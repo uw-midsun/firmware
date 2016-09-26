@@ -18,6 +18,9 @@
 # put the main files you want to compile here separated by a space
 SRCS = main.c
 
+# include directories
+_INC = inc
+
 # the name you want the generated .elf file to go by should go here
 PROJECT_NAME=main
 
@@ -26,7 +29,7 @@ STD_PERIPH_LIB=libraries/stm32f0xx
 
 # linker scripts location if you move the linkers
 # DO NOT TOUCH UNLESS YOU ABSOLUTELY KNOW WHAT YOU ARE DOING
-LDSCRIPT_INC=linker/stm32f0xx/ldscripts
+LDSCRIPT_INC=device/stm32f0xx/ldscripts
 
 ###################################################################################################
 
@@ -59,7 +62,6 @@ CFLAGS += -ffunction-sections -fdata-sections
 CFLAGS += -Wl,--gc-sections -Wl,-Map=$(PROJECT_NAME).map
 
 ###################################################################################################
-
 # TEMPLATE SETUP
 
 vpath %.c src
@@ -67,15 +69,17 @@ vpath %.a $(STD_PERIPH_LIB)
 
 ROOT=$(shell pwd)
 
+INC = $(addprefix -I, $(_INC))
+
 # TODO Investigating making this more dynamic
-CFLAGS += -I inc -isystem $(STD_PERIPH_LIB) \
+CFLAGS += $(INC) -isystem $(STD_PERIPH_LIB) \
 		-isystem $(STD_PERIPH_LIB)/CMSIS/Device/ST/STM32F0xx/Include
 CFLAGS += -isystem $(STD_PERIPH_LIB)/CMSIS/Include \
 		-isystem $(STD_PERIPH_LIB)/STM32F0xx_StdPeriph_Driver/inc
 CFLAGS += -include $(STD_PERIPH_LIB)/stm32f0xx_conf.h
 
 # Include the startup file in the make
-SRCS += linker/stm32f0xx/startup_stm32f0xx.s
+SRCS += device/stm32f0xx/startup_stm32f0xx.s
 
 OBJS = $(SRCS:.c=.o)
 
@@ -89,17 +93,13 @@ LIB_CFLAGS = -g -O2 -Wall
 LIB_CFLAGS += $(ARCH_FLAGS)
 LIB_CFLAGS += -ffreestanding -nostdlib
 LIB_CFLAGS += -include$(STD_PERIPH_LIB)/stm32f0xx_conf.h \
-		-I$(STD_PERIPH_LIB)/CMSIS/Include -I$(STD_PERIPH_LIB)/CMSIS/Device/ST/STM32F0xx/Include \
+		-I$(STD_PERIPH_LIB)/CMSIS/Include \
+		-I$(STD_PERIPH_LIB)/CMSIS/Device/ST/STM32F0xx/Include \
 		-I$(STD_PERIPH_LIB)/STM32F0xx_StdPeriph_Driver/inc \
 		-I$(STD_PERIPH_LIB)/STM32F0xx_StdPeriph_Driver/src
 
 # STD_PERIPH_LIB source files
-LIB_SRCS = stm32f0xx_adc.c stm32f0xx_cec.c stm32f0xx_comp.c stm32f0xx_crc.c \
-	stm32f0xx_dac.c stm32f0xx_dbgmcu.c stm32f0xx_dma.c stm32f0xx_exti.c \
-	stm32f0xx_flash.c stm32f0xx_gpio.c stm32f0xx_i2c.c stm32f0xx_iwdg.c \
-	stm32f0xx_misc.c stm32f0xx_pwr.c stm32f0xx_rcc.c stm32f0xx_rtc.c \
-	stm32f0xx_spi.c stm32f0xx_syscfg.c stm32f0xx_tim.c \
-	stm32f0xx_usart.c stm32f0xx_wwdg.c
+LIB_SRCS = $(notdir $(wildcard $(STD_PERIPH_LIB)/STM32F0xx_StdPeriph_Driver/src/*.c))
 
 # Store object files in a obj directory
 LIB_OBJS = $(addprefix $(STD_PERIPH_LIB)/obj/, $(LIB_SRCS:.c=.o))
@@ -110,7 +110,7 @@ LIB_OBJS = $(addprefix $(STD_PERIPH_LIB)/obj/, $(LIB_SRCS:.c=.o))
 
 .PHONY: lint proj
 
-all: lint $(STD_PERIPH_LIB)/libstm32f0.a proj
+$(warning $(TEST)) all: $(STD_PERIPH_LIB)/libstm32f0.a lint proj
 
 lint:
 	-find inc -name "*.c" -o -name "*.h" | xargs -r cpplint --extensions=c,h
