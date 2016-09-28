@@ -2,7 +2,8 @@
 # AUTHOR: Calder Kitagawa
 # PURPOSE: CORTEX M0 package template using stm32f0xx libraries
 # DATE: SEPT 24 2016
-# MODIFIED: 
+# MODIFIED:
+# VERSION: 1.0.0 
 #
 # USAGE:
 # 	make [all] - makes the stm32f0xx libraries if not cached and compiler files in src/inc dirs 
@@ -15,14 +16,17 @@
 
 # CONFIG
 
-# put the main files you want to compile here separated by a space
-SRCS = main.c
+# put the root direcories you want to compile here separated by a space
+_SRCS = src
 
 # include directories
-_INC = inc
+_INC = inc 
+
+# compile directory
+BIN = bin
 
 # the name you want the generated .elf file to go by should go here
-PROJECT_NAME=main
+PROJECT_NAME=$(basename $(SRCS))
 
 # location of the libraries
 STD_PERIPH_LIB=libraries/stm32f0xx
@@ -59,7 +63,7 @@ ARCH_FLAGS = -mlittle-endian -mcpu=cortex-m0 -march=armv6-m -mthumb
 CFLAGS = -Wall -Werror -g -Os -Wno-unused-variable -pedantic
 CFLAGS += $(ARCH_FLAGS)
 CFLAGS += -ffunction-sections -fdata-sections
-CFLAGS += -Wl,--gc-sections -Wl,-Map=$(PROJECT_NAME).map
+CFLAGS += -Wl,--gc-sections #-Wl,-Map=$(PROJECT_NAME).map
 
 ###################################################################################################
 # TEMPLATE SETUP
@@ -71,6 +75,8 @@ ROOT=$(shell pwd)
 
 INC = $(addprefix -I, $(_INC))
 
+SRCS = $(notdir $(wildcard $(_SRCS)/*.c)) 
+
 # TODO Investigating making this more dynamic
 CFLAGS += $(INC) -isystem $(STD_PERIPH_LIB) \
 		-isystem $(STD_PERIPH_LIB)/CMSIS/Device/ST/STM32F0xx/Include
@@ -79,7 +85,7 @@ CFLAGS += -isystem $(STD_PERIPH_LIB)/CMSIS/Include \
 CFLAGS += -include $(STD_PERIPH_LIB)/stm32f0xx_conf.h
 
 # Include the startup file in the make
-SRCS += device/stm32f0xx/startup_stm32f0xx.s
+STARTUP = device/stm32f0xx/startup_stm32f0xx.s
 
 OBJS = $(SRCS:.c=.o)
 
@@ -108,13 +114,13 @@ LIB_OBJS = $(addprefix $(STD_PERIPH_LIB)/obj/, $(LIB_SRCS:.c=.o))
 
 # MAKE RULES
 
-.PHONY: lint proj
+.PHONY: lint proj program
 
 all: $(STD_PERIPH_LIB)/libstm32f0.a proj
 
 lint:
-	-find inc -name "*.c" -o -name "*.h" | xargs -r python2 cpplint.py
-	-find src -name "*.c" -o -name "*.h" | xargs -r python2 cpplint.py
+	-find inc -name "*.c" -o -name "*.h" | xargs -r python2 cpplint.py)
+	-find src -name "*.c" -o -name "*.h" | xargs -r python2 cpplint.py)
 
 # compiles library objects
 $(STD_PERIPH_LIB)/obj/%.o : $(STD_PERIPH_LIB)/STM32F0xx_StdPeriph_Driver/src/%.c
@@ -125,16 +131,16 @@ $(STD_PERIPH_LIB)/libstm32f0.a: $(LIB_OBJS)
 	$(AR) -r $@ $(LIB_OBJS)
 
 # call to build the project
-proj:   $(PROJECT_NAME).elf
+proj:   $(foreach project,$(PROJECT_NAME),$(BIN)/$(project).elf)
 
 # This is what actually builds the project
 # The necessity of an OBJDUMP and SIZE file for debug is questionable as it is only
 # a feature for power-users who would know how to enable it anyway
-$(PROJECT_NAME).elf: $(SRCS)
-	$(CC) $(CFLAGS) $^ -o $@ -L$(STD_PERIPH_LIB) -lstm32f0 -L$(LDSCRIPT_INC) -Tstm32f0.ld
-	$(OBJCPY) -O binary $(PROJECT_NAME).elf $(PROJECT_NAME).bin
-	$(OBJDUMP) -St $(PROJECT_NAME).elf >$(PROJECT_NAME).lst
-	$(SIZE) $(PROJECT_NAME).elf
+$(BIN)/%.elf: %.c $(STARTUP)
+	$(CC) $(CFLAGS) -Wl,-Map=$(basename $@).map $^ -o $@ -L$(STD_PERIPH_LIB) -lstm32f0 -L$(LDSCRIPT_INC) -Tstm32f0.ld
+	$(OBJCPY) -O binary $@ $(basename $@).bin
+	$(OBJDUMP) -St $@ >$(basename $@).lst
+	$(SIZE) $@
 
 # OPTIONAL: add this line to the above rule to compile a hex file as well
 # $(OBJCOPY) -O ihex $(PROJ_NAME).elf $(PROJ_NAME).hex
@@ -143,9 +149,12 @@ $(PROJECT_NAME).elf: $(SRCS)
 
 # OPENOCD SUPPORT
 
-program: $(PROJECT_NAME).bin
+# TODO verify this isn't broken
+program: $(foreach project,$(PROJECT_NAME),$(BIN)/$(project).bin)
+
+$(BIN)/%.bin: $(BIN)/%.bin
 	openocd -f $(OPENOCD_BOARD_DIR)/stm32f0discovery.cfg -f $(OPENOCD_PROC_FILE) \
-	-c "stm_flash `pwd`/$(PROJ_NAME).bin" -c shutdown
+	-c "stm_flash `pwd`/$@" -c shutdown
 
 ###################################################################################################
 
@@ -156,10 +165,10 @@ program: $(PROJECT_NAME).bin
 clean:
 	find ./ -name '*~' | xargs rm -f
 	rm -f *.o
-	rm -f $(PROJECT_NAME).elf
-	rm -f $(PROJECT_NAME).bin
-	rm -f $(PROJECT_NAME).map
-	rm -f $(PROJECT_NAME).lst
+	rm -f $(foreach project,$(PROJECT_NAME),$(BIN)/$(project).elf)
+	rm -f $(foreach project,$(PROJECT_NAME),$(BIN)/$(project).bin)
+	rm -f $(foreach project,$(PROJECT_NAME),$(BIN)/$(project).map)
+	rm -f $(foreach project,$(PROJECT_NAME),$(BIN)/$(project).lst)
 
 reallyclean: clean
 	rm -f $(LIB_OBJS) $(STD_PERIPH_LIB)/libstm32f0.a
