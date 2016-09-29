@@ -119,8 +119,8 @@ LIB_OBJS = $(addprefix $(STD_PERIPH_LIB)/obj/, $(LIB_SRCS:.c=.o))
 all: $(STD_PERIPH_LIB)/libstm32f0.a proj
 
 lint:
-	-find inc -name "*.c" -o -name "*.h" | xargs -r python2 cpplint.py)
-	-find src -name "*.c" -o -name "*.h" | xargs -r python2 cpplint.py)
+	-find inc -name "*.c" -o -name "*.h" | xargs -r python2 cpplint.py
+	-find src -name "*.c" -o -name "*.h" | xargs -r python2 cpplint.py
 
 # compiles library objects
 $(STD_PERIPH_LIB)/obj/%.o : $(STD_PERIPH_LIB)/STM32F0xx_StdPeriph_Driver/src/%.c
