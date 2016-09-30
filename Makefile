@@ -43,7 +43,7 @@ LDSCRIPT_INC=device/stm32f0xx/ldscripts
 OPENOCD_BOARD_DIR=/usr/share/openocd/scripts/board
 
 # configuration (cfg) file containing directives for OpenOCD
-OPENOCD_PROC_FILE=extra/stm32f0-opencd.cfg
+OPENOCD_PROC_FILE=$(STD_PERIPH_LIB)/stm32f0-opencd.cfg
 
 # the rest of this is taken care of please don't touch anything else
 ###################################################################################################
@@ -57,8 +57,13 @@ OBJDUMP=arm-none-eabi-objdump
 SIZE=arm-none-eabi-size
 AR=arm-none-eabi-ar
 
-# TODO determine if this is the correct architecture
+# TODO verify this is the correct architecture
 ARCH_FLAGS = -mlittle-endian -mcpu=cortex-m0 -march=armv6-m -mthumb
+INC_FLAGS = -include $(STD_PERIPH_LIB)/stm32f0xx_conf.h \
+		-isystem $(STD_PERIPH_LIB)/CMSIS/Include \
+		-isystem $(STD_PERIPH_LIB)/CMSIS/Device/ST/STM32F0xx/Include \
+		-isystem $(STD_PERIPH_LIB)/STM32F0xx_StdPeriph_Driver/inc \
+		-isystem $(STD_PERIPH_LIB)/STM32F0xx_StdPeriph_Driver/src
 
 CFLAGS = -Wall -Werror -g -Os -Wno-unused-variable -pedantic
 CFLAGS += $(ARCH_FLAGS)
@@ -78,11 +83,7 @@ INC = $(addprefix -I, $(_INC))
 SRCS = $(notdir $(wildcard $(_SRCS)/*.c)) 
 
 # TODO Investigating making this more dynamic
-CFLAGS += $(INC) -isystem $(STD_PERIPH_LIB) \
-		-isystem $(STD_PERIPH_LIB)/CMSIS/Device/ST/STM32F0xx/Include
-CFLAGS += -isystem $(STD_PERIPH_LIB)/CMSIS/Include \
-		-isystem $(STD_PERIPH_LIB)/STM32F0xx_StdPeriph_Driver/inc
-CFLAGS += -include $(STD_PERIPH_LIB)/stm32f0xx_conf.h
+CFLAGS += $(INC) -isystem $(STD_PERIPH_LIB) $(INC_FLAGS) 
 
 # Include the startup file in the make
 STARTUP = device/stm32f0xx/startup_stm32f0xx.s
@@ -94,15 +95,9 @@ OBJS = $(SRCS:.c=.o)
 # STM32F0xx LIB SETUP
 
 # Use separate flags to build the STD_PERIPH_LIB
-# TODO investigate making this more dynamic
 LIB_CFLAGS = -g -O2 -Wall
 LIB_CFLAGS += $(ARCH_FLAGS)
-LIB_CFLAGS += -ffreestanding -nostdlib
-LIB_CFLAGS += -include$(STD_PERIPH_LIB)/stm32f0xx_conf.h \
-		-I$(STD_PERIPH_LIB)/CMSIS/Include \
-		-I$(STD_PERIPH_LIB)/CMSIS/Device/ST/STM32F0xx/Include \
-		-I$(STD_PERIPH_LIB)/STM32F0xx_StdPeriph_Driver/inc \
-		-I$(STD_PERIPH_LIB)/STM32F0xx_StdPeriph_Driver/src
+LIB_CFLAGS += -ffreestanding -nostdlib $(INC_FLAGS)
 
 # STD_PERIPH_LIB source files
 LIB_SRCS = $(notdir $(wildcard $(STD_PERIPH_LIB)/STM32F0xx_StdPeriph_Driver/src/*.c))
@@ -116,19 +111,20 @@ LIB_OBJS = $(addprefix $(STD_PERIPH_LIB)/obj/, $(LIB_SRCS:.c=.o))
 
 .PHONY: lint proj program
 
-all: $(STD_PERIPH_LIB)/libstm32f0.a proj
+all: $(STD_PERIPH_LIB)/libstm32f0.a lint proj
 
 lint:
-	-find inc -name "*.c" -o -name "*.h" | xargs -r python2 cpplint.py
-	-find src -name "*.c" -o -name "*.h" | xargs -r python2 cpplint.py
+	@-find inc -name "*.c" -o -name "*.h" | xargs -r python2 cpplint.py
+	@-find src -name "*.c" -o -name "*.h" | xargs -r python2 cpplint.py
 
 # compiles library objects
 $(STD_PERIPH_LIB)/obj/%.o : $(STD_PERIPH_LIB)/STM32F0xx_StdPeriph_Driver/src/%.c
-	$(CC) -w -c -o $@ $< $(LIB_CFLAGS) 
+	@mkdir -p $(STD_PERIPH_LIB)/obj/
+	@$(CC) -w -c -o $@ $< $(LIB_CFLAGS) 
 
 # builds the library
 $(STD_PERIPH_LIB)/libstm32f0.a: $(LIB_OBJS)
-	$(AR) -r $@ $(LIB_OBJS)
+	@$(AR) -r $@ $(LIB_OBJS)
 
 # call to build the project
 proj:   $(foreach project,$(PROJECT_NAME),$(BIN)/$(project).elf)
@@ -137,9 +133,11 @@ proj:   $(foreach project,$(PROJECT_NAME),$(BIN)/$(project).elf)
 # The necessity of an OBJDUMP and SIZE file for debug is questionable as it is only
 # a feature for power-users who would know how to enable it anyway
 $(BIN)/%.elf: %.c $(STARTUP)
-	$(CC) $(CFLAGS) -Wl,-Map=$(basename $@).map $^ -o $@ -L$(STD_PERIPH_LIB) -lstm32f0 -L$(LDSCRIPT_INC) -Tstm32f0.ld
-	$(OBJCPY) -O binary $@ $(basename $@).bin
-	$(OBJDUMP) -St $@ >$(basename $@).lst
+	@mkdir -p bin/	
+	@$(CC) $(CFLAGS) -Wl,-Map=$(basename $@).map $^ -o $@ \
+		-L$(STD_PERIPH_LIB) -lstm32f0 -L$(LDSCRIPT_INC) -Tstm32f0.ld
+	@$(OBJCPY) -O binary $@ $(basename $@).bin
+	@$(OBJDUMP) -St $@ >$(basename $@).lst
 	$(SIZE) $@
 
 # OPTIONAL: add this line to the above rule to compile a hex file as well
@@ -163,14 +161,10 @@ $(BIN)/%.bin: $(BIN)/%.bin
 # clean and remake rules, use reallyclean to remake the STD_PERIPH_LIB or before a push 
 
 clean:
-	find ./ -name '*~' | xargs rm -f
-	rm -f *.o
-	rm -f $(foreach project,$(PROJECT_NAME),$(BIN)/$(project).elf)
-	rm -f $(foreach project,$(PROJECT_NAME),$(BIN)/$(project).bin)
-	rm -f $(foreach project,$(PROJECT_NAME),$(BIN)/$(project).map)
-	rm -f $(foreach project,$(PROJECT_NAME),$(BIN)/$(project).lst)
+	@find ./ -name '*~' | xargs rm -f
+	@rm -rf bin/
 
 reallyclean: clean
-	rm -f $(LIB_OBJS) $(STD_PERIPH_LIB)/libstm32f0.a
+	@rm -rf $(STD_PERIPH_LIB)/obj $(STD_PERIPH_LIB)/libstm32f0.a
 
 remake: clean all
