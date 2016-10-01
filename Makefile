@@ -17,10 +17,10 @@
 # CONFIG
 
 # put the root direcories you want to compile here separated by a space
-_SRCS = src
+_SRCS = main.c
 
 # include directories
-_INC = inc 
+_INC = ms-lib 
 
 # compile directory
 BIN = bin
@@ -34,6 +34,8 @@ STD_PERIPH_LIB=libraries/stm32f0xx
 # linker scripts location if you move the linkers
 # DO NOT TOUCH UNLESS YOU ABSOLUTELY KNOW WHAT YOU ARE DOING
 LDSCRIPT_INC=device/stm32f0xx/ldscripts
+
+PROJ=projects
 
 ###################################################################################################
 
@@ -114,8 +116,8 @@ LIB_OBJS = $(addprefix $(STD_PERIPH_LIB)/obj/, $(LIB_SRCS:.c=.o))
 all: $(STD_PERIPH_LIB)/libstm32f0.a lint proj
 
 lint:
-	@-find inc -name "*.c" -o -name "*.h" | xargs -r python2 cpplint.py
-	@-find src -name "*.c" -o -name "*.h" | xargs -r python2 cpplint.py
+	@-find $(_INC) -name "*.c" -o -name "*.h" | xargs -r python2 cpplint.py
+	@-find $(PROJ) -name "*.c" -o -name "*.h" | xargs -r python2 cpplint.py
 
 # compiles library objects
 $(STD_PERIPH_LIB)/obj/%.o : $(STD_PERIPH_LIB)/STM32F0xx_StdPeriph_Driver/src/%.c
