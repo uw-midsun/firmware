@@ -6,8 +6,8 @@
 # VERSION: 1.0.0 
 #
 # USAGE:
-# 	make [all] - makes the stm32f0xx libraries if not cached and compiler files in src/inc dirs 
-#	make remake - rebuilds .elf using src and inc files explicitly by removing and rebuilding
+# make [all] - makes the device/mslib libraries if not cached and makes the target ruleset 
+#	make remake - rebuilds .elf 
 #	make clean - removes the .elf and associated linker and object files
 #	make reallyclean - in addition to running make clean also removed the cached libraries
 #	make program - builds an OpenOCD binary
@@ -16,31 +16,30 @@
 
 # CONFIG
 
-# Specify the device to build for
-devicefamily = stm32f0xx
-
-# Specify the mainprojectfile you want to build
-mainprojectfile = projects/main.c 
+# Specify the directory with the rule.mk file for the project you want to build 
+RULES_DIR := projects/test_project
+include $(RULES_DIR)/rules.mk
+MAIN_FILE = $(RULES_DIR)/$(MAIN)
 
 # compile directory
-bindir = bin
+BIN_DIR := bin
 
 # location of OpenOCD board .cfg files (only triggered if you use 'make program' explicitly)
-OPENOCD_BOARD_DIR=/usr/share/openocd/scripts/board
+OPENOCD_BOARD_DIR := /usr/share/openocd/scripts/board
 
+# Please don't touch anything below this line
 ###################################################################################################
 
 # AUTOMATED ACTIONS
 
-# name of generated *.elf files 
-mainprojectname = $(basename $(notdir $(mainprojectfile)))
+# name of generated *.elf file 
+MAIN_PROJECT := $(basename $(notdir $(MAIN_FILE)))
 
 # location of the libraries
-lib_dir = libraries/$(devicefamily)
-devdir = device/$(devicefamily)
-mslibdir = libraries/ms-lib
+LIB_DIR := libraries/$(DEVICE_FAMILY)
+DEV_DIR := device/$(DEVICE_FAMILY)
+MSLIB_DIR := libraries/ms-lib
 
-# the rest of this is taken care of please don't touch anything else
 ###################################################################################################
 
 # ENV SETUP
@@ -53,14 +52,14 @@ ROOT=$(shell pwd)
 
 .PHONY: lint proj program
 
-all: $(lib_dir)/libstm32f0.a $(mslibdir)/mslib.a lint project
+all: $(LIB_DIR)/$(DEVICE_LIBRARY) $(MSLIB_DIR)/mslib.a lint project
 
-include $(mslibdir)/mslib.mk
-include $(devdir)/$(devicefamily)cfg.mk
+include $(MSLIB_DIR)/mslib.mk
+include $(DEV_DIR)/cfg.mk
 
 lint:
 	@-find projects -name "*.c" -o -name "*.h" | xargs -r python2 lint.py
-	@-find $(mslibdir) -name "*.c" -o -name "*.h" | xargs -r python2 lint.py
+	@-find $(MSLIB_DIR) -name "*.c" -o -name "*.h" | xargs -r python2 lint.py
 
 ###################################################################################################
 
@@ -69,8 +68,8 @@ lint:
 # TODO verify this isn't broken
 program: $(foreach project,$(PROJECT_NAME),$(BIN)/$(project).bin)
 
-$(BIN)/%.bin: $(BIN)/%.bin
-	openocd -f $(OPENOCD_BOARD_DIR)/stm32f0discovery.cfg -f $(OPENOCD_PROC_FILE) \
+$(BIN_DIR)/%.bin: $(BIN_DIR)/%.bin
+	openocd -f $(OPENOCD_BOARD_DIR)/board.cfg -f $(OPENOCD_CFG) \
 	-c "stm_flash `pwd`/$@" -c shutdown
 
 ###################################################################################################
@@ -84,7 +83,7 @@ clean:
 	@rm -rf bin/
 
 reallyclean: clean
-	@rm -rf $(lib_dir)/obj $(lib_dir)/*.a
-	@rm -rf $(mslibdir)/obj $(mslibdir)/*.a
+	@rm -rf $(LIB_DIR)/obj $(LIB_DIR)/*.a
+	@rm -rf $(MSLIB_DIR)/obj $(MSLIB_DIR)/*.a
 
 remake: clean all

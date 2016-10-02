@@ -1,19 +1,19 @@
-mslib = libraries/ms-lib
+MSLIB := libraries/ms-lib
 
-mssrcdir = $(mslib)/src/$(devicefamily)
-msincdir = $(mslib)/inc
-msobjdir = $(mslib)/obj
+MSSRC_DIR := $(MSLIB)/src/$(DEVICE_FAMILY)
+MSINC_DIR := $(MSLIB)/inc
+MSOBJ_DIR := $(MSLIB)/obj
 
-mssrc = $(notdir $(wildcard $(mssrcdir)/*.c)) 
-msobj = $(addprefix $(msobjdir)/,$(mssrc:.c=.o))
+MSSRC := $(notdir $(wildcard $(MSSRC_DIR)/*.c)) 
+MSOBJ := $(addprefix $(MSOBJ_DIR)/,$(MSSRC:.c=.o))
 
-msCFLAGS = -g -O2 -Wall -Werror -pedantic -Wno-unused-variable \
-					 $(ARCH) $(LIB) -I$(mslib) \
+MSCFLAGS := -g -O2 -Wall -Werror -pedantic -Wno-unused-variable \
+					 $(ARCH) $(LIB) -I$(MSLIB) \
 					 -ffreestanding -nostdlib
 
-$(mslib)/mslib.a: $(msobj)
-	@$(AR) -r $@ $(msobj)
+$(MSLIB)/mslib.a: $(MSOBJ)
+	@$(AR) -r $@ $(MSOBJ)
 
-$(msobjdir)/%.o: $(mssrcdir)/%.c 
-	@mkdir -p $(msobjdir)
-	@$(CC) -w -c -o $@ $< $(msCFLAGS)
+$(MSOBJ_DIR)/%.o: $(MSSRC_DIR)/%.c 
+	@mkdir -p $(MSOBJ_DIR)
+	@$(CC) -w -c -o $@ $< $(MSCFLAGS)

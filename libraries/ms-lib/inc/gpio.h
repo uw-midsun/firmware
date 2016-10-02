@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 // Defines a structure for defining what port/pin is being set
 struct IOMap {
