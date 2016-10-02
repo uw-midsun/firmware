@@ -62,11 +62,10 @@ SECTIONS
     /* This is the uninitialized data section */
     .bss :
     {
-	    . = ALIGN(4);
+      . = ALIGN(4);
         /* This is used by the startup in order to initialize the .bss secion */
         _sbss = .;
         _bss = .;
-        
         *(.bss)
         *(.bss.*) /* patched by elias - allows the use of -fdata-sections */
         *(COMMON)
