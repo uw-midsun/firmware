@@ -31,6 +31,10 @@
 # Debug files
 *.dSYM/
 *.su
+*.lst
+*.map
 
 # Other
 *.vscode
+*obj/
+*bin/

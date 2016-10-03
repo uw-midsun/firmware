@@ -16,13 +16,18 @@
 
 # CONFIG
 
-# Specify the directory with the rule.mk file for the project you want to build 
-RULES_DIR := projects/test_project
-include $(RULES_DIR)/rules.mk
-MAIN_FILE = $(RULES_DIR)/$(MAIN)
+# Specify the directory with the rule.mk file for the project you want to build
+# Default (for now) pass RULES=<path-to-rules> as an argument to override
+RULES := projects/test_project
+
+# Default (for now) pass DEVICE_FAMILY=<device> as an argument to override
+DEVICE_FAMILY := stm32f0xx
 
 # compile directory
 BIN_DIR := bin
+
+# library cache
+OBJ_CACHE := obj
 
 # location of OpenOCD board .cfg files (only triggered if you use 'make program' explicitly)
 OPENOCD_BOARD_DIR := /usr/share/openocd/scripts/board
@@ -32,13 +37,11 @@ OPENOCD_BOARD_DIR := /usr/share/openocd/scripts/board
 
 # AUTOMATED ACTIONS
 
-# name of generated *.elf file 
-MAIN_PROJECT := $(basename $(notdir $(MAIN_FILE)))
-
-# location of the libraries
-LIB_DIR := libraries/$(DEVICE_FAMILY)
-DEV_DIR := device/$(DEVICE_FAMILY)
-MSLIB_DIR := libraries/ms-lib
+# include the target build rules
+include $(RULES)/rules.mk
+MAIN_FILE := $(RULES)/$(MAIN)
+PROJECT_NAME := $(basename $(notdir $(MAIN_FILE)))
+APP_DEPS := $(addprefix $(OBJ_CACHE)/lib,$(notdir $(addsuffix .a,$(DEPS))))
 
 ###################################################################################################
 
@@ -52,21 +55,35 @@ ROOT=$(shell pwd)
 
 .PHONY: lint proj program
 
-all: $(LIB_DIR)/$(DEVICE_LIBRARY) $(MSLIB_DIR)/mslib.a lint project
+all: $(APP_DEPS) lint project
 
-include $(MSLIB_DIR)/mslib.mk
-include $(DEV_DIR)/cfg.mk
+include device/$(DEVICE_FAMILY)/device_config.mk
+include $(foreach path,$(dir $(DEPS)),$(path)rules.mk)  
 
 lint:
 	@-find projects -name "*.c" -o -name "*.h" | xargs -r python2 lint.py
-	@-find $(MSLIB_DIR) -name "*.c" -o -name "*.h" | xargs -r python2 lint.py
+	@-find libraries/ms-lib -name "*.c" -o -name "*.h" | xargs -r python2 lint.py 
+
+project: $(BIN_DIR)/$(PROJECT_NAME).elf
+
+$(BIN_DIR)/%.elf: $(MAIN_FILE) $(HEADERS) $(STARTUP)
+	@mkdir -p $(BIN_DIR)
+	@$(CC) $(CFLAGS) $^ -o $@ -L$(OBJ_CACHE)\
+		$(foreach dep,$(DEPS), -l$(notdir $(dep))) \
+		$(LINKER)
+	@$(OBJCPY) -O binary $@ $(BIN_DIR)/$(PROJECT_NAME).bin
+	@$(OBJDUMP) -St $@ >$(basename $@).lst
+	$(SIZE) $@
+
+# OPTIONAL:
+# $(OBJCPY) -o ihex $(PROJECT_NAME).hex
 
 ###################################################################################################
 
 # OPENOCD SUPPORT
 
 # TODO verify this isn't broken
-program: $(foreach project,$(PROJECT_NAME),$(BIN)/$(project).bin)
+program: $(BIN_DIR)/$(PROJECT_NAME).bin
 
 $(BIN_DIR)/%.bin: $(BIN_DIR)/%.bin
 	openocd -f $(OPENOCD_BOARD_DIR)/board.cfg -f $(OPENOCD_CFG) \
@@ -80,10 +97,10 @@ $(BIN_DIR)/%.bin: $(BIN_DIR)/%.bin
 
 clean:
 	@find ./ -name '*~' | xargs rm -f
-	@rm -rf bin/
+	@rm -rf $(BIN_DIR)
 
 reallyclean: clean
-	@rm -rf $(LIB_DIR)/obj $(LIB_DIR)/*.a
-	@rm -rf $(MSLIB_DIR)/obj $(MSLIB_DIR)/*.a
+	@rm -rf $(OBJ_CACHE)
+	@find libraries -type d -name 'obj' | xargs rm -rf
 
 remake: clean all
