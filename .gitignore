@@ -38,3 +38,4 @@
 *.vscode
 *obj/
 *bin/
+*.swp
