@@ -1,19 +1,24 @@
-MS_DIR := libraries/ms-lib
+# Specifies the path from the makefile to this file
+$(LIB_DIR)_DIR := libraries/ms-lib
 
-MS_SRC_DIR := $(MS_DIR)/src/$(DEVICE_FAMILY)
-MS_INC_DIR := $(MS_DIR)/inc
-MS_OBJ_DIR := $(MS_DIR)/obj
+# Specifies the SRC, INC and OBJ directories for the library
+$(LIB_DIR)_SRC_DIR := $($(LIB_DIR)_DIR)/src/$(DEVICE_FAMILY)
+$(LIB_DIR)_INC_DIR := $($(LIB_DIR)_DIR)/inc
+$(LIB_DIR)_OBJ_DIR := $($(LIB_DIR)_DIR)/obj
 
-MS_SRC := $(notdir $(wildcard $(MS_SRC_DIR)/*.c)) 
-MS_OBJ := $(addprefix $(MS_OBJ_DIR)/,$(MS_SRC:.c=.o))
+# Specifies the SRC and OBJ files DO NOT TOUCH
+$(LIB_DIR)_SRC := $(notdir $(wildcard $($(LIB_DIR)_SRC_DIR)/*.c)) 
+$(LIB_DIR)_OBJ := $(addprefix $($(LIB_DIR)_OBJ_DIR)/,$($(LIB_DIR)_SRC:.c=.o))
 
-MS_CFLAGS := -g -O2 -Wall -Werror -pedantic -Wno-unused-variable \
-					 $(ARCH) $(DEVICE_LIB) -I$(MS_DIR) -ffreestanding -nostdlib
+# Specifies library specific build flags
+$(LIB_DIR)_CFLAGS := -g -O2 -Wall -Werror -pedantic -Wno-unused-variable \
+					 $(ARCH) $(DEVICE_LIB) -I$($(LIB_DIR)_DIR) -ffreestanding -nostdlib
 
-$(OBJ_CACHE)/libmslib.a: $(MS_OBJ)
+# Specifies library build rules
+$(OBJ_CACHE)/lib$(LIB_DIR).a: $($(LIB_DIR)_OBJ)
 	@mkdir -p $(OBJ_CACHE)
-	@$(AR) -r $@ $(MS_OBJ)
+	@$(AR) -r $@ $($(LIB_DIR)_OBJ)
 
-$(MS_OBJ_DIR)/%.o: $(MS_SRC_DIR)/%.c 
-	@mkdir -p $(MS_OBJ_DIR)
-	@$(CC) -w -c -o $@ $< $(MS_CFLAGS)
+$($(LIB_DIR)_OBJ_DIR)/%.o: $($(LIB_DIR)_SRC_DIR)/%.c 
+	@mkdir -p $($(LIB_DIR)_OBJ_DIR)
+	@$(CC) -w -c -o $@ $< $($(LIB_DIR)_CFLAGS)

@@ -39,9 +39,14 @@ OPENOCD_BOARD_DIR := /usr/share/openocd/scripts/board
 
 # include the target build rules
 include $(RULES)/rules.mk
+
+# define a MAIN_FILE and PROJECT_NAME using the rules included in the last section
 MAIN_FILE := $(RULES)/$(MAIN)
 PROJECT_NAME := $(basename $(notdir $(MAIN_FILE)))
-APP_DEPS := $(addprefix $(OBJ_CACHE)/lib,$(notdir $(addsuffix .a,$(DEPS))))
+
+# string manipulations to define the required libraries based on the DEPS variable in the RULES 
+_DEPS := $(foreach dep,$(DEPS),$(addprefix libraries/,$(addsuffix /$(dep),$(dep))))
+APP_DEPS := $(addprefix $(OBJ_CACHE)/lib,$(notdir $(addsuffix .a,$(_DEPS))))
 
 ###################################################################################################
 
@@ -53,19 +58,26 @@ ROOT=$(shell pwd)
 
 # MAKE RULES
 
-.PHONY: lint proj program
+.PHONY: all lint proj program
 
+# Actually calls the make
 all: $(APP_DEPS) lint project
 
+# Includes device specific configurations
 include device/$(DEVICE_FAMILY)/device_config.mk
-include $(foreach path,$(dir $(DEPS)),$(path)rules.mk)  
 
+# Includes libraries needed using LIB_DIR to make the rules.mk for each standardized
+$(foreach dep,$(_DEPS),$(eval override LIB_DIR := $(notdir $(dep))) $(eval include $(dir $(dep))rules.mk))
+
+# Lints the files in ms-lib and projects
 lint:
 	@-find projects -name "*.c" -o -name "*.h" | xargs -r python2 lint.py
 	@-find libraries/ms-lib -name "*.c" -o -name "*.h" | xargs -r python2 lint.py 
 
+# Builds the project
 project: $(BIN_DIR)/$(PROJECT_NAME).elf
 
+# Rule for making the project
 $(BIN_DIR)/%.elf: $(MAIN_FILE) $(HEADERS) $(STARTUP)
 	@mkdir -p $(BIN_DIR)
 	@$(CC) $(CFLAGS) $^ -o $@ -L$(OBJ_CACHE)\

@@ -1,18 +1,23 @@
-STM32F0_DIR = libraries/stm32f0xx
+# Specifies the path from the makefile to this file
+$(LIB_DIR)_DIR = libraries/stm32f0xx
 
-STM32F0_SRC_DIR = $(STM32F0_DIR)/STM32F0xx_StdPeriph_Driver/src
-STM32F0_INC_DIR = $(STM32F0_DIR)/STM32F0xx_StdPeriph_Driver/inc
-STM32F0_OBJ_DIR = $(STM32F0_DIR)/obj
+# Specifies the SRC, INC and OBJ directories for the library
+$(LIB_DIR)_SRC_DIR = $($(LIB_DIR)_DIR)/STM32F0xx_StdPeriph_Driver/src
+$(LIB_DIR)_INC_DIR = $($(LIB_DIR)_DIR)/STM32F0xx_StdPeriph_Driver/inc
+$(LIB_DIR)_OBJ_DIR = $($(LIB_DIR)_DIR)/obj
 
-STM32F0_SRC = $(notdir $(wildcard $(STM32F0_SRC_DIR)/*.c)) 
-STM32F0_OBJ = $(addprefix $(STM32F0_OBJ_DIR)/,$(STM32F0_SRC:.c=.o))
+# Specifies the SRC and OBJ files DO NOT TOUCH 
+$(LIB_DIR)_SRC = $(notdir $(wildcard $($(LIB_DIR)_SRC_DIR)/*.c)) 
+$(LIB_DIR)_OBJ = $(addprefix $($(LIB_DIR)_OBJ_DIR)/,$($(LIB_DIR)_SRC:.c=.o))
 
-STM32F0_CFLAGS = -g -O2 -Wall $(ARCH) $(INC) -ffreestanding -nostdlib
+# Specifies library specific build flags
+$(LIB_DIR)_CFLAGS = -g -O2 -Wall $(ARCH) $(INC) -ffreestanding -nostdlib
 
-$(OBJ_CACHE)/libstm32f0.a: $(STM32F0_OBJ)
+# Specifies library build rules
+$(warning $(LIB_DIR))$(OBJ_CACHE)/lib$(LIB_DIR).a: $($(LIB_DIR)_OBJ)
 	@mkdir -p $(OBJ_CACHE)
-	@$(AR) -r $@ $(STM32F0_OBJ)
+	@$(AR) -r $@ $($(LIB_DIR)_OBJ)
 
-$(STM32F0_OBJ_DIR)/%.o: $(STM32F0_SRC_DIR)/%.c 
-	@mkdir -p $(STM32F0_OBJ_DIR)
-	@$(CC) -w -c -o $@ $< $(STM32F0_CFLAGS)
+$($(LIB_DIR)_OBJ_DIR)/%.o: $($(LIB_DIR)_SRC_DIR)/%.c 
+	@mkdir -p $($(LIB_DIR)_OBJ_DIR)
+	@$(CC) -w -c -o $@ $< $($(LIB_DIR)_CFLAGS)
