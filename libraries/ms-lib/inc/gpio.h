@@ -50,5 +50,5 @@ void io_set_output(const struct IOMap* io_map, IOOutput output, IOSpeed speed);
 // Set the pull-up pull-down resistor
 void io_set_resistor(const struct IOMap* io_map, IOResistor resistor);
 
-// TODO: consider adding locks, and input and output register read/write
-// TODO: interrupt configuration and edge
+// TODO(calderk): consider adding locks, and input and output register read/write
+// TODO(calderk): interrupt configuration and edge

@@ -23,11 +23,21 @@ RULES := projects/test_project
 # Default (for now) pass DEVICE_FAMILY=<device> as an argument to override
 DEVICE_FAMILY := stm32f0xx
 
-# compile directory
-BIN_DIR := bin
+# Output directory
+BUILD_DIR := build
 
-# library cache
-OBJ_CACHE := obj
+# compile directory
+BIN_DIR := $(BUILD_DIR)/bin
+
+# Static library directory
+STATIC_LIB_DIR := $(BUILD_DIR)/lib
+
+# Object cache
+OBJ_CACHE := $(BUILD_DIR)/obj
+
+DIRS := $(BUILD_DIR) $(BIN_DIR) $(STATIC_LIB_DIR) $(OBJ_CACHE)
+
+LIB_DIR := libraries
 
 # location of OpenOCD board .cfg files (only triggered if you use 'make program' explicitly)
 OPENOCD_BOARD_DIR := /usr/share/openocd/scripts/board
@@ -46,7 +56,7 @@ PROJECT_NAME := $(basename $(notdir $(MAIN_FILE)))
 
 # string manipulations to define the required libraries based on the DEPS variable in the RULES 
 _DEPS := $(foreach dep,$(DEPS),$(addprefix libraries/,$(addsuffix /$(dep),$(dep))))
-APP_DEPS := $(addprefix $(OBJ_CACHE)/lib,$(notdir $(addsuffix .a,$(_DEPS))))
+APP_DEPS := $(addprefix $(STATIC_LIB_DIR)/lib,$(notdir $(addsuffix .a,$(_DEPS))))
 
 ###################################################################################################
 
@@ -67,7 +77,8 @@ all: $(APP_DEPS) lint project
 include device/$(DEVICE_FAMILY)/device_config.mk
 
 # Includes libraries needed using LIB_DIR to make the rules.mk for each standardized
-$(foreach dep,$(_DEPS),$(eval override LIB_DIR := $(notdir $(dep))) $(eval include $(dir $(dep))rules.mk))
+$(foreach dep,$(_DEPS),$(eval LIB := $(notdir $(dep))) $(eval include $(dir $(dep))rules.mk))
+undefine LIB
 
 # Lints the files in ms-lib and projects
 lint:
@@ -78,14 +89,16 @@ lint:
 project: $(BIN_DIR)/$(PROJECT_NAME).elf
 
 # Rule for making the project
-$(BIN_DIR)/%.elf: $(MAIN_FILE) $(HEADERS) $(STARTUP)
-	@mkdir -p $(BIN_DIR)
-	@$(CC) $(CFLAGS) $^ -o $@ -L$(OBJ_CACHE)\
+$(BIN_DIR)/%.elf: $(MAIN_FILE) $(HEADERS) $(STARTUP) | $(BIN_DIR)
+	@$(CC) $(CFLAGS) $^ -o $@ -L$(STATIC_LIB_DIR)\
 		$(foreach dep,$(DEPS), -l$(notdir $(dep))) \
 		$(LINKER)
 	@$(OBJCPY) -O binary $@ $(BIN_DIR)/$(PROJECT_NAME).bin
 	@$(OBJDUMP) -St $@ >$(basename $@).lst
 	$(SIZE) $@
+
+$(DIRS):
+	@mkdir -p $@
 
 # OPTIONAL:
 # $(OBJCPY) -o ihex $(PROJECT_NAME).hex
@@ -112,7 +125,6 @@ clean:
 	@rm -rf $(BIN_DIR)
 
 reallyclean: clean
-	@rm -rf $(OBJ_CACHE)
-	@find libraries -type d -name 'obj' | xargs rm -rf
+	@rm -rf $(BUILD_DIR)
 
 remake: clean all
