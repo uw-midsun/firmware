@@ -6,8 +6,8 @@
 # VERSION: 1.0.0 
 #
 # USAGE:
-# 	make [all] - makes the stm32f0xx libraries if not cached and compiler files in src/inc dirs 
-#	make remake - rebuilds .elf using src and inc files explicitly by removing and rebuilding
+# make [all] - makes the device/mslib libraries if not cached and makes the target ruleset 
+#	make remake - rebuilds .elf 
 #	make clean - removes the .elf and associated linker and object files
 #	make reallyclean - in addition to running make clean also removed the cached libraries
 #	make program - builds an OpenOCD binary
@@ -16,31 +16,48 @@
 
 # CONFIG
 
-# Specify the device to build for
-devicefamily = stm32f0xx
+# Specify the directory with the rule.mk file for the project you want to build
+# Default (for now) pass RULES=<path-to-rules> as an argument to override
+RULES := projects/test_project
 
-# Specify the mainprojectfile you want to build
-mainprojectfile = projects/main.c 
+# Default (for now) pass DEVICE_FAMILY=<device> as an argument to override
+DEVICE_FAMILY := stm32f0xx
+
+# Output directory
+BUILD_DIR := build
 
 # compile directory
-bindir = bin
+BIN_DIR := $(BUILD_DIR)/bin
+
+# Static library directory
+STATIC_LIB_DIR := $(BUILD_DIR)/lib
+
+# Object cache
+OBJ_CACHE := $(BUILD_DIR)/obj
+
+DIRS := $(BUILD_DIR) $(BIN_DIR) $(STATIC_LIB_DIR) $(OBJ_CACHE)
+
+LIB_DIR := libraries
 
 # location of OpenOCD board .cfg files (only triggered if you use 'make program' explicitly)
-OPENOCD_BOARD_DIR=/usr/share/openocd/scripts/board
+OPENOCD_BOARD_DIR := /usr/share/openocd/scripts/board
 
+# Please don't touch anything below this line
 ###################################################################################################
 
 # AUTOMATED ACTIONS
 
-# name of generated *.elf files 
-mainprojectname = $(basename $(notdir $(mainprojectfile)))
+# include the target build rules
+include $(RULES)/rules.mk
 
-# location of the libraries
-lib_dir = libraries/$(devicefamily)
-devdir = device/$(devicefamily)
-mslibdir = libraries/ms-lib
+# define a MAIN_FILE and PROJECT_NAME using the rules included in the last section
+MAIN_FILE := $(RULES)/$(MAIN)
+PROJECT_NAME := $(basename $(notdir $(MAIN_FILE)))
 
-# the rest of this is taken care of please don't touch anything else
+# string manipulations to define the required libraries based on the DEPS variable in the RULES 
+_DEPS := $(foreach dep,$(DEPS),$(addprefix libraries/,$(addsuffix /$(dep),$(dep))))
+APP_DEPS := $(addprefix $(STATIC_LIB_DIR)/lib,$(notdir $(addsuffix .a,$(_DEPS))))
+
 ###################################################################################################
 
 # ENV SETUP
@@ -51,26 +68,50 @@ ROOT=$(shell pwd)
 
 # MAKE RULES
 
-.PHONY: lint proj program
+.PHONY: all lint proj program
 
-all: $(lib_dir)/libstm32f0.a $(mslibdir)/mslib.a lint project
+# Actually calls the make
+all: $(APP_DEPS) lint project
 
-include $(mslibdir)/mslib.mk
-include $(devdir)/$(devicefamily)cfg.mk
+# Includes device specific configurations
+include device/$(DEVICE_FAMILY)/device_config.mk
 
+# Includes libraries needed using LIB_DIR to make the rules.mk for each standardized
+$(foreach dep,$(_DEPS),$(eval LIB := $(notdir $(dep))) $(eval include $(dir $(dep))rules.mk))
+undefine LIB
+
+# Lints the files in ms-lib and projects
 lint:
 	@-find projects -name "*.c" -o -name "*.h" | xargs -r python2 lint.py
-	@-find $(mslibdir) -name "*.c" -o -name "*.h" | xargs -r python2 lint.py
+	@-find libraries/ms-lib -name "*.c" -o -name "*.h" | xargs -r python2 lint.py 
+
+# Builds the project
+project: $(BIN_DIR)/$(PROJECT_NAME).elf
+
+# Rule for making the project
+$(BIN_DIR)/%.elf: $(MAIN_FILE) $(HEADERS) $(STARTUP) | $(BIN_DIR)
+	@$(CC) $(CFLAGS) $^ -o $@ -L$(STATIC_LIB_DIR)\
+		$(foreach dep,$(DEPS), -l$(notdir $(dep))) \
+		$(LINKER)
+	@$(OBJCPY) -O binary $@ $(BIN_DIR)/$(PROJECT_NAME).bin
+	@$(OBJDUMP) -St $@ >$(basename $@).lst
+	$(SIZE) $@
+
+$(DIRS):
+	@mkdir -p $@
+
+# OPTIONAL:
+# $(OBJCPY) -o ihex $(PROJECT_NAME).hex
 
 ###################################################################################################
 
 # OPENOCD SUPPORT
 
 # TODO verify this isn't broken
-program: $(foreach project,$(PROJECT_NAME),$(BIN)/$(project).bin)
+program: $(BIN_DIR)/$(PROJECT_NAME).bin
 
-$(BIN)/%.bin: $(BIN)/%.bin
-	openocd -f $(OPENOCD_BOARD_DIR)/stm32f0discovery.cfg -f $(OPENOCD_PROC_FILE) \
+$(BIN_DIR)/%.bin: $(BIN_DIR)/%.bin
+	openocd -f $(OPENOCD_BOARD_DIR)/board.cfg -f $(OPENOCD_CFG) \
 	-c "stm_flash `pwd`/$@" -c shutdown
 
 ###################################################################################################
@@ -81,10 +122,9 @@ $(BIN)/%.bin: $(BIN)/%.bin
 
 clean:
 	@find ./ -name '*~' | xargs rm -f
-	@rm -rf bin/
+	@rm -rf $(BIN_DIR)
 
 reallyclean: clean
-	@rm -rf $(lib_dir)/obj $(lib_dir)/*.a
-	@rm -rf $(mslibdir)/obj $(mslibdir)/*.a
+	@rm -rf $(BUILD_DIR)
 
 remake: clean all
