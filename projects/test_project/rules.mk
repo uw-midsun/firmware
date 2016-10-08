@@ -2,4 +2,4 @@
 MAIN := main.c
 
 # Specify the device library you want to include
-DEPS := stm32f0xx ms-lib
+APP_DEPS := ms-lib

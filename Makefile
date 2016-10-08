@@ -16,9 +16,10 @@
 
 # CONFIG
 
-# Specify the directory with the rule.mk file for the project you want to build
-# Default (for now) pass RULES=<path-to-rules> as an argument to override
-RULES := projects/test_project
+# Specify the directory for the project you want to build. Must contain a rules.mk defining
+# 
+# Default (for now) pass PROJECT=<path-to-project> as an argument to override
+PROJECT := projects/test_project
 
 # Default (for now) pass DEVICE_FAMILY=<device> as an argument to override
 DEVICE_FAMILY := stm32f0xx
@@ -47,38 +48,54 @@ OPENOCD_BOARD_DIR := /usr/share/openocd/scripts/board
 
 # AUTOMATED ACTIONS
 
+# $(call include_lib,libname,dep_var)
+# Assumes the existance of $($(LIB)_OBJ_DIR)
+define include_lib
+$(eval LIB := $(1));
+$(eval include $(LIB_DIR)/$(1)/rules.mk);
+$(eval DIRS := $(sort $(DIRS) $($(LIB)_OBJ_DIR)));
+$(eval undefine LIB)
+endef
+
+# $(call dep_to_lib,deps)
+define dep_to_lib
+$(1:%=$(STATIC_LIB_DIR)/lib%.a)
+endef
+.PHONY: # need colon to fix syntax highlighting
+
 # include the target build rules
-include $(RULES)/rules.mk
+include $(PROJECT)/rules.mk
 
 # define a MAIN_FILE and PROJECT_NAME using the rules included in the last section
-MAIN_FILE := $(RULES)/$(MAIN)
+MAIN_FILE := $(PROJECT)/$(MAIN)
 PROJECT_NAME := $(basename $(notdir $(MAIN_FILE)))
 
-# string manipulations to define the required libraries based on the DEPS variable in the RULES 
-_DEPS := $(foreach dep,$(DEPS),$(addprefix libraries/,$(addsuffix /$(dep),$(dep))))
-APP_DEPS := $(addprefix $(STATIC_LIB_DIR)/lib,$(notdir $(addsuffix .a,$(_DEPS))))
+# Find all libraries available
+LIBS := $(patsubst $(LIB_DIR)/%/rules.mk,%,$(wildcard $(LIB_DIR)/*/rules.mk))
+
+# Define the static libraries required for the project
+APP_LIBS := $(call dep_to_lib,$(APP_DEPS))
 
 ###################################################################################################
 
 # ENV SETUP
 
-ROOT=$(shell pwd)
+ROOT := $(shell pwd)
 
 ###################################################################################################
 
-# MAKE RULES
+# MAKE PROJECT
 
 .PHONY: all lint proj program
 
 # Actually calls the make
-all: $(APP_DEPS) lint project
+all: lint project
 
 # Includes device specific configurations
 include device/$(DEVICE_FAMILY)/device_config.mk
 
-# Includes libraries needed using LIB_DIR to make the rules.mk for each standardized
-$(foreach dep,$(_DEPS),$(eval LIB := $(notdir $(dep))) $(eval include $(dir $(dep))rules.mk))
-undefine LIB
+# Includes all libraries so make can find their targets
+$(foreach dep,$(LIBS),$(call include_lib,$(dep)))
 
 # Lints the files in ms-lib and projects
 lint:
@@ -89,9 +106,9 @@ lint:
 project: $(BIN_DIR)/$(PROJECT_NAME).elf
 
 # Rule for making the project
-$(BIN_DIR)/%.elf: $(MAIN_FILE) $(HEADERS) $(STARTUP) | $(BIN_DIR)
+$(BIN_DIR)/%.elf: $(MAIN_FILE) $(HEADERS) $(STARTUP) $(APP_LIBS) | $(BIN_DIR)
 	@$(CC) $(CFLAGS) $^ -o $@ -L$(STATIC_LIB_DIR)\
-		$(foreach dep,$(DEPS), -l$(notdir $(dep))) \
+		$(foreach dep,$(APP_DEPS), -l$(notdir $(dep))) \
 		$(LINKER)
 	@$(OBJCPY) -O binary $@ $(BIN_DIR)/$(PROJECT_NAME).bin
 	@$(OBJDUMP) -St $@ >$(basename $@).lst
