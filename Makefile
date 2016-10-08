@@ -3,11 +3,11 @@
 # PURPOSE: CORTEX M0 package template using stm32f0xx libraries
 # DATE: SEPT 24 2016
 # MODIFIED:
-# VERSION: 1.0.0 
+# VERSION: 1.0.0
 #
 # USAGE:
-# make [all] - makes the device/mslib libraries if not cached and makes the target ruleset 
-#	make remake - rebuilds .elf 
+# make [all] - makes the device/mslib libraries if not cached and makes the target ruleset
+#	make remake - rebuilds .elf
 #	make clean - removes the .elf and associated linker and object files
 #	make reallyclean - in addition to running make clean also removed the cached libraries
 #	make program - builds an OpenOCD binary
@@ -17,7 +17,7 @@
 # CONFIG
 
 # Specify the directory for the project you want to build. Must contain a rules.mk defining
-# 
+#
 # Default (for now) pass PROJECT=<path-to-project> as an argument to override
 PROJECT := projects/test_project
 
@@ -53,7 +53,7 @@ OPENOCD_BOARD_DIR := /usr/share/openocd/scripts/board
 define include_lib
 $(eval LIB := $(1));
 $(eval include $(LIB_DIR)/$(1)/rules.mk);
-$(eval DIRS := $(sort $(DIRS) $($(LIB)_OBJ_DIR)));
+$(eval DIRS := $(sort $(DIRS) $($(LIB)_OBJ_DIR) $(dir $($(LIB)_OBJ))));
 $(eval undefine LIB)
 endef
 
@@ -89,7 +89,7 @@ ROOT := $(shell pwd)
 .PHONY: all lint proj program
 
 # Actually calls the make
-all: lint project
+all: project lint
 
 # Includes device specific configurations
 include device/$(DEVICE_FAMILY)/device_config.mk
@@ -99,8 +99,8 @@ $(foreach dep,$(LIBS),$(call include_lib,$(dep)))
 
 # Lints the files in ms-lib and projects
 lint:
-	@-find projects -name "*.c" -o -name "*.h" | xargs -r python2 lint.py
-	@-find libraries/ms-lib -name "*.c" -o -name "*.h" | xargs -r python2 lint.py 
+	@-find projects -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
+	@-find libraries -path "$(LIB_DIR)/stm32f0xx" -prune -o -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
 
 # Builds the project
 project: $(BIN_DIR)/$(PROJECT_NAME).elf
