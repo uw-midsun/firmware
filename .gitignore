@@ -36,6 +36,5 @@
 
 # Other
 *.vscode
-*obj/
-*bin/
 *.swp
+build/

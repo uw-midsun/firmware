@@ -1,10 +1,9 @@
 # Specify Compiler
-TOOLCHAIN_PATH := "/c/Program Files (x86)/GNU Tools ARM Embedded/5.4 2016q2/bin"
-CC := $(TOOLCHAIN_PATH)/arm-none-eabi-gcc
-OBJCPY := $(TOOLCHAIN_PATH)/arm-none-eabi-objcopy
-OBJDUMP := $(TOOLCHAIN_PATH)/arm-none-eabi-objdump
-SIZE := $(TOOLCHAIN_PATH)/arm-none-eabi-size
-AR := $(TOOLCHAIN_PATH)/arm-none-eabi-ar
+CC := arm-none-eabi-gcc
+OBJCPY := arm-none-eabi-objcopy
+OBJDUMP := arm-none-eabi-objdump
+SIZE := arm-none-eabi-size
+AR := arm-none-eabi-ar
 
 # Makes life easy if the library moves
 STM32F0_DIR := libraries/stm32f0xx

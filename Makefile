@@ -2,11 +2,11 @@
 # Midnight Sun's build system
 #
 # USAGE:
-# make [all] - builds the libraries if not cached and builds the target
-#	make remake - rebuilds .elf
-#	make clean - removes the .elf and associated linker and object files
-#	make reallyclean - in addition to running make clean also removes the cached libraries
-#	make program - builds an OpenOCD binary
+#		make [all] - builds the libraries if not cached and builds the target
+#		make remake - rebuilds .elf
+#		make clean - removes the .elf and associated linker and object files
+#		make reallyclean - in addition to running make clean also removes the cached libraries
+#		make program - builds an OpenOCD binary
 #
 ###################################################################################################
 
