@@ -1,15 +1,11 @@
 ###################################################################################################
-# AUTHOR: Calder Kitagawa
-# PURPOSE: CORTEX M0 package template using stm32f0xx libraries
-# DATE: SEPT 24 2016
-# MODIFIED:
-# VERSION: 1.0.0
+# Midnight Sun's build system
 #
 # USAGE:
-# make [all] - makes the device/mslib libraries if not cached and makes the target ruleset
+# make [all] - builds the libraries if not cached and builds the target
 #	make remake - rebuilds .elf
 #	make clean - removes the .elf and associated linker and object files
-#	make reallyclean - in addition to running make clean also removed the cached libraries
+#	make reallyclean - in addition to running make clean also removes the cached libraries
 #	make program - builds an OpenOCD binary
 #
 ###################################################################################################
@@ -48,11 +44,10 @@ OPENOCD_BOARD_DIR := /usr/share/openocd/scripts/board
 
 # AUTOMATED ACTIONS
 
-# $(call include_lib,libname,dep_var)
-# Assumes the existance of $($(LIB)_OBJ_DIR)
+# $(call include_lib,libname)
 define include_lib
 $(eval LIB := $(1));
-$(eval include $(LIB_DIR)/$(1)/rules.mk);
+$(eval include $(LIB_DIR)/library.mk);
 $(eval DIRS := $(sort $(DIRS) $($(LIB)_OBJ_DIR) $(dir $($(LIB)_OBJ))));
 $(eval undefine LIB)
 endef
@@ -61,7 +56,7 @@ endef
 define dep_to_lib
 $(1:%=$(STATIC_LIB_DIR)/lib%.a)
 endef
-.PHONY: # need colon to fix syntax highlighting
+.PHONY: # Just adding a colon to fix syntax highlighting
 
 # include the target build rules
 include $(PROJECT)/rules.mk
