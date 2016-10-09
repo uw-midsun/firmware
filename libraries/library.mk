@@ -1,4 +1,6 @@
-$(info including library $(LIB))
+# Default library makefile - expects LIB to be declared as the project name.
+# Defines a few variables, includes the appropriate rules.mk,
+# and sets the static library and object file targets.
 
 # Defines default variables and targets
 $(LIB)_DIR := $(LIB_DIR)/$(LIB)
@@ -12,7 +14,6 @@ include $($(LIB)_DIR)/rules.mk
 
 # Define objects and include generated dependencies
 $(LIB)_OBJ := $(patsubst $($(LIB)_SRC_ROOT)/%.c,$($(LIB)_OBJ_ROOT)/%.o,$($(LIB)_SRC))
-
 -include $($(LIB)_OBJ:.o=.d) #:
 
 # Static library link target
