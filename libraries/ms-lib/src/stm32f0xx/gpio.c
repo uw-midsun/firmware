@@ -1,4 +1,4 @@
-#include "inc/gpio.h"
+#include "gpio.h"
 
 void io_deinit(const struct IOMap*);
 
