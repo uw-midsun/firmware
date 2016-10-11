@@ -12,19 +12,41 @@
 
 # CONFIG
 
-# Specify the directory for the project you want to build. Must contain a rules.mk defining
-#
-# Default (for now) pass PROJECT=<path-to-project> as an argument to override
-PROJECT := projects/test_project
+# Default directories
+PROJECTS_DIR := project
+PLATFORMS_DIR := platform
 
-# Default (for now) pass DEVICE_FAMILY=<device> as an argument to override
-DEVICE_FAMILY := stm32f0xx
+VALID_PROJECTS := $(patsubst $(PROJECTS_DIR)/%/rules.mk,%,$(wildcard $(PROJECTS_DIR)/*/rules.mk))
+VALID_PLATFORMS := $(patsubst $(PLATFORMS_DIR)/%/platform.mk,%,$(wildcard $(PLATFORMS_DIR)/*/platform.mk))
+
+PROJECT := $(filter $(VALID_PROJECTS),$(PROJECT))
+
+# TODO: allow valid platforms to be defined by projects?
+PLATFORM := stm32f0xx
+override PLATFORM := $(filter $(VALID_PLATFORMS),$(PLATFORM))
+
+# Only ignore project and platform if we're doing a full clean
+ifneq (reallyclean,$(MAKECMDGOALS))
+ifeq (,$(PROJECT))
+  $(error Invalid project. Expected PROJECT=[$(VALID_PROJECTS)])
+endif
+
+ifeq (,$(PLATFORM))
+  $(error Invalid platform. Expected PLATFORM=[$(VALID_PLATFORMS)])
+endif
+endif
+
+# Location of project
+PROJECT_DIR := $(PROJECTS_DIR)/$(PROJECT)
+
+# Location of platform
+PLATFORM_DIR := $(PLATFORMS_DIR)/$(PLATFORM)
 
 # Output directory
 BUILD_DIR := build
 
 # compile directory
-BIN_DIR := $(BUILD_DIR)/bin
+BIN_DIR := $(BUILD_DIR)/bin/$(PLATFORM)
 
 # Static library directory
 STATIC_LIB_DIR := $(BUILD_DIR)/lib
@@ -59,11 +81,11 @@ endef
 .PHONY: # Just adding a colon to fix syntax highlighting
 
 # include the target build rules
-include $(PROJECT)/rules.mk
+-include $(PROJECT_DIR)/rules.mk
 
 # define a MAIN_FILE and PROJECT_NAME using the rules included in the last section
-MAIN_FILE := $(PROJECT)/$(MAIN)
-PROJECT_NAME := $(basename $(notdir $(MAIN_FILE)))
+MAIN_FILE := $(PROJECT_DIR)/$(MAIN)
+# PROJECT_NAME := $(basename $(notdir $(MAIN_FILE)))
 
 # Find all libraries available
 LIBS := $(patsubst $(LIB_DIR)/%/rules.mk,%,$(wildcard $(LIB_DIR)/*/rules.mk))
@@ -86,8 +108,8 @@ ROOT := $(shell pwd)
 # Actually calls the make
 all: project lint
 
-# Includes device specific configurations
-include device/$(DEVICE_FAMILY)/device_config.mk
+# Includes platform-specific configurations
+-include $(PLATFORMS_DIR)/$(PLATFORM)/platform.mk
 
 # Includes all libraries so make can find their targets
 $(foreach dep,$(LIBS),$(call include_lib,$(dep)))
@@ -98,14 +120,14 @@ lint:
 	@-find libraries -path "$(LIB_DIR)/stm32f0xx" -prune -o -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
 
 # Builds the project
-project: $(BIN_DIR)/$(PROJECT_NAME).elf
+project: $(BIN_DIR)/$(PROJECT).elf
 
 # Rule for making the project
 $(BIN_DIR)/%.elf: $(MAIN_FILE) $(HEADERS) $(STARTUP) $(APP_LIBS) | $(BIN_DIR)
 	@$(CC) $(CFLAGS) $^ -o $@ -L$(STATIC_LIB_DIR)\
 		$(foreach dep,$(APP_DEPS), -l$(notdir $(dep))) \
 		$(LINKER)
-	@$(OBJCPY) -O binary $@ $(BIN_DIR)/$(PROJECT_NAME).bin
+	@$(OBJCPY) -O binary $@ $(BIN_DIR)/$(PROJECT).bin
 	@$(OBJDUMP) -St $@ >$(basename $@).lst
 	$(SIZE) $@
 
@@ -113,14 +135,14 @@ $(DIRS):
 	@mkdir -p $@
 
 # OPTIONAL:
-# $(OBJCPY) -o ihex $(PROJECT_NAME).hex
+# $(OBJCPY) -o ihex $(PROJECT).hex
 
 ###################################################################################################
 
 # OPENOCD SUPPORT
 
 # TODO verify this isn't broken
-program: $(BIN_DIR)/$(PROJECT_NAME).bin
+program: $(BIN_DIR)/$(PROJECT).bin
 
 $(BIN_DIR)/%.bin: $(BIN_DIR)/%.bin
 	openocd -f $(OPENOCD_BOARD_DIR)/board.cfg -f $(OPENOCD_CFG) \
