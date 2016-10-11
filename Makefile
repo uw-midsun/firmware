@@ -25,8 +25,8 @@ PROJECT := $(filter $(VALID_PROJECTS),$(PROJECT))
 PLATFORM := stm32f0xx
 override PLATFORM := $(filter $(VALID_PLATFORMS),$(PLATFORM))
 
-# Only ignore project and platform if we're doing a full clean
-ifneq (reallyclean,$(MAKECMDGOALS))
+# Only ignore project and platform if we're doing a full clean or lint
+ifeq (,$(filter reallyclean lint,$(MAKECMDGOALS)))
 ifeq (,$(PROJECT))
   $(error Invalid project. Expected PROJECT=[$(VALID_PROJECTS)])
 endif
@@ -116,8 +116,8 @@ $(foreach dep,$(LIBS),$(call include_lib,$(dep)))
 
 # Lints the files in ms-lib and projects
 lint:
-	@-find projects -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
-	@-find libraries -path "$(LIB_DIR)/stm32f0xx" -prune -o -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
+	@-find $(PROJECTS_DIR) -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
+	@-find $(LIB_DIR) -path "$(LIB_DIR)/stm32f0xx" -prune -o -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
 
 # Builds the project
 project: $(BIN_DIR)/$(PROJECT).elf
