@@ -58,9 +58,6 @@ DIRS := $(BUILD_DIR) $(BIN_DIR) $(STATIC_LIB_DIR) $(OBJ_CACHE)
 
 LIB_DIR := libraries
 
-# location of OpenOCD board .cfg files (only triggered if you use 'make program' explicitly)
-OPENOCD_BOARD_DIR := /usr/share/openocd/scripts/board
-
 # Please don't touch anything below this line
 ###################################################################################################
 

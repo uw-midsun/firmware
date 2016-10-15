@@ -29,6 +29,7 @@ CFLAGS := -Wall -Werror -g -Os -Wno-unused-variable -pedantic \
 LDFLAGS := $(INC) -L$(LDSCRIPT) -Tstm32f0.ld
 
 # Device openocd config file
-OPENOCD_CFG := -s $(OPENOCD_BIN)/../scripts/ \
+OPENOCD_SCRIPT_DIR := /usr/share/openocd/scripts/
+OPENOCD_CFG := -s $(OPENOCD_SCRIPT_DIR) \
                -f interface/stlink-v2.cfg -f target/stm32f0x.cfg \
                -f $(PLATFORM_DIR)/stm32f0-openocd.cfg
