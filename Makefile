@@ -72,7 +72,7 @@ $(eval LIB := $(1));
 $(eval include $(LIB_DIR)/library.mk);
 $(eval DIRS := $(sort $(DIRS) $($(LIB)_OBJ_DIR) $(dir $($(LIB)_OBJ))));
 $(eval INC_DIRS := $(sort $(INC_DIRS) $(dir $($(LIB)_INC))));
-$(eval APP_DEPS += $($(LIB)_DEPS));
+$(eval APP_DEPS := $($(LIB)_DEPS) $(APP_DEPS));
 $(eval undefine LIB)
 endef
 
@@ -90,9 +90,8 @@ endef
 # include the target build rules
 -include $(PROJECT_DIR)/rules.mk
 
-# define a MAIN_FILE and PROJECT_NAME using the rules included in the last section
+# define a MAIN_FILE using the rules included in the last section
 MAIN_FILE := $(PROJECT_DIR)/$(MAIN)
-# PROJECT_NAME := $(basename $(notdir $(MAIN_FILE)))
 
 # Find all libraries available
 LIBS := $(patsubst $(LIB_DIR)/%/rules.mk,%,$(wildcard $(LIB_DIR)/*/rules.mk))

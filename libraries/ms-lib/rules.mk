@@ -7,8 +7,8 @@
 
 # Find all *.c files in root source and device-specific source folders.
 $(LIB)_SRC := $(wildcard $($(LIB)_SRC_ROOT)/*.c) \
-              $(wildcard $($(LIB)_SRC_ROOT)/$(DEVICE_FAMILY)/*.c)
+              $(wildcard $($(LIB)_SRC_ROOT)/$(PLATFORM)/*.c)
 $(LIB)_DEPS := $(PLATFORM_LIB)
-
+$(info $($(LIB)_SRC))
 # Specifies library specific build flags
 $(LIB)_CFLAGS :=
