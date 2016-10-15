@@ -149,7 +149,8 @@ program: $(BIN_DIR)/$(PROJECT).bin
 
 gdb: $(BIN_DIR)/$(PROJECT).elf
 	@$(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
-	@$(GDB) $< -ex "target extended-remote :3333" -ex "monitor reset halt" -ex "load" -ex "tb main" -ex "c"
+	@$(GDB) $< -ex "set pagination off" -ex "target extended-remote :3333" -ex "monitor reset halt" \
+             -ex "load" -ex "tb main" -ex "set pagination on" -ex "c"
 	@pkill openocd
 
 $(BIN_DIR)/%.bin: $(BIN_DIR)/%.elf

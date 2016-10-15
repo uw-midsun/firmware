@@ -9,6 +9,3 @@
 $(LIB)_SRC := $(wildcard $($(LIB)_SRC_ROOT)/*.c) \
               $(wildcard $($(LIB)_SRC_ROOT)/$(PLATFORM)/*.c)
 $(LIB)_DEPS := $(PLATFORM_LIB)
-
-# Specifies library specific build flags
-$(LIB)_CFLAGS :=
