@@ -5,7 +5,8 @@ OBJCPY := $(GCC_ARM_BASE)arm-none-eabi-objcopy
 OBJDUMP := $(GCC_ARM_BASE)arm-none-eabi-objdump
 SIZE := $(GCC_ARM_BASE)arm-none-eabi-size
 AR := $(GCC_ARM_BASE)arm-none-eabi-ar
-OPENOCD := $(OPENOCD_BIN)openocd
+GDB := $(GCC_ARM_BASE)arm-none-eabi-gdb
+OPENOCD := openocd
 
 # Set the library to include if using this platform
 PLATFORM_LIB := stm32f0xx

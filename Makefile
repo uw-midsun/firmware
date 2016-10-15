@@ -106,7 +106,7 @@ ROOT := $(shell pwd)
 
 # MAKE PROJECT
 
-.PHONY: all lint proj program
+.PHONY: all lint project program gdb
 
 # Actually calls the make
 all: project lint
@@ -144,9 +144,13 @@ $(DIRS):
 
 # OPENOCD SUPPORT
 
-# TODO verify this isn't broken
 program: $(BIN_DIR)/$(PROJECT).bin
 	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash `pwd`/$<" -c shutdown
+
+gdb: $(BIN_DIR)/$(PROJECT).elf
+	@$(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
+	@$(GDB) $< -ex "target extended-remote :3333" -ex "monitor reset halt" -ex "load" -ex "tb main" -ex "c"
+	@pkill openocd
 
 $(BIN_DIR)/%.bin: $(BIN_DIR)/%.elf
 
@@ -154,7 +158,7 @@ $(BIN_DIR)/%.bin: $(BIN_DIR)/%.elf
 
 # EXTRA
 
-# clean and remake rules, use reallyclean to remake the STD_PERIPH_LIB or before a push 
+# clean and remake rules, use reallyclean to clean everything
 
 clean:
 	@find ./ -name '*~' | xargs rm -f
