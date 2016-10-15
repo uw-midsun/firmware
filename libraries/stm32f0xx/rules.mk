@@ -5,8 +5,9 @@
 # $(LIB)_SRC: $(LIB)_DIR/src/*.c
 # $(LIB)_INC: $(LIB)_DIR/inc/*.h
 
-# This library just glues the standard peripheral and CMSIS libraries together.
+# This library glues the standard peripheral and CMSIS libraries together
+# and includes the startup file.
 $(LIB)_DEPS := STM32F0xx_StdPeriph_Driver
 
 # Specifies library specific build flags
-$(LIB)_CFLAGS :=
+$(LIB)_CFLAGS += -ffreestanding -nostdlib

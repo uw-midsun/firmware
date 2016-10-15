@@ -8,4 +8,4 @@
 $(LIB)_DEPS := CMSIS
 
 # Specifies library specific build flags
-$(LIB)_CFLAGS :=
+$(LIB)_CFLAGS += -ffreestanding -nostdlib

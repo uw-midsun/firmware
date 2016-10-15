@@ -1,5 +1,6 @@
 # Specify toolchain
 CC := $(GCC_ARM_BASE)arm-none-eabi-gcc
+LD := $(GCC_ARM_BASE)arm-none-eabi-gcc
 OBJCPY := $(GCC_ARM_BASE)arm-none-eabi-objcopy
 OBJDUMP := $(GCC_ARM_BASE)arm-none-eabi-objdump
 SIZE := $(GCC_ARM_BASE)arm-none-eabi-size
@@ -13,13 +14,14 @@ ARCH_CLAGS := -mlittle-endian -mcpu=cortex-m0 -march=armv6-m -mthumb
 
 # Linker and startup script locations
 # TODO: Move platform startup to somewhere else?
-PLATFORM_STARTUP := $(PLATFORM_DIR)/startup_stm32f0xx.s
+#PLATFORM_STARTUP := $(PLATFORM_DIR)/startup_stm32f0xx.s
 LDSCRIPT := $(PLATFORM_DIR)/ldscripts
 
 # Build flags for the device
 CFLAGS := -Wall -Werror -g -Os -Wno-unused-variable -pedantic \
-				 $(ARCH_CLAGS) -ffunction-sections -fdata-sections -Wl,--gc-sections \
-				 -Wl,-Map=$(BIN_DIR)/$(PROJECT_NAME).map --specs=nosys.specs
+          -ffunction-sections -fdata-sections \
+          -Wl,-Map=$(BIN_DIR)/$(PROJECT).map --specs=nosys.specs \
+          $(ARCH_CLAGS)
 
 # Linker flags
 LDFLAGS := $(INC) -L$(LDSCRIPT) -Tstm32f0.ld

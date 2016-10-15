@@ -16,4 +16,4 @@ $(LIB)_INC := $(call find_in,$($(LIB)_INC_DIRS),*.h)
 $(LIB)_DEPS :=
 
 # Specifies library specific build flags
-$(LIB)_CFLAGS :=
+$(LIB)_CFLAGS += -ffreestanding -nostdlib

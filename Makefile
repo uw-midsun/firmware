@@ -72,6 +72,7 @@ $(eval LIB := $(1));
 $(eval include $(LIB_DIR)/library.mk);
 $(eval DIRS := $(sort $(DIRS) $($(LIB)_OBJ_DIR) $(dir $($(LIB)_OBJ))));
 $(eval INC_DIRS := $(sort $(INC_DIRS) $(dir $($(LIB)_INC))));
+$(eval APP_DEPS += $($(LIB)_DEPS));
 $(eval undefine LIB)
 endef
 
@@ -129,9 +130,9 @@ lint:
 project: $(BIN_DIR)/$(PROJECT).elf
 
 # Rule for making the project
-$(BIN_DIR)/%.elf: $(PLATFORM_STARTUP) $(MAIN_FILE) $(APP_LIBS) | $(BIN_DIR)
-	@$(CC) $(CFLAGS) $^ -o $@ -L$(STATIC_LIB_DIR)\
-		$(foreach dep,$(APP_DEPS), -l$(notdir $(dep))) \
+$(BIN_DIR)/%.elf: $(MAIN_FILE) $(APP_LIBS) | $(BIN_DIR)
+	@$(CC) $(CFLAGS) $^ -o $@ -L$(STATIC_LIB_DIR) \
+		$(addprefix -l,$(APP_DEPS)) \
 		$(LDFLAGS) $(addprefix -I,$(INC_DIRS))
 	@$(OBJCPY) -O binary $@ $(BIN_DIR)/$(PROJECT).bin
 	@$(OBJDUMP) -St $@ >$(basename $@).lst
