@@ -71,6 +71,7 @@ define include_lib
 $(eval LIB := $(1));
 $(eval include $(LIB_DIR)/library.mk);
 $(eval DIRS := $(sort $(DIRS) $($(LIB)_OBJ_DIR) $(dir $($(LIB)_OBJ))));
+$(eval INC_DIRS := $(sort $(INC_DIRS) $(dir $($(LIB)_INC))));
 $(eval undefine LIB)
 endef
 
@@ -79,6 +80,11 @@ define dep_to_lib
 $(1:%=$(STATIC_LIB_DIR)/lib%.a)
 endef
 .PHONY: # Just adding a colon to fix syntax highlighting
+
+# $(call find_in,folders,wildcard)
+define find_in
+$(foreach folder,$(1),$(wildcard $(folder)/$(2)))
+endef
 
 # include the target build rules
 -include $(PROJECT_DIR)/rules.mk
@@ -116,17 +122,17 @@ $(foreach dep,$(LIBS),$(call include_lib,$(dep)))
 
 # Lints the files in ms-lib and projects
 lint:
-	@-find $(PROJECTS_DIR) -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
-	@-find $(LIB_DIR) -path "$(LIB_DIR)/stm32f0xx" -prune -o -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
+	@find $(PROJECTS_DIR) -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
+	@find "$(LIB_DIR)/ms-lib" -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
 
 # Builds the project
 project: $(BIN_DIR)/$(PROJECT).elf
 
 # Rule for making the project
-$(BIN_DIR)/%.elf: $(MAIN_FILE) $(HEADERS) $(STARTUP) $(APP_LIBS) | $(BIN_DIR)
+$(BIN_DIR)/%.elf: $(PLATFORM_STARTUP) $(MAIN_FILE) $(APP_LIBS) | $(BIN_DIR)
 	@$(CC) $(CFLAGS) $^ -o $@ -L$(STATIC_LIB_DIR)\
 		$(foreach dep,$(APP_DEPS), -l$(notdir $(dep))) \
-		$(LINKER)
+		$(LDFLAGS) $(addprefix -I,$(INC_DIRS))
 	@$(OBJCPY) -O binary $@ $(BIN_DIR)/$(PROJECT).bin
 	@$(OBJDUMP) -St $@ >$(basename $@).lst
 	$(SIZE) $@

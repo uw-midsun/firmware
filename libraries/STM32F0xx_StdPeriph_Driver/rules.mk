@@ -5,8 +5,7 @@
 # $(LIB)_SRC: $(LIB)_DIR/src/*.c
 # $(LIB)_INC: $(LIB)_DIR/inc/*.h
 
-# This library just glues the standard peripheral and CMSIS libraries together.
-$(LIB)_DEPS := STM32F0xx_StdPeriph_Driver
+$(LIB)_DEPS := CMSIS
 
 # Specifies library specific build flags
 $(LIB)_CFLAGS :=
