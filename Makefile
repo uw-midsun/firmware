@@ -150,10 +150,9 @@ $(DIRS):
 
 # TODO verify this isn't broken
 program: $(BIN_DIR)/$(PROJECT).bin
+	openocd -f $(OPENOCD_BOARD_DIR)/board.cfg -f $(OPENOCD_CFG) -c "stm_flash `pwd`/$@" -c shutdown
 
-$(BIN_DIR)/%.bin: $(BIN_DIR)/%.bin
-	openocd -f $(OPENOCD_BOARD_DIR)/board.cfg -f $(OPENOCD_CFG) \
-	-c "stm_flash `pwd`/$@" -c shutdown
+$(BIN_DIR)/%.bin: $(BIN_DIR)/%.elf
 
 ###################################################################################################
 

@@ -27,4 +27,4 @@ CFLAGS := -Wall -Werror -g -Os -Wno-unused-variable -pedantic \
 LDFLAGS := $(INC) -L$(LDSCRIPT) -Tstm32f0.ld
 
 # Device openocd config file
-OPENOCD_CFG := $(STM32F0_DIR)/stm32f0-openocd.cfg
+OPENOCD_CFG := $(PLATFORM_DIR)/stm32f0-openocd.cfg
