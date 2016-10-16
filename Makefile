@@ -126,12 +126,12 @@ project: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 
 # Rule for making the project
 $(BIN_DIR)/%$(PLATFORM_EXT): $(MAIN_FILE) $(APP_LIBS) | $(BIN_DIR)
+	@echo "Building $(notdir $@) for $(PLATFORM)"
 	@$(CC) $(CFLAGS) $^ -o $@ -L$(STATIC_LIB_DIR) \
 		$(addprefix -l,$(APP_DEPS)) \
 		$(LDFLAGS) $(addprefix -I,$(INC_DIRS))
-	@$(OBJCPY) -O binary $@ $(BIN_DIR)/$(PROJECT).bin
 	@$(OBJDUMP) -St $@ >$(basename $@).lst
-	$(SIZE) $@
+	@$(SIZE) $@
 
 $(DIRS):
 	@mkdir -p $@
@@ -150,6 +150,7 @@ gdb: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 	@pkill openocd
 
 $(BIN_DIR)/%.bin: $(BIN_DIR)/%$(PLATFORM_EXT)
+	@$(OBJCPY) -O binary $< $(BIN_DIR)/$(PROJECT).bin
 
 ###################################################################################################
 
