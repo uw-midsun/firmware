@@ -4558,7 +4558,7 @@ def CheckLanguage(filename, clean_lines, linenum, file_extension,
   fullname = os.path.abspath(filename).replace('\\', '/')
 
   # Perform other checks now that we are sure that this is not an include line
-  CheckCasts(filename, clean_lines, linenum, error)
+  #CheckCasts(filename, clean_lines, linenum, error)
   #CheckGlobalStatic(filename, clean_lines, linenum, error)
   CheckPrintf(filename, clean_lines, linenum, error)
 

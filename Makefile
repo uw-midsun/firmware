@@ -12,32 +12,51 @@
 
 # CONFIG
 
-# Specify the directory for the project you want to build. Must contain a rules.mk defining
-#
-# Default (for now) pass PROJECT=<path-to-project> as an argument to override
-PROJECT := projects/test_project
+# Default directories
+PROJECTS_DIR := project
+PLATFORMS_DIR := platform
 
-# Default (for now) pass DEVICE_FAMILY=<device> as an argument to override
-DEVICE_FAMILY := stm32f0xx
+VALID_PROJECTS := $(patsubst $(PROJECTS_DIR)/%/rules.mk,%,$(wildcard $(PROJECTS_DIR)/*/rules.mk))
+VALID_PLATFORMS := $(patsubst $(PLATFORMS_DIR)/%/platform.mk,%,$(wildcard $(PLATFORMS_DIR)/*/platform.mk))
+
+PROJECT := $(filter $(VALID_PROJECTS),$(PROJECT))
+
+# TODO: allow valid platforms to be defined by projects?
+PLATFORM := stm32f0xx
+override PLATFORM := $(filter $(VALID_PLATFORMS),$(PLATFORM))
+
+# Only ignore project and platform if we're doing a full clean or lint
+ifeq (,$(filter reallyclean lint,$(MAKECMDGOALS)))
+ifeq (,$(PROJECT))
+  $(error Invalid project. Expected PROJECT=[$(VALID_PROJECTS)])
+endif
+
+ifeq (,$(PLATFORM))
+  $(error Invalid platform. Expected PLATFORM=[$(VALID_PLATFORMS)])
+endif
+endif
+
+# Location of project
+PROJECT_DIR := $(PROJECTS_DIR)/$(PROJECT)
+
+# Location of platform
+PLATFORM_DIR := $(PLATFORMS_DIR)/$(PLATFORM)
 
 # Output directory
 BUILD_DIR := build
 
 # compile directory
-BIN_DIR := $(BUILD_DIR)/bin
+BIN_DIR := $(BUILD_DIR)/bin/$(PLATFORM)
 
 # Static library directory
-STATIC_LIB_DIR := $(BUILD_DIR)/lib
+STATIC_LIB_DIR := $(BUILD_DIR)/lib/$(PLATFORM)
 
 # Object cache
-OBJ_CACHE := $(BUILD_DIR)/obj
+OBJ_CACHE := $(BUILD_DIR)/obj/$(PLATFORM)
 
 DIRS := $(BUILD_DIR) $(BIN_DIR) $(STATIC_LIB_DIR) $(OBJ_CACHE)
 
 LIB_DIR := libraries
-
-# location of OpenOCD board .cfg files (only triggered if you use 'make program' explicitly)
-OPENOCD_BOARD_DIR := /usr/share/openocd/scripts/board
 
 # Please don't touch anything below this line
 ###################################################################################################
@@ -49,6 +68,7 @@ define include_lib
 $(eval LIB := $(1));
 $(eval include $(LIB_DIR)/library.mk);
 $(eval DIRS := $(sort $(DIRS) $($(LIB)_OBJ_DIR) $(dir $($(LIB)_OBJ))));
+$(eval INC_DIRS := $(sort $(INC_DIRS) $(dir $($(LIB)_INC))));
 $(eval undefine LIB)
 endef
 
@@ -58,12 +78,16 @@ $(1:%=$(STATIC_LIB_DIR)/lib%.a)
 endef
 .PHONY: # Just adding a colon to fix syntax highlighting
 
-# include the target build rules
-include $(PROJECT)/rules.mk
+# $(call find_in,folders,wildcard)
+define find_in
+$(foreach folder,$(1),$(wildcard $(folder)/$(2)))
+endef
 
-# define a MAIN_FILE and PROJECT_NAME using the rules included in the last section
-MAIN_FILE := $(PROJECT)/$(MAIN)
-PROJECT_NAME := $(basename $(notdir $(MAIN_FILE)))
+# include the target build rules
+-include $(PROJECT_DIR)/rules.mk
+
+# define a MAIN_FILE using the rules included in the last section
+MAIN_FILE := $(PROJECT_DIR)/$(MAIN)
 
 # Find all libraries available
 LIBS := $(patsubst $(LIB_DIR)/%/rules.mk,%,$(wildcard $(LIB_DIR)/*/rules.mk))
@@ -81,56 +105,58 @@ ROOT := $(shell pwd)
 
 # MAKE PROJECT
 
-.PHONY: all lint proj program
+.PHONY: all lint project program gdb
 
 # Actually calls the make
 all: project lint
 
-# Includes device specific configurations
-include device/$(DEVICE_FAMILY)/device_config.mk
+# Includes platform-specific configurations
+-include $(PLATFORMS_DIR)/$(PLATFORM)/platform.mk
 
 # Includes all libraries so make can find their targets
 $(foreach dep,$(LIBS),$(call include_lib,$(dep)))
 
-# Lints the files in ms-lib and projects
+# Lints the files in ms-common and projects
 lint:
-	@-find projects -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
-	@-find libraries -path "$(LIB_DIR)/stm32f0xx" -prune -o -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
+	@find $(PROJECTS_DIR) -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
+	@find "$(LIB_DIR)/ms-common" -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
 
 # Builds the project
-project: $(BIN_DIR)/$(PROJECT_NAME).elf
+project: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 
 # Rule for making the project
-$(BIN_DIR)/%.elf: $(MAIN_FILE) $(HEADERS) $(STARTUP) $(APP_LIBS) | $(BIN_DIR)
-	@$(CC) $(CFLAGS) $^ -o $@ -L$(STATIC_LIB_DIR)\
-		$(foreach dep,$(APP_DEPS), -l$(notdir $(dep))) \
-		$(LINKER)
-	@$(OBJCPY) -O binary $@ $(BIN_DIR)/$(PROJECT_NAME).bin
+$(BIN_DIR)/%$(PLATFORM_EXT): $(MAIN_FILE) $(APP_LIBS) | $(BIN_DIR)
+	@echo "Building $(notdir $@) for $(PLATFORM)"
+	@$(CC) $(CFLAGS) $^ -o $@ -L$(STATIC_LIB_DIR) \
+		$(addprefix -l,$(APP_DEPS)) \
+		$(LDFLAGS) $(addprefix -I,$(INC_DIRS))
 	@$(OBJDUMP) -St $@ >$(basename $@).lst
-	$(SIZE) $@
+	@$(SIZE) $@
 
 $(DIRS):
 	@mkdir -p $@
-
-# OPTIONAL:
-# $(OBJCPY) -o ihex $(PROJECT_NAME).hex
 
 ###################################################################################################
 
 # OPENOCD SUPPORT
 
-# TODO verify this isn't broken
-program: $(BIN_DIR)/$(PROJECT_NAME).bin
+program: $(BIN_DIR)/$(PROJECT).bin
+	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash `pwd`/$<" -c shutdown
 
-$(BIN_DIR)/%.bin: $(BIN_DIR)/%.bin
-	openocd -f $(OPENOCD_BOARD_DIR)/board.cfg -f $(OPENOCD_CFG) \
-	-c "stm_flash `pwd`/$@" -c shutdown
+gdb: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+	@$(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
+	@$(GDB) $< -ex "set pagination off" -ex "target extended-remote :3333" -ex "monitor reset halt" \
+             -ex "load" -ex "tb main" -ex "c"
+	@pkill openocd
+
+$(BIN_DIR)/%.bin: $(BIN_DIR)/%$(PLATFORM_EXT)
+	@$(OBJCPY) -O binary $< $(BIN_DIR)/$(PROJECT).bin
 
 ###################################################################################################
 
 # EXTRA
 
-# clean and remake rules, use reallyclean to remake the STD_PERIPH_LIB or before a push 
+# clean and remake rules, use reallyclean to clean everything
 
 clean:
 	@find ./ -name '*~' | xargs rm -f
