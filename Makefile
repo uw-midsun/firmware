@@ -137,9 +137,6 @@ $(BIN_DIR)/%.elf: $(MAIN_FILE) $(APP_LIBS) | $(BIN_DIR)
 $(DIRS):
 	@mkdir -p $@
 
-# OPTIONAL:
-# $(OBJCPY) -o ihex $(PROJECT).hex
-
 ###################################################################################################
 
 # OPENOCD SUPPORT
