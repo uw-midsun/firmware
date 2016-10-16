@@ -122,10 +122,10 @@ lint:
 	@find "$(LIB_DIR)/ms-common" -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
 
 # Builds the project
-project: $(BIN_DIR)/$(PROJECT).elf
+project: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 
 # Rule for making the project
-$(BIN_DIR)/%.elf: $(MAIN_FILE) $(APP_LIBS) | $(BIN_DIR)
+$(BIN_DIR)/%$(PLATFORM_EXT): $(MAIN_FILE) $(APP_LIBS) | $(BIN_DIR)
 	@$(CC) $(CFLAGS) $^ -o $@ -L$(STATIC_LIB_DIR) \
 		$(addprefix -l,$(APP_DEPS)) \
 		$(LDFLAGS) $(addprefix -I,$(INC_DIRS))
@@ -143,13 +143,13 @@ $(DIRS):
 program: $(BIN_DIR)/$(PROJECT).bin
 	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash `pwd`/$<" -c shutdown
 
-gdb: $(BIN_DIR)/$(PROJECT).elf
+gdb: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 	@$(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
 	@$(GDB) $< -ex "set pagination off" -ex "target extended-remote :3333" -ex "monitor reset halt" \
              -ex "load" -ex "tb main" -ex "c"
 	@pkill openocd
 
-$(BIN_DIR)/%.bin: $(BIN_DIR)/%.elf
+$(BIN_DIR)/%.bin: $(BIN_DIR)/%$(PLATFORM_EXT)
 
 ###################################################################################################
 

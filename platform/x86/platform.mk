@@ -9,6 +9,7 @@ GDB := gdb
 
 # Set the library to include if using this platform
 PLATFORM_LIB :=
+PLATFORM_EXT :=
 
 # Architecture dependent variables
 ARCH_CLAGS :=

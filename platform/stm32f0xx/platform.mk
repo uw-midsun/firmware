@@ -10,14 +10,13 @@ OPENOCD := openocd
 
 # Set the library to include if using this platform
 PLATFORM_LIB := stm32f0xx
+PLATFORM_EXT := .elf
 
 # Architecture dependent variables
 ARCH_CLAGS := -mlittle-endian -mcpu=cortex-m0 -march=armv6-m -mthumb
 
-# Linker and startup script locations
-# TODO: Move platform startup to somewhere else?
-#PLATFORM_STARTUP := $(PLATFORM_DIR)/startup_stm32f0xx.s
-LDSCRIPT := $(PLATFORM_DIR)/ldscripts
+# Linker script location
+DSCRIPT := $(PLATFORM_DIR)/ldscripts
 
 # Build flags for the device
 CDEFINES := USE_STDPERIPH_DRIVER STM32F072
