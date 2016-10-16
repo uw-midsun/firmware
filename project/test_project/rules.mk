@@ -2,4 +2,4 @@
 MAIN := main.c
 
 # Specify the device library you want to include
-APP_DEPS := ms-lib
+APP_DEPS := ms-common

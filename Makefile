@@ -117,10 +117,10 @@ all: project lint
 # Includes all libraries so make can find their targets
 $(foreach dep,$(LIBS),$(call include_lib,$(dep)))
 
-# Lints the files in ms-lib and projects
+# Lints the files in ms-common and projects
 lint:
 	@find $(PROJECTS_DIR) -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
-	@find "$(LIB_DIR)/ms-lib" -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
+	@find "$(LIB_DIR)/ms-common" -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
 
 # Builds the project
 project: $(BIN_DIR)/$(PROJECT).elf
