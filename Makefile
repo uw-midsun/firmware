@@ -49,10 +49,10 @@ BUILD_DIR := build
 BIN_DIR := $(BUILD_DIR)/bin/$(PLATFORM)
 
 # Static library directory
-STATIC_LIB_DIR := $(BUILD_DIR)/lib
+STATIC_LIB_DIR := $(BUILD_DIR)/lib/$(PLATFORM)
 
 # Object cache
-OBJ_CACHE := $(BUILD_DIR)/obj
+OBJ_CACHE := $(BUILD_DIR)/obj/$(PLATFORM)
 
 DIRS := $(BUILD_DIR) $(BIN_DIR) $(STATIC_LIB_DIR) $(OBJ_CACHE)
 
@@ -69,7 +69,6 @@ $(eval LIB := $(1));
 $(eval include $(LIB_DIR)/library.mk);
 $(eval DIRS := $(sort $(DIRS) $($(LIB)_OBJ_DIR) $(dir $($(LIB)_OBJ))));
 $(eval INC_DIRS := $(sort $(INC_DIRS) $(dir $($(LIB)_INC))));
-$(eval APP_DEPS := $($(LIB)_DEPS) $(APP_DEPS));
 $(eval undefine LIB)
 endef
 

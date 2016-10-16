@@ -27,7 +27,7 @@ CFLAGS := -Wall -Werror -g -Os -Wno-unused-variable -pedantic \
           $(ARCH_CLAGS) $(addprefix -D,$(CDEFINES))
 
 # Linker flags
-LDFLAGS := $(INC) -L$(LDSCRIPT) -Tstm32f0.ld
+LDFLAGS := -L$(LDSCRIPT) -Tstm32f0.ld
 
 # Device openocd config file
 OPENOCD_SCRIPT_DIR := /usr/share/openocd/scripts/
