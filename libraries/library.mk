@@ -42,3 +42,7 @@ $($(LIB)_OBJ_ROOT)/%.o: $($(LIB)_SRC_ROOT)/%.s | $(LIB) $(dir $($(LIB)_OBJ))
 $(LIB):
 	$(eval APP_DEPS += $($(@)_DEPS))
 	@echo "Processing $@"
+
+ifneq (unity,$(LIB))
+  include $(LIB_DIR)/lib_test.mk
+endif
