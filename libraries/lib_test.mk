@@ -6,7 +6,7 @@ $(LIB)_TEST_BIN_DIR := $(BIN_DIR)/test/$(LIB)
 $(LIB)_TEST_OBJ_DIR := $($(LIB)_OBJ_ROOT)/test
 DIRS += $($(LIB)_GEN_DIR) $($(LIB)_TEST_BIN_DIR)
 
-$(LIB)_TEST_DEPS := unity $($(LIB)_DEPS)
+$(LIB)_TEST_DEPS := unity $(LIB)
 
 $(LIB)_TEST_ROOT := $($(LIB)_DIR)/test
 $(LIB)_TEST := $(wildcard $($(LIB)_TEST_ROOT)/*.c)
