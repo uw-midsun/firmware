@@ -46,3 +46,6 @@ $(LIB):
 ifneq (unity,$(LIB))
   include $(LIB_DIR)/lib_test.mk
 endif
+
+DIRS := $(sort $(DIRS) $($(LIB)_OBJ_DIR) $(dir $($(LIB)_OBJ)))
+INC_DIRS := $(sort $(INC_DIRS) $(dir $($(LIB)_INC)))

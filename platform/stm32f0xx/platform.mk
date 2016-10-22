@@ -16,7 +16,7 @@ PLATFORM_EXT := .elf
 ARCH_CLAGS := -mlittle-endian -mcpu=cortex-m0 -march=armv6-m -mthumb
 
 # Linker script location
-DSCRIPT := $(PLATFORM_DIR)/ldscripts
+LDSCRIPT := $(PLATFORM_DIR)/ldscripts
 
 # Build flags for the device
 CDEFINES := USE_STDPERIPH_DRIVER STM32F072
