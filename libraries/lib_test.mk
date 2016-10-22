@@ -40,18 +40,24 @@ $($(LIB)_TEST_OBJ_DIR)/%.o: $($(LIB)_GEN_DIR)/%.c | $(LIB) $(dir $($(LIB)_TEST_R
 	@$(CC) -MD -MP -w -c -o $@ $< $($(firstword $|)_CFLAGS) $(addprefix -I,$(INC_DIRS))
 
 # Build each test - only include the test's runner and unit tests.
-$($(LIB)_TESTS): $($(LIB)_TEST_BIN_DIR)/%_runner$(PLATFORM_EXT): $($(LIB)_TEST_OBJ_DIR)/%.o $($(LIB)_TEST_OBJ_DIR)/%_runner.o $(call dep_to_lib,$($(LIB)_TEST_DEPS)) | $($(LIB)_TEST_BIN_DIR)
+$($(LIB)_TESTS): $($(LIB)_TEST_BIN_DIR)/%_runner$(PLATFORM_EXT): \
+                 $($(LIB)_TEST_OBJ_DIR)/%.o $($(LIB)_TEST_OBJ_DIR)/%_runner.o \
+                 $(call dep_to_lib,$($(LIB)_TEST_DEPS)) | $($(LIB)_TEST_BIN_DIR)
 	@echo "Building test $(notdir $@) for $(PLATFORM)"
 	@$(CC) $(CFLAGS) $^ -o $@ -L$(STATIC_LIB_DIR) \
 		$(addprefix -l,$(APP_DEPS)) \
 		$(LDFLAGS) $(addprefix -I,$(INC_DIRS))
 
 .PHONY: test test_ test_$(LIB)
+# Only include the library tests as a target if we aren't testing a project
+ifeq (,$(PROJECT))
 test: test_$(LIBRARY)
 test_: # Fake target for unspecified tests
+endif
 
 # Run each test
 test_$(LIB): $($(LIB)_TESTS)
+	@echo "Running test suite - $(@:test_%=%)"
 	@$(foreach test,$^,./$(test) &&) true
 
 DIRS := $(sort $(DIRS) $($(LIB)_GEN_DIR) $($(LIB)_TEST_BIN_DIR) \

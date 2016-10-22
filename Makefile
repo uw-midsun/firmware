@@ -29,8 +29,8 @@ override PLATFORM := $(filter $(VALID_PLATFORMS),$(PLATFORM))
 override PROJECT := $(filter $(VALID_PROJECTS),$(PROJECT))
 override LIBRARY := $(filter $(VALID_LIBRARIES),$(LIBRARY))
 
-# Only ignore project and platform if we're doing a full clean, lint, or test
-ifeq (,$(filter reallyclean lint test,$(MAKECMDGOALS)))
+# Only ignore project and platform if we're doing a full clean or lint
+ifeq (,$(filter reallyclean lint,$(MAKECMDGOALS)))
 ifeq (,$(filter test,$(MAKECMDGOALS)))
 ifeq (,$(PROJECT))
   $(error Invalid project. Expected PROJECT=[$(VALID_PROJECTS)])
