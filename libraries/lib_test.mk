@@ -60,5 +60,7 @@ test_$(LIB): $($(LIB)_TESTS)
 	@echo "Running test suite - $(@:test_%=%)"
 	@$(foreach test,$^,./$(test) &&) true
 
+test_all: test_$(LIB)
+
 DIRS := $(sort $(DIRS) $($(LIB)_GEN_DIR) $($(LIB)_TEST_BIN_DIR) \
                $(dir $($(LIB)_TEST_OBJ) $($(LIB)_TEST_RUNNERS_OBJ)))

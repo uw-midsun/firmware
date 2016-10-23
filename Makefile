@@ -31,7 +31,7 @@ override LIBRARY := $(filter $(VALID_LIBRARIES),$(LIBRARY))
 
 # Only ignore project and platform if we're doing a full clean or lint
 ifeq (,$(filter reallyclean lint,$(MAKECMDGOALS)))
-ifeq (,$(filter test,$(MAKECMDGOALS)))
+ifeq (,$(filter test test_all,$(MAKECMDGOALS)))
 ifeq (,$(PROJECT))
   $(error Invalid project. Expected PROJECT=[$(VALID_PROJECTS)])
 endif
