@@ -4,7 +4,7 @@ LD := $(GCC_ARM_BASE)arm-none-eabi-gcc
 OBJCPY := $(GCC_ARM_BASE)arm-none-eabi-objcopy
 OBJDUMP := $(GCC_ARM_BASE)arm-none-eabi-objdump
 SIZE := $(GCC_ARM_BASE)arm-none-eabi-size
-AR := $(GCC_ARM_BASE)arm-none-eabi-ar
+AR := $(GCC_ARM_BASE)arm-none-eabi-gcc-ar
 GDB := $(GCC_ARM_BASE)arm-none-eabi-gdb
 OPENOCD := openocd
 
@@ -21,12 +21,13 @@ LDSCRIPT := $(PLATFORM_DIR)/ldscripts
 # Build flags for the device
 CDEFINES := USE_STDPERIPH_DRIVER STM32F072
 CFLAGS := -Wall -Werror -g -Os -Wno-unused-variable -pedantic \
-          -ffunction-sections -fdata-sections \
-          -Wl,-Map=$(BIN_DIR)/$(PROJECT).map --specs=nosys.specs \
+          -ffunction-sections -fdata-sections -fno-builtin \
+          -Wl,-Map=$(BIN_DIR)/$(PROJECT).map -flto \
+          --specs=nosys.specs --specs=nano.specs \
           $(ARCH_CLAGS) $(addprefix -D,$(CDEFINES))
 
 # Linker flags
-LDFLAGS := -L$(LDSCRIPT) -Tstm32f0.ld
+LDFLAGS := $(CLFLAGS) -L$(LDSCRIPT) -Tstm32f0.ld -fuse-linker-plugin
 
 # Device openocd config file
 OPENOCD_SCRIPT_DIR := /usr/share/openocd/scripts/
