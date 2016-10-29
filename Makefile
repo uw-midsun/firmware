@@ -15,20 +15,31 @@
 # Default directories
 PROJECTS_DIR := project
 PLATFORMS_DIR := platform
+LIB_DIR := libraries
 
 VALID_PROJECTS := $(patsubst $(PROJECTS_DIR)/%/rules.mk,%,$(wildcard $(PROJECTS_DIR)/*/rules.mk))
 VALID_PLATFORMS := $(patsubst $(PLATFORMS_DIR)/%/platform.mk,%,$(wildcard $(PLATFORMS_DIR)/*/platform.mk))
+VALID_LIBRARIES := $(patsubst $(LIB_DIR)/%/rules.mk,%,$(wildcard $(LIB_DIR)/*/rules.mk))
 
 PROJECT := $(filter $(VALID_PROJECTS),$(PROJECT))
 
 # TODO: allow valid platforms to be defined by projects?
 PLATFORM := stm32f0xx
 override PLATFORM := $(filter $(VALID_PLATFORMS),$(PLATFORM))
+override PROJECT := $(filter $(VALID_PROJECTS),$(PROJECT))
+override LIBRARY := $(filter $(VALID_LIBRARIES),$(LIBRARY))
 
 # Only ignore project and platform if we're doing a full clean or lint
 ifeq (,$(filter reallyclean lint,$(MAKECMDGOALS)))
+ifeq (,$(filter test test_all,$(MAKECMDGOALS)))
 ifeq (,$(PROJECT))
   $(error Invalid project. Expected PROJECT=[$(VALID_PROJECTS)])
+endif
+else
+# If running a test, ensure we have a project or library
+ifeq (,$(PROJECT)$(LIBRARY))
+  $(error Invalid project or library. Expected PROJECT=[$(VALID_PROJECTS)] or LIBRARY=[$(VALID_LIBRARIES)])
+endif
 endif
 
 ifeq (,$(PLATFORM))
@@ -56,8 +67,6 @@ OBJ_CACHE := $(BUILD_DIR)/obj/$(PLATFORM)
 
 DIRS := $(BUILD_DIR) $(BIN_DIR) $(STATIC_LIB_DIR) $(OBJ_CACHE)
 
-LIB_DIR := libraries
-
 # Please don't touch anything below this line
 ###################################################################################################
 
@@ -67,8 +76,6 @@ LIB_DIR := libraries
 define include_lib
 $(eval LIB := $(1));
 $(eval include $(LIB_DIR)/library.mk);
-$(eval DIRS := $(sort $(DIRS) $($(LIB)_OBJ_DIR) $(dir $($(LIB)_OBJ))));
-$(eval INC_DIRS := $(sort $(INC_DIRS) $(dir $($(LIB)_INC))));
 $(eval undefine LIB)
 endef
 
