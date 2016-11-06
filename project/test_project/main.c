@@ -1,42 +1,30 @@
-#include <stdint.h>
 #include <stdbool.h>
-#include "stm32f0xx.h"
+#include <stdint.h>
 
-#define LED_PORT (GPIOC)
-#define LED_PIN (GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9)
-
-void toggle_led(void) {
-  static bool toggled = false;
-  if (toggled) {
-    GPIO_SetBits(LED_PORT, LED_PIN);
-  } else {
-    GPIO_ResetBits(LED_PORT, LED_PIN);
-  }
-
-  toggled = !toggled;
-}
+#include "gpio.h"
 
 int main(void) {
-  // Enable GPIO Peripheral clock
-  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOC, ENABLE);
+  GPIOSettings settings = {GPIO_DIR_OUT, GPIO_STATE_HIGH, GPIO_RES_NONE, GPIO_ALTFN_NONE};
+  GPIOAddress addr[] = {{2, 6}, {2, 7}, {2, 8}, {2, 9}};
+  const uint32_t addr_size = sizeof(addr) / sizeof(GPIOAddress);
 
-  GPIO_InitTypeDef GPIO_InitStructure;
+  gpio_init();
 
-  // Configure pin in output push/pull mode
-  GPIO_InitStructure.GPIO_Pin = LED_PIN;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_Init(LED_PORT, &GPIO_InitStructure);
+  volatile uint32_t i;
+  for (i = 0; i < addr_size; i++) {
+    gpio_init_pin(&addr[i], &settings);
+  }
 
-  int x = 0;
+  volatile uint32_t interval = 0;
+  volatile uint32_t j;
 
   while (true) {
-    volatile uint32_t i = 0;
-    for (i = 0; i < x; i++) { }
-    toggle_led();
+    for (i = 0; i < interval; i++) {
+    }
+    for (j = 0; j < addr_size; j++) {
+      gpio_toggle_state(&addr[j]);
+    }
 
-    x += 10;
+    interval += 10;
   }
 }
