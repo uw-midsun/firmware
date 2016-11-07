@@ -2927,7 +2927,7 @@ def CheckForFunctionLengths(filename, clean_lines, linenum,
     function_state.Count()  # Count non-blank/non-comment lines.
 
 
-_RE_PATTERN_TODO = re.compile(r'^//(\s*)TODO(\(.+?\))?:?(\s|$)?')
+_RE_PATTERN_TODO = re.compile(r'^//(\s*)TODO(\([A-Z]+-[0-9]+?\))?:?(\s|$)?')
 
 
 def CheckComment(line, filename, linenum, next_line_start, error):
@@ -2963,17 +2963,17 @@ def CheckComment(line, filename, linenum, next_line_start, error):
           error(filename, linenum, 'whitespace/todo', 2,
                 'Too many spaces before TODO')
 
-        username = match.group(2)
-        if not username:
+        ticket = match.group(2)
+        if not ticket:
           error(filename, linenum, 'readability/todo', 2,
-                'Missing username in TODO; it should look like '
-                '"// TODO(my_username): Stuff."')
+                'Missing JIRA ticket in TODO; it should look like '
+                '"// TODO(TYPE-#): Stuff."')
 
         middle_whitespace = match.group(3)
         # Comparisons made explicit for correctness -- pylint: disable=g-explicit-bool-comparison
         if middle_whitespace != ' ' and middle_whitespace != '':
           error(filename, linenum, 'whitespace/todo', 2,
-                'TODO(my_username) should be followed by a space')
+                'TODO(TYPE-#) should be followed by a space')
 
       # If the comment contains an alphanumeric character, there
       # should be a space somewhere between it and the // unless
