@@ -135,7 +135,7 @@ lint:
 # Builds the project
 project: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 
-build_all: $(VALID_PROJECTS:%=$(BIN_DIR)/%$(PLATFORM_EXT))
+build_all: $(VALID_PROJECTS:%=$(BIN_DIR)/%$(PLATFORM_EXT)) test_all
 
 $(DIRS):
 	@mkdir -p $@
