@@ -1,5 +1,5 @@
 # Unity
-UNITY_ROOT := $(T_DIR)/unity
+UNITY_ROOT := $(LIB_DIR)/unity
 UNITY_SCRIPT_DIR := $(UNITY_ROOT)/auto
 UNITY_GEN_RUNNER := ruby $(UNITY_SCRIPT_DIR)/generate_test_runner.rb --setup_name=setup_test --teardown_name=teardown_test
 
@@ -44,21 +44,24 @@ $($(T)_TESTS): $($(T)_TEST_BIN_DIR)/%_runner$(PLATFORM_EXT): \
                  $($(T)_TEST_OBJ_DIR)/%.o $($(T)_TEST_OBJ_DIR)/%_runner.o \
                  $(call dep_to_lib,$($(T)_TEST_DEPS)) | $($(T)_TEST_BIN_DIR)
 	@echo "Building test $(notdir $@) for $(PLATFORM)"
-	@$(CC) $(CFLAGS) $^ -o $@ -L$(STATIC_T_DIR) \
+	@$(CC) $(CFLAGS) $^ -o $@ -L$(STATIC_LIB_DIR) \
 		$(addprefix -l,$(APP_DEPS)) \
 		$(LDFLAGS) $(addprefix -I,$(INC_DIRS))
 
 .PHONY: test test_ test_$(T)
 # Only include the library tests as a target if we aren't testing a project
 ifeq (,$(PROJECT))
-test: test_$(TARGET_TYPE)
+test: test_$(LIBRARY)
 test_: # Fake target for unspecified tests
 endif
 
 # Run each test
 test_$(T): $($(T)_TESTS)
+# Only run unit tests on x86
+ifneq (,$(filter x86,$(PLATFORM)))
 	@echo "Running test suite - $(@:test_%=%)"
-	@$(foreach test,$^,./$(test) &&) true
+	@$(foreach test,$^,echo "\nRunning $(notdir $(test))" && ./$(test) &&) true
+endif
 
 test_all: test_$(T)
 
