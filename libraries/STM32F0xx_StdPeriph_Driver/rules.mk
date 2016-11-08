@@ -1,11 +1,11 @@
-# Defines $(LIB)_SRC, $(LIB)_INC, $(LIB)_DEPS, and $(LIB)_CFLAGS for the library makefile.
+# Defines $(T)_SRC, $(T)_INC, $(T)_DEPS, and $(T)_CFLAGS for the build makefile.
 # Pre-defined:
-# $(LIB)_SRC_ROOT: $(LIB)_DIR/src
-# $(LIB)_INC_DIRS: $(LIB)_DIR/inc
-# $(LIB)_SRC: $(LIB)_DIR/src/*.c
-# $(LIB)_INC: $(LIB)_DIR/inc/*.h
+# $(T)_SRC_ROOT: $(T)_DIR/src
+# $(T)_INC_DIRS: $(T)_DIR/inc
+# $(T)_SRC: $(T)_DIR/src{/$(PLATFORM}}/*.{c,s}
+# $(T)_INC: $(T)_DIR/inc{/$(PLATFORM}}/*.h
 
-$(LIB)_DEPS := CMSIS
+$(T)_DEPS := CMSIS
 
 # Specifies library specific build flags
-$(LIB)_CFLAGS += -ffreestanding -nostdlib
+$(T)_CFLAGS += -ffreestanding -nostdlib

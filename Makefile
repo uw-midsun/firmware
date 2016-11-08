@@ -13,11 +13,12 @@
 # CONFIG
 
 # Default directories
-PROJECTS_DIR := project
+PROJ_DIR := project
 PLATFORMS_DIR := platform
 LIB_DIR := libraries
+MAKE_DIR := make
 
-VALID_PROJECTS := $(patsubst $(PROJECTS_DIR)/%/rules.mk,%,$(wildcard $(PROJECTS_DIR)/*/rules.mk))
+VALID_PROJECTS := $(patsubst $(PROJ_DIR)/%/rules.mk,%,$(wildcard $(PROJ_DIR)/*/rules.mk))
 VALID_PLATFORMS := $(patsubst $(PLATFORMS_DIR)/%/platform.mk,%,$(wildcard $(PLATFORMS_DIR)/*/platform.mk))
 VALID_LIBRARIES := $(patsubst $(LIB_DIR)/%/rules.mk,%,$(wildcard $(LIB_DIR)/*/rules.mk))
 
@@ -30,7 +31,7 @@ override PROJECT := $(filter $(VALID_PROJECTS),$(PROJECT))
 override LIBRARY := $(filter $(VALID_LIBRARIES),$(LIBRARY))
 
 # Only ignore project and platform if we're doing a full clean or lint
-ifeq (,$(filter reallyclean lint,$(MAKECMDGOALS)))
+ifeq (,$(filter reallyclean lint build_all,$(MAKECMDGOALS)))
 ifeq (,$(filter test test_all,$(MAKECMDGOALS)))
 ifeq (,$(PROJECT))
   $(error Invalid project. Expected PROJECT=[$(VALID_PROJECTS)])
@@ -48,7 +49,7 @@ endif
 endif
 
 # Location of project
-PROJECT_DIR := $(PROJECTS_DIR)/$(PROJECT)
+PROJECT_DIR := $(PROJ_DIR)/$(PROJECT)
 
 # Location of platform
 PLATFORM_DIR := $(PLATFORMS_DIR)/$(PLATFORM)
@@ -74,9 +75,18 @@ DIRS := $(BUILD_DIR) $(BIN_DIR) $(STATIC_LIB_DIR) $(OBJ_CACHE)
 
 # $(call include_lib,libname)
 define include_lib
-$(eval LIB := $(1));
-$(eval include $(LIB_DIR)/library.mk);
-$(eval undefine LIB)
+$(eval TARGET := $(1));
+$(eval TARGET_TYPE := LIB);
+$(eval include $(MAKE_DIR)/build.mk);
+$(eval undefine TARGET; undefine TARGET_TYPE)
+endef
+
+# $(call include_proj,projname)
+define include_proj
+$(eval TARGET := $(1));
+$(eval TARGET_TYPE := PROJ);
+$(eval include $(MAKE_DIR)/build.mk);
+$(eval undefine TARGET; undefine TARGET_TYPE)
 endef
 
 # $(call dep_to_lib,deps)
@@ -92,15 +102,6 @@ endef
 
 # include the target build rules
 -include $(PROJECT_DIR)/rules.mk
-
-# define a MAIN_FILE using the rules included in the last section
-MAIN_FILE := $(PROJECT_DIR)/$(MAIN)
-
-# Find all libraries available
-LIBS := $(patsubst $(LIB_DIR)/%/rules.mk,%,$(wildcard $(LIB_DIR)/*/rules.mk))
-
-# Define the static libraries required for the project
-APP_LIBS := $(call dep_to_lib,$(APP_DEPS))
 
 ###################################################################################################
 
@@ -121,24 +122,20 @@ all: project lint
 -include $(PLATFORMS_DIR)/$(PLATFORM)/platform.mk
 
 # Includes all libraries so make can find their targets
-$(foreach dep,$(LIBS),$(call include_lib,$(dep)))
+$(foreach lib,$(VALID_LIBRARIES),$(call include_lib,$(lib)))
+
+# Includes all projects so make can find their targets
+$(foreach proj,$(VALID_PROJECTS),$(call include_proj,$(proj)))
 
 # Lints the files in ms-common and projects
 lint:
-	@find $(PROJECTS_DIR) -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
+	@find $(PROJ_DIR) -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
 	@find "$(LIB_DIR)/ms-common" -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
 
 # Builds the project
 project: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 
-# Rule for making the project
-$(BIN_DIR)/%$(PLATFORM_EXT): $(MAIN_FILE) $(APP_LIBS) | $(BIN_DIR)
-	@echo "Building $(notdir $@) for $(PLATFORM)"
-	@$(CC) $(CFLAGS) $^ -o $@ -L$(STATIC_LIB_DIR) \
-		$(addprefix -l,$(APP_DEPS)) \
-		$(LDFLAGS) $(addprefix -I,$(INC_DIRS))
-	@$(OBJDUMP) -St $@ >$(basename $@).lst
-	@$(SIZE) $@
+build_all: $(VALID_PROJECTS:%=$(BIN_DIR)/%$(PLATFORM_EXT)) test_all
 
 $(DIRS):
 	@mkdir -p $@
