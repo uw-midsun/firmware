@@ -21,6 +21,8 @@ $(T)_TEST_RUNNERS := $($(T)_TEST_SRC:$($(T)_TEST_ROOT)/test_%.c=$($(T)_GEN_DIR)/
 $(T)_TEST_RUNNERS_OBJ := $($(T)_TEST_RUNNERS:$($(T)_GEN_DIR)/%.c=$($(T)_TEST_OBJ_DIR/%.o))
 -include $($(T)_TEST_RUNNERS_OBJ:.o=.d) #:
 
+.SECONDARY: $($(T)_TEST_RUNNERS)
+
 # Generate the expected build outputs - one for each runner
 $(T)_TESTS := $($(T)_TEST_RUNNERS:$($(T)_GEN_DIR)/%.c=$($(T)_TEST_BIN_DIR)/%$(PLATFORM_EXT))
 
@@ -44,7 +46,7 @@ $($(T)_TESTS): $($(T)_TEST_BIN_DIR)/%_runner$(PLATFORM_EXT): \
                  $($(T)_TEST_OBJ_DIR)/%.o $($(T)_TEST_OBJ_DIR)/%_runner.o \
                  $(call dep_to_lib,$($(T)_TEST_DEPS)) | $($(T)_TEST_BIN_DIR)
 	@echo "Building test $(notdir $@) for $(PLATFORM)"
-	@$(CC) $(CFLAGS) $^ -o $@ -L$(STATIC_LIB_DIR) \
+	@$(CC) $(CFLAGS) -Wl,-Map=$|/$(notdir $(@:%$(PLATFORM_EXT)=%.map)) $^ -o $@ -L$(STATIC_LIB_DIR) \
 		$(addprefix -l,$(APP_DEPS)) \
 		$(LDFLAGS) $(addprefix -I,$(INC_DIRS))
 
