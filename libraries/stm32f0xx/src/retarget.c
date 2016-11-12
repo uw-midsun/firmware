@@ -1,15 +1,19 @@
 #include "retarget.h"
 #include "stm32f0xx.h"
 
-#define min(x, y) (((x) <= (y)) ? (x) : (y))
+#define min(a,b) \
+  ({ __typeof__ (a) _a = (a); \
+     __typeof__ (b) _b = (b); \
+    _a <= _b ? _a : _b; })
 
-volatile char gv_data[500];
-volatile int gv_pos;
+#define RETARGET_BUFFER_SIZE 1000
 
-// TODO: putchar is not working
+char gv_buffer[RETARGET_BUFFER_SIZE] = { 0 };
+int gv_pos = 0;
+
 int _write(int fd, char *ptr, int len) {
-  int space = min(len, 500 - gv_pos - len);
-  memcpy(gv_data + gv_pos, ptr, space);
+  int space = min(len, RETARGET_BUFFER_SIZE - gv_pos - len);
+  memcpy(gv_buffer + gv_pos, ptr, space);
   gv_pos += space;
 
   return space;
@@ -21,7 +25,5 @@ void HardFault_Handler(void) {
 }
 
 void retarget_init(void) {
-  WWDG_DeInit();
-  gv_pos = 0;
   // Initialize UART
 }
