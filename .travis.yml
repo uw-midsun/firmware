@@ -1,0 +1,37 @@
+notifications:
+  email: false
+
+language: c
+
+env:
+  # add target platforms to build matrix
+  # lint is a target so we don't need to lint multiple times
+  - TARGET='build_all PLATFORM=x86'
+  - TARGET='build_all PLATFORM=stm32f0xx'
+  - TARGET=lint
+
+before_install:
+  # update the libraries (ms-common, etc.)
+  - git submodule update --init --recursive
+
+before_script:
+  # install GCC ARM from GNU ARM Embedded Toolchain PPA
+  - sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa -y
+  - sudo apt-get -qq update
+  - sudo apt-get -qq install gcc-arm-embedded
+
+  # build GNU Make 4.1 from source
+  - wget http://ftp.gnu.org/gnu/make/make-4.1.tar.gz
+  - tar xvf make-4.1.tar.gz
+  - cd make-4.1
+  - ./configure
+  - make
+  - sudo make install
+  - cd ..
+  - rm -rf make-4.1
+
+  # add Make to path
+  - export PATH=/usr/local/bin/:$PATH
+
+script:
+  - make $TARGET
