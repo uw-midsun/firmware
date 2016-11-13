@@ -149,7 +149,8 @@ program: $(BIN_DIR)/$(PROJECT).bin
 
 gdb: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 	@$(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
-	@$(GDB) $< -ex "set pagination off" -ex "target extended-remote :3333" -ex "monitor reset halt" \
+	@$(GDB) $< -ex "set pagination off" -ex "target extended-remote :3333" \
+             -ex "monitor arm semihosting enable" -ex "monitor reset halt" \
              -ex "load" -ex "tb main" -ex "c"
 	@pkill openocd
 

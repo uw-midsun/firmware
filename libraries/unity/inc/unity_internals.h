@@ -262,6 +262,7 @@ typedef UNITY_FLOAT_TYPE _UF;
 #ifndef UNITY_OUTPUT_CHAR
 /* Default to using putchar, which is defined in stdio.h */
 #include <stdio.h>
+#undef putchar // Newlib defines putchar as a macro which does not work, so undefine it
 #define UNITY_OUTPUT_CHAR(a) (void)putchar(a)
 #else
   /* If defined as something else, make sure we declare it here so it's ready for use */

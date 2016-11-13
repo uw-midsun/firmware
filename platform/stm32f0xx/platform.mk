@@ -20,7 +20,7 @@ LDSCRIPT := $(PLATFORM_DIR)/ldscripts
 
 # Build flags for the device
 CDEFINES := USE_STDPERIPH_DRIVER STM32F072
-CFLAGS := -Wall -Werror -g -Os -Wno-unused-variable -pedantic \
+CFLAGS := -Wall -Werror -g -Os -std=c99 -Wno-unused-variable -pedantic \
           -ffunction-sections -fdata-sections -fno-builtin -flto \
           --specs=nosys.specs --specs=nano.specs \
           $(ARCH_CLAGS) $(addprefix -D,$(CDEFINES))
