@@ -3,10 +3,12 @@ notifications:
 
 language: c
 
-# add target platforms to build matrix
 env:
-  - PLATFORM=x86
-  - PLATFORM=stm32f0xx
+  # add target platforms to build matrix
+  # lint is a target so we don't need to lint multiple times
+  - TARGET='build_all PLATFORM=x86'
+  - TARGET='build_all PLATFORM=stm32f0xx'
+  - TARGET=lint
 
 before_install:
   # update the libraries (ms-common, etc.)
@@ -32,4 +34,4 @@ before_script:
   - export PATH=/usr/local/bin/:$PATH
 
 script:
-  - make build_all PLATFORM=$PLATFORM
+  - make $TARGET
