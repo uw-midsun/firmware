@@ -1,6 +1,10 @@
+// Retargets STDOUT to semihosting if SEMIHOSTING_ENABLED=1.
+// Note that semihosting will cause devices that aren't connected to a debugger to hang.
+// TODO(ELEC-36): Replace semihosting with UART
 #include "retarget.h"
 #include "stm32f0xx.h"
 
+// Send a command to OpenOCD - semihosting must be enabled
 static void send_command(int command, void *message) {
   __ASM volatile(
     "mov r0, %[cmd]\n"
@@ -19,7 +23,11 @@ int _write(int fd, char *ptr, int len) {
     len
   };
 
+#if SEMIHOSTING_ENABLED
+  // Only retarget to semihosting if explicitly enabled since
+  // our hard fault handler doesn't play nicely with semihosting
   send_command(0x05, m);
+#endif
 
   return len;
 }
@@ -30,5 +38,5 @@ void HardFault_Handler(void) {
 }
 
 void retarget_init(void) {
-  // Initialize UART
+  // Stub for UART initialization
 }
