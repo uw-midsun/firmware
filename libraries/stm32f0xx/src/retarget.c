@@ -1,22 +1,27 @@
 #include "retarget.h"
 #include "stm32f0xx.h"
 
-#define min(a,b) \
-  ({ __typeof__ (a) _a = (a); \
-     __typeof__ (b) _b = (b); \
-    _a <= _b ? _a : _b; })
-
-#define RETARGET_BUFFER_SIZE 1000
-
-char gv_buffer[RETARGET_BUFFER_SIZE] = { 0 };
-int gv_pos = 0;
+static void send_command(int command, void *message) {
+  __ASM volatile(
+    "mov r0, %[cmd]\n"
+    "mov r1, %[msg]\n"
+    "bkpt #0xAB\n"
+    :
+    : [cmd] "r" (command), [msg] "r" (message)
+    : "r0", "r1", "memory"
+  );
+}
 
 int _write(int fd, char *ptr, int len) {
-  int space = min(len, RETARGET_BUFFER_SIZE - gv_pos - len);
-  memcpy(gv_buffer + gv_pos, ptr, space);
-  gv_pos += space;
+  uint32_t m[] = {
+    1, // stdout
+    (uint32_t)ptr,
+    len
+  };
 
-  return space;
+  send_command(0x05, m);
+
+  return len;
 }
 
 void HardFault_Handler(void) {
