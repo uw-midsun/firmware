@@ -3,6 +3,13 @@ notifications:
 
 language: c
 
+# enable "Build pushes" and "Build pull requests" in Travis CI
+# - pull requests will always be built
+# - only build pushes to master
+branches:
+  only:
+    - master
+
 env:
   # add target platforms to build matrix
   # lint is a target so we don't need to lint multiple times
