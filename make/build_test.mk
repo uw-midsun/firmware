@@ -12,12 +12,13 @@ $(T)_TEST_ROOT := $($(T)_DIR)/test
 $(T)_TEST_DEPS := unity $(T)
 
 # Find all test_*.c files - these are our unit tests
-$(T)_TEST_SRC := $(wildcard $($(T)_TEST_ROOT)/test_*.c)
+$(T)_TEST_SRC := $(wildcard $($(T)_TEST_ROOT)/test_*.c) \
+                 $(wildcard $($(T)_TEST_ROOT)/$(PLATFORM)/test_*.c)
 $(T)_TEST_OBJ := $($(T)_TEST_SRC:$($(T)_TEST_ROOT)/%.c=$($(T)_TEST_OBJ_DIR)/%.o)
 -include $($(T)_TEST_OBJ:.o=.d) #:
 
 # Generate the appropriate test runners for our unit tests
-$(T)_TEST_RUNNERS := $($(T)_TEST_SRC:$($(T)_TEST_ROOT)/test_%.c=$($(T)_GEN_DIR)/test_%_runner.c)
+$(T)_TEST_RUNNERS := $($(T)_TEST_SRC:$($(T)_TEST_ROOT)/%.c=$($(T)_GEN_DIR)/%_runner.c)
 $(T)_TEST_RUNNERS_OBJ := $($(T)_TEST_RUNNERS:$($(T)_GEN_DIR)/%.c=$($(T)_TEST_OBJ_DIR/%.o))
 -include $($(T)_TEST_RUNNERS_OBJ:.o=.d) #:
 
@@ -29,7 +30,7 @@ $(T)_TESTS := $($(T)_TEST_RUNNERS:$($(T)_GEN_DIR)/%.c=$($(T)_TEST_BIN_DIR)/%$(PL
 # Generate the test runners
 $($(T)_GEN_DIR)/%_runner.c: $($(T)_TEST_ROOT)/%.c | $($(T)_GEN_DIR)
 	@echo "Generating $(notdir $@)"
-	@$(UNITY_GEN_RUNNER) $< $@
+	@$(UNITY_GEN_RUNNER) $< $(firstword $|)/$(notdir $@)
 
 # Compile the unit tests
 $($(T)_TEST_OBJ_DIR)/%.o: $($(T)_TEST_ROOT)/%.c | $(T) $(dir $($(T)_TEST_OBJ))
@@ -39,14 +40,14 @@ $($(T)_TEST_OBJ_DIR)/%.o: $($(T)_TEST_ROOT)/%.c | $(T) $(dir $($(T)_TEST_OBJ))
 # Compile the test runners
 $($(T)_TEST_OBJ_DIR)/%.o: $($(T)_GEN_DIR)/%.c | $(T) $(dir $($(T)_TEST_RUNNERS_OBJ))
 	@echo "T: $(notdir $<) -> $(notdir $@)"
-	@$(CC) -MD -MP -w -c -o $@ $< $($(firstword $|)_CFLAGS) $(addprefix -I,$(INC_DIRS))
+	@$(CC) -MD -MP -w -c -o $@ $($(T)_GEN_DIR)/$(notdir $<) $($(firstword $|)_CFLAGS) $(addprefix -I,$(INC_DIRS))
 
 # Build each test - only include the test's runner and unit tests.
 $($(T)_TESTS): $($(T)_TEST_BIN_DIR)/%_runner$(PLATFORM_EXT): \
                  $($(T)_TEST_OBJ_DIR)/%.o $($(T)_TEST_OBJ_DIR)/%_runner.o \
                  $(call dep_to_lib,$($(T)_TEST_DEPS)) | $($(T)_TEST_BIN_DIR)
 	@echo "Building test $(notdir $@) for $(PLATFORM)"
-	@$(CC) $(CFLAGS) -Wl,-Map=$|/$(notdir $(@:%$(PLATFORM_EXT)=%.map)) $^ -o $@ -L$(STATIC_LIB_DIR) \
+	@$(CC) $(CFLAGS) -Wl,-Map=$|/$(notdir $(@:%$(PLATFORM_EXT)=%.map)) $^ -o $(firstword $|)/$(notdir $@) -L$(STATIC_LIB_DIR) \
 		$(addprefix -l,$(APP_DEPS)) \
 		$(LDFLAGS) $(addprefix -I,$(INC_DIRS))
 
