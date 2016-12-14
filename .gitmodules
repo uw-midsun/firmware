@@ -1,4 +1,0 @@
-[submodule "libraries/ms-common"]
-	path = libraries/ms-common
-	url = https://github.com/uw-midsun/ms-common.git
-	branch = master
