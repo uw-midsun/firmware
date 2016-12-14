@@ -18,7 +18,8 @@ $(T)_INC_DIRS := $($(T)_DIR)/inc
 $(T)_SRC := $(wildcard $($(T)_SRC_ROOT)/*.c) \
             $(wildcard $($(T)_SRC_ROOT)/$(PLATFORM)/*.c) \
             $(wildcard $($(T)_SRC_ROOT)/*.s)
-$(T)_INC := $(wildcard $($(T)_INC_DIRS)/*.h)
+$(T)_INC := $(wildcard $($(T)_INC_DIRS)/*.h) \
+            $(wildcard $($(T)_INC_DIRS)/$(PLATFORM)/*.h)
 
 $(T)_CFLAGS := $(CFLAGS)
 

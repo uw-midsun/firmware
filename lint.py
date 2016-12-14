@@ -4293,6 +4293,13 @@ def _DropCommonSuffixes(filename):
     if (filename.endswith(suffix) and len(filename) > len(suffix) and
         filename[-len(suffix) - 1] in ('-', '_')):
       return filename[:-len(suffix) - 1]
+  for prefix in ('test',):
+    index = filename.rfind('/')
+    filename_wo_path = filename[index + 1:]
+    if (filename_wo_path.startswith(prefix) and
+        len(filename_wo_path) > len(prefix) and
+        filename_wo_path[len(prefix)] in ('-', '_')):
+      return filename[:index + 1] + filename_wo_path[len(prefix) + 1:]
   return os.path.splitext(filename)[0]
 
 
