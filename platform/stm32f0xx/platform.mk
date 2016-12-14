@@ -16,20 +16,44 @@ PLATFORM_EXT := .elf
 ARCH_CLAGS := -mlittle-endian -mcpu=cortex-m0 -march=armv6-m -mthumb
 
 # Linker script location
-LDSCRIPT := $(PLATFORM_DIR)/ldscripts
+LDSCRIPT_DIR := $(PLATFORM_DIR)/ldscripts
+
+# Helper scripts location
+SCRIPT_DIR := $(PLATFORM_DIR)/scripts
 
 # Build flags for the device
-CDEFINES := USE_STDPERIPH_DRIVER STM32F072
+CDEFINES := USE_STDPERIPH_DRIVER STM32F072 SEMIHOSTING
 CFLAGS := -Wall -Werror -g -Os -std=c99 -Wno-unused-variable -pedantic \
           -ffunction-sections -fdata-sections -fno-builtin -flto \
           --specs=nosys.specs --specs=nano.specs \
           $(ARCH_CLAGS) $(addprefix -D,$(CDEFINES))
 
 # Linker flags
-LDFLAGS := $(CLFLAGS) -L$(LDSCRIPT) -Tstm32f0.ld -fuse-linker-plugin
+LDFLAGS := $(CLFLAGS) -L$(LDSCRIPT_DIR) -Tstm32f0.ld -fuse-linker-plugin
 
 # Device openocd config file
 OPENOCD_SCRIPT_DIR := /usr/share/openocd/scripts/
 OPENOCD_CFG := -s $(OPENOCD_SCRIPT_DIR) \
                -f interface/stlink-v2.cfg -f target/stm32f0x.cfg \
-               -f $(PLATFORM_DIR)/stm32f0-openocd.cfg
+               -f $(SCRIPT_DIR)/stm32f0-openocd.cfg
+
+# Platform targets
+.PHONY: program gdb semihosting
+
+program: $(BIN_DIR)/$(PROJECT).bin
+	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash `pwd`/$<" -c shutdown
+
+gdb: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+	@$(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
+	@$(GDB) $< -x "$(SCRIPT_DIR)/gdb_flash"
+	@pkill openocd
+
+semihosting: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+	@tmux new-session -s "ms-fw" -d
+	@tmux split-window -h -t "ms-fw":0
+	@tmux send-keys -t "ms-fw":0.1 "$(OPENOCD) $(OPENOCD_CFG)" C-m
+	@tmux send-keys -t "ms-fw":0.0 \
+    "$(GDB) $< -x \"$(SCRIPT_DIR)/gdb_flash\"; \
+    tmux kill-session -t \"ms-fw\"" C-m
+	@tmux select-pane -t 0
+	@tmux attach -t "ms-fw"

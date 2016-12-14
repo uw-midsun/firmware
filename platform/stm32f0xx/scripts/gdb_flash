@@ -1,0 +1,7 @@
+set pagination off
+target extended-remote :3333
+monitor arm semihosting enable
+monitor reset halt
+load
+tb main
+c
