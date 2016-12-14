@@ -28,3 +28,9 @@ CFLAGS := -Wall -Werror -g -Os -std=gnu99 -Wno-unused-variable -pedantic \
 
 # Linker flags
 LDFLAGS :=
+
+# Platform targets
+.PHONY: run
+
+run: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+	@$<
