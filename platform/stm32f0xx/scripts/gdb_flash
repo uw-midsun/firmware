@@ -1,3 +1,5 @@
+# Program and run the current file (pausing at main) through openOCD.
+# Disables pagination and enables history for convenience.
 set pagination off
 set remotetimeout 5
 set history save on
