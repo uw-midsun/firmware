@@ -3,18 +3,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "gpio_cfg.h"
 #include "status.h"
 
-// TODO(ELEC-39): Move this to a configuration file which is included in the x86 shared header.
-#define MAX_PORTS 6
-#define MAX_PINS 16
-
-static GPIOSettings pin_settings[MAX_PORTS * MAX_PINS];
-static uint8_t gpio_pin_input_value[MAX_PORTS * MAX_PINS];
+static GPIOSettings pin_settings[NUM_GPIO_PORTS * NUM_GPIO_PINS];
+static uint8_t gpio_pin_input_value[NUM_GPIO_PORTS * NUM_GPIO_PINS];
 
 // Determines if an GPIOAddress is valid based on the defined number of ports and pins.
 static bool prv_is_address_valid(const GPIOAddress *address) {
-  return !(address->port >= MAX_PORTS || address->pin >= MAX_PINS);
+  return !(address->port >= NUM_GPIO_PORTS || address->pin >= NUM_GPIO_PINS);
 }
 
 // Determines if a GPIOState is valid based on the enums.
@@ -29,17 +26,18 @@ static bool prv_are_settings_valid(const GPIOSettings *settings) {
 }
 
 static uint32_t prv_get_index(GPIOAddress *address) {
-  return address->port * MAX_PORTS + address->pin;
+  return address->port * NUM_GPIO_PORTS + address->pin;
 }
 
 StatusCode gpio_init() {
-  // TODO(ELEC-39): Check if MAX_PORTS and MAX_PINS get defined if not fail as the configuration
+  // TODO(ELEC-39): Check if NUM_GPIO_PORTS and NUM_GPIO_PINS get defined if not fail as the
+  // configuration
   // is bad.
-  GPIOSettings default_settings = { .direction = GPIO_DIR_IN,
+  GPIOSettings default_settings = {.direction = GPIO_DIR_IN,
                                    .state = GPIO_STATE_LOW,
                                    .resistor = GPIO_RES_NONE,
                                    .alt_function = GPIO_ALTFN_NONE };
-  for (uint32_t i = 0; i < MAX_PORTS * MAX_PINS; i++) {
+  for (uint32_t i = 0; i < NUM_GPIO_PORTS * NUM_GPIO_PINS; i++) {
     pin_settings[i] = default_settings;
     gpio_pin_input_value[i] = 0;
   }
