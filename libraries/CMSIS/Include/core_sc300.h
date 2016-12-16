@@ -54,7 +54,7 @@
    \li Required Rule 8.5, object/function definition in header file.<br>
      Function definitions in header files are used to allow 'inlining'.
 
-   \li Required Rule 18.4, declaration of union type or object of union type: '{ ...}'.<br>
+   \li Required Rule 18.4, declaration of union type or object of union type: '{...}'.<br>
      Unions are used for effective representation of core registers.
 
    \li Advisory Rule 19.7, Function-like macro defined.<br>
