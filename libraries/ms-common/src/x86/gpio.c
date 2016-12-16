@@ -33,7 +33,7 @@ StatusCode gpio_init() {
   // TODO(ELEC-39): Check if NUM_GPIO_PORTS and NUM_GPIO_PINS get defined if not fail as the
   // configuration
   // is bad.
-  GPIOSettings default_settings = {.direction = GPIO_DIR_IN,
+  GPIOSettings default_settings = { .direction = GPIO_DIR_IN,
                                    .state = GPIO_STATE_LOW,
                                    .resistor = GPIO_RES_NONE,
                                    .alt_function = GPIO_ALTFN_NONE };

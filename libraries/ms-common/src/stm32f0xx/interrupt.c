@@ -52,7 +52,7 @@ StatusCode prv_nvic_enable(uint8_t irq_channel, InterruptPriority priority) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  NVIC_InitTypeDef init_struct = {.NVIC_IRQChannel = irq_channel,
+  NVIC_InitTypeDef init_struct = { .NVIC_IRQChannel = irq_channel,
                                   .NVIC_IRQChannelPriority = priority,
                                   .NVIC_IRQChannelCmd = ENABLE };
 
@@ -70,7 +70,7 @@ StatusCode prv_exti_enable(uint8_t line, InterruptSettings *settings) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  EXTI_InitTypeDef init_struct = {.EXTI_Line = 0x01 << line,
+  EXTI_InitTypeDef init_struct = { .EXTI_Line = 0x01 << line,
                                   .EXTI_Mode = 0x04 * settings->type,
                                   .EXTI_Trigger = 0x08 + 0x04 * settings->edge,
                                   .EXTI_LineCmd = ENABLE };

@@ -29,7 +29,7 @@ void setup_test(void) {
   s_callback_ran = false;
 }
 
-void teardown_test(void) {}
+void teardown_test(void) { }
 
 // Verifies that gaurd clauses all work as intended for GPIO.
 void test_interrupt_gpio_invalid_cases(void) {
