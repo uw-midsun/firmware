@@ -113,13 +113,13 @@ ROOT := $(shell pwd)
 
 # MAKE PROJECT
 
-.PHONY: all lint project program gdb
+.PHONY: all lint project
 
 # Actually calls the make
 all: project lint
 
 # Includes platform-specific configurations
--include $(PLATFORMS_DIR)/$(PLATFORM)/platform.mk
+include $(PLATFORMS_DIR)/$(PLATFORM)/platform.mk
 
 # Includes all libraries so make can find their targets
 $(foreach lib,$(VALID_LIBRARIES),$(call include_lib,$(lib)))
@@ -139,20 +139,6 @@ build_all: $(VALID_PROJECTS:%=$(BIN_DIR)/%$(PLATFORM_EXT)) test_all
 
 $(DIRS):
 	@mkdir -p $@
-
-###################################################################################################
-
-# OPENOCD SUPPORT
-
-program: $(BIN_DIR)/$(PROJECT).bin
-	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash `pwd`/$<" -c shutdown
-
-gdb: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
-	@$(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
-	@$(GDB) $< -ex "set pagination off" -ex "target extended-remote :3333" \
-             -ex "monitor arm semihosting enable" -ex "monitor reset halt" \
-             -ex "load" -ex "tb main" -ex "c"
-	@pkill openocd
 
 $(BIN_DIR)/%.bin: $(BIN_DIR)/%$(PLATFORM_EXT)
 	@$(OBJCPY) -O binary $< $(BIN_DIR)/$(PROJECT).bin
