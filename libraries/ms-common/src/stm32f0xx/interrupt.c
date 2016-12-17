@@ -22,6 +22,8 @@ void interrupt_init() {
   }
 }
 
+#pragma GCC push_options
+#pragma GCC optimize("O0")
 // Use this to count how many nested disables there are and only enable once out of all critical
 // sections.
 static uint8_t s_interrupt_priority_mask = 0;
@@ -39,6 +41,7 @@ void interrupt_disable() {
   s_interrupt_priority_mask++;
   __disable_irq();
 }
+#pragma GCC pop_options
 
 // REGISTRATION AND TRIGGER HELPERS
 // Use these functions to register and trigger interrupts using module specific registration and
@@ -52,7 +55,7 @@ StatusCode prv_nvic_enable(uint8_t irq_channel, InterruptPriority priority) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  NVIC_InitTypeDef init_struct = { .NVIC_IRQChannel = irq_channel,
+  NVIC_InitTypeDef init_struct = {.NVIC_IRQChannel = irq_channel,
                                   .NVIC_IRQChannelPriority = priority,
                                   .NVIC_IRQChannelCmd = ENABLE };
 
@@ -70,7 +73,7 @@ StatusCode prv_exti_enable(uint8_t line, InterruptSettings *settings) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  EXTI_InitTypeDef init_struct = { .EXTI_Line = 0x01 << line,
+  EXTI_InitTypeDef init_struct = {.EXTI_Line = 0x01 << line,
                                   .EXTI_Mode = 0x04 * settings->type,
                                   .EXTI_Trigger = 0x08 + 0x04 * settings->edge,
                                   .EXTI_LineCmd = ENABLE };
