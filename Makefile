@@ -1,12 +1,23 @@
 ###################################################################################################
 # Midnight Sun's build system
 #
-# USAGE:
-#		make [all] - builds the libraries if not cached and builds the target
-#		make remake - rebuilds .elf
-#		make clean - removes the .elf and associated linker and object files
-#		make reallyclean - in addition to running make clean also removes the cached libraries
-#		make program - builds an OpenOCD binary
+# Arguments:
+#		PL: [PLATFORM=] - Specifies the target platform (based on device family, defaults to stm32f0xx)
+#		PR: [PROJECT=] - Specifies the target project
+#		LI: [LIBRARY=] - Specifies the target library (only valid for tests)
+#		TE: [TEST=] - Specifies the target test (only valid for tests, requires LI or PR to be specified)
+#
+# Usage:
+#		make [all] [PL] [PR] - Builds the target project and its dependencies
+#		make clean [PL] [PR] - Removes the project's build output and associated linker and object files
+#		make remake [PL] [PR] - Cleans and rebuilds the target project (does not force-rebuild dependencies)
+#		make reallyclean - Completely deletes all build output
+#		make lint - Lints all non-vendor code
+#		make test [PL] [PR|LI] [TE] - Builds and runs the specified unit test, assuming all tests if TE is not defined
+#		make gdb [PL] [PR] - Builds and runs the project and connects an instance of GDB for debugging
+# Platform specific:
+#		make program [PL=stm32f0xx] [PR] - Programs and runs the project through OpenOCD
+#		make semihosting [PL=stm32f0xx] [PR] - Opens an instance of tmux to view both GDB and OpenOCD and runs the project
 #
 ###################################################################################################
 
@@ -31,16 +42,14 @@ override PROJECT := $(filter $(VALID_PROJECTS),$(PROJECT))
 override LIBRARY := $(filter $(VALID_LIBRARIES),$(LIBRARY))
 
 # Only ignore project and platform if we're doing a full clean or lint
-ifeq (,$(filter reallyclean lint build_all,$(MAKECMDGOALS)))
-ifeq (,$(filter test test_all,$(MAKECMDGOALS)))
+ifeq (,$(filter reallyclean lint build_all test_all,$(MAKECMDGOALS)))
+# If not running a test, only care about project
+ifeq (,$(filter test,$(MAKECMDGOALS)))
 ifeq (,$(PROJECT))
   $(error Invalid project. Expected PROJECT=[$(VALID_PROJECTS)])
 endif
-else
-# If running a test, ensure we have a project or library
-ifeq (,$(PROJECT)$(LIBRARY))
+else ifeq (,$(PROJECT)$(LIBRARY))
   $(error Invalid project or library. Expected PROJECT=[$(VALID_PROJECTS)] or LIBRARY=[$(VALID_LIBRARIES)])
-endif
 endif
 
 ifeq (,$(PLATFORM))
