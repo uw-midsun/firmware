@@ -51,21 +51,26 @@ $($(T)_TESTS): $($(T)_TEST_BIN_DIR)/%_runner$(PLATFORM_EXT): \
 		$(LDFLAGS) $(addprefix -I,$(INC_DIRS))
 
 .PHONY: test test_ test_$(T)
-# Only include the library tests as a target if we aren't testing a project
-ifeq (,$(PROJECT))
-test: test_$(LIBRARY)
-test_: # Fake target for unspecified tests
+
+ifeq ($(T),$(filter $(T),$(LIBRARY) $(PROJECT)))
+ifeq (,$(TEST))
+test: test_$(T)
+else
+test: $($(T)_TEST_BIN_DIR)/test_$(TEST)_runner$(PLATFORM_EXT)
+	@echo "Running test - $(TEST)"
+	@$(call run_test,$<)
+
+endif
 endif
 
 # Run each test
 test_$(T): $($(T)_TESTS)
-# Only run unit tests on x86
-ifneq (,$(filter x86,$(PLATFORM)))
 	@echo "Running test suite - $(@:test_%=%)"
-	@$(foreach test,$^,echo "\nRunning $(notdir $(test))" && ./$(test) &&) true
-endif
+	@$(foreach test,$^,$(call run_test,$<) &&) true
 
 test_all: test_$(T)
+
+build_all: $($(T)_TESTS)
 
 DIRS := $(sort $(DIRS) $($(T)_GEN_DIR) $($(T)_TEST_BIN_DIR) \
                $(dir $($(T)_TEST_OBJ) $($(T)_TEST_RUNNERS_OBJ)))

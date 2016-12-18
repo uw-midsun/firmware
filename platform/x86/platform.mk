@@ -30,7 +30,15 @@ CFLAGS := -Wall -Werror -g -Os -std=gnu99 -Wno-unused-variable -pedantic \
 LDFLAGS :=
 
 # Platform targets
-.PHONY: run
+.PHONY: run gdb
 
 run: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 	@$<
+
+gdb: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+	@$(GDB) $<
+
+# Defines a command to run for unit testing
+define run_test
+echo "\nRunning $(notdir $1)" && ./$(1)
+endef

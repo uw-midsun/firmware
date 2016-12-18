@@ -57,3 +57,15 @@ semihosting: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
     tmux kill-session -t \"ms-fw\"" C-m
 	@tmux select-pane -t 0
 	@tmux attach -t "ms-fw"
+
+# Defines a command to run for unit testing
+define run_test
+tmux new-session -s "ms-fw" -d;
+tmux split-window -h -t "ms-fw":0;
+tmux send-keys -t "ms-fw":0.1 "$(OPENOCD) $(OPENOCD_CFG)" C-m;
+tmux send-keys -t "ms-fw":0.0 \
+  "$(GDB) $< -x \"$(SCRIPT_DIR)/gdb_flash\"; \
+  tmux kill-session -t \"ms-fw\"" C-m;
+tmux select-pane -t 0;
+tmux attach -t "ms-fw"
+endef
