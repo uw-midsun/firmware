@@ -70,5 +70,7 @@ test_$(T): $($(T)_TESTS)
 
 test_all: test_$(T)
 
+build_all: $($(T)_TESTS)
+
 DIRS := $(sort $(DIRS) $($(T)_GEN_DIR) $($(T)_TEST_BIN_DIR) \
                $(dir $($(T)_TEST_OBJ) $($(T)_TEST_RUNNERS_OBJ)))

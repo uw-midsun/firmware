@@ -15,6 +15,7 @@ env:
   # lint is a target so we don't need to lint multiple times
   - TARGET='build_all PLATFORM=x86'
   - TARGET='build_all PLATFORM=stm32f0xx'
+  - TARGET='test_all PLATFORM=x86'
   - TARGET=lint
 
 before_install:
