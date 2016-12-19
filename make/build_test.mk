@@ -66,7 +66,7 @@ endif
 # Run each test
 test_$(T): $($(T)_TESTS)
 	@echo "Running test suite - $(@:test_%=%)"
-	@$(foreach test,$^,$(call run_test,$<) &&) true
+	@$(foreach test,$^,$(call run_test,$(test)) &&) true
 
 test_all: test_$(T)
 
