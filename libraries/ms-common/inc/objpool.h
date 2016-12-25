@@ -11,7 +11,7 @@
 #include "status.h"
 
 // Function to initialize nodes with
-typedef void (*objpool_node_init_fn)(void *node);
+typedef void (*objpool_node_init_fn)(void *node, void *context);
 
 // All nodes compatible with object pools should begin with an object marker
 typedef struct ObjectMarker {
@@ -21,17 +21,20 @@ typedef struct ObjectMarker {
 
 typedef struct ObjectPool {
   void *nodes;
+  void *context;
+  objpool_node_init_fn init_node;
   size_t num_nodes;
   size_t node_size;
-  objpool_node_init_fn init_node;
 } ObjectPool;
 
 // Initializes an object pool given a local array (i.e. not a pointer)
-#define objpool_init(pool, nodes, init_fn) \
-  objpool_init_verbose(pool, nodes, SIZEOF_ARRAY(nodes), sizeof(nodes[0]), init_fn)
+#define objpool_init(pool, nodes, init_fn, context) \
+  objpool_init_verbose((pool), (nodes), SIZEOF_ARRAY((nodes)), sizeof((nodes)[0]), \
+                       (init_fn), (context))
 
+// Initializes an object pool. The specified context is provided for node initialization.
 void objpool_init_verbose(ObjectPool *pool, void *nodes, size_t num_nodes, size_t node_size,
-                          objpool_node_init_fn init_node);
+                          objpool_node_init_fn init_node, void *context);
 
 // Returns the pointer to an object from the pool.
 void *objpool_get_node(ObjectPool *pool);

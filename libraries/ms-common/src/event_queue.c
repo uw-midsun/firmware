@@ -1,52 +1,27 @@
-// Event queue uses a priority heap and object pool under the hood.
+// This is just a wrapper for a backed priority queue.
 // Currently, there is only one global event queue.
 #include <stdbool.h>
 #include <string.h>
 
 #include "event_queue.h"
-#include "objpool.h"
-#include "pqueue.h"
-#include "status.h"
+#include "pqueue_backed.h"
 
 typedef struct EventQueue {
-  ObjectPool pool;
-  PQueue queue;
+  PQueueBacked queue;
   PQueueNode queue_nodes[EVENT_QUEUE_SIZE + 1];
   Event event_nodes[EVENT_QUEUE_SIZE];
 } EventQueue;
 
-static EventQueue queue;
-
-static void prv_init_node(void *node) {
-  Event *e = node;
-  memset(e, 0xA5, sizeof(*e));
-}
+static EventQueue s_queue;
 
 void event_queue_init(void) {
-  pqueue_init(&queue.queue, queue.queue_nodes, SIZEOF_ARRAY(queue.queue_nodes));
-  objpool_init(&queue.pool, queue.event_nodes, prv_init_node);
+  pqueue_backed_init(&s_queue.queue, s_queue.queue_nodes, s_queue.event_nodes);
 }
 
 StatusCode event_raise(const Event *e) {
-  Event *node = objpool_get_node(&queue.pool);
-  if (node == NULL) {
-    return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
-  }
-
-  *node = *e;
-  pqueue_push(&queue.queue, node, node->id);
-
-  return STATUS_CODE_OK;
+  return pqueue_backed_push(&s_queue, e, e->id);
 }
 
 StatusCode event_process(Event *e) {
-  Event *node = pqueue_pop(&queue.queue);
-  if (node == NULL) {
-    return status_code(STATUS_CODE_EMPTY);
-  }
-
-  *e = *node;
-  objpool_free_node(&queue.pool, node);
-
-  return STATUS_CODE_OK;
+  return pqueue_backed_pop(&s_queue, e);
 }

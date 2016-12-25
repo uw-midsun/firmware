@@ -10,10 +10,11 @@
   ((ObjectMarker *)((uintptr_t)(pool)->nodes + ((index) * (pool)->node_size)))
 
 void objpool_init_verbose(ObjectPool *pool, void *nodes, size_t num_nodes, size_t node_size,
-                          objpool_node_init_fn init_node) {
+                          objpool_node_init_fn init_node, void *context) {
   memset(pool, 0, sizeof(*pool));
 
   pool->nodes = nodes;
+  pool->context = context;
   pool->num_nodes = num_nodes;
   pool->node_size = node_size;
   pool->init_node = init_node;
@@ -49,7 +50,7 @@ StatusCode objpool_free_node(ObjectPool *pool, void *node) {
   uint16_t index = marker->index;
   memset(node, 0, pool->node_size);
   if (pool->init_node != NULL) {
-    pool->init_node(node);
+    pool->init_node(node, pool->context);
   }
 
   marker->index = index;
