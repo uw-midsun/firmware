@@ -24,15 +24,15 @@ void test_pqueue_backed_run(void) {
   uint16_t prios[] = { 50, 10, 20, 2, 17, 5, 4000, 0, 3, 240 };
 
   for (int i = 0; i < SIZEOF_ARRAY(prios); i++) {
-    bool success = pqueue_backed_push(&s_queue, &(TestObject) { .data = prios[i] }, prios[i]);
-    TEST_ASSERT_TRUE(success);
+    StatusCode result = pqueue_backed_push(&s_queue, &(TestObject) { .data = prios[i] }, prios[i]);
+    TEST_ASSERT_EQUAL(STATUS_CODE_OK, result);
   }
 
   uint16_t last_prio = 0;
   for (int i = 0; i < SIZEOF_ARRAY(prios); i++) {
     TestObject obj;
-    bool success = pqueue_backed_pop(&s_queue, &obj);
-    TEST_ASSERT_TRUE(success);
+    StatusCode result = pqueue_backed_pop(&s_queue, &obj);
+    TEST_ASSERT_EQUAL(STATUS_CODE_OK, result);
     TEST_ASSERT_MESSAGE(last_prio <= obj.data, "Last data was lower than new data!");
     last_prio = obj.data;
   }
