@@ -11,7 +11,6 @@
 typedef uint16_t EventID;
 
 typedef struct Event {
-  ObjectMarker marker;
   EventID id;
   uint16_t data;
 } Event;

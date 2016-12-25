@@ -6,7 +6,6 @@
 #define TEST_PQUEUE_BACKED_SIZE 10
 
 typedef struct TestObject {
-  ObjectMarker marker;
   uint16_t data;
 } TestObject;
 

@@ -1,7 +1,5 @@
 #include "pqueue_backed.h"
 
-#define OBJPOOL_MARKER_SIZE (sizeof(ObjectMarker))
-
 static void prv_init_node(void *node, void *context) {
   PQueueBacked *queue = context;
   memset(node, 0, queue->elem_size);
@@ -31,9 +29,7 @@ StatusCode pqueue_backed_push(PQueueBacked *queue, void *elem, uint16_t prio) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  // Only copy non-marker content so the object pool can still keep track of it
-  memcpy(node + OBJPOOL_MARKER_SIZE, elem + OBJPOOL_MARKER_SIZE,
-         queue->elem_size - OBJPOOL_MARKER_SIZE);
+  memcpy(node, elem, queue->elem_size);
   return pqueue_push(&queue->pqueue, node, prio);
 }
 

@@ -6,7 +6,6 @@
 #define TEST_OBJPOOL_DEFAULT UINT16_MAX
 
 typedef struct TestObject {
-  ObjectMarker marker;
   uint16_t data;
 } TestObject;
 
