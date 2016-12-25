@@ -64,6 +64,14 @@ void *pqueue_pop(PQueue *queue) {
   return data;
 }
 
+void *pqueue_peek(PQueue *queue) {
+  if (queue->size == 0) {
+    return NULL;
+  }
+
+  return queue->nodes[1].data;
+}
+
 size_t pqueue_size(PQueue *queue) {
   return queue->size;
 }

@@ -5,7 +5,7 @@
 
 typedef struct PQueueBacked {
   ObjectPool pool;
-  PQueue queue;
+  PQueue pqueue;
   size_t elem_size;
 } PQueueBacked;
 
@@ -16,14 +16,17 @@ typedef struct PQueueBacked {
                           SIZEOF_ARRAY(nodes), SIZEOF_ARRAY(elems), \
                           sizeof((elems)[0]))
 
-bool pqueue_backed_init_impl(PQueueBacked *queue, PQueueNode *nodes, void *elems,
-                             size_t num_nodes, size_t num_elems, size_t elem_size);
+StatusCode pqueue_backed_init_impl(PQueueBacked *queue, PQueueNode *nodes, void *elems,
+                                   size_t num_nodes, size_t num_elems, size_t elem_size);
 
 // Push a copy of the data in elem with the specified priority onto the pqueue.
-bool pqueue_backed_push(PQueueBacked *queue, void *elem, uint16_t prio);
+StatusCode pqueue_backed_push(PQueueBacked *queue, void *elem, uint16_t prio);
 
 // Pop the minimum node from the pqueue and copy its data into elem.
-bool pqueue_backed_pop(PQueueBacked *queue, void *elem);
+StatusCode pqueue_backed_pop(PQueueBacked *queue, void *elem);
+
+// Peek at the minimum node in the pqueue and copy its data into elem.
+StatusCode pqueue_backed_peek(PQueueBacked *queue, void *elem);
 
 // Returns the number of nodes currently in the queue.
 size_t pqueue_backed_size(PQueueBacked *queue);

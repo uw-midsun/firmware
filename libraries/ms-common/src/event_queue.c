@@ -7,7 +7,7 @@
 #include "pqueue_backed.h"
 
 typedef struct EventQueue {
-  PQueueBacked queue;
+  PQueueBacked pqueue;
   PQueueNode queue_nodes[EVENT_QUEUE_SIZE + 1];
   Event event_nodes[EVENT_QUEUE_SIZE];
 } EventQueue;
@@ -15,7 +15,7 @@ typedef struct EventQueue {
 static EventQueue s_queue;
 
 void event_queue_init(void) {
-  pqueue_backed_init(&s_queue.queue, s_queue.queue_nodes, s_queue.event_nodes);
+  pqueue_backed_init(&s_queue.pqueue, s_queue.queue_nodes, s_queue.event_nodes);
 }
 
 StatusCode event_raise(const Event *e) {

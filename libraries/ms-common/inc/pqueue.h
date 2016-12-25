@@ -26,5 +26,8 @@ StatusCode pqueue_push(PQueue *queue, void *data, uint16_t prio);
 // Pop the minimum node from the queue and return its data.
 void *pqueue_pop(PQueue *queue);
 
+// Peek at the minimum node in the queue, returning its data.
+void *pqueue_peek(PQueue *queue);
+
 // Returns the number of nodes currently in the queue.
 size_t pqueue_size(PQueue *queue);

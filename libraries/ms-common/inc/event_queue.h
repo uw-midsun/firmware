@@ -8,10 +8,11 @@
 #include "status.h"
 
 #define EVENT_QUEUE_SIZE 20
+typedef uint16_t EventID;
 
 typedef struct Event {
   ObjectMarker marker;
-  uint16_t id;
+  EventID id;
   uint16_t data;
 } Event;
 
