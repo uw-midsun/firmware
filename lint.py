@@ -4194,7 +4194,7 @@ def CheckStyle(filename, clean_lines, linenum, file_extension, nesting_state,
   # We also don't check for lines that look like continuation lines
   # (of lines ending in double quotes, commas, equals, or angle brackets)
   # because the rules for how to indent those are non-trivial.
-  if (not Search(r'[",=><] *$', prev) and
+  if (not Search(r'[",=><//] *$', prev) and
       (initial_spaces == 1 or initial_spaces == 3) and
       not Match(scope_or_label_pattern, cleansed_line) and
       not (clean_lines.raw_lines[linenum] != line and
