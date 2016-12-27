@@ -1,7 +1,8 @@
 #include "fsm.h"
 
-void fsm_init(FSM *fsm, const char *name, State *default_state) {
+void fsm_init(FSM *fsm, const char *name, State *default_state, void *context) {
   fsm->name = name;
+  fsm->context = context;
   fsm->current_state = default_state;
 }
 

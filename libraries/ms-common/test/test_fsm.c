@@ -29,16 +29,17 @@ FSM_STATE_TRANSITION(test_c) {
   FSM_ADD_TRANSITION(TEST_FSM_EVENT_C, test_c);
 }
 
-static void prv_output(struct FSM *fsm, const Event *e) {
+static void prv_output(struct FSM *fsm, const Event *e, void *context) {
   printf("[%s:%s] State reached from %s (Event %d, data %d)\n",
          fsm->name, fsm->current_state->name, fsm->last_state->name,
          e->id, e->data);
+  TEST_ASSERT_EQUAL(fsm, context);
   s_num_output++;
 }
 
 void setup_test(void) {
   fsm_state_init(test_c, prv_output);
-  fsm_init(&s_fsm, "test_fsm", &test_a);
+  fsm_init(&s_fsm, "test_fsm", &test_a, &s_fsm);
   s_num_output = 0;
 }
 

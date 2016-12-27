@@ -28,7 +28,7 @@ do { \
     *transitioned = true; \
 \
     if (fsm->current_state->output != NULL) { \
-      fsm->current_state->output(fsm, e); \
+      fsm->current_state->output(fsm, e, fsm->context); \
     } \
 \
     return; \
