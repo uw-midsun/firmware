@@ -15,6 +15,7 @@ void interrupt_enable(bool disabled_in_scope) {
 
 bool interrupt_disable() {
   if (!s_interrupts_disabled) {
+    s_interrupts_disabled = true;
     __disable_irq();
     // Interrupts were previously not disabled.
     return false;
