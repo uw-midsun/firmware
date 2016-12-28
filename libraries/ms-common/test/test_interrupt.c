@@ -4,7 +4,7 @@
 
 #include "unity.h"
 
-void setup_test(void) {}
+void setup_test(void) { }
 
 void teardown_test(void) {
   // After a test concludes forcibly enable interrupts if they aren't already enabled.
