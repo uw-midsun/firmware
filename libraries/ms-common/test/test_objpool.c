@@ -6,20 +6,19 @@
 #define TEST_OBJPOOL_DEFAULT UINT16_MAX
 
 typedef struct TestObject {
-  ObjectMarker marker;
   uint16_t data;
 } TestObject;
 
 static ObjectPool gv_pool;
 static TestObject gv_nodes[TEST_OBJPOOL_SIZE];
 
-static void prv_node_init(void *node) {
+static void prv_node_init(void *node, void *context) {
   TestObject *obj = node;
   obj->data = TEST_OBJPOOL_DEFAULT;
 }
 
 void setup_test(void) {
-  objpool_init(&gv_pool, gv_nodes, prv_node_init);
+  objpool_init(&gv_pool, gv_nodes, prv_node_init, NULL);
 }
 
 void teardown_test(void) { }
@@ -78,7 +77,7 @@ void test_objpool_free_other_pool(void) {
   ObjectPool pool;
   TestObject nodes[1];
 
-  objpool_init(&pool, nodes, NULL);
+  objpool_init(&pool, nodes, NULL, NULL);
 
   TestObject *node = objpool_get_node(&pool);
   TEST_ASSERT_NOT_NULL(node);

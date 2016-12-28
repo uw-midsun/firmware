@@ -1,5 +1,4 @@
-// The object pool uses a flag and index to verify a given node and determine its state.
-// We currently use a bitfield to maximize the index limit.
+// We use a bitset to represent free nodes
 #include <stdbool.h>
 #include <string.h>
 
@@ -7,53 +6,61 @@
 #include "status.h"
 
 #define OBJPOOL_GET(pool, index) \
-  ((ObjectMarker *)((uintptr_t)(pool)->nodes + ((index) * (pool)->node_size)))
+  ((void *)((uintptr_t)(pool)->nodes + ((index) * (pool)->node_size)))
 
-void objpool_init_verbose(ObjectPool *pool, void *nodes, size_t num_nodes, size_t node_size,
-                          objpool_node_init_fn init_node) {
+// Check in range and alignment
+#define OBJPOOL_NODE_INVALID(pool, node) \
+  ((pool)->nodes > (node) || \
+   ((pool)->nodes + (pool)->num_nodes * (pool)->node_size) <= (node) || \
+   ((node) - (pool)->nodes) % (pool)->node_size != 0)
+
+#define OBJPOOL_GET_INDEX(pool, node) \
+  (((node) - (pool)->nodes) / (pool->node_size))
+
+StatusCode objpool_init_verbose(ObjectPool *pool, void *nodes, size_t num_nodes, size_t node_size,
+                                objpool_node_init_fn init_node, void *context) {
+  if (num_nodes > OBJPOOL_MAX_NODES) {
+    return status_code(STATUS_CODE_OUT_OF_RANGE);
+  }
+
   memset(pool, 0, sizeof(*pool));
 
   pool->nodes = nodes;
+  pool->context = context;
   pool->num_nodes = num_nodes;
   pool->node_size = node_size;
   pool->init_node = init_node;
 
   for (size_t i = 0; i < num_nodes; i++) {
-    ObjectMarker *node = OBJPOOL_GET(pool, i);
-    node->index = i;
-
+    void *node = OBJPOOL_GET(pool, i);
     objpool_free_node(pool, node);
   }
+
+  return STATUS_CODE_OK;
 }
 
 void *objpool_get_node(ObjectPool *pool) {
-  for (size_t i = 0; i < pool->num_nodes; i++) {
-    ObjectMarker *node = OBJPOOL_GET(pool, i);
-    if (node->free) {
-      node->free = false;
-      return node;
-    }
+  // Find first set bit - returns 0 if no bits are set, 1-indexed
+  size_t index = __builtin_ffsll(pool->free_bitset);
+  if (index == 0) {
+    return NULL;
   }
 
-  return NULL;
+  pool->free_bitset &= ~(1 << (index - 1));
+  return OBJPOOL_GET(pool, index - 1);
 }
 
 StatusCode objpool_free_node(ObjectPool *pool, void *node) {
-  ObjectMarker *marker = node;
-
-  if (marker == NULL || marker->index >= pool->num_nodes ||
-      marker != OBJPOOL_GET(pool, marker->index)) {
+  if (node == NULL || OBJPOOL_NODE_INVALID(pool, node)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  uint16_t index = marker->index;
   memset(node, 0, pool->node_size);
   if (pool->init_node != NULL) {
-    pool->init_node(node);
+    pool->init_node(node, pool->context);
   }
 
-  marker->index = index;
-  marker->free = true;
+  pool->free_bitset |= (1 << OBJPOOL_GET_INDEX(pool, node));
 
   return STATUS_CODE_OK;
 }

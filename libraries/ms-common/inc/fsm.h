@@ -40,7 +40,7 @@
 #define fsm_state_init(state, output_func) _fsm_state_init(state, output_func)
 
 struct FSM;
-typedef void (*StateOutput)(struct FSM *fsm, const Event *e);
+typedef void (*StateOutput)(struct FSM *fsm, const Event *e, void *context);
 typedef void (*StateTransition)(struct FSM *fsm, const Event *e, bool *transitioned);
 
 typedef struct State {
@@ -53,10 +53,11 @@ typedef struct FSM {
   const char *name;
   State *last_state;
   State *current_state;
+  void *context;
 } FSM;
 
 // Initializes the FSM.
-void fsm_init(FSM *fsm, const char *name, State *default_state);
+void fsm_init(FSM *fsm, const char *name, State *default_state, void *context);
 
 // Returns whether a transition occurred in the FSM.
 bool fsm_process_event(FSM *fsm, const Event *e);
