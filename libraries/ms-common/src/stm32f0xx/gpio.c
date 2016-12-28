@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "gpio_cfg.h"
 #include "status.h"
 #include "stm32f0xx.h"
 #include "stm32f0xx_gpio.h"
@@ -13,12 +14,9 @@ static uint32_t gpio_rcc_ahb_timer_map[] = { RCC_AHBPeriph_GPIOA, RCC_AHBPeriph_
                                              RCC_AHBPeriph_GPIOC, RCC_AHBPeriph_GPIOD,
                                              RCC_AHBPeriph_GPIOE, RCC_AHBPeriph_GPIOF };
 
-#define GPIO_NUM_PINS 16
-#define GPIO_NUM_PORTS 6
-
 // Determines if an GPIOAddress is valid based on the defined number of ports and pins.
 static bool prv_is_address_valid(const GPIOAddress *address) {
-  return !(address->port >= GPIO_NUM_PORTS || address->pin >= GPIO_NUM_PINS);
+  return !(address->port >= NUM_GPIO_PORTS || address->pin >= NUM_GPIO_PINS);
 }
 
 // TODO(ELEC-20): Consider moving these two functions to the header as they will be used more or
@@ -36,7 +34,7 @@ static bool prv_are_settings_valid(const GPIOSettings *settings) {
 }
 
 StatusCode gpio_init() {
-  for (uint32_t i = 0; i < GPIO_NUM_PORTS; i++) {
+  for (uint32_t i = 0; i < NUM_GPIO_PORTS; i++) {
     // Sets the pin to a default reset mode.
     // TODO(ELEC-20): determine if this is actually Lowest Power setting.
     GPIO_DeInit(gpio_port_map[i]);
