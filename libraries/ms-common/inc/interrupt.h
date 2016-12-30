@@ -3,10 +3,6 @@
 // device specific functionality which exist in their respective interrupt_mcu.h files (do not
 // include that file directly instead reference it through a module such as gpio_it.h).
 
-// A generic interrupt callback with context. It will recieve the name of the interrupt that called
-// it by passing in  __FUNC__.
-typedef void (*interrupt_callback)(const char* interrupt_name, void *context);
-
 // The interrupt type runs a callback as soon as the interrupt is triggered. The event type raises a
 // flag which needs to be checked/polled periodically and then the callback is run.
 typedef enum {
