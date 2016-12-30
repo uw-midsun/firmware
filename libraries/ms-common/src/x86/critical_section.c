@@ -1,23 +1,14 @@
-#include "interrupt.h"
+#include "critical_section.h"
 
 #include <signal.h>
 #include <stdbool.h>
 #include <unistd.h>
 
+#include "interrupt.h"
+
 static bool s_interrupts_disabled = false;
 
-void interrupt_enable(bool disabled_in_scope) {
-  if (s_interrupts_disabled && disabled_in_scope) {
-    // Clear the block mask for this process to allow signals to be processed. (They will queue when
-    // disbaled).
-    sigset_t block_mask;
-    sigemptyset(&block_mask);
-    sigprocmask(SIG_SETMASK, &block_mask, NULL);
-    s_interrupts_disabled = false;
-  }
-}
-
-bool interrupt_disable() {
+bool critical_section_start(void) {
   if (!s_interrupts_disabled) {
     s_interrupts_disabled = true;
     // Set a block mask for this process on the signals we are using as interrupts. Don't block all
@@ -28,9 +19,20 @@ bool interrupt_disable() {
     sigaddset(&block_mask, SIGRTMIN + INTERRUPT_PRIORITY_NORMAL);
     sigaddset(&block_mask, SIGRTMIN + INTERRUPT_PRIORITY_LOW);
     sigprocmask(SIG_SETMASK, &block_mask, NULL);
-    // Interrupts were not previously disabled.
-    return false;
+    // Interrupts got disabled.
+    return true;
   }
-  // Interrupts were previously disabled.
-  return true;
+  // Interrupts did not get disabled.
+  return false;
+}
+
+void critical_section_end(bool disabled_in_scope) {
+  if (s_interrupts_disabled && disabled_in_scope) {
+    // Clear the block mask for this process to allow signals to be processed. (They will queue when
+    // disbaled).
+    sigset_t block_mask;
+    sigemptyset(&block_mask);
+    sigprocmask(SIG_SETMASK, &block_mask, NULL);
+    s_interrupts_disabled = false;
+  }
 }

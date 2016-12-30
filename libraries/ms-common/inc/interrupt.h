@@ -1,12 +1,11 @@
 #pragma once
-// Shared interface elements across all devices for interrupts. Each device will also have internal
+// Shared elements across all devices for interrupts. Each device will also have internal
 // device specific functionality which exist in their respective interrupt_mcu.h files (do not
 // include that file directly instead reference it through a module such as gpio_it.h).
 
-#include <stdbool.h>
-
-// A generic interrupt callback with context.
-typedef void (*interrupt_callback)(void *context);
+// A generic interrupt callback with context. It will recieve the name of the interrupt that called
+// it by passing in  __FUNC__.
+typedef void (*interrupt_callback)(const char* interrupt_name, void *context);
 
 // The interrupt type runs a callback as soon as the interrupt is triggered. The event type raises a
 // flag which needs to be checked/polled periodically and then the callback is run.
@@ -36,21 +35,3 @@ typedef struct InterruptSettings {
   InterruptType type;
   InterruptPriority priority;
 } InterruptSettings;
-
-// To protect critical code use the following two functions:
-// EXAMPLE:
-//
-// bool was_disabled = interrupt_disabled();
-// // Critical code here.
-// interrupt_enable(was_disabled);
-// ...
-//
-// This will also protect nested attempts from enabling and disabling interupts from prematurely
-// ending the critical section.
-
-// Enables all registered interrupts on all line/inputs.
-void interrupt_enable(bool disabled_in_scope);
-
-// Disables all interrupts accross all lines/inputs. Returns true if interrupts were previously
-// disabled.
-bool interrupt_disable();
