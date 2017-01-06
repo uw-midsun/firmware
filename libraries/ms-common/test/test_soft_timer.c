@@ -52,5 +52,6 @@ void test_soft_timer_resource_exhausted(void) {
     TEST_ASSERT_OK(soft_timer_start(0, prv_soft_timer_test_callback, &timer_id, NULL));
   }
 
-  TEST_ASSERT_EQUAL(STATUS_CODE_RESOURCE_EXHAUSTED, soft_timer_start(0, prv_soft_timer_test_callback, &timer_id, NULL));
+  TEST_ASSERT_EQUAL(
+    STATUS_CODE_RESOURCE_EXHAUSTED, soft_timer_start(0, prv_soft_timer_test_callback, &timer_id, NULL));
 }
