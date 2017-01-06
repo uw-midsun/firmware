@@ -113,7 +113,7 @@ void test_gpio_set_pin_state_valid(void) {
                            .resistor = GPIO_RES_NONE,
                            .alt_function = GPIO_ALTFN_NONE };
   // A pin that should be valid on all boards.
-  GPIOAddress address = { .port = VALID_PORT, .pin = INVALID_PIN };
+  GPIOAddress address = { .port = VALID_PORT, .pin = VALID_PIN };
   TEST_ASSERT_OK(gpio_init());
   TEST_ASSERT_OK(gpio_init_pin(&address, &settings));
   GPIOState state;
