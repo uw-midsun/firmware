@@ -32,7 +32,7 @@ static uint32_t prv_get_index(GPIOAddress *address) {
   return address->port * MAX_PORTS + address->pin;
 }
 
-StatusCode gpio_init() {
+StatusCode gpio_init(void) {
   // TODO(ELEC-39): Check if MAX_PORTS and MAX_PINS get defined if not fail as the configuration
   // is bad.
   GPIOSettings default_settings = { .direction = GPIO_DIR_IN,
