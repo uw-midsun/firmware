@@ -21,7 +21,7 @@ LDSCRIPT := $(PLATFORM_DIR)/ldscripts
 
 # Build flags for the device
 CDEFINES :=
-CFLAGS := -Wall -Werror -g -Os -std=gnu99 -Wno-unused-variable -pedantic \
+CFLAGS := -Wall -Werror -g -lrt -Os -std=gnu99 -Wno-unused-variable -pedantic \
           -ffunction-sections -fdata-sections \
           -Wl,-Map=$(BIN_DIR)/$(PROJECT).map \
           $(ARCH_CLAGS) $(addprefix -D,$(CDEFINES))
