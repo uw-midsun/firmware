@@ -12,8 +12,8 @@ void teardown_test(void) { }
 #define VALID_PIN 1
 #define VALID_PORT 1
 
-#define INVALID_PIN GPIO_CFG_NUM_PINS_PER_PORT
-#define INVALID_PORT GPIO_CFG_NUM_PORTS
+#define INVALID_PIN (GPIO_CFG_NUM_PINS_PER_PORT)
+#define INVALID_PORT (GPIO_CFG_NUM_PORTS)
 
 // gpio_init
 
