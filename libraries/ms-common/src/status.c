@@ -17,7 +17,7 @@ StatusCode status_impl_update(const StatusCode code, const char* source, const c
   return code;
 }
 
-Status status_get() {
+Status status_get(void) {
   return s_global_status;
 }
 

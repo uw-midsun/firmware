@@ -35,7 +35,7 @@ static bool prv_are_settings_valid(const GPIOSettings *settings) {
            settings->resistor >= NUM_GPIO_RES || settings->alt_function >= NUM_GPIO_ALTFN);
 }
 
-StatusCode gpio_init() {
+StatusCode gpio_init(void) {
   for (uint32_t i = 0; i < GPIO_NUM_PORTS; i++) {
     // Sets the pin to a default reset mode.
     // TODO(ELEC-20): determine if this is actually Lowest Power setting.
