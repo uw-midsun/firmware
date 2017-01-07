@@ -29,8 +29,8 @@ static uint32_t prv_get_index(GPIOAddress *address) {
   return address->port * GPIO_CFG_NUM_PORTS + address->pin;
 }
 
-StatusCode gpio_init() {
-  GPIOSettings default_settings = {.direction = GPIO_DIR_IN,
+StatusCode gpio_init(void) {
+  GPIOSettings default_settings = { .direction = GPIO_DIR_IN,
                                    .state = GPIO_STATE_LOW,
                                    .resistor = GPIO_RES_NONE,
                                    .alt_function = GPIO_ALTFN_NONE };

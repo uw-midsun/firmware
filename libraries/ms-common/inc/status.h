@@ -69,7 +69,7 @@ StatusCode status_impl_update(const StatusCode code, const char* source, const c
                               const char* message);
 
 // Get a copy of the global status so it can be used safely.
-Status status_get();
+Status status_get(void);
 
 // Set a callback that is run whenever the status is changed.
 void status_register_callback(status_callback callback);
