@@ -59,7 +59,7 @@ typedef struct GPIOSettings {
 
 // Initializes GPIO globally by setting all pins to their default state. ONLY CALL ONCE or it will
 // deinit all current settings. Change setting by calling gpio_init_pin.
-StatusCode gpio_init();
+StatusCode gpio_init(void);
 
 // Initializes a GPIO pin by address.
 StatusCode gpio_init_pin(GPIOAddress *address, GPIOSettings *settings);
