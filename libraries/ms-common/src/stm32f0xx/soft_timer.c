@@ -11,85 +11,95 @@
 typedef struct timer {
   uint32_t duration;
   uint32_t time_started;
-  soft_timer_callback callback;
+  uint32_t last_update_value;
+  void *context;
   bool inuse;
   bool rolled_over;
-  void *context;
+  SoftTimerCallback callback;
 } timer;
 
-static timer s_soft_timer_array[SOFT_TIMER_NUM];
+static timer s_soft_timer_array[SOFT_TIMER_MAX_TIMERS];
 
 // Used to track rollovers this will happen every ~1.19 hrs as we are using microseconds.
-static uint32_t s_soft_timer_last_value = 0;
-static bool s_soft_timer_initialized = false;
 
-void soft_timer_init(uint8_t clock_speed) {
-  if (!s_soft_timer_initialized) {
-    for (uint8_t i = 0; i < SOFT_TIMER_NUM; i++) {
-      s_soft_timer_array[i].inuse = false;
-    }
-
-    // Configure each clock tick to be 1 microsecond from 0 to UINT32_MAX. Uses the external 8 MHz
-    // clock for tick source. This will need to adjusted or made into a variable if we choose a
-    // different external clock from the discovery board.
-    TIM_TimeBaseInitTypeDef init_struct = {.TIM_Prescaler = clock_speed,
-                                           .TIM_CounterMode = TIM_CounterMode_Up,
-                                           .TIM_Period = UINT32_MAX,
-                                           .TIM_ClockDivision = TIM_CKD_DIV1 };
-
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
-    TIM_TimeBaseInit(TIM2, &init_struct);
-    TIM_Cmd(TIM2, ENABLE);
-
-    s_soft_timer_initialized = true;
+void soft_timer_init(void) {
+  for (uint32_t i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {
+    s_soft_timer_array[i].inuse = false;
+    s_soft_timer_array[i].last_update_value = 0;
   }
+
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+
+  RCC_ClocksTypeDef clock_speeds;
+  RCC_GetClocksFreq(&clock_speeds);
+
+  // Configure each clock tick to be 1 microsecond from 0 to UINT32_MAX. Uses the external 8 MHz
+  // clock for tick source. This will need to adjusted or made into a variable if we choose a
+  // different external clock from the discovery board.
+  TIM_TimeBaseInitTypeDef init_struct = {.TIM_Prescaler = clock_speeds.SYSCLK_Frequency / 1000000,
+                                         .TIM_CounterMode = TIM_CounterMode_Up,
+                                         .TIM_Period = UINT32_MAX,
+                                         .TIM_ClockDivision = TIM_CKD_DIV1 };
+
+  TIM_TimeBaseInit(TIM2, &init_struct);
+  TIM_Cmd(TIM2, ENABLE);
 }
 
-StatusCode soft_timer_start(uint32_t duration_micros, soft_timer_callback callback,
-                            uint8_t *timer_id, void *context) {
+StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, void *context,
+                            SoftTimerID *timer_id) {
   uint32_t curr_time = TIM_GetCounter(TIM2);
-  for (uint8_t i = 0; i < SOFT_TIMER_NUM; i++) {
+  for (uint32_t i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {
     if (!s_soft_timer_array[i].inuse) {
       // Populate next available timer if possible.
-      s_soft_timer_array[i].duration = duration_micros;
+      s_soft_timer_array[i].duration = duration_us;
       s_soft_timer_array[i].time_started = curr_time;
+      s_soft_timer_array[i].last_update_value = curr_time;
       s_soft_timer_array[i].callback = callback;
       s_soft_timer_array[i].context = context;
       s_soft_timer_array[i].inuse = true;
       s_soft_timer_array[i].rolled_over = false;
       *timer_id = i;
-      break;
-    }
-    if (i == SOFT_TIMER_NUM - 1) {
-      return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "Out of software timers.");
+      return STATUS_CODE_OK;
     }
   }
-  return STATUS_CODE_OK;
+
+  return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "Out of software timers.");
 }
 
 void soft_timer_update(void) {
   // Get the time to use to update.
-  uint32_t tmp_last_time = s_soft_timer_last_value;
-  s_soft_timer_last_value = TIM_GetCounter(TIM2);
+  uint32_t curr_time = TIM_GetCounter(TIM2);
 
-  // If the timer has rolled over relative to the last time it was update take note of this.
-  bool rolled_over = false;
-  if (tmp_last_time > s_soft_timer_last_value) {
-    rolled_over = true;
-  }
-
-  for (uint8_t i = 0; i < SOFT_TIMER_NUM; i++) {
+  for (uint32_t i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {
     if (s_soft_timer_array[i].inuse) {
       // For each inuse timer see if the timer expired. If it has run its callback. Otherwise update
       // if it has rolled over.
-      if ((uint64_t)s_soft_timer_last_value + UINT32_MAX * rolled_over -
-              s_soft_timer_array[i].time_started >
+
+      // If the timer has rolled over relative to the last time it was updated take note of this.
+      bool rolled_over = false;
+      if (s_soft_timer_array[i].last_update_value > curr_time) {
+        rolled_over = true;
+      }
+
+      if ((uint64_t)curr_time + UINT32_MAX * rolled_over - s_soft_timer_array[i].time_started >
           s_soft_timer_array[i].duration) {
         s_soft_timer_array[i].callback(i, s_soft_timer_array[i].context);
         s_soft_timer_array[i].inuse = false;
+        s_soft_timer_array[i].last_update_value = 0;
       } else {
+        s_soft_timer_array[i].last_update_value = curr_time;
         s_soft_timer_array[i].rolled_over = rolled_over;
       }
     }
   }
+}
+
+bool soft_timer_inuse(void) {
+  for (uint32_t i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {
+    if (s_soft_timer_array[i].inuse) {
+      return true;
+    }
+  }
+
+  return false;
 }
