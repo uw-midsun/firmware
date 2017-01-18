@@ -4,9 +4,7 @@
 #include "unity.h"
 
 static StatusCode prv_raise_event(uint16_t i) {
-  Event e = { .id = i, .data = i * 100 };
-
-  return event_raise(&e);
+  return event_raise(i, i * 100);
 }
 
 void setup_test(void) {

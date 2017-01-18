@@ -22,8 +22,6 @@ PLATFORM_EXT :=
 ARCH_CLAGS :=
 
 # Linker and startup script locations
-# TODO: Move platform startup to somewhere else?
-#PLATFORM_STARTUP := $(PLATFORM_DIR)/startup_stm32f0xx.s
 LDSCRIPT := $(PLATFORM_DIR)/ldscripts
 
 # Build flags for the device

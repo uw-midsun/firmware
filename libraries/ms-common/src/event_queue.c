@@ -18,8 +18,13 @@ void event_queue_init(void) {
   pqueue_backed_init(&s_queue.pqueue, s_queue.queue_nodes, s_queue.event_nodes);
 }
 
-StatusCode event_raise(const Event *e) {
-  return pqueue_backed_push(&s_queue, e, e->id);
+StatusCode event_raise(EventID id, uint16_t data) {
+  const Event e = {
+    .id = id,
+    .data = data
+  };
+
+  return pqueue_backed_push(&s_queue, &e, id);
 }
 
 StatusCode event_process(Event *e) {
