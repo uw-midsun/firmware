@@ -39,7 +39,7 @@ StatusCode can_rx_register_handler(CANRxHandlers *rx_handlers, CANMessageID msg_
 
 CANRxHandler *can_rx_get_handler(CANRxHandlers *rx_handlers, CANMessageID msg_id) {
   // TODO: error checking
-
-  return bsearch(msg_id, rx_handlers->storage, rx_handlers->num_handlers,
+  const CANRxHandler key = { .msg_id = msg_id };
+  return bsearch(&key, rx_handlers->storage, rx_handlers->num_handlers,
                  sizeof(*rx_handlers->storage), prv_handler_comp);
 }
