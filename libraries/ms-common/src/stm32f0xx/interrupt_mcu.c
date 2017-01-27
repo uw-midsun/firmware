@@ -38,9 +38,9 @@ StatusCode interrupt_mcu_nvic_enable(uint8_t irq_channel, InterruptPriority prio
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "Priority already set.");
   }
 
-  NVIC_InitTypeDef init_struct = {.NVIC_IRQChannel = irq_channel,
-                                  .NVIC_IRQChannelPriority = priority,
-                                  .NVIC_IRQChannelCmd = ENABLE };
+  NVIC_InitTypeDef init_struct = { .NVIC_IRQChannel = irq_channel,
+                                   .NVIC_IRQChannelPriority = priority,
+                                   .NVIC_IRQChannelCmd = ENABLE };
 
   NVIC_Init(&init_struct);
 
@@ -54,10 +54,10 @@ StatusCode interrupt_mcu_exti_enable(uint8_t line, InterruptSettings *settings,
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  EXTI_InitTypeDef init_struct = {.EXTI_Line = 0x01 << line,
-                                  .EXTI_Mode = 0x04 * settings->type,
-                                  .EXTI_Trigger = 0x08 + 0x04 * edge,
-                                  .EXTI_LineCmd = ENABLE };
+  EXTI_InitTypeDef init_struct = { .EXTI_Line = 0x01 << line,
+                                   .EXTI_Mode = 0x04 * settings->type,
+                                   .EXTI_Trigger = 0x08 + 0x04 * edge,
+                                   .EXTI_LineCmd = ENABLE };
   EXTI_Init(&init_struct);
 
   return STATUS_CODE_OK;
