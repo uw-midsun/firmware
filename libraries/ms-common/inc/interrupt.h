@@ -31,3 +31,8 @@ typedef struct InterruptSettings {
   InterruptType type;
   InterruptPriority priority;
 } InterruptSettings;
+
+// Initializes interrupts. Call before any interrupts are added, will reset
+// interrupts if called multiple times requiring re-intialization of all
+// interrupt modules followed by re-registering all interrupts.
+void interrupt_init(void);
