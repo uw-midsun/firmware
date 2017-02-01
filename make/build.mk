@@ -42,7 +42,7 @@ $(BIN_DIR)/$(T)$(PLATFORM_EXT): $($(T)_OBJ) $(call dep_to_lib,$($(T)_DEPS)) | $(
 	@echo "Building $(notdir $@) for $(PLATFORM)"
 	@$(CC) $(CFLAGS) -Wl,-Map=$(BIN_DIR)/$(notdir $(@:%$(PLATFORM_EXT)=%.map)) $^ -o $@ -L$(STATIC_LIB_DIR) \
 		$(addprefix -l,$(APP_DEPS)) \
-		$(LDFLAGS) $(addprefix -I,$(INC_DIRS))
+		$(LDFLAGS) $(addprefix -I,$(INC_DIRS)) $(POST_CFLAGS)
 	@$(OBJDUMP) -St $@ >$(basename $@).lst
 	@$(SIZE) $@
 
