@@ -32,7 +32,7 @@ void prv_gpio_it_handler(uint8_t interrupt_id) {
 void gpio_it_init(void) {
   x86_interrupt_register_handler(prv_gpio_it_handler, &s_gpio_it_handler_id);
 
-  GPIOITInterrupt empty_cfg;
+  GPIOITInterrupt empty_cfg = { 0 };
   for (uint16_t i = 0; i < GPIO_CFG_NUM_PINS_PER_PORT; i++) {
     s_gpio_it_interrupts[i] = empty_cfg;
   }

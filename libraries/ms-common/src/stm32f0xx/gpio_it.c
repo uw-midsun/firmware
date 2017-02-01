@@ -19,7 +19,7 @@ typedef struct GPIOITInterrupt {
 static GPIOITInterrupt s_gpio_it_interrupts[GPIO_CFG_NUM_PINS_PER_PORT];
 
 void gpio_it_init(void) {
-  GPIOITInterrupt empty_interrupt = { .callback = NULL };
+  GPIOITInterrupt empty_interrupt = { 0 };
   for (int16_t i = 0; i < GPIO_CFG_NUM_PINS_PER_PORT; i++) {
     s_gpio_it_interrupts[i] = empty_interrupt;
   }
@@ -51,16 +51,18 @@ StatusCode gpio_it_register_interrupt(GPIOAddress *address, InterruptSettings *s
 
   SYSCFG_EXTILineConfig(address->port, address->pin);
   StatusCode status = stm32f0xx_interrupt_exti_enable(address->pin, settings, edge);
-  if (status_ok(status)) {
-    status = stm32f0xx_interrupt_nvic_enable(prv_get_irq_channel(address->pin), settings->priority);
-    if (status_ok(status)) {
-      // Both operations succeeded so exit successfully
-      return STATUS_CODE_OK;
-    }
+  // If the operation failed clean up by removing the callback and pass the error up the stack.
+  if (!status_ok(status)) {
+    s_gpio_it_interrupts[address->pin].callback = NULL;
+    return status;
+  }
+  status = stm32f0xx_interrupt_nvic_enable(prv_get_irq_channel(address->pin), settings->priority);
+  // If the operation failed clean up by removing the callback and pass the error up the stack.
+  if (!status_ok(status)) {
+    s_gpio_it_interrupts[address->pin].callback = NULL;
+    return status;
   }
 
-  // If either operation failed clean up by removing the callback and pass the error up the stack.
-  s_gpio_it_interrupts[address->pin].callback = NULL;
   return STATUS_CODE_OK;
 }
 
