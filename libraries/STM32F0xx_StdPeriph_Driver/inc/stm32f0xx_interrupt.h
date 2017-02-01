@@ -5,8 +5,8 @@
 #include "interrupt.h"
 #include "status.h"
 
-// Initializes interrupt internals. If called multiple times the subsequent attempts will not change
-// anything.
+// Initializes interrupt internals. If called multiple times the subsequent attempts will clear
+// everything resulting in needing to re initialize al interrupts.
 void stm32f0xx_interrupt_init(void);
 
 // Enables the nested interrupt vector controller for a given channel.

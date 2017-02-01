@@ -7,8 +7,8 @@
 
 typedef void (*x86_interrupt_handler)(uint8_t interrupt_id);
 
-// Initializes the interrupt internals. If called multiple times the subsequent attempts will not
-// change anything.
+// Initializes the interrupt internals. If called multiple times the subsequent attempts will clear
+// everything resulting in the need to re initialize all interrupts.
 void x86_interrupt_init(void);
 
 // Registers an ISR handler. The handler_id is updated to the id assigned to the handler if
