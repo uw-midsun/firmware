@@ -43,7 +43,7 @@ before_script:
 
   # add Make to path
   - export PATH=/usr/local/bin/:$PATH
-  - update-alternatives --display-gcc
+  - update-alternatives --display gcc
   - gcc --version
 
 script:
