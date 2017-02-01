@@ -27,7 +27,6 @@ CFLAGS := -Wall -Werror -g -Os -std=c99 -Wno-unused-variable -pedantic \
           -ffunction-sections -fdata-sections -fno-builtin -flto \
           --specs=nosys.specs --specs=nano.specs \
           $(ARCH_CLAGS) $(addprefix -D,$(CDEFINES))
-POST_CFLAGS :=
 
 # Linker flags
 LDFLAGS := $(CLFLAGS) -L$(LDSCRIPT_DIR) -Tstm32f0.ld -fuse-linker-plugin
