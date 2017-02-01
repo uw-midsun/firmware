@@ -43,6 +43,7 @@ before_script:
 
   # add Make to path
   - export PATH=/usr/local/bin/:$PATH
+  - gcc --version
 
 script:
   - make $TARGET
