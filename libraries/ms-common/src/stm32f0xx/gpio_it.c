@@ -75,7 +75,7 @@ StatusCode gpio_it_trigger_interrupt(GPIOAddress *address) {
 }
 
 // Callback runner for GPIO which runs callbacks based on which callbacks are associated with an IRQ
-// channel. The function runs the callbacks which have a flag raise in the range [lower_bound,
+// channel. The function runs the callbacks which have a flag raised in the range [lower_bound,
 // upperbound].
 void prv_run_gpio_callbacks(uint8_t lower_bound, uint8_t upper_bound) {
   uint8_t pending;
