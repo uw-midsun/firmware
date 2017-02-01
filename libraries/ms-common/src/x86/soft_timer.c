@@ -65,7 +65,6 @@ bool soft_timer_inuse(void) {
   for (uint32_t i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {
     if (s_soft_timer_array[i].inuse) {
       return true;
-      ;
     }
   }
   return false;
