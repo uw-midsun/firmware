@@ -27,7 +27,7 @@ CFLAGS := -Wall -Werror -g -Os -std=gnu99 -Wno-unused-variable -pedantic \
           $(ARCH_CLAGS) $(addprefix -D,$(CDEFINES))
 
 # Linker flags
-LDFLAGS :=
+LDFLAGS := -lrt
 
 # Platform targets
 .PHONY: run gdb
