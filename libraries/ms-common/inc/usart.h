@@ -114,7 +114,7 @@ StatusCode usart_init(uint8_t periph, USARTSettings *settings);
 StatusCode usart_clock_init(uint8_t periph, USARTClockSettings *clock_settings);
 
 // Configures interrupt source
-StatusCode usart_it_config(uint8_t periph, USART_IT_Source usart_it, ENABLE);
+StatusCode usart_it_config(uint8_t periph, USART_IT_Source usart_it, FunctionalState state);
 
 // Transmits data
 StatusCode usart_send_data(USARTSettings *settings, uint16_t data);
