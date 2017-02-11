@@ -8,7 +8,7 @@ AR := ar
 GDB := gdb
 
 # Set the library to include if using this platform
-PLATFORM_LIB :=
+PLATFORM_LIB := x86
 PLATFORM_EXT :=
 
 # Architecture dependent variables
