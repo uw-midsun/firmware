@@ -1,30 +1,13 @@
-// SPI HAL Interface
+// HAL SPI
 
+#pragma once
+
+#include "gpio.h"
 #include "interrupt.h"
 #include "status.h"
-#include "stm32f0xx.h"
 
-typdef void (*spi_callback)(SPIPeriph spi_x, void *context);
 
-// For selecting which peripheral
-typedef enum {
-  SPI_PERIPH_1 = 0,
-  SPI_PERIPH_2,
-} SPIPeriph;
-
-// For setting communication directions
-typedef enum {
-  SPI_DIR_2LINES_FD = 0,
-  SPI_DIR_2LINES_RX_ONLY,
-  SPI_DIR_1LINE_RX,
-  SPI_DIR_1LINE_TX,
-} SPIDir;
-
-// For setting master or slave mode
-typedef enum {
-  SPI_MODE_MASTER = 0,
-  SPI_MODE_SLAVE,
-} SPIMode;
+typdef void (*spi_callback)(uint8_t spi_x, SPIITSource source, void *context);
 
 // For setting data size
 typedef enum {
@@ -45,21 +28,15 @@ typedef enum {
 
 // For setting clock polarity
 typedef enum {
-  SPI_CPOL_LOW = 0,
-  SPI_CPOL_HIGH,
-} SPICPOL;
+  SPI_CPOLARITY_LOW = 0,
+  SPI_CPOLARITY_HIGH,
+} SPICPolarity;
 
 // For setting clock phase
 typedef enum {
-  SPI_CPHA_1EDGE = 0,
-  SPI_CPHA_2EDGE,
-} SPICPHA;
-
-// For configuring NSS pin
-typedef enum {
-  SPI_NSS_SOFT = 0,
-  SPI_NSS_HARD,
-} SPINSS;
+  SPI_CPHASE_1EDGE = 0,
+  SPI_CPHASE_2EDGE,
+} SPICPhase;
 
 // For setting baud rate prescaler
 typedef enum {
@@ -81,14 +58,18 @@ typedef enum {
 
 // SPI init struct
 typedef struct SPISettings {
-  SPIDir direction;
-  SPIMode mode;
+  // SPI Settings
   SPIDataSize data_size;
-  SPICPOL polarity;
-  SPICPHA phase;
-  SPINSS nss;
+  SPICPolarity polarity;
+  SPICPhase phase;
   SPIBaudRate baud_rate;
-}
+
+  // GPIO pin settings
+  GPIOAddress mosi_pin;
+  GPIOAddress miso_pin;
+  GPIOAddress sck_pin;
+  GPIOAddress nss_pin;
+} 
 
 // For selecting an interrupt source when registering a callback
 typedef enum {
@@ -98,14 +79,17 @@ typedef enum {
 } SPIITSource;
 
 // Initializes a SPI peripheral.
-StatusCode spi_init(SPIPeriph spi_x, SPISettings *settings);
+  // Communication direction will always be set to full duplex.
+  // Mode will always be set to master. 
+  // NSS is always set to be managed in software
+StatusCode spi_init(uint8_t spi_x, SPISettings *settings);
 
-// Transmits 8 bits of data through a SPI peripheral.
-StatusCode spi_send_data8(SPIPeriph spi_x, uint8_t data);
+// Sets NSS high or low
+StatusCode spi_set_NSS(uint8_t spi_x, SPISettings *settings, GPIOState state);
 
-// Transmits 16 bits of data through a SPI peripheral.
-StatusCode spi_send_data16(SPIPeriph spi_x, uint16_t data);
+// Transmits all messages in data
+StatusCode spi_send_data(uint8_t spi_x, uint8_t *data, size_t data_length);
 
 // Registers a callback on a SPI peripheral on a given source.
-StatusCode spi_register_interrupt(SPIPeriph spi_x, SPIITSource source, InterruptSettings *settings,
+StatusCode spi_register_interrupt(uint8_t spi_x, SPIITSource source, InterruptSettings *settings,
                                   spi_callback, void *context);
