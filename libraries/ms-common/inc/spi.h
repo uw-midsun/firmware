@@ -69,7 +69,7 @@ typedef struct SPISettings {
   GPIOAddress miso_pin;
   GPIOAddress sck_pin;
   GPIOAddress nss_pin;
-} 
+}
 
 // For selecting an interrupt source when registering a callback
 typedef enum {
@@ -80,7 +80,7 @@ typedef enum {
 
 // Initializes a SPI peripheral.
   // Communication direction will always be set to full duplex.
-  // Mode will always be set to master. 
+  // Mode will always be set to master.
   // NSS is always set to be managed in software
 StatusCode spi_init(uint8_t spi_x, SPISettings *settings);
 
