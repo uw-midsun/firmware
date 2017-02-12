@@ -21,9 +21,5 @@ void soft_timer_init(void);
 StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, void* context,
                             SoftTimerID* timer_id);
 
-// Updates the software timer running any callbacks that the time had expired for. Call this in your
-// main loop if using software timers.
-void soft_timer_update(void);
-
 // Checks if software timers are running, returns true if any soft timers are in use.
 bool soft_timer_inuse(void);

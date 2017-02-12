@@ -1,57 +1,126 @@
 #include "soft_timer.h"
 
+#include <signal.h>
 #include <stdbool.h>
 #include <stdint.h>
 
 #include "extra_unity.h"
+#include "interrupt.h"
+#include "log.h"
 #include "unity.h"
 
-void setup_test(void) {
-  soft_timer_init();
-}
-
-void teardown_test(void) {}
-
-static bool s_callback_ran = false;
-static uint8_t s_interrupt_id = 255;
+// Medium term callback used across tests.
+static volatile bool s_callback_ran = false;
+static volatile uint8_t s_interrupt_id = 255;
 
 void prv_soft_timer_test_callback(SoftTimerID id, void* context) {
   s_interrupt_id = id;
   s_callback_ran = true;
 }
 
+// Short duration callback used in multi timer test.
+static volatile bool s_short_callback_ran = false;
+static volatile uint8_t s_short_interrupt_id = 255;
+
+void prv_short_soft_timer_test_callback(SoftTimerID id, void* context) {
+  s_short_interrupt_id = id;
+  s_short_callback_ran = true;
+}
+
+// Long duration callback used in the multi timer test.
+static volatile bool s_long_callback_ran = false;
+static volatile uint8_t s_long_interrupt_id = 255;
+
+void prv_long_soft_timer_test_callback(SoftTimerID id, void* context) {
+  s_long_interrupt_id = id;
+  s_long_callback_ran = true;
+}
+
+void setup_test(void) {
+  // Reset all timers/interrupts and reset the callback used in all tests.
+  interrupt_init();
+  soft_timer_init();
+  s_callback_ran = false;
+}
+
+void teardown_test(void) { }
+
 // Software timer end to end test.
 void test_soft_timer_end2end(void) {
   SoftTimerID timer_id = 255;
-  // 1 second timer.
+
   TEST_ASSERT_FALSE(soft_timer_inuse());
-  TEST_ASSERT_OK(soft_timer_start(2000000, prv_soft_timer_test_callback, NULL, &timer_id));
+
+  // 0.5 second timer.
+  TEST_ASSERT_OK(soft_timer_start(50000, prv_soft_timer_test_callback, NULL, &timer_id));
+
   // Assume the timer id changed to something else. (Not a specific number as this would prevent the
   // test from passing if we ever modified the internals).
   TEST_ASSERT_NOT_EQUAL(255, timer_id);
+
+  // Validate it hasn't run yet (possibly flaky);
   TEST_ASSERT_FALSE(s_callback_ran);
   TEST_ASSERT_TRUE(soft_timer_inuse());
 
-  // Update assuming the above operation is faster than the timer.
-  soft_timer_update();
-  TEST_ASSERT_FALSE(s_callback_ran);
-
-  // Until the callback gets run wait.
   while (!s_callback_ran) {
-    soft_timer_update();
   }
+
+  // Once run validate everything is as expected.
   TEST_ASSERT_TRUE(s_callback_ran);
   TEST_ASSERT_EQUAL(timer_id, s_interrupt_id);
+}
+
+void test_soft_timer_multitimer(void) {
+  SoftTimerID short_timer = 255;
+  SoftTimerID mid_timer = 255;
+  SoftTimerID long_timer = 255;
+
+  // Verify everything is clear.
+  TEST_ASSERT_FALSE(soft_timer_inuse());
+
+  // 1 Second timer starting immediately
+  TEST_ASSERT_OK(soft_timer_start(1000000, prv_soft_timer_test_callback, NULL, &mid_timer));
+  // 0.5 second timer premepts the other timer.
+  TEST_ASSERT_OK(soft_timer_start(500000, prv_short_soft_timer_test_callback, NULL, &short_timer));
+  // Queued last timer should return after 2 seconds.
+  TEST_ASSERT_OK(soft_timer_start(2000000, prv_long_soft_timer_test_callback, NULL, &long_timer));
+
+  while (!s_short_callback_ran) {
+  }
+
+  // Once the short timer ran make sure the medium timer hasn't run (can be flaky for very short
+  // durations).
+  TEST_ASSERT_FALSE(s_callback_ran);
+  TEST_ASSERT_EQUAL(short_timer, s_short_interrupt_id);
+
+  while (!s_callback_ran) {
+  }
+
+  // Once the mid timer ran make sure the longer timer hasn't run (can be flaky for very short
+  // durations).
+  TEST_ASSERT_FALSE(s_long_callback_ran);
+  TEST_ASSERT_EQUAL(mid_timer, s_interrupt_id);
+
+  while (!s_long_callback_ran) {
+  }
+
+  // Verify the long timer ran.
+  TEST_ASSERT_EQUAL(long_timer, s_long_interrupt_id);
 }
 
 // Software timer create too many
 void test_soft_timer_resource_exhausted(void) {
   SoftTimerID timer_id = 255;
-  // Empty timer.
+
+  // Start a bunch of 10 second timers we will cancel them before they run.
   for (int i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {
-    TEST_ASSERT_OK(soft_timer_start(0, prv_soft_timer_test_callback, NULL, &timer_id));
+    TEST_ASSERT_OK(soft_timer_start(10000000, prv_soft_timer_test_callback, NULL, &timer_id));
   }
 
+  // Vefify we run out of timers.
   TEST_ASSERT_EQUAL(STATUS_CODE_RESOURCE_EXHAUSTED,
-                    soft_timer_start(0, prv_soft_timer_test_callback, &timer_id, NULL));
+                    soft_timer_start(10000000, prv_soft_timer_test_callback, NULL, &timer_id));
+
+  // Reset all timers before exiting to prevent any strange behaviors.
+  soft_timer_init();
 }
