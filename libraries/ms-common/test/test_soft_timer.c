@@ -6,7 +6,6 @@
 
 #include "extra_unity.h"
 #include "interrupt.h"
-#include "log.h"
 #include "unity.h"
 
 // Medium term callback used across tests.
