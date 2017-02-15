@@ -91,10 +91,10 @@ void soft_timer_init(void) {
   RCC_GetClocksFreq(&clock_speeds);
 
   // Configure each clock tick to be 1 microsecond from 0 to duration.
-  TIM_TimeBaseInitTypeDef init_struct = {.TIM_Prescaler = clock_speeds.PCLK_Frequency / 1000000,
-                                         .TIM_CounterMode = TIM_CounterMode_Up,
-                                         .TIM_Period = UINT32_MAX,
-                                         .TIM_ClockDivision = TIM_CKD_DIV1 };
+  TIM_TimeBaseInitTypeDef init_struct = { .TIM_Prescaler = clock_speeds.PCLK_Frequency / 1000000,
+                                          .TIM_CounterMode = TIM_CounterMode_Up,
+                                          .TIM_Period = UINT32_MAX,
+                                          .TIM_ClockDivision = TIM_CKD_DIV1 };
 
   TIM_TimeBaseInit(TIM2, &init_struct);
 
