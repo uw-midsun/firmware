@@ -26,11 +26,11 @@ typedef struct POSIXTimer {
   bool active;
 } POSIXTimer;
 
-static Timer s_soft_timer_array[SOFT_TIMER_MAX_TIMERS];
-static SoftTimerID s_active_timer_id;
+static volatile Timer s_soft_timer_array[SOFT_TIMER_MAX_TIMERS];
+static volatile SoftTimerID s_active_timer_id;
 static POSIXTimer s_posix_timer;
 
-void prv_soft_timer_update(uint32_t curr_time) {
+static void prv_soft_timer_update(uint32_t curr_time) {
   // Default these values to max. If there is ever a newer timer it will replace them. In the event
   // there are no timers left the defaults will result in the module being reset to a state where no
   // timers exist.
@@ -59,7 +59,7 @@ void prv_soft_timer_update(uint32_t curr_time) {
   s_active_timer_id = min_time_id;
 }
 
-void prv_start_timer(uint32_t duration_us) {
+static void prv_start_timer(uint32_t duration_us) {
   // Create an empty interrupt timerspec.
   struct itimerspec timerspec = { { 0, 0 }, { 0, 0 } };
 
@@ -76,7 +76,7 @@ void prv_start_timer(uint32_t duration_us) {
   s_posix_timer.active = true;
 }
 
-void prv_soft_timer_interrupt(void) {
+static void prv_soft_timer_interrupt(void) {
   // Assume the next interrupt is the active one.
   bool critical = critical_section_start();
   prv_soft_timer_update(s_soft_timer_array[s_active_timer_id].duration);
@@ -86,9 +86,16 @@ void prv_soft_timer_interrupt(void) {
   critical_section_end(critical);
 }
 
-void prv_soft_timer_handler(uint8_t interrupt_id) {
+static void prv_soft_timer_handler(uint8_t interrupt_id) {
   // Run the interrupt since there is only one for this handler.
   prv_soft_timer_interrupt();
+}
+
+static uint32_t prv_soft_timer_get_time(void) {
+  struct itimerspec curr_timespec;
+  timer_gettime(s_posix_timer.timer_id, &curr_timespec);
+  return s_posix_timer.duration_us -
+         (curr_timespec.it_value.tv_sec * 1000000 + curr_timespec.it_value.tv_nsec / 1000);
 }
 
 void soft_timer_init(void) {
@@ -108,8 +115,8 @@ void soft_timer_init(void) {
   // Register a handler and interrupt.
   uint8_t handler_id;
   x86_interrupt_register_handler(prv_soft_timer_handler, &handler_id);
-  InterruptSettings it_settings = { .type = INTERRUPT_TYPE_INTERRUPT,
-                                    .priority = INTERRUPT_PRIORITY_NORMAL };
+  InterruptSettings it_settings = {.type = INTERRUPT_TYPE_INTERRUPT,
+                                   .priority = INTERRUPT_PRIORITY_NORMAL };
   uint8_t interrupt_id;
   x86_interrupt_register_interrupt(handler_id, &it_settings, &interrupt_id);
 
@@ -126,18 +133,15 @@ StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, vo
   // Start a critical section to prevent this section from being broken.
   bool critical = critical_section_start();
 
-  // Get the current time.
-  uint32_t curr_time = 0;
-  if (s_posix_timer.active) {
-    struct itimerspec curr_timespec;
-    timer_gettime(s_posix_timer.timer_id, &curr_timespec);
-    curr_time = s_posix_timer.duration_us -
-                (curr_timespec.it_value.tv_sec * 1000000 + curr_timespec.it_value.tv_nsec / 1000);
-  }
-
   for (uint32_t i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {
     if (!s_soft_timer_array[i].inuse) {
       // Look for an empty timer.
+
+      // Get the current time.
+      uint32_t curr_time = 0;
+      if (s_posix_timer.active) {
+        curr_time = prv_soft_timer_get_time();
+      }
       if (s_active_timer_id >= SOFT_TIMER_MAX_TIMERS) {
         // New timer will be the only timer. Start it.
         s_active_timer_id = i;
@@ -149,9 +153,9 @@ StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, vo
         s_active_timer_id = i;
         prv_start_timer(duration_us);
       } else {
-        // Add the curr time to the newest timer so it isn't affected by the timer currently on the
-        // clock.
-        duration_us += curr_time;
+        // Update the timers to not interfere with the duration of this one.
+        prv_soft_timer_update(curr_time);
+        prv_start_timer(s_soft_timer_array[s_active_timer_id].duration - curr_time);
       }
       // Otherwise, the new timer is longest ignore it until later.
 
@@ -173,8 +177,30 @@ StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, vo
 }
 
 bool soft_timer_inuse(void) {
-  for (uint32_t i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {
-    if (s_soft_timer_array[i].inuse) {
+  if (s_active_timer_id != SOFT_TIMER_MAX_TIMERS) {
+    return true;
+  }
+  return false;
+}
+
+bool soft_timer_cancel(SoftTimerID timer_id) {
+  if (timer_id < SOFT_TIMER_MAX_TIMERS) {
+    if (timer_id == s_active_timer_id) {
+      // Start a critical section and update pretending the active timer doesn't exist so as to
+      // replace it with the next timer.
+      bool critical = critical_section_start();
+      s_soft_timer_array[timer_id].inuse = false;
+
+      prv_soft_timer_update(s_soft_timer_array[s_active_timer_id].duration -
+                            prv_soft_timer_get_time());
+      if (s_active_timer_id < SOFT_TIMER_MAX_TIMERS) {
+        prv_start_timer(s_soft_timer_array[s_active_timer_id].duration);
+      }
+      critical_section_end(critical);
+      return true;
+    } else if (s_soft_timer_array[timer_id].inuse) {
+      // Not in use pretend it doesn't exist
+      s_soft_timer_array[timer_id].inuse = false;
       return true;
     }
   }
