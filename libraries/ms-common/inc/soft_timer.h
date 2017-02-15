@@ -21,5 +21,16 @@ void soft_timer_init(void);
 StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, void* context,
                             SoftTimerID* timer_id);
 
+// Starts a software timer in milliseconds. Max duration is still UINT32_MAX us.
+#define soft_timer_start_millis(duration_ms, callback, context, timer_id) \
+  soft_timer_start(duration_ms * 1000, callback, context, timer_id)
+
+// Starts a software timer in seconds. Max duration is still UINT32_MAX us.
+#define soft_timer_start_seconds(duration_s, callback, context, timer_id) \
+  soft_timer_start(duration_s * 1000000, callback, context, timer_id)
+
+// Cancels the soft timer specified by id returns true if successful.
+bool soft_timer_cancel(SoftTimerID timer_id);
+
 // Checks if software timers are running, returns true if any soft timers are in use.
 bool soft_timer_inuse(void);
