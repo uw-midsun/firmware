@@ -24,8 +24,8 @@ static volatile uint32_t s_active_timer_duration;
 
 static void prv_start_timer(uint32_t duration_us) {
   // Clear any pending interrupts, this will always occur in an interrupt or new timer getting
-  // started in a critical section so we need to prevent a accidental trigger if the time expires in
-  // the middle of the critical section and we started a new timer which falls before it.
+  // started in a critical section so we need to prevent an accidental trigger if the time expires
+  // in the middle of the critical section and we started a new timer which falls before it.
   TIM_ClearITPendingBit(TIM2, TIM_IT_CC1);
 
   TIM_Cmd(TIM2, DISABLE);
@@ -41,10 +41,10 @@ static void prv_start_timer(uint32_t duration_us) {
 
 static uint32_t prv_soft_timer_update_period(void) {
   uint32_t counter = TIM_GetCounter(TIM2);
-  if (counter - s_last_update_count > 0) {
+  if (counter < s_last_update_count) {
     return counter - s_last_update_count;
   } else {
-    return counter - s_last_update_count + UINT32_MAX;
+    return counter + UINT32_MAX - s_last_update_count;
   }
 }
 
@@ -91,7 +91,7 @@ void soft_timer_init(void) {
   RCC_GetClocksFreq(&clock_speeds);
 
   // Configure each clock tick to be 1 microsecond from 0 to duration.
-  TIM_TimeBaseInitTypeDef init_struct = { .TIM_Prescaler = clock_speeds.PCLK_Frequency / 1000000,
+  TIM_TimeBaseInitTypeDef init_struct = { .TIM_Prescaler = clock_speeds.SYSCLK_Frequency / 1000000,
                                           .TIM_CounterMode = TIM_CounterMode_Up,
                                           .TIM_Period = UINT32_MAX,
                                           .TIM_ClockDivision = TIM_CKD_DIV1 };
