@@ -13,7 +13,7 @@ void pqueue_init(PQueue *queue, PQueueNode *nodes, size_t num_nodes) {
   queue->max_nodes = num_nodes - 1;  // 1-indexed heap - throw away one node
 }
 
-StatusCode pqueue_push(PQueue *queue, void *data, uint32_t prio) {
+StatusCode pqueue_push(PQueue *queue, void *data, uint16_t prio) {
   if (queue->size == queue->max_nodes) {
     // Ran out of space.
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
