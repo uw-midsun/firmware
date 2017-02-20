@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 #include "gpio.h"
 #include "interrupt.h"
 #include "status.h"
@@ -9,7 +11,7 @@
 
 typdef void (*spi_callback)(uint8_t spi_x, SPIITSource source, void *context);
 
-// For setting data size
+// For setting data size (applies to both transmission and reception)
 typedef enum {
   SPI_DATASIZE_4B = 0,
   SPI_DATASIZE_5B,
@@ -30,13 +32,13 @@ typedef enum {
 typedef enum {
   SPI_CPOLARITY_LOW = 0,
   SPI_CPOLARITY_HIGH,
-} SPICPolarity;
+} SPICpol;
 
 // For setting clock phase
 typedef enum {
   SPI_CPHASE_1EDGE = 0,
   SPI_CPHASE_2EDGE,
-} SPICPhase;
+} SPICpha;
 
 // For setting baud rate prescaler
 typedef enum {
@@ -84,11 +86,20 @@ typedef enum {
   // NSS is always set to be managed in software
 StatusCode spi_init(uint8_t spi_x, SPISettings *settings);
 
-// Sets NSS high or low
-StatusCode spi_set_NSS(uint8_t spi_x, SPISettings *settings, GPIOState state);
+// Sets or resets NSS pin
+StatusCode spi_configure_NSS(uint8_t spi_x, SPISettings *settings, GPIOState state);
 
 // Transmits all messages in data
 StatusCode spi_send_data(uint8_t spi_x, uint8_t *data, size_t data_length);
+
+// Receives messages and puts them into data 
+StatusCode spi_receive_data(uint8_t spi_x, uint8_t *data, size_t data_length);
+
+// Enables the interrupt source
+StatusCode spi_enable_interrupt(uint8_t spi_x, SPIITSource source);
+
+// Disables the interrupt source
+StatusCode spi_disable_interrupt(uint8_t spi_x, SPIITSource source);
 
 // Registers a callback on a SPI peripheral on a given source.
 StatusCode spi_register_interrupt(uint8_t spi_x, SPIITSource source, InterruptSettings *settings,
