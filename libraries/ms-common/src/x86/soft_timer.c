@@ -24,7 +24,7 @@ static POSIXTimer s_posix_timers[SOFT_TIMER_MAX_TIMERS];
 static volatile uint8_t s_active_timers = 0;
 
 static void prv_soft_timer_interrupt(void) {
-  bool critical = critical_section_start();
+  const bool critical = critical_section_start();
   struct itimerspec spec = { { 0, 0 }, { 0, 0 } };
   for (uint16_t i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {
     if (!s_active_timers) {
@@ -79,7 +79,7 @@ void soft_timer_init(void) {
 StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, void* context,
                             SoftTimerID* timer_id) {
   // Start a critical section to prevent this section from being broken.
-  bool critical = critical_section_start();
+  const bool critical = critical_section_start();
   for (uint32_t i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {
     if (!s_posix_timers[i].inuse) {
       // Look for an empty timer.
@@ -111,7 +111,7 @@ bool soft_timer_inuse(void) {
 }
 
 bool soft_timer_cancel(SoftTimerID timer_id) {
-  bool critical = critical_section_start();
+  const bool critical = critical_section_start();
   if (timer_id < SOFT_TIMER_MAX_TIMERS && s_posix_timers[timer_id].inuse) {
     // Clear the timer if it is in use by setting it_val to 0, 0.
     struct itimerspec spec = { { 0, 0 }, { 0, 0 } };

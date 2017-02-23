@@ -17,7 +17,6 @@ typedef struct Timer {
   SoftTimerID previous_timer;
   SoftTimerID next_timer;
   void *context;
-  bool inuse;
   SoftTimerCallback callback;
 } Timer;
 
@@ -29,6 +28,7 @@ static volatile SoftTimerID s_active_timer_id;
 
 // Rollover count. By my calculations we will never roll this over it would take ~584554 yrs.
 static volatile uint32_t s_rollover_count;
+static volatile uint32_t s_freebitset;
 
 static void prv_start_timer(SoftTimerID timer_id) {
   // Clear any pending interrupts, this will always occur in an interrupt or new timer getting
@@ -41,7 +41,7 @@ static void prv_start_timer(SoftTimerID timer_id) {
       s_soft_timer_array[timer_id].expiry_time < TIM_GetCounter(TIM2)) {
     // Expired run immediately.
     s_soft_timer_array[timer_id].callback(timer_id, s_soft_timer_array[timer_id].context);
-    s_soft_timer_array[timer_id].inuse = false;
+    s_freebitset |= (1 << timer_id);
     // Start the next timer.
     if (s_soft_timer_array[timer_id].next_timer != SOFT_TIMER_MAX_TIMERS) {
       prv_start_timer(s_soft_timer_array[timer_id].next_timer);
@@ -101,8 +101,8 @@ void soft_timer_init(void) {
   // Clear and disable all the timers and forget the last running timer and rollover count.
   s_rollover_count = 0;
   s_active_timer_id = SOFT_TIMER_MAX_TIMERS;
+  s_freebitset = UINT64_MAX;
   for (uint32_t i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {
-    s_soft_timer_array[i].inuse = false;
     s_soft_timer_array[i].next_timer = SOFT_TIMER_MAX_TIMERS;
     s_soft_timer_array[i].previous_timer = SOFT_TIMER_MAX_TIMERS;
   }
@@ -124,44 +124,44 @@ void soft_timer_init(void) {
 
 StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, void *context,
                             SoftTimerID *timer_id) {
-  uint32_t count = TIM_GetCounter(TIM2);
+  const uint32_t count = TIM_GetCounter(TIM2);
 
   // Enable a critical section.
-  bool critical = critical_section_start();
-  for (uint32_t i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {
-    if (!s_soft_timer_array[i].inuse) {
-      // Look for an empty timer.
+  const bool critical = critical_section_start();
+  const uint16_t free_bit = __builtin_ffsl(s_freebitset);
+  if (free_bit && free_bit <= SOFT_TIMER_MAX_TIMERS) {
+    // Look for an empty timer.
+    const uint16_t i = free_bit - 1;
 
-      // Check for rollover purely to see if we need to increment the rollover count.
-      if (duration_us > UINT32_MAX - count) {
-        s_soft_timer_array[i].rollover_count = s_rollover_count + 1;
-      } else {
-        s_soft_timer_array[i].rollover_count = s_rollover_count;
-      }
-
-      // Allow the rollover (this is fine for uints).
-      s_soft_timer_array[i].expiry_time = count + duration_us;
-      s_soft_timer_array[i].next_timer = SOFT_TIMER_MAX_TIMERS;
-      s_soft_timer_array[i].previous_timer = SOFT_TIMER_MAX_TIMERS;
-      s_soft_timer_array[i].callback = callback;
-      s_soft_timer_array[i].context = context;
-      s_soft_timer_array[i].inuse = true;
-      *timer_id = i;
-
-      if (s_soft_timer_array[i].expiry_time < s_soft_timer_array[s_active_timer_id].expiry_time &&
-          s_soft_timer_array[i].rollover_count <=
-              s_soft_timer_array[s_active_timer_id].rollover_count) {
-        // New timer is before the current timer so replace it.
-        s_soft_timer_array[i].next_timer = s_active_timer_id;
-        prv_start_timer(i);
-      } else {
-        // New timer is not newest just find a free node an insert it.
-        prv_insert_timer(i, s_active_timer_id);
-      }
-
-      critical_section_end(critical);
-      return STATUS_CODE_OK;
+    // Check for rollover purely to see if we need to increment the rollover count.
+    if (duration_us > UINT32_MAX - count) {
+      s_soft_timer_array[i].rollover_count = s_rollover_count + 1;
+    } else {
+      s_soft_timer_array[i].rollover_count = s_rollover_count;
     }
+
+    // Allow the rollover (this is fine for uints).
+    s_soft_timer_array[i].expiry_time = count + duration_us;
+    s_soft_timer_array[i].next_timer = SOFT_TIMER_MAX_TIMERS;
+    s_soft_timer_array[i].previous_timer = SOFT_TIMER_MAX_TIMERS;
+    s_soft_timer_array[i].callback = callback;
+    s_soft_timer_array[i].context = context;
+    s_freebitset &= ~(1 << i);
+    *timer_id = i;
+
+    if (s_soft_timer_array[i].expiry_time < s_soft_timer_array[s_active_timer_id].expiry_time &&
+        s_soft_timer_array[i].rollover_count <=
+            s_soft_timer_array[s_active_timer_id].rollover_count) {
+      // New timer is before the current timer so replace it.
+      s_soft_timer_array[i].next_timer = s_active_timer_id;
+      prv_start_timer(i);
+    } else {
+      // New timer is not newest just find a free node an insert it.
+      prv_insert_timer(i, s_active_timer_id);
+    }
+
+    critical_section_end(critical);
+    return STATUS_CODE_OK;
   }
 
   // Out of timers.
@@ -182,7 +182,7 @@ void TIM2_IRQHandler(void) {
     // Update the timer assuming the active timer expired.
     s_soft_timer_array[s_active_timer_id].callback(s_active_timer_id,
                                                    s_soft_timer_array[s_active_timer_id].context);
-    s_soft_timer_array[s_active_timer_id].inuse = false;
+    s_freebitset |= (1 << s_active_timer_id);
 
     // Start the next active timer if it exists as determined by the update.
     if (s_soft_timer_array[s_active_timer_id].next_timer < SOFT_TIMER_MAX_TIMERS) {
@@ -206,14 +206,14 @@ bool soft_timer_cancel(SoftTimerID timer_id) {
       // Start a critical section and update pretending the active timer doesn't exist so as to
       // replace it with the next timer. Since the head is tracked we don't really have to do any
       // cleanup.
-      bool critical = critical_section_start();
-      s_soft_timer_array[timer_id].inuse = false;
+      const bool critical = critical_section_start();
+      s_freebitset |= (1 << timer_id);
       prv_start_timer(s_soft_timer_array[timer_id].next_timer);
       critical_section_end(critical);
       return true;
-    } else if (s_soft_timer_array[timer_id].inuse) {
+    } else if (s_freebitset & (1 << timer_id)) {
       // Not active pretend it doesn't exist by popping the node out of the doubly linked list.
-      s_soft_timer_array[timer_id].inuse = false;
+      s_freebitset |= (1 << timer_id);
       s_soft_timer_array[s_soft_timer_array[timer_id].previous_timer].next_timer =
           s_soft_timer_array[timer_id].next_timer;
       return true;
