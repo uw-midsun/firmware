@@ -12,7 +12,7 @@
 static volatile bool s_callback_ran = false;
 static volatile uint8_t s_interrupt_id = 255;
 
-void prv_soft_timer_test_callback(SoftTimerID id, void* context) {
+static void prv_soft_timer_test_callback(SoftTimerID id, void* context) {
   s_interrupt_id = id;
   s_callback_ran = true;
 }
@@ -21,7 +21,7 @@ void prv_soft_timer_test_callback(SoftTimerID id, void* context) {
 static volatile bool s_short_callback_ran = false;
 static volatile uint8_t s_short_interrupt_id = 255;
 
-void prv_short_soft_timer_test_callback(SoftTimerID id, void* context) {
+static void prv_short_soft_timer_test_callback(SoftTimerID id, void* context) {
   s_short_interrupt_id = id;
   s_short_callback_ran = true;
 }
@@ -30,7 +30,7 @@ void prv_short_soft_timer_test_callback(SoftTimerID id, void* context) {
 static volatile bool s_long_callback_ran = false;
 static volatile uint8_t s_long_interrupt_id = 255;
 
-void prv_long_soft_timer_test_callback(SoftTimerID id, void* context) {
+static void prv_long_soft_timer_test_callback(SoftTimerID id, void* context) {
   s_long_interrupt_id = id;
   s_long_callback_ran = true;
 }

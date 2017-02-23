@@ -54,7 +54,7 @@ static void prv_start_timer(SoftTimerID timer_id) {
 }
 
 // Recursive method to find the correct place to insert the timer_id node in the linked list.
-void prv_insert_timer(SoftTimerID timer_id, SoftTimerID last_node_id) {
+static void prv_insert_timer(SoftTimerID timer_id, SoftTimerID last_node_id) {
   if (s_soft_timer_array[last_node_id].next_timer == SOFT_TIMER_MAX_TIMERS) {
     // Next node is empty. Insert this.
     s_soft_timer_array[last_node_id].next_timer = timer_id;

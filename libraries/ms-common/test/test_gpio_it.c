@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "critical_section.h"
-#include "extra_unity.h"
+#include "test_helpers.h"
 #include "gpio.h"
 #include "interrupt.h"
 #include "unity.h"
@@ -19,7 +19,7 @@ static InterruptSettings s_event_settings = { .type = INTERRUPT_TYPE_EVENT,
 static volatile bool s_correct_port = false;
 static volatile bool s_interrupt_ran = false;
 
-void prv_test_callback(GPIOAddress* address, void* context) {
+static void prv_test_callback(GPIOAddress* address, void* context) {
   if (address->port == 1) {
     s_correct_port = true;
   }

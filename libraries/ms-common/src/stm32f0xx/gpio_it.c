@@ -26,7 +26,7 @@ void gpio_it_init(void) {
 }
 
 // Pins 0-1 are mapped to IRQ Channel 5, 2-3 to 6 and 4-15 to 7;
-uint8_t prv_get_irq_channel(uint8_t pin) {
+static uint8_t prv_get_irq_channel(uint8_t pin) {
   if (pin <= 1) {
     return 5;
   } else if (pin <= 3) {
@@ -77,7 +77,7 @@ StatusCode gpio_it_trigger_interrupt(GPIOAddress *address) {
 // Callback runner for GPIO which runs callbacks based on which callbacks are associated with an IRQ
 // channel. The function runs the callbacks which have a flag raised in the range [lower_bound,
 // upperbound].
-void prv_run_gpio_callbacks(uint8_t lower_bound, uint8_t upper_bound) {
+static void prv_run_gpio_callbacks(uint8_t lower_bound, uint8_t upper_bound) {
   uint8_t pending;
   for (int i = lower_bound; i <= upper_bound; i++) {
     stm32f0xx_interrupt_exti_get_pending(i, &pending);

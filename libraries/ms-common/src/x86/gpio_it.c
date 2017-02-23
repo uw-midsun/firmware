@@ -19,7 +19,7 @@ typedef struct GPIOITInterrupt {
 static uint8_t s_gpio_it_handler_id;
 static GPIOITInterrupt s_gpio_it_interrupts[GPIO_CFG_NUM_PINS_PER_PORT];
 
-void prv_gpio_it_handler(uint8_t interrupt_id) {
+static void prv_gpio_it_handler(uint8_t interrupt_id) {
   for (int i = 0; i < GPIO_CFG_NUM_PINS_PER_PORT; i++) {
     if (s_gpio_it_interrupts[i].interrupt_id == interrupt_id &&
         s_gpio_it_interrupts[i].callback != NULL) {
