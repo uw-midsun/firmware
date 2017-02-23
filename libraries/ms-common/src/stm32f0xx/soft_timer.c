@@ -101,7 +101,7 @@ void soft_timer_init(void) {
   // Clear and disable all the timers and forget the last running timer and rollover count.
   s_rollover_count = 0;
   s_active_timer_id = SOFT_TIMER_MAX_TIMERS;
-  s_freebitset = UINT64_MAX;
+  s_freebitset |= (1 << SOFT_TIMER_MAX_TIMERS) - 1;
   for (uint32_t i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {
     s_soft_timer_array[i].next_timer = SOFT_TIMER_MAX_TIMERS;
     s_soft_timer_array[i].previous_timer = SOFT_TIMER_MAX_TIMERS;
@@ -129,7 +129,7 @@ StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, vo
   // Enable a critical section.
   const bool critical = critical_section_start();
   const uint16_t free_bit = __builtin_ffsl(s_freebitset);
-  if (free_bit && free_bit <= SOFT_TIMER_MAX_TIMERS) {
+  if (free_bit) {
     // Look for an empty timer.
     const uint16_t i = free_bit - 1;
 
