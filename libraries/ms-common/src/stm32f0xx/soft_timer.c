@@ -27,7 +27,7 @@ static volatile Timer s_soft_timer_array[SOFT_TIMER_MAX_TIMERS];
 // Head of the DLL.
 static volatile SoftTimerID s_active_timer_id;
 
-// Rollover count by my calculations we will never roll this over ~584554 yrs.
+// Rollover count. By my calculations we will never roll this over it would take ~584554 yrs.
 static volatile uint32_t s_rollover_count;
 
 static void prv_start_timer(SoftTimerID timer_id) {
