@@ -53,7 +53,7 @@ void test_soft_timer_end2end(void) {
   TEST_ASSERT_FALSE(soft_timer_inuse());
 
   // 0.5 second timer.
-  TEST_ASSERT_OK(soft_timer_start(50000, prv_soft_timer_test_callback, NULL, &timer_id));
+  TEST_ASSERT_OK(soft_timer_start(500, prv_soft_timer_test_callback, NULL, &timer_id));
 
   // Assume the timer id changed to something else. (Not a specific number as this would prevent the
   // test from passing if we ever modified the internals).
@@ -80,11 +80,49 @@ void test_soft_timer_multitimer(void) {
   TEST_ASSERT_FALSE(soft_timer_inuse());
 
   // 1 Second timer starting immediately
-  TEST_ASSERT_OK(soft_timer_start_millis(1000, prv_soft_timer_test_callback, NULL, &mid_timer));
+  TEST_ASSERT_OK(soft_timer_start_millis(1, prv_soft_timer_test_callback, NULL, &mid_timer));
   // 0.5 second timer premepts the other timer.
-  TEST_ASSERT_OK(soft_timer_start(500000, prv_short_soft_timer_test_callback, NULL, &short_timer));
+  TEST_ASSERT_OK(soft_timer_start(500, prv_short_soft_timer_test_callback, NULL, &short_timer));
   // Queued last timer should return after 2 seconds.
-  TEST_ASSERT_OK(soft_timer_start_seconds(2, prv_long_soft_timer_test_callback, NULL, &long_timer));
+  TEST_ASSERT_OK(soft_timer_start_seconds(1, prv_long_soft_timer_test_callback, NULL, &long_timer));
+
+  while (!s_short_callback_ran) {
+  }
+
+  // Once the short timer ran make sure the medium timer hasn't run (can be flaky for very short
+  // durations).
+  TEST_ASSERT_FALSE(s_callback_ran);
+  TEST_ASSERT_EQUAL(short_timer, s_short_interrupt_id);
+
+  while (!s_callback_ran) {
+  }
+
+  // Once the mid timer ran make sure the longer timer hasn't run (can be flaky for very short
+  // durations).
+  TEST_ASSERT_FALSE(s_long_callback_ran);
+  TEST_ASSERT_EQUAL(mid_timer, s_interrupt_id);
+
+  while (!s_long_callback_ran) {
+  }
+
+  // Verify the long timer ran.
+  TEST_ASSERT_EQUAL(long_timer, s_long_interrupt_id);
+}
+
+void test_soft_timer_multitimer_short(void) {
+  SoftTimerID short_timer = 255;
+  SoftTimerID mid_timer = 255;
+  SoftTimerID long_timer = 255;
+
+  // Verify everything is clear.
+  TEST_ASSERT_FALSE(soft_timer_inuse());
+
+  // 1 Second timer starting immediately
+  TEST_ASSERT_OK(soft_timer_start(125, prv_soft_timer_test_callback, NULL, &mid_timer));
+  // 0.5 second timer premepts the other timer.
+  TEST_ASSERT_OK(soft_timer_start(50, prv_short_soft_timer_test_callback, NULL, &short_timer));
+  // Queued last timer should return after 2 seconds.
+  TEST_ASSERT_OK(soft_timer_start(200, prv_long_soft_timer_test_callback, NULL, &long_timer));
 
   while (!s_short_callback_ran) {
   }
@@ -114,8 +152,8 @@ void test_soft_timer_rollover(void) {
   SoftTimerID timer_id = 255;
 
   TEST_ASSERT_FALSE(soft_timer_inuse());
-  TEST_soft_timer_set_counter(UINT32_MAX - 1000000);
-  TEST_ASSERT_OK(soft_timer_start(2000000, prv_soft_timer_test_callback, NULL, &timer_id));
+  TEST_soft_timer_set_counter(UINT32_MAX - 500);
+  TEST_ASSERT_OK(soft_timer_start(1000, prv_soft_timer_test_callback, NULL, &timer_id));
   TEST_ASSERT_NOT_EQUAL(255, timer_id);
 
   // Validate it hasn't run yet (possibly flaky).
@@ -136,8 +174,8 @@ void test_soft_timer_cancel(void) {
 
   TEST_ASSERT_FALSE(soft_timer_inuse());
   TEST_ASSERT_FALSE(soft_timer_cancel(timer_id));
-  TEST_ASSERT_OK(soft_timer_start(2000000, prv_long_soft_timer_test_callback, NULL, &timer_id));
-  TEST_ASSERT_OK(soft_timer_start(500000, prv_soft_timer_test_callback, NULL, &timer_id));
+  TEST_ASSERT_OK(soft_timer_start(1000, prv_long_soft_timer_test_callback, NULL, &timer_id));
+  TEST_ASSERT_OK(soft_timer_start(500, prv_soft_timer_test_callback, NULL, &timer_id));
   TEST_ASSERT_NOT_EQUAL(255, timer_id);
 
   // Validate this hasn't run yet (possibly flaky).
