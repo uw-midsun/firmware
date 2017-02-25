@@ -1,6 +1,13 @@
 # Specify toolchain
-CC := gcc
-LD := gcc
+COMPILER := gcc
+VALID_COMPILERS := gcc clang
+override COMPILER := $(filter $(VALID_COMPILERS),$(COMPILER))
+ifeq (,$(COMPILER))
+  $(error Invalid compiler. Expected: $(VALID_COMPILERS))
+endif
+
+CC := $(COMPILER)
+LD := $(COMPILER)
 OBJCPY := objcopy
 OBJDUMP := objdump
 SIZE := size
@@ -21,7 +28,18 @@ LDSCRIPT := $(PLATFORM_DIR)/ldscripts
 
 # Build flags for the device
 CDEFINES :=
-CFLAGS := -Wall -Werror -g -Os -std=gnu99 -Wno-unused-variable -pedantic \
+
+ifeq (gcc, $(COMPILER))
+  CSFLAGS := -g -Os
+else ifeq (asan, $(COPTIONS))
+  CSFLAGS := -O1 -g -fsanitize=address -fno-omit-frame-pointer
+else ifeq (tsan, $(COPTIONS))
+  CSFLAGS := -fsanitize=thread -O1 -g
+else
+  CSFLAGS := -O1 -g
+endif
+
+CFLAGS := $(CSFLAGS) -std=gnu99 -Wall -Werror -Wno-unused-variable -pedantic \
           -ffunction-sections -fdata-sections \
           -Wl,-Map=$(BIN_DIR)/$(PROJECT).map \
           $(ARCH_CLAGS) $(addprefix -D,$(CDEFINES))

@@ -43,3 +43,6 @@ tags
 .ycm_extra_conf.py
 *.swp
 __pycache__
+
+# Compile database
+compile_commands.json
