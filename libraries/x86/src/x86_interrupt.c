@@ -67,13 +67,8 @@ void x86_interrupt_init(void) {
   s_x86_interrupt_next_interrupt_id = 0;
   s_x86_interrupt_next_handler_id = 0;
 
-  Interrupt empty_interrupt;
-  for (uint16_t i = 0; i < NUM_X86_INTERRUPT_HANDLERS; i++) {
-    s_x86_interrupt_interrupts_map[i] = empty_interrupt;
-  }
-  for (uint16_t i = 0; i < NUM_X86_INTERRUPT_INTERRUPTS; i++) {
-    s_x86_interrupt_handlers[i] = NULL;
-  }
+  memset(&s_x86_interrupt_interrupts_map, 0, sizeof(s_x86_interrupt_interrupts_map));
+  memset(&s_x86_interrupt_handlers, 0, sizeof(s_x86_interrupt_handlers));
 }
 
 StatusCode x86_interrupt_register_handler(x86_interrupt_handler handler, uint8_t *handler_id) {
