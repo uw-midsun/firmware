@@ -124,3 +124,9 @@ bool soft_timer_cancel(SoftTimerID timer_id) {
   critical_section_end(critical);
   return false;
 }
+
+uint32_t soft_timer_remaining_time(SoftTimerID timer_id) {
+  struct itimerspec spec = { { 0, 0 }, { 0, 0 } };
+  timer_gettime(s_posix_timers[timer_id].timer_id, &spec);
+  return spec.it_value.tv_sec * 1000000 + spec.it_value.tv_nsec / 1000;
+}

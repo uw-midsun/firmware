@@ -34,3 +34,8 @@ bool soft_timer_cancel(SoftTimerID timer_id);
 
 // Checks if software timers are running. Returns true if any soft timers are in use.
 bool soft_timer_inuse(void);
+
+// Checks the time left on a particular timer. Returns a 0 if the timer has expired and is no longer
+// in use. Note that since timer ids are re-used this could return false values once the timer has
+// expired or if it is cancelled.
+uint32_t soft_timer_remaining_time(SoftTimerID timer_id);

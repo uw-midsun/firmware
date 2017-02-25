@@ -52,7 +52,7 @@ void test_soft_timer_end2end(void) {
 
   TEST_ASSERT_FALSE(soft_timer_inuse());
 
-  // 0.5 second timer.
+  // 0.5 us timer.
   TEST_ASSERT_OK(soft_timer_start(500, prv_soft_timer_test_callback, NULL, &timer_id));
 
   // Assume the timer id changed to something else. (Not a specific number as this would prevent the
@@ -79,11 +79,11 @@ void test_soft_timer_multitimer(void) {
   // Verify everything is clear.
   TEST_ASSERT_FALSE(soft_timer_inuse());
 
-  // 1 Second timer starting immediately
+  // 1 ms timer starting immediately
   TEST_ASSERT_OK(soft_timer_start_millis(1, prv_soft_timer_test_callback, NULL, &mid_timer));
-  // 0.5 second timer premepts the other timer.
+  // 500 us timer premepts the other timer.
   TEST_ASSERT_OK(soft_timer_start(500, prv_short_soft_timer_test_callback, NULL, &short_timer));
-  // Queued last timer should return after 2 seconds.
+  // Queued last timer should return after 1 seconds.
   TEST_ASSERT_OK(soft_timer_start_seconds(1, prv_long_soft_timer_test_callback, NULL, &long_timer));
 
   while (!s_short_callback_ran) {
@@ -117,11 +117,11 @@ void test_soft_timer_multitimer_short(void) {
   // Verify everything is clear.
   TEST_ASSERT_FALSE(soft_timer_inuse());
 
-  // 1 Second timer starting immediately
+  // 125 us timer starting immediately
   TEST_ASSERT_OK(soft_timer_start(125, prv_soft_timer_test_callback, NULL, &mid_timer));
-  // 0.5 second timer premepts the other timer.
+  // 50 us timer premepts prior timer.
   TEST_ASSERT_OK(soft_timer_start(50, prv_short_soft_timer_test_callback, NULL, &short_timer));
-  // Queued last timer should return after 2 seconds.
+  // Queued last timer should return after 200 us.
   TEST_ASSERT_OK(soft_timer_start(200, prv_long_soft_timer_test_callback, NULL, &long_timer));
 
   while (!s_short_callback_ran) {
@@ -190,6 +190,34 @@ void test_soft_timer_cancel(void) {
 
   // Validate it still hasn't run.
   TEST_ASSERT_FALSE(s_callback_ran);
+}
+
+// Test checking the duration remaining (loosely)
+void test_soft_timer_remaining(void) {
+  SoftTimerID timer_id = 255;
+
+  TEST_ASSERT_FALSE(soft_timer_inuse());
+
+  // 500 us timer.
+  const uint32_t duration = 500;
+  TEST_ASSERT_OK(soft_timer_start(duration, prv_soft_timer_test_callback, NULL, &timer_id));
+
+  // Assume the timer id changed to something else. (Not a specific number as this would prevent the
+  // test from passing if we ever modified the internals).
+  TEST_ASSERT_NOT_EQUAL(255, timer_id);
+  TEST_ASSERT_TRUE(soft_timer_remaining_time(timer_id) < duration);
+
+  // Validate it hasn't run yet (possibly flaky);
+  TEST_ASSERT_FALSE(s_callback_ran);
+  TEST_ASSERT_TRUE(soft_timer_inuse());
+
+  while (!s_callback_ran) {
+  }
+
+  // Once run validate everything is as expected.
+  TEST_ASSERT_TRUE(s_callback_ran);
+  TEST_ASSERT_EQUAL(timer_id, s_interrupt_id);
+  TEST_ASSERT_EQUAL(soft_timer_remaining_time(timer_id), 0);
 }
 
 // Create too many software timers.

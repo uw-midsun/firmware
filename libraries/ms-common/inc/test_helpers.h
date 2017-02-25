@@ -8,4 +8,4 @@
 #define TEST_ASSERT_OK(code) TEST_ASSERT_EQUAL(STATUS_CODE_OK, (code))
 
 // TEST ONLY FUNCTION TO SET TIMER COUNTER FOR SOFT TIMERS UNSAFE TO CALL OUTSIDE A TEST.
-void TEST_SOFT_TIMER_SET_COUNTER(uint32_t counter_value);
+void TEST_soft_timer_set_counter(uint32_t counter_value);

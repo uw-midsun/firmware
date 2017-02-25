@@ -20,6 +20,13 @@ typedef struct Timer {
   SoftTimerCallback callback;
 } Timer;
 
+// Timers on the stm32f0xx is implemented as an ordered doubly linked list. This allows for O(1)
+// access to the minimum timer, O(1) deletion of this timer and O(1) access to the next timer. Since
+// the queuing of the next timer is the priority this makes it a very good data structure for this
+// application. This does come at a cost of worst case O(n) insertion and deletion of arbitrary
+// timers but the tradeoff of super fast access to the head node and its immediate successor is
+// worthwhile to allow for fast interrupts.
+
 // This is treated like a doubly linked list where this array is the object pool.
 static volatile Timer s_soft_timer_array[SOFT_TIMER_MAX_TIMERS];
 
@@ -220,4 +227,19 @@ bool soft_timer_cancel(SoftTimerID timer_id) {
     }
   }
   return false;
+}
+
+uint32_t soft_timer_remaining_time(SoftTimerID timer_id) {
+  // Check if the timer is running.
+  if (~s_freebitset & (1 << timer_id)) {
+    if (s_soft_timer_array[timer_id].rollover_count > s_rollover_count) {
+      // If it needs to rollover add the time left to rollover to the expiry time. (Warning not
+      // compatible above uint32_t duration sizes).
+      return UINT32_MAX - TIM_GetCounter(TIM2) + s_soft_timer_array[timer_id].expiry_time;
+    } else {
+      // If it doesn't need to rollover just return the time remaining.
+      return s_soft_timer_array[timer_id].expiry_time - TIM_GetCounter(TIM2);
+    }
+  }
+  return 0;
 }
