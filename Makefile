@@ -6,6 +6,8 @@
 #		PR: [PROJECT=] - Specifies the target project
 #		LI: [LIBRARY=] - Specifies the target library (only valid for tests)
 #		TE: [TEST=] - Specifies the target test (only valid for tests, requires LI or PR to be specified)
+#		CM: [COMPILER=] - Specifies the compiler to use on x86. Defualts to gcc [gcc | clang].
+#		CO: [COPTIONS=] - Specifies compiler options on x86 [asan | tsan].
 #
 # Usage:
 #		make [all] [PL] [PR] - Builds the target project and its dependencies
@@ -18,6 +20,7 @@
 # Platform specific:
 #		make program [PL=stm32f0xx] [PR] - Programs and runs the project through OpenOCD
 #		make semihosting [PL=stm32f0xx] [PR] - Opens an instance of tmux to view both GDB and OpenOCD and runs the project
+#		make <build | test | remake | all> [PL=x86] [CM=clang [CO]]
 #
 ###################################################################################################
 
