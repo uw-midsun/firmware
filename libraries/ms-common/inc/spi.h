@@ -5,28 +5,7 @@
 #include <stdint.h>
 
 #include "gpio.h"
-#include "interrupt.h"
 #include "status.h"
-
-
-typdef void (*spi_callback)(uint8_t spi_x, SPIITSource source, void *context);
-
-// For setting data size (applies to both transmission and reception)
-typedef enum {
-  SPI_DATASIZE_4B = 0,
-  SPI_DATASIZE_5B,
-  SPI_DATASIZE_6B,
-  SPI_DATASIZE_7B,
-  SPI_DATASIZE_8B,
-  SPI_DATASIZE_9B,
-  SPI_DATASIZE_10B,
-  SPI_DATASIZE_11B,
-  SPI_DATASIZE_12B,
-  SPI_DATASIZE_13B,
-  SPI_DATASIZE_14B,
-  SPI_DATASIZE_15B,
-  SPI_DATASIZE_16B,
-} SPIDataSize;
 
 // For setting clock polarity
 typedef enum {
@@ -61,10 +40,10 @@ typedef enum {
 // SPI init struct
 typedef struct SPISettings {
   // SPI Settings
-  SPIDataSize data_size;
   SPICPolarity polarity;
   SPICPhase phase;
   SPIBaudRate baud_rate;
+  SPIFirstBit first_bit;
 
   // GPIO pin settings
   GPIOAddress mosi_pin;
@@ -73,34 +52,29 @@ typedef struct SPISettings {
   GPIOAddress nss_pin;
 }
 
-// For selecting an interrupt source when registering a callback
-typedef enum {
-  SPI_IT_SOURCE_TXE = 0,    // Tx buffer empty
-  SPI_IT_SOURCE_RXNE,       // Rx buffer not empty
-  SPI_IT_SOURCE_ERR,        // error
-} SPIITSource;
+// Note: spi_x = 0 for SPI1, spi_x = 1 for SPI2.
 
 // Initializes a SPI peripheral.
   // Communication direction will always be set to full duplex.
   // Mode will always be set to master.
   // NSS is always set to be managed in software
-StatusCode spi_init(uint8_t spi_x, SPISettings *settings);
+  // Data size is always set to 8 bits
+StatusCode spi_init(uint8_t spi_x, SPISettings *settings); 
+
+// Transmit 8 bits
+StatusCode spi_send(uint8_t spi_x, uint8_t data);
+
+// Transmits all messages in data
+StatusCode spi_send_array(uint8_t spi_x, uint8_t *data, size_t data_length);
+
+// Receive 8 bits
+uint8_t spi_receive(uint8_t spi_x);
+
+// Sends and receives 8 bits
+uint8_t spi_exchange(uint8_t spi_x, uint8_t data);
 
 // Sets or resets NSS pin
 StatusCode spi_configure_NSS(uint8_t spi_x, SPISettings *settings, GPIOState state);
 
-// Transmits all messages in data
-StatusCode spi_send_data(uint8_t spi_x, uint8_t *data, size_t data_length);
-
-// Receives messages and puts them into data 
-StatusCode spi_receive_data(uint8_t spi_x, uint8_t *data, size_t data_length);
-
-// Enables the interrupt source
-StatusCode spi_enable_interrupt(uint8_t spi_x, SPIITSource source);
-
-// Disables the interrupt source
-StatusCode spi_disable_interrupt(uint8_t spi_x, SPIITSource source);
-
-// Registers a callback on a SPI peripheral on a given source.
-StatusCode spi_register_interrupt(uint8_t spi_x, SPIITSource source, InterruptSettings *settings,
-                                  spi_callback, void *context);
+// Toggles NSS pin
+StatusCode spi_toggle_NSS(uint8_t spi_x, SPISettings *settings);
