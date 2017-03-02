@@ -14,21 +14,21 @@
 static SPI_TypeDef *spi_periph_map[] = { SPI1, SPI2 };
 
 static bool prv_is_periph_valid(const uint8_t spi_x) {
-	return spi_x == 0 || spi_x = 1;
+  return spi_x == 0 || spi_x = 1;
 }
 
 static bool prv_are_settings_valid(const SPISettings *settings) {
-	return !(settings->polarity > SPI_CPOLARITY_HIGH ||
+  return !(settings->polarity > SPI_CPOLARITY_HIGH ||
            settings->phase > SPI_CPHASE_2EDGE ||
            settings->baud_rate > SPI_BAUDRATE_256 ||
            settings->first_bit > SPI_FIRSTBIT_LSB);
 }
 
 static uint8_t prv_exchange(uint8_t spi_x, uint8_t data) {
-  while(!SPI_I2S_GetFlagStatus(SPI_I2S_FLAG_TXE));
+  while (!SPI_I2S_GetFlagStatus(SPI_I2S_FLAG_TXE)) {}
   SPI_SendData8(spi_periph_map[spi_x], data);
 
-  while(!SPI_I2S_GetFlagStatus(SPI_I2S_FLAG_RXNE));
+  while (!SPI_I2S_GetFlagStatus(SPI_I2S_FLAG_RXNE)) {}
   return SPI_ReceiveData8(spi_periph_map[spi_x]);
 }
 
@@ -83,7 +83,7 @@ StatusCode spi_init(uint8_t spi_x, SPISettings *settings) {
   } else {
     init_struct.SPI_CPOL = SPI_CPOL_High;
   }
-  
+
   // Parse clock phase
   if (settings->phase == SPI_CPHASE_1EDGE) {
     init_struct.SPI_CPHA = SPI_CPHA_1Edge;
@@ -92,7 +92,7 @@ StatusCode spi_init(uint8_t spi_x, SPISettings *settings) {
   }
 
   // Parse Baud Rate prescaler value
-  init_struct.SPI_BaudRatePrescaler = ((settings->baud_rate / 2) << 4) 
+  init_struct.SPI_BaudRatePrescaler = ((settings->baud_rate / 2) << 4)
                                       + ((settings->baud_rate % 2) << 3);
 
   // Parse first bit
@@ -102,7 +102,7 @@ StatusCode spi_init(uint8_t spi_x, SPISettings *settings) {
     init_struct.SPI_FirstBit = SPI_FirstBit_LSB;
   }
 
-  spi_init(spi_periph_map[spi_x], &init_struct);
+  Spi_Init(spi_periph_map[spi_x], &init_struct);
 
   // Set FIFO threshold for RXNE event
   SPI_RxFIFOThresholdConfig(spi_periph_map[spi_x], SPI_RxFIFOThreshold_QF);
@@ -137,7 +137,7 @@ uint8_t spi_receive(uint8_t spi_x) {
   if (!prv_is_periph_valid(spi_x)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
-  
+
   return prv_exchange(spi_x, 0x00); // dummy data
 }
 

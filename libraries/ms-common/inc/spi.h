@@ -59,7 +59,7 @@ typedef struct SPISettings {
   // Mode will always be set to master.
   // NSS is always set to be managed in software
   // Data size is always set to 8 bits
-StatusCode spi_init(uint8_t spi_x, SPISettings *settings); 
+StatusCode spi_init(uint8_t spi_x, SPISettings *settings);
 
 // Transmit 8 bits
 StatusCode spi_send(uint8_t spi_x, uint8_t data);
