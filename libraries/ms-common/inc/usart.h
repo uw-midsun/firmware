@@ -25,18 +25,6 @@ typedef enum {
   USART_MODE_TX,
 } USARTMode;
 
-// For setting interrupt source
-typedef enum {
-  USART_IT_SOURCE_TXE = 0,
-  USART_IT_SOURCE_RXNE,
-  USART_IT_SOURCE_TC,
-  USART_IT_SOURCE_IDLE,
-  USART_IT_SOURCE_CTS,
-  USART_IT_SOURCE_LBD,
-  USART_IT_SOURCE_PE,
-  USART_IT_SOURCE_ERR,
-} USARTITSource;
-
 // USART settings
 typedef struct {
   uint32_t baud_rate;
@@ -47,25 +35,14 @@ typedef struct {
   GPIOAddress rx_address;
 } USARTSettings;
 
-
-typedef void (*usart_it_callback)(uint8_t periph, void *context);
-
-// Registers new callback
-StatusCode usart_register_interrupt(uint8_t address,
-  InterruptSettings *settings, InterruptEdge edge,
-  usart_it_callback callback, void *context);
-
-// Triggers interrupt
-StatusCode usart_it_trigger_interrupt(uint8_t address);
-
 // Initializes USART with settings
 StatusCode usart_init(uint8_t periph, USARTSettings *settings);
 
-// Configures interrupt source
-StatusCode usart_it_config(uint8_t periph, USARTITSource source);
-
 // Transmits data
-StatusCode usart_send_data(USARTSettings *settings, uint16_t data);
+StatusCode usart_transmit(USARTSettings *settings, uint16_t data);
+
+// Tranmits array of data
+StatusCode usart_transmit_array(USARTSettings *settings, uint8_t *data, uint8_t length);
 
 // Receives data
 StatusCode usart_receive(USARTSettings *settings);
