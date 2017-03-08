@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "gpio.h"
@@ -9,14 +10,14 @@
 
 // For setting clock polarity
 typedef enum {
-  SPI_CPOLARITY_LOW = 0,
-  SPI_CPOLARITY_HIGH,
+  SPI_CPOL_LOW = 0,
+  SPI_CPOL_HIGH,
 } SPICpol;
 
 // For setting clock phase
 typedef enum {
-  SPI_CPHASE_1EDGE = 0,
-  SPI_CPHASE_2EDGE,
+  SPI_CPHA_1EDGE = 0,
+  SPI_CPHA_2EDGE,
 } SPICpha;
 
 // For setting baud rate prescaler
@@ -40,8 +41,8 @@ typedef enum {
 // SPI init struct
 typedef struct SPISettings {
   // SPI Settings
-  SPICPolarity polarity;
-  SPICPhase phase;
+  SPICpol polarity;
+  SPICpha phase;
   SPIBaudRate baud_rate;
   SPIFirstBit first_bit;
 
@@ -49,32 +50,15 @@ typedef struct SPISettings {
   GPIOAddress mosi_pin;
   GPIOAddress miso_pin;
   GPIOAddress sck_pin;
-  GPIOAddress nss_pin;
-}
+  GPIOAddress cs_pin;
+} SPISettings;
 
-// Note: spi_x = 0 for SPI1, spi_x = 1 for SPI2.
-
-// Initializes a SPI peripheral.
-  // Communication direction will always be set to full duplex.
-  // Mode will always be set to master.
-  // NSS is always set to be managed in software
-  // Data size is always set to 8 bits
+// Initialize a SPI peripheral.
 StatusCode spi_init(uint8_t spi_x, SPISettings *settings);
 
-// Transmit 8 bits
-StatusCode spi_send(uint8_t spi_x, uint8_t data);
+// Sends all messages in tbuf and receives messages until rbuf is filled.
+StatusCode spi_exchange(uint8_t spi_x, uint8_t *tbuf, uint8_t *rbuf,
+  size_t t_length, size_t r_length);
 
-// Transmits all messages in data
-StatusCode spi_send_array(uint8_t spi_x, uint8_t *data, size_t data_length);
-
-// Receive 8 bits
-uint8_t spi_receive(uint8_t spi_x);
-
-// Sends and receives 8 bits
-uint8_t spi_exchange(uint8_t spi_x, uint8_t data);
-
-// Sets or resets NSS pin
-StatusCode spi_configure_NSS(uint8_t spi_x, SPISettings *settings, GPIOState state);
-
-// Toggles NSS pin
-StatusCode spi_toggle_NSS(uint8_t spi_x, SPISettings *settings);
+// Sets CS high or low
+StatusCode spi_set_cs_state(uint8_t spi_x, GPIOState state);
