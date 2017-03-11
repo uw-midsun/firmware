@@ -17,6 +17,8 @@ typedef struct Interrupt {
   bool is_event;
 } Interrupt;
 
+static pid_t s_main_thread_id = 0;
+
 static uint8_t s_x86_interrupt_next_interrupt_id = 0;
 static uint8_t s_x86_interrupt_next_handler_id = 0;
 
@@ -40,6 +42,10 @@ void prv_sig_handler(int signum, siginfo_t *info, void *ptr) {
 }
 
 void x86_interrupt_init(void) {
+  // Assign the s_main_thread_id to be the thread "owning" the interrupts. This prevents
+  // subprocesses from sending a signal to itself.
+  s_main_thread_id = getpid();
+
   // Create a generic sigaction.
   struct sigaction act;
   act.sa_sigaction = prv_sig_handler;
@@ -111,7 +117,7 @@ StatusCode x86_interrupt_trigger(uint8_t interrupt_id) {
   // callback it is going to run.
   siginfo_t value_store;
   value_store.si_value.sival_int = interrupt_id;
-  sigqueue(getpid(), SIGRTMIN + s_x86_interrupt_interrupts_map[interrupt_id].priority,
+  sigqueue(s_main_thread_id, SIGRTMIN + s_x86_interrupt_interrupts_map[interrupt_id].priority,
            value_store.si_value);
 
   return STATUS_CODE_OK;
