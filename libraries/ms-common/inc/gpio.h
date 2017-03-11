@@ -4,7 +4,7 @@
 
 #include "status.h"
 
-// GPIO address to be used to change that pin's settings
+// GPIO address to be used to change that pin's settings. Both port and pin are zero indexed.
 typedef struct GPIOAddress {
   uint8_t port;
   uint8_t pin;
