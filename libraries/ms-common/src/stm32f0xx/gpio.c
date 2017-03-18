@@ -69,7 +69,7 @@ StatusCode gpio_init_pin(GPIOAddress *address, GPIOSettings *settings) {
   init_struct.GPIO_OType = GPIO_OType_PP;
   if (init_struct.GPIO_Mode == GPIO_Mode_AF) {
     // Subtract 1 due to the offset of the enum from the ALTFN_NONE entry
-    GPIO_PinAFConfig(gpio_port_map[address->port], pin, settings->alt_function - 1);
+    GPIO_PinAFConfig(gpio_port_map[address->port], address->pin, settings->alt_function - 1);
   }
 
   // Set the pin state.
