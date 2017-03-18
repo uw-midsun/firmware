@@ -12,16 +12,9 @@
 
 static SPI_TypeDef *spi_periph_map[] = { SPI1, SPI2 };
 
-static uint8_t s_spi_x = 0;
-
-static uint8_t s_tx_buffer = 0;
-static uint8_t s_rx_buffer = 0;
-static bool s_transmitted = 0;
-static bool s_received = 0;
-
 static GPIOAddress s_cs_pin_map[] = { 0, 0 };
 
-static bool prv_is_periph_valid(const uint8_t spi_x) {
+static bool prv_is_periph_valid(const SPIPeriph spi_x) {
   return spi_x == 0 || spi_x == 1;
 }
 
@@ -36,24 +29,15 @@ static bool prv_is_state_valid(const GPIOState state) {
   return state < NUM_GPIO_STATE;
 }
 
-static uint8_t prv_exchange(uint8_t data) {
-  s_transmitted = false;
-  s_received = false;
-  s_tx_buffer = data;
+static uint8_t prv_exchange(SPIPeriph spi_x, uint8_t data) {
+  while (!SPI_I2SGetFlagStatus(SPI_I2S_FLAG_TXE)) {}
+  SPI_SendData8(spi_periph_map[spi_x], data);
 
-  SPI_I2S_ITConfig(spi_periph_map[s_spi_x], SPI_I2S_IT_TXE, ENABLE);
-  if (!s_transmitted) {
-    PWR_EnterSleepMode(PWR_SLEEPEntry_WFI);
-  }
-
-  SPI_I2S_ITConfig(spi_periph_map[s_spi_x], SPI_I2S_IT_RXNE, ENABLE);
-  if (!s_received) {
-    PWR_EnterSleepMode(PWR_SLEEPEntry_WFI);
-  }
-  return s_rx_buffer;
+  while (!SPI_I2SGetFlagStatus(SPI_I2S_FLAG_RXNE)) {}
+  return SPI_ReceiveData8;
 }
 
-StatusCode spi_init(uint8_t spi_x, SPISettings *settings) {
+StatusCode spi_init(SPIPeriph spi_x, SPISettings *settings) {
   if (!prv_is_periph_valid(spi_x) || !prv_are_settings_valid(settings)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -126,12 +110,6 @@ StatusCode spi_init(uint8_t spi_x, SPISettings *settings) {
 
   Spi_Init(spi_periph_map[spi_x], &spi_init_struct);
 
-  // Enable NVIC for interrupts
-  NVIC_InitTypeDef nvic_init_struct = { 0 };
-  nvic_init_struct.NVIC_IRQChannel = SPI1_IRQn + spi_x;
-  nvic_init_struct.NVIC_IRQChannelPriority = 1; // no idea if this is correct priority
-  nvic_init_struct.NVIC_IRQChannelCmd = ENABLE;
-
   // Set FIFO threshold for RXNE event
   SPI_RxFIFOThresholdConfig(spi_periph_map[spi_x], SPI_RxFIFOThreshold_QF);
 
@@ -140,46 +118,25 @@ StatusCode spi_init(uint8_t spi_x, SPISettings *settings) {
   return STATUS_CODE_OK;
 }
 
-StatusCode spi_exchange(uint8_t spi_x, uint8_t *tbuf, uint8_t *rbuf,
-  size_t t_length, size_t r_length) {
-  if (!prv_is_periph_valid(spi_x)) {
-    return status_code(STATUS_CODE_INVALID_ARGS);
-  }
-
-  s_spi_x = spi_x;
-
-  for (int i = 0; i * sizeof(uint8_t) < (t_length > r_length ? t_length : r_length); ++i) {
-    if (i * sizeof(uint8_t) >= t_length) {
-      rbuf[i] = prv_exchange(0x00);
-    } else if (i * sizeof(uint8_t) >= r_length) {
-      prv_exchange(tbuf[i]);
+StatusCode spi_exchange(SPIPeriph spi_x, uint8_t *tx_data, size_t tx_len,
+  uint8_t *rx_data, size_t rx_len) {
+  size_t num_cycles = tx_len > rx_len ? tx_len : rx_len;
+  for (int i = 0; i < num_cycles; ++i) {
+    if (i > rx_len) {
+      prv_exchange(spi_x, tx_data[i]);
     } else {
-      rbuf = prv_exchange(tbuf[i]);
+      rx_data[i] = prv_exchange(spi_x, i > tx_len ? 0x00 : tx_data[i]);
     }
   }
-
   return STATUS_CODE_OK;
 }
 
-StatusCode spi_set_cs_state(uint8_t spi_x, GPIOState state) {
+
+StatusCode spi_set_cs_state(SPIPeriph spi_x, GPIOState state) {
   if (!prv_is_periph_valid(spi_x) || !prv_is_state_valid(state)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
   gpio_set_pin_state(&s_cs_pin_map[spi_x], state);
   return STATUS_CODE_OK;
-}
-
-void SPI1_IRQHandler(void) {
-  if (SPI_I2S_GetITStatus(spi_periph_map[s_spi_x], SPI_I2S_IT_TXE)) {
-    SPI_SendData8(spi_periph_map[s_spi_x], s_tx_buffer);
-    SPI_I2S_ITConfig(spi_periph_map[s_spi_x], SPI_I2S_IT_TXE, DISABLE);
-  } else if (SPI_I2S_GetITStatus(spi_periph_map[s_spi_x], SPI_I2S_IT_RXNE)) {
-    s_rx_buffer = SPI_ReceiveData8(spi_periph_map[s_spi_x]);
-    SPI_I2S_ITConfig(spi_periph_map[s_spi_x], SPI_I2S_IT_RXNE, DISABLE);
-  }
-}
-
-void SPI2_IRQHandler(void) {
-  SPI1_IRQHandler();
 }

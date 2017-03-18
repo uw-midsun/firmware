@@ -8,6 +8,11 @@
 #include "gpio.h"
 #include "status.h"
 
+typedef enum {
+  SPI_PERIPH_1 = 0,
+  SPI_PERIPH_2,
+} SPIPeriph;
+
 // For setting clock polarity
 typedef enum {
   SPI_CPOL_LOW = 0,
@@ -54,11 +59,11 @@ typedef struct SPISettings {
 } SPISettings;
 
 // Initialize a SPI peripheral.
-StatusCode spi_init(uint8_t spi_x, SPISettings *settings);
+StatusCode spi_init(SPIPeriph spi_x, SPISettings *settings);
 
 // Sends all messages in tbuf and receives messages until rbuf is filled.
-StatusCode spi_exchange(uint8_t spi_x, uint8_t *tbuf, uint8_t *rbuf,
-  size_t t_length, size_t r_length);
+StatusCode spi_exchange(SPIPeriph spi_x, uint8_t *tx_data, size_t tx_len,
+  uint8_t *rx_data, size_t rx_len);
 
 // Sets CS high or low
-StatusCode spi_set_cs_state(uint8_t spi_x, GPIOState state);
+StatusCode spi_set_cs_state(SPIPeriph spi_x, GPIOState state);
