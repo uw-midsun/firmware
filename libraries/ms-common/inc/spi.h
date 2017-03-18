@@ -1,5 +1,12 @@
 // HAL SPI
 
+// Interface for SPI; used to send and receive messages according to the SPI specification.
+
+// To use, fill a SPISettings struct with the desired settings and call spi_init once.
+// You cannot change these settings later.
+// After initializing a SPI peripheral, you can use the spi_exchange and spi_set_cs_state
+// functions. You must initialize each peripheral individually.
+
 #pragma once
 
 #include <stddef.h>
@@ -61,7 +68,7 @@ typedef struct SPISettings {
 // Initialize a SPI peripheral.
 StatusCode spi_init(SPIPeriph spi_x, SPISettings *settings);
 
-// Sends all messages in tbuf and receives messages until rbuf is filled.
+// Sends all messages in tx_data and receives messages until rx_data is filled.
 StatusCode spi_exchange(SPIPeriph spi_x, uint8_t *tx_data, size_t tx_len,
   uint8_t *rx_data, size_t rx_len);
 
