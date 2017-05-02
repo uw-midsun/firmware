@@ -68,7 +68,6 @@ StatusCode can_ack_expire(CANAckRequests *requests, const CANAckRequest *ack_req
     return status_code(STATUS_CODE_UNKNOWN);
   }
 
-  printf("Found request at index %d\n", index);
   if (found_request->callback != NULL) {
     found_request->callback(found_request->msg_id, 0, CAN_ACK_STATUS_TIMEOUT,
                             found_request->num_remaining, found_request->context);
@@ -79,9 +78,6 @@ StatusCode can_ack_expire(CANAckRequests *requests, const CANAckRequest *ack_req
 
   requests->num_requests--;
   if (index != requests->num_requests) {
-    printf("Shifting elements %d to %d (%d total) from %p to %p\n",
-           index + 1, requests->num_requests, requests->num_requests - index,
-           &requests->active_requests[index + 1], &requests->active_requests[index]);
     memmove(&requests->active_requests[index], &requests->active_requests[index + 1],
             sizeof(requests->active_requests[0]) * (requests->num_requests - index));
   }
