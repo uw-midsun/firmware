@@ -19,8 +19,8 @@ int main(void) {
   volatile uint32_t j;
 
   while (true) {
-    for (i = 0; i < interval; i++) {
-    }
+    for (i = 0; i < interval; i++) { }
+
     for (j = 0; j < addr_size; j++) {
       gpio_toggle_state(&addr[j]);
     }
