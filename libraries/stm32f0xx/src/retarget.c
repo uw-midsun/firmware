@@ -1,6 +1,4 @@
-// Retargets STDOUT to semihosting if SEMIHOSTING_ENABLED=1.
-// Note that semihosting will cause devices that aren't connected to a debugger to hang.
-// TODO(ELEC-36): Replace semihosting with UART
+// Retargets STDOUT to UART
 #include "retarget.h"
 #include "retarget_cfg.h"
 #include "stm32f0xx.h"
