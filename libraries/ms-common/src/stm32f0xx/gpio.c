@@ -3,7 +3,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "gpio_cfg.h"
 #include "status.h"
 #include "stm32f0xx.h"
 #include "stm32f0xx_gpio.h"
