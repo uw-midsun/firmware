@@ -12,8 +12,8 @@ void teardown_test(void) { }
 #define VALID_PIN 0
 #define VALID_PORT 0
 
-#define INVALID_PIN (GPIO_CFG_NUM_PINS_PER_PORT)
-#define INVALID_PORT (GPIO_CFG_NUM_PORTS)
+#define INVALID_PIN (GPIO_MCU_NUM_PINS_PER_PORT)
+#define INVALID_PORT (GPIO_MCU_NUM_PORTS)
 
 // Used to impose a delay to due to the 12 MHz max slew rate of the GPIO on the stm32f0xx.
 void delay(void) {

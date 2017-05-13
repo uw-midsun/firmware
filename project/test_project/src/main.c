@@ -23,10 +23,10 @@ int main(void) {
   SPISettings spi_settings = {
     .baudrate = 1500000,
     .mode = SPI_MODE_0,
-    .mosi = { GPIO_MCU_PORT_B, 15 },
-    .miso = { GPIO_MCU_PORT_B, 14 },
-    .sclk = { GPIO_MCU_PORT_B, 13 },
-    .cs = { GPIO_MCU_PORT_C, 0 }
+    .mosi = { GPIO_PORT_B, 15 },
+    .miso = { GPIO_PORT_B, 14 },
+    .sclk = { GPIO_PORT_B, 13 },
+    .cs = { GPIO_PORT_C, 0 }
   };
 
   spi_init(1, &spi_settings);
@@ -39,7 +39,7 @@ int main(void) {
     .state = GPIO_STATE_HIGH,
   };
 
-  GPIOAddress leds[] = { { GPIO_MCU_PORT_C, 6 }, { GPIO_MCU_PORT_C, 7 } };
+  GPIOAddress leds[] = { { GPIO_PORT_C, 6 }, { GPIO_PORT_C, 7 } };
   gpio_init_pin(&leds[0], &led_settings);
   gpio_init_pin(&leds[1], &led_settings);
 
