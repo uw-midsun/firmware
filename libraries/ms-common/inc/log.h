@@ -5,16 +5,20 @@ typedef enum {
   LOG_LEVEL_DEBUG = 0,
   LOG_LEVEL_WARN,
   LOG_LEVEL_FAULT,
-  LOG_LEVEL_NONE // Invalid log level
+  LOG_LEVEL_NONE, // Invalid log level
 } LogLevel;
 
 #ifndef LOG_LEVEL_VERBOSITY
 #define LOG_LEVEL_VERBOSITY LOG_LEVEL_DEBUG
 #endif
 
+#define LOG_DEBUG(fmt, ...) LOG(LOG_LEVEL_DEBUG, fmt, ##__VA_ARGS__)
+#define LOG_WARN(fmt, ...) LOG(LOG_LEVEL_WARN, fmt, ##__VA_ARGS__)
+#define LOG_FAULT(fmt, ...) LOG(LOG_LEVEL_FAULT, fmt, ##__VA_ARGS__)
+
 #define LOG(level, fmt, ...) \
 do { \
   if ((level) >= LOG_LEVEL_VERBOSITY) { \
-    printf("%s:%d:%s():" (fmt), __FILE__, __LINE__, __func__, __VA_ARGS__); \
+    printf("[%d] %s:%d:" fmt, (level), __FILE__, __LINE__, ##__VA_ARGS__); \
   } \
-} while (0);
+} while (0)
