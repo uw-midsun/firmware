@@ -29,6 +29,7 @@ int main(void) {
     .cs = { GPIO_PORT_C, 0 }
   };
 
+  // Using SPI port 2 - not using enum so build on x86 will pass
   spi_init(1, &spi_settings);
 
   uint8_t whoami = 0xAA;

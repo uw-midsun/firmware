@@ -2,7 +2,6 @@
 
 #include "test_helpers.h"
 #include "gpio.h"
-#include "gpio_cfg.h"
 #include "unity.h"
 
 void setup_test(void) { }
