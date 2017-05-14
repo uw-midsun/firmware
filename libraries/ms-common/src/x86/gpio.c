@@ -3,7 +3,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "gpio_cfg.h"
 #include "status.h"
 
 static GPIOSettings pin_settings[GPIO_MCU_TOTAL_PINS];

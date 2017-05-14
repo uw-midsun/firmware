@@ -1,10 +1,10 @@
 #include "spi.h"
 
-void spi_init(SPIPort spi, SPISettings *settings) {
-  // TODO(ELEC-61): use status codes
-  // Not implemented
+StatusCode spi_init(SPIPort spi, SPISettings *settings) {
+  return status_code(STATUS_CODE_UNIMPLEMENTED);
 }
 
-void spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *rx_data, size_t rx_len) {
-  // Not implemented
+StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len,
+                        uint8_t *rx_data, size_t rx_len) {
+  return status_code(STATUS_CODE_UNIMPLEMENTED);
 }

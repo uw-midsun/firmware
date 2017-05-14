@@ -22,7 +22,15 @@ static SPIPortData s_port[SPI_MCU_NUM_PORTS] = {
   }
 };
 
-void spi_init(SPIPort spi, SPISettings *settings) {
+StatusCode spi_init(SPIPort spi, SPISettings *settings) {
+  RCC_ClocksTypeDef clocks;
+  RCC_GetClocksFreq(&clocks);
+
+  size_t index = __builtin_ffsl(clocks.PCLK_Frequency / settings->baudrate);
+  if (index <= 2) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid baudrate");
+  }
+
   s_port[spi].rcc_cmd(s_port[spi].periph, ENABLE);
   s_port[spi].cs = settings->cs;
 
@@ -41,14 +49,6 @@ void spi_init(SPIPort spi, SPISettings *settings) {
   gpio_settings.alt_function = GPIO_ALTFN_NONE;
   gpio_init_pin(&settings->cs, &gpio_settings);
 
-  RCC_ClocksTypeDef clocks;
-  RCC_GetClocksFreq(&clocks);
-
-  size_t index = __builtin_ffsl(clocks.PCLK_Frequency / settings->baudrate);
-  if (index <= 2) {
-    index = 2;
-  }
-
   SPI_InitTypeDef init = {
     .SPI_Direction = SPI_Direction_2Lines_FullDuplex,
     .SPI_Mode = SPI_Mode_Master,
@@ -66,9 +66,12 @@ void spi_init(SPIPort spi, SPISettings *settings) {
   SPI_RxFIFOThresholdConfig(s_port[spi].base, SPI_RxFIFOThreshold_QF);
 
   SPI_Cmd(s_port[spi].base, ENABLE);
+
+  return STATUS_CODE_OK;
 }
 
-void spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *rx_data, size_t rx_len) {
+StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len,
+                        uint8_t *rx_data, size_t rx_len) {
   gpio_set_pin_state(&s_port[spi].cs, GPIO_STATE_LOW);
 
   for (int i = 0; i < tx_len; i++) {
@@ -88,4 +91,6 @@ void spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *rx_data
   }
 
   gpio_set_pin_state(&s_port[spi].cs, GPIO_STATE_HIGH);
+
+  return STATUS_CODE_OK;
 }

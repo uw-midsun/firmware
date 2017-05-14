@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include "spi_mcu.h"
 #include "gpio.h"
+#include "status.h"
 
 typedef enum {
   SPI_MODE_0 = 0, // CPOL: 0 CPHA: 0
@@ -21,6 +22,7 @@ typedef struct {
   GPIOAddress cs;
 } SPISettings;
 
-void spi_init(SPIPort spi, SPISettings *settings);
+StatusCode spi_init(SPIPort spi, SPISettings *settings);
 
-void spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *rx_data, size_t rx_len);
+StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len,
+                        uint8_t *rx_data, size_t rx_len);
