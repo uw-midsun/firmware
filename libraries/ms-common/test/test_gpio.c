@@ -9,11 +9,17 @@ void setup_test(void) { }
 
 void teardown_test(void) { }
 
-#define VALID_PIN 1
-#define VALID_PORT 1
+#define VALID_PIN 0
+#define VALID_PORT 0
 
 #define INVALID_PIN (GPIO_CFG_NUM_PINS_PER_PORT)
 #define INVALID_PORT (GPIO_CFG_NUM_PORTS)
+
+// Used to impose a delay to due to the 12 MHz max slew rate of the GPIO on the stm32f0xx.
+void delay(void) {
+  for (volatile int16_t i = 0; i < 1000; i++) {
+  }
+}
 
 // gpio_init
 
@@ -30,9 +36,9 @@ void test_gpio_init_valid(void) {
 void test_gpio_init_pin_valid(void) {
   // Default settings for a pin.
   GPIOSettings settings = { .direction = GPIO_DIR_IN,
-                           .state = GPIO_STATE_LOW,
-                           .resistor = GPIO_RES_NONE,
-                           .alt_function = GPIO_ALTFN_NONE };
+                            .state = GPIO_STATE_LOW,
+                            .resistor = GPIO_RES_PULLUP,
+                            .alt_function = GPIO_ALTFN_NONE };
   // A pin that should be valid on all configurations.
   GPIOAddress address = { .port = VALID_PORT, .pin = VALID_PIN };
   TEST_ASSERT_OK(gpio_init());
@@ -43,9 +49,9 @@ void test_gpio_init_pin_valid(void) {
 void test_gpio_init_pin_invalid_address(void) {
   // Default settings for a pin.
   GPIOSettings settings = { .direction = GPIO_DIR_IN,
-                           .state = GPIO_STATE_LOW,
-                           .resistor = GPIO_RES_NONE,
-                           .alt_function = GPIO_ALTFN_NONE };
+                            .state = GPIO_STATE_LOW,
+                            .resistor = GPIO_RES_PULLUP,
+                            .alt_function = GPIO_ALTFN_NONE };
   TEST_ASSERT_OK(gpio_init());
   // A port that should be invalid on all configurations.
   GPIOAddress address = { .port = INVALID_PORT, .pin = VALID_PIN };
@@ -60,9 +66,9 @@ void test_gpio_init_pin_invalid_address(void) {
 void test_gpio_init_pin_invalid_settings(void) {
   // Bad settings for a pin.
   GPIOSettings settings = { .direction = NUM_GPIO_DIR,
-                           .state = GPIO_STATE_LOW,
-                           .resistor = GPIO_RES_NONE,
-                           .alt_function = GPIO_ALTFN_NONE };
+                            .state = GPIO_STATE_LOW,
+                            .resistor = GPIO_RES_PULLUP,
+                            .alt_function = GPIO_ALTFN_NONE };
   TEST_ASSERT_OK(gpio_init());
   // A port that should be valid on all configurations.
   GPIOAddress address = { .port = VALID_PORT, .pin = VALID_PIN };
@@ -83,9 +89,9 @@ void test_gpio_init_pin_invalid_settings(void) {
 void test_gpio_init_pin_valid_output(void) {
   // Default high settings for a pin.
   GPIOSettings settings = { .direction = GPIO_DIR_IN,
-                           .state = GPIO_STATE_HIGH,
-                           .resistor = GPIO_RES_NONE,
-                           .alt_function = GPIO_ALTFN_NONE };
+                            .state = GPIO_STATE_HIGH,
+                            .resistor = GPIO_RES_PULLUP,
+                            .alt_function = GPIO_ALTFN_NONE };
   // A pin that should be valid on all configurations.
   GPIOAddress address = { .port = VALID_PORT, .pin = VALID_PIN };
   TEST_ASSERT_OK(gpio_init());
@@ -109,24 +115,26 @@ void test_gpio_init_pin_valid_output(void) {
 void test_gpio_set_pin_state_valid(void) {
   // Default output settings for a pin.
   GPIOSettings settings = { .direction = GPIO_DIR_OUT,
-                           .state = GPIO_STATE_LOW,
-                           .resistor = GPIO_RES_NONE,
-                           .alt_function = GPIO_ALTFN_NONE };
+                            .state = GPIO_STATE_HIGH,
+                            .resistor = GPIO_RES_PULLUP,
+                            .alt_function = GPIO_ALTFN_NONE };
   // A pin that should be valid on all boards.
   GPIOAddress address = { .port = VALID_PORT, .pin = VALID_PIN };
   TEST_ASSERT_OK(gpio_init());
   TEST_ASSERT_OK(gpio_init_pin(&address, &settings));
   GPIOState state;
-  // OFF to ON
-  TEST_ASSERT_OK(gpio_get_value(&address, &state));
-  TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
-  TEST_ASSERT_OK(gpio_set_pin_state(&address, GPIO_STATE_HIGH));
+  // ON to OFF
   TEST_ASSERT_OK(gpio_get_value(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
-  // ON to OFF
   TEST_ASSERT_OK(gpio_set_pin_state(&address, GPIO_STATE_LOW));
+  delay();
   TEST_ASSERT_OK(gpio_get_value(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
+  // OFF to ON
+  TEST_ASSERT_OK(gpio_set_pin_state(&address, GPIO_STATE_HIGH));
+  delay();
+  TEST_ASSERT_OK(gpio_get_value(&address, &state));
+  TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
 }
 
 // Test that an invalid address is caught.
@@ -156,9 +164,9 @@ void test_gpio_set_pin_state_invalid_state(void) {
 void test_gpio_toggle_state_valid(void) {
   // Default output settings for a pin.
   GPIOSettings settings = { .direction = GPIO_DIR_OUT,
-                           .state = GPIO_STATE_LOW,
-                           .resistor = GPIO_RES_NONE,
-                           .alt_function = GPIO_ALTFN_NONE };
+                            .state = GPIO_STATE_LOW,
+                            .resistor = GPIO_RES_PULLUP,
+                            .alt_function = GPIO_ALTFN_NONE };
   // A pin that should be valid on all boards.
   GPIOAddress address = { .port = VALID_PORT, .pin = VALID_PIN };
   TEST_ASSERT_OK(gpio_init());
@@ -168,10 +176,12 @@ void test_gpio_toggle_state_valid(void) {
   TEST_ASSERT_OK(gpio_get_value(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
   TEST_ASSERT_OK(gpio_toggle_state(&address));
+  delay();
   TEST_ASSERT_OK(gpio_get_value(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
   // ON to OFF
   TEST_ASSERT_OK(gpio_toggle_state(&address));
+  delay();
   TEST_ASSERT_OK(gpio_get_value(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
 }
@@ -195,9 +205,9 @@ void test_gpio_toggle_state_invalid_address(void) {
 void test_gpio_get_value_valid(void) {
   // Default output settings for a pin.
   GPIOSettings settings = { .direction = GPIO_DIR_OUT,
-                           .state = GPIO_STATE_LOW,
-                           .resistor = GPIO_RES_NONE,
-                           .alt_function = GPIO_ALTFN_NONE };
+                            .state = GPIO_STATE_LOW,
+                            .resistor = GPIO_RES_PULLUP,
+                            .alt_function = GPIO_ALTFN_NONE };
   // A pin that should be valid on all boards.
   GPIOAddress address = { .port = VALID_PORT, .pin = VALID_PIN };
   TEST_ASSERT_OK(gpio_init());
