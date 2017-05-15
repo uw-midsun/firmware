@@ -35,11 +35,6 @@ static bool prv_are_settings_valid(const GPIOSettings *settings) {
 
 
 StatusCode gpio_init(void) {
-  for (uint32_t i = 0; i < GPIO_CFG_NUM_PORTS; i++) {
-    // Sets the pin to a default reset mode.
-    // TODO(ELEC-20): determine if this is actually Lowest Power setting.
-    GPIO_DeInit(gpio_port_map[i]);
-  }
   return STATUS_CODE_OK;
 }
 
@@ -65,7 +60,7 @@ StatusCode gpio_init_pin(GPIOAddress *address, GPIOSettings *settings) {
   init_struct.GPIO_Pin = pin;
 
   // These are default values which are not intended to be changed.
-  init_struct.GPIO_Speed = GPIO_Speed_Level_1;
+  init_struct.GPIO_Speed = GPIO_Speed_Level_3;
   init_struct.GPIO_OType = GPIO_OType_PP;
   if (init_struct.GPIO_Mode == GPIO_Mode_AF) {
     // Subtract 1 due to the offset of the enum from the ALTFN_NONE entry
