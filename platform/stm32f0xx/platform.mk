@@ -32,9 +32,11 @@ CFLAGS := -Wall -Werror -g -Os -std=c99 -Wno-unused-variable -pedantic \
 LDFLAGS := $(CLFLAGS) -L$(LDSCRIPT_DIR) -Tstm32f0.ld -fuse-linker-plugin
 
 # Device openocd config file
+# Use PROBE=stlink-v2 for discovery boards
+PROBE=cmsis-dap
 OPENOCD_SCRIPT_DIR := /usr/share/openocd/scripts/
 OPENOCD_CFG := -s $(OPENOCD_SCRIPT_DIR) \
-               -f interface/stlink-v2.cfg -f target/stm32f0x.cfg \
+               -f interface/$(PROBE).cfg -f target/stm32f0x.cfg \
                -f $(SCRIPT_DIR)/stm32f0-openocd.cfg
 
 # Platform targets
@@ -48,12 +50,15 @@ gdb: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 	@$(GDB) $< -x "$(SCRIPT_DIR)/gdb_flash"
 	@pkill openocd
 
-semihosting: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+debug: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 	@tmux new-session -s "ms-fw" -d
 	@tmux split-window -h -t "ms-fw":0
-	@tmux send-keys -t "ms-fw":0.1 "$(OPENOCD) $(OPENOCD_CFG)" C-m
+	@tmux send-keys -t "ms-fw":0.1 "echo this should be the serial output" C-m
+	@tmux send-keys -t "ms-fw":0.0 "$(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &" C-m
 	@tmux send-keys -t "ms-fw":0.0 \
-    "$(GDB) $< -x \"$(SCRIPT_DIR)/gdb_flash\"; \
+    "clear; \
+    $(GDB) $< -x \"$(SCRIPT_DIR)/gdb_flash\"; \
+    pkill openocd; \
     tmux kill-session -t \"ms-fw\"" C-m
 	@tmux select-pane -t 0
 	@tmux attach -t "ms-fw"
@@ -62,9 +67,12 @@ semihosting: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 define run_test
 tmux new-session -s "ms-fw" -d;
 tmux split-window -h -t "ms-fw":0;
-tmux send-keys -t "ms-fw":0.1 "$(OPENOCD) $(OPENOCD_CFG)" C-m;
+tmux send-keys -t "ms-fw":0.1 "echo this should be the serial output" C-m
+tmux send-keys -t "ms-fw":0.0 "$(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &" C-m;
 tmux send-keys -t "ms-fw":0.0 \
-  "$(GDB) $1 -x \"$(SCRIPT_DIR)/gdb_flash\"; \
+  "clear; \
+  $(GDB) $1 -x \"$(SCRIPT_DIR)/gdb_flash\"; \
+  pkill openocd; \
   tmux kill-session -t \"ms-fw\"" C-m;
 tmux select-pane -t 0;
 tmux attach -t "ms-fw"
