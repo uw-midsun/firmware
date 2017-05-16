@@ -40,7 +40,7 @@ OPENOCD_CFG := -s $(OPENOCD_SCRIPT_DIR) \
                -f $(SCRIPT_DIR)/stm32f0-openocd.cfg
 
 # Platform targets
-.PHONY: program gdb semihosting
+.PHONY: program gdb debug
 
 program: $(BIN_DIR)/$(PROJECT).bin
 	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash `pwd`/$<" -c shutdown
@@ -51,29 +51,19 @@ gdb: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 	@pkill openocd
 
 debug: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
-	@tmux new-session -s "ms-fw" -d
-	@tmux split-window -h -t "ms-fw":0
-	@tmux send-keys -t "ms-fw":0.1 "echo this should be the serial output" C-m
-	@tmux send-keys -t "ms-fw":0.0 "$(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &" C-m
-	@tmux send-keys -t "ms-fw":0.0 \
-    "clear; \
-    $(GDB) $< -x \"$(SCRIPT_DIR)/gdb_flash\"; \
-    pkill openocd; \
-    tmux kill-session -t \"ms-fw\"" C-m
-	@tmux select-pane -t 0
-	@tmux attach -t "ms-fw"
+	@$(call session_wrapper,$(GDB) $< -x "$(SCRIPT_DIR)/gdb_flash")
 
-# Defines a command to run for unit testing
-define run_test
+define session_wrapper
 tmux new-session -s "ms-fw" -d;
 tmux split-window -h -t "ms-fw":0;
 tmux send-keys -t "ms-fw":0.1 "echo this should be the serial output" C-m
 tmux send-keys -t "ms-fw":0.0 "$(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &" C-m;
-tmux send-keys -t "ms-fw":0.0 \
-  "clear; \
-  $(GDB) $1 -x \"$(SCRIPT_DIR)/gdb_flash\"; \
-  pkill openocd; \
-  tmux kill-session -t \"ms-fw\"" C-m;
+tmux send-keys -t "ms-fw":0.0 '$1; pkill openocd; tmux kill-session -t "ms-fw"' C-m;
 tmux select-pane -t 0;
 tmux attach -t "ms-fw"
+endef
+
+# Defines command to run for unit testing
+define test_run
+clear && $(GDB) $1 -x "$(SCRIPT_DIR)/gdb_flash" -ex "b LoopForever" -ex "c" -ex "set confirm off" -ex "q"
 endef
