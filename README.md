@@ -1,4 +1,4 @@
-#firmware
+# firmware
 
 [![Build Status](https://travis-ci.org/uw-midsun/firmware.svg?branch=master)](https://travis-ci.org/uw-midsun/firmware)
 
@@ -10,16 +10,14 @@ This repository contains all the latest firmware for the [University of Waterloo
 ```bash
 git clone https://github.com/uw-midsun/firmware.git firmware
 cd firmware
-git submodule update --init --recursive
+make build_all PLATFORM=x86
+make build_all PLATFORM=stm32f0xx
+make test_all PLATFORM=x86
 ```
 
 We use the GNU ARM Embedded toolchain to build all our firmware.
 
-```bash
-make build_all PLATFORM=x86
-```
-
-To build a project, run ``make project PROJECT=$PROJECT PLATFORM=$PLATFORM``, where ``$PROJECT`` is a valid project name, and ``$PLATFORM`` is a supported platform.
+To build a project, run ``make PROJECT=$PROJECT PLATFORM=$PLATFORM``, where ``$PROJECT`` is a valid project name, and ``$PLATFORM`` is a supported platform.
 
 **Note**: If not specified, ``$PLATFORM`` is set to ``stm32f0xx`` by default.
 
