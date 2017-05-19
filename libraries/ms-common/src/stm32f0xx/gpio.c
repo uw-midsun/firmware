@@ -3,20 +3,19 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "gpio_cfg.h"
 #include "status.h"
 #include "stm32f0xx.h"
 #include "stm32f0xx_gpio.h"
 #include "stm32f0xx_rcc.h"
 
-static GPIO_TypeDef *gpio_port_map[] = { GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF };
-static uint32_t gpio_rcc_ahb_timer_map[] = { RCC_AHBPeriph_GPIOA, RCC_AHBPeriph_GPIOB,
-                                             RCC_AHBPeriph_GPIOC, RCC_AHBPeriph_GPIOD,
-                                             RCC_AHBPeriph_GPIOE, RCC_AHBPeriph_GPIOF };
+static GPIO_TypeDef *s_gpio_port_map[] = { GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF };
+static uint32_t s_gpio_rcc_ahb_timer_map[] = { RCC_AHBPeriph_GPIOA, RCC_AHBPeriph_GPIOB,
+                                               RCC_AHBPeriph_GPIOC, RCC_AHBPeriph_GPIOD,
+                                               RCC_AHBPeriph_GPIOE, RCC_AHBPeriph_GPIOF };
 
 // Determines if an GPIOAddress is valid based on the defined number of ports and pins.
 static bool prv_is_address_valid(const GPIOAddress *address) {
-  return !(address->port >= GPIO_CFG_NUM_PORTS || address->pin >= GPIO_CFG_NUM_PINS_PER_PORT);
+  return !(address->port >= GPIO_MCU_NUM_PORTS || address->pin >= GPIO_MCU_NUM_PINS_PER_PORT);
 }
 
 // TODO(ELEC-20): Consider moving these two functions to the header as they will be used more or
@@ -46,7 +45,7 @@ StatusCode gpio_init_pin(GPIOAddress *address, GPIOSettings *settings) {
   GPIO_InitTypeDef init_struct;
   uint16_t pin = 0x01 << address->pin;
 
-  RCC_AHBPeriphClockCmd(gpio_rcc_ahb_timer_map[address->port], ENABLE);
+  RCC_AHBPeriphClockCmd(s_gpio_rcc_ahb_timer_map[address->port], ENABLE);
 
   // Parse the GPIOAltFN settings which are used to modify the mode and Alt Function.
   if (settings->alt_function == GPIO_ALTFN_ANALOG) {
@@ -64,14 +63,14 @@ StatusCode gpio_init_pin(GPIOAddress *address, GPIOSettings *settings) {
   init_struct.GPIO_OType = GPIO_OType_PP;
   if (init_struct.GPIO_Mode == GPIO_Mode_AF) {
     // Subtract 1 due to the offset of the enum from the ALTFN_NONE entry
-    GPIO_PinAFConfig(gpio_port_map[address->port], address->pin, settings->alt_function - 1);
+    GPIO_PinAFConfig(s_gpio_port_map[address->port], address->pin, settings->alt_function - 1);
   }
 
   // Set the pin state.
   gpio_set_pin_state(address, settings->state);
 
   // Use the init_struct to set the pin.
-  GPIO_Init(gpio_port_map[address->port], &init_struct);
+  GPIO_Init(s_gpio_port_map[address->port], &init_struct);
   return STATUS_CODE_OK;
 }
 
@@ -80,7 +79,7 @@ StatusCode gpio_set_pin_state(GPIOAddress *address, GPIOState state) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  GPIO_WriteBit(gpio_port_map[address->port], 0x01 << address->pin, (BitAction)state);
+  GPIO_WriteBit(s_gpio_port_map[address->port], 0x01 << address->pin, (BitAction)state);
   return STATUS_CODE_OK;
 }
 
@@ -90,11 +89,11 @@ StatusCode gpio_toggle_state(GPIOAddress *address) {
   }
 
   uint16_t pin = 0x01 << address->pin;
-  uint8_t state = GPIO_ReadOutputDataBit(gpio_port_map[address->port], pin);
+  uint8_t state = GPIO_ReadOutputDataBit(s_gpio_port_map[address->port], pin);
   if (state) {
-    GPIO_ResetBits(gpio_port_map[address->port], pin);
+    GPIO_ResetBits(s_gpio_port_map[address->port], pin);
   } else {
-    GPIO_SetBits(gpio_port_map[address->port], pin);
+    GPIO_SetBits(s_gpio_port_map[address->port], pin);
   }
   return STATUS_CODE_OK;
 }
@@ -104,6 +103,6 @@ StatusCode gpio_get_value(GPIOAddress *address, GPIOState *input_state) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  *input_state = GPIO_ReadInputDataBit(gpio_port_map[address->port], 0x01 << address->pin);
+  *input_state = GPIO_ReadInputDataBit(s_gpio_port_map[address->port], 0x01 << address->pin);
   return STATUS_CODE_OK;
 }
