@@ -18,9 +18,9 @@
 #		make lint - Lints all non-vendor code
 #		make test [PL] [PR|LI] [TE] - Builds and runs the specified unit test, assuming all tests if TE is not defined
 #		make gdb [PL] [PR] - Builds and runs the project and connects an instance of GDB for debugging
+#   make gdb [PL] [PR|LI] [TE] - Builds and runs the specified unit test and connects an instance of GDB
 # Platform specific:
 #		make program [PL=stm32f0xx] [PR] [PB] - Programs and runs the project through OpenOCD
-#		make debug [PL=stm32f0xx] [PR] [PB] - Opens an instance of tmux to view both GDB and serial output
 #	  make gdb [PL=stm32f0xx] [PL] [PR] [PB]
 #		make <build | test | remake | all> [PL=x86] [CM=clang [CO]]
 #
@@ -49,7 +49,7 @@ override LIBRARY := $(filter $(VALID_LIBRARIES),$(LIBRARY))
 # Only ignore project and platform if we're doing a full clean or lint
 ifeq (,$(filter reallyclean lint build_all test_all,$(MAKECMDGOALS)))
 # If not running a test, only care about project
-ifeq (,$(filter test,$(MAKECMDGOALS)))
+ifeq (,$(filter test gdb,$(MAKECMDGOALS)))
 ifeq (,$(PROJECT))
   $(error Invalid project. Expected PROJECT=[$(VALID_PROJECTS)])
 endif

@@ -62,5 +62,5 @@ endef
 
 # Defines command to run for unit testing
 define test_run
-echo "\nRunning $(notdir $1)" && ./$(1)
+echo "\nRunning $(notdir $1)" && ./$1
 endef
