@@ -82,7 +82,7 @@ OBJ_CACHE := $(BUILD_DIR)/obj/$(PLATFORM)
 
 # Set GDB target
 ifeq (,$(TEST))
-GDB_TARGET := $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+GDB_TARGET = $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 else
 GDB_TARGET = $(BIN_DIR)/test/$(LIBRARY)$(PROJECT)/test_$(TEST)_runner$(PLATFORM_EXT)
 endif

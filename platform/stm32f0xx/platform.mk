@@ -29,7 +29,7 @@ CFLAGS := -Wall -Werror -g -Os -std=c99 -Wno-unused-variable -pedantic \
           $(ARCH_CLAGS) $(addprefix -D,$(CDEFINES))
 
 # Linker flags
-LDFLAGS := $(CLFLAGS) -L$(LDSCRIPT_DIR) -Tstm32f0.ld -fuse-linker-plugin
+LDFLAGS := -L$(LDSCRIPT_DIR) -Tstm32f0.ld -fuse-linker-plugin
 
 # Device openocd config file
 # Use PROBE=stlink-v2 for discovery boards
