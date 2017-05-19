@@ -80,6 +80,13 @@ STATIC_LIB_DIR := $(BUILD_DIR)/lib/$(PLATFORM)
 # Object cache
 OBJ_CACHE := $(BUILD_DIR)/obj/$(PLATFORM)
 
+# Set GDB target
+ifeq (,$(TEST))
+GDB_TARGET := $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+else
+GDB_TARGET = $(BIN_DIR)/test/$(LIBRARY)$(PROJECT)/test_$(TEST)_runner$(PLATFORM_EXT)
+endif
+
 DIRS := $(BUILD_DIR) $(BIN_DIR) $(STATIC_LIB_DIR) $(OBJ_CACHE)
 
 # Please don't touch anything below this line

@@ -53,7 +53,7 @@ LDFLAGS := -lrt
 run: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 	@$<
 
-gdb: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+gdb: $(GDB_TARGET)
 	@$(GDB) $<
 
 define session_wrapper

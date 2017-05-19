@@ -45,12 +45,6 @@ OPENOCD_CFG := -s $(OPENOCD_SCRIPT_DIR) \
 program: $(BIN_DIR)/$(PROJECT).bin
 	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash `pwd`/$<" -c shutdown
 
-ifeq (,$(TEST))
-GDB_TARGET := $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
-else
-GDB_TARGET = $(BIN_DIR)/test/$(LIBRARY)$(PROJECT)/test_$(TEST)_runner$(PLATFORM_EXT)
-endif
-
 gdb: $(GDB_TARGET)
 	@$(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
 	@$(GDB) $< -x "$(SCRIPT_DIR)/gdb_flash"
