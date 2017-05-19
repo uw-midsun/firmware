@@ -58,7 +58,7 @@ test: test_$(T)
 else
 test: $($(T)_TEST_BIN_DIR)/test_$(TEST)_runner$(PLATFORM_EXT)
 	@echo "Running test - $(TEST)"
-	@$(call run_test,$<)
+	@$(call session_wrapper,$(call test_run,$<))
 
 endif
 endif
@@ -66,7 +66,7 @@ endif
 # Run each test
 test_$(T): $($(T)_TESTS)
 	@echo "Running test suite - $(@:test_%=%)"
-	@$(foreach test,$^,$(call run_test,$(test)) &&) true
+	@$(call session_wrapper,$(foreach test,$^,$(call test_run,$(test)) &&) true)
 
 test_all: test_$(T)
 
