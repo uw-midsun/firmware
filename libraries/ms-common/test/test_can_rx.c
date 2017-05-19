@@ -1,6 +1,6 @@
 #include "can_rx.h"
 #include "unity.h"
-#include "extra_unity.h"
+#include "test_helpers.h"
 
 #define TEST_CAN_RX_NUM_HANDLERS 10
 
