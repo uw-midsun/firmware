@@ -26,7 +26,7 @@ before_script:
   # install GCC ARM from GNU ARM Embedded Toolchain PPA
   - sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa -y
   - sudo apt-get -qq update
-  - sudo apt-get -qq install gcc-arm-embedded
+  - sudo apt-get -y install gcc-arm-embedded
 
   # build GNU Make 4.1 from source
   - wget http://ftp.gnu.org/gnu/make/make-4.1.tar.gz

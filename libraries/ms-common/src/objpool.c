@@ -4,6 +4,7 @@
 
 #include "objpool.h"
 #include "status.h"
+#include "critical_section.h"
 
 #define OBJPOOL_GET(pool, index) \
   ((void *)((uintptr_t)(pool)->nodes + ((index) * (pool)->node_size)))
@@ -40,18 +41,27 @@ StatusCode objpool_init_verbose(ObjectPool *pool, void *nodes, size_t num_nodes,
 }
 
 void *objpool_get_node(ObjectPool *pool) {
+  bool disabled = critical_section_start();
+
   // Find first set bit - returns 0 if no bits are set, 1-indexed
   size_t index = __builtin_ffsll(pool->free_bitset);
   if (index == 0) {
+    critical_section_end(disabled);
     return NULL;
   }
 
   pool->free_bitset &= ~(1 << (index - 1));
+
+  critical_section_end(disabled);
+
   return OBJPOOL_GET(pool, index - 1);
 }
 
 StatusCode objpool_free_node(ObjectPool *pool, void *node) {
+  bool disabled = critical_section_start();
+
   if (node == NULL || OBJPOOL_NODE_INVALID(pool, node)) {
+    critical_section_end(disabled);
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
@@ -61,6 +71,8 @@ StatusCode objpool_free_node(ObjectPool *pool, void *node) {
   }
 
   pool->free_bitset |= (1 << OBJPOOL_GET_INDEX(pool, node));
+
+  critical_section_end(disabled);
 
   return STATUS_CODE_OK;
 }
