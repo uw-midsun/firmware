@@ -6,7 +6,7 @@
 #		PR: [PROJECT=] - Specifies the target project
 #		LI: [LIBRARY=] - Specifies the target library (only valid for tests)
 #		TE: [TEST=] - Specifies the target test (only valid for tests, requires LI or PR to be specified)
-#		CM: [COMPILER=] - Specifies the compiler to use on x86. Defualts to gcc [gcc | clang].
+#		CM: [COMPILER=] - Specifies the compiler to use on x86. Defaults to gcc [gcc | clang].
 #		CO: [COPTIONS=] - Specifies compiler options on x86 [asan | tsan].
 #   PB: [PROBE=] - Specifies which debug probe to use on STM32F0xx. Defaults to cmsis-dap [cmsis-dap | stlink-v2].
 #
@@ -82,7 +82,7 @@ OBJ_CACHE := $(BUILD_DIR)/obj/$(PLATFORM)
 
 # Set GDB target
 ifeq (,$(TEST))
-GDB_TARGET := $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+GDB_TARGET = $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 else
 GDB_TARGET = $(BIN_DIR)/test/$(LIBRARY)$(PROJECT)/test_$(TEST)_runner$(PLATFORM_EXT)
 endif

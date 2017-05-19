@@ -4,7 +4,6 @@
 #include <stdlib.h>
 
 #include "gpio.h"
-#include "gpio_cfg.h"
 #include "interrupt.h"
 #include "stm32f0xx_interrupt.h"
 #include "status.h"
@@ -16,11 +15,11 @@ typedef struct GPIOITInterrupt {
   void *context;
 } GPIOITInterrupt;
 
-static GPIOITInterrupt s_gpio_it_interrupts[GPIO_CFG_NUM_PINS_PER_PORT];
+static GPIOITInterrupt s_gpio_it_interrupts[GPIO_MCU_NUM_PINS_PER_PORT];
 
 void gpio_it_init(void) {
   GPIOITInterrupt empty_interrupt = { 0 };
-  for (int16_t i = 0; i < GPIO_CFG_NUM_PINS_PER_PORT; i++) {
+  for (int16_t i = 0; i < GPIO_MCU_NUM_PINS_PER_PORT; i++) {
     s_gpio_it_interrupts[i] = empty_interrupt;
   }
 }
@@ -38,7 +37,7 @@ static uint8_t prv_get_irq_channel(uint8_t pin) {
 StatusCode gpio_it_register_interrupt(GPIOAddress *address, InterruptSettings *settings,
                                       InterruptEdge edge, gpio_it_callback callback,
                                       void *context) {
-  if (address->port >= GPIO_CFG_NUM_PORTS || address->pin >= GPIO_CFG_NUM_PINS_PER_PORT) {
+  if (address->port >= GPIO_MCU_NUM_PORTS || address->pin >= GPIO_MCU_NUM_PINS_PER_PORT) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   } else if (s_gpio_it_interrupts[address->pin].callback) {
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "Pin already used.");
@@ -67,7 +66,7 @@ StatusCode gpio_it_register_interrupt(GPIOAddress *address, InterruptSettings *s
 }
 
 StatusCode gpio_it_trigger_interrupt(GPIOAddress *address) {
-  if (address->port >= GPIO_CFG_NUM_PORTS || address->pin >= GPIO_CFG_NUM_PINS_PER_PORT) {
+  if (address->port >= GPIO_MCU_NUM_PORTS || address->pin >= GPIO_MCU_NUM_PINS_PER_PORT) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
