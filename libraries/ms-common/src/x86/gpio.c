@@ -3,15 +3,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "gpio_cfg.h"
 #include "status.h"
 
-static GPIOSettings pin_settings[GPIO_CFG_TOTAL_PINS];
-static uint8_t gpio_pin_input_value[GPIO_CFG_TOTAL_PINS];
+static GPIOSettings s_pin_settings[GPIO_MCU_TOTAL_PINS];
+static uint8_t s_gpio_pin_input_value[GPIO_MCU_TOTAL_PINS];
 
 // Determines if an GPIOAddress is valid based on the defined number of ports and pins.
 static bool prv_is_address_valid(const GPIOAddress *address) {
-  return !(address->port >= GPIO_CFG_NUM_PORTS || address->pin >= GPIO_CFG_NUM_PINS_PER_PORT);
+  return !(address->port >= GPIO_MCU_NUM_PORTS || address->pin >= GPIO_MCU_NUM_PINS_PER_PORT);
 }
 
 // Determines if a GPIOState is valid based on the enums.
@@ -26,7 +25,7 @@ static bool prv_are_settings_valid(const GPIOSettings *settings) {
 }
 
 static uint32_t prv_get_index(GPIOAddress *address) {
-  return address->port * GPIO_CFG_NUM_PORTS + address->pin;
+  return address->port * GPIO_MCU_NUM_PORTS + address->pin;
 }
 
 StatusCode gpio_init(void) {
@@ -34,9 +33,9 @@ StatusCode gpio_init(void) {
                                    .state = GPIO_STATE_LOW,
                                    .resistor = GPIO_RES_NONE,
                                    .alt_function = GPIO_ALTFN_NONE };
-  for (uint32_t i = 0; i < GPIO_CFG_TOTAL_PINS; i++) {
-    pin_settings[i] = default_settings;
-    gpio_pin_input_value[i] = 0;
+  for (uint32_t i = 0; i < GPIO_MCU_TOTAL_PINS; i++) {
+    s_pin_settings[i] = default_settings;
+    s_gpio_pin_input_value[i] = 0;
   }
   return STATUS_CODE_OK;
 }
@@ -46,7 +45,7 @@ StatusCode gpio_init_pin(GPIOAddress *address, GPIOSettings *settings) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  pin_settings[prv_get_index(address)] = *settings;
+  s_pin_settings[prv_get_index(address)] = *settings;
   return STATUS_CODE_OK;
 }
 
@@ -55,7 +54,7 @@ StatusCode gpio_set_pin_state(GPIOAddress *address, GPIOState state) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  pin_settings[prv_get_index(address)].state = state;
+  s_pin_settings[prv_get_index(address)].state = state;
   return STATUS_CODE_OK;
 }
 
@@ -65,10 +64,10 @@ StatusCode gpio_toggle_state(GPIOAddress *address) {
   }
 
   uint32_t index = prv_get_index(address);
-  if (pin_settings[index].state == GPIO_STATE_LOW) {
-    pin_settings[index].state = GPIO_STATE_HIGH;
+  if (s_pin_settings[index].state == GPIO_STATE_LOW) {
+    s_pin_settings[index].state = GPIO_STATE_HIGH;
   } else {
-    pin_settings[index].state = GPIO_STATE_LOW;
+    s_pin_settings[index].state = GPIO_STATE_LOW;
   }
   return STATUS_CODE_OK;
 }
@@ -81,10 +80,10 @@ StatusCode gpio_get_value(GPIOAddress *address, GPIOState *state) {
   uint32_t index = prv_get_index(address);
 
   // Behave how hardware does when the direction is set to out.
-  if (pin_settings[index].direction == GPIO_DIR_OUT) {
-    *state = pin_settings[index].state;
+  if (s_pin_settings[index].direction == GPIO_DIR_OUT) {
+    *state = s_pin_settings[index].state;
   } else {
-    *state = gpio_pin_input_value[index];
+    *state = s_gpio_pin_input_value[index];
   }
   return STATUS_CODE_OK;
 }
