@@ -27,6 +27,8 @@ To program the STM microcontrollers, run ``make program``.
 
 To debug code, run ``make gdb``.
 
+Note that we support CMSIS-DAP probes by default. To program using an ST-Link v2, run ``make [program|gdb] PROBE=stlink-v2``.
+
 To test a project, run ``make test PROJECT=$PROJECT``, where ``$PROJECT`` is a valid project name.
 
 To test a library, run ``make test LIBRARY=$LIBRARY``, where ``$LIBRARY`` is a valid library name.
