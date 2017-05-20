@@ -2,6 +2,7 @@
 // GPIO HAL Interface
 #include <stdint.h>
 
+#include "gpio_mcu.h"
 #include "status.h"
 
 // GPIO address to be used to change that pin's settings. Both port and pin are zero indexed.

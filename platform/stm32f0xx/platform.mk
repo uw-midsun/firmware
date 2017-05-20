@@ -29,43 +29,33 @@ CFLAGS := -Wall -Werror -g -Os -std=c99 -Wno-unused-variable -pedantic \
           $(ARCH_CLAGS) $(addprefix -D,$(CDEFINES))
 
 # Linker flags
-LDFLAGS := $(CLFLAGS) -L$(LDSCRIPT_DIR) -Tstm32f0.ld -fuse-linker-plugin
+LDFLAGS := -L$(LDSCRIPT_DIR) -Tstm32f0.ld -fuse-linker-plugin
 
 # Device openocd config file
+# Use PROBE=stlink-v2 for discovery boards
+PROBE=cmsis-dap
 OPENOCD_SCRIPT_DIR := /usr/share/openocd/scripts/
 OPENOCD_CFG := -s $(OPENOCD_SCRIPT_DIR) \
-               -f interface/stlink-v2.cfg -f target/stm32f0x.cfg \
+               -f interface/$(PROBE).cfg -f target/stm32f0x.cfg \
                -f $(SCRIPT_DIR)/stm32f0-openocd.cfg
 
 # Platform targets
-.PHONY: program gdb semihosting
+.PHONY: program gdb
 
 program: $(BIN_DIR)/$(PROJECT).bin
 	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash `pwd`/$<" -c shutdown
 
-gdb: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+gdb: $(GDB_TARGET)
 	@$(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
 	@$(GDB) $< -x "$(SCRIPT_DIR)/gdb_flash"
 	@pkill openocd
 
-semihosting: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
-	@tmux new-session -s "ms-fw" -d
-	@tmux split-window -h -t "ms-fw":0
-	@tmux send-keys -t "ms-fw":0.1 "$(OPENOCD) $(OPENOCD_CFG)" C-m
-	@tmux send-keys -t "ms-fw":0.0 \
-    "$(GDB) $< -x \"$(SCRIPT_DIR)/gdb_flash\"; \
-    tmux kill-session -t \"ms-fw\"" C-m
-	@tmux select-pane -t 0
-	@tmux attach -t "ms-fw"
+define session_wrapper
+$(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
+$1; pkill openocd
+endef
 
-# Defines a command to run for unit testing
-define run_test
-tmux new-session -s "ms-fw" -d;
-tmux split-window -h -t "ms-fw":0;
-tmux send-keys -t "ms-fw":0.1 "$(OPENOCD) $(OPENOCD_CFG)" C-m;
-tmux send-keys -t "ms-fw":0.0 \
-  "$(GDB) $1 -x \"$(SCRIPT_DIR)/gdb_flash\"; \
-  tmux kill-session -t \"ms-fw\"" C-m;
-tmux select-pane -t 0;
-tmux attach -t "ms-fw"
+# Defines command to run for unit testing
+define test_run
+clear && $(GDB) $1 -x "$(SCRIPT_DIR)/gdb_flash" -ex "b LoopForever" -ex "c" -ex "set confirm off" -ex "q"
 endef

@@ -53,10 +53,14 @@ LDFLAGS := -lrt
 run: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 	@$<
 
-gdb: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+gdb: $(GDB_TARGET)
 	@$(GDB) $<
 
-# Defines a command to run for unit testing
-define run_test
-echo "\nRunning $(notdir $1)" && ./$(1)
+define session_wrapper
+$1
+endef
+
+# Defines command to run for unit testing
+define test_run
+echo "\nRunning $(notdir $1)" && ./$1
 endef

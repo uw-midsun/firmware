@@ -1,0 +1,15 @@
+#pragma once
+
+#define GPIO_MCU_NUM_PINS_PER_PORT 16
+
+typedef enum {
+  GPIO_PORT_A = 0,
+  GPIO_PORT_B,
+  GPIO_PORT_C,
+  GPIO_PORT_D,
+  GPIO_PORT_E,
+  GPIO_PORT_F,
+  GPIO_MCU_NUM_PORTS
+} GPIOPort;
+
+#define GPIO_MCU_TOTAL_PINS ((GPIO_MCU_NUM_PINS_PER_PORT) * (GPIO_MCU_NUM_PORTS))
