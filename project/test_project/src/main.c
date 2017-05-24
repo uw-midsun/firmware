@@ -1,56 +1,168 @@
-// Test program for STM32F072RB discovery boards - attempts to connect to the onboard MEMS
-// gyroscope over SPI. Blinks the blue LED on success or the red LED on fail.
-#include <stdbool.h>
+#include <stdio.h>
 #include <stdint.h>
 
+#include "fsm.h"
+#include "interrupt.h"
 #include "gpio.h"
-#include "spi.h"
+#include "gpio_it.h"
+#include "event_queue.h"
+#include "input_interrupt.h"
 
-#define GYRO_ID 0xD4
+#define INPUT_DEVICES 17
+#define CAN_PINS 2
 
-void gyro_cmd(bool read, bool autoincrement, uint8_t addr, uint8_t *data) {
-  uint8_t packet[] = {
-    (read & 0x01) << 7 | (autoincrement & 0x01) << 6 | (addr & 0x3F),
-    (read) ? 0 : *data
-  };
+/* TODO: 
+		- Keep lookup table of the states and their allowed devices
+		- May need lookup table to make sure (Put that in input_interrupt.h) 
+		- Define the output functions for events
+		- Once you can ensure that this works, for the love of God, get the FSM daclarations into another own file. 
+		- For now, just get the CAN messages printed to stdout. We'll deal with bus communication later.
+*/
 
-  spi_exchange(1, packet, 2 - read, data, read);
+typedef enum {
+  INPUT_EVENT_POWER_ON,
+  INPUT_EVENT_POWER_OFF,
+  INPUT_EVENT_GAS_PRESSED,
+  INPUT_EVENT_GAS_RELEASED,
+  INPUT_EVENT_BRAKE_PRESSED,
+  INPUT_EVENT_BRAKE_RELEASED,
+  INPUT_EVENT_HORN_PRESSED,
+  INPUT_EVENT_HORN_RELEASED,
+  INPUT_EVENT_EMERGENCY_STOP,
+  INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL,
+  INPUT_EVENT_DIRECTION_SELECTOR_DRIVE,
+  INPUT_EVENT_DIRECTION_SELECTOR_REVERSE,
+  INPUT_EVENT_HEADLIGHTS_ON,
+  INPUT_EVENT_HEADLIGHTS_OFF,
+  INPUT_EVENT_TURN_SIGNAL_LEFT,
+  INPUT_EVENT_TURN_SIGNAL_RIGHT,
+  INPUT_EVENT_HAZARD_LIGHT_ON,
+  INPUT_EVENT_HAZARD_LIGHT_OFF,
+  INPUT_EVENT_CRUISE_CONTROL_ON,
+  INPUT_EVENT_CRUISE_CONTROL_OFF,
+  INPUT_EVENT_REGEN_STRENGTH_OFF,
+  INPUT_EVENT_REGEN_STRENGTH_WEAK,
+  INPUT_EVENT_REGEN_STRENGTH_ON
+} InputEvent;
+
+// Off State: when the car is not receiving power
+FSM_DECLARE_STATE(state_off);
+
+// Idle State: when neither of the gas pedals are pressed
+FSM_DECLARE_STATE(state_idle_neutral);
+FSM_DECLARE_STATE(state_idle_forward);
+FSM_DECLARE_STATE(state_idle_reverse);
+
+// Brake State: when the driver is holding down the brake pedal
+FSM_DECLARE_STATE(state_brake_neutral);
+FSM_DECLARE_STATE(state_brake_forward);
+FSM_DECLARE_STATE(state_brake_reverse);
+
+// Driving State: when the car is in motion due to the gas pedal
+FSM_DECLARE_STATE(state_driving_forward);
+FSM_DECLARE_STATE(state_driving_reverse);
+
+// State table for off state
+FSM_STATE_TRANSITION(state_off) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_ON, state_idle_neutral);
 }
 
-int main(void) {
+// State table for idle superstate
+FSM_STATE_TRANSITION(state_idle_neutral) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_OFF, state_off);
+  FSM_ADD_TRANSITION(INPUT_EVENT_BRAKE_PRESSED, state_brake_neutral);
+  FSM_ADD_TRANSITION(INPUT_EVENT_EMERGENCY_STOP, state_off);
+}
+
+FSM_STATE_TRANSITION(state_idle_forward) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_PRESSED, state_driving_forward);
+  FSM_ADD_TRANSITION(INPUT_EVENT_BRAKE_PRESSED, state_brake_forward);
+  FSM_ADD_TRANSITION(INPUT_EVENT_EMERGENCY_STOP, state_off);
+}
+
+FSM_STATE_TRANSITION(state_idle_reverse) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_PRESSED, state_driving_reverse);
+  FSM_ADD_TRANSITION(INPUT_EVENT_BRAKE_PRESSED, state_brake_reverse);
+  FSM_ADD_TRANSITION(INPUT_EVENT_EMERGENCY_STOP, state_off);
+}
+
+// State table for brake superstate
+FSM_STATE_TRANSITION(state_brake_neutral) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, state_brake_forward);
+  FSM_ADD_TRANSITION(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, state_brake_reverse);
+  FSM_ADD_TRANSITION(INPUT_EVENT_BRAKE_RELEASED, state_idle_neutral);
+  FSM_ADD_TRANSITION(INPUT_EVENT_EMERGENCY_STOP, state_off);
+}
+
+FSM_STATE_TRANSITION(state_brake_forward) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL, state_brake_neutral);
+  FSM_ADD_TRANSITION(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, state_brake_reverse);
+  FSM_ADD_TRANSITION(INPUT_EVENT_BRAKE_RELEASED, state_idle_forward);
+  FSM_ADD_TRANSITION(INPUT_EVENT_EMERGENCY_STOP, state_off);
+}
+
+FSM_STATE_TRANSITION(state_brake_reverse) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL, state_brake_neutral);
+  FSM_ADD_TRANSITION(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, state_brake_forward);
+  FSM_ADD_TRANSITION(INPUT_EVENT_BRAKE_RELEASED, state_idle_reverse);
+  FSM_ADD_TRANSITION(INPUT_EVENT_EMERGENCY_STOP, state_off);
+}
+
+// State table for driving superstate
+FSM_STATE_TRANSITION(state_driving_forward) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_RELEASED, state_idle_forward);
+  FSM_ADD_TRANSITION(INPUT_EVENT_BRAKE_PRESSED, state_brake_forward);
+  FSM_ADD_TRANSITION(INPUT_EVENT_EMERGENCY_STOP, state_off);
+}
+
+FSM_STATE_TRANSITION(state_driving_reverse) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_RELEASED, state_idle_reverse);
+  FSM_ADD_TRANSITION(INPUT_EVENT_BRAKE_PRESSED, state_brake_reverse);
+  FSM_ADD_TRANSITION(INPUT_EVENT_EMERGENCY_STOP, state_off);
+}
+
+int main() {
+  FSM fsm;
+  fsm_init(&fsm, "driver_fsm", &state_off, &fsm);
+
   gpio_init();
+  interrupt_init();
+  gpio_it_init();
 
-  SPISettings spi_settings = {
-    .baudrate = 1500000,
-    .mode = SPI_MODE_0,
-    .mosi = { GPIO_PORT_B, 15 },
-    .miso = { GPIO_PORT_B, 14 },
-    .sclk = { GPIO_PORT_B, 13 },
-    .cs = { GPIO_PORT_C, 0 }
+  GPIOAddress input[INPUT_DEVICES] = { 
+	{ 0, 10 },	// Soft Power switch 
+	{ 1, 3 },	// Soft Power switch LED
+    { 1, 4 },	// Direction selector 0
+    { 1, 5 },   // Direction selector 1
+	{ 1, 6 },   // Headlight toggle
+	{ 1, 7 },   // Hazardlight toggle 
+	{ 2, 13 },  // Hazardlight indicator light
+	{ 0, 10 },  // Regen low 
+    { 0, 9 },   // Regen high
+	{ 0, 8 },   // BMS fault LED
+	{ 0, 15 },  // Left-turn signal
+	{ 0, 14 },  // Right-turn signal
+	{ 0, 0 },   // Push-to-talk
+    { 1, 13 },  // Cruise control toggle
+    { 1, 12 },  // Cruise control up
+    { 1, 11 },  // Cruise control down
+    { 1, 10 }   // Horn
   };
 
-  // Using SPI port 2 - not using enum so build on x86 will pass
-  spi_init(1, &spi_settings);
+  GPIOAddress output = { 2, 6 };
 
-  uint8_t whoami = 0xAA;
-  gyro_cmd(true, false, 0x0F, &whoami);
+  GPIOAddress can_address[CAN_PINS] = { { 1, 8 }, { 1, 9 } };
 
-  GPIOSettings led_settings = {
-    .direction = GPIO_DIR_OUT,
-    .state = GPIO_STATE_HIGH,
-  };
+  GPIOSettings gpio_settings = { GPIO_DIR_OUT, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_NONE };
+  gpio_init_pin(&output, &gpio_settings);
 
-  GPIOAddress leds[] = { { GPIO_PORT_C, 6 }, { GPIO_PORT_C, 7 } };
-  gpio_init_pin(&leds[0], &led_settings);
-  gpio_init_pin(&leds[1], &led_settings);
-
-  while (true) {
-    printf("ID: %d\n", whoami);
-    gpio_toggle_state(&leds[whoami == GYRO_ID]);
-
-    // arbitrary software delay
-    for (volatile int i = 0; i < 2000000; i++) { }
+  gpio_settings = (GPIOSettings){ GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_NONE };
+  InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_NORMAL };
+ 
+  for (volatile uint8_t i=0; i < INPUT_DEVICES; i++) {
+    gpio_init_pin(&input[i], &gpio_settings);
+    gpio_it_register_interrupt(&input[i], &it_settings, INTERRUPT_EDGE_RISING, input_callback, &output);
   }
 
-  return 0;
+  for (;;) {}
 }
