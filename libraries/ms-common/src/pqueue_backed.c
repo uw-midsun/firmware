@@ -14,7 +14,7 @@ StatusCode pqueue_backed_init_impl(PQueueBacked *queue, PQueueNode *nodes, void 
   queue->elem_size = elem_size;
 
   pqueue_init(&queue->pqueue, nodes, num_nodes);
-  objpool_init_verbose(&queue->pool, elems, num_elems, elem_size, prv_init_node, queue);
+  objpool_init_verbose(&queue->pool, elems, elem_size, num_elems, prv_init_node, queue);
 
   return STATUS_CODE_OK;
 }
