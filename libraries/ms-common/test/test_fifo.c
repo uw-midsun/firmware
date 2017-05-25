@@ -24,9 +24,7 @@ void setup_test(void) {
   fifo_init(&s_fifo, s_buffer);
 }
 
-void teardown_test(void) {
-
-}
+void teardown_test(void) { }
 
 void test_fifo_basic(void) {
   // Fill buffer
