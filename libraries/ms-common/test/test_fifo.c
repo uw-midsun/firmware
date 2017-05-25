@@ -1,7 +1,6 @@
 #include "fifo.h"
 #include "unity.h"
 #include "test_helpers.h"
-#include "log.h"
 
 #define TEST_FIFO_BUFFER_LEN 11
 #define TEST_FIFO_OFFSET 0x12

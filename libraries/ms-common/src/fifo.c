@@ -1,5 +1,5 @@
 #include "fifo.h"
-#include <stdio.h>
+#include <string.h>
 
 StatusCode fifo_init_impl(Fifo *fifo, void *buffer, size_t elem_size, size_t num_elems) {
   memset(fifo, 0, sizeof(*fifo));
