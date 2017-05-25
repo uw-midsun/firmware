@@ -1,7 +1,7 @@
 #include "fifo.h"
 #include <stdio.h>
 
-StatusCode fifo_init(Fifo *fifo, void *buffer, size_t elem_size, size_t num_elems) {
+StatusCode fifo_init_impl(Fifo *fifo, void *buffer, size_t elem_size, size_t num_elems) {
   memset(fifo, 0, sizeof(*fifo));
   memset(buffer, 0, num_elems * elem_size);
 
@@ -17,7 +17,7 @@ size_t fifo_size(Fifo *fifo) {
   return fifo->num_elems;
 }
 
-StatusCode fifo_push(Fifo *fifo, void *source_elem, size_t elem_size) {
+StatusCode fifo_push_impl(Fifo *fifo, void *source_elem, size_t elem_size) {
   if (fifo->num_elems == fifo->max_elems) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   } else if (fifo->elem_size != elem_size) {
@@ -36,7 +36,7 @@ StatusCode fifo_push(Fifo *fifo, void *source_elem, size_t elem_size) {
   return STATUS_CODE_OK;
 }
 
-StatusCode fifo_pop(Fifo *fifo, void *dest_elem, size_t elem_size) {
+StatusCode fifo_pop_impl(Fifo *fifo, void *dest_elem, size_t elem_size) {
   if (fifo->num_elems == 0) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   } else if (fifo->elem_size != elem_size && dest_elem != NULL) {
@@ -59,7 +59,7 @@ StatusCode fifo_pop(Fifo *fifo, void *dest_elem, size_t elem_size) {
   return STATUS_CODE_OK;
 }
 
-StatusCode fifo_push_arr(Fifo *fifo, void *source, size_t elem_size, size_t num_elems) {
+StatusCode fifo_push_arr_impl(Fifo *fifo, void *source_arr, size_t elem_size, size_t num_elems) {
   if (fifo->num_elems + num_elems > fifo->max_elems) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   } else if (fifo->elem_size != elem_size) {
@@ -74,14 +74,14 @@ StatusCode fifo_push_arr(Fifo *fifo, void *source, size_t elem_size, size_t num_
   }
 
   size_t nonwrap_bytes = fifo->elem_size * num_elems - wrap_bytes;
-  memcpy(fifo->next, source, nonwrap_bytes);
+  memcpy(fifo->next, source_arr, nonwrap_bytes);
   fifo->next += nonwrap_bytes;
   if (fifo->next >= fifo->end) {
     fifo->next = fifo->buffer;
   }
 
   if (wrap_bytes > 0) {
-    memcpy(fifo->next, source + nonwrap_bytes, wrap_bytes);
+    memcpy(fifo->next, source_arr + nonwrap_bytes, wrap_bytes);
     fifo->next += wrap_bytes;
   }
 
@@ -90,10 +90,10 @@ StatusCode fifo_push_arr(Fifo *fifo, void *source, size_t elem_size, size_t num_
   return STATUS_CODE_OK;
 }
 
-StatusCode fifo_pop_arr(Fifo *fifo, void *dest, size_t elem_size, size_t num_elems) {
+StatusCode fifo_pop_arr_impl(Fifo *fifo, void *dest_arr, size_t elem_size, size_t num_elems) {
   if (fifo->num_elems < num_elems) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
-  } else if (fifo->elem_size != elem_size && dest != NULL) {
+  } else if (fifo->elem_size != elem_size && dest_arr != NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
@@ -106,8 +106,8 @@ StatusCode fifo_pop_arr(Fifo *fifo, void *dest, size_t elem_size, size_t num_ele
 
   size_t nonwrap_bytes = fifo->elem_size * num_elems - wrap_bytes;
 
-  if (dest != NULL) {
-    memcpy(dest, fifo->head, nonwrap_bytes);
+  if (dest_arr != NULL) {
+    memcpy(dest_arr, fifo->head, nonwrap_bytes);
   }
   memset(fifo->head, 0, nonwrap_bytes);
 
@@ -117,8 +117,8 @@ StatusCode fifo_pop_arr(Fifo *fifo, void *dest, size_t elem_size, size_t num_ele
   }
 
   if (wrap_bytes > 0) {
-    if (dest != NULL) {
-      memcpy(dest + nonwrap_bytes, fifo->head, wrap_bytes);
+    if (dest_arr != NULL) {
+      memcpy(dest_arr + nonwrap_bytes, fifo->head, wrap_bytes);
     }
     memset(fifo->head, 0, wrap_bytes);
     fifo->head += wrap_bytes;
