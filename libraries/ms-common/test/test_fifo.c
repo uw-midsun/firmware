@@ -59,6 +59,7 @@ void test_fifo_basic(void) {
 }
 
 void test_fifo_arr(void) {
+  // Test for basic array functionality
   uint16_t send_arr[4] = { 0x12, 0x34, 0x56, 0x78 };
   uint16_t rx_arr[4] = { 0 };
 
@@ -71,6 +72,7 @@ void test_fifo_arr(void) {
 }
 
 void test_fifo_arr_wrap(void) {
+  // Test for push/pop wrapping
   uint16_t send_arr[4] = { 0x12, 0x34, 0x56, 0x78 };
   uint16_t rx_arr[4] = { 0 };
 
@@ -94,6 +96,7 @@ void test_fifo_arr_wrap(void) {
 }
 
 void test_fifo_arr_end(void) {
+  // Make sure that the tail is set properly
   uint16_t send_arr[4] = { 0x12, 0x34, 0x56, 0x78 };
   uint16_t rx_arr[4] = { 0 };
 
@@ -104,4 +107,13 @@ void test_fifo_arr_end(void) {
 
   TEST_ASSERT_OK(fifo_push_arr(&s_fifo, send_arr, SIZEOF_ARRAY(send_arr)));
   TEST_ASSERT_EQUAL(TEST_FIFO_BUFFER_LEN, fifo_size(&s_fifo));
+
+  TEST_ASSERT_OK(fifo_pop(&s_fifo, NULL));
+
+  uint16_t temp = 0xDEAD;
+  TEST_ASSERT_OK(fifo_push(&s_fifo, &temp));
+  temp = 0;
+
+  TEST_ASSERT_OK(fifo_pop(&s_fifo, &temp));
+  TEST_ASSERT_EQUAL(0xDEAD, temp);
 }

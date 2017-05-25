@@ -14,6 +14,8 @@ typedef struct {
   size_t elem_size;
 } Fifo;
 
+// Convenience macros - these can only be used if the element or array are preserved.
+// i.e. The type must persist and arrays must keep their size information.
 #define fifo_init(fifo, buffer) \
   fifo_init_impl((fifo), (buffer), sizeof((buffer)[0]), SIZEOF_ARRAY((buffer)))
 #define fifo_push(fifo, source) \
