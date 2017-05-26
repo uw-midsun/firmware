@@ -5,11 +5,6 @@
 #define DEVICE_STATES 9 
 #define INPUT_DEVICES 11 
 
-// Define ISRs for each of the input pins
-
-/* TODO: 
-		- Come up with better names 
-		- The lookup table should (probably?) be implemented here
-*/
+// Define ISRs for each of the input pins (To be completed later)
 
 void input_callback(GPIOAddress* address, void* context);
