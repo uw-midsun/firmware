@@ -22,18 +22,18 @@ int main() {
   gpio_it_init();
 
   // Input pins
-  GPIOAddress input[INPUT_DEVICES] = { 
-	 { GPIO_PORT_A, 0 }, { GPIO_PORT_A, 1 },	{ GPIO_PORT_A, 2 },	{ GPIO_PORT_A, 3 }, { GPIO_PORT_A, 4 },   
-	 { GPIO_PORT_A, 5 }, { GPIO_PORT_A, 6 }, { GPIO_PORT_A, 7 }, { GPIO_PORT_A, 8 }, { GPIO_PORT_A, 9 },   
-	 { GPIO_PORT_A, 10 }  
+  GPIOAddress input[INPUT_DEVICES] = {
+    { GPIO_PORT_A, 0 }, { GPIO_PORT_A, 1 }, { GPIO_PORT_A, 2 }, { GPIO_PORT_A, 3 },
+    { GPIO_PORT_A, 4 }, { GPIO_PORT_A, 5 }, { GPIO_PORT_A, 6 }, { GPIO_PORT_A, 7 },
+    { GPIO_PORT_A, 8 }, { GPIO_PORT_A, 9 }, { GPIO_PORT_A, 10 }
   };
 
   // Test output pins
-  GPIOAddress output[OUTPUT_DEVICES] = { 
+  GPIOAddress led[OUTPUT_DEVICES] = {
     { GPIO_PORT_C, 6 },
     { GPIO_PORT_C, 7 },
     { GPIO_PORT_C, 8 },
-    { GPIO_PORT_C, 9 } 
+    { GPIO_PORT_C, 9 }
   };
 
   // CAN Tx and Rx pins
@@ -44,17 +44,16 @@ int main() {
 
   GPIOSettings gpio_settings = { GPIO_DIR_OUT, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_NONE };
   InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_NORMAL };
-  
+
   for (int i=0; i < OUTPUT_DEVICES; i++) {
-    gpio_init_pin(&output[i], &gpio_settings);
+    gpio_init_pin(&led[i], &gpio_settings);
   }
-  
+
   gpio_settings = (GPIOSettings){ GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_NONE };
-  
- 
+
   for (int i=0; i < INPUT_DEVICES; i++) {
     gpio_init_pin(&input[i], &gpio_settings);
-    gpio_it_register_interrupt(&input[i], &it_settings, INTERRUPT_EDGE_RISING, input_callback, &output);
+    gpio_it_register_interrupt(&input[i], &it_settings, INTERRUPT_EDGE_RISING, input_callback, &led);
   }
 
   for (;;) {}

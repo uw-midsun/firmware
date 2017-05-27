@@ -2,7 +2,7 @@
 
 #include "gpio.h"
 
-// Hold time must be greater than sampling rate 
+// Hold time must be greater than sampling rate
 
 #define SAMPLING_INTERVAL 1
 #define HOLD_TIME_PRESSED 1500
