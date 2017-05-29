@@ -24,7 +24,7 @@ void adc_init(ADCMode adc_mode) {
   while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC)) {}
 }
 
-bool adc_init_pin(GPIOAddress* address) {
+bool adc_init_pin(GPIOAddress* address, ADCSampleRate adc_sample_rate) {
   uint8_t adc_channel = ADC_Channel_0 + address->pin;
 
   switch (address->port) {
@@ -46,14 +46,13 @@ bool adc_init_pin(GPIOAddress* address) {
        return 0;
   }
 
-  ADC_ChannelConfig(ADC1, adc_channel, ADC_SampleTime_1_5Cycles);
+  ADC_ChannelConfig(ADC1, adc_channel, adc_sample_rate);
   return 1;
 }
 
-uint16_t adc_read() {
+uint16_t adc_read(uint16_t max_voltage) {
   uint16_t adc_reading = ADC_GetConversionValue(ADC1);
-  uint16_t voltage = (3000 * adc_reading)/4096;
+  uint16_t voltage = (max_voltage * adc_reading)/4096;
   return voltage;
 }
 
-uint16_t adc_read_periodic() {}
