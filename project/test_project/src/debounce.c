@@ -1,27 +1,19 @@
 #include "debounce.h"
 
-/* TODO:
-		- Once you've implemented the debouncer, find a pushbutton to use 
-		  to test the thing
-		- Use for loops for now. Use actual time delay later
-		- Just get it working, good code comes later
-*/
-
-void debounce(GPIOAddress *address, GPIOState key_pressed) {
-  uint16_t count = (key_pressed) ? HOLD_TIME_PRESSED : HOLD_TIME_RELEASED;
-  GPIOState current_state;
+void debounce(GPIOAddress* address) {
+  uint16_t count = HOLD_TIME;
+  GPIOState prev_state = 0, current_state = 0;
 
   while (count > 0) {
     for (uint8_t i = 0; i < SAMPLING_INTERVAL; i++) {
       gpio_get_value(address, &current_state);
     }
 
-    if (current_state == key_pressed) {
+    if (current_state == prev_state) {
       count--;
     } else {
-      count = (key_pressed) ? HOLD_TIME_PRESSED : HOLD_TIME_RELEASED;
+      count = HOLD_TIME;
     }
+	prev_state = current_state;
   }
-
-  return;
 }
