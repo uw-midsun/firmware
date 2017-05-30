@@ -8,8 +8,9 @@
 #include "event_queue.h"
 #include "input_interrupt.h"
 #include "driver_state.h"
+#include "stm32f0xx.h"
 
-#define INPUT_DEVICES 11
+#define INPUT_DEVICES 4
 #define OUTPUT_DEVICES 4
 #define CAN_PINS 2
 
@@ -23,9 +24,10 @@ int main() {
 
   // Input pins
   GPIOAddress input[INPUT_DEVICES] = {
-    { GPIO_PORT_A, 0 }, { GPIO_PORT_A, 1 }, { GPIO_PORT_A, 2 }, { GPIO_PORT_A, 3 },
-    { GPIO_PORT_A, 4 }, { GPIO_PORT_A, 5 }, { GPIO_PORT_A, 6 }, { GPIO_PORT_A, 7 },
-    { GPIO_PORT_A, 8 }, { GPIO_PORT_A, 9 }, { GPIO_PORT_A, 10 }
+    { GPIO_PORT_C, 4 },
+	{ GPIO_PORT_C, 5 },
+    { GPIO_PORT_C, 6 },
+	{ GPIO_PORT_A, 0 }
   };
 
   // Test output pins
@@ -53,7 +55,7 @@ int main() {
 
   for (int i=0; i < INPUT_DEVICES; i++) {
     gpio_init_pin(&input[i], &gpio_settings);
-    gpio_it_register_interrupt(&input[i], &it_settings, INTERRUPT_EDGE_RISING, input_callback, &led);
+    gpio_it_register_interrupt(&input[i], &it_settings, INTERRUPT_EDGE_RISING_FALLING, input_callback, &led[0]);
   }
 
   for (;;) {}
