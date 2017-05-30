@@ -5,6 +5,19 @@
 
 #include <stdbool.h>
 
+#define ADC_CHSELR  0x40012428
+
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)  \
+  (byte & 0x80 ? '1' : '0'), \
+  (byte & 0x40 ? '1' : '0'), \
+  (byte & 0x20 ? '1' : '0'), \
+  (byte & 0x10 ? '1' : '0'), \
+  (byte & 0x08 ? '1' : '0'), \
+  (byte & 0x04 ? '1' : '0'), \
+  (byte & 0x02 ? '1' : '0'), \
+  (byte & 0x01 ? '1' : '0') 
+
 /* Driver for the STM32's onboard ADC. 
 
 	External Channel mapping
@@ -32,6 +45,7 @@
 typedef enum {
   ADC_MODE_SINGLE = 0,
   ADC_MODE_CONTINUOUS,
+  ADC_MODE_DISCONTINUOUS
 } ADCMode;
 
 typedef enum {
@@ -52,4 +66,4 @@ void adc_init(ADCMode adc_mode);
 bool adc_init_pin(GPIOAddress* address, ADCSampleRate adc_sample_rate);
 
 // Returns the current ADC signal as a 12-bit integer. Uses the system voltage as a parameter
-uint16_t adc_read(uint16_t max_voltage);
+uint16_t adc_read(GPIOAddress* address, uint16_t max_voltage);
