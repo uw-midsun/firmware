@@ -1,29 +1,25 @@
-#include "adc.h"
-
-//
-#include <stdio.h>
-//
+#include "adc.h"i
 
 static uint8_t prv_get_channel(GPIOAddress* address) {
-  uint8_t adc_channel = ADC_Channel_0 + address->pin;
+  volatile uint8_t adc_channel = address->pin;
 
   switch (address->port) {
      case GPIO_PORT_A:
-       if (address->pin > 7) { return 0; }
+       if (address->pin > 7) { return -1; }
        break;
 
      case GPIO_PORT_B:
-       if (address->pin > 1) { return 0; }
+       if (address->pin > 1) { return -1; }
        adc_channel += 8;
        break;
 
      case GPIO_PORT_C:
-       if (address->pin > 5) { return 0; }
+       if (address->pin > 5) { return -1; }
        adc_channel += 10;
        break;
 
      default:
-       return 0;
+       return -1;
   }
 
   return adc_channel;
@@ -51,7 +47,6 @@ void adc_init(ADCMode adc_mode) {
 
   ADC_StartOfConversion(ADC1);
   while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC)) {}
-  //ADC_StopOfConversion(ADC1);
 }
 
 bool adc_init_pin(GPIOAddress* address, ADCSampleRate adc_sample_rate) {
@@ -60,23 +55,20 @@ bool adc_init_pin(GPIOAddress* address, ADCSampleRate adc_sample_rate) {
   return 1;
 }
 
-uint16_t adc_read(GPIOAddress* address, uint16_t max_voltage) {
+uint16_t adc_read(GPIOAddress* address, uint16_t max) {
+	bool continuous_mode = ADC1->CFGR1 >> 13;
+	
+	if (!continuous_mode) {
+		ADC_StartOfConversion(ADC1);
+	}
 
-  // while(ADC_GetFlagStatus(ADC1, ADC_FLAG_ADSTART)) {} 
-  
-  //uint16_t adc_channel = prv_get_channel(address);
-
-  /*if (!(ADC1->CHSELR >> adc_channel)) {
-    return 0;
-  }*/
-
-  //uint32_t temp = ADC1->CHSELR;
-
-  printf("ADC_CHSELR: "BYTE_TO_BINARY_PATTERN"\n", BYTE_TO_BINARY(ADC1->CHSELR));  
+	ADC1->CFGR1 ^= (ADC1->CFGR1 >> 13) ? ADC_CR_ADSTART : 0;
+  ADC1->CHSELR = 1 << prv_get_channel(address);
+	ADC1->CFGR1 ^= (ADC1->CFGR1 >> 13) ? ADC_CR_ADSTART : 0;
   
   uint16_t adc_reading = ADC_GetConversionValue(ADC1);
-  uint16_t voltage = (max_voltage * adc_reading)/4096;
+  uint16_t reading = (max * adc_reading)/4096;
 
-  return voltage;
+  return reading;
 }
 

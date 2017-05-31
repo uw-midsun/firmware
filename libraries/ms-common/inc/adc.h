@@ -5,18 +5,24 @@
 
 #include <stdbool.h>
 
-#define ADC_CHSELR  0x40012428
-
-#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
-#define BYTE_TO_BINARY(byte)  \
-  (byte & 0x80 ? '1' : '0'), \
-  (byte & 0x40 ? '1' : '0'), \
-  (byte & 0x20 ? '1' : '0'), \
-  (byte & 0x10 ? '1' : '0'), \
-  (byte & 0x08 ? '1' : '0'), \
-  (byte & 0x04 ? '1' : '0'), \
-  (byte & 0x02 ? '1' : '0'), \
-  (byte & 0x01 ? '1' : '0') 
+#define REG_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
+#define REG_TO_BINARY(byte)  \
+  (byte & 0x8000 ? '1' : '0'), \
+  (byte & 0x4000 ? '1' : '0'), \
+  (byte & 0x2000 ? '1' : '0'), \
+  (byte & 0x1000 ? '1' : '0'), \
+  (byte & 0x0800 ? '1' : '0'), \
+  (byte & 0x0400 ? '1' : '0'), \
+  (byte & 0x0200 ? '1' : '0'), \
+  (byte & 0x0100 ? '1' : '0'), \
+  (byte & 0x0080 ? '1' : '0'), \
+  (byte & 0x0040 ? '1' : '0'), \
+  (byte & 0x0020 ? '1' : '0'), \
+  (byte & 0x0010 ? '1' : '0'), \
+  (byte & 0x0008 ? '1' : '0'), \
+  (byte & 0x0004 ? '1' : '0'), \
+  (byte & 0x0002 ? '1' : '0'), \
+  (byte & 0x0001 ? '1' : '0') 
 
 /* Driver for the STM32's onboard ADC. 
 
@@ -41,11 +47,9 @@
 	
 */
 
-// Additional settings to be used for initialization
 typedef enum {
   ADC_MODE_SINGLE = 0,
   ADC_MODE_CONTINUOUS,
-  ADC_MODE_DISCONTINUOUS
 } ADCMode;
 
 typedef enum {
@@ -62,8 +66,8 @@ typedef enum {
 // Initialize the onboard ADC in the specified conversion mode
 void adc_init(ADCMode adc_mode);
 
-// Initializes a pin for ADC, returns false if pin is invalid
+// Sets the continuous mode sample rate for the given pin.
 bool adc_init_pin(GPIOAddress* address, ADCSampleRate adc_sample_rate);
 
 // Returns the current ADC signal as a 12-bit integer. Uses the system voltage as a parameter
-uint16_t adc_read(GPIOAddress* address, uint16_t max_voltage);
+uint16_t adc_read(GPIOAddress* address, uint16_t max);
