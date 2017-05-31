@@ -1,4 +1,4 @@
-#include "adc.h"i
+#include "adc.h"
 
 static uint8_t prv_get_channel(GPIOAddress* address) {
   volatile uint8_t adc_channel = address->pin;
