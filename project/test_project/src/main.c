@@ -5,6 +5,8 @@
 
 #include "gpio.h"
 #include "spi.h"
+#include "uart.h"
+#include "interrupt.h"
 
 #define GYRO_ID 0xD4
 
@@ -15,6 +17,10 @@ void gyro_cmd(bool read, bool autoincrement, uint8_t addr, uint8_t *data) {
   };
 
   spi_exchange(1, packet, 2 - read, data, read);
+}
+
+static void prv_rx_handler(const char *rx_str, size_t len, void *context) {
+  printf("UART RX: %s\n", rx_str);
 }
 
 int main(void) {
@@ -44,12 +50,26 @@ int main(void) {
   gpio_init_pin(&leds[0], &led_settings);
   gpio_init_pin(&leds[1], &led_settings);
 
+  interrupt_init();
+  UARTStorage uart_storage = { 0 };
+  UARTSettings uart_settings = {
+    .baudrate = 115200,
+    .rx_handler = prv_rx_handler,
+    .tx = { GPIO_PORT_B, 6 },
+    .rx = { GPIO_PORT_B, 7 },
+    .alt_fn = GPIO_ALTFN_0
+  };
+  uart_init(0, &uart_settings, &uart_storage);
+
   while (true) {
-    printf("ID: %d\n", whoami);
+    // printf("ID: %d\n", whoami);
     gpio_toggle_state(&leds[whoami == GYRO_ID]);
 
     // arbitrary software delay
     for (volatile int i = 0; i < 2000000; i++) { }
+
+    const char *tx = "test\n";
+    uart_tx(0, tx, 5);
   }
 
   return 0;

@@ -4,12 +4,12 @@
 #include "status.h"
 #include "fifo.h"
 
-#define UART_MAX_BUFFER_LEN 512
+#define UART_MAX_BUFFER_LEN 256
 
 // TODO: Replace, just for now
 typedef uint8_t UARTPort;
 
-typedef void (*UARTRxHandler)(const char *rx_str, size_t len, void *context);
+typedef void (*UARTRxHandler)(const uint8_t *rx_arr, size_t len, void *context);
 
 typedef struct {
   UARTRxHandler rx_handler;
