@@ -4,7 +4,7 @@
 
 // Hold time must be greater than sampling interval
 
-#define SAMPLING_INTERVAL 1
-#define HOLD_TIME 2000
+#define SAMPLING_INTERVAL 10
+#define HOLD_TIME 200000
 
-void debounce(GPIOAddress* address);
+void debounce(GPIOAddress* address, GPIOState* current_state);
