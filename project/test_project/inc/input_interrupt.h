@@ -1,11 +1,16 @@
 #pragma once
 
+#include "adc.h"
 #include "gpio.h"
+#include "driver_state.h"
+#include "fsm.h"
 
 #include <stdbool.h>
 
-#define DEVICE_STATES 9 
-#define INPUT_DEVICES 11 
+#define DEVICE_STATES 10 
+#define INPUT_DEVICES 4 
+#define OUTPUT_DEVICES 4
+#define MAX_SPEED 200
 
 //
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
@@ -21,5 +26,24 @@
 //
 
 // Define ISRs for each of the input pins (To be completed later)
+/*
+	Pin		Device
+	0		Power
+	1		Gas
+	2		Brakes
+	3		Direction Selector 1
+	4		Direction Selector 2
+	5		
+	6		
+	7		
+	8		
+	9		
+	10		
+	11		
+	12		
+	13		
+	14		
+	15		
+*/
+void input_callback (GPIOAddress* address, FSMGroup* fsm_group);
 
-void input_callback (GPIOAddress* address, void* context);
