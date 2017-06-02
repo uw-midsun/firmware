@@ -51,6 +51,11 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group) {
 			}
 			return INPUT_EVENT_CRUISE_CONTROL_DEC;
 			break;
+		
+		case 8:
+		case 9:
+			return (key_pressed) ? INPUT_EVENT_TURN_SIGNAL_LEFT : INPUT_EVENT_TURN_SIGNAL_RIGHT;
+			break;
 	}
 }
 

@@ -36,6 +36,8 @@ int main() {
 		{ { GPIO_PORT_B, 5 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE },
 		{ { GPIO_PORT_C, 6 }, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE },
 		{ { GPIO_PORT_C, 7 }, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE },
+		{ { GPIO_PORT_C, 8 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE },
+		{ { GPIO_PORT_C, 9 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE }	
   };
 
   // Test output pins
@@ -68,7 +70,7 @@ int main() {
   }
 
   for (;;) {
-		//printf(BYTE_TO_BINARY_PATTERN"\n", BYTE_TO_BINARY(GPIOB->IDR & (GPIO_IDR_3 | GPIO_IDR_4)));
+		//printf(BYTE_TO_BINARY_PATTERN"\n", BYTE_TO_BINARY(GPIOC->IDR & (GPIO_IDR_7 | GPIO_IDR_8)));
 		input_callback(&input[1].address, &fsm_group);
 		for (uint32_t i = 0; i < 2000000; i++) {}
   }
