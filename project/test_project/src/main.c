@@ -6,10 +6,7 @@
 #include "gpio_it.h"
 #include "input_interrupt.h"
 #include "driver_state.h"
-
-#include "stm32f0xx.h"
-
-// Remember to initialize the analog inputs with GPIO_ALTFN_ANALOG
+#include "soft_timer.h"
 
 typedef struct Input {
 	GPIOAddress address;
@@ -32,9 +29,10 @@ int main() {
   // List of inputs
   Input input[INPUT_DEVICES] = {
     { { GPIO_PORT_A, 0 }, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE },
-    { { GPIO_PORT_A, 1 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE },
-	{ { GPIO_PORT_B, 2 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE },
-	{ { GPIO_PORT_B, 3 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE }
+    { { GPIO_PORT_A, 1 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_ANALOG },
+		{ { GPIO_PORT_B, 2 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE },
+		{ { GPIO_PORT_B, 3 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE },
+		{ { GPIO_PORT_B, 4 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE }
   };
 
   // Test output pins
@@ -62,9 +60,13 @@ int main() {
 
   for (uint8_t i=0; i < INPUT_DEVICES; i++) {
     gpio_settings.alt_function = input[i].alt_function;
-	gpio_init_pin(&input[i].address, &gpio_settings);
+		gpio_init_pin(&input[i].address, &gpio_settings);
     gpio_it_register_interrupt(&input[i].address, &it_settings, input[i].edge, input_callback, &fsm_group);
   }
 
-  for (;;) {}
+  for (;;) {
+		//printf(BYTE_TO_BINARY_PATTERN"\n", BYTE_TO_BINARY(GPIOB->IDR & (GPIO_IDR_3 | GPIO_IDR_4)));
+		input_callback(&input[1].address, &fsm_group);
+		for (uint32_t i = 0; i < 2000000; i++) {}
+  }
 }

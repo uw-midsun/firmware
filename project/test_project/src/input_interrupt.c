@@ -5,14 +5,17 @@
 
 // Replace the switch statement with a jump table if they get too big
 
-static InputEvent prv_get_event(GPIOAddress* address, GPIOState key_pressed, FSMGroup* fsm_group) {
+static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group) {
+	GPIOState key_pressed;
+  gpio_get_value(address, &key_pressed);
+	debounce(address, &key_pressed);
 
 	switch (address->pin) {
 		case 0:
 			return (!strcmp(fsm_group->pedal_fsm.current_state->name, "state_off")) ? INPUT_EVENT_POWER_ON : INPUT_EVENT_POWER_OFF; 
 
 		case 1:
-			return (key_pressed) ? INPUT_EVENT_GAS_PRESSED : INPUT_EVENT_GAS_RELEASED; 
+			return (adc_read(address, MAX_SPEED) > PEDAL_THRESHOLD) ? INPUT_EVENT_GAS_PRESSED : INPUT_EVENT_GAS_RELEASED; 
 			break;
 
 		case 2:
@@ -20,19 +23,22 @@ static InputEvent prv_get_event(GPIOAddress* address, GPIOState key_pressed, FSM
 			break;
 
 		case 3:
-			return (key_pressed) ? INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL : INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
+		case 4:
+			switch ((GPIOB->IDR & (GPIO_IDR_3 | GPIO_IDR_4)) >> 3) {
+				case 0:
+					return INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
+				case 1:
+					return INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
+				case 2: 
+					return INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
+			}
 			break;
 	}
 }
 
 void input_callback (GPIOAddress* address, FSMGroup* fsm_group) {
-	GPIOState key_pressed; 
-	gpio_get_value(address, &key_pressed);
-	debounce(address, &key_pressed);
-
-	printf("P%c%d has been %s\n", address->port + 65, address->pin, (key_pressed) ? "pressed" : "released");
-	
-	Event e = { prv_get_event(address, key_pressed, fsm_group), 0 };
+	Event e = { prv_get_event(address, fsm_group), 0 };
+	bool transitioned = 0;
 
 	switch (e.id) {
 		case INPUT_EVENT_POWER_OFF:
@@ -46,7 +52,7 @@ void input_callback (GPIOAddress* address, FSMGroup* fsm_group) {
 				break;
 			}
 				
-			fsm_process_event(&fsm_group->pedal_fsm, &e);
+			transitioned = fsm_process_event(&fsm_group->pedal_fsm, &e);
 			break;
 		
 		case INPUT_EVENT_GAS_PRESSED:
@@ -56,16 +62,16 @@ void input_callback (GPIOAddress* address, FSMGroup* fsm_group) {
 				break;
 			}
 			
-			fsm_process_event(&fsm_group->pedal_fsm, &e);
+			transitioned = fsm_process_event(&fsm_group->pedal_fsm, &e);
 			break;
 		
 		case INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL:		
 		case INPUT_EVENT_DIRECTION_SELECTOR_DRIVE:		
 		case INPUT_EVENT_DIRECTION_SELECTOR_REVERSE:
 			if (!(strcmp(fsm_group->pedal_fsm.current_state->name, "state_brake"))) {
-				fsm_process_event(&fsm_group->direction_fsm, &e);
+				transitioned = fsm_process_event(&fsm_group->direction_fsm, &e);
 			}
-            break;
+      break;
 	
 		default:		
 			if (e.id >= 9 && e.id <= 11) {
@@ -77,24 +83,16 @@ void input_callback (GPIOAddress* address, FSMGroup* fsm_group) {
 			}
 	}
 	
-	printf("P%c%d : Event %d : Pedal State - %s : Direction State - %s : Turn State - %s\n", 
+	printf("P%c%d : Event = %d : Transitioned = %d : Pedal State = %s : Direction State = %s : Turn State = %s \n", 
 			(uint8_t)(address->port+65), 
 			address->pin, 
 			e.id,
+			transitioned,
 			fsm_group->pedal_fsm.current_state->name,
 			fsm_group->direction_fsm.current_state->name,
 			fsm_group->turn_signal_fsm.current_state->name
 	);
 	
 	return;
-}
-
-static uint8_t prv_get_direction_selector(GPIOAddress* address) {
-	GPIOState key_pressed[2];
-	gpio_get_value(&address[0], &key_pressed[0]);
-	gpio_get_value(&address[1], &key_pressed[1]);
-	
-	uint8_t dir_state = (key_pressed[0] << 1) + (key_pressed[1]);
-	return dir_state;
 }
 

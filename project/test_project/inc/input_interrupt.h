@@ -4,13 +4,15 @@
 #include "gpio.h"
 #include "driver_state.h"
 #include "fsm.h"
+#include "stm32f0xx.h"
 
 #include <stdbool.h>
 
 #define DEVICE_STATES 10 
-#define INPUT_DEVICES 4 
+#define INPUT_DEVICES 5 
 #define OUTPUT_DEVICES 4
 #define MAX_SPEED 200
+#define PEDAL_THRESHOLD 80
 
 //
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
