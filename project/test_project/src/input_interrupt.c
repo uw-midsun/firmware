@@ -33,6 +33,24 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group) {
 					return INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
 			}
 			break;
+
+		case 5:
+			return (key_pressed) ? INPUT_EVENT_CRUISE_CONTROL_ON : INPUT_EVENT_CRUISE_CONTROL_OFF;
+			break;
+
+		case 6:
+			if (!strcmp(fsm_group->pedal_fsm.current_state->name, "state_cruise_control")) {
+				printf("Cruise control increase speed\n");
+			}
+			return INPUT_EVENT_CRUISE_CONTROL_INC; 
+			break;
+
+		case 7:
+			if (!strcmp(fsm_group->pedal_fsm.current_state->name, "state_cruise_control")) {
+				printf("Cruise control decrease speed\n");
+			}
+			return INPUT_EVENT_CRUISE_CONTROL_DEC;
+			break;
 	}
 }
 
@@ -72,15 +90,14 @@ void input_callback (GPIOAddress* address, FSMGroup* fsm_group) {
 				transitioned = fsm_process_event(&fsm_group->direction_fsm, &e);
 			}
       break;
-	
+		
+		case INPUT_EVENT_TURN_SIGNAL_NONE:
+		case INPUT_EVENT_TURN_SIGNAL_LEFT:
+		case INPUT_EVENT_TURN_SIGNAL_RIGHT:
+			fsm_process_event(&fsm_group->turn_signal_fsm, &e);
+			break;	
 		default:		
-			if (e.id >= 9 && e.id <= 11) {
-				fsm_process_event(&fsm_group->direction_fsm, &e);
-			} else if ( e.id >=14 && e.id <= 16) {
-				fsm_process_event(&fsm_group->turn_signal_fsm, &e);
-			} else {			
-				fsm_process_event(&fsm_group->pedal_fsm, &e);
-			}
+			fsm_process_event(&fsm_group->pedal_fsm, &e);
 	}
 	
 	printf("P%c%d : Event = %d : Transitioned = %d : Pedal State = %s : Direction State = %s : Turn State = %s \n", 

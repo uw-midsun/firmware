@@ -9,7 +9,7 @@
 #include <stdbool.h>
 
 #define DEVICE_STATES 10 
-#define INPUT_DEVICES 5 
+#define INPUT_DEVICES 8 
 #define OUTPUT_DEVICES 4
 #define MAX_SPEED 200
 #define PEDAL_THRESHOLD 80
@@ -35,9 +35,9 @@
 	2		Brakes
 	3		Direction Selector 1
 	4		Direction Selector 2
-	5		
-	6		
-	7		
+	5		Cruise Control On/Off
+	6		Cruise Control Inc
+	7		Cruise Control Dec
 	8		
 	9		
 	10		
