@@ -20,6 +20,7 @@ int main() {
   fsm_init(&fsm_group.pedal_fsm, "pedal_fsm", &state_off, &fsm_group.pedal_fsm);
   fsm_init(&fsm_group.direction_fsm, "direction_fsm", &state_neutral, &fsm_group.direction_fsm);
   fsm_init(&fsm_group.turn_signal_fsm, "turn_signal_fsm", &state_no_signal, &fsm_group.turn_signal_fsm);
+	fsm_init(&fsm_group.hazard_light_fsm, "hazard_light_fsm", &state_hazard_off, &fsm_group.hazard_light_fsm);
 
   gpio_init();
   interrupt_init();
@@ -28,16 +29,17 @@ int main() {
 
   // List of inputs
   Input input[INPUT_DEVICES] = {
-    { { GPIO_PORT_A, 0 }, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE },
-    { { GPIO_PORT_A, 1 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_ANALOG },
-		{ { GPIO_PORT_B, 2 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE },
-		{ { GPIO_PORT_B, 3 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE },
-		{ { GPIO_PORT_B, 4 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE },
-		{ { GPIO_PORT_B, 5 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE },
-		{ { GPIO_PORT_C, 6 }, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE },
-		{ { GPIO_PORT_C, 7 }, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE },
-		{ { GPIO_PORT_C, 8 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE },
-		{ { GPIO_PORT_C, 9 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE }	
+    { { GPIO_PORT_A, 0 }, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE },							// Power Switch
+    { { GPIO_PORT_A, 1 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_ANALOG },		// Gas Pedal
+		{ { GPIO_PORT_B, 2 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE },			// Brake Pedal
+		{ { GPIO_PORT_B, 3 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE },			// Direction Selector
+		{ { GPIO_PORT_B, 4 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE },			// ""
+		{ { GPIO_PORT_B, 5 }, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE },							// Cruise Control Switch
+		{ { GPIO_PORT_C, 6 }, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE },							// Cruise Control Increase
+		{ { GPIO_PORT_C, 7 }, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE },							// Cruise Control Decrease
+		{ { GPIO_PORT_C, 8 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE },			// Turn Signal 
+		{ { GPIO_PORT_C, 9 }, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE },			// ""
+		{ { GPIO_PORT_C, 10 },INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE }  				    // Hazard Lights 
   };
 
   // Test output pins

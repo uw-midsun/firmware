@@ -47,6 +47,7 @@ typedef struct FSMGroup {
     FSM pedal_fsm;
     FSM direction_fsm;
     FSM turn_signal_fsm;
+    FSM hazard_light_fsm;
 } FSMGroup;
 
 FSM_DECLARE_STATE(state_off);             // Off State: Car is not receiving power
@@ -62,6 +63,9 @@ FSM_DECLARE_STATE(state_reverse);
 FSM_DECLARE_STATE(state_no_signal);
 FSM_DECLARE_STATE(state_left_signal);
 FSM_DECLARE_STATE(state_right_signal);
+
+FSM_DECLARE_STATE(state_hazard_on);
+FSM_DECLARE_STATE(state_hazard_off);
 
 /********************  Transition table for pedal state machine  ******************/
 FSM_STATE_TRANSITION(state_off) {
@@ -116,9 +120,21 @@ FSM_STATE_TRANSITION(state_no_signal) {
 }
 
 FSM_STATE_TRANSITION(state_left_signal) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_TURN_SIGNAL_RIGHT, state_no_signal);
+  FSM_ADD_TRANSITION(INPUT_EVENT_TURN_SIGNAL_NONE, state_no_signal);
+  FSM_ADD_TRANSITION(INPUT_EVENT_TURN_SIGNAL_RIGHT, state_right_signal);
 }
 
 FSM_STATE_TRANSITION(state_right_signal) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_TURN_SIGNAL_LEFT, state_no_signal);
+  FSM_ADD_TRANSITION(INPUT_EVENT_TURN_SIGNAL_LEFT, state_left_signal);
+  FSM_ADD_TRANSITION(INPUT_EVENT_TURN_SIGNAL_NONE, state_no_signal);
 }
+
+/********************  Transition table for the turn signal state machine  ******************/
+FSM_STATE_TRANSITION(state_hazard_on) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_HAZARD_LIGHT_OFF, state_hazard_off);
+}
+
+FSM_STATE_TRANSITION(state_hazard_off) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_HAZARD_LIGHT_ON, state_hazard_on);
+}
+
