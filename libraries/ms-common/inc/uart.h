@@ -1,13 +1,11 @@
 #pragma once
 #include <stdint.h>
+#include "uart_mcu.h"
 #include "gpio.h"
 #include "status.h"
 #include "fifo.h"
 
 #define UART_MAX_BUFFER_LEN 256
-
-// TODO: Replace, just for now
-typedef uint8_t UARTPort;
 
 typedef void (*UARTRxHandler)(const uint8_t *rx_arr, size_t len, void *context);
 
