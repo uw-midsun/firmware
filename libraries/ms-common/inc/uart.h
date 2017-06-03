@@ -1,3 +1,4 @@
+// Non-blocking UART driver
 #pragma once
 #include <stdint.h>
 #include "uart_mcu.h"
@@ -30,7 +31,9 @@ typedef struct {
 } UARTSettings;
 
 // Assumes standard 8 N 1
-// Storage should be persistent through the program
+// Registers a handler to be called when a newline is encountered or the buffer is full.
+// Storage should be persistent through the program.
 StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage);
 
+// Non-blocking TX
 StatusCode uart_tx(UARTPort uart, uint8_t *tx_data, size_t len);

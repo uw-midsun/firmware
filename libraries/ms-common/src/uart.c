@@ -1,3 +1,10 @@
+// The basic idea is that we have two FIFOs, one for TX and one for TX.
+// When a transmit is requested, we copy the data into the TX FIFO and use the TXE interrupt
+// to clock the data out. Note that we only enable the interrupt when a transfer is currently
+// in progress, as otherwise it seems to continuously trigger.
+// When we receive data through the RX interrupt, we copy it into a buffer until we encounter
+// a newline or the buffer is full. Once that occurs, we pop the data into another buffer
+// and call the registered RX handler.
 #include "uart.h"
 #include "stm32f0xx.h"
 
@@ -109,7 +116,9 @@ static void prv_rx_push(UARTPort uart) {
     uint8_t buf[UART_MAX_BUFFER_LEN + 1] = { 0 };
     fifo_pop_arr(&s_port[uart].storage->rx_fifo, buf, num_bytes);
 
-    s_port[uart].storage->rx_handler(buf, num_bytes, s_port[uart].storage->context);
+    if (s_port[uart].storage->rx_handler != NULL) {
+      s_port[uart].storage->rx_handler(buf, num_bytes, s_port[uart].storage->context);
+    }
   }
 }
 
