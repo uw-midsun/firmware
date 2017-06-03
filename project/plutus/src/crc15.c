@@ -3,7 +3,7 @@
 // x^{15} + x^{14} + x^{10} + x^{8} + x^{7} + x^{4} + x^{3} + x^{0}
 #define CRC_POLYNOMIAL 0x4599
 
-uint16_t s_crc15_table[256];
+static uint16_t s_crc15_table[256];
 
 void crc15_init_table(void) {
   uint32_t remainder;
