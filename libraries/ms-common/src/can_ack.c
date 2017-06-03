@@ -1,5 +1,6 @@
 // Uses an object pool to track the storage for ack requests, but the actual requests are handled
 // through an array of request pointers to minimize copying
+// ACK requests currently ordered as they were created
 #include "can_ack.h"
 #include "log.h"
 
@@ -7,8 +8,8 @@ static int prv_request_comp(const void *a, const void *b) {
   const CANAckRequest **req_a = a;
   const CANAckRequest **req_b = b;
 
-  // If timer ID is 0, we're searching by ID
-  if ((*req_a)->msg_id == (*req_b)->msg_id && (*req_a)->timer != 0) {
+  // If timer ID is SOFT_TIMER_MAX_TIMERS, we're searching by ID
+  if ((*req_a)->msg_id == (*req_b)->msg_id && (*req_a)->timer != SOFT_TIMER_MAX_TIMERS) {
     // Pick the ack request that will be expiring sooner
     // TODO: double check that this is the right order
     return soft_timer_remaining_time((*req_a)->timer) - soft_timer_remaining_time((*req_b)->timer);
@@ -21,6 +22,14 @@ static void prv_handle_timeout(SoftTimerID timer_id, void *context) {
   CANAckRequests *requests = context;
 
   LOG_DEBUG("Expiring timer %d\n", timer_id);
+
+  for (int i = 0; i < requests->num_requests; i++) {
+    const CANAckRequest *req = requests->active_requests[i];
+    if (req->timer == timer_id) {
+      can_ack_expire(requests, req);
+      break;
+    }
+  }
   // TODO: expire using timer ID to find it
   // Theoretically, it should always be the first item that expires first
 }
@@ -66,7 +75,7 @@ StatusCode can_ack_expire(CANAckRequests *requests, const CANAckRequest *ack_req
   for (index = 0; index < requests->num_requests; index++) {
     const CANAckRequest *req = requests->active_requests[index];
     if (req->msg_id == ack_request->msg_id &&
-        (ack_request->timer == 0 || req->timer == ack_request->timer)) {
+        (ack_request->timer == SOFT_TIMER_MAX_TIMERS || req->timer == ack_request->timer)) {
       found_request = req;
       break;
     }
@@ -97,7 +106,8 @@ StatusCode can_ack_expire(CANAckRequests *requests, const CANAckRequest *ack_req
 
 StatusCode can_ack_handle_msg(CANAckRequests *requests, CANMessageID msg_id) {
   CANAckRequest ack_request = {
-    .msg_id = msg_id
+    .msg_id = msg_id,
+    .timer = SOFT_TIMER_MAX_TIMERS
   };
   CANAckRequest *req_ptr = &ack_request;
 

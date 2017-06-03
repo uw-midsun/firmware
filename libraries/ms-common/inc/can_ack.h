@@ -64,5 +64,7 @@ StatusCode can_ack_add_request(CANAckRequests *requests, CANMessageID msg_id, ui
 // Removes the request with the same message ID, matching timer ID if non-zero
 StatusCode can_ack_remove(CANAckRequests *requests, const CANAckRequest *ack_request);
 
+StatusCode can_ack_expire(CANAckRequests *requests, const CANAckRequest *ack_request);
+
 // Handle a received ACK, firing the callback associated with the received message
 StatusCode can_ack_handle_msg(CANAckRequests *requests, CANMessageID msg_id);

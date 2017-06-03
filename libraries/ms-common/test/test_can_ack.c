@@ -1,4 +1,5 @@
 #include "can_ack.h"
+#include "interrupt.h"
 #include "soft_timer.h"
 #include "unity.h"
 #include "test_helpers.h"
@@ -20,9 +21,12 @@ static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckS
   data->device = device;
   data->response = response;
   data->num_remaining = num_remaining;
+
+  return STATUS_CODE_OK;
 }
 
 void setup_test(void) {
+  interrupt_init();
   soft_timer_init();
   can_ack_init(&s_ack_requests);
 }
