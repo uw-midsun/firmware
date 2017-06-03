@@ -1,4 +1,5 @@
 #include "can.h"
+#include "soft_timer.h"
 
 // Attempts to transmit the specified message using the HW TX, overwriting the source device.
 StatusCode prv_transmit(const CANConfig *can, const CANMessage *msg) {
@@ -54,22 +55,23 @@ void prv_rx_handler(void *context) {
   }
 }
 
-// Handler for CAN HW bus error events
-// Starts a timer to check for bus recovery
-void prv_bus_error_handler(void *context) {
-  CANConfig *can = context;
-
-  // TODO: Start 1s timer
-}
-
 // Bus error timer callback
 // Checks if the bus has recovered, raising the fault event if still off
-void prv_bus_error_timeout_handler(TimerID timer, void *context) {
+void prv_bus_error_timeout_handler(SoftTimerID timer_id, void *context) {
   CANConfig *can = context;
 
   if (can_hw_bus_status(&can->hw) == CAN_HW_BUS_STATUS_OFF) {
     event_raise(can->fault_event, 0);
   }
+}
+
+// Handler for CAN HW bus error events
+// Starts a timer to check for bus recovery
+void prv_bus_error_handler(void *context) {
+  CANConfig *can = context;
+
+  // TODO: replace magic number
+  soft_timer_start_seconds(1, prv_bus_error_timeout_handler, can, NULL);
 }
 
 StatusCode can_init(CANConfig *can, uint16_t device_id, uint16_t bus_speed, bool loopback,

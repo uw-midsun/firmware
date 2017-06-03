@@ -19,9 +19,10 @@
 #include "can_msg.h"
 #include "objpool.h"
 #include "status.h"
+#include "soft_timer.h"
 
-// TODO: Replace
-typedef uint16_t TimerID;
+// Arbitrary timeout - should calculate reasonable value
+#define CAN_ACK_TIMEOUT_US 10
 
 #define CAN_ACK_MAX_REQUESTS 10
 
@@ -45,7 +46,7 @@ typedef struct CANAckRequest {
   uint16_t num_remaining;
   CANAckRequestCb callback;
   void *context;
-  TimerID timer;
+  SoftTimerID timer;
 } CANAckRequest;
 
 typedef struct CANAckRequests {
