@@ -10,6 +10,9 @@
 #include "can_rx.h"
 #include "fsm.h"
 
+// TODO: replace with user provided handler storage?
+#define CAN_MAX_RX_HANDLERS 16
+
 typedef struct CANConfig {
   FSM fsm;
   CANHwConfig hw;
@@ -20,6 +23,7 @@ typedef struct CANConfig {
   CANQueue rx_queue;
   CANAckRequests ack_requests;
   CANRxHandlers rx_handlers;
+  CANRxHandler rx_handler_storage[CAN_MAX_RX_HANDLERS];
 } CANConfig;
 
 // Initializes the specified CAN configuration given a pointer to CAN config storage

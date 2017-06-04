@@ -19,27 +19,27 @@ StatusCode can_ack_init(CANAckRequests *requests) {
   }
 }
 
-StatusCode can_ack_add_request(CANAckRequests *requests, CANMessageID msg_id, uint16_t num_expected,
-                               CANAckRequestCb callback, void *context) {
-  CANAckRequest *ack_request = objpool_get_node(&requests->pool);
+StatusCode can_ack_add_request(CANAckRequests *requests, CANMessageID msg_id,
+                               const CANAckRequest *ack_request) {
+  CANAckPendingReq *pending_ack = objpool_get_node(&requests->pool);
 
-  if (ack_request == NULL) {
+  if (pending_ack == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  memset(ack_request, 0, sizeof(*ack_request));
-  ack_request->msg_id = msg_id;
-  ack_request->num_remaining = num_expected;
-  ack_request->callback = callback;
-  ack_request->context = context;
-  StatusCode ret = soft_timer_start(CAN_ACK_TIMEOUT_US, prv_timeout_cb, requests, &ack_request->timer);
+  memset(pending_ack, 0, sizeof(*pending_ack));
+  pending_ack->msg_id = msg_id;
+  pending_ack->num_remaining = ack_request->num_expected;
+  pending_ack->callback = ack_request->callback;
+  pending_ack->context = ack_request->context;
+  StatusCode ret = soft_timer_start(CAN_ACK_TIMEOUT_US, prv_timeout_cb, requests, &pending_ack->timer);
 
   if (ret != STATUS_CODE_OK) {
-    objpool_free_node(&requests->pool, ack_request);
+    objpool_free_node(&requests->pool, pending_ack);
     return ret;
   }
 
-  requests->active_requests[requests->num_requests++] = ack_request;
+  requests->active_requests[requests->num_requests++] = pending_ack;
 
   return STATUS_CODE_OK;
 }
@@ -51,7 +51,7 @@ StatusCode can_ack_handle_msg(CANAckRequests *requests, const CANId *can_id) {
 
 static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
                                  SoftTimerID timer_id, CANAckStatus status, uint16_t device) {
-  CANAckRequest *found_request = NULL;
+  CANAckPendingReq *found_request = NULL;
   size_t index = 0;
 
   // Requests should be in the order that they were made, and there's a higher
@@ -64,7 +64,7 @@ static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
   // * The timer ID matches given an invalid message ID
   // * Both message and timer match given valid values for both
   for (index = 0; index < requests->num_requests; index++) {
-    const CANAckRequest *req = requests->active_requests[index];
+    const CANAckPendingReq *req = requests->active_requests[index];
     if (((req->msg_id == msg_id && timer_id == SOFT_TIMER_MAX_TIMERS) ||
          (req->timer == timer_id && msg_id == CAN_MSG_INVALID_ID) ||
          (req->msg_id == msg_id && req->timer == timer_id)) &&

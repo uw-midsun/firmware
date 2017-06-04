@@ -2,6 +2,7 @@
 // Defines the CAN message type
 // This is kept in a separate file to prevent cyclic dependencies
 #include <stdint.h>
+#include <stddef.h>
 
 #define CAN_MSG_INVALID_ID (UINT16_MAX)
 #define CAN_MSG_INVALID_DEVICE (UINT16_MAX)
@@ -34,7 +35,7 @@ typedef struct CANMessage {
     uint8_t data_u8[8];
   };
   CANMsgType type;
-  uint8_t dlc;
+  size_t dlc;
 } CANMessage;
 
 typedef union CANId {

@@ -48,11 +48,19 @@ void test_can_ack_handle_devices(void) {
     .type = CAN_MSG_TYPE_ACK,
     .msg_id = 0
   };
+  CANAckRequest ack_request = {
+    .callback = prv_ack_callback,
+    .context = &data
+  };
 
-  can_ack_add_request(&s_ack_requests, 0x4, 6, prv_ack_callback, &data);
-  can_ack_add_request(&s_ack_requests, 0x2, 3, prv_ack_callback, &data);
-  can_ack_add_request(&s_ack_requests, 0x6, 6, prv_ack_callback, &data);
-  can_ack_add_request(&s_ack_requests, 0x2, 1, prv_ack_callback, &data);
+  ack_request.num_expected = 6;
+  can_ack_add_request(&s_ack_requests, 0x4, &ack_request);
+  ack_request.num_expected = 3;
+  can_ack_add_request(&s_ack_requests, 0x2, &ack_request);
+  ack_request.num_expected = 6;
+  can_ack_add_request(&s_ack_requests, 0x6, &ack_request);
+  ack_request.num_expected = 1;
+  can_ack_add_request(&s_ack_requests, 0x2, &ack_request);
 
   can_id.msg_id = 0x2;
   LOG_DEBUG("Handling ACK for ID %d, device %d\n", can_id.msg_id, can_id.source_id);
@@ -105,8 +113,13 @@ void test_can_ack_handle_devices(void) {
 void test_can_ack_expiry(void) {
   // Basic expiry test
   volatile TestResponse data = { 0 };
+  CANAckRequest ack_request = {
+    .callback = prv_ack_callback,
+    .context = &data,
+    .num_expected = 5
+  };
 
-  can_ack_add_request(&s_ack_requests, 0x2, 5, prv_ack_callback, &data);
+  can_ack_add_request(&s_ack_requests, 0x2, &ack_request);
 
   while (data.msg_id == 0) { }
 
@@ -124,9 +137,15 @@ void test_can_ack_expiry_moved(void) {
     .type = CAN_MSG_TYPE_ACK,
     .msg_id = 0x4
   };
+  CANAckRequest ack_request = {
+    .callback = prv_ack_callback,
+    .context = &data,
+    .num_expected = 1
+  };
 
-  can_ack_add_request(&s_ack_requests, 0x4, 1, prv_ack_callback, &data);
-  can_ack_add_request(&s_ack_requests, 0x2, 5, prv_ack_callback, &data);
+  can_ack_add_request(&s_ack_requests, 0x4, &ack_request);
+  ack_request.num_expected = 5;
+  can_ack_add_request(&s_ack_requests, 0x2, &ack_request);
 
   StatusCode ret = can_ack_handle_msg(&s_ack_requests, &can_id);
   TEST_ASSERT_OK(ret);

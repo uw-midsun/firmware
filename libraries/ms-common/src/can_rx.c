@@ -23,7 +23,11 @@ StatusCode can_rx_init(CANRxHandlers *rx_handlers,
 
 StatusCode can_rx_register_handler(CANRxHandlers *rx_handlers, CANMessageID msg_id,
                                    CANRxHandlerCb handler, void *context) {
-  // TODO: error checking
+  if (rx_handlers->num_handlers == rx_handlers->max_handlers) {
+    return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN RX handlers full");
+  } else if (can_rx_get_handler(rx_handlers, msg_id) != NULL) {
+    return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN RX handler already registered");
+  }
 
   rx_handlers->storage[rx_handlers->num_handlers++] = (CANRxHandler) {
     .msg_id = msg_id,

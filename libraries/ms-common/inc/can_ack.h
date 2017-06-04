@@ -34,25 +34,31 @@ typedef StatusCode (*CANAckRequestCb)(CANMessageID msg_id, uint16_t device, CANA
                                       uint16_t num_remaining, void *context);
 
 typedef struct CANAckRequest {
+  CANAckRequestCb callback;
+  void *context;
+  uint16_t num_expected;
+} CANAckRequest;
+
+typedef struct CANAckPendingReq {
   CANMessageID msg_id;
   uint16_t num_remaining;
   CANAckRequestCb callback;
   void *context;
   SoftTimerID timer;
   uint32_t response_bitset;
-} CANAckRequest;
+} CANAckPendingReq;
 
 typedef struct CANAckRequests {
   ObjectPool pool;
-  CANAckRequest request_nodes[CAN_ACK_MAX_REQUESTS];
-  CANAckRequest *active_requests[CAN_ACK_MAX_REQUESTS];
+  CANAckPendingReq request_nodes[CAN_ACK_MAX_REQUESTS];
+  CANAckPendingReq *active_requests[CAN_ACK_MAX_REQUESTS];
   size_t num_requests;
 } CANAckRequests;
 
 StatusCode can_ack_init(CANAckRequests *requests);
 
-StatusCode can_ack_add_request(CANAckRequests *requests, CANMessageID msg_id, uint16_t num_expected,
-                               CANAckRequestCb callback, void *context);
+StatusCode can_ack_add_request(CANAckRequests *requests, CANMessageID msg_id,
+                               const CANAckRequest *ack_request);
 
 // Handle a received ACK, firing the callback associated with the received message
 StatusCode can_ack_handle_msg(CANAckRequests *requests, const CANId *can_id);

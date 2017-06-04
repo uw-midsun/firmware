@@ -132,7 +132,7 @@ bool can_hw_receive(const CANHwConfig *can_hw, uint16_t *id, uint64_t *data, siz
     return false;
   }
 
-  CanRxMsg rx_msg;
+  CanRxMsg rx_msg = { 0 };
   CAN_Receive(can_hw->base, fifo, &rx_msg);
 
   *id = rx_msg.StdId;

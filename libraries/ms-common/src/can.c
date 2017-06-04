@@ -35,8 +35,8 @@ void prv_tx_handler(void *context) {
 // Dumps received messages to the RX queue and raises an event for the messages to be processed
 void prv_rx_handler(void *context) {
   CANConfig *can = context;
-  CANId rx_id;
-  CANMessage rx_msg;
+  CANId rx_id = { 0 };
+  CANMessage rx_msg = { 0 };
   size_t counter = 0;
 
   while (can_hw_receive(&can->hw, &rx_id.raw, &rx_msg.data, &rx_msg.dlc)) {
@@ -81,6 +81,13 @@ StatusCode can_init(CANConfig *can, uint16_t device_id, uint16_t bus_speed, bool
   memset(can, 0, sizeof(*can));
 
   can_hw_init(&can->hw, bus_speed, loopback);
+
+  can_rx_fsm_init(&can->fsm, can);
+  can_queue_init(&can->tx_queue);
+  can_queue_init(&can->rx_queue);
+  can_ack_init(&can->ack_requests);
+  can_rx_init(&can->rx_handlers, can->rx_handler_storage, CAN_MAX_RX_HANDLERS);
+
   can->device_id = device_id;
   can->rx_event = rx_event;
   can->fault_event = fault_event;
@@ -92,18 +99,34 @@ StatusCode can_init(CANConfig *can, uint16_t device_id, uint16_t bus_speed, bool
   return STATUS_CODE_OK;
 }
 
+StatusCode can_add_filter(CANConfig *can, CANMessageID msg_id) {
+  CANId can_id = {
+    .msg_id = msg_id
+  }, mask = {
+    .raw = UINT16_MAX
+  };
+
+  return can_hw_add_filter(&can->hw, can_id.raw, mask.msg_id);
+}
+
+StatusCode can_register_rx_handler(CANConfig *can, CANMessageID msg_id,
+                                   CANRxHandlerCb handler, void *context) {
+  return can_rx_register_handler(&can->rx_handlers, msg_id, handler, context);
+}
+
 StatusCode can_transmit(CANConfig *can, const CANMessage *msg, const CANAckRequest *ack_request) {
   // TODO: Add check for valid critical message if ack requested
 
   if (ack_request != NULL) {
-    // TODO: figure out what to do here
-    // status_ok_or_return(can_ack_add_request(&can->ack_requests, msg->msg_id, ack_request));
+    StatusCode ret = STATUS_CODE_OK;
+    ret = can_ack_add_request(&can->ack_requests, msg->msg_id, ack_request);
+    status_ok_or_return(ret);
   }
 
   // We could push the message first and attempt to transmit the message with the lowest ID,
   // but there really isn't any point. We get an interrupt whenever a TX mailbox is empty and
   // attempt to fill it, so that should usually take precedence over this function.
-  StatusCode tx_result = prv_transmit(&can, msg);
+  StatusCode tx_result = prv_transmit(can, msg);
   if (tx_result != STATUS_CODE_OK) {
     // As long as the timer for the ACK request is started, it's okay for the message to fail.
     // An optimization would be to fail early and signal that as an error.

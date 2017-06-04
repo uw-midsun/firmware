@@ -19,7 +19,7 @@ void teardown_test(void) {
 
 }
 
-void test_rx_handle(void) {
+void test_can_rx_handle(void) {
   StatusCode ret;
   ret = can_rx_register_handler(&s_rx_handlers, 0x7FF, prv_rx_callback, 0x00);
   TEST_ASSERT_OK(ret);
@@ -45,4 +45,17 @@ void test_rx_handle(void) {
   handler = can_rx_get_handler(&s_rx_handlers, 0x08);
   TEST_ASSERT_NOT_NULL(handler);
   TEST_ASSERT_EQUAL(0x01, handler->context);
+}
+
+void test_can_rx_duplicate(void) {
+  StatusCode ret;
+  ret = can_rx_register_handler(&s_rx_handlers, 0x01, prv_rx_callback, 0x00);
+  TEST_ASSERT_OK(ret);
+  ret = can_rx_register_handler(&s_rx_handlers, 0x01, prv_rx_callback, 0x01);
+  TEST_ASSERT_NOT_EQUAL(STATUS_CODE_OK, ret);
+
+  CANRxHandler *handler = NULL;
+  handler = can_rx_get_handler(&s_rx_handlers, 0x01);
+  TEST_ASSERT_NOT_NULL(handler);
+  TEST_ASSERT_EQUAL(0x00, handler->context);
 }

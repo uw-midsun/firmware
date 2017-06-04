@@ -1,5 +1,6 @@
 #pragma once
 #include "fsm.h"
+#include "can.h"
 // CAN TX/RX event handlers
 
 // Register RX handlers?
@@ -13,6 +14,4 @@
 // TX: request transmit - push message into queue, attempt to TX
 // if critical, create ACK request and start timer
 
-struct CANConfig;
-
-StatusCode can_rx_fsm_init(FSM *rx_fsm, struct CANConfig *can);
+StatusCode can_rx_fsm_init(FSM *rx_fsm, CANConfig *can);
