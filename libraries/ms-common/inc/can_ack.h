@@ -33,7 +33,6 @@ typedef enum {
 typedef StatusCode (*CANAckRequestCb)(CANMessageID msg_id, uint16_t device, CANAckStatus status,
                                       uint16_t num_remaining, void *context);
 
-// TODO: we may want to keep track of which devices we've received from to prevent duplicates
 typedef struct CANAckRequest {
   CANMessageID msg_id;
   uint16_t num_remaining;

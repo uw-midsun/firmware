@@ -1,7 +1,7 @@
 #include "can_hw.h"
+#include "log.h"
 #include "unity.h"
 #include "test_helpers.h"
-#include <stdio.h>
 
 #ifdef STM32F072
 static CANHwConfig s_can;
@@ -30,7 +30,7 @@ void setup_test(void) {
   s_rx_id = 0;
   s_rx_data = 0;
   s_rx_len = 0;
-  printf("CAN initialized\n");
+  LOG_DEBUG("CAN initialized\n");
 }
 
 void teardown_test(void) { }
