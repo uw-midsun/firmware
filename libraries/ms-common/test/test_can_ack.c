@@ -103,6 +103,7 @@ void test_can_ack_handle_devices(void) {
 }
 
 void test_can_ack_expiry(void) {
+  // Basic expiry test
   volatile TestResponse data = { 0 };
 
   can_ack_add_request(&s_ack_requests, 0x2, 5, prv_ack_callback, &data);
@@ -116,6 +117,7 @@ void test_can_ack_expiry(void) {
 
 
 void test_can_ack_expiry_moved(void) {
+  // Ensure that ACK expiry can handle being shuffled around
   volatile TestResponse data = { 0 };
   CANId can_id = {
     .source_id = 0,

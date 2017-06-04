@@ -10,7 +10,6 @@ static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
 static void prv_timeout_cb(SoftTimerID timer_id, void *context);
 
 StatusCode can_ack_init(CANAckRequests *requests) {
-  // TODO: error checking
   memset(requests, 0, sizeof(*requests));
 
   objpool_init(&requests->pool, requests->request_nodes, NULL, NULL);
@@ -34,7 +33,12 @@ StatusCode can_ack_add_request(CANAckRequests *requests, CANMessageID msg_id, ui
   ack_request->num_remaining = num_expected;
   ack_request->callback = callback;
   ack_request->context = context;
-  soft_timer_start(CAN_ACK_TIMEOUT_US, prv_timeout_cb, requests, &ack_request->timer);
+  StatusCode ret = soft_timer_start(CAN_ACK_TIMEOUT_US, prv_timeout_cb, requests, &ack_request->timer);
+
+  if (ret != STATUS_CODE_OK) {
+    objpool_free_node(&requests->pool, ack_request);
+    return ret;
+  }
 
   requests->active_requests[requests->num_requests++] = ack_request;
 
@@ -48,8 +52,6 @@ StatusCode can_ack_handle_msg(CANAckRequests *requests, const CANId *can_id) {
 
 static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
                                  SoftTimerID timer_id, CANAckStatus status, uint16_t device) {
-  // TODO: error checking
-
   CANAckRequest *found_request = NULL;
   size_t index = 0;
 
