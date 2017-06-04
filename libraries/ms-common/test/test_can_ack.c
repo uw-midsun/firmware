@@ -104,58 +104,37 @@ void test_can_ack_handle_devices(void) {
 
 void test_can_ack_expiry(void) {
   volatile TestResponse data = { 0 };
-  CANId can_id = {
-    .source_id = 0,
-    .type = CAN_MSG_TYPE_ACK,
-    .msg_id = 0
-  };
 
   can_ack_add_request(&s_ack_requests, 0x2, 5, prv_ack_callback, &data);
-  can_ack_add_request(&s_ack_requests, 0x1, 5, prv_ack_callback, &data);
 
   while (data.msg_id == 0) { }
 
+  TEST_ASSERT_EQUAL(0x2, data.msg_id);
   TEST_ASSERT_EQUAL(CAN_ACK_STATUS_TIMEOUT, data.status);
+  TEST_ASSERT_EQUAL(0, s_ack_requests.num_requests);
 }
 
-// void test_check_expire(void) {
-//   TestResponse data = { 0 };
-//   can_ack_add_request(&s_ack_requests, 0x4, 1, prv_ack_callback, &data);
-//   can_ack_add_request(&s_ack_requests, 0x2, 2, prv_ack_callback, &data);
-//   can_ack_add_request(&s_ack_requests, 0x3, 3, prv_ack_callback, &data);
-//   can_ack_add_request(&s_ack_requests, 0x2, 4, prv_ack_callback, &data);
-//   can_ack_add_request(&s_ack_requests, 0x1, 5, prv_ack_callback, &data);
-//   can_ack_add_request(&s_ack_requests, 0x2, 6, prv_ack_callback, &data);
 
-//   // Expire the 2nd 0x2 message, then any 0x2 message
-//   CANAckRequest ack_request = { .msg_id = 0x2 };
-//   for (size_t i = 0; i < s_ack_requests.num_requests; i++) {
-//     if (s_ack_requests.active_requests[i]->num_remaining == 4) {
-//       ack_request.timer = s_ack_requests.active_requests[i]->timer;
-//     }
-//   }
-//   TEST_ASSERT_NOT_EQUAL(0, ack_request.timer);
+void test_can_ack_expiry_moved(void) {
+  volatile TestResponse data = { 0 };
+  CANId can_id = {
+    .source_id = 0,
+    .type = CAN_MSG_TYPE_ACK,
+    .msg_id = 0x4
+  };
 
-//   printf("Expiring message ID %d, timer %d\n", ack_request.msg_id, ack_request.timer);
-//   StatusCode ret = can_ack_expire(&s_ack_requests, &ack_request);
-//   TEST_ASSERT_OK(ret);
+  can_ack_add_request(&s_ack_requests, 0x4, 1, prv_ack_callback, &data);
+  can_ack_add_request(&s_ack_requests, 0x2, 5, prv_ack_callback, &data);
 
-//   TEST_ASSERT_EQUAL(ack_request.msg_id, data.msg_id);
-//   TEST_ASSERT_EQUAL(4, data.num_remaining);
+  StatusCode ret = can_ack_handle_msg(&s_ack_requests, &can_id);
+  TEST_ASSERT_OK(ret);
 
-//   // Should remove the first message with ID 0x2
-//   ack_request.timer = 0;
-//   ret = can_ack_expire(&s_ack_requests, &ack_request);
-//   TEST_ASSERT_OK(ret);
+  TEST_ASSERT_EQUAL(can_id.msg_id, data.msg_id);
+  TEST_ASSERT_EQUAL(1, s_ack_requests.num_requests);
 
-//   TEST_ASSERT_EQUAL(ack_request.msg_id, data.msg_id);
-//   TEST_ASSERT_EQUAL(2, data.num_remaining);
+  while (data.msg_id == can_id.msg_id) { }
 
-//   printf("Expiring all remaining %d messages\n", s_ack_requests.num_requests);
-//   while (s_ack_requests.num_requests > 0) {
-//     uint16_t num_remaining = s_ack_requests.active_requests[0]->num_remaining;
-//     ret = can_ack_expire(&s_ack_requests, s_ack_requests.active_requests[0]);
-//     TEST_ASSERT_OK(ret);
-//     TEST_ASSERT_EQUAL(num_remaining, data.num_remaining);
-//   }
-// }
+  TEST_ASSERT_EQUAL(0x2, data.msg_id);
+  TEST_ASSERT_EQUAL(CAN_ACK_STATUS_TIMEOUT, data.status);
+  TEST_ASSERT_EQUAL(0, s_ack_requests.num_requests);
+}

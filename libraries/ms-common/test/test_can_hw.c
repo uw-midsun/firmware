@@ -2,8 +2,8 @@
 #include "unity.h"
 #include "test_helpers.h"
 #include <stdio.h>
-#include "stm32f0xx.h"
 
+#ifdef STM32F072
 static CANHwConfig s_can;
 static volatile size_t s_msg_rx;
 static volatile uint16_t s_rx_id;
@@ -71,3 +71,10 @@ void test_filter(void) {
   TEST_ASSERT_EQUAL(2, s_msg_rx);
   TEST_ASSERT_EQUAL(0x39, s_rx_id);
 }
+
+#else
+void setup_test(void) { }
+void teardown_test(void) { }
+void test_loop(void) { }
+void test_filter(void) { }
+#endif
