@@ -8,14 +8,7 @@
 // b) The timer expires and we timeout the ACK
 //
 // If the ACK has timed out or we've received the expected number of ACKs, we remove the ACK request
-// from the list. We use an object pool and an array of pointers to do so efficiently. If necessary,
-// we could use a BST, but for the purposes of keeping it simple, we'll just use qsort and bsearch.
-//
-// TODO: Will timers have context? How should we sort the list?
-// If we're trying to process a received message, we search for the first request that matches the
-// message ID. (Note that we order requests by time)
-// If we're trying to process an expired ACK request, assume we have a void *context. This context
-// should be the index (or pointer) of the element to be removed.
+// from the list. We use an object pool and an array of pointers to do so efficiently.
 #include "can_msg.h"
 #include "objpool.h"
 #include "status.h"

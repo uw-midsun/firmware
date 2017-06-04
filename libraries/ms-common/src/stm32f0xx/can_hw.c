@@ -54,7 +54,9 @@ StatusCode can_hw_init(CANHwConfig *can_hw, uint16_t bus_speed, bool loopback) {
 
 StatusCode can_hw_register_callback(CANHwConfig *can_hw, CANHwEvent flag,
                                     CANHwEventHandlerCb callback, void *context) {
-  // TODO: error checking
+  if (flag > NUM_CAN_HW_EVENTS) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
 
   can_hw->handlers[flag] = (CANHwEventHandler) {
     .callback = callback,
@@ -145,30 +147,19 @@ void CEC_CAN_IRQHandler(void) {
     return;
   }
 
-  // TODO: De-duplicate
+  bool run_cb[NUM_CAN_HW_EVENTS] = {
+    [CAN_HW_EVENT_TX_READY] = CAN_GetITStatus(s_can->base, CAN_IT_TME) == SET,
+    [CAN_HW_EVENT_MSG_RX] = CAN_GetITStatus(s_can->base, CAN_IT_FMP0) == SET ||
+                            CAN_GetITStatus(s_can->base, CAN_IT_FMP1) == SET,
+    [CAN_HW_EVENT_BUS_ERROR] = CAN_GetITStatus(s_can->base, CAN_IT_BOF) == SET
+  };
 
-  CANHwEventHandler *handler = NULL;
-
-  if (CAN_GetITStatus(s_can->base, CAN_IT_TME) == SET) {
-    handler = &s_can->handlers[CAN_HW_EVENT_TX_READY];
-    if (handler->callback != NULL) {
+  for (int flag = 0; flag < NUM_CAN_HW_EVENTS; flag++) {
+    CANHwEventHandler *handler = &s_can->handlers[flag];
+    if (handler->callback != NULL && run_cb[flag]) {
       handler->callback(handler->context);
     }
-    CAN_ClearITPendingBit(CAN, CAN_IT_TME);
-  }
+  };
 
-  if (CAN_GetITStatus(s_can->base, CAN_IT_FMP0) == SET ||
-      CAN_GetITStatus(s_can->base, CAN_IT_FMP1) == SET) {
-    handler = &s_can->handlers[CAN_HW_EVENT_MSG_RX];
-    if (handler->callback != NULL) {
-      handler->callback(handler->context);
-    }
-  }
-
-  if (CAN_GetITStatus(s_can->base, CAN_IT_BOF) == SET) {
-    handler = &s_can->handlers[CAN_HW_EVENT_BUS_ERROR];
-    if (handler->callback != NULL) {
-      handler->callback(handler->context);
-    }
-  }
+  CAN_ClearITPendingBit(CAN, CAN_IT_TME);
 }

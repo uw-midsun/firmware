@@ -2,7 +2,6 @@
 // through an array of request pointers to minimize copying
 // ACK requests currently ordered as they were created
 #include "can_ack.h"
-#include "log.h"
 
 static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
                                  SoftTimerID timer_id, CANAckStatus status, uint16_t device);

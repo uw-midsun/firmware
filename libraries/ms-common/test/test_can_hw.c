@@ -35,7 +35,7 @@ void setup_test(void) {
 
 void teardown_test(void) { }
 
-void test_loop(void) {
+void test_can_hw_loop(void) {
   uint16_t tx_id = 0x01;
   uint64_t tx_data = 0x1122334455667788;
   size_t tx_len = 8;
@@ -50,7 +50,7 @@ void test_loop(void) {
   TEST_ASSERT_EQUAL(tx_len, s_rx_len);
 }
 
-void test_filter(void) {
+void test_can_hw_filter(void) {
   // Mask 0b11, require 0b01
   can_hw_add_filter(&s_can, 0x03, 0x01);
 
@@ -75,6 +75,6 @@ void test_filter(void) {
 #else
 void setup_test(void) { }
 void teardown_test(void) { }
-void test_loop(void) { }
-void test_filter(void) { }
+void test_can_hw_loop(void) { }
+void test_can_hw_filter(void) { }
 #endif
