@@ -103,10 +103,10 @@ StatusCode can_add_filter(CANConfig *can, CANMessageID msg_id) {
   CANId can_id = {
     .msg_id = msg_id
   }, mask = {
-    .raw = UINT16_MAX
+    .msg_id = UINT16_MAX
   };
 
-  return can_hw_add_filter(&can->hw, can_id.raw, mask.msg_id);
+  return can_hw_add_filter(&can->hw, can_id.raw, mask.raw);
 }
 
 StatusCode can_register_rx_handler(CANConfig *can, CANMessageID msg_id,
