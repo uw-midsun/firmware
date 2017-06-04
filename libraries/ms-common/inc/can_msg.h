@@ -3,6 +3,11 @@
 // This is kept in a separate file to prevent cyclic dependencies
 #include <stdint.h>
 
+#define CAN_MSG_INVALID_ID (UINT16_MAX)
+#define CAN_MSG_INVALID_DEVICE (UINT16_MAX)
+
+#define CAN_MSG_MAX_DEVICES (1 << 4)
+
 #define CAN_MSG_SET_RAW_ID(can_msg, can_id) \
 do { \
   CANId id = { .raw = (can_id) }; \
@@ -13,7 +18,8 @@ do { \
 
 typedef enum {
   CAN_MSG_TYPE_DATA = 0,
-  CAN_MSG_TYPE_ACK
+  CAN_MSG_TYPE_ACK,
+  CAN_MSG_NUM_TYPES
 } CANMsgType;
 
 typedef uint16_t CANMessageID;

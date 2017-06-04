@@ -22,14 +22,14 @@
 #include "soft_timer.h"
 
 // Arbitrary timeout - should calculate reasonable value
-#define CAN_ACK_TIMEOUT_US 10
+#define CAN_ACK_TIMEOUT_US 1000
 
 #define CAN_ACK_MAX_REQUESTS 10
 
 typedef enum {
   CAN_ACK_STATUS_OK = 0,
   CAN_ACK_STATUS_TIMEOUT,
-  CAN_ACK_STATUS_INVALID,
+  CAN_ACK_STATUS_INVALID, // Currently unused
   CAN_ACK_STATUS_UNKNOWN,
   NUM_ACK_STATUSES
 } CANAckStatus;
@@ -37,7 +37,7 @@ typedef enum {
 // If the callback was fired due to timer expiry, the device ID is invalid.
 // If the return code is non-OK, it is assumed that the received ACK is invalid and should be
 // ignored. If this occurs on a timer expiry, we still remove the ACK request.
-typedef StatusCode (*CANAckRequestCb)(CANMessageID msg_id, uint16_t device, CANAckStatus response,
+typedef StatusCode (*CANAckRequestCb)(CANMessageID msg_id, uint16_t device, CANAckStatus status,
                                       uint16_t num_remaining, void *context);
 
 // TODO: we may want to keep track of which devices we've received from to prevent duplicates
@@ -47,6 +47,7 @@ typedef struct CANAckRequest {
   CANAckRequestCb callback;
   void *context;
   SoftTimerID timer;
+  uint32_t response_bitset;
 } CANAckRequest;
 
 typedef struct CANAckRequests {
@@ -61,10 +62,5 @@ StatusCode can_ack_init(CANAckRequests *requests);
 StatusCode can_ack_add_request(CANAckRequests *requests, CANMessageID msg_id, uint16_t num_expected,
                                CANAckRequestCb callback, void *context);
 
-// Removes the request with the same message ID, matching timer ID if non-zero
-StatusCode can_ack_remove(CANAckRequests *requests, const CANAckRequest *ack_request);
-
-StatusCode can_ack_expire(CANAckRequests *requests, const CANAckRequest *ack_request);
-
 // Handle a received ACK, firing the callback associated with the received message
-StatusCode can_ack_handle_msg(CANAckRequests *requests, CANMessageID msg_id);
+StatusCode can_ack_handle_msg(CANAckRequests *requests, const CANId *can_id);
