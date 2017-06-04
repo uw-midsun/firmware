@@ -24,6 +24,7 @@ void crc15_init_table(void) {
 }
 
 uint16_t crc15_calculate(uint8_t *data, size_t len) {
+  // CRC should be initialized to 16 (see datasheet p.44)
   uint16_t remainder = 16;
   uint16_t addr = 0;
 
