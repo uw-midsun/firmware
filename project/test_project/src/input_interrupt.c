@@ -5,23 +5,25 @@
 
 // Replace the switch statement with a jump table if they get too big
 
-static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group) {
+static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group, uint16_t reading) {
 	GPIOState key_pressed;
   gpio_get_value(address, &key_pressed);
 	debounce(address, &key_pressed);
-
+		
 	switch (address->pin) {
 		case 0:
 			return (!strcmp(fsm_group->pedal_fsm.current_state->name, "state_off")) ? INPUT_EVENT_POWER_ON : INPUT_EVENT_POWER_OFF; 
 
 		case 1:
-			return (adc_read(address, MAX_SPEED) > COAST_THRESHOLD) ? INPUT_EVENT_GAS_PRESSED : INPUT_EVENT_GAS_RELEASED; 
+			if (reading < COAST_THRESHOLD) {
+				return INPUT_EVENT_GAS_BRAKE;
+			} else if (reading > DRIVE_THRESHOLD) {
+				return INPUT_EVENT_GAS_PRESSED;
+			} else {
+				return INPUT_EVENT_GAS_COAST;
+			} 
 			break;
-
-		case 2:
-			return (key_pressed) ? INPUT_EVENT_BRAKE_PRESSED : INPUT_EVENT_BRAKE_RELEASED; 
-			break;
-
+		
 		case 3:
 		case 4:
 			switch ((GPIOB->IDR & (GPIO_IDR_3 | GPIO_IDR_4)) >> 3) {
@@ -70,20 +72,14 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group) {
 }
 
 void input_callback (GPIOAddress* address, FSMGroup* fsm_group) {
-	Event e = { prv_get_event(address, fsm_group), 0 };
+	uint16_t reading = adc_read(address, MAX_SPEED);
+	Event e = { prv_get_event(address, fsm_group, reading), 0 };
 	bool transitioned = 0;
-
-	printf("GPIO_ISR =  "BYTE_TO_BINARY_PATTERN"\nEXTI_PR =   "BYTE_TO_BINARY_PATTERN"\nEXTI_RTSR = "BYTE_TO_BINARY_PATTERN"\nEXTI_FSTR = "BYTE_TO_BINARY_PATTERN"\n",
-					BYTE_TO_BINARY(GPIOC->IDR), 
-					BYTE_TO_BINARY(EXTI->PR),
-          BYTE_TO_BINARY(EXTI->RTSR),
-          BYTE_TO_BINARY(EXTI->FTSR)
-	);
 
 	switch (e.id) {
 		case INPUT_EVENT_POWER_OFF:
 			printf("current_state = %s\n", fsm_group->pedal_fsm.current_state->name);
-			if (strcmp(fsm_group->pedal_fsm.current_state->name, "state_idle")) {
+			if (strcmp(fsm_group->pedal_fsm.current_state->name, "state_brake")) {
 				printf("Cannot power off while pedals are pressed\n");
 				break;
 			}
@@ -95,7 +91,8 @@ void input_callback (GPIOAddress* address, FSMGroup* fsm_group) {
 				
 			transitioned = fsm_process_event(&fsm_group->pedal_fsm, &e);
 			break;
-		
+	
+		case INPUT_EVENT_GAS_COAST:	
 		case INPUT_EVENT_GAS_PRESSED:
             if (strcmp(fsm_group->direction_fsm.current_state->name, "state_forward") && 
 				strcmp(fsm_group->direction_fsm.current_state->name, "state_reverse")) {
@@ -121,6 +118,8 @@ void input_callback (GPIOAddress* address, FSMGroup* fsm_group) {
 			break;
 		case INPUT_EVENT_HAZARD_LIGHT_ON:
 		case INPUT_EVENT_HAZARD_LIGHT_OFF:
+			GPIOA->ODR ^= 0x0400;
+			printf (BYTE_TO_BINARY_PATTERN"\n", BYTE_TO_BINARY(GPIOA->ODR));	
 			if (strcmp(fsm_group->pedal_fsm.current_state->name, "state_off")) {
 				transitioned = fsm_process_event(&fsm_group->hazard_light_fsm, &e);
 			}
@@ -128,15 +127,16 @@ void input_callback (GPIOAddress* address, FSMGroup* fsm_group) {
 		default:		
 			transitioned = fsm_process_event(&fsm_group->pedal_fsm, &e);
 	}
-	
-	printf("P%c%d : Event = %d  Car Status = %s : Direction = %s : Turn Signal = %s : Hazard Lights = %s \n", 
+
+	printf("P%c%d : Event = %d : Car Status = %s : Direction = %s : Turn = %s : Hazard = %s : %d \n", 
 			(uint8_t)(address->port+65), 
 			address->pin, 
 			e.id,
 			fsm_group->pedal_fsm.current_state->name,
 			fsm_group->direction_fsm.current_state->name,
 			fsm_group->turn_signal_fsm.current_state->name,
-			fsm_group->hazard_light_fsm.current_state->name
+			fsm_group->hazard_light_fsm.current_state->name,
+			reading
 	);
 	
 	return;

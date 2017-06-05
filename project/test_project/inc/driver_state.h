@@ -5,22 +5,23 @@
 // Define output functions for the Driver control FSM
 
 void driver_state_off(FSM* fsm, const Event* e, void *context);
-
-void driver_state_idle(FSM* fsm, const Event* e, void *context);
 void driver_state_brake(FSM* fsm, const Event* e, void *context);
+void driver_state_coast(FSM* fsm, const Event* e, void *context);
 void driver_state_driving(FSM* fsm, const Event* e, void *context);
+void driver_state_cruise_control(FSM* fsm, const Event* e, void *context);
 
 void driver_state_neutral(FSM* fsm, const Event* e, void *context);
 void driver_state_forward(FSM* fsm, const Event* e, void *context);
 void driver_state_reverse(FSM* fsm, const Event* e, void *context);
 
+void driver_state_hazard_light(FSM* fsm, const Event* e, void *context);
+
 typedef enum {
   INPUT_EVENT_POWER_ON = 0,
   INPUT_EVENT_POWER_OFF,
+  INPUT_EVENT_GAS_BRAKE,
+  INPUT_EVENT_GAS_COAST,
   INPUT_EVENT_GAS_PRESSED,
-  INPUT_EVENT_GAS_RELEASED,
-  INPUT_EVENT_BRAKE_PRESSED,
-  INPUT_EVENT_BRAKE_RELEASED,
   INPUT_EVENT_HORN_PRESSED,
   INPUT_EVENT_HORN_RELEASED,
   INPUT_EVENT_EMERGENCY_STOP,
@@ -51,8 +52,8 @@ typedef struct FSMGroup {
 } FSMGroup;
 
 FSM_DECLARE_STATE(state_off);             // Off State: Car is not receiving power
-FSM_DECLARE_STATE(state_idle);            // Idle State: Neither of the gas pedals are pressed
 FSM_DECLARE_STATE(state_brake);           // Brake State: Driver is holding down the brake pedal
+FSM_DECLARE_STATE(state_coast);
 FSM_DECLARE_STATE(state_driving);         // Driving State: Car is in motion due to the gas pedal
 FSM_DECLARE_STATE(state_cruise_control);  // Driving State: Car is in motion due to the gas pedal
 
@@ -69,32 +70,33 @@ FSM_DECLARE_STATE(state_hazard_off);
 
 /********************  Transition table for pedal state machine  ******************/
 FSM_STATE_TRANSITION(state_off) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_ON, state_idle);
-}
-
-FSM_STATE_TRANSITION(state_idle) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_OFF, state_off);
-  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_PRESSED, state_driving);
-  FSM_ADD_TRANSITION(INPUT_EVENT_BRAKE_PRESSED, state_brake);
-  FSM_ADD_TRANSITION(INPUT_EVENT_EMERGENCY_STOP, state_off);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL_ON, state_cruise_control);
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_ON, state_brake);
 }
 
 FSM_STATE_TRANSITION(state_brake) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_BRAKE_RELEASED, state_idle);
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_OFF, state_off);
+  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_COAST, state_coast);
+  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_PRESSED, state_driving);
+  FSM_ADD_TRANSITION(INPUT_EVENT_EMERGENCY_STOP, state_off);
+}
+
+FSM_STATE_TRANSITION(state_coast) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_PRESSED, state_driving);
+  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_BRAKE, state_brake);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL_ON, state_cruise_control);
   FSM_ADD_TRANSITION(INPUT_EVENT_EMERGENCY_STOP, state_off);
 }
 
 FSM_STATE_TRANSITION(state_driving) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_RELEASED, state_idle);
-  FSM_ADD_TRANSITION(INPUT_EVENT_BRAKE_PRESSED, state_brake);
-  FSM_ADD_TRANSITION(INPUT_EVENT_EMERGENCY_STOP, state_off);
+  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_BRAKE, state_brake);
+  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_COAST, state_coast);
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL_ON, state_cruise_control);
+  FSM_ADD_TRANSITION(INPUT_EVENT_EMERGENCY_STOP, state_off);
 }
 
 FSM_STATE_TRANSITION(state_cruise_control) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_BRAKE_PRESSED, state_brake);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL_OFF, state_idle);
+  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_BRAKE, state_brake);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL_OFF, state_brake);
 }
 
 /********************  Transition table for direction state machine  ******************/

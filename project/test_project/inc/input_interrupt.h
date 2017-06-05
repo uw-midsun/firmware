@@ -9,13 +9,13 @@
 #include <stdbool.h>
 
 #define DEVICE_STATES 10 
-#define INPUT_DEVICES 11 
+#define INPUT_DEVICES 12 
 #define OUTPUT_DEVICES 4
 #define MAX_SPEED 200
 
 #define COAST_THRESHOLD 80
-#define DRIVE_THRESHOLD 150
-
+#define DRIVE_THRESHOLD 130
+#define SAMPLE_AVERAGE 20
 //
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \

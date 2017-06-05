@@ -29,7 +29,7 @@ void adc_init(ADCMode adc_mode) {
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
 
   ADC_InitTypeDef adc_settings = {
-    ADC_Resolution_12b,
+    ADC_Resolution_10b,
     adc_mode,
     ADC_ExternalTrigConvEdge_None,
     ADC_ExternalTrigConv_T1_TRGO,
@@ -67,8 +67,17 @@ uint16_t adc_read(GPIOAddress* address, uint16_t max) {
 	ADC1->CFGR1 ^= (ADC1->CFGR1 >> 13) ? ADC_CR_ADSTART : 0;
   
   uint16_t adc_reading = ADC_GetConversionValue(ADC1);
-  uint16_t reading = (max * adc_reading)/4096;
+  uint16_t reading = (max * adc_reading)/1024;
 
   return reading;
 }
 
+uint16_t adc_average(GPIOAddress* address, uint16_t period, uint16_t max) {
+  uint16_t average = 0;
+  for (uint16_t i = 0; i < period; i++) {
+      average += adc_read(address, max);
+  }
+
+  average /= period;
+  return average;
+}

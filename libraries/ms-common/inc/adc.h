@@ -50,5 +50,8 @@ void adc_init(ADCMode adc_mode);
 // Sets the continuous mode sample rate for the given pin.
 bool adc_init_pin(GPIOAddress* address, ADCSampleRate adc_sample_rate);
 
-// Returns the current ADC signal as a 12-bit integer. Uses the system voltage as a parameter
+// Returns the current ADC signal as a 12-bit integer.
 uint16_t adc_read(GPIOAddress* address, uint16_t max);
+
+//
+uint16_t adc_average(GPIOAddress* address, uint16_t period, uint16_t max);
