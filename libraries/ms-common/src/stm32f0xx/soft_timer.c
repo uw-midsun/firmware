@@ -7,9 +7,7 @@
 #include "critical_section.h"
 #include "interrupt.h"
 #include "status.h"
-#include "stm32f0xx_interrupt.h"
-#include "stm32f0xx_rcc.h"
-#include "stm32f0xx_tim.h"
+#include "stm32f0xx.h"
 
 typedef struct Timer {
   uint32_t expiry_time;
@@ -86,6 +84,8 @@ void soft_timer_init(void) {
 
   // Stop the timer if it was running.
   TIM_Cmd(TIM2, DISABLE);
+  TIM_ITConfig(TIM2, TIM_IT_CC1, DISABLE);
+  TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);
 
   // Get the clock speed of the clocks to determine the SYSCLK speed which is what TIM2 uses.
   // Note this is susceptible to prescaling on both the AHB and APB but by default these are not
@@ -115,13 +115,13 @@ void soft_timer_init(void) {
   }
 
   // Enable the interrupts on Capture Compare and updates. TIM2 uses IRQ channel 15.
-  stm32f0xx_interrupt_nvic_enable(15, INTERRUPT_PRIORITY_NORMAL);
-  TIM_ITConfig(TIM2, TIM_IT_CC1, ENABLE);
+  stm32f0xx_interrupt_nvic_enable(TIM2_IRQn, INTERRUPT_PRIORITY_NORMAL);
   TIM_ClearITPendingBit(TIM2, TIM_IT_CC1);
+  TIM_ITConfig(TIM2, TIM_IT_CC1, ENABLE);
 
   // Update on overflows only. Clear any pending overflows.
-  TIM_UpdateRequestConfig(TIM2, TIM_UpdateSource_Regular);
   TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+  TIM_UpdateRequestConfig(TIM2, TIM_UpdateSource_Regular);
 
   // Start the timer.
   TIM_Cmd(TIM2, ENABLE);
@@ -185,7 +185,7 @@ bool soft_timer_inuse(void) {
 
 // TIM2 Interrupt handler as defined in stm32f0xx.h
 void TIM2_IRQHandler(void) {
-  if (TIM_GetITStatus(TIM2, TIM_IT_CC1) != RESET) {
+  if (TIM_GetITStatus(TIM2, TIM_IT_CC1) != RESET && s_active_timer_id < SOFT_TIMER_MAX_TIMERS) {
     // Update the timer assuming the active timer expired.
     s_soft_timer_array[s_active_timer_id].callback(s_active_timer_id,
                                                    s_soft_timer_array[s_active_timer_id].context);
