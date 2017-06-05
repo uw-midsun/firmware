@@ -46,12 +46,12 @@ program: $(BIN_DIR)/$(PROJECT).bin
 	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash `pwd`/$<" -c shutdown
 
 gdb: $(GDB_TARGET)
-	@$(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
+	@setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
 	@$(GDB) $< -x "$(SCRIPT_DIR)/gdb_flash"
 	@pkill openocd
 
 define session_wrapper
-$(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
+setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
 $1; pkill openocd
 endef
 
