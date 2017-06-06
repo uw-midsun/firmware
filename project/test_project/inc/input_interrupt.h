@@ -9,7 +9,7 @@
 #include <stdbool.h>
 
 #define DEVICE_STATES 10 
-#define INPUT_DEVICES 12 
+#define INPUT_DEVICES 11 
 #define OUTPUT_DEVICES 4
 #define MAX_SPEED 200
 
