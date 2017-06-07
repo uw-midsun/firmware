@@ -14,6 +14,6 @@ void debounce(GPIOAddress* address, GPIOState* current_state) {
     } else {
       count = HOLD_TIME;
     }
-	prev_state = *current_state;
+  prev_state = *current_state;
   }
 }

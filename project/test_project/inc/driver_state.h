@@ -57,7 +57,7 @@ FSM_DECLARE_STATE(state_coast);
 FSM_DECLARE_STATE(state_driving);         // Driving State: Car is in motion due to the gas pedal
 FSM_DECLARE_STATE(state_cruise_control);  // Driving State: Car is in motion due to the gas pedal
 
-FSM_DECLARE_STATE(state_neutral); 
+FSM_DECLARE_STATE(state_neutral);
 FSM_DECLARE_STATE(state_forward);
 FSM_DECLARE_STATE(state_reverse);
 
