@@ -1,7 +1,5 @@
 #include "timer.h"
 #include "objpool.h"
-#define LOG_LEVEL_VERBOSITY LOG_LEVEL_NONE
-#include "log.h"
 #include "stm32f0xx.h"
 
 #define SOFT_TIMER_GET_ID(timer) ((timer) - s_storage)
@@ -26,7 +24,7 @@ static volatile SoftTimer s_storage[SOFT_TIMER_MAX_TIMERS] = { 0 };
 
 static void prv_init_periph(void);
 static bool prv_insert_timer(SoftTimer *timer);
-static bool prv_remove_timer(SoftTimer *timer);
+static void prv_remove_timer(SoftTimer *timer);
 static void prv_update_timer(void);
 
 StatusCode timer_init(void) {
@@ -56,11 +54,8 @@ StatusCode timer_start(uint32_t time_us, SoftTimerCb callback, void *context,
     *timer_id = SOFT_TIMER_GET_ID(node);
   }
 
-  LOG_DEBUG("Added timer %d\n", SOFT_TIMER_GET_ID(node));
-
   bool head = prv_insert_timer(node);
   if (head) {
-    LOG_DEBUG("Updated head\n");
     prv_update_timer();
   }
 }
@@ -101,7 +96,6 @@ static bool prv_insert_timer(SoftTimer *timer) {
   SoftTimer *node = s_timers.head;
 
   if (node == NULL) {
-    LOG_DEBUG("no head - setting head\n");
     s_timers.head = timer;
     return true;
   }
@@ -125,7 +119,6 @@ static bool prv_insert_timer(SoftTimer *timer) {
   }
 
   if (s_timers.head->prev != NULL) {
-    LOG_DEBUG("Setting as new head - expires before current\n");
     // Should only have added a single node at most
     s_timers.head = s_timers.head->prev;
     return true;
@@ -134,15 +127,9 @@ static bool prv_insert_timer(SoftTimer *timer) {
   return false;
 }
 
-static bool prv_remove_timer(SoftTimer *timer) {
-  LOG_DEBUG("removing timer %d\n", SOFT_TIMER_GET_ID(timer));
-
-  bool needs_update = false;
-
+static void prv_remove_timer(SoftTimer *timer) {
   if (timer == s_timers.head) {
-    LOG_DEBUG("moving to new head\n");
     s_timers.head = timer->next;
-    needs_update = true;
   }
 
   if (timer->prev != NULL) {
@@ -154,28 +141,27 @@ static bool prv_remove_timer(SoftTimer *timer) {
   }
 
   objpool_free_node(&s_timers.pool, timer);
-
-  return needs_update;
 }
 
 static void prv_update_timer(void) {
-  while (s_timers.head != NULL &&
-         (s_timers.head->expiry_rollover_count < s_timers.rollover_count ||
-          (s_timers.head->expiry_rollover_count == s_timers.rollover_count &&
-           s_timers.head->expiry_us <= TIM_GetCounter(TIM2)))) {
-    LOG_DEBUG("Timer already expired - %d < %d\n", s_timers.head->expiry_us, TIM_GetCounter(TIM2));
-    s_timers.head->callback(SOFT_TIMER_GET_ID(s_timers.head), s_timers.head->context);
+  SoftTimer *active_timer = s_timers.head;
+  TIM_CCxCmd(TIM2, TIM_Channel_1, TIM_CCx_Disable);
 
-    prv_remove_timer(s_timers.head);
+  // TODO: figure out why the offset is necessary - most likely the time it takes
+  // for comparison and to enable the CCR1
+  while (active_timer != NULL &&
+         (active_timer->expiry_rollover_count < s_timers.rollover_count ||
+          (active_timer->expiry_rollover_count == s_timers.rollover_count &&
+           active_timer->expiry_us <= TIM_GetCounter(TIM2) + 2))) {
+    active_timer->callback(SOFT_TIMER_GET_ID(active_timer), active_timer->context);
+
+    prv_remove_timer(active_timer);
+    active_timer = s_timers.head;
   }
 
   if (s_timers.head != NULL) {
-    LOG_DEBUG("Updating compare register - currently %d, expires %d - delta %d\n",
-              TIM_GetCounter(TIM2), s_timers.head->expiry_us, s_timers.head->expiry_us - TIM_GetCounter(TIM2));
-    TIM_CCxCmd(TIM2, TIM_Channel_1, TIM_CCx_Enable);
     TIM_SetCompare1(TIM2, s_timers.head->expiry_us);
-  } else {
-    TIM_CCxCmd(TIM2, TIM_Channel_1, TIM_CCx_Disable);
+    TIM_CCxCmd(TIM2, TIM_Channel_1, TIM_CCx_Enable);
   }
 }
 
@@ -184,18 +170,12 @@ void TIM2_IRQHandler(void) {
     SoftTimer *active_timer = s_timers.head;
 
     if (active_timer == NULL) {
-      LOG_DEBUG("invalid active timer???\n");
       return;
     }
 
-    LOG_DEBUG("Running callback - ISR\n");
-
     active_timer->callback(SOFT_TIMER_GET_ID(active_timer), active_timer->context);
-    bool needs_update = prv_remove_timer(active_timer);
-    if (needs_update) {
-      // TODO: prevent stack overflow if too many timers are scheduled
-      prv_update_timer();
-    }
+    prv_remove_timer(active_timer);
+    prv_update_timer();
 
     TIM_ClearITPendingBit(TIM2, TIM_IT_CC1);
   }

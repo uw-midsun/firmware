@@ -7,7 +7,8 @@ static int s_time = 15;
 
 static void prv_timeout_cb(SoftTimerID timer_id, void *context) {
   GPIOAddress *led = context;
-  gpio_toggle_state(&led);
+  gpio_toggle_state(led);
+  printf("?\n");
 
   timer_start(s_time, prv_timeout_cb, led, NULL);
 }
@@ -21,16 +22,15 @@ int main(void) {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,
   };
-  GPIOAddress s_led = { GPIO_PORT_A, 0 };
+  GPIOAddress led = { GPIO_PORT_A, 0 };
 
-  gpio_init_pin(&s_led, &led_settings);
+  gpio_init_pin(&led, &led_settings);
   timer_init();
+  timer_start(s_time, prv_timeout_cb, &led, NULL);
 
-  uint32_t counter = 0;
-
-  timer_start(s_time, prv_timeout_cb, &s_led, NULL);
-
-  while (true);
+  while (true) {
+    __asm("nop");
+  }
 
   return 0;
 }
