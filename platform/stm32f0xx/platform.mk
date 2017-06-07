@@ -23,8 +23,8 @@ SCRIPT_DIR := $(PLATFORM_DIR)/scripts
 
 # Build flags for the device
 CDEFINES := USE_STDPERIPH_DRIVER STM32F072
-CFLAGS := -Wall -Werror -g -Os -std=c99 -Wno-unused-variable -pedantic \
-          -ffunction-sections -fdata-sections -fno-builtin -flto \
+CFLAGS := -Wall -Werror -g3 -O3 -std=c99 -Wno-unused-variable -pedantic \
+          -ffunction-sections -fdata-sections -fno-builtin \
           --specs=nosys.specs --specs=nano.specs \
           $(ARCH_CLAGS) $(addprefix -D,$(CDEFINES))
 
@@ -46,12 +46,12 @@ program: $(BIN_DIR)/$(PROJECT).bin
 	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash `pwd`/$<" -c shutdown
 
 gdb: $(GDB_TARGET)
-	@$(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
+	@setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
 	@$(GDB) $< -x "$(SCRIPT_DIR)/gdb_flash"
 	@pkill openocd
 
 define session_wrapper
-$(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
+setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
 $1; pkill openocd
 endef
 

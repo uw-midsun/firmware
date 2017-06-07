@@ -21,6 +21,6 @@ typedef enum {
 #define LOG(level, fmt, ...) \
 do { \
   if ((level) >= LOG_LEVEL_VERBOSITY) { \
-    printf("[%d] %s:%d:" fmt, (level), __FILE__, __LINE__, ##__VA_ARGS__); \
+    printf("[%d] %s:%d: " fmt, (level), __FILE__, __LINE__, ##__VA_ARGS__); \
   } \
 } while (0)
