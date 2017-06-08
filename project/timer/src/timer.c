@@ -33,19 +33,20 @@ StatusCode timer_init(void) {
   objpool_init(&s_timers.pool, s_storage, NULL, NULL);
 
   prv_init_periph();
+
+  return STATUS_CODE_OK;
 }
 
-StatusCode timer_start(uint32_t time_us, SoftTimerCb callback, void *context,
+StatusCode timer_start(uint32_t duration_us, SoftTimerCb callback, void *context,
                        SoftTimerID *timer_id) {
-  const uint32_t count = TIM_GetCounter(TIM2);
-
   SoftTimer *node = objpool_get_node(&s_timers.pool);
   if (node == NULL) {
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "Out of software timers.");
   }
 
   // Set the expected counter value for a expiry - if count + time_us < count, we overflowed
-  node->expiry_us = count + time_us;
+  const uint32_t count = TIM_GetCounter(TIM2);
+  node->expiry_us = count + duration_us;
   node->expiry_rollover_count = s_timers.rollover_count + (node->expiry_us < count);
   node->callback = callback;
   node->context = context;
@@ -58,6 +59,8 @@ StatusCode timer_start(uint32_t time_us, SoftTimerCb callback, void *context,
   if (head) {
     prv_update_timer();
   }
+
+  return STATUS_CODE_OK;
 }
 
 bool timer_cancel(SoftTimerID timer_id) {
@@ -81,10 +84,10 @@ uint32_t timer_remaining_time(SoftTimerID timer_id) {
 
   // technically should be protected?
 
-  if (s_timers[timer_id].expiry_rollover_count > s_timers.rollover_count) {
-    return UINT32_MAX - TIM_GetCounter(TIM2) + s_timers[timer_id].expiry_us;
+  if (s_storage[timer_id].expiry_rollover_count > s_timers.rollover_count) {
+    return UINT32_MAX - TIM_GetCounter(TIM2) + s_storage[timer_id].expiry_us;
   } else {
-    return s_timers[timer_id].expiry_us - TIM_GetCounter(TIM2);
+    return s_storage[timer_id].expiry_us - TIM_GetCounter(TIM2);
   }
 }
 
@@ -110,13 +113,9 @@ static void prv_init_periph(void) {
   TIM_SetCounter(TIM2, 0);
   TIM_ITConfig(TIM2, TIM_IT_CC1, ENABLE);
 
-  TIM_Cmd(TIM2, ENABLE);
+  stm32f0xx_interrupt_nvic_enable(TIM2_IRQn, INTERRUPT_PRIORITY_NORMAL);
 
-  NVIC_InitTypeDef nvic_init = {
-    .NVIC_IRQChannel = TIM2_IRQn,
-    .NVIC_IRQChannelCmd = ENABLE
-  };
-  NVIC_Init(&nvic_init);
+  TIM_Cmd(TIM2, ENABLE);
 }
 
 // Returns whether it was inserted into the head

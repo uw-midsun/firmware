@@ -3,6 +3,7 @@
 #include "timer.h"
 #include "gpio.h"
 
+// 15us seems to be the minimum time if attempting to use a periodic timer
 static int s_time = 15;
 
 static void prv_timeout_cb(SoftTimerID timer_id, void *context) {
