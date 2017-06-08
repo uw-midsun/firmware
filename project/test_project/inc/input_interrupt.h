@@ -6,8 +6,8 @@
 #include "fsm.h"
 #include "stm32f0xx.h"
 
-#define INPUT_DEVICES 11
-#define OUTPUT_DEVICES 4
+#define INPUT_DEVICES 10
+#define OUTPUT_DEVICES 1
 #define MAX_SPEED 200
 
 #define COAST_THRESHOLD 80

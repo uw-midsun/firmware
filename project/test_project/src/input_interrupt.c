@@ -27,7 +27,7 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group, uint1
 
     case 2:
     case 3:
-      switch ((GPIOC->IDR & (GPIO_IDR_2 | GPIO_IDR_3)) >> 2) {
+      switch ((GPIOB->IDR & (GPIO_IDR_2 | GPIO_IDR_3)) >> 2) {
         case 0:
           return INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
         case 1:
@@ -58,8 +58,7 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group, uint1
 
     case 7:
     case 8:
-      printf("%d\n", (GPIOC->IDR & (GPIO_IDR_5 | GPIO_IDR_6)) >> 5);
-      switch ((GPIOB->IDR & (GPIO_IDR_7 | GPIO_IDR_8)) >> 7) {
+      switch ((GPIOC->IDR & (GPIO_IDR_7 | GPIO_IDR_8)) >> 7) {
         case 0:
           return INPUT_EVENT_TURN_SIGNAL_NONE;
         case 1:
@@ -76,9 +75,11 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group, uint1
 }
 
 void input_callback(GPIOAddress* address, FSMGroup* fsm_group) {
-  uint16_t reading = adc_read(address, MAX_SPEED);
-  Event e = { prv_get_event(address, fsm_group, reading), 0 };
-
+	GPIOAddress pedal = { 2, 1 };
+	uint16_t reading = adc_read(&pedal, MAX_SPEED);
+  
+	Event e = { prv_get_event(address, fsm_group, reading), 0 };
+	
   switch (e.id) {
     case INPUT_EVENT_POWER_OFF:
       if (strcmp(fsm_group->pedal_fsm.current_state->name, "state_brake")) {
@@ -120,8 +121,7 @@ void input_callback(GPIOAddress* address, FSMGroup* fsm_group) {
       break;
     case INPUT_EVENT_HAZARD_LIGHT_ON:
     case INPUT_EVENT_HAZARD_LIGHT_OFF:
-      GPIOC->ODR ^= 0x0400;
-
+      GPIOC->ODR ^= 0x0800;
       if (strcmp(fsm_group->pedal_fsm.current_state->name, "state_off")) {
         fsm_process_event(&fsm_group->hazard_light_fsm, &e);
       }

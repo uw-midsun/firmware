@@ -10,14 +10,14 @@ int main() {
   };
   
   GPIOSettings settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_ANALOG };
-  
+  ADCSettings adc_settings = { ADC_MODE_CONTINUOUS, ADC_RESOLUTION_12 };
   gpio_init();
   
   for (uint8_t i = 0; i < 16; i++) {
   	gpio_init_pin(&address[i], &settings);
   }
 
-  adc_init(ADC_MODE_CONTINUOUS);
+  adc_init(&adc_settings);
 	
   for (uint8_t i = 0; i < 16; i++) {
     adc_init_pin(&address[i], ADC_SAMPLE_RATE_1);
@@ -25,6 +25,6 @@ int main() {
   
   while (1) {
     for (uint32_t i = 0; i < 2000000; i++) {}
-    printf("%d mV\t\t%d mv\n", adc_read(&address[14], 3000), adc_read(&address[15], 5000));
+    printf("%d mv\n", adc_read(&address[0], 200));
   }
 }
