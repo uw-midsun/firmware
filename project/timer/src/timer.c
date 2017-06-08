@@ -169,13 +169,11 @@ void TIM2_IRQHandler(void) {
   if (TIM_GetITStatus(TIM2, TIM_IT_CC1) == SET) {
     SoftTimer *active_timer = s_timers.head;
 
-    if (active_timer == NULL) {
-      return;
+    if (active_timer != NULL) {
+      active_timer->callback(SOFT_TIMER_GET_ID(active_timer), active_timer->context);
+      prv_remove_timer(active_timer);
+      prv_update_timer();
     }
-
-    active_timer->callback(SOFT_TIMER_GET_ID(active_timer), active_timer->context);
-    prv_remove_timer(active_timer);
-    prv_update_timer();
 
     TIM_ClearITPendingBit(TIM2, TIM_IT_CC1);
   }
