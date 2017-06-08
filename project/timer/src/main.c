@@ -8,7 +8,6 @@ static int s_time = 15;
 static void prv_timeout_cb(SoftTimerID timer_id, void *context) {
   GPIOAddress *led = context;
   gpio_toggle_state(led);
-  printf("?\n");
 
   timer_start(s_time, prv_timeout_cb, led, NULL);
 }

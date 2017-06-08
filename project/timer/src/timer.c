@@ -60,6 +60,34 @@ StatusCode timer_start(uint32_t time_us, SoftTimerCb callback, void *context,
   }
 }
 
+bool timer_cancel(SoftTimerID timer_id) {
+  if (timer_id >= SOFT_TIMER_MAX_TIMERS) {
+    return false;
+  }
+
+  // technically should be protected
+  prv_remove_timer(&s_storage[timer_id]);
+  return true;
+}
+
+bool timer_inuse(void) {
+  return s_timers.head != NULL;
+}
+
+uint32_t timer_remaining_time(SoftTimerID timer_id) {
+  if (s_storage[timer_id].expiry_us == 0) {
+    return 0;
+  }
+
+  // technically should be protected?
+
+  if (s_timers[timer_id].expiry_rollover_count > s_timers.rollover_count) {
+    return UINT32_MAX - TIM_GetCounter(TIM2) + s_timers[timer_id].expiry_us;
+  } else {
+    return s_timers[timer_id].expiry_us - TIM_GetCounter(TIM2);
+  }
+}
+
 static void prv_init_periph(void) {
   // TODO: use interrupt.h
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
