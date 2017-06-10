@@ -1,6 +1,7 @@
 #include "timer.h"
 #include "objpool.h"
 #include "stm32f0xx.h"
+#include "log.h"
 
 #define SOFT_TIMER_GET_ID(timer) ((timer) - s_storage)
 
@@ -37,6 +38,7 @@ StatusCode timer_init(void) {
   return STATUS_CODE_OK;
 }
 
+// Seems to take around 5us to start a timer
 StatusCode timer_start(uint32_t duration_us, SoftTimerCb callback, void *context,
                        SoftTimerID *timer_id) {
   SoftTimer *node = objpool_get_node(&s_timers.pool);
@@ -127,6 +129,17 @@ static bool prv_insert_timer(SoftTimer *timer) {
     return true;
   }
 
+  if (node->expiry_rollover_count > timer->expiry_rollover_count ||
+      (node->expiry_rollover_count == timer->expiry_rollover_count &&
+       node->expiry_us > timer->expiry_us)) {
+    s_timers.head = timer;
+
+    timer->next = node;
+    node->prev = timer;
+
+    return true;
+  }
+
   // iterate through linked list until we hit either the last node
   // or find a node that expires after this timer
   // lowest rollover expires first
@@ -143,12 +156,6 @@ static bool prv_insert_timer(SoftTimer *timer) {
   node->next = timer;
   if (timer->next != NULL) {
     timer->next->prev = timer;
-  }
-
-  if (s_timers.head->prev != NULL) {
-    // Should only have added a single node at most
-    s_timers.head = s_timers.head->prev;
-    return true;
   }
 
   return false;
