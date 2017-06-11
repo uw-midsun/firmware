@@ -80,7 +80,7 @@ bool soft_timer_cancel(SoftTimerID timer_id) {
     return false;
   }
 
-  // technically should be protected
+  // Technically should be protected?
   prv_remove_timer(&s_storage[timer_id]);
   return true;
 }
@@ -94,7 +94,7 @@ uint32_t soft_timer_remaining_time(SoftTimerID timer_id) {
     return 0;
   }
 
-  // technically should be protected?
+  // Technically should be protected?
 
   if (s_storage[timer_id].expiry_rollover_count > s_timers.rollover_count) {
     return UINT32_MAX - TIM_GetCounter(TIM2) + s_storage[timer_id].expiry_us;
@@ -121,6 +121,7 @@ static void prv_init_periph(void) {
   };
   TIM_TimeBaseInit(TIM2, &timer_init);
 
+  // Make sure the compare flag won't trigger from setting the counter
   TIM_ClearITPendingBit(TIM2, TIM_IT_CC1);
   TIM_SetCounter(TIM2, 0);
   TIM_ITConfig(TIM2, TIM_IT_CC1, ENABLE);
@@ -186,8 +187,9 @@ static void prv_update_timer(void) {
   SoftTimer *active_timer = s_timers.head;
   TIM_CCxCmd(TIM2, TIM_Channel_1, TIM_CCx_Disable);
 
-  // TODO: figure out why the offset is necessary - most likely the time it takes
-  // for comparison and to enable the CCR1
+  // Loop through any timers that have expired and fire their callbacks.
+  // The magic offset is most likely the time it takes for the comparison
+  // and for the compare register to update. (2us)
   while (active_timer != NULL &&
          (active_timer->expiry_rollover_count < s_timers.rollover_count ||
           (active_timer->expiry_rollover_count == s_timers.rollover_count &&
@@ -198,6 +200,9 @@ static void prv_update_timer(void) {
     active_timer = s_timers.head;
   }
 
+  // If there are still any unexpired timers, we set the next compare to the head's expiry time
+  // and reenable compares. In the case where there aren't any timers registered, the compare
+  // channel is disabled until a new timer is added.
   if (s_timers.head != NULL) {
     TIM_SetCompare1(TIM2, s_timers.head->expiry_us);
     TIM_CCxCmd(TIM2, TIM_Channel_1, TIM_CCx_Enable);
@@ -206,13 +211,7 @@ static void prv_update_timer(void) {
 
 void TIM2_IRQHandler(void) {
   if (TIM_GetITStatus(TIM2, TIM_IT_CC1) == SET) {
-    SoftTimer *active_timer = s_timers.head;
-
-    if (active_timer != NULL) {
-      active_timer->callback(SOFT_TIMER_GET_ID(active_timer), active_timer->context);
-      prv_remove_timer(active_timer);
-      prv_update_timer();
-    }
+    prv_update_timer();
 
     TIM_ClearITPendingBit(TIM2, TIM_IT_CC1);
   }
