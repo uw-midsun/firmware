@@ -6,7 +6,6 @@
 #include "soft_timer.h"
 #include "objpool.h"
 #include "stm32f0xx.h"
-#include "log.h"
 
 #define SOFT_TIMER_GET_ID(timer) ((timer) - s_storage)
 // A expires before B:
