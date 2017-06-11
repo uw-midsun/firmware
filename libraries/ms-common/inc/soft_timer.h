@@ -6,8 +6,9 @@
 #include "status.h"
 
 #define SOFT_TIMER_MAX_TIMERS 10
+#define SOFT_TIMER_INVALID_TIMER (SOFT_TIMER_MAX_TIMERS)
 
-typedef uint8_t SoftTimerID;
+typedef uint16_t SoftTimerID;
 
 typedef void (*SoftTimerCallback)(SoftTimerID timer_id, void* context);
 

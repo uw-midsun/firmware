@@ -1,245 +1,222 @@
+// Timers are implemented as a doubly linked list, sorted in order of remaining time until expiry.
+// Thus, the head of the list is always defined as the next timer to expire, so we set the timer
+// peripheral's compare register to the head's expiry time.
+// This gives us O(1) deletion, but we do have O(n) insertion due to the ordered requirement.
+// This tradeoff is worth it for faster interrupts.
 #include "soft_timer.h"
-
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-
-#include "critical_section.h"
-#include "interrupt.h"
-#include "status.h"
+#include "objpool.h"
 #include "stm32f0xx.h"
 
-typedef struct Timer {
-  uint32_t expiry_time;
-  uint32_t rollover_count;
-  SoftTimerID previous_timer;
-  SoftTimerID next_timer;
-  void *context;
+#define SOFT_TIMER_GET_ID(timer) ((timer) - s_storage)
+// A expires before B:
+// A has a lower rollover count than b
+// A and B have the same rollover count and A's expiry time is less than B's
+#define SOFT_TIMER_EXPIRES_BEFORE(a, b) \
+  (((a)->expiry_rollover_count < (b)->expiry_rollover_count || \
+   ((a)->expiry_rollover_count == (b)->expiry_rollover_count && \
+    (a)->expiry_us < (b)->expiry_us)))
+
+typedef struct SoftTimer {
+  uint32_t expiry_us;
+  uint32_t expiry_rollover_count;
   SoftTimerCallback callback;
-} Timer;
+  void *context;
+  struct SoftTimer *next;
+  struct SoftTimer *prev;
+} SoftTimer;
 
-// Timers on the stm32f0xx is implemented as an ordered doubly linked list. This allows for O(1)
-// access to the minimum timer, O(1) deletion of this timer and O(1) access to the next timer. Since
-// the queuing of the next timer is the priority this makes it a very good data structure for this
-// application. This does come at a cost of worst case O(n) insertion and deletion of arbitrary
-// timers but the tradeoff of super fast access to the head node and its immediate successor is
-// worthwhile to allow for fast interrupts.
+typedef struct SoftTimerList {
+  uint32_t rollover_count;
+  SoftTimer *head;
+  ObjectPool pool;
+} SoftTimerList;
 
-// This is treated like a doubly linked list where this array is the object pool.
-static volatile Timer s_soft_timer_array[SOFT_TIMER_MAX_TIMERS];
+static volatile SoftTimerList s_timers = { 0 };
+static volatile SoftTimer s_storage[SOFT_TIMER_MAX_TIMERS] = { 0 };
 
-// Head of the DLL.
-static volatile SoftTimerID s_active_timer_id;
-
-// Rollover count. By my calculations we will never roll this over it would take ~584554 yrs.
-static volatile uint32_t s_rollover_count;
-static volatile uint32_t s_freebitset;
-
-static void prv_start_timer(SoftTimerID timer_id) {
-  // Clear any pending interrupts, this will always occur in an interrupt or new timer getting
-  // started in a critical section so we need to prevent an accidental trigger if the time expires
-  // in the middle of the critical section and we started a new timer which falls before it.
-  TIM_ClearITPendingBit(TIM2, TIM_IT_CC1);
-
-  s_active_timer_id = timer_id;
-  if (s_soft_timer_array[timer_id].rollover_count == s_rollover_count &&
-      s_soft_timer_array[timer_id].expiry_time < TIM_GetCounter(TIM2)) {
-    // Expired run immediately.
-    s_soft_timer_array[timer_id].callback(timer_id, s_soft_timer_array[timer_id].context);
-    s_freebitset |= (1 << timer_id);
-    // Start the next timer.
-    if (s_soft_timer_array[timer_id].next_timer != SOFT_TIMER_MAX_TIMERS) {
-      prv_start_timer(s_soft_timer_array[timer_id].next_timer);
-    }
-  } else {
-    // Set CC1 to trigger an interrupt. Doesn't have to be within uint32_t as it can be multiple
-    // rollovers out but this is not enabled at present.
-    TIM_SetCompare1(TIM2, s_soft_timer_array[timer_id].expiry_time);
-  }
-}
-
-// Recursive method to find the correct place to insert the timer_id node in the linked list.
-static void prv_insert_timer(SoftTimerID timer_id, SoftTimerID last_node_id) {
-  if (s_soft_timer_array[last_node_id].next_timer == SOFT_TIMER_MAX_TIMERS) {
-    // Next node is empty. Insert this.
-    s_soft_timer_array[last_node_id].next_timer = timer_id;
-  } else if (s_soft_timer_array[timer_id].rollover_count <=
-                 s_soft_timer_array[s_soft_timer_array[last_node_id].next_timer].rollover_count &&
-             s_soft_timer_array[timer_id].expiry_time <
-                 s_soft_timer_array[s_soft_timer_array[last_node_id].next_timer].expiry_time) {
-    // Next node is after this node and the prior node is before. Insert this, if the timers have
-    // the same expiry the last added timer is later in the list.
-    s_soft_timer_array[timer_id].next_timer = s_soft_timer_array[last_node_id].next_timer;
-    s_soft_timer_array[last_node_id].next_timer = timer_id;
-    s_soft_timer_array[s_soft_timer_array[timer_id].next_timer].previous_timer = timer_id;
-  } else {
-    // Longer than the next node recurse to the next node.
-    prv_insert_timer(timer_id, s_soft_timer_array[last_node_id].next_timer);
-  }
-}
+static void prv_init_periph(void);
+static bool prv_insert_timer(SoftTimer *timer);
+static void prv_remove_timer(SoftTimer *timer);
+static void prv_update_timer(void);
 
 void soft_timer_init(void) {
-  // Start the PeiphClock
+  memset(&s_timers, 0, sizeof(s_timers));
+
+  objpool_init(&s_timers.pool, s_storage, NULL, NULL);
+
+  prv_init_periph();
+}
+
+// Seems to take around 5us to start a timer
+StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, void *context,
+                            SoftTimerID *timer_id) {
+  SoftTimer *node = objpool_get_node(&s_timers.pool);
+  if (node == NULL) {
+    return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "Out of software timers.");
+  }
+
+  // Set the expected counter value for a expiry - if count + time_us < count, we overflowed
+  const uint32_t count = TIM_GetCounter(TIM2);
+  node->expiry_us = count + duration_us;
+  node->expiry_rollover_count = s_timers.rollover_count + (node->expiry_us < count);
+  node->callback = callback;
+  node->context = context;
+
+  if (timer_id != NULL) {
+    *timer_id = SOFT_TIMER_GET_ID(node);
+  }
+
+  bool head = prv_insert_timer(node);
+  if (head) {
+    prv_update_timer();
+  }
+
+  return STATUS_CODE_OK;
+}
+
+bool soft_timer_cancel(SoftTimerID timer_id) {
+  if (timer_id >= SOFT_TIMER_MAX_TIMERS) {
+    return false;
+  }
+
+  // Technically should be protected?
+  prv_remove_timer(&s_storage[timer_id]);
+  return true;
+}
+
+bool soft_timer_inuse(void) {
+  return s_timers.head != NULL;
+}
+
+uint32_t soft_timer_remaining_time(SoftTimerID timer_id) {
+  if (s_storage[timer_id].expiry_us == 0) {
+    return 0;
+  }
+
+  // Technically should be protected?
+
+  if (s_storage[timer_id].expiry_rollover_count > s_timers.rollover_count) {
+    return UINT32_MAX - TIM_GetCounter(TIM2) + s_storage[timer_id].expiry_us;
+  } else {
+    return s_storage[timer_id].expiry_us - TIM_GetCounter(TIM2);
+  }
+}
+
+static void prv_init_periph(void) {
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
 
-  // Stop the timer if it was running.
   TIM_Cmd(TIM2, DISABLE);
   TIM_ITConfig(TIM2, TIM_IT_CC1, DISABLE);
   TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);
 
-  // Get the clock speed of the clocks to determine the SYSCLK speed which is what TIM2 uses.
-  // Note this is susceptible to prescaling on both the AHB and APB but by default these are not
-  // scaled.
-  RCC_ClocksTypeDef clock_speeds;
-  RCC_GetClocksFreq(&clock_speeds);
+  RCC_ClocksTypeDef clocks;
+  RCC_GetClocksFreq(&clocks);
 
-  // Configure each clock tick to be 1 microsecond from 0 to UINT32_MAX.
-  // Note that while this is valid for now, any prescale changes to AHB and APB will impact the
-  // Prescaler here.
-  TIM_TimeBaseInitTypeDef init_struct = { .TIM_Prescaler = clock_speeds.SYSCLK_Frequency / 1000000,
-                                          .TIM_CounterMode = TIM_CounterMode_Up,
-                                          .TIM_Period = UINT32_MAX,
-                                          .TIM_ClockDivision = TIM_CKD_DIV1 };
-  TIM_TimeBaseInit(TIM2, &init_struct);
+  TIM_TimeBaseInitTypeDef timer_init = {
+    .TIM_Prescaler = (clocks.PCLK_Frequency / 1000000) - 1, // 1 Mhz
+    .TIM_CounterMode = TIM_CounterMode_Up,
+    .TIM_Period = UINT32_MAX,
+    .TIM_ClockDivision = TIM_CKD_DIV1
+  };
+  TIM_TimeBaseInit(TIM2, &timer_init);
 
-  // Reset the counter to 0.
-  TIM_SetCounter(TIM2, 0);
-
-  // Clear and disable all the timers and forget the last running timer and rollover count.
-  s_rollover_count = 0;
-  s_active_timer_id = SOFT_TIMER_MAX_TIMERS;
-  s_freebitset |= (1 << SOFT_TIMER_MAX_TIMERS) - 1;
-  for (uint32_t i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {
-    s_soft_timer_array[i].next_timer = SOFT_TIMER_MAX_TIMERS;
-    s_soft_timer_array[i].previous_timer = SOFT_TIMER_MAX_TIMERS;
-  }
-
-  // Enable the interrupts on Capture Compare and updates. TIM2 uses IRQ channel 15.
-  stm32f0xx_interrupt_nvic_enable(TIM2_IRQn, INTERRUPT_PRIORITY_NORMAL);
+  // Make sure the compare flag won't trigger from setting the counter
   TIM_ClearITPendingBit(TIM2, TIM_IT_CC1);
+  TIM_SetCounter(TIM2, 0);
   TIM_ITConfig(TIM2, TIM_IT_CC1, ENABLE);
 
   // Update on overflows only. Clear any pending overflows.
-  TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
   TIM_UpdateRequestConfig(TIM2, TIM_UpdateSource_Regular);
+  TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
 
-  // Start the timer.
+  stm32f0xx_interrupt_nvic_enable(TIM2_IRQn, INTERRUPT_PRIORITY_NORMAL);
+
   TIM_Cmd(TIM2, ENABLE);
-  // Enable the overflow interrupt after to prevent an accidental overflow trigger.
+
   TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
 }
 
-StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, void *context,
-                            SoftTimerID *timer_id) {
-  const uint32_t count = TIM_GetCounter(TIM2);
+// Returns whether it was inserted into the head
+static bool prv_insert_timer(SoftTimer *timer) {
+  SoftTimer *next = s_timers.head;
+  SoftTimer *prev = NULL;
 
-  // Enable a critical section.
-  const bool critical = critical_section_start();
-  const uint16_t free_bit = __builtin_ffsl(s_freebitset);
-  if (free_bit) {
-    // Look for an empty timer.
-    const uint16_t i = free_bit - 1;
-
-    // Check for rollover purely to see if we need to increment the rollover count.
-    if (duration_us > UINT32_MAX - count) {
-      s_soft_timer_array[i].rollover_count = s_rollover_count + 1;
-    } else {
-      s_soft_timer_array[i].rollover_count = s_rollover_count;
-    }
-
-    // Allow the rollover (this is fine for uints).
-    s_soft_timer_array[i].expiry_time = count + duration_us;
-    s_soft_timer_array[i].next_timer = SOFT_TIMER_MAX_TIMERS;
-    s_soft_timer_array[i].previous_timer = SOFT_TIMER_MAX_TIMERS;
-    s_soft_timer_array[i].callback = callback;
-    s_soft_timer_array[i].context = context;
-    s_freebitset &= ~(1 << i);
-    *timer_id = i;
-
-    if (s_soft_timer_array[i].expiry_time < s_soft_timer_array[s_active_timer_id].expiry_time &&
-        s_soft_timer_array[i].rollover_count <=
-            s_soft_timer_array[s_active_timer_id].rollover_count) {
-      // New timer is before the current timer so replace it.
-      s_soft_timer_array[i].next_timer = s_active_timer_id;
-      prv_start_timer(i);
-    } else {
-      // New timer is not newest just find a free node an insert it.
-      prv_insert_timer(i, s_active_timer_id);
-    }
-
-    critical_section_end(critical);
-    return STATUS_CODE_OK;
+  // iterate through linked list until we hit either the last node
+  // or find a node that expires after this timer
+  while (next != NULL && SOFT_TIMER_EXPIRES_BEFORE(next, timer)) {
+    prev = next;
+    next = next->next;
   }
 
-  // Out of timers.
-  critical_section_end(critical);
-  return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "Out of software timers.");
-}
-
-bool soft_timer_inuse(void) {
-  if (s_active_timer_id != SOFT_TIMER_MAX_TIMERS) {
-    return true;
+  if (prev == NULL) {
+    // Updated the head
+    s_timers.head = timer;
+  } else {
+    // Update previous node
+    prev->next = timer;
+    timer->prev = prev;
   }
-  return false;
+
+  if (next != NULL) {
+    // Update next node
+    next->prev = timer;
+    timer->next = next;
+  }
+
+  return s_timers.head == timer;
 }
 
-// TIM2 Interrupt handler as defined in stm32f0xx.h
+static void prv_remove_timer(SoftTimer *timer) {
+  if (timer == s_timers.head) {
+    s_timers.head = timer->next;
+  }
+
+  if (timer->prev != NULL) {
+    timer->prev->next = timer->next;
+  }
+
+  if (timer->next != NULL) {
+    timer->next->prev = timer->prev;
+  }
+
+  objpool_free_node(&s_timers.pool, timer);
+}
+
+static void prv_update_timer(void) {
+  SoftTimer *active_timer = s_timers.head;
+  TIM_CCxCmd(TIM2, TIM_Channel_1, TIM_CCx_Disable);
+
+  // Loop through any timers that have expired and fire their callbacks.
+  // The magic offset is most likely the time it takes for the comparison
+  // and for the compare register to update. (2us)
+  while (active_timer != NULL &&
+         (active_timer->expiry_rollover_count < s_timers.rollover_count ||
+          (active_timer->expiry_rollover_count == s_timers.rollover_count &&
+           active_timer->expiry_us <= TIM_GetCounter(TIM2) + 2))) {
+    active_timer->callback(SOFT_TIMER_GET_ID(active_timer), active_timer->context);
+
+    prv_remove_timer(active_timer);
+    active_timer = s_timers.head;
+  }
+
+  // If there are still any unexpired timers, we set the next compare to the head's expiry time
+  // and reenable compares. In the case where there aren't any timers registered, the compare
+  // channel is disabled until a new timer is added.
+  if (s_timers.head != NULL) {
+    TIM_SetCompare1(TIM2, s_timers.head->expiry_us);
+    TIM_CCxCmd(TIM2, TIM_Channel_1, TIM_CCx_Enable);
+  }
+}
+
 void TIM2_IRQHandler(void) {
-  if (TIM_GetITStatus(TIM2, TIM_IT_CC1) != RESET && s_active_timer_id < SOFT_TIMER_MAX_TIMERS) {
-    // Update the timer assuming the active timer expired.
-    s_soft_timer_array[s_active_timer_id].callback(s_active_timer_id,
-                                                   s_soft_timer_array[s_active_timer_id].context);
-    s_freebitset |= (1 << s_active_timer_id);
+  if (TIM_GetITStatus(TIM2, TIM_IT_CC1) == SET) {
+    prv_update_timer();
 
-    // Start the next active timer if it exists as determined by the update.
-    if (s_soft_timer_array[s_active_timer_id].next_timer < SOFT_TIMER_MAX_TIMERS) {
-      prv_start_timer(s_soft_timer_array[s_active_timer_id].next_timer);
-    }
-
-    // Clear the pending bit to stop a repeat trigger if there are no new timers.
     TIM_ClearITPendingBit(TIM2, TIM_IT_CC1);
   }
 
-  if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
-    // Rolled over.
-    s_rollover_count++;
+  if (TIM_GetITStatus(TIM2, TIM_IT_Update) == SET) {
+    s_timers.rollover_count++;
     TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
   }
-}
-
-bool soft_timer_cancel(SoftTimerID timer_id) {
-  if (timer_id < SOFT_TIMER_MAX_TIMERS) {
-    if (timer_id == s_active_timer_id) {
-      // Start a critical section and update pretending the active timer doesn't exist so as to
-      // replace it with the next timer. Since the head is tracked we don't really have to do any
-      // cleanup.
-      const bool critical = critical_section_start();
-      s_freebitset |= (1 << timer_id);
-      prv_start_timer(s_soft_timer_array[timer_id].next_timer);
-      critical_section_end(critical);
-      return true;
-    } else if (s_freebitset & (1 << timer_id)) {
-      // Not active pretend it doesn't exist by popping the node out of the doubly linked list.
-      s_freebitset |= (1 << timer_id);
-      s_soft_timer_array[s_soft_timer_array[timer_id].previous_timer].next_timer =
-          s_soft_timer_array[timer_id].next_timer;
-      return true;
-    }
-  }
-  return false;
-}
-
-uint32_t soft_timer_remaining_time(SoftTimerID timer_id) {
-  // Check if the timer is running.
-  if (~s_freebitset & (1 << timer_id)) {
-    if (s_soft_timer_array[timer_id].rollover_count > s_rollover_count) {
-      // If it needs to rollover add the time left to rollover to the expiry time. (Warning not
-      // compatible above uint32_t duration sizes).
-      return UINT32_MAX - TIM_GetCounter(TIM2) + s_soft_timer_array[timer_id].expiry_time;
-    } else {
-      // If it doesn't need to rollover just return the time remaining.
-      return s_soft_timer_array[timer_id].expiry_time - TIM_GetCounter(TIM2);
-    }
-  }
-  return 0;
 }

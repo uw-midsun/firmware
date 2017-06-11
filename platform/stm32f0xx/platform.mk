@@ -47,8 +47,7 @@ program: $(BIN_DIR)/$(PROJECT).bin
 
 gdb: $(GDB_TARGET)
 	@setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
-	@$(GDB) $< -x "$(SCRIPT_DIR)/gdb_flash"
-	@pkill openocd
+	@$(GDB) $< -x "$(SCRIPT_DIR)/gdb_flash"; pkill openocd
 
 define session_wrapper
 setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
