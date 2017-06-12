@@ -2,6 +2,7 @@
 // through an array of request pointers to minimize copying
 // ACK requests currently ordered as they were created
 #include "can_ack.h"
+#include "log.h"
 
 static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
                                  SoftTimerID timer_id, CANAckStatus status, uint16_t device);
@@ -13,10 +14,6 @@ StatusCode can_ack_init(CANAckRequests *requests) {
 
   objpool_init(&requests->pool, requests->request_nodes, NULL, NULL);
   requests->num_requests = 0;
-
-  for (int i = 0; i < CAN_ACK_MAX_REQUESTS; i++) {
-    requests->active_requests[i] = i;
-  }
 }
 
 StatusCode can_ack_add_request(CANAckRequests *requests, CANMessageID msg_id,
@@ -32,7 +29,8 @@ StatusCode can_ack_add_request(CANAckRequests *requests, CANMessageID msg_id,
   pending_ack->num_remaining = ack_request->num_expected;
   pending_ack->callback = ack_request->callback;
   pending_ack->context = ack_request->context;
-  StatusCode ret = soft_timer_start(CAN_ACK_TIMEOUT_US, prv_timeout_cb, requests, &pending_ack->timer);
+  StatusCode ret = soft_timer_start_millis(CAN_ACK_TIMEOUT_MS, prv_timeout_cb,
+                                           requests, &pending_ack->timer);
 
   if (ret != STATUS_CODE_OK) {
     objpool_free_node(&requests->pool, pending_ack);
@@ -44,9 +42,9 @@ StatusCode can_ack_add_request(CANAckRequests *requests, CANMessageID msg_id,
   return STATUS_CODE_OK;
 }
 
-StatusCode can_ack_handle_msg(CANAckRequests *requests, const CANId *can_id) {
-  return prv_update_req(requests, can_id->msg_id, SOFT_TIMER_MAX_TIMERS,
-                        CAN_ACK_STATUS_OK, can_id->source_id);
+StatusCode can_ack_handle_msg(CANAckRequests *requests, const CANMessage *msg) {
+  return prv_update_req(requests, msg->msg_id, SOFT_TIMER_INVALID_TIMER,
+                        msg->data, msg->source_id);
 }
 
 static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
@@ -65,7 +63,7 @@ static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
   // * Both message and timer match given valid values for both
   for (index = 0; index < requests->num_requests; index++) {
     const CANAckPendingReq *req = requests->active_requests[index];
-    if (((req->msg_id == msg_id && timer_id == SOFT_TIMER_MAX_TIMERS) ||
+    if (((req->msg_id == msg_id && timer_id == SOFT_TIMER_INVALID_TIMER) ||
          (req->timer == timer_id && msg_id == CAN_MSG_INVALID_ID) ||
          (req->msg_id == msg_id && req->timer == timer_id)) &&
         (device == CAN_MSG_INVALID_DEVICE || (req->response_bitset & (1 << device)) == 0)) {
@@ -93,6 +91,7 @@ static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
   }
 
   if (found_request->num_remaining == 0 || status == CAN_ACK_STATUS_TIMEOUT) {
+    soft_timer_cancel(found_request->timer);
     StatusCode ret = objpool_free_node(&requests->pool, found_request);
     status_ok_or_return(ret);
 

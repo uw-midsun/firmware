@@ -14,15 +14,16 @@
 #include "status.h"
 #include "soft_timer.h"
 
-// Arbitrary timeout - should calculate reasonable value
-#define CAN_ACK_TIMEOUT_US 1000
+// ACK timeout - transit time + computation time
+// Note that this timeout is currently an arbitrary value, but should be minimized.
+#define CAN_ACK_TIMEOUT_MS 10
 
 #define CAN_ACK_MAX_REQUESTS 10
 
 typedef enum {
   CAN_ACK_STATUS_OK = 0,
   CAN_ACK_STATUS_TIMEOUT,
-  CAN_ACK_STATUS_INVALID, // Currently unused
+  CAN_ACK_STATUS_INVALID,
   CAN_ACK_STATUS_UNKNOWN,
   NUM_ACK_STATUSES
 } CANAckStatus;
@@ -61,4 +62,4 @@ StatusCode can_ack_add_request(CANAckRequests *requests, CANMessageID msg_id,
                                const CANAckRequest *ack_request);
 
 // Handle a received ACK, firing the callback associated with the received message
-StatusCode can_ack_handle_msg(CANAckRequests *requests, const CANId *can_id);
+StatusCode can_ack_handle_msg(CANAckRequests *requests, const CANMessage *msg);

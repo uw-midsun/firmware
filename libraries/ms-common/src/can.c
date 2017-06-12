@@ -1,5 +1,6 @@
 #include "can.h"
 #include "soft_timer.h"
+#include "can_rx_fsm.h"
 
 // Attempts to transmit the specified message using the HW TX, overwriting the source device.
 StatusCode prv_transmit(const CANConfig *can, const CANMessage *msg) {

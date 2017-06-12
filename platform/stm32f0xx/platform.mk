@@ -42,12 +42,14 @@ OPENOCD_CFG := -s $(OPENOCD_SCRIPT_DIR) \
 # Platform targets
 .PHONY: program gdb
 
-program: $(BIN_DIR)/$(PROJECT).bin
-	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash `pwd`/$<" -c shutdown
+program: $(GDB_TARGET:$(PLATFORM_EXT)=.bin)
+	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash $<" -c shutdown
 
 gdb: $(GDB_TARGET)
+	@pkill openocd || true
 	@setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
-	@$(GDB) $< -x "$(SCRIPT_DIR)/gdb_flash"; pkill openocd
+	@$(GDB) $< -x "$(SCRIPT_DIR)/gdb_flash"
+	@pkill openocd
 
 define session_wrapper
 setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
