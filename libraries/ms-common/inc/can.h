@@ -10,7 +10,7 @@
 #include "can_rx.h"
 #include "fsm.h"
 
-// TODO: replace with user provided handler storage?
+// If needed, we could replace this with user provided handler storage
 #define CAN_MAX_RX_HANDLERS 16
 
 typedef struct CANConfig {

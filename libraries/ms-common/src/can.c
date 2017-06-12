@@ -2,6 +2,8 @@
 #include "soft_timer.h"
 #include "can_rx_fsm.h"
 
+#define CAN_BUS_OFF_RECOVERY_TIME_MS 500
+
 // Attempts to transmit the specified message using the HW TX, overwriting the source device.
 StatusCode prv_transmit(const CANConfig *can, const CANMessage *msg) {
   CANId msg_id = {
@@ -71,13 +73,14 @@ void prv_bus_error_timeout_handler(SoftTimerID timer_id, void *context) {
 void prv_bus_error_handler(void *context) {
   CANConfig *can = context;
 
-  // TODO: replace magic number
-  soft_timer_start_seconds(1, prv_bus_error_timeout_handler, can, NULL);
+  soft_timer_start_millis(CAN_BUS_OFF_RECOVERY_TIME_MS, prv_bus_error_timeout_handler, can, NULL);
 }
 
 StatusCode can_init(CANConfig *can, uint16_t device_id, uint16_t bus_speed, bool loopback,
                     EventID rx_event, EventID fault_event) {
-  // TODO: Add checks
+  if (device_id >= CAN_MSG_MAX_DEVICES) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: Invalid device ID");
+  }
 
   memset(can, 0, sizeof(*can));
 
@@ -101,6 +104,10 @@ StatusCode can_init(CANConfig *can, uint16_t device_id, uint16_t bus_speed, bool
 }
 
 StatusCode can_add_filter(CANConfig *can, CANMessageID msg_id) {
+  if (msg_id >= CAN_MSG_MAX_IDS) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: Invalid message ID");
+  }
+
   CANId can_id = {
     .msg_id = msg_id
   }, mask = {
@@ -116,9 +123,15 @@ StatusCode can_register_rx_handler(CANConfig *can, CANMessageID msg_id,
 }
 
 StatusCode can_transmit(CANConfig *can, const CANMessage *msg, const CANAckRequest *ack_request) {
-  // TODO: Add check for valid critical message if ack requested
+  if (msg->msg_id >= CAN_MSG_MAX_IDS) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: Invalid message ID");
+  }
 
   if (ack_request != NULL) {
+    if (!CAN_MSG_IS_CRITICAL(msg)) {
+      return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: ACK requested for non-critical message");
+    }
+
     StatusCode ret = STATUS_CODE_OK;
     ret = can_ack_add_request(&can->ack_requests, msg->msg_id, ack_request);
     status_ok_or_return(ret);

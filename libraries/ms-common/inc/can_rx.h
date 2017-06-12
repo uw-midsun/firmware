@@ -24,6 +24,7 @@ typedef struct CANRxHandlers {
 StatusCode can_rx_init(CANRxHandlers *rx_handlers,
                        CANRxHandler *handler_storage, size_t num_handlers);
 
+// TODO(ELEC-55): should we support a default handler?
 StatusCode can_rx_register_handler(CANRxHandlers *rx_handlers, CANMessageID msg_id,
                                    CANRxHandlerCb handler, void *context);
 

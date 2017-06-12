@@ -2,9 +2,6 @@
 #include "can_rx.h"
 #include "can.h"
 
-// TODO: determine which messages are considered "critical"
-#define CAN_ACK_EXPECTED(msg) ((msg)->msg_id < 14)
-
 FSM_DECLARE_STATE(can_rx_fsm_handle);
 
 FSM_STATE_TRANSITION(can_rx_fsm_handle) {
@@ -21,15 +18,13 @@ static StatusCode prv_handle_data_msg(CANConfig *can, const CANMessage *rx_msg) 
     ret = handler->callback(rx_msg, handler->context, &ack_status);
   }
 
-  if (CAN_ACK_EXPECTED(rx_msg)) {
+  if (CAN_MSG_IS_CRITICAL(rx_msg)) {
     CANMessage ack = {
       .msg_id = rx_msg->msg_id,
       .type = CAN_MSG_TYPE_ACK,
       .dlc = sizeof(ack_status),
       .data = ack_status
     };
-
-    // TODO: add custom ACK responses
 
     ret = can_transmit(can, &ack, NULL);
     status_ok_or_return(ret);
@@ -49,7 +44,9 @@ static void prv_handle_rx(FSM *fsm, const Event *e, void *context) {
     return;
   }
 
-  switch(rx_msg.type) {
+  // We currently ignore failures to handle the message.
+  // If needed, we could push it back to the queue.
+  switch (rx_msg.type) {
     case CAN_MSG_TYPE_ACK:
       result = can_ack_handle_msg(&can->ack_requests, &rx_msg);
 
@@ -64,11 +61,6 @@ static void prv_handle_rx(FSM *fsm, const Event *e, void *context) {
       return;
       // error
       break;
-  }
-
-  if (result != STATUS_CODE_OK) {
-    // Error? TODO: figure out what we should do with FSM errors
-    return;
   }
 
   if (can_queue_size(&can->rx_queue) > 0) {

@@ -52,13 +52,13 @@ StatusCode can_hw_init(CANHwConfig *can_hw, uint16_t bus_speed, bool loopback) {
   return STATUS_CODE_OK;
 }
 
-StatusCode can_hw_register_callback(CANHwConfig *can_hw, CANHwEvent flag,
+StatusCode can_hw_register_callback(CANHwConfig *can_hw, CANHwEvent event,
                                     CANHwEventHandlerCb callback, void *context) {
-  if (flag > NUM_CAN_HW_EVENTS) {
+  if (event > NUM_CAN_HW_EVENTS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  can_hw->handlers[flag] = (CANHwEventHandler) {
+  can_hw->handlers[event] = (CANHwEventHandler) {
     .callback = callback,
     .context = context
   };
@@ -67,11 +67,16 @@ StatusCode can_hw_register_callback(CANHwConfig *can_hw, CANHwEvent flag,
 }
 
 StatusCode can_hw_add_filter(CANHwConfig *can_hw, uint16_t mask, uint16_t filter) {
-  // TODO: error checking
+  if (can_hw->num_filters > CAN_HW_MCU_NUM_FILTER_BANKS) {
+    return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN HW: Ran out of filter banks.");
+  }
+
+  // We currently use 32-bit filters. We could use 16-bit filters instead since we're only using
+  // standard 11-bit IDs.
   CAN_FilterInitTypeDef filter_cfg = {
     .CAN_FilterNumber = can_hw->num_filters,
     .CAN_FilterMode = CAN_FilterMode_IdMask,
-    .CAN_FilterScale = CAN_FilterScale_32bit, // TODO: Figure out good way to use 16bit filters
+    .CAN_FilterScale = CAN_FilterScale_16bit,
     .CAN_FilterIdHigh = filter << 5,
     .CAN_FilterIdLow = 0x0000,
     .CAN_FilterMaskIdHigh = mask << 5,
@@ -108,7 +113,7 @@ StatusCode can_hw_transmit(const CANHwConfig *can_hw, uint16_t id, uint8_t *data
   uint8_t tx_status = CAN_Transmit(can_hw->base, &tx_msg);
   switch (tx_status) {
     case CAN_TxStatus_NoMailBox:
-    // case CAN_TxStatus_Failed:
+    case CAN_TxStatus_Failed:
       return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN HW TX failed");
       break;
     default:
@@ -154,12 +159,12 @@ void CEC_CAN_IRQHandler(void) {
     [CAN_HW_EVENT_BUS_ERROR] = CAN_GetITStatus(s_can->base, CAN_IT_BOF) == SET
   };
 
-  for (int flag = 0; flag < NUM_CAN_HW_EVENTS; flag++) {
-    CANHwEventHandler *handler = &s_can->handlers[flag];
-    if (handler->callback != NULL && run_cb[flag]) {
+  for (int event = 0; event < NUM_CAN_HW_EVENTS; event++) {
+    CANHwEventHandler *handler = &s_can->handlers[event];
+    if (handler->callback != NULL && run_cb[event]) {
       handler->callback(handler->context);
     }
-  };
+  }
 
   CAN_ClearITPendingBit(CAN, CAN_IT_TME);
 }

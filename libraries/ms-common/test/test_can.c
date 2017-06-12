@@ -4,7 +4,6 @@
 #include "log.h"
 #include "unity.h"
 #include "test_helpers.h"
-#include <inttypes.h>
 
 #define TEST_CAN_UNKNOWN_MSG_ID 0xA
 #define TEST_CAN_DEVICE_ID 0x1

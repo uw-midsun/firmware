@@ -41,8 +41,8 @@ typedef struct CANHwConfig {
 // Initializes the specified CAN HW instance against the native CAN interface
 StatusCode can_hw_init(CANHwConfig *can_hw, uint16_t bus_speed, bool loopback);
 
-// TODO: Fix inconsistent naming
-StatusCode can_hw_register_callback(CANHwConfig *can_hw, CANHwEvent flag,
+// Registers a callback for the given event
+StatusCode can_hw_register_callback(CANHwConfig *can_hw, CANHwEvent event,
                                     CANHwEventHandlerCb callback, void *context);
 
 StatusCode can_hw_add_filter(CANHwConfig *can_hw, uint16_t mask, uint16_t filter);
