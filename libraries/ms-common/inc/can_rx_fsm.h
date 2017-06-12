@@ -1,17 +1,13 @@
 #pragma once
+// CAN RX event handlers
 #include "fsm.h"
 #include "can.h"
-// CAN TX/RX event handlers
 
-// Register RX handlers?
-
-// Idea: ISRs raise TX and RX events, push elements into queue
-// RX FSM: On RX event, pop elements in RX queue
-// If type = ACK, run ACK handler
-// Else, run RX handler/callback? Or raise appropriate event - probably want callback to copy data
-// If critical, send ACK?
-
-// TX: request transmit - push message into queue, attempt to TX
-// if critical, create ACK request and start timer
+// The idea is that the CAN RX ISR pushes received message into a queue and raises an RX event.
+// In the RX FSM, when we encounter an RX event, we pop the messages in the RX queue
+// and decide what to do based on the event type:
+// * Data: Find registered RX handler and run the corresponding callback. If an ACK was requested,
+//         we send an ACK as a response. The callback may choose to set the ACK's status.
+// * ACK: Find the corresponding pending ACK request and process the ACK.
 
 StatusCode can_rx_fsm_init(FSM *rx_fsm, CANConfig *can);
