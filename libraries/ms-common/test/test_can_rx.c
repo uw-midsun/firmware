@@ -57,3 +57,21 @@ void test_can_rx_duplicate(void) {
   TEST_ASSERT_NOT_NULL(handler);
   TEST_ASSERT_EQUAL(0x00, handler->context);
 }
+
+void test_can_rx_default(void) {
+  StatusCode ret;
+  ret = can_rx_register_handler(&s_rx_handlers, 0x01, prv_rx_callback, 0x00);
+  TEST_ASSERT_OK(ret);
+
+  ret = can_rx_register_default_handler(&s_rx_handlers, prv_rx_callback, 0xA);
+  TEST_ASSERT_OK(ret);
+
+  CANRxHandler *handler = NULL;
+  handler = can_rx_get_handler(&s_rx_handlers, 0x01);
+  TEST_ASSERT_NOT_NULL(handler);
+  TEST_ASSERT_EQUAL(0x00, handler->context);
+
+  handler = can_rx_get_handler(&s_rx_handlers, 0x3);
+  TEST_ASSERT_NOT_NULL(handler);
+  TEST_ASSERT_EQUAL(0xA, handler->context);
+}

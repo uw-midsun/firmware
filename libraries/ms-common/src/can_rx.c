@@ -19,6 +19,17 @@ StatusCode can_rx_init(CANRxHandlers *rx_handlers,
   return STATUS_CODE_OK;
 }
 
+StatusCode can_rx_register_default_handler(CANRxHandlers *rx_handlers,
+                                           CANRxHandlerCb handler, void *context) {
+  StatusCode ret = can_rx_register_handler(rx_handlers, CAN_MSG_INVALID_ID, handler, context);
+
+  if (ret == STATUS_CODE_OK) {
+    rx_handlers->default_handler = can_rx_get_handler(rx_handlers, CAN_MSG_INVALID_ID);
+  }
+
+  return ret;
+}
+
 StatusCode can_rx_register_handler(CANRxHandlers *rx_handlers, CANMessageID msg_id,
                                    CANRxHandlerCb handler, void *context) {
   if (rx_handlers->num_handlers == rx_handlers->max_handlers) {
@@ -41,6 +52,12 @@ StatusCode can_rx_register_handler(CANRxHandlers *rx_handlers, CANMessageID msg_
 
 CANRxHandler *can_rx_get_handler(CANRxHandlers *rx_handlers, CANMessageID msg_id) {
   const CANRxHandler key = { .msg_id = msg_id };
-  return bsearch(&key, rx_handlers->storage, rx_handlers->num_handlers,
-                 sizeof(*rx_handlers->storage), prv_handler_comp);
+  CANRxHandler *handler = bsearch(&key, rx_handlers->storage, rx_handlers->num_handlers,
+                                  sizeof(*rx_handlers->storage), prv_handler_comp);
+
+  if (handler == NULL && rx_handlers->default_handler != NULL) {
+    return rx_handlers->default_handler;
+  }
+
+  return handler;
 }

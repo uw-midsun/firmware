@@ -6,6 +6,7 @@
 static volatile CANHwConfig *s_can = NULL;
 
 StatusCode can_hw_init(CANHwConfig *can_hw, uint16_t bus_speed, bool loopback) {
+  CAN_DeInit(CAN);
   memset(can_hw, 0, sizeof(*can_hw));
 
   can_hw->base = CAN;
@@ -67,7 +68,7 @@ StatusCode can_hw_register_callback(CANHwConfig *can_hw, CANHwEvent event,
 }
 
 StatusCode can_hw_add_filter(CANHwConfig *can_hw, uint16_t mask, uint16_t filter) {
-  if (can_hw->num_filters > CAN_HW_MCU_NUM_FILTER_BANKS) {
+  if (can_hw->num_filters >= CAN_HW_MCU_NUM_FILTER_BANKS) {
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN HW: Ran out of filter banks.");
   }
 
@@ -76,7 +77,7 @@ StatusCode can_hw_add_filter(CANHwConfig *can_hw, uint16_t mask, uint16_t filter
   CAN_FilterInitTypeDef filter_cfg = {
     .CAN_FilterNumber = can_hw->num_filters,
     .CAN_FilterMode = CAN_FilterMode_IdMask,
-    .CAN_FilterScale = CAN_FilterScale_16bit,
+    .CAN_FilterScale = CAN_FilterScale_32bit,
     .CAN_FilterIdHigh = filter << 5,
     .CAN_FilterIdLow = 0x0000,
     .CAN_FilterMaskIdHigh = mask << 5,
@@ -110,10 +111,11 @@ StatusCode can_hw_transmit(const CANHwConfig *can_hw, uint16_t id, uint8_t *data
 
   memcpy(tx_msg.Data, data, sizeof(*data) * len);
 
+  // TX returns failed on loopback
   uint8_t tx_status = CAN_Transmit(can_hw->base, &tx_msg);
   switch (tx_status) {
     case CAN_TxStatus_NoMailBox:
-    case CAN_TxStatus_Failed:
+    // case CAN_TxStatus_Failed:
       return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN HW TX failed");
       break;
     default:
@@ -166,5 +168,5 @@ void CEC_CAN_IRQHandler(void) {
     }
   }
 
-  CAN_ClearITPendingBit(CAN, CAN_IT_TME);
+  CAN_ClearITPendingBit(s_can->base, CAN_IT_TME);
 }

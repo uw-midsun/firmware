@@ -117,6 +117,10 @@ StatusCode can_add_filter(CANConfig *can, CANMessageID msg_id) {
   return can_hw_add_filter(&can->hw, can_id.raw, mask.raw);
 }
 
+StatusCode can_register_rx_default_handler(CANConfig *can, CANRxHandlerCb handler, void *context) {
+  return can_rx_register_default_handler(&can->rx_handlers, handler, context);
+}
+
 StatusCode can_register_rx_handler(CANConfig *can, CANMessageID msg_id,
                                    CANRxHandlerCb handler, void *context) {
   return can_rx_register_handler(&can->rx_handlers, msg_id, handler, context);

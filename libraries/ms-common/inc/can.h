@@ -32,6 +32,8 @@ StatusCode can_init(CANConfig *can, uint16_t device_id, uint16_t bus_speed, bool
 
 StatusCode can_add_filter(CANConfig *can, CANMessageID msg_id);
 
+StatusCode can_register_rx_default_handler(CANConfig *can, CANRxHandlerCb handler, void *context);
+
 StatusCode can_register_rx_handler(CANConfig *can, CANMessageID msg_id,
                                    CANRxHandlerCb handler, void *context);
 
