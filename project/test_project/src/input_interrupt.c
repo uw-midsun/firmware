@@ -1,4 +1,5 @@
 #include "input_interrupt.h"
+#include "event_queue.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -12,8 +13,7 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group, uint1
 
   switch (address->pin) {
     case 0:
-      return (!strcmp(fsm_group->pedal_fsm.current_state->name,
-              "state_off")) ? INPUT_EVENT_POWER_ON : INPUT_EVENT_POWER_OFF;
+      return (GPIO_STATE_HIGH) ? INPUT_EVENT_POWER_ON : INPUT_EVENT_POWER_OFF;
 
   case 1:
       if (reading < COAST_THRESHOLD) {
@@ -79,66 +79,9 @@ void input_callback(GPIOAddress* address, FSMGroup* fsm_group) {
 	uint16_t reading = adc_read(&pedal, MAX_SPEED);
   
 	Event e = { prv_get_event(address, fsm_group, reading), 0 };
-	
-  switch (e.id) {
-    case INPUT_EVENT_POWER_OFF:
-      if (strcmp(fsm_group->pedal_fsm.current_state->name, "state_brake")) {
-        printf("Cannot power off while pedals are pressed\n");
-        break;
-      }
+  event_raise(&e);
 
-      if (strcmp(fsm_group->direction_fsm.current_state->name, "state_neutral")) {
-        printf("Cannot power off until in neutral\n");
-        break;
-      }
-
-      fsm_process_event(&fsm_group->pedal_fsm, &e);
-      break;
-
-    case INPUT_EVENT_GAS_COAST:
-    case INPUT_EVENT_GAS_PRESSED:
-      if (strcmp(fsm_group->direction_fsm.current_state->name, "state_forward") &&
-        strcmp(fsm_group->direction_fsm.current_state->name, "state_reverse")) {
-        printf("Cannot start moving unless in forward or reverse\n");
-        break;
-      }
-
-      fsm_process_event(&fsm_group->pedal_fsm, &e);
-      break;
-
-    case INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL:
-    case INPUT_EVENT_DIRECTION_SELECTOR_DRIVE:
-    case INPUT_EVENT_DIRECTION_SELECTOR_REVERSE:
-      if (!(strcmp(fsm_group->pedal_fsm.current_state->name, "state_brake"))) {
-        fsm_process_event(&fsm_group->direction_fsm, &e);
-      }
-      break;
-
-    case INPUT_EVENT_TURN_SIGNAL_NONE:
-    case INPUT_EVENT_TURN_SIGNAL_LEFT:
-    case INPUT_EVENT_TURN_SIGNAL_RIGHT:
-      fsm_process_event(&fsm_group->turn_signal_fsm, &e);
-      break;
-    case INPUT_EVENT_HAZARD_LIGHT_ON:
-    case INPUT_EVENT_HAZARD_LIGHT_OFF:
-      GPIOC->ODR ^= 0x0800;
-      if (strcmp(fsm_group->pedal_fsm.current_state->name, "state_off")) {
-        fsm_process_event(&fsm_group->hazard_light_fsm, &e);
-      }
-      break;
-    default:
-      fsm_process_event(&fsm_group->pedal_fsm, &e);
-  }
-
-  printf("P%c%d : Event = %d : Car Status = %s : Direction = %s : Turn = %s : Hazard = %s : %d \n",
-      (uint8_t)(address->port+65),
-      address->pin,
-      e.id,
-      fsm_group->pedal_fsm.current_state->name,
-      fsm_group->direction_fsm.current_state->name,
-      fsm_group->turn_signal_fsm.current_state->name,
-      fsm_group->hazard_light_fsm.current_state->name,
-      reading);
+  //printf("Device Pin = P%c%d | Returning %d\n", (uint8_t)(address->port+65), address->pin, e.data); 
 
   return;
 }
