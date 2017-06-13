@@ -13,6 +13,11 @@ $(T)_TEST_DEPS := unity $(T)
 
 # Find all test_*.c files - these are our unit tests
 $(T)_TEST_SRC := $(wildcard $($(T)_TEST_ROOT)/test_*.c)
+
+# Exclude any tests explicitly mentioned - this allows tests to be disabled per platform.
+$(T)_EXCLUDED_TESTS := $(foreach test,$($(T)_EXCLUDE_TESTS),$($(T)_TEST_ROOT)/test_$(test).c)
+$(T)_TEST_SRC := $(filter-out $($(T)_EXCLUDED_TESTS),$($(T)_TEST_SRC))
+
 $(T)_TEST_OBJ := $($(T)_TEST_SRC:$($(T)_TEST_ROOT)/%.c=$($(T)_TEST_OBJ_DIR)/%.o)
 -include $($(T)_TEST_OBJ:.o=.d) #:
 
