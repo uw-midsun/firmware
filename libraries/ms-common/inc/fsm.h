@@ -7,7 +7,8 @@
 // The FSM keeps track of both current and last states for debug purposes. It would be trivial to
 // additionally track the last processed event.
 //
-// Usage - Forward declare all states with FSM_DECLARE_STATE:
+// Usage: Note that FSMs should be declared in the source file, not the header.
+// Forward declare all states with FSM_DECLARE_STATE:
 //
 // FSM_DECLARE_STATE(state_a);
 // FSM_DECLARE_STATE(state_b);
@@ -35,6 +36,9 @@
 #define FSM_STATE_TRANSITION(state) _FSM_STATE_TRANSITION(state)
 // Adds an entry to the state transition table.
 #define FSM_ADD_TRANSITION(event_id, state) _FSM_ADD_TRANSITION(event_id, state)
+// Adds an entry with a conditional boolean guard to the state transition table.
+#define FSM_ADD_GUARDED_TRANSITION(event_id, guard, state) \
+  _FSM_ADD_GUARDED_TRANSITION(event_id, guard, state)
 
 // Initializes an FSM state with an output function.
 #define fsm_state_init(state, output_func) _fsm_state_init(state, output_func)
@@ -42,6 +46,7 @@
 struct FSM;
 typedef void (*StateOutput)(struct FSM *fsm, const Event *e, void *context);
 typedef void (*StateTransition)(struct FSM *fsm, const Event *e, bool *transitioned);
+typedef bool (*StateTransitionGuard)(const struct FSM *fsm, const Event *e, void *context);
 
 typedef struct State {
   const char *name;
@@ -61,3 +66,5 @@ void fsm_init(FSM *fsm, const char *name, State *default_state, void *context);
 
 // Returns whether a transition occurred in the FSM.
 bool fsm_process_event(FSM *fsm, const Event *e);
+
+bool fsm_guard_true(FSM *fsm, const Event *e, void *context);
