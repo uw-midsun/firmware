@@ -24,9 +24,7 @@ int main() {
 	
 	// Initialize the state machines to be used, along with their default settings
   FSMGroup fsm_group;
-	FSMState default_state[] = { STATE_OFF, STATE_NEUTRAL, STATE_NO_SIGNAL, STATE_HAZARD_OFF };
-
-	state_init(&fsm_group, default_state);
+	state_init(&fsm_group);
 
   GPIOSettings gpio_settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_NONE };
   InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_NORMAL };
@@ -76,8 +74,6 @@ int main() {
   	gpio_init_pin(&output[i].address, &gpio_settings);
 	}
 
-	// Main program loop
-
 	Event e;	
 
   for (;;) {
@@ -85,12 +81,12 @@ int main() {
 		for (uint8_t i = 0; i < 10; i++) {
 			if (!event_process(&e)) {
 				state_process_event(&fsm_group, &e);
-				  printf("Event = %d : Car Status = %s : Direction = %s : Turn = %s : Hazard = %s : %d \n",
+				printf("Event = %d : Car Status = %d : Direction = %d : Turn = %d : Hazard = %d : %d \n",
      				e.id,
-     				fsm_group.pedal_fsm.current_state->name,
-     				fsm_group.direction_fsm.current_state->name,
-     				fsm_group.turn_signal_fsm.current_state->name,
-     				fsm_group.hazard_light_fsm.current_state->name,
+     				fsm_group.pedal.state,
+     				fsm_group.direction.state,
+     				fsm_group.turn_signal.state,
+     				fsm_group.hazard_light.state,
      				ADC1->DR);
 			}
 		}
