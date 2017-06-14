@@ -3,14 +3,20 @@
 FSM_DECLARE_STATE(state_hazard_on);
 FSM_DECLARE_STATE(state_hazard_off);
 
-// Transition table for the turn signal state machine
+// Transition guard function
+static bool prv_power_guard(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
+  bool transitioned = (fsm_group->pedal.state != STATE_OFF);
+  return transitioned;
+}
+
+// State machine transition tables
 
 FSM_STATE_TRANSITION(state_hazard_on) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_HAZARD_LIGHT_OFF, state_hazard_off);
+  FSM_ADD_GUARDED_TRANSITION(INPUT_EVENT_HAZARD_LIGHT_OFF, prv_power_guard, state_hazard_off);
 }
 
 FSM_STATE_TRANSITION(state_hazard_off) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_HAZARD_LIGHT_ON, state_hazard_on);
+  FSM_ADD_GUARDED_TRANSITION(INPUT_EVENT_HAZARD_LIGHT_ON, prv_power_guard, state_hazard_on);
 }
 
 // Output functions for the hazard light state

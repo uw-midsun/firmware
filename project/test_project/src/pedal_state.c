@@ -7,18 +7,34 @@ FSM_DECLARE_STATE(state_coast);
 FSM_DECLARE_STATE(state_driving);         // Driving State: Car is in motion due to the gas pedal
 FSM_DECLARE_STATE(state_cruise_control);  // Driving State: Car is in motion due to the gas pedal
 
+// Transition guard functions
+
+static bool prv_power_guard(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
+  bool transitioned = (fsm_group->direction.state == STATE_NEUTRAL);
+  return transitioned;
+}
+
+static bool prv_gas_guard(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
+  bool transitioned = (fsm_group->direction.state == STATE_FORWARD) ||
+                      (fsm_group->direction.state == STATE_REVERSE);
+  return transitioned;
+}
+
+// State machine transition tables
+
 FSM_STATE_TRANSITION(state_off) {
   FSM_ADD_TRANSITION(INPUT_EVENT_POWER_ON, state_brake);
 }
 
 FSM_STATE_TRANSITION(state_brake) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_COAST, state_coast);
-  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_PRESSED, state_driving);
+  FSM_ADD_GUARDED_TRANSITION(INPUT_EVENT_POWER_OFF, prv_power_guard, state_off);
+  FSM_ADD_GUARDED_TRANSITION(INPUT_EVENT_GAS_COAST, prv_gas_guard, state_coast);
+  FSM_ADD_GUARDED_TRANSITION(INPUT_EVENT_GAS_PRESSED, prv_gas_guard, state_driving);
   FSM_ADD_TRANSITION(INPUT_EVENT_EMERGENCY_STOP, state_off);
 }
 
 FSM_STATE_TRANSITION(state_coast) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_PRESSED, state_driving);
+  FSM_ADD_GUARDED_TRANSITION(INPUT_EVENT_GAS_PRESSED, prv_gas_guard, state_driving);
   FSM_ADD_TRANSITION(INPUT_EVENT_GAS_BRAKE, state_brake);
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL_ON, state_cruise_control);
   FSM_ADD_TRANSITION(INPUT_EVENT_EMERGENCY_STOP, state_off);
@@ -26,7 +42,7 @@ FSM_STATE_TRANSITION(state_coast) {
 
 FSM_STATE_TRANSITION(state_driving) {
   FSM_ADD_TRANSITION(INPUT_EVENT_GAS_BRAKE, state_brake);
-  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_COAST, state_coast);
+  FSM_ADD_GUARDED_TRANSITION(INPUT_EVENT_GAS_COAST, prv_gas_guard, state_coast);
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL_ON, state_cruise_control);
   FSM_ADD_TRANSITION(INPUT_EVENT_EMERGENCY_STOP, state_off);
 }
