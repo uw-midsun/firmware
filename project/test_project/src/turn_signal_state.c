@@ -23,23 +23,23 @@ FSM_STATE_TRANSITION(state_right_signal) {
 
 // Output functions for the turn signal state
 
-static void prv_driver_state_no_signal(FSM* fsm, const Event* e, void *context) {
-  *(uint8_t*)context = STATE_NO_SIGNAL;
+static void prv_driver_state_no_signal(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
+  fsm_group->turn_signal.state = STATE_NO_SIGNAL;
 }
 
-static void prv_driver_state_left_signal(FSM* fsm, const Event* e, void *context) {
-  *(uint8_t*)context = STATE_LEFT_SIGNAL;
+static void prv_driver_state_left_signal(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
+  fsm_group->turn_signal.state = STATE_LEFT_SIGNAL;
 }
 
-static void prv_driver_state_right_signal(FSM* fsm, const Event* e, void *context) {
-  *(uint8_t*)context = STATE_RIGHT_SIGNAL;
+static void prv_driver_state_right_signal(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
+  fsm_group->turn_signal.state = STATE_RIGHT_SIGNAL;
 }
 
 
-void turn_signal_state_init(FSM* turn_signal_fsm, FSMState* state_id) {
+void turn_signal_state_init(FSM* turn_signal_fsm, FSMGroup* fsm_group) {
 	fsm_state_init(state_no_signal, prv_driver_state_no_signal);
 	fsm_state_init(state_left_signal, prv_driver_state_left_signal);
 	fsm_state_init(state_right_signal, prv_driver_state_right_signal);
 
-	fsm_init(turn_signal_fsm, "turn_signal_fsm", &state_no_signal, state_id);
+	fsm_init(turn_signal_fsm, "turn_signal_fsm", &state_no_signal, fsm_group);
 }

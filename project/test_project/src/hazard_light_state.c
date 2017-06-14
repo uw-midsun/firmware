@@ -15,17 +15,17 @@ FSM_STATE_TRANSITION(state_hazard_off) {
 
 // Output functions for the hazard light state
 
-static void prv_driver_state_hazard_on(FSM* fsm, const Event* e, void *context) {
-  *(uint8_t*)context = STATE_HAZARD_ON;
+static void prv_driver_state_hazard_on(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
+  fsm_group->hazard_light.state = STATE_HAZARD_ON;
 }
 
-static void prv_driver_state_hazard_off(FSM* fsm, const Event* e, void *context) {
-  *(uint8_t*)context = STATE_HAZARD_OFF;
+static void prv_driver_state_hazard_off(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
+  fsm_group->hazard_light.state = STATE_HAZARD_OFF;
 }
 
-void hazard_light_state_init(FSM* hazard_light_fsm, FSMState* state_id) {
+void hazard_light_state_init(FSM* hazard_light_fsm, FSMGroup* fsm_group) {
 	fsm_state_init(state_hazard_on, prv_driver_state_hazard_on);
 	fsm_state_init(state_hazard_off, prv_driver_state_hazard_off);
 
-  fsm_init(hazard_light_fsm, "hazard_light_fsm", &state_hazard_off, state_id);
+  fsm_init(hazard_light_fsm, "hazard_light_fsm", &state_hazard_off, fsm_group);
 }

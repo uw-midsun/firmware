@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// Replace the switch statement with a jump table if they get too big
-
 static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group, uint16_t reading) {
   GPIOState key_pressed;
   gpio_get_value(address, &key_pressed);
@@ -13,7 +11,7 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group, uint1
 
   switch (address->pin) {
     case 0:
-      return (GPIO_STATE_HIGH) ? INPUT_EVENT_POWER_ON : INPUT_EVENT_POWER_OFF;
+      return (fsm_group->pedal.state == STATE_OFF) ? INPUT_EVENT_POWER_ON : INPUT_EVENT_POWER_OFF;
 
   case 1:
       if (reading < COAST_THRESHOLD) {
@@ -38,19 +36,18 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group, uint1
         break;
 
     case 4:
-      return (strcmp(fsm_group->pedal_fsm.current_state->name,
-              "state_cruise_control")) ? INPUT_EVENT_CRUISE_CONTROL_ON : INPUT_EVENT_CRUISE_CONTROL_OFF;
+      return (fsm_group->pedal.state == STATE_CRUISE_CONTROL) ? INPUT_EVENT_CRUISE_CONTROL_OFF : INPUT_EVENT_CRUISE_CONTROL_ON;
       break;
 
     case 5:
-      if (!strcmp(fsm_group->pedal_fsm.current_state->name, "state_cruise_control")) {
+      if (fsm_group->pedal.state == STATE_CRUISE_CONTROL) {
         printf("Cruise control increase speed\n");
       }
       return INPUT_EVENT_CRUISE_CONTROL_INC;
       break;
 
     case 6:
-      if (!strcmp(fsm_group->pedal_fsm.current_state->name, "state_cruise_control")) {
+      if (fsm_group->pedal.state == STATE_CRUISE_CONTROL) {
         printf("Cruise control decrease speed\n");
       }
       return INPUT_EVENT_CRUISE_CONTROL_DEC;
@@ -69,19 +66,18 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group, uint1
       break;
 
     case 9:
-      return (!strcmp(fsm_group->hazard_light_fsm.current_state->name,
-              "state_hazard_off")) ? INPUT_EVENT_HAZARD_LIGHT_ON : INPUT_EVENT_HAZARD_LIGHT_OFF;
+      return (fsm_group->hazard_light.state == STATE_HAZARD_OFF) ? INPUT_EVENT_HAZARD_LIGHT_ON : INPUT_EVENT_HAZARD_LIGHT_OFF;
   }
 }
 
 void input_callback(GPIOAddress* address, FSMGroup* fsm_group) {
-	GPIOAddress pedal = { 2, 1 };
+  GPIOAddress pedal = { 2, 1 };
 	uint16_t reading = adc_read(&pedal, MAX_SPEED);
   
 	Event e = { prv_get_event(address, fsm_group, reading), 0 };
   event_raise(&e);
-
-  //printf("Device Pin = P%c%d | Returning %d\n", (uint8_t)(address->port+65), address->pin, e.data); 
-
+  
+  //printf("Device Pin = P%c%d\n", (uint8_t)(address->port+65), address->pin); 
+  
   return;
 }

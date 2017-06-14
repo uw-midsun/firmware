@@ -23,22 +23,22 @@ FSM_STATE_TRANSITION(state_reverse) {
 
 // Output functions for the direction state
 
-static void prv_driver_state_neutral(FSM* fsm, const Event* e, void *context) {
-  *(uint8_t*)context = STATE_NEUTRAL;
+static void prv_driver_state_neutral(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
+  fsm_group->direction.state = STATE_NEUTRAL;
 }
 
-static void prv_driver_state_forward(FSM* fsm, const Event* e, void *context) {
-  *(uint8_t*)context = STATE_FORWARD;
+static void prv_driver_state_forward(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
+  fsm_group->direction.state = STATE_FORWARD;
 }
 
-static void prv_driver_state_reverse(FSM* fsm, const Event* e, void *context) {
-  *(uint8_t*)context = STATE_REVERSE;
+static void prv_driver_state_reverse(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
+  fsm_group->direction.state = STATE_REVERSE;
 }
 
-void direction_state_init(FSM* direction_fsm, FSMState* state_id) {
+void direction_state_init(FSM* direction_fsm, FSMGroup* fsm_group) {
 	fsm_state_init(state_neutral, prv_driver_state_neutral);
 	fsm_state_init(state_forward, prv_driver_state_forward);
 	fsm_state_init(state_reverse, prv_driver_state_reverse);
 
-	fsm_init(&direction_fsm, "direction_fsm", &state_neutral, state_id);
+	fsm_init(direction_fsm, "direction_fsm", &state_neutral, fsm_group);
 }
