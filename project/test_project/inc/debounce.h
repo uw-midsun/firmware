@@ -2,10 +2,11 @@
 
 #include "gpio.h"
 
-// Hold time must be greater than sampling interval
+// Hold times must be greater than or equal to the sampling interval
 
-#define SAMPLING_INTERVAL 100   // Number of reads inbetween sampling
-#define HOLD_TIME 200000          // Number of samples that the signal needs to remain steady for
+#define CHECK_MSEC		5		// Sampling interval in milliseconds
+#define PRESS_MSEC		50		// Hold time for button presses
+#define RELEASE_MSEC	50		// Hold time for button depresses
 
 // Return the debounced state of the pressed button
 void debounce(GPIOAddress* address, GPIOState* current_state);

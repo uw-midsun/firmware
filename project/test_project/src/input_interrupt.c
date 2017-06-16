@@ -4,8 +4,10 @@
 #include <stdio.h>
 #include <string.h>
 
-static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group, uint16_t reading) {
+static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group) {
   GPIOState key_pressed;
+  uint16_t reading;
+
   gpio_get_value(address, &key_pressed);
   debounce(address, &key_pressed);
 
@@ -14,6 +16,7 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group, uint1
       return (fsm_group->pedal.state == STATE_OFF) ? INPUT_EVENT_POWER_ON : INPUT_EVENT_POWER_OFF;
 
   case 1:
+      reading = adc_read(address, MAX_SPEED);
       if (reading < COAST_THRESHOLD) {
         return INPUT_EVENT_GAS_BRAKE;
       } else if (reading > DRIVE_THRESHOLD) {
@@ -71,10 +74,7 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group, uint1
 }
 
 void input_callback(GPIOAddress* address, FSMGroup* fsm_group) {
-  GPIOAddress pedal = { 2, 1 };
-	uint16_t reading = adc_read(&pedal, MAX_SPEED);
-  
-	Event e = { prv_get_event(address, fsm_group, reading), 0 };
+	Event e = { prv_get_event(address, fsm_group), 0 };
   event_raise(&e);
   
   //printf("Device Pin = P%c%d\n", (uint8_t)(address->port+65), address->pin); 

@@ -35,6 +35,7 @@ int main() {
   interrupt_init();
   gpio_it_init();
 	event_queue_init();
+  soft_timer_init();
   adc_init(&adc_settings);
 
   Device input[INPUT_DEVICES] = {
