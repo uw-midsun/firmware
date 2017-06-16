@@ -8,5 +8,5 @@
 #define PRESS_MSEC		50		// Hold time for button presses
 #define RELEASE_MSEC	50		// Hold time for button depresses
 
-// Return the debounced state of the pressed button
+// Sets the value of current_state to the debounced state 
 void debounce(GPIOAddress* address, GPIOState* current_state);
