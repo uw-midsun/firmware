@@ -1,6 +1,6 @@
 # Projects
 
-Projects are stored in this directory. Each folder represents an individual project, identified by the folder's name and the existance of a `rules.mk` in the folder's root.
+Projects are stored in this directory. Each folder represents an individual project, identified by the folder's name and the existence of a `rules.mk` in the folder's root.
 
 This is an example of a standard project's structure.
 ````
@@ -35,7 +35,7 @@ Unit tests should be located in the `test` subdirectory. Tests are built using [
 
 | Variable | Purpose | Default Value | Notes |
 |----------|---------|---------------|-------|
-| `$(T)_DEPS` | Define the libraries that this target depends on. | | A common depedency for projects is `ms-common`, which is our HAL. |
+| `$(T)_DEPS` | Define the libraries that this target depends on. | | A common dependency for projects is `ms-common`, which is our HAL. |
 | `$(T)_SRC_ROOT` | Modify the source file (*.c, *.s) root directory | `$(T)_DIR/src` | Note that this must be the root folder. Only a single directory is valid. |
 | `$(T)_INC_DIRS` | Modify the directories to search for headers in. | `$(T)_DIR/inc` | This may be any number of directories. |
 | `$(T)_SRC` | Define the source files to compile. | `$(T)_DIR/src/[$(PLATFORM)/]*.(c,s)` | |
