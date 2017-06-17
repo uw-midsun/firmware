@@ -10,9 +10,6 @@ $(T)_SRC_ROOT := $($(T)_DIR)/Device/ST/STM32F0xx/Source/Templates
 $(T)_INC_DIRS := $($(T)_DIR)/Device/ST/STM32F0xx/Include \
                    $($(T)_DIR)/Include
 
-# Redefine $(T)_SRC to reflect the new root
-$(T)_SRC := $(wildcard $($(T)_SRC_ROOT)/*.c)
-$(T)_INC := $(call find_in,$($(T)_INC_DIRS),*.h)
 $(T)_DEPS :=
 
 # Specifies library specific build flags

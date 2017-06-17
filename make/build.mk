@@ -13,18 +13,24 @@ $(T)_DIR := $($(TARGET_TYPE)_DIR)/$(T)
 
 $(T)_SRC_ROOT := $($(T)_DIR)/src
 $(T)_OBJ_ROOT := $(OBJ_CACHE)/$(T)
-$(T)_INC_DIRS := $($(T)_DIR)/inc
-
-$(T)_SRC := $(wildcard $($(T)_SRC_ROOT)/*.c) \
-            $(wildcard $($(T)_SRC_ROOT)/$(PLATFORM)/*.c) \
-            $(wildcard $($(T)_SRC_ROOT)/*.s)
-$(T)_INC := $(wildcard $($(T)_INC_DIRS)/*.h) \
-            $(wildcard $($(T)_INC_DIRS)/$(PLATFORM)/*.h)
+$(T)_INC_DIRS := $($(T)_DIR)/inc $($(T)_DIR)/inc/$(PLATFORM)
 
 $(T)_CFLAGS := $(CFLAGS)
 
 # Include library variables - we expect to have $(T)_SRC, $(T)_INC, $(T)_DEPS, and $(T)_CFLAGS
 include $($(T)_DIR)/rules.mk
+
+# If the source or include files were not explicitly defined, use the possibly modified
+# source root and include directories to find the source and headers.
+ifeq (,$($(T)_SRC))
+$(T)_SRC := $(wildcard $($(T)_SRC_ROOT)/*.c) \
+            $(wildcard $($(T)_SRC_ROOT)/$(PLATFORM)/*.c) \
+            $(wildcard $($(T)_SRC_ROOT)/*.s)
+endif
+ifeq (,$($(T)_INC))
+$(T)_INC := $(call find_in,$($(T)_INC_DIRS),*.h) \
+            $(call find_in,$($(T)_INC_DIRS),$(PLATFORM)/*.h)
+endif
 
 # Define objects and include generated dependencies
 # Note that without some very complex rules, we can only support one root source directory.
