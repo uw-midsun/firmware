@@ -27,10 +27,6 @@ $(T)_SRC := $(wildcard $($(T)_SRC_ROOT)/*.c) \
             $(wildcard $($(T)_SRC_ROOT)/$(PLATFORM)/*.c) \
             $(wildcard $($(T)_SRC_ROOT)/*.s)
 endif
-ifeq (,$($(T)_INC))
-$(T)_INC := $(call find_in,$($(T)_INC_DIRS),*.h) \
-            $(call find_in,$($(T)_INC_DIRS),$(PLATFORM)/*.h)
-endif
 
 # Define objects and include generated dependencies
 # Note that without some very complex rules, we can only support one root source directory.
@@ -73,4 +69,4 @@ ifneq (unity,$(T))
 endif
 
 DIRS := $(sort $(DIRS) $($(T)_OBJ_DIR) $(dir $($(T)_OBJ)))
-INC_DIRS := $(sort $(INC_DIRS) $(dir $($(T)_INC)))
+INC_DIRS := $(sort $(INC_DIRS) $($(T)_INC_DIRS))
