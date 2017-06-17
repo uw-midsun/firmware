@@ -44,7 +44,7 @@ void teardown_test(void) { }
 
 void test_can_ack_handle_devices(void) {
   TestResponse data = { 0 };
-  CANId can_id = {
+  CANMessage can_msg = {
     .source_id = 0,
     .type = CAN_MSG_TYPE_ACK,
     .msg_id = 0
@@ -63,46 +63,46 @@ void test_can_ack_handle_devices(void) {
   ack_request.num_expected = 1;
   can_ack_add_request(&s_ack_requests, 0x2, &ack_request);
 
-  can_id.msg_id = 0x2;
-  LOG_DEBUG("Handling ACK for ID %d, device %d\n", can_id.msg_id, can_id.source_id);
-  StatusCode ret = can_ack_handle_msg(&s_ack_requests, &can_id);
+  can_msg.msg_id = 0x2;
+  LOG_DEBUG("Handling ACK for ID %d, device %d\n", can_msg.msg_id, can_msg.source_id);
+  StatusCode ret = can_ack_handle_msg(&s_ack_requests, &can_msg);
   TEST_ASSERT_OK(ret);
 
   // Expect to update the 1st 0x2 ACK request
-  TEST_ASSERT_EQUAL(can_id.msg_id, data.msg_id);
+  TEST_ASSERT_EQUAL(can_msg.msg_id, data.msg_id);
   TEST_ASSERT_EQUAL(2, data.num_remaining);
 
   LOG_DEBUG("Handling duplicate ACK\n");
-  ret = can_ack_handle_msg(&s_ack_requests, &can_id);
+  ret = can_ack_handle_msg(&s_ack_requests, &can_msg);
   TEST_ASSERT_OK(ret);
 
   // Should've updated the 2nd 0x2 ACK request
-  TEST_ASSERT_EQUAL(can_id.msg_id, data.msg_id);
+  TEST_ASSERT_EQUAL(can_msg.msg_id, data.msg_id);
   TEST_ASSERT_EQUAL(0, data.num_remaining);
 
   // 3rd duplicate 0x2 ACK should fail
   LOG_DEBUG("Handling duplicate ACK 2\n");
-  ret = can_ack_handle_msg(&s_ack_requests, &can_id);
+  ret = can_ack_handle_msg(&s_ack_requests, &can_msg);
   TEST_ASSERT_EQUAL(STATUS_CODE_UNKNOWN, ret);
 
   // Valid ACK (new device)
-  can_id.source_id = 1;
-  LOG_DEBUG("Handling ACK for ID %d, device %d\n", can_id.msg_id, can_id.source_id);
-  ret = can_ack_handle_msg(&s_ack_requests, &can_id);
+  can_msg.source_id = 1;
+  LOG_DEBUG("Handling ACK for ID %d, device %d\n", can_msg.msg_id, can_msg.source_id);
+  ret = can_ack_handle_msg(&s_ack_requests, &can_msg);
   TEST_ASSERT_OK(ret);
 
-  TEST_ASSERT_EQUAL(can_id.msg_id, data.msg_id);
+  TEST_ASSERT_EQUAL(can_msg.msg_id, data.msg_id);
   TEST_ASSERT_EQUAL(1, data.num_remaining);
 
   // Send invalid device ACK - should be able to send another ACK
-  can_id.source_id = TEST_CAN_ACK_INVALID_DEVICE;
+  can_msg.source_id = TEST_CAN_ACK_INVALID_DEVICE;
   LOG_DEBUG("Handling ACK from invalid device\n");
-  ret = can_ack_handle_msg(&s_ack_requests, &can_id);
+  ret = can_ack_handle_msg(&s_ack_requests, &can_msg);
   TEST_ASSERT_OK(ret);
 
-  can_id.source_id = 2;
+  can_msg.source_id = 2;
   LOG_DEBUG("Handling ACK from valid device\n");
-  ret = can_ack_handle_msg(&s_ack_requests, &can_id);
+  ret = can_ack_handle_msg(&s_ack_requests, &can_msg);
   TEST_ASSERT_OK(ret);
 
   TEST_ASSERT_EQUAL(0, data.num_remaining);
@@ -133,7 +133,7 @@ void test_can_ack_expiry(void) {
 void test_can_ack_expiry_moved(void) {
   // Ensure that ACK expiry can handle being shuffled around
   volatile TestResponse data = { 0 };
-  CANId can_id = {
+  CANMessage can_msg = {
     .source_id = 0,
     .type = CAN_MSG_TYPE_ACK,
     .msg_id = 0x4
@@ -148,13 +148,13 @@ void test_can_ack_expiry_moved(void) {
   ack_request.num_expected = 5;
   can_ack_add_request(&s_ack_requests, 0x2, &ack_request);
 
-  StatusCode ret = can_ack_handle_msg(&s_ack_requests, &can_id);
+  StatusCode ret = can_ack_handle_msg(&s_ack_requests, &can_msg);
   TEST_ASSERT_OK(ret);
 
-  TEST_ASSERT_EQUAL(can_id.msg_id, data.msg_id);
+  TEST_ASSERT_EQUAL(can_msg.msg_id, data.msg_id);
   TEST_ASSERT_EQUAL(1, s_ack_requests.num_requests);
 
-  while (data.msg_id == can_id.msg_id) { }
+  while (data.msg_id == can_msg.msg_id) { }
 
   TEST_ASSERT_EQUAL(0x2, data.msg_id);
   TEST_ASSERT_EQUAL(CAN_ACK_STATUS_TIMEOUT, data.status);
