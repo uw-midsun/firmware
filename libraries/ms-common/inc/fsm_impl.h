@@ -20,9 +20,9 @@ static void prv_fsm_##state(FSM *fsm, const Event *e, bool *transitioned)
 // Represents a transition through a conditional. This should only be used in transition functions.
 // This keeps track of states and signals that a transition has occurred through the pointer.
 // We then call the new state's output function if it exists.
-#define _FSM_ADD_TRANSITION(event_id, state) \
+#define _FSM_ADD_GUARDED_TRANSITION(event_id, guard, state) \
 do { \
-  if (e->id == event_id) { \
+  if (e->id == event_id && (guard)(fsm, e, fsm->context)) { \
     fsm->last_state = fsm->current_state; \
     fsm->current_state = &state; \
     *transitioned = true; \
@@ -34,6 +34,10 @@ do { \
     return; \
   } \
 } while (0)
+
+// Unguarded transitions just always return true for the guard.
+#define _FSM_ADD_TRANSITION(event_id, state) \
+  _FSM_ADD_GUARDED_TRANSITION(event_id, fsm_guard_true, state)
 
 // Initializes an FSM state with an output function.
 #define _fsm_state_init(state, output_func) \
