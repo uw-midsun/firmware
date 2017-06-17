@@ -39,6 +39,5 @@ Unit tests should be located in the `test` subdirectory. Tests are built using [
 | `$(T)_SRC_ROOT` | Modify the source file (*.c, *.s) root directory | `$(T)_DIR/src` | Note that this must be the root folder. Only a single directory is valid. |
 | `$(T)_INC_DIRS` | Modify the directories to search for headers in. | `$(T)_DIR/inc` | This may be any number of directories. |
 | `$(T)_SRC` | Define the source files to compile. | `$(T)_DIR/src/[$(PLATFORM)/]*.(c,s)` | |
-| `$(T)_INC` | Define the headers that should be watched. | `$(T)_DIR/inc/*.h` | |
 | `$(T)_CFLAGS` | Define custom target CFLAGS. | `$(CFLAGS)` | |
 | `$(T)_EXCLUDE_TESTS` | Define any tests that should be excluded. | | When specifying tests to exclude, do not include `test_`. |
