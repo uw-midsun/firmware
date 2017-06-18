@@ -10,7 +10,7 @@
 #define CAN_MSG_MAX_DEVICES (1 << 4)
 #define CAN_MSG_MAX_IDS (1 << 6)
 
-// TODO(ELEC-55): determine which messages are considered "critical"
+// TODO(ELEC-202): determine which messages are considered "critical"
 #define CAN_MSG_IS_CRITICAL(msg) ((msg)->msg_id < 14)
 
 #define CAN_MSG_SET_RAW_ID(can_msg, can_id) \
