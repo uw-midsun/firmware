@@ -1,5 +1,6 @@
 #pragma once
 // CAN RX handlers
+// Provides an interface for registering and finding callbacks based on CAN message IDs.
 #include <stdint.h>
 #include "status.h"
 #include "can_msg.h"

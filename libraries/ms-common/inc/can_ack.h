@@ -14,7 +14,7 @@
 #include "status.h"
 #include "soft_timer.h"
 
-// ACK timeout - transit time + computation time
+// ACK timeout: Should account for transit and computation time
 // Note that this timeout is currently an arbitrary value, but should be minimized.
 #define CAN_ACK_TIMEOUT_MS 10
 

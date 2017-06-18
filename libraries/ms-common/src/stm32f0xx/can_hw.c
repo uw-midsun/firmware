@@ -6,7 +6,6 @@
 static volatile CANHwConfig *s_can = NULL;
 
 StatusCode can_hw_init(CANHwConfig *can_hw, uint16_t bus_speed, bool loopback) {
-  CAN_DeInit(CAN);
   memset(can_hw, 0, sizeof(*can_hw));
 
   can_hw->base = CAN;
@@ -55,7 +54,7 @@ StatusCode can_hw_init(CANHwConfig *can_hw, uint16_t bus_speed, bool loopback) {
 
 StatusCode can_hw_register_callback(CANHwConfig *can_hw, CANHwEvent event,
                                     CANHwEventHandlerCb callback, void *context) {
-  if (event > NUM_CAN_HW_EVENTS) {
+  if (event >= NUM_CAN_HW_EVENTS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 

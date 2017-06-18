@@ -1,4 +1,6 @@
 #include "can_rx.h"
+#include <stdlib.h>
+#include <string.h>
 
 static int prv_handler_comp(const void *a, const void *b) {
   const CANRxHandler *x = a;

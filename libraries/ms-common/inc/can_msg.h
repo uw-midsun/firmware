@@ -24,7 +24,7 @@ do { \
 typedef enum {
   CAN_MSG_TYPE_DATA = 0,
   CAN_MSG_TYPE_ACK,
-  CAN_MSG_NUM_TYPES
+  NUM_CAN_MSG_TYPES
 } CANMsgType;
 
 typedef uint16_t CANMessageID;

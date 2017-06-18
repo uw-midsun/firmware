@@ -136,8 +136,7 @@ StatusCode can_transmit(CANConfig *can, const CANMessage *msg, const CANAckReque
       return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: ACK requested for non-critical message");
     }
 
-    StatusCode ret = STATUS_CODE_OK;
-    ret = can_ack_add_request(&can->ack_requests, msg->msg_id, ack_request);
+    StatusCode ret = can_ack_add_request(&can->ack_requests, msg->msg_id, ack_request);
     status_ok_or_return(ret);
   }
 

@@ -2,7 +2,6 @@
 // through an array of request pointers to minimize copying
 // ACK requests currently ordered as they were created
 #include "can_ack.h"
-#include "log.h"
 
 static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
                                  SoftTimerID timer_id, CANAckStatus status, uint16_t device);
@@ -81,10 +80,8 @@ static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
   found_request->response_bitset |= (1 << device);
 
   if (found_request->callback != NULL) {
-    StatusCode ret = STATUS_CODE_OK;
-    ret = found_request->callback(found_request->msg_id, device, status,
-                                  found_request->num_remaining, found_request->context);
-
+    StatusCode ret = found_request->callback(found_request->msg_id, device, status,
+                                             found_request->num_remaining, found_request->context);
     if (ret != STATUS_CODE_OK) {
       found_request->num_remaining++;
     }
