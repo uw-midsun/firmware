@@ -76,4 +76,6 @@ StatusCode can_rx_fsm_init(FSM *rx_fsm, CANConfig *can) {
 
   fsm_init(rx_fsm, "can_rx_fsm", &can_rx_fsm_handle, can);
   fsm_state_init(can_rx_fsm_handle, prv_handle_rx);
+
+  return STATUS_CODE_OK;
 }
