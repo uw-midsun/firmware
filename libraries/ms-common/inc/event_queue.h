@@ -19,7 +19,7 @@ typedef struct Event {
 void event_queue_init(void);
 
 // Raises an event in the global event queue.
-StatusCode event_raise(const Event *e);
+StatusCode event_raise(EventID id, uint16_t data);
 
 // Returns the next event to be processed.
 // Note that events are processed by priority.
