@@ -1,7 +1,7 @@
 #include "can_queue.h"
 
 StatusCode can_queue_init(CANQueue *can_queue) {
-  pqueue_backed_init(&can_queue->pqueue, can_queue->queue_nodes, can_queue->msg_nodes);
+  return pqueue_backed_init(&can_queue->pqueue, can_queue->queue_nodes, can_queue->msg_nodes);
 }
 
 StatusCode can_queue_push(CANQueue *can_queue, const CANMessage *msg) {
