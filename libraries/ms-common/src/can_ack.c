@@ -13,6 +13,8 @@ StatusCode can_ack_init(CANAckRequests *requests) {
 
   objpool_init(&requests->pool, requests->request_nodes, NULL, NULL);
   requests->num_requests = 0;
+
+  return STATUS_CODE_OK;
 }
 
 StatusCode can_ack_add_request(CANAckRequests *requests, CANMessageID msg_id,
