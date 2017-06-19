@@ -1,6 +1,9 @@
 #include "adc.h"
+#include "stm32f0xx.h"  
 
-static uint8_t prv_get_channel(GPIOAddress* address) {
+#include <stdio.h>
+
+uint32_t prv_get_channel(GPIOAddress* address) {
   volatile uint8_t adc_channel = address->pin;
 
   switch (address->port) {
@@ -25,6 +28,19 @@ static uint8_t prv_get_channel(GPIOAddress* address) {
   return adc_channel;
 }
 
+static uint16_t prv_adc_read_single(GPIOAddress* address, uint8_t adc_channel) {
+  // In single mode, the ADSTART bit must be explicitly set
+  ADC1->CR ^= ADC_CR_ADSTART;
+  ADC1->CHSELR = 1 << adc_channel;
+  return ADC_GetConversionValue(ADC1);
+}
+
+
+static uint16_t prv_adc_read_continuous(GPIOAddress* address, uint8_t adc_channel) {
+  ADC1->CHSELR = 1 << adc_channel;
+  return ADC_GetConversionValue(ADC1);
+}
+
 void adc_init(ADCMode adc_mode) {
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
 
@@ -40,11 +56,15 @@ void adc_init(ADCMode adc_mode) {
   ADC_Init(ADC1, &adc_settings);
 
   ADC_GetCalibrationFactor(ADC1);
-  ADC_Cmd(ADC1, ENABLE);
 
+  // Calculate the ADC calibration factor 
   ADC_ContinuousModeCmd(ADC1, adc_mode);
   while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADCAL)) {}
 
+  // Enable the ADC
+  ADC_Cmd(ADC1, ENABLE);
+  while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_ADRDY)) {}
+  
   ADC_StartOfConversion(ADC1);
   while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC)) {}
 }
@@ -57,16 +77,13 @@ bool adc_init_pin(GPIOAddress* address, ADCSampleRate adc_sample_rate) {
 
 uint16_t adc_read(GPIOAddress* address, uint16_t max) {
 	bool continuous_mode = ADC1->CFGR1 >> 13;
-	
-	if (!continuous_mode) {
-		ADC_StartOfConversion(ADC1);
-	}
+  uint8_t adc_channel = prv_get_channel(address);
+	printf("Channel = %d | ", adc_channel);
 
-	ADC1->CFGR1 ^= (ADC1->CFGR1 >> 13) ? ADC_CR_ADSTART : 0;
-  ADC1->CHSELR = 1 << prv_get_channel(address);
-	ADC1->CFGR1 ^= (ADC1->CFGR1 >> 13) ? ADC_CR_ADSTART : 0;
-  
-  uint16_t adc_reading = ADC_GetConversionValue(ADC1);
+  uint16_t adc_reading = (continuous_mode) ?
+                          prv_adc_read_continuous(address, adc_channel) :
+                          prv_adc_read_single(address, adc_channel);
+
   uint16_t reading = (max * adc_reading)/4096;
 
   return reading;
