@@ -3,42 +3,29 @@
 
 #include <stdio.h>
 
-uint32_t prv_get_channel(GPIOAddress* address) {
-  volatile uint8_t adc_channel = address->pin;
+static uint8_t prv_get_channel(GPIOAddress *address) {
+  uint8_t adc_channel = address->pin;
 
   switch (address->port) {
      case GPIO_PORT_A:
-       if (address->pin > 7) { return -1; }
+       if (address->pin > 7) { return 11; }
        break;
 
      case GPIO_PORT_B:
-       if (address->pin > 1) { return -1; }
+       if (address->pin > 1) { return 11; }
        adc_channel += 8;
        break;
 
      case GPIO_PORT_C:
-       if (address->pin > 5) { return -1; }
+       if (address->pin > 5) { return 11; }
        adc_channel += 10;
        break;
 
      default:
-       return -1;
+       return 11;
   }
 
   return adc_channel;
-}
-
-static uint16_t prv_adc_read_single(GPIOAddress* address, uint8_t adc_channel) {
-  // In single mode, the ADSTART bit must be explicitly set
-  ADC1->CR ^= ADC_CR_ADSTART;
-  ADC1->CHSELR = 1 << adc_channel;
-  return ADC_GetConversionValue(ADC1);
-}
-
-
-static uint16_t prv_adc_read_continuous(GPIOAddress* address, uint8_t adc_channel) {
-  ADC1->CHSELR = 1 << adc_channel;
-  return ADC_GetConversionValue(ADC1);
 }
 
 void adc_init(ADCMode adc_mode) {
@@ -59,32 +46,57 @@ void adc_init(ADCMode adc_mode) {
 
   // Calculate the ADC calibration factor 
   ADC_ContinuousModeCmd(ADC1, adc_mode);
-  while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADCAL)) {}
+  while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADCAL)) { }
 
   // Enable the ADC
   ADC_Cmd(ADC1, ENABLE);
-  while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_ADRDY)) {}
-  
-  ADC_StartOfConversion(ADC1);
-  while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC)) {}
+  while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_ADRDY)) { }
+
+  // Continuous conversions must be initiated by setting the ADSTART 
+  if ((ADC1->CFGR1 >> 13) & 1) {
+    ADC_StartOfConversion(ADC1);
+  }
 }
 
-void adc_init_pin(GPIOAddress* address, ADCSampleRate adc_sample_rate) {
+StatusCode adc_init_pin(GPIOAddress *address, ADCSampleRate adc_sample_rate) {
   uint8_t adc_channel = prv_get_channel(address);
+
+  // Returns invalid if the given address is not connected to an ADC channel 
+  if (adc_channel == 11) {
+    return STATUS_CODE_INVALID_ARGS;
+  }
+
   ADC_ChannelConfig(ADC1, adc_channel, adc_sample_rate);
-  return 1;
+  return STATUS_CODE_OK;
 }
 
-uint16_t adc_read(GPIOAddress* address, uint16_t max) {
-  bool continuous_mode = ADC1->CFGR1 >> 13;
+uint16_t adc_read(GPIOAddress *address, uint16_t max) {
+  bool continuous_mode = (ADC1->CFGR1 >> 13) & 1;
+
   uint8_t adc_channel = prv_get_channel(address);
-  uint16_t adc_reading = (continuous_mode) ?
-                          prv_adc_read_continuous(address, adc_channel) :
-                          prv_adc_read_single(address, adc_channel);
+  
+  if (adc_channel == 11) {
+    return 0;
+  }
+
+  // In single mode, the ADSTART bit must be explicitly set for each conversion
+  if (!continuous_mode) {
+    ADC_StartOfConversion(ADC1);
+  }
+
+  ADC1->CHSELR = 1 << adc_channel;
+  uint16_t adc_reading = ADC_GetConversionValue(ADC1); 
+  while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC)) { }                        
 
   uint16_t reading = (max * adc_reading)/4096;
 
   return reading;
 }
 
+void adc_disable() {
+  ADC_StopOfConversion(ADC1);
+  while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADSTP)) { }
 
+  ADC1->CR |= ADC_FLAG_ADDIS;
+  while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADEN)) { }
+}

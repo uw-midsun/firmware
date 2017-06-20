@@ -1,4 +1,5 @@
 #include "adc.h"
+#include "log.h"
 #include "gpio.h"
 
 int main() {
@@ -8,10 +9,10 @@ int main() {
   gpio_init();
   gpio_init_pin(&address, &settings);
 
-  adc_init(ADC_MODE_CONTINUOUS);
+  adc_init(ADC_MODE_SINGLE);
   adc_init_pin(&address, ADC_SAMPLE_RATE_1);
 
   while (1) {
-    printf("%d mV\n", adc_read(&address, 3000));
+    LOG_DEBUG("%d mV\n", adc_read(&address, 3000));
   }
 }

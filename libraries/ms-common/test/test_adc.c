@@ -1,10 +1,10 @@
 #include "adc.h"
 #include "gpio.h"
-#include "stm32f0xx.h"  
 #include "unity.h"
 #include <stdio.h>
 
-static GPIOAddress address = { 0, 0 };
+static GPIOAddress address[] = { { 0, 0 }, { 0, 1 }, { 0, 2 } };
+static GPIOAddress invalid_address[] = { { 0, 8 }, { 0, 9 }, { 0, 10 } };
 
 void setup_test() {
   GPIOSettings settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_ANALOG };
@@ -27,18 +27,14 @@ void test_single() {
   // Read directly from the register. Should stay constant despite changes with the input
   // (Analog input should be connected for this test)
   
-  /*
-  for (uint32_t i = 0; i < 2000; i++) {
-    printf("Single Read #%d = %d\n", i, reading, 3000*ADC1->DR/4095);
+  
+  for (uint32_t i = 0; i < 500; i++) {
+    LOG_DEBUG("Single Read #%d = %d\n", i, reading, 3000*ADC1->DR/4095);
   }
-  */
+  
 
   // Disable ADC for continuous test
-  ADC_StopOfConversion(ADC1);
-  while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADSTP)) {}
-
-  ADC1->CR |= ADC_FLAG_ADDIS;
-  while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADEN)) {}
+  adc_disable();
 }
 
 void test_continuous() {
@@ -52,14 +48,16 @@ void test_continuous() {
     TEST_ASSERT_TRUE((reading >= 0) && (reading <= 4096));
   }
 
-  
-  // Read directly from the register. Value should change with the connected input
-  // (Analog input should be connected for this test)
-  /*
-  for (uint32_t i = 0; i < 2000; i++) {
-    printf("Continuous Read #%d =  %d - %d\n", i, reading, 3000*ADC1->DR/4095);
+}
+
+void test_valid() {
+  // Ensure that sampling rates can only be set for pins mapped to an ADC channel
+
+  for (uint8_t i = 0; i < 3; i++) {
+    TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_init_pin(&address[i], ADC_SAMPLE_RATE_1));
+    TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, adc_init_pin(&invalid_address[i], ADC_SAMPLE_RATE_1));
   }
-  */
+
 }
 
 void teardown_test(void) { }
