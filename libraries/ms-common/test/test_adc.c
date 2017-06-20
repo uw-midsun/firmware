@@ -1,6 +1,7 @@
 #include "adc.h"
 #include "gpio.h"
 #include "unity.h"
+#include "log.h"
 #include <stdio.h>
 
 static GPIOAddress address[] = { { 0, 0 }, { 0, 1 }, { 0, 2 } };
@@ -48,6 +49,14 @@ void test_continuous() {
     TEST_ASSERT_TRUE((reading >= 0) && (reading <= 4096));
   }
 
+  
+  // Read directly from the register. Value should change with the connected input
+  // (Analog input should be connected for this test)
+  
+  for (uint32_t i = 0; i < 500; i++) {
+    LOG_DEBUG("Continuous Read #%d = %d\n", i, 3000*ADC1->DR/4095);
+  }
+  
 }
 
 void test_valid() {
@@ -61,4 +70,3 @@ void test_valid() {
 }
 
 void teardown_test(void) { }
-
