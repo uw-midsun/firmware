@@ -1,36 +1,32 @@
-#pragma once
+#pragma once  
 
 // Generic ADC Driver
 
 #include <stdbool.h>
-#include "gpio.h"
+#include <stdint.h>
+
 #include "status.h"
 
+typedef uint8_t ADCChannel;
+
+typedef void (*adc_callback)(ADCChannel adc_channel, uint16_t reading, void *context);
 
 typedef enum {
   ADC_MODE_SINGLE = 0,
   ADC_MODE_CONTINUOUS,
 } ADCMode;
 
-typedef enum {
-  ADC_SAMPLE_RATE_1 = 0,
-  ADC_SAMPLE_RATE_2,
-  ADC_SAMPLE_RATE_3,
-  ADC_SAMPLE_RATE_4,
-  ADC_SAMPLE_RATE_5,
-  ADC_SAMPLE_RATE_6,
-  ADC_SAMPLE_RATE_7,
-  ADC_SAMPLE_RATE_8
-} ADCSampleRate;
-
-// Initialize the onboard ADC in the specified conversion mode
+// Initialize the ADC
 void adc_init(ADCMode adc_mode);
 
-// Sets the continuous mode sample rate for the given pin.
-StatusCode adc_init_pin(GPIOAddress *address, ADCSampleRate adc_sample_rate);
+// Select or deselect the channel for conversions
+void adc_set_channel(ADCChannel adc_channel, bool new_state);
 
-// Returns the current ADC signal as a 12-bit integer. Invalid pins will read 0
-uint16_t adc_read(GPIOAddress *address, uint16_t max);
+// Register a callback function for an ADC Channel
+StatusCode adc_interrupt_callback(ADCChannel adc_channel, adc_callback callback, void *context);
+
+// Obtain the current value for the given channel
+uint16_t adc_read(ADCChannel adc_channel);
 
 // Disable the ADC
 void adc_disable();

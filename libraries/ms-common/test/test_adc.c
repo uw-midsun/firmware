@@ -4,6 +4,16 @@
 #include "log.h"
 #include <stdio.h>
 
+/*  TODO:
+        - test_single()
+            - Run and ensure that registered ISRs do not activate
+            - Test that it works and that we can read voltages in the desired range
+            - Test that voltages can be changed
+            
+        - test_continuous()
+            -
+*/
+
 static GPIOAddress address[] = { { 0, 0 }, { 0, 1 }, { 0, 2 } };
 static GPIOAddress invalid_address[] = { { 0, 8 }, { 0, 9 }, { 0, 10 } };
 
@@ -25,38 +35,20 @@ void test_single() {
     TEST_ASSERT_TRUE((reading >= 0) && (reading <= 3000));
   }
   
-  // Read directly from the register. Should stay constant despite changes with the input
-  // (Analog input should be connected for this test)
-  
-  
-  for (uint32_t i = 0; i < 500; i++) {
-    LOG_DEBUG("Single Read #%d = %d\n", i, reading, 3000*ADC1->DR/4095);
-  }
-  
-
   // Disable ADC for continuous test
   adc_disable();
 }
 
 void test_continuous() {
   adc_init(ADC_MODE_CONTINUOUS);
-  adc_init_pin(&address, ADC_SAMPLE_RATE_1);
+  adc_init_pin(&address);
   uint16_t reading;
 
   // Ensure that converted values are within the required range
   for (uint8_t i = 0; i < 8; i++) {
     reading = adc_read(&address, 3000);
     TEST_ASSERT_TRUE((reading >= 0) && (reading <= 4096));
-  }
-
-  
-  // Read directly from the register. Value should change with the connected input
-  // (Analog input should be connected for this test)
-  
-  for (uint32_t i = 0; i < 500; i++) {
-    LOG_DEBUG("Continuous Read #%d = %d\n", i, 3000*ADC1->DR/4095);
-  }
-  
+  } 
 }
 
 void test_valid() {
