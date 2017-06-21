@@ -49,7 +49,7 @@ override LIBRARY := $(filter $(VALID_LIBRARIES),$(LIBRARY))
 # Only ignore project and platform if we're doing a full clean or lint
 ifeq (,$(filter reallyclean lint build_all test_all,$(MAKECMDGOALS)))
 # If not running a test, only care about project
-ifeq (,$(filter test gdb,$(MAKECMDGOALS)))
+ifeq (,$(filter test gdb program,$(MAKECMDGOALS)))
 ifeq (,$(PROJECT))
   $(error Invalid project. Expected PROJECT=[$(VALID_PROJECTS)])
 endif
@@ -162,7 +162,7 @@ $(DIRS):
 	@mkdir -p $@
 
 $(BIN_DIR)/%.bin: $(BIN_DIR)/%$(PLATFORM_EXT)
-	@$(OBJCPY) -O binary $< $(BIN_DIR)/$(PROJECT).bin
+	@$(OBJCPY) -O binary $< $(<:$(PLATFORM_EXT)=.bin)
 
 ###################################################################################################
 
