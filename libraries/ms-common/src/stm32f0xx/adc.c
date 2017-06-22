@@ -4,10 +4,6 @@
 #include "log.h"
 #include "stm32f0xx.h"
 
-#define ADC_CHANNELS_EXTERNAL 16
-#define ADC_CHANNELS_INTERNAL 3
-#define ADC_CHANNELS_TOTAL 19
-
 typedef struct ADCInterrupt {
   adc_callback callback;
   uint16_t reading;
@@ -84,7 +80,7 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
   return STATUS_CODE_OK;
 }
 
-StatusCode adc_register_callback(uint8_t adc_channel, adc_callback callback, void *context) {
+StatusCode adc_register_callback(ADCChannel adc_channel, adc_callback callback, void *context) {
   // Returns invalid if the given address is not connected to an ADC channel
   if (adc_channel >= 19) {
     return STATUS_CODE_INVALID_ARGS;
@@ -100,7 +96,7 @@ void adc_start_continuous() {
   ADC_StartOfConversion(ADC1);
 }
 
-uint16_t adc_read_value(uint8_t adc_channel) {
+uint16_t adc_read_value(ADCChannel adc_channel) {
   if (!s_adc_status.continuous) {
     prv_adc_conversion_sequence();
   }
@@ -126,7 +122,7 @@ void ADC1_COMP_IRQHandler() {
   if ((select != (select & -(select))) || (select != 1 << current_channel))  {
     // Set current channel equal to the next in the sequence
     for (ADCChannel i = 1; i < NUM_ADC_CHANNEL; i++) {
-      if ((select >> (current_channel + i) % ADC_CHANNELS_TOTAL) & 1) {
+      if ((select >> (current_channel + i) % NUM_ADC_CHANNEL) & 1) {
         current_channel += i;
         current_channel %= NUM_ADC_CHANNEL;
         break;
