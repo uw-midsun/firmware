@@ -66,25 +66,34 @@ void adc_init(ADCMode adc_mode) {
   s_adc_status.continuous = (ADC1->CFGR1 >> 13) & 1;
   s_adc_status.current_channel = 0;
 
-  for (ADCChannel i = 0; i < ADC_CHANNELS_TOTAL; i++) {
-    ADC_ChannelConfig(ADC1, i, ADC_SampleTime_239_5Cycles);
-  }
-
   // Continuous conversions must be initiated by setting the ADSTART 
   if (s_adc_status.continuous) {
     ADC_StartOfConversion(ADC1);
   }
 }
 
-void adc_set_channel(ADCChannel adc_channel, bool new_state) {
+StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
+  if (adc_channel >= 19) {
+    return STATUS_CODE_INVALID_ARGS;
+  }
+
+  uint32_t select = prv_get_channel_select();
+
   if (new_state) {
-    ADC1->CHSELR |= (1 << adc_channel);
+
+    // If no channels were previously selected, set the the new channel to be the current channel
+    if (select == 0) {
+      s_adc_status.current_channel = adc_channel;
+    }
+    ADC_ChannelConfig(ADC1, (1 << adc_channel), ADC_SampleTime_71_5Cycles);
   } else {
     ADC1->CHSELR &= !(1 << adc_channel);
   }
+
+  return STATUS_CODE_OK;
 }
 
-StatusCode adc_interrupt_callback(uint8_t adc_channel, adc_callback callback, void *context) {
+StatusCode adc_register_callback(uint8_t adc_channel, adc_callback callback, void *context) {
 
   // Returns invalid if the given address is not connected to an ADC channel 
   if (adc_channel >= 19) {
@@ -97,7 +106,7 @@ StatusCode adc_interrupt_callback(uint8_t adc_channel, adc_callback callback, vo
   return STATUS_CODE_OK;
 }
 
-uint16_t adc_read(uint8_t adc_channel) {
+uint16_t adc_read_value(uint8_t adc_channel) {
   if (!s_adc_status.continuous) {
     prv_adc_conversion_sequence();
   }
@@ -114,11 +123,16 @@ void adc_disable() {
 }
 
 void ADC1_COMP_IRQHandler() {
-  //ADC_StopOfConversion(ADC1);
-  volatile uint32_t select = prv_get_channel_select();
+  ADC_WaitModeCmd(ADC1, ENABLE);
+  uint32_t select = prv_get_channel_select();
 
-  // Distinguish channels via bitshifting the ADC1_DR register
-  s_adc_interrupts[s_adc_status.current_channel].reading = ADC_GetConversionValue(ADC1);
+  // Return if only one channel is active
+  if (select == (select & -(select))) {
+    s_adc_interrupts[s_adc_status.current_channel].reading = ADC_GetConversionValue(ADC1);
+    return;
+  }
+
+  ADCChannel prev_channel = s_adc_status.current_channel;
 
   // Set current channel equal to the next in the sequence
   for (ADCChannel i = 1; i < ADC_CHANNELS_TOTAL; i++) {
@@ -128,6 +142,7 @@ void ADC1_COMP_IRQHandler() {
       break;
     }
   }
-  //printf("interrupts\n");
-  //ADC_StartOfConversion(ADC1);
+
+  // Distinguish channels via bitshifting the ADC1_DR register
+  s_adc_interrupts[prev_channel].reading = ADC_GetConversionValue(ADC1);
 }

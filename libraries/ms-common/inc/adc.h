@@ -20,13 +20,13 @@ typedef enum {
 void adc_init(ADCMode adc_mode);
 
 // Select or deselect the channel for conversions
-void adc_set_channel(ADCChannel adc_channel, bool new_state);
+StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state);
 
 // Register a callback function for an ADC Channel
-StatusCode adc_interrupt_callback(ADCChannel adc_channel, adc_callback callback, void *context);
+StatusCode adc_register_callback(ADCChannel adc_channel, adc_callback callback, void *context);
 
 // Obtain the current value for the given channel
-uint16_t adc_read(ADCChannel adc_channel);
+uint16_t adc_read_value(ADCChannel adc_channel);
 
 // Disable the ADC
 void adc_disable();
