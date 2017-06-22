@@ -49,7 +49,7 @@ void adc_init(ADCMode adc_mode) {
 
   ADC_Init(ADC1, &adc_settings);
 
-  // Calculate the ADC calibration factor 
+  // Calculate the ADC calibration factor
   ADC_GetCalibrationFactor(ADC1);
 
   ADC_ContinuousModeCmd(ADC1, adc_mode);
@@ -85,7 +85,7 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
 }
 
 StatusCode adc_register_callback(uint8_t adc_channel, adc_callback callback, void *context) {
-  // Returns invalid if the given address is not connected to an ADC channel 
+  // Returns invalid if the given address is not connected to an ADC channel
   if (adc_channel >= 19) {
     return STATUS_CODE_INVALID_ARGS;
   }
@@ -142,5 +142,5 @@ void ADC1_COMP_IRQHandler() {
 
   s_adc_interrupts[current_channel].reading = reading;
   s_adc_status.current_channel = current_channel;
-  return; 
+  return;
 }
