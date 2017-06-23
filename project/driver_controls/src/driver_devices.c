@@ -1,12 +1,13 @@
 #include "driver_devices.h"
 #include "gpio_it.h"
 #include "input_interrupt.h"
+#include <stdio.h>
 
 typedef struct DeviceSettings {
-  GPIOAddress address;
-  GPIODir direction;
-  InterruptEdge edge;
-  GPIOAltFn alt_function;
+  GPIOAddress address;    //
+  GPIODir direction;      //
+  InterruptEdge edge;     //
+  GPIOAltFn alt_function; //
 } DeviceSettings;
 
 void device_init(Devices* devices) {
@@ -21,8 +22,9 @@ void device_init(Devices* devices) {
   devices->num_inputs = INPUT_DEVICES;
   devices->num_outputs = OUTPUT_DEVICES;
 
-  memset(devices->inputs, 0, sizeof(GPIOAddress)*INPUT_DEVICES);
-  memset(devices->outputs, 0, sizeof(GPIOAddress)*OUTPUT_DEVICES);   
+  GPIOAddress input_instance[INPUT_DEVICES], output_instance[OUTPUT_DEVICES]; 
+  devices->inputs = input_instance;
+  devices->outputs = output_instance;   
 
   DeviceSettings input_settings[INPUT_DEVICES] = {
     { { GPIO_PORT_C, 0 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE },
@@ -51,6 +53,14 @@ void device_init(Devices* devices) {
             input_settings[i].edge,
             input_callback,
             0);
+    devices->inputs[i] = input_settings[i].address; 
+  }
+
+  for (uint8_t i=0; i < OUTPUT_DEVICES; i++) {
+    gpio_settings.direction = output_settings[i].direction;
+    gpio_settings.alt_function = output_settings[i].alt_function;
+    gpio_init_pin(&output_settings[i].address, &gpio_settings);
+    devices->outputs[i] = output_settings[i].address; 
   }
 
 }

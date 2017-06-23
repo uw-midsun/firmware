@@ -16,7 +16,7 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group) {
       return INPUT_EVENT_POWER;
 
   case 1:
-      reading = adc_read(address, MAX_SPEED);
+      reading = 0;
       if (reading < COAST_THRESHOLD) {
         return INPUT_EVENT_GAS_BRAKE;
       } else if (reading > DRIVE_THRESHOLD) {
@@ -74,9 +74,6 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group) {
 }
 
 void input_callback(GPIOAddress* address, FSMGroup* fsm_group) {
-	event_raise(prv_get_event(address, fsm_group), 0);
-  
-  //printf("Device Pin = P%c%d\n", (uint8_t)(address->port+65), address->pin); 
-  
+	event_raise(prv_get_event(address, fsm_group), 0);  
   return;
 }
