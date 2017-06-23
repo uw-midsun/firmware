@@ -1,5 +1,6 @@
 #include "fsm.h"
 #include "unity.h"
+#include "log.h"
 
 typedef enum {
   TEST_FSM_EVENT_A = 0,
@@ -9,6 +10,11 @@ typedef enum {
 
 static FSM s_fsm;
 static uint16_t s_num_output;
+
+static bool prv_guard(const FSM *fsm, const Event *e, void *context) {
+  LOG_DEBUG("Hit transition guard - returning %d\n", (bool)e->data);
+  return (bool)e->data;
+}
 
 FSM_DECLARE_STATE(test_a);
 FSM_DECLARE_STATE(test_b);
@@ -27,12 +33,13 @@ FSM_STATE_TRANSITION(test_b) {
 
 FSM_STATE_TRANSITION(test_c) {
   FSM_ADD_TRANSITION(TEST_FSM_EVENT_C, test_c);
+  FSM_ADD_GUARDED_TRANSITION(TEST_FSM_EVENT_B, prv_guard, test_a);
 }
 
-static void prv_output(struct FSM *fsm, const Event *e, void *context) {
-  printf("[%s:%s] State reached from %s (Event %d, data %d)\n",
-         fsm->name, fsm->current_state->name, fsm->last_state->name,
-         e->id, e->data);
+static void prv_output(FSM *fsm, const Event *e, void *context) {
+  LOG_DEBUG("[%s:%s] State reached from %s (Event %d, data %d)\n",
+            fsm->name, fsm->current_state->name, fsm->last_state->name,
+            e->id, e->data);
   TEST_ASSERT_EQUAL(fsm, context);
   s_num_output++;
 }
@@ -74,4 +81,23 @@ void test_fsm_transition(void) {
   e.id = TEST_FSM_EVENT_A;
   transitioned = fsm_process_event(&s_fsm, &e);
   TEST_ASSERT_FALSE(transitioned);
+}
+
+void test_fsm_guard(void) {
+  Event e = {
+    .id = TEST_FSM_EVENT_C,
+    .data = false
+  };
+
+  // Expect A -> C -> guard fail (C) -> B
+  bool transitioned = fsm_process_event(&s_fsm, &e);
+  TEST_ASSERT_TRUE(transitioned);
+
+  e.id = TEST_FSM_EVENT_B;
+  transitioned = fsm_process_event(&s_fsm, &e);
+  TEST_ASSERT_FALSE(transitioned);
+
+  e.data = true;
+  transitioned = fsm_process_event(&s_fsm, &e);
+  TEST_ASSERT_TRUE(transitioned);
 }

@@ -37,6 +37,7 @@
 # Other
 *.vscode
 build/
+*.DS_Store
 
 # Vim
 tags

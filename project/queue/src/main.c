@@ -7,9 +7,9 @@
 int main(void) {
   event_queue_init();
 
-  event_raise(&((Event){ .id = 40, .data = 0 }));
-  event_raise(&((Event){ .id = 20, .data = 1 }));
-  event_raise(&((Event){ .id = 60, .data = 3 }));
+  event_raise(40, 0);
+  event_raise(20, 1);
+  event_raise(60, 3);
 
   Event e;
   while (event_process(&e)) {
