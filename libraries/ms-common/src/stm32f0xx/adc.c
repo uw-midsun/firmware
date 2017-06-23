@@ -6,16 +6,13 @@
 
 typedef struct ADCInterrupt {
   adc_callback callback;
-  uint16_t reading;
   void *context;
+  uint16_t reading;
 } ADCInterrupt;
 
 typedef struct ADCStatus {
-  bool continuous;
   ADCChannel current_channel;
-  adc_callback *callback;
-  uint16_t *reading;
-  void **context;
+  bool continuous;
 } ADCStatus;
 
 static ADCInterrupt s_adc_interrupts[NUM_ADC_CHANNEL];
