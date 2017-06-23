@@ -12,11 +12,11 @@ static bool prv_power_guard(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
 // State machine transition tables
 
 FSM_STATE_TRANSITION(state_hazard_on) {
-  FSM_ADD_GUARDED_TRANSITION(INPUT_EVENT_HAZARD_LIGHT_OFF, prv_power_guard, state_hazard_off);
+  FSM_ADD_GUARDED_TRANSITION(INPUT_EVENT_HAZARD_LIGHT, prv_power_guard, state_hazard_off);
 }
 
 FSM_STATE_TRANSITION(state_hazard_off) {
-  FSM_ADD_GUARDED_TRANSITION(INPUT_EVENT_HAZARD_LIGHT_ON, prv_power_guard, state_hazard_on);
+  FSM_ADD_GUARDED_TRANSITION(INPUT_EVENT_HAZARD_LIGHT, prv_power_guard, state_hazard_on);
 }
 
 // Output functions for the hazard light state

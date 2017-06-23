@@ -13,14 +13,18 @@ void state_init(FSMGroup* fsm_group) {
   fsm_group->hazard_light.state = STATE_HAZARD_OFF;
 }
 
-void state_process_event(FSMGroup* fsm_group, Event* e) {
-  if (e->id <= 8) {
-    fsm_process_event(&fsm_group->pedal.fsm, e); 
-  } else if (e->id <= 11) {
-    fsm_process_event(&fsm_group->direction.fsm, e);
-  } else if (e->id <= 14) {
-    fsm_process_event(&fsm_group->turn_signal.fsm, e);
-  } else if (e->id <= 16) {
-    fsm_process_event(&fsm_group->hazard_light.fsm, e);
+bool state_process_event(FSMGroup* fsm_group, Event* e) {
+  bool transitioned;
+
+  if (e->id <= INPUT_EVENT_CRUISE_CONTROL_DEC) {
+    transitioned = fsm_process_event(&fsm_group->pedal.fsm, e);
+  } else if (e->id <= INPUT_EVENT_DIRECTION_SELECTOR_REVERSE) {
+    transitioned = fsm_process_event(&fsm_group->direction.fsm, e);
+  } else if (e->id <= INPUT_EVENT_TURN_SIGNAL_RIGHT) {
+    transitioned = fsm_process_event(&fsm_group->turn_signal.fsm, e);
+  } else if (e->id <= INPUT_EVENT_HAZARD_LIGHT) {
+    transitioned = fsm_process_event(&fsm_group->hazard_light.fsm, e);
   }
+
+  return transitioned;
 }

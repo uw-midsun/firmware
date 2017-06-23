@@ -13,7 +13,7 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group) {
 
   switch (address->pin) {
     case 0:
-      return (fsm_group->pedal.state == STATE_OFF) ? INPUT_EVENT_POWER_ON : INPUT_EVENT_POWER_OFF;
+      return INPUT_EVENT_POWER;
 
   case 1:
       reading = adc_read(address, MAX_SPEED);
@@ -39,7 +39,7 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group) {
         break;
 
     case 4:
-      return (fsm_group->pedal.state == STATE_CRUISE_CONTROL) ? INPUT_EVENT_CRUISE_CONTROL_OFF : INPUT_EVENT_CRUISE_CONTROL_ON;
+      return INPUT_EVENT_CRUISE_CONTROL;
       break;
 
     case 5:
@@ -69,13 +69,12 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group) {
       break;
 
     case 9:
-      return (fsm_group->hazard_light.state == STATE_HAZARD_OFF) ? INPUT_EVENT_HAZARD_LIGHT_ON : INPUT_EVENT_HAZARD_LIGHT_OFF;
+      return INPUT_EVENT_HAZARD_LIGHT;
   }
 }
 
 void input_callback(GPIOAddress* address, FSMGroup* fsm_group) {
-	Event e = { prv_get_event(address, fsm_group), 0 };
-  event_raise(&e);
+	event_raise(prv_get_event(address, fsm_group), 0);
   
   //printf("Device Pin = P%c%d\n", (uint8_t)(address->port+65), address->pin); 
   
