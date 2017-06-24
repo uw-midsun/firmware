@@ -10,10 +10,11 @@ static GPIOAddress address[] = {
   { 2, 2 }, { 2, 3 }, { 2, 4 }, { 2, 5 }
 };
 
-static bool s_callback_ran = false;
+static volatile uint8_t s_callback_runs = 0;
+static volatile bool s_callback_ran = false;
 
 void prv_callback(ADCChannel adc_channel, uint16_t reading, void *context) {
-  LOG_DEBUG("Callback was called by %s (Reading %d)\n", adc_channel, reading);
+  s_callback_runs++;
   s_callback_ran = true;
 }
 
@@ -21,12 +22,14 @@ void setup_test() {
   GPIOSettings settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_ANALOG };
 
   gpio_init();
-  gpio_init_pin(&address, &settings);
+  interrupt_init();
+
+  for (uint8_t i = 0; i < 16; i++) {
+    gpio_init_pin(&address[i], &settings);
+  }
 }
 
-void test_single() {
-  LOG_DEBUG("Test start\n");
-
+void test_single() {  
   // Initialize the ADC to single mode and configure the channels
   adc_init(ADC_MODE_SINGLE);
 
@@ -39,20 +42,25 @@ void test_single() {
   adc_register_callback(12, prv_callback, 0);
 
   // Background conversions should not be running in single mode
-  TEST_ASSERT_FALSE(s_callback_ran);
+  TEST_ASSERT_EQUAL(0, s_callback_runs);
 
   // Ensure that the conversions happen once adc_read_value is called
   adc_read_value(10);
-  TEST_ASSERT_TRUE(s_callback_ran);
+  TEST_ASSERT_EQUAL(3, s_callback_runs);
 
-  // Disable ADC for continuous test
+  // Disable ADC for next test
   adc_disable();
 }
 
 void test_continuous() {
+  s_callback_ran = false;
+
   // Initialize the ADC to single mode and configure the channels
   adc_init(ADC_MODE_CONTINUOUS);
+  adc_start_continuous();
 
+  // Delay the test so that an interrupt can raise the flag
+  LOG_DEBUG("\n");
   TEST_ASSERT_TRUE(s_callback_ran);
 
   // Disable ADC for continuous test
