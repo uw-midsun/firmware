@@ -1,7 +1,7 @@
 #include "driver_state.h"
 #include <stdio.h>
 
-void state_init(FSMGroup* fsm_group) {
+void state_init(FSMGroup *fsm_group) {
 	pedal_state_init(&fsm_group->pedal.fsm, fsm_group);
   direction_state_init(&fsm_group->direction.fsm, fsm_group);
   turn_signal_state_init(&fsm_group->turn_signal.fsm, fsm_group);
@@ -13,7 +13,7 @@ void state_init(FSMGroup* fsm_group) {
   fsm_group->hazard_light.state = STATE_HAZARD_OFF;
 }
 
-bool state_process_event(FSMGroup* fsm_group, Event* e) {
+bool state_process_event(FSMGroup *fsm_group, Event *e) {
   bool transitioned;
 
   if (e->id <= INPUT_EVENT_CRUISE_CONTROL_DEC) {

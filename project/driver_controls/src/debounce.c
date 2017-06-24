@@ -3,11 +3,11 @@
 #include "soft_timer.h"
 #include <stdio.h>
 
-static void prv_output(SoftTimerID timer_id, void* context) {
+static void prv_output(SoftTimerID timer_id, void *context) {
   return;
 }
 
-void debounce(GPIOAddress* address, GPIOState* key_pressed) {
+void debounce(GPIOAddress *address, GPIOState *key_pressed) {
   uint8_t count = (*key_pressed) ?
                    (PRESS_MSEC / CHECK_MSEC) :
                    (RELEASE_MSEC / CHECK_MSEC);

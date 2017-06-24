@@ -9,12 +9,12 @@ FSM_DECLARE_STATE(state_cruise_control);  // Driving State: Car is in motion due
 
 // Transition guard functions
 
-static bool prv_power_guard(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
+static bool prv_power_guard(FSM *fsm, const Event *e, FSMGroup *fsm_group) {
   bool transitioned = (fsm_group->direction.state == STATE_NEUTRAL);
   return transitioned;
 }
 
-static bool prv_gas_guard(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
+static bool prv_gas_guard(FSM *fsm, const Event *e, FSMGroup *fsm_group) {
   bool transitioned = (fsm_group->direction.state == STATE_FORWARD) ||
                       (fsm_group->direction.state == STATE_REVERSE);
   return transitioned;
@@ -54,27 +54,27 @@ FSM_STATE_TRANSITION(state_cruise_control) {
 
 // Output functions for the pedal state
 
-static void prv_driver_state_off(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
+static void prv_driver_state_off(FSM *fsm, const Event *e, FSMGroup *fsm_group) {
   fsm_group->pedal.state = STATE_OFF;
 }
 
-static void prv_driver_state_brake(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
+static void prv_driver_state_brake(FSM *fsm, const Event *e, FSMGroup *fsm_group) {
   fsm_group->pedal.state = STATE_BRAKE;
 }
 
-static void prv_driver_state_coast(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
+static void prv_driver_state_coast(FSM *fsm, const Event *e, FSMGroup *fsm_group) {
   fsm_group->pedal.state = STATE_COAST;
 }
 
-static void prv_driver_state_driving(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
+static void prv_driver_state_driving(FSM *fsm, const Event *e, FSMGroup *fsm_group) {
   fsm_group->pedal.state = STATE_DRIVING;
 }
 
-static void prv_driver_state_cruise_control(FSM* fsm, const Event* e, FSMGroup* fsm_group) {
+static void prv_driver_state_cruise_control(FSM *fsm, const Event *e, FSMGroup *fsm_group) {
   fsm_group->pedal.state = STATE_CRUISE_CONTROL;
 }
 
-void pedal_state_init(FSM* pedal_fsm, FSMGroup* fsm_group) {
+void pedal_state_init(FSM *pedal_fsm, FSMGroup *fsm_group) {
 	fsm_state_init(state_off, prv_driver_state_off);
 	fsm_state_init(state_brake, prv_driver_state_brake);
 	fsm_state_init(state_coast, prv_driver_state_coast);

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group) {
+static InputEvent prv_get_event(GPIOAddress *address) {
   GPIOState key_pressed;
   uint16_t reading;
 
@@ -43,16 +43,10 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group) {
       break;
 
     case 5:
-      if (fsm_group->pedal.state == STATE_CRUISE_CONTROL) {
-        printf("Cruise control increase speed\n");
-      }
       return INPUT_EVENT_CRUISE_CONTROL_INC;
       break;
 
     case 6:
-      if (fsm_group->pedal.state == STATE_CRUISE_CONTROL) {
-        printf("Cruise control decrease speed\n");
-      }
       return INPUT_EVENT_CRUISE_CONTROL_DEC;
       break;
 
@@ -73,7 +67,7 @@ static InputEvent prv_get_event(GPIOAddress* address, FSMGroup* fsm_group) {
   }
 }
 
-void input_callback(GPIOAddress* address, FSMGroup* fsm_group) {
+void input_callback(GPIOAddress *address) {
 	event_raise(prv_get_event(address, fsm_group), 0);  
   return;
 }

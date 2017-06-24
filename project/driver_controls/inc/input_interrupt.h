@@ -6,10 +6,6 @@
 #include "fsm.h"
 #include "stm32f0xx.h"
 
-#define INPUT_DEVICES 10
-#define OUTPUT_DEVICES 1
-#define MAX_SPEED 200
-
 #define COAST_THRESHOLD 40
 #define DRIVE_THRESHOLD 130
 #define SAMPLE_AVERAGE 20
@@ -34,5 +30,5 @@
   (byte & 0x02 ? '1' : '0'), \
   (byte & 0x01 ? '1' : '0')
 
-void input_callback(GPIOAddress* address, FSMGroup* fsm_group);
+void input_callback(GPIOAddress *address, FSMGroup *fsm_group);
 
