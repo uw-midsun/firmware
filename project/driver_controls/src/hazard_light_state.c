@@ -29,9 +29,9 @@ static void prv_driver_state_hazard_off(FSM *fsm, const Event *e, FSMGroup *fsm_
   fsm_group->hazard_light.state = STATE_HAZARD_OFF;
 }
 
-void hazard_light_state_init(FSM *fsm, const Event *e, FSMGroup *fsm_group) {
-	fsm_state_init(state_hazard_on, prv_driver_state_hazard_on);
-	fsm_state_init(state_hazard_off, prv_driver_state_hazard_off);
+void hazard_light_state_init(FSM *hazard_light_fsm, FSMGroup *fsm_group) {
+  fsm_state_init(state_hazard_on, prv_driver_state_hazard_on);
+  fsm_state_init(state_hazard_off, prv_driver_state_hazard_off);
 
   fsm_init(hazard_light_fsm, "hazard_light_fsm", &state_hazard_off, fsm_group);
 }

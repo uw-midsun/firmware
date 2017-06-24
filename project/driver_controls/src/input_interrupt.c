@@ -1,8 +1,7 @@
+#include "adc.h"
 #include "input_interrupt.h"
 #include "event_queue.h"
-
-#include <stdio.h>
-#include <string.h>
+#include "stm32f0xx.h"
 
 static InputEvent prv_get_event(GPIOAddress *address) {
   GPIOState key_pressed;
@@ -68,6 +67,6 @@ static InputEvent prv_get_event(GPIOAddress *address) {
 }
 
 void input_callback(GPIOAddress *address) {
-	event_raise(prv_get_event(address, fsm_group), 0);  
+	event_raise(prv_get_event(address), 0);  
   return;
 }

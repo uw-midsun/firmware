@@ -1,14 +1,10 @@
 #pragma once
 
-#include "adc.h"
 #include "gpio.h"
 #include "driver_state.h"
-#include "fsm.h"
-#include "stm32f0xx.h"
 
 #define COAST_THRESHOLD 40
 #define DRIVE_THRESHOLD 130
-#define SAMPLE_AVERAGE 20
 
 // Prints the given number as a binary value
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
@@ -30,5 +26,5 @@
   (byte & 0x02 ? '1' : '0'), \
   (byte & 0x01 ? '1' : '0')
 
-void input_callback(GPIOAddress *address, FSMGroup *fsm_group);
+void input_callback(GPIOAddress *address);
 

@@ -54,17 +54,15 @@ int main() {
 	Event e;	
 
   for (;;) {
-		for (uint8_t i = 0; i < 10; i++) {
-			if (!event_process(&e)) {
-				state_process_event(&fsm_group, &e);
-				printf("Event = %d : Car Status = %d : Direction = %d : Turn = %d : Hazard = %d : %d \n",
-     				e.id,
-     				fsm_group.pedal.state,
-     				fsm_group.direction.state,
-     				fsm_group.turn_signal.state,
-     				fsm_group.hazard_light.state,
-     				ADC1->DR);
-			}
+		if (!event_process(&e)) {
+			state_process_event(&fsm_group, &e);
+		  printf("Event = %d : Car Status = %d : Direction = %d : Turn = %d : Hazard = %d : %d \n",
+    			e.id,
+    			fsm_group.pedal.state,
+    			fsm_group.direction.state,
+    			fsm_group.turn_signal.state,
+    			fsm_group.hazard_light.state,
+    			0);
 		}
   }
 
