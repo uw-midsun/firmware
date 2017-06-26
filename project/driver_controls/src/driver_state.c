@@ -9,14 +9,6 @@
 
 #define MAX_FSMS 10
 
-typedef void (*DriverStateInit)(FSM *fsm, void *context);
-
-static FSM s_driver_fsms[MAX_FSMS];
-static DriverStateInit s_driver_state_inits[MAX_FSMS] = { pedal_state_init,
-                                                          direction_state_init,
-                                                          turn_signal_state_init,
-                                                          hazard_light_state_init };
-
 static bool prv_get_permit(FSMGroup *fsm_group, Event *e) {
   bool transitioned = 1, status;
 
