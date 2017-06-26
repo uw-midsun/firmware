@@ -33,13 +33,13 @@ void test_single() {
   // Initialize the ADC to single mode and configure the channels
   adc_init(ADC_MODE_SINGLE);
 
-  adc_set_channel(10, 1);
-  adc_set_channel(11, 1);
-  adc_set_channel(12, 1);
+  adc_set_channel(0, 1);
+  adc_set_channel(1, 1);
+  adc_set_channel(2, 1);
 
-  adc_register_callback(10, prv_callback, 0);
-  adc_register_callback(11, prv_callback, 0);
-  adc_register_callback(12, prv_callback, 0);
+  adc_register_callback(0, prv_callback, 0);
+  adc_register_callback(1, prv_callback, 0);
+  adc_register_callback(2, prv_callback, 0);
 
   // Background conversions should not be running in single mode
   TEST_ASSERT_EQUAL(0, s_callback_runs);
@@ -60,7 +60,7 @@ void test_continuous() {
   adc_start_continuous();
 
   // Delay the test so that an interrupt can raise the flag
-  LOG_DEBUG("Interrupt Delay\n");
+  LOG_DEBUG("Interrupt delay\n");
   TEST_ASSERT_TRUE(s_callback_ran);
 
   // Disable ADC for continuous test
