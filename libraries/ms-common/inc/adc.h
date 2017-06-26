@@ -1,6 +1,6 @@
 #pragma once
 
-// Analog to Digital Converter HAL Inteface 
+// Analog to Digital Converter HAL Inteface
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -13,7 +13,7 @@ typedef enum {
   ADC_MODE_CONTINUOUS,
 } ADCMode;
 
-// Used to specify an ADC Channel 
+// Used to specify an ADC Channel
 typedef enum {
   ADC_CHANNEL_0 = 0,
   ADC_CHANNEL_1,
