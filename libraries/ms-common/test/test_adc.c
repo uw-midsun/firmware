@@ -29,7 +29,7 @@ void setup_test() {
   }
 }
 
-void test_single() {  
+void test_single() {
   // Initialize the ADC to single mode and configure the channels
   adc_init(ADC_MODE_SINGLE);
 
