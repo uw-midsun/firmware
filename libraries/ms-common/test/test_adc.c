@@ -60,7 +60,7 @@ void test_continuous() {
   adc_start_continuous();
 
   // Delay the test so that an interrupt can raise the flag
-  LOG_DEBUG("\n");
+  LOG_DEBUG("Interrupt Delay\n");
   TEST_ASSERT_TRUE(s_callback_ran);
 
   // Disable ADC for continuous test
