@@ -1,17 +1,22 @@
 #pragma once
 
-// Generic ADC Driver
+// Analog to Digital Converter HAL Inteface 
 
 #include <stdbool.h>
 #include <stdint.h>
 
 #include "status.h"
 
+// Typedef for ADC callbacks
+typedef void (*ADCCallback)(ADCChannel adc_channel, uint16_t reading, void *context);
+
+// Used to select a conversion mode
 typedef enum {
   ADC_MODE_SINGLE = 0,
   ADC_MODE_CONTINUOUS,
 } ADCMode;
 
+// Used to specify an ADC Channel 
 typedef enum {
   ADC_CHANNEL_0 = 0,
   ADC_CHANNEL_1,
@@ -35,18 +40,16 @@ typedef enum {
   NUM_ADC_CHANNEL
 } ADCChannel;
 
-typedef void (*adc_callback)(ADCChannel adc_channel, uint16_t reading, void *context);
-
-// Initialize the ADC
+// Initialize the ADC to the desired conversion mode
 void adc_init(ADCMode adc_mode);
 
-// Select or deselect the channel for conversions
+// Enable or disable a given channel
 StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state);
 
-// Register a callback function for an ADC Channel
-StatusCode adc_register_callback(ADCChannel adc_channel, adc_callback callback, void *context);
+// Register a callback function to be called when the specified channel completes a conversion
+StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, void *context);
 
-// Start background continuous conversions
+// Initiate background conversions for continuous mode
 void adc_start_continuous();
 
 // Obtain the current value of the channel

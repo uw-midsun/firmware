@@ -5,7 +5,7 @@
 #include "stm32f0xx.h"
 
 typedef struct ADCInterrupt {
-  adc_callback callback;
+  ADCCallback callback;
   void *context;
   uint16_t reading;
 } ADCInterrupt;
@@ -77,7 +77,7 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
   return STATUS_CODE_OK;
 }
 
-StatusCode adc_register_callback(ADCChannel adc_channel, adc_callback callback, void *context) {
+StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, void *context) {
   // Returns invalid if the given address is not connected to an ADC channel
   if (adc_channel >= 19) {
     return STATUS_CODE_INVALID_ARGS;
