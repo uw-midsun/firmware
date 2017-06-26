@@ -17,10 +17,10 @@ static bool prv_get_permit(FSMGroup *fsm_group, Event *e) {
 
   fsm_group->direction.current_state->output(&fsm_group->direction, e, &status);
   transitioned &= status;
-  
+
   fsm_group->turn_signal.current_state->output(&fsm_group->turn_signal, e, &status);
   transitioned &= status;
-  
+
   fsm_group->hazard_light.current_state->output(&fsm_group->hazard_light, e, &status);
   transitioned &= status;
 

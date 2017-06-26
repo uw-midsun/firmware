@@ -24,13 +24,11 @@ FSM_STATE_TRANSITION(state_reverse) {
 // Output functions for the direction state
 
 static void prv_driver_state_neutral(FSM *fsm, const Event *e, void *context) {
-  switch (e->id) {
-    case INPUT_EVENT_GAS_COAST:
-    case INPUT_EVENT_GAS_PRESSED:
+  if (e->id == INPUT_EVENT_GAS_COAST || e->id == INPUT_EVENT_GAS_PRESSED) {
       *(bool*)context = 0;
-    default:
-      *(bool*)context = 1;
+      return;
   }
+  *(bool*)context = 1;
 }
 
 static void prv_driver_state_forward(FSM *fsm, const Event *e, void *context) {

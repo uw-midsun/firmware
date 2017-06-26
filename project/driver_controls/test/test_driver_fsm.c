@@ -23,10 +23,10 @@ void setup_test() {
 void teardown_test(void) { }
 
 void test_driver_init() {
-  TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.pedal.fsm.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.fsm.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_no_signal", s_fsm_group.turn_signal.fsm.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_hazard_off", s_fsm_group.hazard_light.fsm.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.pedal.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_no_signal", s_fsm_group.turn_signal.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_hazard_off", s_fsm_group.hazard_light.current_state->name);
 }
 
 void test_power() {

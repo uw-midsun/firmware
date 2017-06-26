@@ -59,7 +59,7 @@ static void prv_driver_state_off(FSM *fsm, const Event *e, void *context) {
     *(bool*)context = 1;
     return;
   }
-  
+
   *(bool*)context = 0;
 }
 
