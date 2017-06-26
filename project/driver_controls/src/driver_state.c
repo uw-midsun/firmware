@@ -1,30 +1,59 @@
-#include "driver_state.h"
 #include <stdio.h>
 
-void state_init(FSMGroup *fsm_group) {
-	pedal_state_init(&fsm_group->pedal.fsm, fsm_group);
-  direction_state_init(&fsm_group->direction.fsm, fsm_group);
-  turn_signal_state_init(&fsm_group->turn_signal.fsm, fsm_group);
-  hazard_light_state_init(&fsm_group->hazard_light.fsm, fsm_group);
+#include "driver_state.h"
 
-  fsm_group->pedal.state = STATE_OFF;
-  fsm_group->direction.state = STATE_NEUTRAL;
-  fsm_group->turn_signal.state = STATE_NO_SIGNAL;
-  fsm_group->hazard_light.state = STATE_HAZARD_OFF;
+#include "pedal_state.h"
+#include "direction_state.h"
+#include "turn_signal_state.h"
+#include "hazard_light_state.h"
+
+#define MAX_FSMS 10
+
+typedef void (*DriverStateInit)(FSM *fsm, void *context);
+
+static FSM s_driver_fsms[MAX_FSMS];
+static DriverStateInit s_driver_state_inits[MAX_FSMS] = { pedal_state_init,
+                                                          direction_state_init,
+                                                          turn_signal_state_init,
+                                                          hazard_light_state_init };
+
+static bool prv_get_permit(FSMGroup *fsm_group, Event *e) {
+  bool transitioned = 1, status;
+
+  fsm_group->pedal.current_state->output(&fsm_group->pedal, e, &status);
+  transitioned &= status;
+
+  fsm_group->direction.current_state->output(&fsm_group->direction, e, &status);
+  transitioned &= status;
+  
+  fsm_group->turn_signal.current_state->output(&fsm_group->turn_signal, e, &status);
+  transitioned &= status;
+  
+  fsm_group->hazard_light.current_state->output(&fsm_group->hazard_light, e, &status);
+  transitioned &= status;
+
+  return transitioned;
+}
+
+void state_init(FSMGroup *fsm_group) {
+	pedal_state_init(&fsm_group->pedal, fsm_group);
+  direction_state_init(&fsm_group->direction, fsm_group);
+  turn_signal_state_init(&fsm_group->turn_signal, fsm_group);
+  hazard_light_state_init(&fsm_group->hazard_light, fsm_group);
 }
 
 bool state_process_event(FSMGroup *fsm_group, Event *e) {
-  bool transitioned;
-
-  if (e->id <= INPUT_EVENT_CRUISE_CONTROL_DEC) {
-    transitioned = fsm_process_event(&fsm_group->pedal.fsm, e);
-  } else if (e->id <= INPUT_EVENT_DIRECTION_SELECTOR_REVERSE) {
-    transitioned = fsm_process_event(&fsm_group->direction.fsm, e);
-  } else if (e->id <= INPUT_EVENT_TURN_SIGNAL_RIGHT) {
-    transitioned = fsm_process_event(&fsm_group->turn_signal.fsm, e);
-  } else if (e->id <= INPUT_EVENT_HAZARD_LIGHT) {
-    transitioned = fsm_process_event(&fsm_group->hazard_light.fsm, e);
+  if (prv_get_permit(fsm_group, e)) {
+    if (e->id <= INPUT_EVENT_CRUISE_CONTROL_DEC) {
+      return fsm_process_event(&fsm_group->pedal, e);
+    } else if (e->id <= INPUT_EVENT_DIRECTION_SELECTOR_REVERSE) {
+      return fsm_process_event(&fsm_group->direction, e);
+    } else if (e->id <= INPUT_EVENT_TURN_SIGNAL_RIGHT) {
+      return fsm_process_event(&fsm_group->turn_signal, e);
+    } else if (e->id <= INPUT_EVENT_HAZARD_LIGHT) {
+      return fsm_process_event(&fsm_group->hazard_light, e);
+    }
   }
 
-  return transitioned;
+  return 0;
 }

@@ -4,22 +4,6 @@
 // Common type definitions for the FSMs to be used
 
 typedef enum {
-  STATE_OFF = 0,
-  STATE_BRAKE,
-  STATE_COAST,
-  STATE_DRIVING,
-  STATE_CRUISE_CONTROL,
-  STATE_NEUTRAL,
-  STATE_FORWARD,
-  STATE_REVERSE,
-  STATE_NO_SIGNAL,
-  STATE_LEFT_SIGNAL,
-  STATE_RIGHT_SIGNAL,
-  STATE_HAZARD_ON,
-  STATE_HAZARD_OFF
-} FSMState;
-
-typedef enum {
   INPUT_EVENT_POWER = 0,                  // Pedal         00
   INPUT_EVENT_GAS_BRAKE,                  // Pedal         01
   INPUT_EVENT_GAS_COAST,                  // Pedal         02
@@ -44,14 +28,9 @@ typedef enum {
   INPUT_EVENT_REGEN_STRENGTH_ON
 } InputEvent;
 
-typedef struct DriverFSM {
-  FSM fsm;
-  FSMState state;
-} DriverFSM;
-
 typedef struct FSMGroup {
-  DriverFSM pedal;
-  DriverFSM direction;
-  DriverFSM turn_signal;
-  DriverFSM hazard_light;
+  FSM pedal;
+  FSM direction;
+  FSM turn_signal;
+  FSM hazard_light;
 } FSMGroup;

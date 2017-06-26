@@ -56,12 +56,12 @@ int main() {
   for (;;) {
 		if (!event_process(&e)) {
 			state_process_event(&fsm_group, &e);
-		  printf("Event = %d : Car Status = %d : Direction = %d : Turn = %d : Hazard = %d : %d \n",
+		  printf("Event = %d : Car Status = %s : Direction = %s : Turn = %s : Hazard = %s : %d \n",
     			e.id,
-    			fsm_group.pedal.state,
-    			fsm_group.direction.state,
-    			fsm_group.turn_signal.state,
-    			fsm_group.hazard_light.state,
+    			fsm_group.pedal.current_state->name,
+    			fsm_group.direction.current_state->name,
+    			fsm_group.turn_signal.current_state->name,
+    			fsm_group.hazard_light.current_state->name,
     			0);
 		}
   }
