@@ -27,7 +27,7 @@ int main() {
     gpio_init_pin(&address[i], &settings);
   }
 
-  uint16_t adc_readings[16];
+  uint16_t adc_readings[NUM_ADC_CHANNEL];
   memset(adc_readings, 0, sizeof(adc_readings));
 
   adc_init(ADC_MODE_CONTINUOUS);
@@ -36,15 +36,17 @@ int main() {
   adc_set_channel(ADC_CHANNEL_11, 1);
   adc_set_channel(ADC_CHANNEL_12, 1);
   adc_set_channel(ADC_CHANNEL_13, 1);
+  adc_set_channel(ADC_CHANNEL_REF, 1);
 
   adc_register_callback(ADC_CHANNEL_10, test_callback, &adc_readings[ADC_CHANNEL_10]);
   adc_register_callback(ADC_CHANNEL_11, test_callback, &adc_readings[ADC_CHANNEL_11]);
   adc_register_callback(ADC_CHANNEL_12, test_callback, &adc_readings[ADC_CHANNEL_12]);
   adc_register_callback(ADC_CHANNEL_13, test_callback, &adc_readings[ADC_CHANNEL_13]);
+  adc_register_callback(ADC_CHANNEL_REF, test_callback, &adc_readings[ADC_CHANNEL_REF]);
 
-  while (1) { 
+  while (1) {
     LOG_DEBUG("{");
-    for (int i = ADC_CHANNEL_0; i < ADC_CHANNEL_TEMP; i++) {
+    for (int i = ADC_CHANNEL_0; i < NUM_ADC_CHANNEL; i++) {
       printf(" %d ", adc_readings[i]);
     }
     printf("}\n");
