@@ -3,12 +3,7 @@
 #include "unity.h"
 #include "log.h"
 
-static GPIOAddress address[] = {
-  { 0, 0 }, { 0, 1 }, { 0, 2 }, { 0, 3 },
-  { 0, 4 }, { 0, 5 }, { 0, 6 }, { 0, 7 },
-  { 1, 0 }, { 1, 1 }, { 2, 0 }, { 2, 1 },
-  { 2, 2 }, { 2, 3 }, { 2, 4 }, { 2, 5 }
-};
+static GPIOAddress address[] = { { GPIO_PORT_A, 0 }, { GPIO_PORT_A, 1 }, { GPIO_PORT_A, 2 } };
 
 static volatile uint8_t s_callback_runs = 0;
 static volatile bool s_callback_ran = false;
@@ -29,27 +24,29 @@ void setup_test() {
   }
 }
 
+void teardown_test(void) { }
+
 void test_single() {
   // Initialize the ADC to single mode and configure the channels
   adc_init(ADC_MODE_SINGLE);
 
-  adc_set_channel(0, 1);
-  adc_set_channel(1, 1);
-  adc_set_channel(2, 1);
+  adc_set_channel(ADC_CHANNEL_0, 1);
+  adc_set_channel(ADC_CHANNEL_1, 1);
+  adc_set_channel(ADC_CHANNEL_2, 1);
 
-  adc_register_callback(0, prv_callback, 0);
-  adc_register_callback(1, prv_callback, 0);
-  adc_register_callback(2, prv_callback, 0);
+  adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL);
+  adc_register_callback(ADC_CHANNEL_1, prv_callback, NULL);
+  adc_register_callback(ADC_CHANNEL_2, prv_callback, NULL);
 
   // Background conversions should not be running in single mode
   TEST_ASSERT_EQUAL(0, s_callback_runs);
 
   // Ensure that the conversions happen once adc_read_value is called
-  adc_read_value(10);
+  uint16_t reading = adc_read_value(10);
+
+  TEST_ASSERT_TRUE(0 <= reading && reading <= 4096);
   TEST_ASSERT_EQUAL(3, s_callback_runs);
 
-  // Disable ADC for next test
-  adc_disable();
 }
 
 void test_continuous() {
@@ -57,14 +54,7 @@ void test_continuous() {
 
   // Initialize the ADC to single mode and configure the channels
   adc_init(ADC_MODE_CONTINUOUS);
-  adc_start_continuous();
-
+  
   // Delay the test so that an interrupt can raise the flag
-  LOG_DEBUG("Interrupt delay\n");
   TEST_ASSERT_TRUE(s_callback_ran);
-
-  // Disable ADC for continuous test
-  adc_disable();
 }
-
-void teardown_test(void) { }

@@ -6,7 +6,8 @@
 #include "gpio.h"
 
 void test_callback(ADCChannel adc_channel, uint16_t reading, void *context) {
-  *(uint16_t*)context = reading;
+  uint16_t* adc_reading = (uint16_t*)context;
+  *adc_reading = reading;
 }
 
 int main() {
@@ -27,23 +28,23 @@ int main() {
   }
 
   uint16_t adc_readings[16];
-  memset(adc_readings, 0, sizeof(uint16_t[16]));
+  memset(adc_readings, 0, sizeof(adc_readings));
 
-  adc_init(ADC_MODE_SINGLE);
+  adc_init(ADC_MODE_CONTINUOUS);
 
-  adc_set_channel(10, 1);
-  adc_set_channel(11, 1);
-  adc_set_channel(12, 1);
+  adc_set_channel(ADC_CHANNEL_10, 1);
+  adc_set_channel(ADC_CHANNEL_11, 1);
+  adc_set_channel(ADC_CHANNEL_12, 1);
+  adc_set_channel(ADC_CHANNEL_13, 1);
 
-  adc_register_callback(10, test_callback, &adc_readings[10]);
-  adc_register_callback(11, test_callback, &adc_readings[11]);
-  adc_register_callback(12, test_callback, &adc_readings[12]);
+  adc_register_callback(ADC_CHANNEL_10, test_callback, &adc_readings[ADC_CHANNEL_10]);
+  adc_register_callback(ADC_CHANNEL_11, test_callback, &adc_readings[ADC_CHANNEL_11]);
+  adc_register_callback(ADC_CHANNEL_12, test_callback, &adc_readings[ADC_CHANNEL_12]);
+  adc_register_callback(ADC_CHANNEL_13, test_callback, &adc_readings[ADC_CHANNEL_13]);
 
-  while (1) {
-    adc_read_value(10);
-
+  while (1) { 
     LOG_DEBUG("{");
-    for (int i = 0; i < 16; i++) {
+    for (int i = ADC_CHANNEL_0; i < ADC_CHANNEL_TEMP; i++) {
       printf(" %d ", adc_readings[i]);
     }
     printf("}\n");

@@ -49,11 +49,5 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state);
 // Register a callback function to be called when the specified channel completes a conversion
 StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, void *context);
 
-// Initiate background conversions for continuous mode
-void adc_start_continuous();
-
-// Obtain the current value of the channel
+// Obtain the raw 12-bit value read by the specified channel
 uint16_t adc_read_value(ADCChannel adc_channel);
-
-// Disable the ADC
-void adc_disable();
