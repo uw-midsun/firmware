@@ -46,7 +46,6 @@ void test_single() {
 
   TEST_ASSERT_TRUE(0 <= reading && reading <= 4096);
   TEST_ASSERT_EQUAL(3, s_callback_runs);
-
 }
 
 void test_continuous() {
@@ -54,7 +53,7 @@ void test_continuous() {
 
   // Initialize the ADC to single mode and configure the channels
   adc_init(ADC_MODE_CONTINUOUS);
-  
+
   // Delay the test so that an interrupt can raise the flag
   TEST_ASSERT_TRUE(s_callback_ran);
 }

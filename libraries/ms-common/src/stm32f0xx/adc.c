@@ -4,6 +4,8 @@
 #include "log.h"
 #include "stm32f0xx.h"
 
+#define VREFINT_CAL 0x1ffff7ba
+
 typedef struct ADCInterrupt {
   ADCCallback callback;
   void *context;
@@ -32,12 +34,16 @@ static prv_get_ffs(uint32_t select, ADCChannel adc_channel) {
 }
 
 void adc_init(ADCMode adc_mode) {
-  // Stop ongoing conversions and disable the ADC 
+  // Stop ongoing conversions and disable the ADC
   ADC_StopOfConversion(ADC1);
   while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADSTP)) { }
-  
+
   ADC1->CR |= ADC_FLAG_ADDIS;
   while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADEN)) { }
+
+  ADC_TempSensorCmd(ENABLE);
+  ADC_VrefintCmd(ENABLE);
+  ADC_VbatCmd(ENABLE);
 
   // Once the ADC has been reset, enable it with the given settings
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
@@ -128,32 +134,8 @@ void ADC1_COMP_IRQHandler() {
       s_adc_interrupts[current_channel].callback(current_channel, reading,
                                           s_adc_interrupts[current_channel].context);
     }
-    s_adc_interrupts[current_channel].reading = reading;
   }
 
   current_channel = prv_get_ffs(select, current_channel);
   s_adc_status.current_channel = current_channel;
-/*
-  // Only search for the next channel if more than one are active
-  if ((select != (select & -(select))) || (select != 1 << current_channel))  {
-    // Set current channel equal to the next in the sequence
-    for (ADCChannel i = 1; i < NUM_ADC_CHANNEL; i++) {
-      if ((select >> (current_channel + i) % NUM_ADC_CHANNEL) & 1) {
-        current_channel += i;
-        current_channel %= NUM_ADC_CHANNEL;
-        break;
-      }
-    }
-  }
-
-  reading = ADC_GetConversionValue(ADC1);
-  if (s_adc_interrupts[current_channel].callback != NULL) {
-    s_adc_interrupts[current_channel].callback(current_channel, reading,
-                                          s_adc_interrupts[current_channel].context);
-  }
-
-  s_adc_interrupts[current_channel].reading = reading;
-  s_adc_status.current_channel = current_channel;
-  return;
-*/
 }
