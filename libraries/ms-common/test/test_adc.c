@@ -10,7 +10,6 @@ static volatile uint8_t s_callback_runs = 0;
 static volatile bool s_callback_ran = false;
 
 void prv_callback(ADCChannel adc_channel, uint16_t reading, void *context) {
-  LOG_DEBUG("ADC Channel %d with reading %d\n", adc_channel, reading);
   s_callback_runs++;
   s_callback_ran = true;
 }
@@ -76,17 +75,5 @@ void test_continuous() {
 
   // Initialize the ADC to single mode and configure the channels
   adc_init(ADC_MODE_CONTINUOUS);
-
-  bool critical_section = critical_section_start();
-  TEST_ASSERT_TRUE(critical_section);
-
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_trigger_callback(ADC_CHANNEL_0));
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_trigger_callback(ADC_CHANNEL_1));
-
-  TEST_ASSERT_EQUAL(2, s_callback_runs);
-
-  critical_section_end(true);
-  s_callback_runs = 0;
-
   TEST_ASSERT_TRUE(s_callback_runs > 0);
 }

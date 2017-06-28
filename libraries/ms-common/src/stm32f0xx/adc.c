@@ -16,20 +16,12 @@ typedef struct ADCInterrupt {
 
 typedef struct ADCStatus {
   ADCChannel current_channel;
+  uint32_t select;
   bool continuous;
 } ADCStatus;
 
 static ADCInterrupt s_adc_interrupts[NUM_ADC_CHANNEL];
 static ADCStatus s_adc_status;
-
-// Get the first set bit left of the bit specified by the current channel
-static uint8_t prv_get_ffs(uint32_t select, ADCChannel adc_channel) {
-  select = select >> adc_channel + 1;
-  if (select) {
-    return (__builtin_ctz(select) + adc_channel + 1);
-  }
-  return 0;
-}
 
 static int16_t prv_get_temp(int32_t reading) {
   uint16_t ts_cal1 = *(uint16_t*)TS_CAL1;
@@ -115,6 +107,8 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
     ADC_VbatCmd(new_state);
   }
 
+  s_adc_status.select = ADC1->CHSELR;
+
   return STATUS_CODE_OK;
 }
 
@@ -171,7 +165,7 @@ StatusCode adc_trigger_callback(ADCChannel adc_channel) {
 
 void ADC1_COMP_IRQHandler() {
   ADCChannel current_channel = s_adc_status.current_channel;
-  uint32_t select = ADC1->CHSELR;
+  uint32_t select = s_adc_status.select;
   uint16_t reading;
 
   if (select & (1 << current_channel)) {
@@ -201,6 +195,14 @@ void ADC1_COMP_IRQHandler() {
     s_adc_interrupts[current_channel].reading = reading;
   }
 
-  current_channel = prv_get_ffs(select, current_channel);
-  s_adc_status.current_channel = current_channel;
+  select &= ~(1 << current_channel);
+
+  if (select == 0) {
+    select = ADC1->CHSELR;
+  } else {
+    current_channel = __builtin_ctz(select);
+    s_adc_status.current_channel = current_channel;
+  }
+
+  s_adc_status.select = select;
 }
