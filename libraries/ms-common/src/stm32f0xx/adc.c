@@ -4,6 +4,8 @@
 #include "log.h"
 #include "stm32f0xx.h"
 
+#define TS_CAL1 0x1ffff7b8
+#define TS_CAL2 0x1ffff7c2
 #define VREFINT_CAL 0x1ffff7ba
 
 typedef struct ADCInterrupt {
@@ -20,6 +22,7 @@ typedef struct ADCStatus {
 static ADCInterrupt s_adc_interrupts[NUM_ADC_CHANNEL];
 static ADCStatus s_adc_status;
 
+// Get the first set bit left of the bit specified by the current channel 
 static prv_get_ffs(uint32_t select, ADCChannel adc_channel) {
   select = select >> adc_channel + 1;
   uint8_t offset = 0;
@@ -33,6 +36,21 @@ static prv_get_ffs(uint32_t select, ADCChannel adc_channel) {
   return 0;
 }
 
+static int16_t prv_get_temp(int32_t reading) {
+  uint16_t ts_cal1 = *(uint16_t*)TS_CAL1;
+  uint16_t ts_cal2 = *(uint16_t*)TS_CAL2;
+
+  reading = (110 - 30) * (reading - ts_cal1) / (ts_cal2 - ts_cal1) + 30;
+
+  return reading;
+}
+
+static uint16_t prv_get_vdd(uint32_t reading) {
+  uint16_t vrefint_cal = *(uint16_t*)VREFINT_CAL;
+  reading = (3300 * vrefint_cal) / reading;
+  return reading; 
+}
+
 void adc_init(ADCMode adc_mode) {
   // Stop ongoing conversions and disable the ADC
   ADC_StopOfConversion(ADC1);
@@ -40,10 +58,6 @@ void adc_init(ADCMode adc_mode) {
 
   ADC1->CR |= ADC_FLAG_ADDIS;
   while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADEN)) { }
-
-  ADC_TempSensorCmd(ENABLE);
-  ADC_VrefintCmd(ENABLE);
-  ADC_VbatCmd(ENABLE);
 
   // Once the ADC has been reset, enable it with the given settings
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
@@ -61,6 +75,9 @@ void adc_init(ADCMode adc_mode) {
 
   // Calculate the ADC calibration factor
   ADC_GetCalibrationFactor(ADC1);
+
+  ADC_TempSensorCmd(ENABLE);
+  ADC_VrefintCmd(ENABLE);
 
   ADC_ContinuousModeCmd(ADC1, adc_mode);
   while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADCAL)) { }
@@ -98,6 +115,11 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
     ADC1->CHSELR &= !(1 << adc_channel);
   }
 
+  // The bridge divider is only enabled when needed to minimize consumption on the battery 
+  if (adc_channel == ADC_CHANNEL_BAT) {
+    ADC_VbatCmd(new_state);
+  } 
+
   return STATUS_CODE_OK;
 }
 
@@ -130,10 +152,29 @@ void ADC1_COMP_IRQHandler() {
 
   if (select & (1 << current_channel)) {
     reading = ADC_GetConversionValue(ADC1);
+
+    switch (current_channel) {
+      case ADC_CHANNEL_TEMP:
+        reading = prv_get_temp(reading);
+        break;
+
+      case ADC_CHANNEL_REF:
+        reading = prv_get_vdd(reading);
+        break;
+
+      case ADC_CHANNEL_BAT:
+        reading *= 2;
+        break;
+      
+      default:
+        break;
+    }
+
     if (s_adc_interrupts[current_channel].callback != NULL) {
       s_adc_interrupts[current_channel].callback(current_channel, reading,
                                           s_adc_interrupts[current_channel].context);
     }
+    s_adc_interrupts[current_channel].reading = reading;
   }
 
   current_channel = prv_get_ffs(select, current_channel);
