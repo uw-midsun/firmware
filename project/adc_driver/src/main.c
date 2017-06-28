@@ -32,19 +32,15 @@ int main() {
 
   adc_init(ADC_MODE_CONTINUOUS);
 
-  //adc_set_channel(ADC_CHANNEL_10, 1);
-  //adc_set_channel(ADC_CHANNEL_11, 1);
-  //adc_set_channel(ADC_CHANNEL_12, 1);
-  //adc_set_channel(ADC_CHANNEL_13, 1);
-  //adc_set_channel(ADC_CHANNEL_TEMP, 1);
-  adc_set_channel(ADC_CHANNEL_REF, 1);
+  adc_set_channel(ADC_CHANNEL_10, 1);
+  adc_set_channel(ADC_CHANNEL_11, 1);
+  adc_set_channel(ADC_CHANNEL_12, 1);
+  adc_set_channel(ADC_CHANNEL_13, 1);
 
-  //adc_register_callback(ADC_CHANNEL_10, test_callback, &adc_readings[ADC_CHANNEL_10]);
-  //adc_register_callback(ADC_CHANNEL_11, test_callback, &adc_readings[ADC_CHANNEL_11]);
-  //adc_register_callback(ADC_CHANNEL_12, test_callback, &adc_readings[ADC_CHANNEL_12]);
-  //adc_register_callback(ADC_CHANNEL_13, test_callback, &adc_readings[ADC_CHANNEL_13]);
-  //adc_register_callback(ADC_CHANNEL_TEMP, test_callback, &adc_readings[ADC_CHANNEL_TEMP]);
-  adc_register_callback(ADC_CHANNEL_REF, test_callback, &adc_readings[ADC_CHANNEL_REF]);
+  adc_register_callback(ADC_CHANNEL_10, test_callback, &adc_readings[ADC_CHANNEL_10]);
+  adc_register_callback(ADC_CHANNEL_11, test_callback, &adc_readings[ADC_CHANNEL_11]);
+  adc_register_callback(ADC_CHANNEL_12, test_callback, &adc_readings[ADC_CHANNEL_12]);
+  adc_register_callback(ADC_CHANNEL_13, test_callback, &adc_readings[ADC_CHANNEL_13]);
 
   while (1) {
     LOG_DEBUG("{");

@@ -22,8 +22,15 @@ typedef struct ADCStatus {
 static ADCInterrupt s_adc_interrupts[NUM_ADC_CHANNEL];
 static ADCStatus s_adc_status;
 
-// Get the first set bit left of the bit specified by the current channel 
-static prv_get_ffs(uint32_t select, ADCChannel adc_channel) {
+static bool prv_channel_valid(ADCChannel adc_channel) {
+  if (adc_channel < 0 || adc_channel >= NUM_ADC_CHANNEL) {
+    return 0;
+  }
+  return 1;
+}
+
+// Get the first set bit left of the bit specified by the current channel
+static uint8_t prv_get_ffs(uint32_t select, ADCChannel adc_channel) {
   select = select >> adc_channel + 1;
   uint8_t offset = 0;
 
@@ -42,13 +49,13 @@ static int16_t prv_get_temp(int32_t reading) {
 
   reading = (110 - 30) * (reading - ts_cal1) / (ts_cal2 - ts_cal1) + 30;
 
-  return reading;
+  return reading + 273;
 }
 
-static uint16_t prv_get_vdd(uint32_t reading) {
+static uint16_t prv_get_vdda(uint32_t reading) {
   uint16_t vrefint_cal = *(uint16_t*)VREFINT_CAL;
   reading = (3300 * vrefint_cal) / reading;
-  return reading; 
+  return reading;
 }
 
 void adc_init(ADCMode adc_mode) {
@@ -105,27 +112,27 @@ void adc_init(ADCMode adc_mode) {
 }
 
 StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
-  if (adc_channel >= NUM_ADC_CHANNEL) {
+  if (!prv_channel_valid(adc_channel)) {
     return STATUS_CODE_INVALID_ARGS;
   }
 
   if (new_state) {
     ADC_ChannelConfig(ADC1, (1 << adc_channel), ADC_SampleTime_239_5Cycles);
   } else {
-    ADC1->CHSELR &= !(1 << adc_channel);
+    ADC1->CHSELR &= ~(1 << adc_channel);
   }
 
-  // The bridge divider is only enabled when needed to minimize consumption on the battery 
+  // The bridge divider is only enabled when needed to minimize consumption on the battery
   if (adc_channel == ADC_CHANNEL_BAT) {
     ADC_VbatCmd(new_state);
-  } 
+  }
 
   return STATUS_CODE_OK;
 }
 
 StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, void *context) {
   // Returns invalid if the given address is not connected to an ADC channel
-  if (adc_channel >= NUM_ADC_CHANNEL) {
+  if (!prv_channel_valid(adc_channel)) {
     return STATUS_CODE_INVALID_ARGS;
   }
 
@@ -135,15 +142,44 @@ StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, v
   return STATUS_CODE_OK;
 }
 
-uint16_t adc_read_value(ADCChannel adc_channel) {
+StatusCode adc_read_value(ADCChannel adc_channel, uint16_t *reading) {
+  if (!prv_channel_valid(adc_channel)) {
+    return STATUS_CODE_INVALID_ARGS;
+  }
+
   if (!s_adc_status.continuous) {
     s_adc_status.current_channel = 0;
     ADC_StartOfConversion(ADC1);
-    while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOSEQ)) {}
+    while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOSEQ)) { }
   }
 
-  return s_adc_interrupts[adc_channel].reading;
+  reading = s_adc_interrupts[adc_channel].reading;
+
+  return STATUS_CODE_OK;
 }
+
+
+StatusCode adc_trigger_callback(ADCChannel adc_channel) {
+  if (!prv_channel_valid(adc_channel)) {
+    return STATUS_CODE_INVALID_ARGS;
+  }
+
+  ADC_StopOfConversion(ADC1);
+  while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADSTP)) { }
+
+  // Save the current channel selection and set only the given channel
+  uint32_t temp = ADC1->CHSELR;
+  ADC1->CHSELR &= (1 << adc_channel);
+
+  s_adc_status.current_channel = 0;
+  ADC_StartOfConversion(ADC1);
+  while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOSEQ)) { }
+
+  ADC1->CHSELR = temp;
+
+  return STATUS_CODE_OK;
+}
+
 
 void ADC1_COMP_IRQHandler() {
   ADCChannel current_channel = s_adc_status.current_channel;
@@ -159,13 +195,13 @@ void ADC1_COMP_IRQHandler() {
         break;
 
       case ADC_CHANNEL_REF:
-        reading = prv_get_vdd(reading);
+        reading = prv_get_vdda(reading);
         break;
 
       case ADC_CHANNEL_BAT:
         reading *= 2;
         break;
-      
+
       default:
         break;
     }
