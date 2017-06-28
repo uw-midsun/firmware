@@ -7,13 +7,11 @@
 
 #include "status.h"
 
-// Used to select a conversion mode
 typedef enum {
   ADC_MODE_SINGLE = 0,
   ADC_MODE_CONTINUOUS,
 } ADCMode;
 
-// Used to specify an ADC Channel
 typedef enum {
   ADC_CHANNEL_0 = 0,
   ADC_CHANNEL_1,
@@ -37,7 +35,6 @@ typedef enum {
   NUM_ADC_CHANNEL
 } ADCChannel;
 
-// Typedef for ADC callbacks
 typedef void (*ADCCallback)(ADCChannel adc_channel, uint16_t reading, void *context);
 
 // Initialize the ADC to the desired conversion mode

@@ -22,23 +22,11 @@ typedef struct ADCStatus {
 static ADCInterrupt s_adc_interrupts[NUM_ADC_CHANNEL];
 static ADCStatus s_adc_status;
 
-static bool prv_channel_valid(ADCChannel adc_channel) {
-  if (adc_channel < 0 || adc_channel >= NUM_ADC_CHANNEL) {
-    return 0;
-  }
-  return 1;
-}
-
 // Get the first set bit left of the bit specified by the current channel
 static uint8_t prv_get_ffs(uint32_t select, ADCChannel adc_channel) {
   select = select >> adc_channel + 1;
-  uint8_t offset = 0;
-
-  uint32_t ffs_max = NUM_ADC_CHANNEL - adc_channel;
-  for (uint32_t i = 0; i < ffs_max; i++) {
-    if (select & (1 << i)) {
-      return (i + adc_channel + 1);
-    }
+  if (select) {
+    return (__builtin_ctz(select) + adc_channel + 1);
   }
   return 0;
 }
@@ -112,7 +100,7 @@ void adc_init(ADCMode adc_mode) {
 }
 
 StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
-  if (!prv_channel_valid(adc_channel)) {
+  if (adc_channel >= NUM_ADC_CHANNEL) {
     return STATUS_CODE_INVALID_ARGS;
   }
 
@@ -132,7 +120,7 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
 
 StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, void *context) {
   // Returns invalid if the given address is not connected to an ADC channel
-  if (!prv_channel_valid(adc_channel)) {
+  if (adc_channel >= NUM_ADC_CHANNEL) {
     return STATUS_CODE_INVALID_ARGS;
   }
 
@@ -143,7 +131,7 @@ StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, v
 }
 
 StatusCode adc_read_value(ADCChannel adc_channel, uint16_t *reading) {
-  if (!prv_channel_valid(adc_channel)) {
+  if (adc_channel >= NUM_ADC_CHANNEL) {
     return STATUS_CODE_INVALID_ARGS;
   }
 
@@ -160,7 +148,7 @@ StatusCode adc_read_value(ADCChannel adc_channel, uint16_t *reading) {
 
 
 StatusCode adc_trigger_callback(ADCChannel adc_channel) {
-  if (!prv_channel_valid(adc_channel)) {
+  if (adc_channel >= NUM_ADC_CHANNEL) {
     return STATUS_CODE_INVALID_ARGS;
   }
 
