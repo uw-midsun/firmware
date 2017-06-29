@@ -15,8 +15,7 @@ typedef struct ADCInterrupt {
 } ADCInterrupt;
 
 typedef struct ADCStatus {
-  ADCChannel current_channel;
-  uint32_t select;
+  uint32_t sequence;
   bool continuous;
 } ADCStatus;
 
@@ -83,7 +82,6 @@ void adc_init(ADCMode adc_mode) {
 
   // Initialize static varables
   s_adc_status.continuous = adc_mode;
-  s_adc_status.current_channel = 0;
 
   // Start background conversions if in continuous
   if (adc_mode) {
@@ -107,7 +105,7 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
     ADC_VbatCmd(new_state);
   }
 
-  s_adc_status.select = ADC1->CHSELR;
+  s_adc_status.sequence = ADC1->CHSELR;
 
   return STATUS_CODE_OK;
 }
@@ -130,7 +128,6 @@ StatusCode adc_read_value(ADCChannel adc_channel, uint16_t *reading) {
   }
 
   if (!s_adc_status.continuous) {
-    s_adc_status.current_channel = 0;
     ADC_StartOfConversion(ADC1);
     while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOSEQ)) { }
   }
@@ -140,69 +137,40 @@ StatusCode adc_read_value(ADCChannel adc_channel, uint16_t *reading) {
   return STATUS_CODE_OK;
 }
 
-
-StatusCode adc_trigger_callback(ADCChannel adc_channel) {
-  if (adc_channel >= NUM_ADC_CHANNEL) {
-    return STATUS_CODE_INVALID_ARGS;
-  }
-
-  ADC_StopOfConversion(ADC1);
-  while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADSTP)) { }
-
-  // Save the current channel selection and set only the given channel
-  uint32_t temp = ADC1->CHSELR;
-  ADC1->CHSELR &= (1 << adc_channel);
-
-  s_adc_status.current_channel = 0;
-  ADC_StartOfConversion(ADC1);
-  while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOSEQ)) { }
-
-  ADC1->CHSELR = temp;
-
-  return STATUS_CODE_OK;
-}
-
-
 void ADC1_COMP_IRQHandler() {
-  ADCChannel current_channel = s_adc_status.current_channel;
-  uint32_t select = s_adc_status.select;
+  ADCChannel current_channel = __builtin_ctz(s_adc_status.sequence);
   uint16_t reading;
 
-  if (select & (1 << current_channel)) {
-    reading = ADC_GetConversionValue(ADC1);
+  reading = ADC_GetConversionValue(ADC1);
 
-    switch (current_channel) {
-      case ADC_CHANNEL_TEMP:
-        reading = prv_get_temp(reading);
-        break;
+  switch (current_channel) {
+    case ADC_CHANNEL_TEMP:
+      reading = prv_get_temp(reading);
+      break;
 
-      case ADC_CHANNEL_REF:
-        reading = prv_get_vdda(reading);
-        break;
+    case ADC_CHANNEL_REF:
+      reading = prv_get_vdda(reading);
+      break;
 
-      case ADC_CHANNEL_BAT:
-        reading *= 2;
-        break;
+    case ADC_CHANNEL_BAT:
+      reading *= 2;
+      break;
 
-      default:
-        break;
-    }
-
-    if (s_adc_interrupts[current_channel].callback != NULL) {
-      s_adc_interrupts[current_channel].callback(current_channel, reading,
-                                          s_adc_interrupts[current_channel].context);
-    }
-    s_adc_interrupts[current_channel].reading = reading;
+    default:
+      break;
   }
 
-  select &= ~(1 << current_channel);
-
-  if (select == 0) {
-    select = ADC1->CHSELR;
-  } else {
-    current_channel = __builtin_ctz(select);
-    s_adc_status.current_channel = current_channel;
+  if (s_adc_interrupts[current_channel].callback != NULL) {
+    s_adc_interrupts[current_channel].callback(current_channel, reading,
+                                            s_adc_interrupts[current_channel].context);
   }
 
-  s_adc_status.select = select;
+  s_adc_interrupts[current_channel].reading = reading;
+
+  s_adc_status.sequence &= ~(1 << current_channel);
+
+  if (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOSEQ)) {
+    s_adc_status.sequence = ADC1->CHSELR;
+    ADC_ClearFlag(ADC1, ADC_FLAG_EOSEQ);
+  }
 }

@@ -48,5 +48,3 @@ StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, v
 
 // Obtain the raw 12-bit value read by the specified channel
 StatusCode adc_read_value(ADCChannel adc_channel, uint16_t *reading);
-
-StatusCode adc_trigger_callback(ADCChannel adc_channel);
