@@ -47,7 +47,7 @@ int main() {
   while (1) {
     LOG_DEBUG("{");
     for (int i = ADC_CHANNEL_0; i < ADC_CHANNEL_TEMP; i++) {
-      printf(" %d ", adc_readings[i]*adc_readings[ADC_CHANNEL_REF]/4095);
+      printf(" %d ", adc_readings[i]);
     }
     for (int i = ADC_CHANNEL_TEMP; i < NUM_ADC_CHANNEL; i++) {
       printf(" %d ", adc_readings[i]);

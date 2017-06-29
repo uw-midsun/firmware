@@ -23,16 +23,13 @@ void setup_test() {
   for (uint8_t i = ADC_CHANNEL_0; i < ADC_CHANNEL_2; i++) {
     gpio_init_pin(&address[i], &settings);
   }
+
+  adc_init(ADC_MODE_SINGLE);
 }
 
 void teardown_test(void) { }
 
-void test_single() {
-  uint16_t reading;
-
-  // Initialize the ADC to single mode and configure the channels
-  adc_init(ADC_MODE_SINGLE);
-
+void test_set_channel(void) {
   // Check that channels can only be set with the correct channel arguments
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, adc_set_channel(NUM_ADC_CHANNEL, 1));
 
@@ -40,12 +37,29 @@ void test_single() {
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_set_channel(ADC_CHANNEL_1, 1));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_set_channel(ADC_CHANNEL_2, 1));
 
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_set_channel(ADC_CHANNEL_0, 0));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_set_channel(ADC_CHANNEL_1, 0));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_set_channel(ADC_CHANNEL_2, 0));
+}
+
+void test_set_callback(void) {
   // Check that callbacks can only be registered with the correct channel arguments
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, adc_set_channel(NUM_ADC_CHANNEL, 1));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
+                    adc_register_callback(NUM_ADC_CHANNEL, prv_callback, NULL));
 
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_register_callback(ADC_CHANNEL_1, prv_callback, NULL));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_register_callback(ADC_CHANNEL_2, prv_callback, NULL));
+}
+
+void test_single() {
+  uint16_t reading;
+
+  // Initialize the ADC to single mode and configure the channels
+  adc_init(ADC_MODE_SINGLE);
+
+  adc_set_channel(ADC_CHANNEL_0, 1);
+  adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL);
 
   // Background conversions should not be running in single mode
   TEST_ASSERT_EQUAL(0, s_callback_runs);
@@ -55,25 +69,21 @@ void test_single() {
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, adc_read_value(NUM_ADC_CHANNEL, &reading));
 
   TEST_ASSERT_TRUE(0 <= reading && reading <= 4096);
-  TEST_ASSERT_EQUAL(3, s_callback_runs);
+  TEST_ASSERT_EQUAL(1, s_callback_runs);
 }
 
 void test_continuous() {
-  ADCChannel adc_channel;
-
   s_callback_runs = 0;
   s_callback_ran = false;
 
-  // Disable all but one of the channels and check that it only works with correct arguments
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, adc_set_channel(NUM_ADC_CHANNEL, 0));
+  adc_init(ADC_MODE_CONTINUOUS);
 
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_set_channel(ADC_CHANNEL_2, 0));
+  adc_set_channel(ADC_CHANNEL_0, 1);
+  adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL);
 
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_register_callback(ADC_CHANNEL_0,
-    prv_callback,
-    &adc_channel));
+  while (!s_callback_ran) { }
 
   // Initialize the ADC to single mode and configure the channels
-  adc_init(ADC_MODE_CONTINUOUS);
+  TEST_ASSERT_TRUE(s_callback_ran);
   TEST_ASSERT_TRUE(s_callback_runs > 0);
 }

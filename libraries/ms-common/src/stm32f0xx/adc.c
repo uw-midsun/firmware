@@ -169,8 +169,7 @@ void ADC1_COMP_IRQHandler() {
 
   s_adc_status.sequence &= ~(1 << current_channel);
 
-  if (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOSEQ)) {
+  if (!s_adc_status.sequence) {
     s_adc_status.sequence = ADC1->CHSELR;
-    ADC_ClearFlag(ADC1, ADC_FLAG_EOSEQ);
   }
 }
