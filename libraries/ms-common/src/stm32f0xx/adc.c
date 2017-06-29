@@ -38,12 +38,7 @@ static uint16_t prv_get_vdda(uint32_t reading) {
 }
 
 void adc_init(ADCMode adc_mode) {
-  // Stop ongoing conversions and disable the ADC
-  ADC_StopOfConversion(ADC1);
-  while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADSTP)) { }
-
-  ADC1->CR |= ADC_FLAG_ADDIS;
-  while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADEN)) { }
+  ADC_DeInit(ADC1);
 
   // Once the ADC has been reset, enable it with the given settings
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
@@ -72,9 +67,8 @@ void adc_init(ADCMode adc_mode) {
   ADC_Cmd(ADC1, ENABLE);
   while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_ADRDY)) { }
 
-  // Set the ADC to wait mode
   ADC_WaitModeCmd(ADC1, ENABLE);
-  ADC_AutoPowerOffCmd(ADC1, ENABLE);
+  ADC_AutoPowerOffCmd(ADC1, !adc_mode);
 
   // Enable interrupts for the end of each conversion
   stm32f0xx_interrupt_nvic_enable(ADC1_COMP_IRQn, INTERRUPT_PRIORITY_NORMAL);
@@ -82,8 +76,8 @@ void adc_init(ADCMode adc_mode) {
 
   // Initialize static varables
   s_adc_status.continuous = adc_mode;
+  s_adc_status.sequence = ADC1->CHSELR;
 
-  // Start background conversions if in continuous
   if (adc_mode) {
     ADC_StartOfConversion(ADC1);
   }
@@ -106,7 +100,6 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
   }
 
   s_adc_status.sequence = ADC1->CHSELR;
-
   return STATUS_CODE_OK;
 }
 
@@ -129,19 +122,18 @@ StatusCode adc_read_value(ADCChannel adc_channel, uint16_t *reading) {
 
   if (!s_adc_status.continuous) {
     ADC_StartOfConversion(ADC1);
-    while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOSEQ)) { }
+    while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADSTART)) { }
   }
 
-  reading = s_adc_interrupts[adc_channel].reading;
+  *reading = s_adc_interrupts[adc_channel].reading;
 
   return STATUS_CODE_OK;
 }
 
 void ADC1_COMP_IRQHandler() {
   ADCChannel current_channel = __builtin_ctz(s_adc_status.sequence);
-  uint16_t reading;
 
-  reading = ADC_GetConversionValue(ADC1);
+  uint16_t reading = ADC_GetConversionValue(ADC1);
 
   switch (current_channel) {
     case ADC_CHANNEL_TEMP:
@@ -166,10 +158,10 @@ void ADC1_COMP_IRQHandler() {
   }
 
   s_adc_interrupts[current_channel].reading = reading;
-
   s_adc_status.sequence &= ~(1 << current_channel);
 
-  if (!s_adc_status.sequence) {
+  if (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOSEQ)) {
     s_adc_status.sequence = ADC1->CHSELR;
+    ADC_ClearFlag(ADC1, ADC_FLAG_EOSEQ);
   }
 }

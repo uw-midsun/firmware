@@ -59,31 +59,45 @@ void test_single() {
   adc_init(ADC_MODE_SINGLE);
 
   adc_set_channel(ADC_CHANNEL_0, 1);
-  adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL);
+  adc_set_channel(ADC_CHANNEL_1, 1);
+  adc_set_channel(ADC_CHANNEL_2, 1);
 
-  // Background conversions should not be running in single mode
+  adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL);
+  adc_register_callback(ADC_CHANNEL_1, prv_callback, NULL);
+  adc_register_callback(ADC_CHANNEL_2, prv_callback, NULL);
+
+  // Callbacks must not run in single mode unless a read occurs
+  TEST_ASSERT_FALSE(s_callback_ran);
   TEST_ASSERT_EQUAL(0, s_callback_runs);
 
   // Ensure that the conversions happen once adc_read_value is called
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_read_value(ADC_CHANNEL_0, &reading));
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, adc_read_value(NUM_ADC_CHANNEL, &reading));
 
-  TEST_ASSERT_TRUE(0 <= reading && reading <= 4096);
-  TEST_ASSERT_EQUAL(1, s_callback_runs);
+  while (!s_callback_ran) {}
+
+  TEST_ASSERT_TRUE(s_callback_ran);
+  TEST_ASSERT_EQUAL(3, s_callback_runs);
 }
 
 void test_continuous() {
   s_callback_runs = 0;
   s_callback_ran = false;
 
+  // Initialize ADC and check that adc_init() can properly reset the ADC
   adc_init(ADC_MODE_CONTINUOUS);
 
   adc_set_channel(ADC_CHANNEL_0, 1);
+  adc_set_channel(ADC_CHANNEL_1, 1);
+  adc_set_channel(ADC_CHANNEL_2, 1);
+
   adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL);
+  adc_register_callback(ADC_CHANNEL_1, prv_callback, NULL);
+  adc_register_callback(ADC_CHANNEL_2, prv_callback, NULL);
 
-  while (!s_callback_ran) { }
+  // Run a busy loop until a callback is triggered
+  while (!s_callback_runs) { }
 
-  // Initialize the ADC to single mode and configure the channels
   TEST_ASSERT_TRUE(s_callback_ran);
   TEST_ASSERT_TRUE(s_callback_runs > 0);
 }
