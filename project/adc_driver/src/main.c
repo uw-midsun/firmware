@@ -48,12 +48,11 @@ int main() {
   while (1) {
     LOG_DEBUG("{");
     for (int i = ADC_CHANNEL_0; i < ADC_CHANNEL_TEMP; i++) {
-      adc_read_voltage(i, &reading);
-      printf(" %d ", reading);
+      printf(" %d ", adc_readings[i]);
     }
     for (int i = ADC_CHANNEL_TEMP; i < NUM_ADC_CHANNEL; i++) {
-      adc_read_value(i, &reading);
-      printf(" %d ", reading);
+      adc_readings[i];
+      printf(" %d ", adc_readings[i]);
     }
     printf("}\n");
   }

@@ -73,6 +73,7 @@ void adc_init(ADCMode adc_mode) {
   // Enable interrupts for the end of each conversion
   stm32f0xx_interrupt_nvic_enable(ADC1_COMP_IRQn, INTERRUPT_PRIORITY_NORMAL);
   ADC_ITConfig(ADC1, ADC_IER_EOCIE, ENABLE);
+  ADC_ITConfig(ADC1, ADC_IER_EOSEQIE, ENABLE);
 
   // Initialize static varables
   s_adc_status.continuous = adc_mode;
@@ -175,8 +176,8 @@ void ADC1_COMP_IRQHandler() {
   s_adc_interrupts[current_channel].reading = reading;
   s_adc_status.sequence &= ~(1 << current_channel);
 
-  if (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOSEQ)) {
+  if (ADC_GetITStatus(ADC1, ADC_IT_EOSEQ)) {
     s_adc_status.sequence = ADC1->CHSELR;
-    ADC_ClearFlag(ADC1, ADC_FLAG_EOSEQ);
+    ADC_ClearITPendingBit(ADC1, ADC_IT_EOSEQ);
   }
 }
