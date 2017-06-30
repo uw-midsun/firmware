@@ -31,29 +31,29 @@ int main() {
   uint16_t adc_readings[NUM_ADC_CHANNEL];
   memset(adc_readings, 0, sizeof(adc_readings));
 
-  adc_init(ADC_MODE_SINGLE);
+  adc_init(ADC_MODE_CONTINUOUS);
 
-  adc_set_channel(ADC_CHANNEL_0, 1);
-  adc_set_channel(ADC_CHANNEL_1, 1);
-  adc_set_channel(ADC_CHANNEL_2, 1);
-  adc_set_channel(ADC_CHANNEL_REF, 1);
+  for (ADCChannel i = ADC_CHANNEL_10; i < ADC_CHANNEL_14; i++) {
+    adc_set_channel(i, 1);
+    adc_register_callback(i, test_callback, &adc_readings[i]);
+  }
 
-  adc_register_callback(ADC_CHANNEL_0, test_callback, &adc_readings[ADC_CHANNEL_0]);
-  adc_register_callback(ADC_CHANNEL_1, test_callback, &adc_readings[ADC_CHANNEL_1]);
-  adc_register_callback(ADC_CHANNEL_2, test_callback, &adc_readings[ADC_CHANNEL_2]);
-  adc_register_callback(ADC_CHANNEL_REF, test_callback, &adc_readings[ADC_CHANNEL_REF]);
+  adc_set_channel(ADC_CHANNEL_TEMP, 1);
+  adc_set_channel(ADC_CHANNEL_BAT, 1);
+  adc_register_callback(ADC_CHANNEL_TEMP, test_callback, &adc_readings[ADC_CHANNEL_TEMP]);
+  adc_register_callback(ADC_CHANNEL_BAT, test_callback, &adc_readings[ADC_CHANNEL_BAT]);
 
   uint16_t reading;
 
   while (1) {
-    adc_read_value(ADC_CHANNEL_10, &reading);
-
     LOG_DEBUG("{");
     for (int i = ADC_CHANNEL_0; i < ADC_CHANNEL_TEMP; i++) {
-      printf(" %d ", adc_readings[i]);
+      adc_read_voltage(i, &reading);
+      printf(" %d ", reading);
     }
     for (int i = ADC_CHANNEL_TEMP; i < NUM_ADC_CHANNEL; i++) {
-      printf(" %d ", adc_readings[i]);
+      adc_read_value(i, &reading);
+      printf(" %d ", reading);
     }
     printf("}\n");
   }

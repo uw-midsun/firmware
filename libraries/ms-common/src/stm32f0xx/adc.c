@@ -4,9 +4,9 @@
 #include "log.h"
 #include "stm32f0xx.h"
 
-#define TS_CAL1 0x1ffff7b8
-#define TS_CAL2 0x1ffff7c2
-#define VREFINT_CAL 0x1ffff7ba
+#define TS_CAL1 0x1FFFF7b8
+#define TS_CAL2 0x1FFFF7c2
+#define VREFINT_CAL 0x1FFFF7ba
 
 typedef struct ADCInterrupt {
   ADCCallback callback;
@@ -22,16 +22,16 @@ typedef struct ADCStatus {
 static ADCInterrupt s_adc_interrupts[NUM_ADC_CHANNEL];
 static ADCStatus s_adc_status;
 
-static int16_t prv_get_temp(int32_t reading) {
+static uint16_t prv_get_temp(uint16_t reading) {
   uint16_t ts_cal1 = *(uint16_t*)TS_CAL1;
   uint16_t ts_cal2 = *(uint16_t*)TS_CAL2;
 
-  reading = (110 - 30) * (reading - ts_cal1) / (ts_cal2 - ts_cal1) + 30;
+  reading = ((110 - 30) * (reading - ts_cal1)) / (ts_cal2 - ts_cal1) + 30;
 
   return reading + 273;
 }
 
-static uint16_t prv_get_vdda(uint32_t reading) {
+static uint16_t prv_get_vdda(uint16_t reading) {
   uint16_t vrefint_cal = *(uint16_t*)VREFINT_CAL;
   reading = (3300 * vrefint_cal) / reading;
   return reading;
@@ -81,10 +81,13 @@ void adc_init(ADCMode adc_mode) {
   if (adc_mode) {
     ADC_StartOfConversion(ADC1);
   }
+
+  // Set reference voltage channel on by default
+  ADC_ChannelConfig(ADC1, (1 << ADC_CHANNEL_REF), ADC_SampleTime_239_5Cycles);
 }
 
 StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
-  if (adc_channel >= NUM_ADC_CHANNEL) {
+  if (adc_channel >= NUM_ADC_CHANNEL || adc_channel == ADC_CHANNEL_REF) {
     return STATUS_CODE_INVALID_ARGS;
   }
 
@@ -127,6 +130,35 @@ StatusCode adc_read_value(ADCChannel adc_channel, uint16_t *reading) {
 
   *reading = s_adc_interrupts[adc_channel].reading;
 
+  switch (adc_channel) {
+    case ADC_CHANNEL_TEMP:
+      *reading = prv_get_temp(*reading);
+      break;
+
+    case ADC_CHANNEL_REF:
+      *reading = prv_get_vdda(*reading);
+      break;
+
+    case ADC_CHANNEL_BAT:
+      *reading *= 2;
+      break;
+
+    default:
+      break;
+  }
+
+  return STATUS_CODE_OK;
+}
+
+StatusCode adc_read_voltage(ADCChannel adc_channel, uint16_t *reading) {
+  if (adc_channel >= NUM_ADC_CHANNEL) {
+    return STATUS_CODE_INVALID_ARGS;
+  }
+
+  uint16_t vrefint;
+  adc_read_value(adc_channel, reading);
+  adc_read_value(ADC_CHANNEL_REF, &vrefint);
+  *reading = ((*reading) * vrefint)/4095;
   return STATUS_CODE_OK;
 }
 
@@ -134,23 +166,6 @@ void ADC1_COMP_IRQHandler() {
   ADCChannel current_channel = __builtin_ctz(s_adc_status.sequence);
 
   uint16_t reading = ADC_GetConversionValue(ADC1);
-
-  switch (current_channel) {
-    case ADC_CHANNEL_TEMP:
-      reading = prv_get_temp(reading);
-      break;
-
-    case ADC_CHANNEL_REF:
-      reading = prv_get_vdda(reading);
-      break;
-
-    case ADC_CHANNEL_BAT:
-      reading *= 2;
-      break;
-
-    default:
-      break;
-  }
 
   if (s_adc_interrupts[current_channel].callback != NULL) {
     s_adc_interrupts[current_channel].callback(current_channel, reading,
