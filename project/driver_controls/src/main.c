@@ -56,8 +56,9 @@ int main() {
   for (;;) {
 		if (!event_process(&e)) {
 			state_process_event(&fsm_group, &e);
-		  printf("Event = %d : Car Status = %s : Direction = %s : Turn = %s : Hazard = %s : %d \n",
+		  printf("Event = %d : %s : %s : %s : %s : %s : %d \n",
     			e.id,
+          fsm_group.power.current_state->name,
     			fsm_group.pedal.current_state->name,
     			fsm_group.direction.current_state->name,
     			fsm_group.turn_signal.current_state->name,

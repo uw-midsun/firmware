@@ -18,6 +18,7 @@ typedef enum {
   INPUT_EVENT_TURN_SIGNAL_LEFT,           // Turn Signal   12
   INPUT_EVENT_TURN_SIGNAL_RIGHT,          // Turn Signal   13
   INPUT_EVENT_HAZARD_LIGHT,               // Hazard Light  14
+  INPUT_EVENT_MECHANICAL_BRAKE,           // Mech. Brake   15
   INPUT_EVENT_HORN,
   INPUT_EVENT_EMERGENCY_STOP,
   INPUT_EVENT_HEADLIGHTS,
@@ -27,8 +28,10 @@ typedef enum {
 } InputEvent;
 
 typedef struct FSMGroup {
+  FSM power;
   FSM pedal;
   FSM direction;
   FSM turn_signal;
   FSM hazard_light;
+  FSM mechanical_brake;
 } FSMGroup;
