@@ -4,36 +4,19 @@
 #include <stdint.h>
 
 #include "gpio.h"
-#include "spi.h"
-
-#define GYRO_ID 0xD4
-
-void gyro_cmd(bool read, bool autoincrement, uint8_t addr, uint8_t *data) {
-  uint8_t packet[] = {
-    (read & 0x01) << 7 | (autoincrement & 0x01) << 6 | (addr & 0x3F),
-    (read) ? 0 : *data
-  };
-
-  spi_exchange(1, packet, 2 - read, data, read);
-}
+#include "i2c.h"
 
 int main(void) {
   gpio_init();
 
-  SPISettings spi_settings = {
-    .baudrate = 1500000,
-    .mode = SPI_MODE_0,
-    .mosi = { GPIO_PORT_B, 15 },
-    .miso = { GPIO_PORT_B, 14 },
-    .sclk = { GPIO_PORT_B, 13 },
-    .cs = { GPIO_PORT_C, 0 }
+  I2CSettings i2c_settings = {
+    .speed = I2C_SPEED_FAST,
+    .scl = { GPIO_PORT_B, 8 },
+    .sda = { GPIO_PORT_B, 9 }
   };
+  i2c_init(I2C_PORT_1, &i2c_settings);
 
-  // Using SPI port 2 - not using enum so build on x86 will pass
-  spi_init(1, &spi_settings);
-
-  uint8_t whoami = 0xAA;
-  gyro_cmd(true, false, 0x0F, &whoami);
+  printf("I2C initialized\n");
 
   GPIOSettings led_settings = {
     .direction = GPIO_DIR_OUT,
@@ -45,11 +28,16 @@ int main(void) {
   gpio_init_pin(&leds[1], &led_settings);
 
   while (true) {
-    printf("ID: %d\n", whoami);
-    gpio_toggle_state(&leds[whoami == GYRO_ID]);
+    uint16_t rx_data = { 0 };
+    i2c_read(I2C_PORT_1, 0x5A, 0x07, &rx_data, sizeof(rx_data));
 
-    // arbitrary software delay
-    for (volatile int i = 0; i < 2000000; i++) { }
+    printf("0x%x: %d C\n", rx_data, (int16_t)(rx_data / 50) - 273);
+
+    i2c_read(I2C_PORT_1, 0x5A, 0x06, &rx_data, sizeof(rx_data));
+
+    printf("0x%x\n", rx_data);
+
+    for (volatile int i = 0; i < 4000000; i++) { }
   }
 
   return 0;
