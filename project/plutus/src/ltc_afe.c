@@ -36,7 +36,7 @@ void prv_write_config(const LtcAfeSettings *afe) {
     //    - true: CFGR0[0] = 0
     //    - false: CFGR0[0] = 1
     // CFGR0: bit0 is the ADC Mode
-    configuration_cmd[configuration_index++] |= ((afe->adc_mode + 1) > 3);
+    configuration_cmd[configuration_index++] |= !((afe->adc_mode + 1) > 3);
 
     // CFGR1: VUV[7...0]
     configuration_cmd[configuration_index++] = (undervoltage & 0xFF);
@@ -58,7 +58,7 @@ void prv_write_config(const LtcAfeSettings *afe) {
     configuration_cmd[configuration_index++] |= (timeout << 4);
 
     // adjust the configuration_cmd pointer to point to the start of slave's configuration
-    uint16_t cfgr_pec = crc15_calculate(configuration_cmd + (8 * (afe->devices_in_chain - device)) + 2, 6);
+    uint16_t cfgr_pec = crc15_calculate(configuration_cmd + (8 * (afe->devices_in_chain - device)) + (2 + 2), 6);
     configuration_cmd[configuration_index++] = (uint8_t)(cfgr_pec >> 8);
     configuration_cmd[configuration_index++] = (uint8_t)cfgr_pec;
   }
@@ -132,16 +132,14 @@ static void prv_trigger_adc_conversion(const LtcAfeSettings *afe) {
 }
 
 StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result_data) {
-  // start an ADC conversion
   prv_trigger_adc_conversion(afe);
 
   StatusCode result_status = STATUS_CODE_OK;
 
-  // TODO: is this the maximum data?
-  // devices_in_chain * (12 * 2) +
-  uint8_t afe_data[48] = { 0 };
-  uint16_t data_counter = 0;
   for (uint8_t cell_reg = 1; cell_reg < 5; ++cell_reg) {
+    uint8_t afe_data[8 * LTC_DEVICES_IN_CHAIN] = { 0 };
+    uint16_t data_counter = 0;
+
     prv_read_voltage(afe, cell_reg, afe_data);
 
     for (uint8_t afe_device = 0; afe_device < afe->devices_in_chain; ++afe_device) {
@@ -158,10 +156,10 @@ StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result_d
       uint16_t received_pec = (afe_data[data_counter] << 8)
                                 + afe_data[data_counter + 1];
 
-      //uint16_t data_pec = crc15_calculate(afe_data[afe_device * NUM_RX_BYTES]);
-      //if (received_pec != data_pec) {
-      //  result_status = STATUS_CODE_UNKNOWN;
-      //}
+      uint16_t data_pec = crc15_calculate(&afe_data[afe_device * 8], 6);
+      if (received_pec != data_pec) {
+        result_status = STATUS_CODE_UNKNOWN;
+      }
       data_counter += 2;
     }
   }
