@@ -57,7 +57,7 @@ typedef struct LtcAfeSettings {
 
   const SPIPort spi_port;
 
-  LtcAfeAdcMode afe_mode;
+  LtcAfeAdcMode adc_mode;
   uint8_t devices_in_chain;
 } LtcAfeSettings;
 

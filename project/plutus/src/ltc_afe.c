@@ -1,9 +1,8 @@
 #include "ltc_afe.h"
 #include "crc15.h"
 
-
 // write config to all devices
-void prv_write_config(const LtcAfeSettings *afe, uint8_t config) {
+void prv_write_config(const LtcAfeSettings *afe) {
   // see p.54 in datasheet
   // (2 bits for WRCFG + 2 bits for WRCFG PEC) +
   // (6 bits for CFGR + 2 bits for CFGR PEC) * devices_in_chain
@@ -30,6 +29,7 @@ void prv_write_config(const LtcAfeSettings *afe, uint8_t config) {
 
   // send CFGR registers starting with the bottom slave in the stack
   for (uint8_t device = afe->devices_in_chain; device > 0; --device) {
+    // TODO: get these values from config struct
     uint8_t enable = LTC6804_GPIO1 | LTC6804_GPIO2 | LTC6804_GPIO3 | LTC6804_GPIO4 | LTC6804_GPIO5;
     uint16_t undervoltage = 0;
     uint16_t overvoltage = 0;
@@ -39,7 +39,12 @@ void prv_write_config(const LtcAfeSettings *afe, uint8_t config) {
     // CFGR0, ..., CFGR5 + 2 bytes for PEC
     uint8_t cfgr_registers[8] = { 0 };
     // CFGR0
-    configuration_cmd[configuration_index++] = enable;
+    configuration_cmd[configuration_index] = enable;
+    // (adc mode enum + 1) > 3:
+    //    - true: CFGR0[0] = 0
+    //    - false: CFGR0[0] = 1
+    // CFGR0: bit0 is the ADC Mode
+    configuration_cmd[configuration_index++] |= ((afe->adc_mode + 1) > 3);
 
     // CFGR1: VUV[7...0]
     configuration_cmd[configuration_index++] = (undervoltage & 0xFF);
@@ -66,14 +71,15 @@ void prv_write_config(const LtcAfeSettings *afe, uint8_t config) {
     configuration_cmd[configuration_index++] = (uint8_t)cfgr_pec;
   }
 
-  //spi_exchange(afe->spi_port, cfgr_registers, 8, );
+  // don't care about SPI results
+  spi_exchange(afe->spi_port, configuration_cmd, (2 + 2) + ((6 + 2) * afe->devices_in_chain), NULL, 0);
 }
 
 StatusCode LtcAfe_init(const LtcAfeSettings *afe) {
   crc15_init();
 
   SPISettings spi_config = {
-    .baudrate = 1,
+    .baudrate = 115200,
     .mode = SPI_MODE_3,
     .mosi = afe->mosi,
     .miso = afe->miso,
@@ -82,13 +88,9 @@ StatusCode LtcAfe_init(const LtcAfeSettings *afe) {
   };
   spi_init(afe->spi_port, &spi_config);
 
-  // write configuration register
+  prv_write_config();
 
   // set adc mode
-  // (adc mode enum + 1) % 3
-  // (adc mode enum + 1) > 3:
-  //    - true: CFGR0[0] = 0
-  //    - false: CFGR0[0] = 1
 
 
   return STATUS_CODE_OK;
@@ -96,8 +98,7 @@ StatusCode LtcAfe_init(const LtcAfeSettings *afe) {
 
 // read back raw data from a single cell voltage register
 // voltage_register is 0 indexed
-StatusCode prv_read_voltage(LtcAfeSettings *afe, uint8_t voltage_register,
-                            uint8_t *data) {
+StatusCode prv_read_voltage(LtcAfeSettings *afe, uint8_t voltage_register, uint8_t *data) {
   if (voltage_register > 4) {
     return STATUS_CODE_INVALID_ARGS;
   }
