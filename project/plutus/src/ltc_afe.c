@@ -8,12 +8,13 @@ void prv_write_config(const LtcAfeSettings *afe, uint8_t config) {
   // (2 bits for WRCFG + 2 bits for WRCFG PEC) +
   // (6 bits for CFGR + 2 bits for CFGR PEC) * devices_in_chain
   uint8_t configuration_cmd[4 + 8 * LTC_DEVICES_IN_CHAIN] = { 0 };
-  uint8_t wrcfg_cmd[4] = { 0 };
-  // WRCFG
-  wrcfg_cmd[0] = 0x00;
-  wrcfg_cmd[1] = 0x01;
+  uint8_t configuration_index = 0;
 
-  uint16_t cmd_crc = crc15_calculate(wrcfg_cmd, 2);
+  // WRCFG
+  configuration_cmd[configuration_index++] = 0x00;
+  configuration_cmd[configuration_index++] = 0x01;
+
+  uint16_t cmd_crc = crc15_calculate(configuration_cmd, 2);
 
   union {
     uint16_t data;
@@ -23,9 +24,9 @@ void prv_write_config(const LtcAfeSettings *afe, uint8_t config) {
   crc_bits.data = cmd_crc;
 
   // set PEC high bits
-  wrcfg_cmd[3] = crc_bits.bits[1];
+  configuration_cmd[configuration_index++] = crc_bits.bits[1];
   // set PEC low bits
-  wrcfg_cmd[4] = crc_bits.bits[0];
+  configuration_cmd[configuration_index++] = crc_bits.bits[0];
 
   // send CFGR registers starting with the bottom slave in the stack
   for (uint8_t device = afe->devices_in_chain; device > 0; --device) {
@@ -35,33 +36,34 @@ void prv_write_config(const LtcAfeSettings *afe, uint8_t config) {
     uint16_t cells_to_discharge = 0;
     LtcDischargeTimeout timeout = LTC_AFE_DISCHARGE_TIMEOUT_DISABLED;
 
-    // CFGR0 - CFGR5 + 2 bytes for PEC
+    // CFGR0, ..., CFGR5 + 2 bytes for PEC
     uint8_t cfgr_registers[8] = { 0 };
     // CFGR0
-    cfgr_registers[0] = enable;
+    configuration_cmd[configuration_index++] = enable;
 
     // CFGR1: VUV[7...0]
-    cfgr_registers[1] = (undervoltage & 0xFF);
+    configuration_cmd[configuration_index++] = (undervoltage & 0xFF);
 
     // CFGR2: VUV[11...8] in bit3, ..., bit0
-    cfgr_registers[2] = ((undervoltage >> 8) & 0xF0);
+    configuration_cmd[configuration_index] = ((undervoltage >> 8) & 0xF0);
     // CFGR2: VOV[3...0] in bit7, ..., bit4
-    cfgr_registers[2] |= (overvoltage & 0x0F);
+    configuration_cmd[configuration_index++] |= (overvoltage & 0x0F);
 
     // CFGR3: VOV[11...4]
-    cfgr_registers[3] = ((overvoltage >> 4) & 0xFF);
+    configuration_cmd[configuration_index++] = ((overvoltage >> 4) & 0xFF);
 
     // CFGR4: DCC8, ..., DCC1
-    cfgr_registers[4] = cells_to_discharge & 0xFF;
+    configuration_cmd[configuration_index++] = cells_to_discharge & 0xFF;
 
     // CFGR5: DCC12, ..., DCC9
-    cfgr_registers[5] = ((cells_to_discharge >> 8) & 0x0F);
+    configuration_cmd[configuration_index] = ((cells_to_discharge >> 8) & 0x0F);
     // CFGR5: DCTO5, ... DCTO0 in bit7, ..., bit4
-    cfgr_registers[5] |= (timeout << 4);
+    configuration_cmd[configuration_index++] |= (timeout << 4);
 
-    uint16_t cfgr_pec = crc15_calculate(cfgr_registers, 6);
-    cfgr_registers[6] = (uint8_t)(cfgr_pec >> 8);
-    cfgr_registers[7] = (uint8_t)cfgr_pec;
+    // adjust the configuration_cmd pointer to point to the start of slave's configuration
+    uint16_t cfgr_pec = crc15_calculate(configuration_cmd + (8 * (afe->devices_in_chain - device)) + 2, 6);
+    configuration_cmd[configuration_index++] = (uint8_t)(cfgr_pec >> 8);
+    configuration_cmd[configuration_index++] = (uint8_t)cfgr_pec;
   }
 
   //spi_exchange(afe->spi_port, cfgr_registers, 8, );
