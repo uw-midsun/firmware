@@ -88,10 +88,7 @@ StatusCode LtcAfe_init(const LtcAfeSettings *afe) {
   };
   spi_init(afe->spi_port, &spi_config);
 
-  prv_write_config();
-
-  // set adc mode
-
+  prv_write_config(afe);
 
   return STATUS_CODE_OK;
 }
@@ -99,6 +96,7 @@ StatusCode LtcAfe_init(const LtcAfeSettings *afe) {
 // read back raw data from a single cell voltage register
 // voltage_register is 0 indexed
 StatusCode prv_read_voltage(LtcAfeSettings *afe, uint8_t voltage_register, uint8_t *data) {
+  // RDCV{A,B,C,D}
   if (voltage_register > 4) {
     return STATUS_CODE_INVALID_ARGS;
   }
@@ -133,7 +131,25 @@ StatusCode prv_read_voltage(LtcAfeSettings *afe, uint8_t voltage_register, uint8
   return STATUS_CODE_OK;
 }
 
+// start cell voltage conversion
+//
+static void prv_trigger_adc_conversion(const LtcAfeSettings *afe) {
+  // ADCV command
+  uint8_t cmd[4] = { 0 };
+  cmd[0] = LTC6804_CNVT_CELL_ALL;
+  cmd[0] |= LTC6804_ADCV_DISCHARGE_PERMITTED | LTC6804_ADCV_RESERVED;
+
+  uint16_t cmd_pec = crc15_calculate(cmd, 2);
+  cmd[2] = (uint8_t)(cmd_pec >> 8);
+  cmd[3] = (uint8_t)(cmd_pec);
+
+  spi_exchange(afe->spi_port, cmd, 4, NULL, 0);
+}
+
 StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result_data) {
+  // start an ADC conversion
+  prv_trigger_adc_conversion(afe);
+
   StatusCode result_status = STATUS_CODE_OK;
 
   // TODO: is this the maximum data?
@@ -163,7 +179,6 @@ StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result_d
         cell_voltage.data[1] = afe_data[data_counter + 1];
 
         // TODO: figure out how we're going to index this
-        //result_data[][] = cell_voltage.voltage;
         data_counter += 2;
       }
 

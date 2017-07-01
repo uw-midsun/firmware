@@ -19,6 +19,17 @@
 #define LTC6804_GPIO4         (1 << 6)
 #define LTC6804_GPIO5         (1 << 7)
 
+#define LTC6804_CNVT_CELL_ALL   0
+#define LTC6804_CNVT_CELL_1_7   1
+#define LTC6804_CNVT_CELL_2_8   2
+#define LTC6804_CNVT_CELL_3_9   3
+#define LTC6804_CNVT_CELL_4_10  4
+#define LTC6804_CNVT_CELL_5_11  5
+#define LTC6804_CNVT_CELL_6_12  6
+
+#define LTC6804_ADCV_DISCHARGE_PERMITTED     (1 << 4)
+#define LTC6804_ADCV_RESERVED ((1 << 6) | (1 << 5) | (1 << 9))
+
 typedef enum {
   LTC_AFE_DISCHARGE_TIMEOUT_DISABLED = 0,
   LTC_AFE_DISCHARGE_TIMEOUT_30_S,
