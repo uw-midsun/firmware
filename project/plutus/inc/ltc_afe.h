@@ -5,6 +5,7 @@
 #include "gpio.h"
 #include "status.h"
 #include "spi.h"
+#include "crc15.h"
 
 #define LTC_AFE_CELL_IN_REG 6
 

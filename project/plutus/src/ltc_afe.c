@@ -1,5 +1,4 @@
 #include "ltc_afe.h"
-#include "crc15.h"
 
 // write config to all devices
 void prv_write_config(const LtcAfeSettings *afe) {
@@ -13,19 +12,12 @@ void prv_write_config(const LtcAfeSettings *afe) {
   configuration_cmd[configuration_index++] = 0x00;
   configuration_cmd[configuration_index++] = 0x01;
 
-  uint16_t cmd_crc = crc15_calculate(configuration_cmd, 2);
-
-  union {
-    uint16_t data;
-    uint8_t bits[2];
-  } crc_bits;
-
-  crc_bits.data = cmd_crc;
+  uint16_t cmd_pec = crc15_calculate(configuration_cmd, 2);
 
   // set PEC high bits
-  configuration_cmd[configuration_index++] = crc_bits.bits[1];
+  configuration_cmd[configuration_index++] = (uint8_t)(cmd_pec >> 8);
   // set PEC low bits
-  configuration_cmd[configuration_index++] = crc_bits.bits[0];
+  configuration_cmd[configuration_index++] = (uint8_t)cmd_pec;
 
   // send CFGR registers starting with the bottom slave in the stack
   for (uint8_t device = afe->devices_in_chain; device > 0; --device) {
@@ -76,7 +68,7 @@ void prv_write_config(const LtcAfeSettings *afe) {
 }
 
 StatusCode LtcAfe_init(const LtcAfeSettings *afe) {
-  crc15_init();
+  crc15_init_table();
 
   SPISettings spi_config = {
     .baudrate = 115200,
@@ -109,19 +101,12 @@ StatusCode prv_read_voltage(LtcAfeSettings *afe, uint8_t voltage_register, uint8
   cmd[0] = 0x00;
   cmd[1] = 0x04 + voltage_register;
 
-  uint16_t cmd_crc = crc15_calculate(cmd, 2);
-
-  union {
-    uint16_t data;
-    uint8_t bits[2];
-  } crc_bits;
-
-  crc_bits.data = cmd_crc;
+  uint16_t cmd_pec = crc15_calculate(cmd, 2);
 
   // set high bits
-  cmd[2] = crc_bits.bits[1];
+  cmd[2] = (uint8_t)(cmd_pec >> 8);
   // set low bits
-  cmd[3] = crc_bits.bits[0];
+  cmd[3] = (uint8_t)(cmd_pec);
 
   // wakeup idle.. is this necessary?
 
@@ -159,24 +144,11 @@ StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result_d
   for (uint8_t cell_reg = 1; cell_reg < 5; ++cell_reg) {
     prv_read_voltage(afe, cell_reg, afe_data);
 
-    union {
-      uint16_t voltage;
-      uint8_t data[2];
-    } cell_voltage;
-
-    union {
-      uint16_t data;
-      uint8_t bytes[2];
-    } packet_error_code;
-
-
     for (uint8_t afe_device = 0; afe_device < afe->devices_in_chain; ++afe_device) {
       // iterate through each cell each device is monitoring
       for (uint8_t cell = 0; cell < LTC_AFE_CELL_IN_REG; ++cell) {
-        // set low bits
-        cell_voltage.data[0] = afe_data[data_counter];
-        // set high bits
-        cell_voltage.data[1] = afe_data[data_counter + 1];
+        uint16_t cell_voltage = afe_data[data_counter] + (afe_data[data_counter + 1] << 8);
+        result_data[afe_device * 12 + cell] = cell_voltage;
 
         // TODO: figure out how we're going to index this
         data_counter += 2;
@@ -209,19 +181,12 @@ StatusCode prv_read_aux_cmd(const LtcAfeSettings *afe, uint8_t aux_register, uin
   // Auxiliary Register Group B: 0x0E (14)
   cmd[4] = 0x0C + aux_register;
 
-  uint16_t cmd_crc = crc15_calculate(cmd, 2);
-
-  union {
-    uint16_t data;
-    uint8_t bits[2];
-  } crc_bits;
-
-  crc_bits.data = cmd_crc;
+  uint16_t cmd_pec = crc15_calculate(cmd, 2);
 
   // set high bits
-  cmd[2] = crc_bits.bits[1];
+  cmd[2] = (uint8_t)(cmd_pec >> 8);
   // set low bits
-  cmd[3] = crc_bits.bits[0];
+  cmd[3] = (uint8_t)cmd_pec;
 
   // wakeup idle.. is this necessary?
 
