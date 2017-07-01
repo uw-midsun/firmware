@@ -1,9 +1,43 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
-#include "cn_proc.h"
+#include "gpio.h"
 #include "status.h"
 #include "spi.h"
+
+#define LTC_AFE_CELL_IN_REG 6
+
+// used to allocate static memory
+#define LTC_DEVICES_IN_CHAIN 3
+
+#define LTC6804_ADCOPT        (1 << 0)
+#define LTC6804_SWTRD         (1 << 1)
+#define LTC6804_GPIO1         (1 << 3)
+#define LTC6804_GPIO2         (1 << 4)
+#define LTC6804_GPIO3         (1 << 5)
+#define LTC6804_GPIO4         (1 << 6)
+#define LTC6804_GPIO5         (1 << 7)
+
+typedef enum {
+  LTC_AFE_DISCHARGE_TIMEOUT_DISABLED = 0,
+  LTC_AFE_DISCHARGE_TIMEOUT_30_S,
+  LTC_AFE_DISCHARGE_TIMEOUT_1_MIN,
+  LTC_AFE_DISCHARGE_TIMEOUT_2_MIN,
+  LTC_AFE_DISCHARGE_TIMEOUT_3_MIN,
+  LTC_AFE_DISCHARGE_TIMEOUT_4_MIN,
+  LTC_AFE_DISCHARGE_TIMEOUT_5_MIN,
+  LTC_AFE_DISCHARGE_TIMEOUT_10_MIN,
+  LTC_AFE_DISCHARGE_TIMEOUT_15_MIN,
+  LTC_AFE_DISCHARGE_TIMEOUT_20_MIN,
+  LTC_AFE_DISCHARGE_TIMEOUT_30_MIN,
+  LTC_AFE_DISCHARGE_TIMEOUT_40_MIN,
+  LTC_AFE_DISCHARGE_TIMEOUT_60_MIN,
+  LTC_AFE_DISCHARGE_TIMEOUT_75_MIN,
+  LTC_AFE_DISCHARGE_TIMEOUT_90_MIN,
+  LTC_AFE_DISCHARGE_TIMEOUT_120_MIN
+} LtcDischargeTimeout;
+
 
 typedef enum {
   LTC_AFE_ADC_MODE_27KHZ = 0,
@@ -15,17 +49,27 @@ typedef enum {
   LTC_AFE_ADC_MODE_NUM
 } LtcAfeAdcMode;
 
-typedef struct {
-  const SPISettings *spi_settings;
+typedef struct LtcAfeSettings {
+  GPIOAddress cs;
+  GPIOAddress mosi;
+  GPIOAddress miso;
+  GPIOAddress sclk;
+
   const SPIPort spi_port;
+
   LtcAfeAdcMode afe_mode;
+  uint8_t devices_in_chain;
 } LtcAfeSettings;
 
 // initialize the LTC6804
 StatusCode LtcAfe_init(const LtcAfeSettings *afe);
 
 // read all voltages
-StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe);
+StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result);
 
-// read all temperatures
-StatusCode LtcAfe_read_all_temperature(const LtcAfeSettings *afe);
+// read all auxilary registers
+StatusCode LtcAfe_read_all_aux(const LtcAfeSettings *afe);
+
+// discharge cells
+StatusCode LtcAfe_toggle_discharge_cells(const LtcAfeSettings *afe, uint8_t device,
+                                          uint8_t cell, bool discharge);
