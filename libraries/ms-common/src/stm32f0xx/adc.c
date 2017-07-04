@@ -178,7 +178,7 @@ StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading) {
   adc_read_raw(adc_channel, reading);
   uint16_t vdda = prv_get_vdda(s_adc_interrupts[ADC_CHANNEL_REF].reading);
   uint16_t adc_reading = ((*reading) * vdda)/4095;
-  
+
   *reading = adc_reading;
   return STATUS_CODE_OK;
 }
