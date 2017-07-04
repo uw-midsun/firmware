@@ -35,7 +35,7 @@ typedef enum {
   NUM_ADC_CHANNEL
 } ADCChannel;
 
-typedef void (*ADCCallback)(ADCChannel adc_channel, uint16_t reading, void *context);
+typedef void (*ADCCallback)(ADCChannel adc_channel, void *context);
 
 // Initialize the ADC to the desired conversion mode
 void adc_init(ADCMode adc_mode);
@@ -47,7 +47,7 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state);
 StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, void *context);
 
 // Obtain the raw 12-bit value read by the specified channel
-StatusCode adc_read_value(ADCChannel adc_channel, uint16_t *reading);
+StatusCode adc_read_raw(ADCChannel adc_channel, uint16_t *reading);
 
-// Obtain the converted voltage at the specified channel
-StatusCode adc_read_voltage(ADCChannel adc_channel, uint16_t *reading);
+// Obtain the converted value at the specified channel
+StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading);

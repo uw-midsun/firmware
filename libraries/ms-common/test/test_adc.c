@@ -2,7 +2,6 @@
 #include "gpio.h"
 #include "unity.h"
 #include "log.h"
-#include "critical_section.h"
 
 static GPIOAddress address[] = { { GPIO_PORT_A, 0 }, { GPIO_PORT_A, 1 }, { GPIO_PORT_A, 2 } };
 
@@ -47,6 +46,14 @@ void test_set_callback(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     adc_register_callback(NUM_ADC_CHANNEL, prv_callback, NULL));
 
+  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL));
+  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, adc_register_callback(ADC_CHANNEL_1, prv_callback, NULL));
+  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, adc_register_callback(ADC_CHANNEL_2, prv_callback, NULL));
+
+  adc_set_channel(ADC_CHANNEL_0, 1);
+  adc_set_channel(ADC_CHANNEL_1, 1);
+  adc_set_channel(ADC_CHANNEL_2, 1);
+
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_register_callback(ADC_CHANNEL_1, prv_callback, NULL));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_register_callback(ADC_CHANNEL_2, prv_callback, NULL));
@@ -71,13 +78,17 @@ void test_single() {
   TEST_ASSERT_EQUAL(0, s_callback_runs);
 
   // Ensure that the conversions happen once adc_read_value is called
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_read_value(ADC_CHANNEL_0, &reading));
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, adc_read_value(NUM_ADC_CHANNEL, &reading));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_read_raw(ADC_CHANNEL_0, &reading));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_read_raw(ADC_CHANNEL_1, &reading));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_read_raw(ADC_CHANNEL_2, &reading));
+
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, adc_read_raw(NUM_ADC_CHANNEL, &reading));
+  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, adc_read_raw(ADC_CHANNEL_3, &reading));
 
   while (!s_callback_ran) {}
 
   TEST_ASSERT_TRUE(s_callback_ran);
-  TEST_ASSERT_EQUAL(3, s_callback_runs);
+  TEST_ASSERT_TRUE(s_callback_runs > 0);
 }
 
 void test_continuous() {

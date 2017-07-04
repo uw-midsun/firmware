@@ -10,6 +10,10 @@ StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, v
   return STATUS_CODE_UNIMPLEMENTED;
 }
 
-StatusCode adc_read_value(ADCChannel adc_channel, uint16_t *reading) {
+StatusCode adc_read_raw(ADCChannel adc_channel, uint16_t *reading) {
+  return STATUS_CODE_UNIMPLEMENTED;
+}
+
+StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading) {
   return STATUS_CODE_UNIMPLEMENTED;
 }
