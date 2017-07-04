@@ -134,11 +134,8 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
 
 StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, void *context) {
   // Returns invalid if the given address is not connected to an ADC channel
-  StatusCode invalid = prv_channel_valid(adc_channel);
-
-  if (invalid) {
-    return invalid;
-  }
+  StatusCode valid = prv_channel_valid(adc_channel);
+  status_ok_or_return(valid);
 
   s_adc_interrupts[adc_channel].callback = callback;
   s_adc_interrupts[adc_channel].context = context;
@@ -147,11 +144,8 @@ StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, v
 }
 
 StatusCode adc_read_raw(ADCChannel adc_channel, uint16_t *reading) {
-  StatusCode invalid = prv_channel_valid(adc_channel);
-
-  if (invalid) {
-    return invalid;
-  }
+  StatusCode valid = prv_channel_valid(adc_channel);
+  status_ok_or_return(valid);
 
   if (!s_adc_status.continuous) {
     ADC_StartOfConversion(ADC1);
@@ -164,37 +158,27 @@ StatusCode adc_read_raw(ADCChannel adc_channel, uint16_t *reading) {
 }
 
 StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading) {
-  StatusCode invalid = prv_channel_valid(adc_channel);
-
-  if (invalid) {
-    return invalid;
-  }
-
-  uint16_t adc_reading, internal_reading;
+  StatusCode valid = prv_channel_valid(adc_channel);
+  status_ok_or_return(valid);
 
   switch (adc_channel) {
     case ADC_CHANNEL_TEMP:
-      internal_reading = s_adc_interrupts[ADC_CHANNEL_TEMP].reading;
-      adc_reading = prv_get_temp(internal_reading);
-      break;
+      *reading = prv_get_temp(s_adc_interrupts[adc_channel].reading);
+      return;
 
     case ADC_CHANNEL_REF:
-      internal_reading = s_adc_interrupts[ADC_CHANNEL_REF].reading;
-      adc_reading = prv_get_vdda(internal_reading);
-      break;
+      *reading = prv_get_vdda(s_adc_interrupts[adc_channel].reading);
+      return;
 
     case ADC_CHANNEL_BAT:
-      adc_reading = s_adc_interrupts[ADC_CHANNEL_BAT].reading * 2;
-      break;
-
-    default:
-      adc_read_raw(adc_channel, reading);
-      internal_reading = s_adc_interrupts[ADC_CHANNEL_REF].reading;
-      uint16_t vdda = prv_get_vdda(internal_reading);
-      adc_reading = ((*reading) * vdda)/4095;
-      break;
+      *reading = s_adc_interrupts[adc_channel].reading * 2;
+      return;
   }
 
+  adc_read_raw(adc_channel, reading);
+  uint16_t vdda = prv_get_vdda(s_adc_interrupts[ADC_CHANNEL_REF].reading);
+  uint16_t adc_reading = ((*reading) * vdda)/4095;
+  
   *reading = adc_reading;
   return STATUS_CODE_OK;
 }

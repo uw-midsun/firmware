@@ -8,9 +8,22 @@ static GPIOAddress address[] = { { GPIO_PORT_A, 0 }, { GPIO_PORT_A, 1 }, { GPIO_
 static volatile uint8_t s_callback_runs = 0;
 static volatile bool s_callback_ran = false;
 
-void prv_callback(ADCChannel adc_channel, uint16_t reading, void *context) {
+void prv_callback(ADCChannel adc_channel, void *context) {
   s_callback_runs++;
   s_callback_ran = true;
+}
+
+// Check multiple samples to ensure they are within the correct range
+void prv_adc_read(ADCChannel adc_channel) {
+  uint16_t raw_reading, conv_reading;
+
+  for (uint8_t i = 0; i < 12; i++) {
+    adc_read_raw(adc_channel, &raw_reading);
+    TEST_ASSERT_TRUE(0 <= raw_reading && raw_reading < 4095);
+
+    adc_read_converted(adc_channel, &conv_reading);
+    TEST_ASSERT_TRUE(0 <= conv_reading && conv_reading < 3000);
+  }
 }
 
 void setup_test() {
@@ -89,6 +102,7 @@ void test_single() {
 
   TEST_ASSERT_TRUE(s_callback_ran);
   TEST_ASSERT_TRUE(s_callback_runs > 0);
+  TEST_ASSERT_TRUE(0 <= reading && reading < 4095);
 }
 
 void test_continuous() {
@@ -111,4 +125,24 @@ void test_continuous() {
 
   TEST_ASSERT_TRUE(s_callback_ran);
   TEST_ASSERT_TRUE(s_callback_runs > 0);
+}
+
+void test_read_single() {
+  // Check that both the raw readings and converted readings are within the expected range
+  adc_init(ADC_MODE_SINGLE);
+
+  adc_set_channel(ADC_CHANNEL_0, 1);
+  adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL);
+
+  prv_adc_read(ADC_CHANNEL_0);
+}
+
+void test_read_continuous() {
+  // Check that both the raw readings and converted readings are within the expected range
+  adc_init(ADC_MODE_CONTINUOUS);
+
+  adc_set_channel(ADC_CHANNEL_0, 1);
+  adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL);
+
+  prv_adc_read(ADC_CHANNEL_0);
 }
