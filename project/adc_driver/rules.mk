@@ -5,8 +5,5 @@
 # $(T)_INC_DIRS: $(T)_DIR/inc{/$(PLATFORM)}
 # $(T)_SRC: $(T)_DIR/src{/$(PLATFORM)}/*.{c,s}
 
-$(T)_DEPS := $(PLATFORM_LIB)
-
-ifeq (x86,$(PLATFORM))
-$(T)_EXCLUDE_TESTS := can can_hw adc
-endif
+# Specify the device library you want to include
+$(T)_DEPS := ms-common
