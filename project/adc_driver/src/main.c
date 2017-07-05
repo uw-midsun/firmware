@@ -47,7 +47,7 @@ int main() {
 
   uint16_t reading;
 
-  while (1) {
+  for (int i = 0; i < 500; i++) {
     adc_read_raw(ADC_CHANNEL_10, &reading);
     LOG_DEBUG("{");
     for (int i = ADC_CHANNEL_0; i < ADC_CHANNEL_TEMP; i++) {

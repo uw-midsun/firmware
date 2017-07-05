@@ -74,7 +74,6 @@ void adc_init(ADCMode adc_mode) {
   // Calculate the ADC calibration factor
   ADC_GetCalibrationFactor(ADC1);
 
-
   ADC_ContinuousModeCmd(ADC1, adc_mode);
   while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADCAL)) { }
 
@@ -101,6 +100,7 @@ void adc_init(ADCMode adc_mode) {
   // Configure internal reference channel to run by default for voltage conversions
   adc_set_channel(ADC_CHANNEL_REF, ENABLE);
 }
+
 
 StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
   if (adc_channel >= NUM_ADC_CHANNEL) {
@@ -161,25 +161,29 @@ StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading) {
   StatusCode valid = prv_channel_valid(adc_channel);
   status_ok_or_return(valid);
 
+  uint16_t adc_reading;
+  adc_read_raw(adc_channel, &adc_reading);
+
   switch (adc_channel) {
     case ADC_CHANNEL_TEMP:
-      *reading = prv_get_temp(s_adc_interrupts[adc_channel].reading);
-      return;
+      adc_reading = prv_get_temp(adc_reading);
+      *reading = adc_reading;
+      return STATUS_CODE_OK;
 
     case ADC_CHANNEL_REF:
-      *reading = prv_get_vdda(s_adc_interrupts[adc_channel].reading);
-      return;
+      adc_reading = prv_get_vdda(adc_reading);
+      *reading = adc_reading;
+      return STATUS_CODE_OK;
 
     case ADC_CHANNEL_BAT:
-      *reading = s_adc_interrupts[adc_channel].reading * 2;
-      return;
+      adc_reading *= 2;
+      break;
   }
 
-  adc_read_raw(adc_channel, reading);
-  uint16_t vdda = prv_get_vdda(s_adc_interrupts[ADC_CHANNEL_REF].reading);
-  uint16_t adc_reading = ((*reading) * vdda)/4095;
+  uint16_t vdda;
+  adc_read_converted(ADC_CHANNEL_REF, &vdda);
+  *reading = (adc_reading * vdda)/4095;
 
-  *reading = adc_reading;
   return STATUS_CODE_OK;
 }
 

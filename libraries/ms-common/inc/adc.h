@@ -40,7 +40,9 @@ typedef void (*ADCCallback)(ADCChannel adc_channel, void *context);
 // Initialize the ADC to the desired conversion mode
 void adc_init(ADCMode adc_mode);
 
-// Enable or disable a given channel
+// Enable or disable a given channel.
+// A race condition may occur when setting a channel during a conversion. However, it should not
+// cause issues given the intended use cases
 StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state);
 
 // Register a callback function to be called when the specified channel completes a conversion

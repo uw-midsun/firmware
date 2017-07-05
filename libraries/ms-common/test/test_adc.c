@@ -14,7 +14,7 @@ void prv_callback(ADCChannel adc_channel, void *context) {
 }
 
 // Check multiple samples to ensure they are within the correct range
-void prv_adc_read(ADCChannel adc_channel) {
+void prv_adc_check_range(ADCChannel adc_channel) {
   uint16_t raw_reading, conv_reading;
 
   for (uint8_t i = 0; i < 12; i++) {
@@ -134,7 +134,7 @@ void test_read_single() {
   adc_set_channel(ADC_CHANNEL_0, 1);
   adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL);
 
-  prv_adc_read(ADC_CHANNEL_0);
+  prv_adc_check_range(ADC_CHANNEL_0);
 }
 
 void test_read_continuous() {
@@ -144,5 +144,5 @@ void test_read_continuous() {
   adc_set_channel(ADC_CHANNEL_0, 1);
   adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL);
 
-  prv_adc_read(ADC_CHANNEL_0);
+  prv_adc_check_range(ADC_CHANNEL_0);
 }
