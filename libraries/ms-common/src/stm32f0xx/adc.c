@@ -58,7 +58,7 @@ void adc_init(ADCMode adc_mode) {
   ADC_DeInit(ADC1);
 
   // Once the ADC has been reset, enable it with the given settings
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, true);
 
   ADC_InitTypeDef adc_settings = {
     .ADC_Resolution = ADC_Resolution_12b,
@@ -78,16 +78,16 @@ void adc_init(ADCMode adc_mode) {
   while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADCAL)) { }
 
   // Enable the ADC
-  ADC_Cmd(ADC1, ENABLE);
+  ADC_Cmd(ADC1, true);
   while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_ADRDY)) { }
 
-  ADC_WaitModeCmd(ADC1, ENABLE);
+  ADC_WaitModeCmd(ADC1, true);
   ADC_AutoPowerOffCmd(ADC1, !adc_mode);
 
   // Enable interrupts for the end of each conversion
   stm32f0xx_interrupt_nvic_enable(ADC1_COMP_IRQn, INTERRUPT_PRIORITY_NORMAL);
-  ADC_ITConfig(ADC1, ADC_IER_EOCIE, ENABLE);
-  ADC_ITConfig(ADC1, ADC_IER_EOSEQIE, ENABLE);
+  ADC_ITConfig(ADC1, ADC_IER_EOCIE, true);
+  ADC_ITConfig(ADC1, ADC_IER_EOSEQIE, true);
 
   // Initialize static varables
   s_adc_status.continuous = adc_mode;
@@ -98,7 +98,7 @@ void adc_init(ADCMode adc_mode) {
   }
 
   // Configure internal reference channel to run by default for voltage conversions
-  adc_set_channel(ADC_CHANNEL_REF, ENABLE);
+  adc_set_channel(ADC_CHANNEL_REF, true);
 }
 
 
@@ -166,13 +166,11 @@ StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading) {
 
   switch (adc_channel) {
     case ADC_CHANNEL_TEMP:
-      adc_reading = prv_get_temp(adc_reading);
-      *reading = adc_reading;
+      *reading = prv_get_temp(adc_reading);
       return STATUS_CODE_OK;
 
     case ADC_CHANNEL_REF:
-      adc_reading = prv_get_vdda(adc_reading);
-      *reading = adc_reading;
+      *reading = prv_get_vdda(adc_reading);
       return STATUS_CODE_OK;
 
     case ADC_CHANNEL_BAT:

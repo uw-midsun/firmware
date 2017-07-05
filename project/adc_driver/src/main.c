@@ -34,12 +34,12 @@ int main() {
   adc_init(ADC_MODE_SINGLE);
 
   for (ADCChannel i = ADC_CHANNEL_10; i < ADC_CHANNEL_14; i++) {
-    adc_set_channel(i, 1);
+    adc_set_channel(i, true);
     adc_register_callback(i, test_callback, &adc_readings[i]);
   }
 
-  adc_set_channel(ADC_CHANNEL_TEMP, 1);
-  adc_set_channel(ADC_CHANNEL_BAT, 1);
+  adc_set_channel(ADC_CHANNEL_TEMP, true);
+  adc_set_channel(ADC_CHANNEL_BAT, true);
 
   adc_register_callback(ADC_CHANNEL_TEMP, test_callback, &adc_readings[ADC_CHANNEL_TEMP]);
   adc_register_callback(ADC_CHANNEL_REF, test_callback, &adc_readings[ADC_CHANNEL_REF]);
@@ -47,7 +47,7 @@ int main() {
 
   uint16_t reading;
 
-  for (int i = 0; i < 500; i++) {
+  for (;;) {
     adc_read_raw(ADC_CHANNEL_10, &reading);
     LOG_DEBUG("{");
     for (int i = ADC_CHANNEL_0; i < ADC_CHANNEL_TEMP; i++) {
