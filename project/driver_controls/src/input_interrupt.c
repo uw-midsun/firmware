@@ -66,7 +66,7 @@ static InputEvent prv_get_event(GPIOAddress *address) {
   }
 }
 
-void input_callback(GPIOAddress *address) {
-	event_raise(prv_get_event(address), 0);  
+void input_callback(GPIOAddress *address, void *context) {
+  event_raise(prv_get_event(address), 0);
   return;
 }

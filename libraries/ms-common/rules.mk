@@ -8,5 +8,5 @@
 $(T)_DEPS := $(PLATFORM_LIB)
 
 ifeq (x86,$(PLATFORM))
-$(T)_EXCLUDE_TESTS := can can_hw
+$(T)_EXCLUDE_TESTS := can can_hw adc
 endif

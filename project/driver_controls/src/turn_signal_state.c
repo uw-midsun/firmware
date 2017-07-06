@@ -41,9 +41,9 @@ static void prv_state_right_signal(FSM* fsm, const Event* e, void *context) {
 
 
 void turn_signal_state_init(FSM* turn_signal_fsm, void *context) {
-	fsm_state_init(state_no_signal, prv_state_no_signal);
-	fsm_state_init(state_left_signal, prv_state_left_signal);
-	fsm_state_init(state_right_signal, prv_state_right_signal);
+  fsm_state_init(state_no_signal, prv_state_no_signal);
+  fsm_state_init(state_left_signal, prv_state_left_signal);
+  fsm_state_init(state_right_signal, prv_state_right_signal);
 
-	fsm_init(turn_signal_fsm, "turn_signal_fsm", &state_no_signal, prv_check_signal);
+  fsm_init(turn_signal_fsm, "turn_signal_fsm", &state_no_signal, prv_check_signal);
 }

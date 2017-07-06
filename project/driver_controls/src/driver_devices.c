@@ -10,12 +10,15 @@ void driver_controls_init() {
 }
 
 void driver_controls_add_device(Device *device) {
-  GPIOSettings gpio_settings = { device->direction, GPIO_STATE_LOW, GPIO_RES_NONE, device->alt_function };
+  GPIOSettings gpio_settings = { device->direction, GPIO_STATE_LOW,
+                                  GPIO_RES_NONE, device->alt_function };
+
   InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_NORMAL };
 
   gpio_init_pin(&device->address, &gpio_settings);
 
   if (device->callback != NULL) {
-    gpio_it_register_interrupt(&device->address, &it_settings, device->edge, device->callback, device->context);
+    gpio_it_register_interrupt(&device->address, &it_settings, device->edge,
+                                device->callback, device->context);
   }
 }

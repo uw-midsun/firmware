@@ -50,9 +50,9 @@ static void prv_state_reverse(FSM *fsm, const Event *e, void *context) {
 }
 
 void direction_state_init(FSM *direction_fsm, void *context) {
-	fsm_state_init(state_neutral, prv_state_neutral);
-	fsm_state_init(state_forward, prv_state_forward);
-	fsm_state_init(state_reverse, prv_state_reverse);
+  fsm_state_init(state_neutral, prv_state_neutral);
+  fsm_state_init(state_forward, prv_state_forward);
+  fsm_state_init(state_reverse, prv_state_reverse);
 
-	fsm_init(direction_fsm, "direction_fsm", &state_neutral, prv_check_neutral);
+  fsm_init(direction_fsm, "direction_fsm", &state_neutral, prv_check_neutral);
 }

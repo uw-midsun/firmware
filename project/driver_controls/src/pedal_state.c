@@ -64,10 +64,10 @@ static void prv_state_cruise_control(FSM *fsm, const Event *e, void *context) {
 }
 
 void pedal_state_init(FSM *pedal_fsm, void *context) {
-	fsm_state_init(state_brake, prv_state_brake);
-	fsm_state_init(state_coast, prv_state_coast);
-	fsm_state_init(state_driving, prv_state_driving);
-	fsm_state_init(state_cruise_control, prv_state_cruise_control);
+  fsm_state_init(state_brake, prv_state_brake);
+  fsm_state_init(state_coast, prv_state_coast);
+  fsm_state_init(state_driving, prv_state_driving);
+  fsm_state_init(state_cruise_control, prv_state_cruise_control);
 
-	fsm_init(pedal_fsm, "pedal_fsm", &state_brake, prv_check_brake);
+  fsm_init(pedal_fsm, "pedal_fsm", &state_brake, prv_check_brake);
 }

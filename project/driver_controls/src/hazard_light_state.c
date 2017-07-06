@@ -15,7 +15,7 @@ FSM_STATE_TRANSITION(state_hazard_off) {
 
 // Transition check functions
 static bool prv_check_hazard(const Event *e) {
-	return true;
+  return true;
 }
 
 // Output functions for the hazard light state

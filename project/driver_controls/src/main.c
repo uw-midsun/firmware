@@ -7,8 +7,17 @@
 #include "soft_timer.h"
 #include "driver_devices.h"
 
+#include "power_state.h"
+#include "pedal_state.h"
+#include "direction_state.h"
+#include "turn_signal_state.h"
+#include "hazard_light_state.h"
+#include "mechanical_brake.h"
+
 #define INPUT_DEVICES 10
 #define OUTPUT_DEVICES 1
+
+//Keep interrupt priority low so that debounce can work properly
 
 void device_init() {
   driver_controls_init();
@@ -28,7 +37,7 @@ void device_init() {
   };
 
   Device outputs[OUTPUT_DEVICES] = {
-    { { GPIO_PORT_C, 11 }, GPIO_DIR_OUT, 0, GPIO_ALTFN_NONE } 
+    { { GPIO_PORT_C, 11 }, GPIO_DIR_OUT, 0, GPIO_ALTFN_NONE }
   };
 
   for (uint8_t i = 0; i < INPUT_DEVICES; i++) {
@@ -41,30 +50,36 @@ void device_init() {
 }
 
 int main() {
-	// Initialize the state machines to be used, along with their default settings
+  // Initialize the state machines to be used, along with their default settings
   FSMGroup fsm_group;
-	state_init(&fsm_group);
+  driver_state_init(&fsm_group);
+
+  driver_state_add_fsm(power_state_init);
+  driver_state_add_fsm(pedal_state_init);
+  driver_state_add_fsm(direction_state_init);
+  driver_state_add_fsm(turn_signal_state_init);
+  driver_state_add_fsm(hazard_light_state_init);
+  driver_state_add_fsm(mechanical_brake_state_init);
 
   device_init();
 
-	// Initialize other devices to be used
-	event_queue_init();
+  // Initialize other devices to be used
+  event_queue_init();
   soft_timer_init();
 
-	Event e;	
+  Event e;
 
   for (;;) {
-		if (!event_process(&e)) {
-			state_process_event(&fsm_group, &e);
-		  printf("Event = %d : %s : %s : %s : %s : %s : %d \n",
-    			e.id,
-          fsm_group.power.current_state->name,
-    			fsm_group.pedal.current_state->name,
-    			fsm_group.direction.current_state->name,
-    			fsm_group.turn_signal.current_state->name,
-    			fsm_group.hazard_light.current_state->name,
-    			0);
-		}
+    if (!event_process(&e)) {
+      if (driver_state_process_event(&e)) {
+        printf("Event = %d\t%s\t%s\t%s\t%s\t\t%s\n",
+            e.id,
+            fsm_group.power->current_state->name,
+            fsm_group.pedal->current_state->name,
+            fsm_group.direction->current_state->name,
+            fsm_group.turn_signal->current_state->name,
+            fsm_group.hazard_light->current_state->name);
+      }
+    }
   }
-
 }

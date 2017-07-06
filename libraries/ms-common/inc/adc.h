@@ -1,32 +1,11 @@
 #pragma once
 
-#include "stm32f0xx.h"	
-#include "gpio.h"
+// Analog to Digital Converter HAL Inteface
 
 #include <stdbool.h>
+#include <stdint.h>
 
-/* Driver for the STM32's onboard ADC. 
-
-	External Channel mapping
-	Pin		ADC Channel
-  PA0   ADC_IN0
-  PA1   ADC_IN1
-  PA2   ADC_IN2
-  PA3   ADC_IN3
-  PA4   ADC_IN4
-  PA5   ADC_IN5
-  PA6   ADC_IN6
-  PA7   ADC_IN7
-  PB0   ADC_IN8
-  PB1   ADC_IN9
-  PC0   ADC_IN10
-  PC1   ADC_IN11
-  PC2   ADC_IN12
-  PC3   ADC_IN13
-  PC4   ADC_IN14
-  PC5   ADC_IN15
-	
-*/
+#include "status.h"
 
 typedef enum {
   ADC_MODE_SINGLE = 0,
@@ -34,36 +13,43 @@ typedef enum {
 } ADCMode;
 
 typedef enum {
-  ADC_RESOLUTION_12,
-  ADC_RESOLUTION_10,
-  ADC_RESOLUTION_8,
-  ADC_RESOLUTION_6
-} ADCResolution;
+  ADC_CHANNEL_0 = 0,
+  ADC_CHANNEL_1,
+  ADC_CHANNEL_2,
+  ADC_CHANNEL_3,
+  ADC_CHANNEL_4,
+  ADC_CHANNEL_5,
+  ADC_CHANNEL_6,
+  ADC_CHANNEL_7,
+  ADC_CHANNEL_8,
+  ADC_CHANNEL_9,
+  ADC_CHANNEL_10,
+  ADC_CHANNEL_11,
+  ADC_CHANNEL_12,
+  ADC_CHANNEL_13,
+  ADC_CHANNEL_14,
+  ADC_CHANNEL_15,
+  ADC_CHANNEL_TEMP,
+  ADC_CHANNEL_REF,
+  ADC_CHANNEL_BAT,
+  NUM_ADC_CHANNEL
+} ADCChannel;
 
-typedef enum {
-  ADC_SAMPLE_RATE_1 = 0,	// 1.5 cycles
-  ADC_SAMPLE_RATE_2, 		  // 7.5 cycles
-  ADC_SAMPLE_RATE_3,		  // 13.5 cycles
-  ADC_SAMPLE_RATE_4,		  // 28.5 cycles
-  ADC_SAMPLE_RATE_5,	    // 41.5 cycles
-  ADC_SAMPLE_RATE_6,		  // 55.5 cycles
-  ADC_SAMPLE_RATE_7,		  // 71.5 cycles
-  ADC_SAMPLE_RATE_8			  // 239.5 cycles
-} ADCSampleRate;
+typedef void (*ADCCallback)(ADCChannel adc_channel, void *context);
 
-typedef struct ADCSettings {
-  ADCMode mode;
-  ADCResolution resolution;
-} ADCSettings;
+// Initialize the ADC to the desired conversion mode
+void adc_init(ADCMode adc_mode);
 
-// Initialize the onboard ADC in the specified conversion mode
-void adc_init(ADCSettings* settings);
+// Enable or disable a given channel.
+// A race condition may occur when setting a channel during a conversion. However, it should not
+// cause issues given the intended use cases
+StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state);
 
-// Sets the continuous mode sample rate for the given pin.
-bool adc_init_pin(GPIOAddress* address, ADCSampleRate adc_sample_rate);
+// Register a callback function to be called when the specified channel completes a conversion
+StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, void *context);
 
-// Returns the current ADC signal as a 12-bit integer.
-uint16_t adc_read(GPIOAddress* address, uint16_t max);
+// Obtain the raw 12-bit value read by the specified channel
+StatusCode adc_read_raw(ADCChannel adc_channel, uint16_t *reading);
 
-//
-uint16_t adc_average(GPIOAddress* address, uint16_t period, uint16_t max);
+// Obtain the converted value at the specified channel
+StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading);

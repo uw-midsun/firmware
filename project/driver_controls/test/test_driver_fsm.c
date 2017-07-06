@@ -30,7 +30,7 @@ void test_driver_init() {
 }
 
 void test_power() {
-  // Test that the FSM will transition in and out of the off state 
+  // Test that the FSM will transition in and out of the off state
   prv_process_event(INPUT_EVENT_POWER, 1);
   prv_process_event(INPUT_EVENT_POWER, 1);
 
@@ -50,7 +50,7 @@ void test_power() {
 void test_pedal_forward() {
   // Turn on car
   prv_process_event(INPUT_EVENT_POWER, 1);
-  
+
   // Ensure that the car cannot be moved while in neutral
   prv_process_event(INPUT_EVENT_GAS_COAST, 0);
   prv_process_event(INPUT_EVENT_GAS_PRESSED, 0);
@@ -76,7 +76,7 @@ void test_pedal_forward() {
 void test_pedal_reverse() {
   // Turn on car
   prv_process_event(INPUT_EVENT_POWER, 1);
-  
+
   // Ensure that the car cannot be moved while in neutral
   prv_process_event(INPUT_EVENT_GAS_COAST, 0);
   prv_process_event(INPUT_EVENT_GAS_PRESSED, 0);
@@ -84,7 +84,7 @@ void test_pedal_reverse() {
 
   // Test that the car can be moved in forward gear
   prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, 1);
-  
+
   prv_process_event(INPUT_EVENT_GAS_COAST, 1);
   prv_process_event(INPUT_EVENT_GAS_PRESSED, 1);
   prv_process_event(INPUT_EVENT_GAS_BRAKE, 1);
@@ -95,13 +95,13 @@ void test_pedal_reverse() {
 
   // Turn off car
   prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL, 1);
-  prv_process_event(INPUT_EVENT_POWER, 1);  
+  prv_process_event(INPUT_EVENT_POWER, 1);
 }
 
 void test_cruise_control() {
   // Turn on car
   prv_process_event(INPUT_EVENT_POWER, 1);
-  
+
   // Ensure that cruise control cannot be activated from brake
   prv_process_event(INPUT_EVENT_CRUISE_CONTROL, 0);
 
@@ -115,19 +115,19 @@ void test_cruise_control() {
   prv_process_event(INPUT_EVENT_GAS_COAST, 1);
   prv_process_event(INPUT_EVENT_CRUISE_CONTROL, 1);
   prv_process_event(INPUT_EVENT_GAS_BRAKE, 1);
-  
+
   // Exit via cruise control shutoff
   prv_process_event(INPUT_EVENT_GAS_COAST, 1);
   prv_process_event(INPUT_EVENT_CRUISE_CONTROL, 1);
   prv_process_event(INPUT_EVENT_CRUISE_CONTROL, 1);
-  
+
   // Test cruise control from driving state
 
   // Exit via brake
   prv_process_event(INPUT_EVENT_GAS_PRESSED, 1);
   prv_process_event(INPUT_EVENT_CRUISE_CONTROL, 1);
   prv_process_event(INPUT_EVENT_GAS_BRAKE, 1);
-  
+
   // Exit via cruise control shutoff
   prv_process_event(INPUT_EVENT_GAS_COAST, 1);
   prv_process_event(INPUT_EVENT_CRUISE_CONTROL, 1);
@@ -135,7 +135,7 @@ void test_cruise_control() {
 
   // Turn off car
   prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL, 1);
-  prv_process_event(INPUT_EVENT_POWER, 1);    
+  prv_process_event(INPUT_EVENT_POWER, 1);
 }
 
 void test_direction_selector() {
@@ -164,8 +164,7 @@ void test_direction_selector() {
   // Turn off car
   prv_process_event(INPUT_EVENT_GAS_BRAKE, 1);
   prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL, 1);
-  prv_process_event(INPUT_EVENT_POWER, 1);    
-
+  prv_process_event(INPUT_EVENT_POWER, 1);
 }
 
 void test_turn_signal() {
@@ -196,7 +195,7 @@ void test_hazard_light() {
   prv_process_event(INPUT_EVENT_HAZARD_LIGHT, 1);
 
   // Turn off car
-  prv_process_event(INPUT_EVENT_POWER, 1); 
+  prv_process_event(INPUT_EVENT_POWER, 1);
 
   // Test that hazard lights don't work when car isn't powered
   prv_process_event(INPUT_EVENT_HAZARD_LIGHT, 0);
