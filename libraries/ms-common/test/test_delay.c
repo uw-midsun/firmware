@@ -11,16 +11,8 @@ void setup_test(void) {
   soft_timer_init();
 }
 
-void teardown_test(void) {}
+void teardown_test(void) { }
 
 void test_delay_us(void) {
   delay_us(10000);
-}
-
-void test_delay_ms(void) {
-  delay_ms(10);
-}
-
-void test_delay_s(void) {
-  delay_s(1);
 }

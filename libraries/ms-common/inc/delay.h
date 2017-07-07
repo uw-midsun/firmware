@@ -1,7 +1,8 @@
 #pragma once
 // Delay function library
 //
-// Blocking delay for a fixed period of time. Still allow interrupts to trigger.
+// Blocking delay for a fixed period of time. Still allows interrupts to
+// trigger.
 //
 // Max allowable time is UINT32_MAX in microseconds.
 
