@@ -27,7 +27,14 @@ static bool prv_check_mechanical_brake_engaged(const Event *e) {
 }
 
 static bool prv_check_mechanical_brake_disengaged(const Event *e) {
-  return true;
+  switch (e->id) {
+    case INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL:
+    case INPUT_EVENT_DIRECTION_SELECTOR_DRIVE:
+    case INPUT_EVENT_DIRECTION_SELECTOR_REVERSE:
+      return false;
+    default:
+      return true;
+  }
 }
 
 // State output functions

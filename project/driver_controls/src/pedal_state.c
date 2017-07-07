@@ -36,14 +36,7 @@ static bool prv_check_brake(const Event *e) {
 }
 
 static bool prv_check_event(const Event *e) {
-  switch (e->id) {
-    case INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL:
-    case INPUT_EVENT_DIRECTION_SELECTOR_DRIVE:
-    case INPUT_EVENT_DIRECTION_SELECTOR_REVERSE:
-      return false;
-    default:
-      return true;
-  }
+  return true;
 }
 
 // State output functions
