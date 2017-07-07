@@ -15,7 +15,6 @@ static bool prv_get_permit(Event *e) {
   for (uint8_t i = 0; i < s_active_fsms; i++) {
     transitioned &= ((TransitionCheck)s_driver_fsms[i]->context)(e);
   }
-
   return transitioned;
 }
 

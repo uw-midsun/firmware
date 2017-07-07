@@ -28,12 +28,3 @@ typedef enum {
   INPUT_EVENT_REGEN_STRENGTH_ON,
   NUM_INPUT_EVENT
 } InputEvent;
-
-typedef struct FSMGroup {
-  FSM* power;
-  FSM* pedal;
-  FSM* direction;
-  FSM* turn_signal;
-  FSM* hazard_light;
-  FSM* mechanical_brake;
-} FSMGroup;
