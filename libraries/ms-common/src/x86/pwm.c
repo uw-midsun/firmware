@@ -20,10 +20,10 @@ uint16_t pwm_get_period(void) {
   return s_period_ms;
 }
 
-StatusCode pwm_set_pulse(uint16_t pulse_width) {
+StatusCode pwm_set_pulse(uint16_t pulse_width_ms) {
   if (s_period_ms == 0) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "Pwm must be initialized.");
-  } else if (pulse_width > s_period_ms) {
+  } else if (pulse_width_ms > s_period_ms) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Pulse width must be leq period.");
   }
   return STATUS_CODE_OK;

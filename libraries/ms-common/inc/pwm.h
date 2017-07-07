@@ -23,8 +23,8 @@ StatusCode pwm_init(uint16_t period_ms);
 // Gets the current period of the PWM.
 uint16_t pwm_get_period(void);
 
-// Sets the pulse width of the PWM. Use for high resolution control.
-StatusCode pwm_set_pulse(uint16_t pulse_width);
+// Sets the pulse width in ms of the PWM. Use for high resolution control.
+StatusCode pwm_set_pulse(uint16_t pulse_width_ms);
 
 // Sets the duty cycle, in units of 1%, of the PWM. This wraps the
 // pwm_set_pulse doing the necessary math.
