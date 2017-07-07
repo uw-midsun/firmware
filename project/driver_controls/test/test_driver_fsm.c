@@ -1,202 +1,302 @@
 #include "driver_state.h"
 #include "unity.h"
+#include "status.h"
+
+#include "power_state.h"
+#include "pedal_state.h"
+#include "direction_state.h"
+#include "turn_signal_state.h"
+#include "hazard_light_state.h"
+#include "mechanical_brake.h"
+
+typedef struct FSMGroup {
+  FSM power;
+  FSM pedal;
+  FSM direction;
+  FSM turn_signal;
+  FSM hazard_light;
+  FSM mechanical_brake;
+} FSMGroup;
 
 static FSMGroup s_fsm_group;
 
-void prv_process_event(EventID id, bool expected) {
-  Event e = {
-    .id = id,
-    .data = 0
-  };
+void setup_test() { }
 
-  if (expected) {
-    TEST_ASSERT_TRUE(state_process_event(&s_fsm_group, &e));
-  } else {
-    TEST_ASSERT_FALSE(state_process_event(&s_fsm_group, &e));
-  }
+void teardown_test(void) {
+  Event e;
+
+  // Release gas pedal
+  e.id = INPUT_EVENT_GAS_BRAKE;
+  driver_state_process_event(&e);
+  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
+
+  // Shift gear to neutral
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  driver_state_process_event(&e);
+ 
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
+  driver_state_process_event(&e);
+  TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
+
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  driver_state_process_event(&e);
 }
 
-void setup_test() {
-  state_init(&s_fsm_group);
-}
+void test_setup() {
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, driver_state_add_fsm(&s_fsm_group.power, power_state_init));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, driver_state_add_fsm(&s_fsm_group.pedal, pedal_state_init));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, driver_state_add_fsm(&s_fsm_group.direction, direction_state_init));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, driver_state_add_fsm(&s_fsm_group.turn_signal, turn_signal_state_init));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, driver_state_add_fsm(&s_fsm_group.hazard_light, hazard_light_state_init));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, driver_state_add_fsm(&s_fsm_group.mechanical_brake, mechanical_brake_state_init));
 
-void teardown_test(void) { }
-
-void test_driver_init() {
-  TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.pedal.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
   TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
   TEST_ASSERT_EQUAL_STRING("state_no_signal", s_fsm_group.turn_signal.current_state->name);
   TEST_ASSERT_EQUAL_STRING("state_hazard_off", s_fsm_group.hazard_light.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_disengaged", s_fsm_group.mechanical_brake.current_state->name);
 }
 
-void test_power() {
-  // Test that the FSM will transition in and out of the off state
-  prv_process_event(INPUT_EVENT_POWER, 1);
-  prv_process_event(INPUT_EVENT_POWER, 1);
+void test_power_fsm() {
+  Event e ;
 
-  // Test that the FSM will not turn off when not in neutral
-  prv_process_event(INPUT_EVENT_POWER, 1);
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, 1);
-  prv_process_event(INPUT_EVENT_POWER, 0);
+  // Ensure that the FSM does not transition to the on state with the incorrect event 
+  for (uint8_t i = INPUT_EVENT_GAS_BRAKE; i < NUM_INPUT_EVENT; i++) {
+    e.id = i;
+    TEST_ASSERT_FALSE(driver_state_process_event(&e));
+    TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
+  }
 
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, 1);
-  prv_process_event(INPUT_EVENT_POWER, 0);
+  // Check that the power FSM tranisitions when receiving INPUT_EVENT_POWER
+  e.id = INPUT_EVENT_POWER;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
 
-  // Turn off car
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL, 1);
-  prv_process_event(INPUT_EVENT_POWER, 1);
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
+
 }
 
-void test_pedal_forward() {
-  // Turn on car
-  prv_process_event(INPUT_EVENT_POWER, 1);
+void test_pedal_fsm() {
+  Event e;
+  Event mech_brake = { .id = INPUT_EVENT_MECHANICAL_BRAKE };
 
-  // Ensure that the car cannot be moved while in neutral
-  prv_process_event(INPUT_EVENT_GAS_COAST, 0);
-  prv_process_event(INPUT_EVENT_GAS_PRESSED, 0);
-  prv_process_event(INPUT_EVENT_CRUISE_CONTROL, 0);
+  // Set power to the ON state
+  e.id = INPUT_EVENT_POWER;
+  driver_state_process_event(&e);
+  TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
 
-  // Test that the car can be moved in forward gear
+  // Transitions to the driving state should not happen since the since the direction fsm initializes in neutral,
+  e.id = INPUT_EVENT_GAS_COAST;
+  TEST_ASSERT_FALSE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
 
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, 1);
+  e.id = INPUT_EVENT_GAS_PRESSED;
+  TEST_ASSERT_FALSE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
 
-  prv_process_event(INPUT_EVENT_GAS_COAST, 1);
-  prv_process_event(INPUT_EVENT_GAS_PRESSED, 1);
-  prv_process_event(INPUT_EVENT_GAS_BRAKE, 1);
+  // Check that the car moves after switching to the forward direction
+  TEST_ASSERT_TRUE(driver_state_process_event(&mech_brake));
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_forward", s_fsm_group.direction.current_state->name);
+  TEST_ASSERT_TRUE(driver_state_process_event(&mech_brake));
 
-  prv_process_event(INPUT_EVENT_GAS_PRESSED, 1);
-  prv_process_event(INPUT_EVENT_GAS_COAST, 1);
-  prv_process_event(INPUT_EVENT_GAS_BRAKE, 1);
+  // Check that the car moves after switching to the forward direction
+  e.id = INPUT_EVENT_GAS_COAST;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_coast", s_fsm_group.pedal.current_state->name);
+  e.id = INPUT_EVENT_GAS_BRAKE;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
 
-  // Turn off car
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL, 1);
-  prv_process_event(INPUT_EVENT_POWER, 1);
-}
+  e.id = INPUT_EVENT_GAS_PRESSED;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_driving", s_fsm_group.pedal.current_state->name);
+    e.id = INPUT_EVENT_GAS_BRAKE;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
 
-void test_pedal_reverse() {
-  // Turn on car
-  prv_process_event(INPUT_EVENT_POWER, 1);
+  // Switch to reverse gear 
+  TEST_ASSERT_TRUE(driver_state_process_event(&mech_brake));
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_TRUE(driver_state_process_event(&mech_brake));
 
-  // Ensure that the car cannot be moved while in neutral
-  prv_process_event(INPUT_EVENT_GAS_COAST, 0);
-  prv_process_event(INPUT_EVENT_GAS_PRESSED, 0);
-  prv_process_event(INPUT_EVENT_CRUISE_CONTROL, 0);
-
-  // Test that the car can be moved in forward gear
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, 1);
-
-  prv_process_event(INPUT_EVENT_GAS_COAST, 1);
-  prv_process_event(INPUT_EVENT_GAS_PRESSED, 1);
-  prv_process_event(INPUT_EVENT_GAS_BRAKE, 1);
-
-  prv_process_event(INPUT_EVENT_GAS_PRESSED, 1);
-  prv_process_event(INPUT_EVENT_GAS_COAST, 1);
-  prv_process_event(INPUT_EVENT_GAS_BRAKE, 1);
-
-  // Turn off car
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL, 1);
-  prv_process_event(INPUT_EVENT_POWER, 1);
+  // Check that the car moves after switching to the reverse direction
+  e.id = INPUT_EVENT_GAS_COAST;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_coast", s_fsm_group.pedal.current_state->name);
+  e.id = INPUT_EVENT_GAS_BRAKE;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
 }
 
 void test_cruise_control() {
-  // Turn on car
-  prv_process_event(INPUT_EVENT_POWER, 1);
+  Event e;
+  Event mech_brake = { .id = INPUT_EVENT_MECHANICAL_BRAKE };
 
-  // Ensure that cruise control cannot be activated from brake
-  prv_process_event(INPUT_EVENT_CRUISE_CONTROL, 0);
+  // Check that cruise control cannot be transitioned to while in neutral
+  e.id = INPUT_EVENT_CRUISE_CONTROL;
+  TEST_ASSERT_FALSE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
 
-  // Switch to drive
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, 1);
 
+  // Switch to forward direction
+  driver_state_process_event(&mech_brake);
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
+  driver_state_process_event(&e);
+  driver_state_process_event(&mech_brake);
 
-  // Test cruise control from coast state
+  // Check that cruise control can be entered from the coast state
+  e.id = INPUT_EVENT_GAS_COAST;
+  driver_state_process_event(&e);
 
-  // Exit via brake
-  prv_process_event(INPUT_EVENT_GAS_COAST, 1);
-  prv_process_event(INPUT_EVENT_CRUISE_CONTROL, 1);
-  prv_process_event(INPUT_EVENT_GAS_BRAKE, 1);
+  e.id = INPUT_EVENT_CRUISE_CONTROL;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_cruise_control", s_fsm_group.pedal.current_state->name);
 
-  // Exit via cruise control shutoff
-  prv_process_event(INPUT_EVENT_GAS_COAST, 1);
-  prv_process_event(INPUT_EVENT_CRUISE_CONTROL, 1);
-  prv_process_event(INPUT_EVENT_CRUISE_CONTROL, 1);
+  // Exit cruise control
+  e.id = INPUT_EVENT_GAS_BRAKE;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
 
-  // Test cruise control from driving state
+  // Check that cruise control can be entered from the driving state
+  e.id = INPUT_EVENT_GAS_PRESSED;
+  driver_state_process_event(&e);
 
-  // Exit via brake
-  prv_process_event(INPUT_EVENT_GAS_PRESSED, 1);
-  prv_process_event(INPUT_EVENT_CRUISE_CONTROL, 1);
-  prv_process_event(INPUT_EVENT_GAS_BRAKE, 1);
+  e.id = INPUT_EVENT_CRUISE_CONTROL;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_cruise_control", s_fsm_group.pedal.current_state->name);
 
-  // Exit via cruise control shutoff
-  prv_process_event(INPUT_EVENT_GAS_COAST, 1);
-  prv_process_event(INPUT_EVENT_CRUISE_CONTROL, 1);
-  prv_process_event(INPUT_EVENT_CRUISE_CONTROL, 1);
-
-  // Turn off car
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL, 1);
-  prv_process_event(INPUT_EVENT_POWER, 1);
+  // Exit cruise control
+  e.id = INPUT_EVENT_GAS_BRAKE;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
 }
 
-void test_direction_selector() {
-  // Turn on car
-  prv_process_event(INPUT_EVENT_POWER, 1);
+void test_direction_fsm() {
+  Event e;
+  Event mech_brake = { .id = INPUT_EVENT_MECHANICAL_BRAKE };
 
-  // Test that transitions can be made when braked
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, 1);
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, 1);
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL, 1);
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, 1);
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, 1);
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL, 1);
+  // Test that transitions can be made while brake is active
+  driver_state_process_event(&mech_brake);
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_forward", s_fsm_group.direction.current_state->name);
+  driver_state_process_event(&mech_brake);
+  
+  driver_state_process_event(&mech_brake);
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_reverse", s_fsm_group.direction.current_state->name);
+  driver_state_process_event(&mech_brake);
 
-  // Test that the direction cannot be changed if not in neutral
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, 1);
-  prv_process_event(INPUT_EVENT_GAS_COAST, 1);
+  driver_state_process_event(&mech_brake);
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
+  driver_state_process_event(&mech_brake);
+  
 
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, 0);
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, 0);
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL, 0);
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, 0);
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, 0);
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL, 0);
+  // Check that transitions are not made when not braked
 
-  // Turn off car
-  prv_process_event(INPUT_EVENT_GAS_BRAKE, 1);
-  prv_process_event(INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL, 1);
-  prv_process_event(INPUT_EVENT_POWER, 1);
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
+  driver_state_process_event(&e); 
+  e.id = INPUT_EVENT_GAS_COAST;
+  driver_state_process_event(&e);
+
+  // Test that transitions can be made while brake is active
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
+  TEST_ASSERT_FALSE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
+
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
+  TEST_ASSERT_FALSE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
+  
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
+  TEST_ASSERT_FALSE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
 }
 
-void test_turn_signal() {
-  // Turn on car
-  prv_process_event(INPUT_EVENT_POWER, 1);
+void test_turn_signal_fsm() {
+  Event e;
+
+  // Check that the turn signals do not work when the car is powered off
+  e.id = INPUT_EVENT_POWER;
+  driver_state_process_event(&e);
+  TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
+
+  e.id = INPUT_EVENT_TURN_SIGNAL_LEFT;
+  TEST_ASSERT_FALSE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_no_signal", s_fsm_group.turn_signal.current_state->name);
+
+  e.id = INPUT_EVENT_TURN_SIGNAL_RIGHT;
+  TEST_ASSERT_FALSE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_no_signal", s_fsm_group.turn_signal.current_state->name);
 
   // Test that turn signals work when car is powered
-  prv_process_event(INPUT_EVENT_TURN_SIGNAL_LEFT, 1);
-  prv_process_event(INPUT_EVENT_TURN_SIGNAL_NONE, 1);
-  prv_process_event(INPUT_EVENT_TURN_SIGNAL_RIGHT, 1);
-  prv_process_event(INPUT_EVENT_TURN_SIGNAL_NONE, 1);
+  e.id = INPUT_EVENT_POWER;
+  driver_state_process_event(&e);
+  TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
 
-  // Turn off car
-  prv_process_event(INPUT_EVENT_POWER, 1);
+  e.id = INPUT_EVENT_TURN_SIGNAL_LEFT;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_left_signal", s_fsm_group.turn_signal.current_state->name);
 
-  // Test that turn signals don't work when car isn't powered
-  prv_process_event(INPUT_EVENT_TURN_SIGNAL_LEFT, 0);
-  prv_process_event(INPUT_EVENT_TURN_SIGNAL_NONE, 0);
-  prv_process_event(INPUT_EVENT_TURN_SIGNAL_RIGHT, 0);
-  prv_process_event(INPUT_EVENT_TURN_SIGNAL_NONE, 0);
+  e.id = INPUT_EVENT_TURN_SIGNAL_NONE;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_no_signal", s_fsm_group.turn_signal.current_state->name);
+
+  e.id = INPUT_EVENT_TURN_SIGNAL_RIGHT;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_right_signal", s_fsm_group.turn_signal.current_state->name);
+
+  e.id = INPUT_EVENT_TURN_SIGNAL_NONE;
+  TEST_ASSERT_TRUE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_no_signal", s_fsm_group.turn_signal.current_state->name);
 }
 
-void test_hazard_light() {
-  // Turn on car
-  prv_process_event(INPUT_EVENT_POWER, 1);
+void test_hazard_signal_fsm() {
+  Event power = { .id = INPUT_EVENT_POWER };
+  Event hazard_light = { .id = INPUT_EVENT_HAZARD_LIGHT };
 
-  // Test that hazard lights work when car is powered
-  prv_process_event(INPUT_EVENT_HAZARD_LIGHT, 1);
+  driver_state_process_event(&power);
+  TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
 
-  // Turn off car
-  prv_process_event(INPUT_EVENT_POWER, 1);
+  // Test that hazard lights don't work when the car isn't powered
+  TEST_ASSERT_FALSE(driver_state_process_event(&hazard_light));
+  TEST_ASSERT_EQUAL_STRING("state_hazard_off", s_fsm_group.hazard_light.current_state->name);
 
-  // Test that hazard lights don't work when car isn't powered
-  prv_process_event(INPUT_EVENT_HAZARD_LIGHT, 0);
+  // Test that hazard lights work when the car is powered
+  driver_state_process_event(&power);
+  TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
+
+  TEST_ASSERT_TRUE(driver_state_process_event(&hazard_light));
+  TEST_ASSERT_EQUAL_STRING("state_hazard_on", s_fsm_group.hazard_light.current_state->name);
+
+  TEST_ASSERT_TRUE(driver_state_process_event(&hazard_light));
+  TEST_ASSERT_EQUAL_STRING("state_hazard_off", s_fsm_group.hazard_light.current_state->name);
+}
+
+void test_mechanical_brake_fsm() {
+  Event e;
+  Event mech_brake = { .id = INPUT_EVENT_MECHANICAL_BRAKE };
+
+  // Check that gear shifts cannot be made while the brake is disengaged
+  TEST_ASSERT_EQUAL_STRING("state_disengaged", s_fsm_group.mechanical_brake.current_state->name);
+
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
+  TEST_ASSERT_FALSE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
+
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
+  TEST_ASSERT_FALSE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
+  
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
+  TEST_ASSERT_FALSE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
 }
