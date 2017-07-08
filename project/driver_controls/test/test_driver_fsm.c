@@ -44,7 +44,7 @@ void teardown_test(void) {
   // Shift gear to neutral
   e.id = INPUT_EVENT_MECHANICAL_BRAKE;
   driver_state_process_event(&e);
- 
+
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
   driver_state_process_event(&e);
   TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
@@ -56,12 +56,19 @@ void teardown_test(void) {
 }
 
 void test_setup() {
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK, driver_state_add_fsm(&s_fsm_group.power, power_state_init));
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK, driver_state_add_fsm(&s_fsm_group.pedal, pedal_state_init));
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK, driver_state_add_fsm(&s_fsm_group.direction, direction_state_init));
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK, driver_state_add_fsm(&s_fsm_group.turn_signal, turn_signal_state_init));
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK, driver_state_add_fsm(&s_fsm_group.hazard_light, hazard_light_state_init));
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK, driver_state_add_fsm(&s_fsm_group.mechanical_brake, mechanical_brake_state_init));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK,
+                    driver_state_add_fsm(&s_fsm_group.power, power_state_init));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK,
+                    driver_state_add_fsm(&s_fsm_group.pedal, pedal_state_init));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK,
+                    driver_state_add_fsm(&s_fsm_group.direction, direction_state_init));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK,
+                    driver_state_add_fsm(&s_fsm_group.turn_signal, turn_signal_state_init));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK,
+                    driver_state_add_fsm(&s_fsm_group.hazard_light, hazard_light_state_init));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK,
+                    driver_state_add_fsm(&s_fsm_group.mechanical_brake,
+                                          mechanical_brake_state_init));
 
   TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
   TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
@@ -72,9 +79,9 @@ void test_setup() {
 }
 
 void test_power_fsm() {
-  Event e ;
+  Event e;
 
-  // Ensure that the FSM does not transition to the on state with the incorrect event 
+  // Ensure that the FSM does not transition to the on state with the incorrect event
   for (e.id = INPUT_EVENT_GAS_BRAKE; e.id < NUM_INPUT_EVENT; e.id++) {
     if (e.id == INPUT_EVENT_MECHANICAL_BRAKE) {
       continue;
@@ -127,7 +134,7 @@ void test_direction_fsm() {
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
   TEST_ASSERT_FALSE(driver_state_process_event(&e));
   TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
-  
+
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
   TEST_ASSERT_FALSE(driver_state_process_event(&e));
   TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
@@ -143,7 +150,7 @@ void test_direction_fsm() {
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
   TEST_ASSERT_TRUE(driver_state_process_event(&e));
   TEST_ASSERT_EQUAL_STRING("state_reverse", s_fsm_group.direction.current_state->name);
-  
+
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
   TEST_ASSERT_TRUE(driver_state_process_event(&e));
   TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
@@ -159,7 +166,7 @@ void test_pedal_fsm() {
   // Turn on the power
   prv_toggle_power(true);
 
-  // Transitions to the driving state should not happen since the since the direction fsm initializes in neutral,
+  // Check that transitions do not happen while direction is set to neutral
   e.id = INPUT_EVENT_GAS_COAST;
   TEST_ASSERT_FALSE(driver_state_process_event(&e));
   TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);

@@ -27,23 +27,42 @@ typedef struct FSMGroup {
   FSM mechanical_brake;
 } FSMGroup;
 
-//Keep interrupt priority low so that debounce can work properly
-
 void device_init() {
   driver_controls_init();
 
   Device inputs[INPUT_DEVICES] = {
-    { { GPIO_PORT_C, 0 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE, input_callback },
-    { { GPIO_PORT_C, 1 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_ANALOG, input_callback },
-    { { GPIO_PORT_B, 2 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE, input_callback },
-    { { GPIO_PORT_B, 3 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE, input_callback },
-    { { GPIO_PORT_C, 4 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE, input_callback },
-    { { GPIO_PORT_C, 5 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE, input_callback },
-    { { GPIO_PORT_C, 6 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE, input_callback },
-    { { GPIO_PORT_C, 7 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE, input_callback },
-    { { GPIO_PORT_C, 8 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE, input_callback },
-    { { GPIO_PORT_C, 9 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE, input_callback },
-    { { GPIO_PORT_C, 10 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE, input_callback }
+    { { GPIO_PORT_C, 0 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING,
+      GPIO_ALTFN_NONE, input_callback },
+
+    { { GPIO_PORT_C, 1 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING,
+      GPIO_ALTFN_ANALOG, input_callback },
+
+    { { GPIO_PORT_B, 2 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING,
+      GPIO_ALTFN_NONE, input_callback },
+
+    { { GPIO_PORT_B, 3 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING,
+      GPIO_ALTFN_NONE, input_callback },
+
+    { { GPIO_PORT_C, 4 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING,
+      GPIO_ALTFN_NONE, input_callback },
+
+    { { GPIO_PORT_C, 5 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING,
+      GPIO_ALTFN_NONE, input_callback },
+
+    { { GPIO_PORT_C, 6 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING,
+      GPIO_ALTFN_NONE, input_callback },
+
+    { { GPIO_PORT_C, 7 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING,
+      GPIO_ALTFN_NONE, input_callback },
+
+    { { GPIO_PORT_C, 8 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING,
+      GPIO_ALTFN_NONE, input_callback },
+
+    { { GPIO_PORT_C, 9 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING,
+      GPIO_ALTFN_NONE, input_callback },
+
+    { { GPIO_PORT_C, 10 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING,
+      GPIO_ALTFN_NONE, input_callback }
   };
 
   Device outputs[OUTPUT_DEVICES] = {
@@ -60,7 +79,7 @@ void device_init() {
 }
 
 int main() {
-  // Declare and initialize the FSMs to be used 
+  // Declare and initialize the FSMs to be used
   FSMGroup fsm_group;
 
   driver_state_add_fsm(&fsm_group.power, power_state_init);
@@ -70,7 +89,7 @@ int main() {
   driver_state_add_fsm(&fsm_group.hazard_light, hazard_light_state_init);
   driver_state_add_fsm(&fsm_group.mechanical_brake, mechanical_brake_state_init);
 
-  // Initialize the GPIO inputs and other devices 
+  // Initialize the GPIO inputs and other devices
   device_init();
   event_queue_init();
   soft_timer_init();
@@ -80,7 +99,6 @@ int main() {
   for (;;) {
     if (!event_process(&e)) {
       if (driver_state_process_event(&e)) {
-
         printf("Event = %d\t%s\t%s\t%s\t%s\t\t%s\n",
             e.id,
             fsm_group.power.current_state->name,
