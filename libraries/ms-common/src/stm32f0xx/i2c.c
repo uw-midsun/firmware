@@ -71,7 +71,7 @@ StatusCode i2c_init(I2CPort i2c, const I2CSettings *settings) {
   I2C_StructInit(&i2c_init);
   i2c_init.I2C_Mode = I2C_Mode_I2C;
   i2c_init.I2C_Ack = I2C_Ack_Enable;
-  i2c_init.I2C_Timing = s_i2c_timing[i2c];
+  i2c_init.I2C_Timing = s_i2c_timing[settings->speed];
 
   I2C_Init(s_i2c_ports[i2c], &i2c_init);
 
