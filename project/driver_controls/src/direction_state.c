@@ -23,17 +23,11 @@ FSM_STATE_TRANSITION(state_reverse) {
 
 // Transition check functions
 static bool prv_check_neutral(const Event *e) {
-  if (e->id == INPUT_EVENT_GAS_COAST || e->id == INPUT_EVENT_GAS_PRESSED) {
-      return false;
-  }
-  return true;
+  return !(e->id == INPUT_EVENT_GAS_COAST || e->id == INPUT_EVENT_GAS_PRESSED);
 }
 
 static bool prv_check_power(const Event *e) {
-  if (e->id == INPUT_EVENT_POWER) {
-    return false;
-  }
-  return true;
+  return (e->id != INPUT_EVENT_POWER);
 }
 
 // State output functions
@@ -45,14 +39,10 @@ static void prv_state_forward(FSM *fsm, const Event *e, void *context) {
   fsm->context = prv_check_power;
 }
 
-static void prv_state_reverse(FSM *fsm, const Event *e, void *context) {
-  fsm->context = prv_check_power;
-}
-
 void direction_state_init(FSM *direction_fsm, void *context) {
   fsm_state_init(state_neutral, prv_state_neutral);
   fsm_state_init(state_forward, prv_state_forward);
-  fsm_state_init(state_reverse, prv_state_reverse);
+  fsm_state_init(state_reverse, prv_state_forward);
 
   fsm_init(direction_fsm, "direction_fsm", &state_neutral, prv_check_neutral);
 }

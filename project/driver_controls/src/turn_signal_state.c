@@ -27,23 +27,14 @@ static bool prv_check_signal(const Event *e) {
 }
 
 // State output functions
-static void prv_state_no_signal(FSM* fsm, const Event* e, void *context) {
+static void prv_state_output(FSM* fsm, const Event* e, void *context) {
   fsm->context = prv_check_signal;
 }
-
-static void prv_state_left_signal(FSM* fsm, const Event* e, void *context) {
-  fsm->context = prv_check_signal;
-}
-
-static void prv_state_right_signal(FSM* fsm, const Event* e, void *context) {
-  fsm->context = prv_check_signal;
-}
-
 
 void turn_signal_state_init(FSM* turn_signal_fsm, void *context) {
-  fsm_state_init(state_no_signal, prv_state_no_signal);
-  fsm_state_init(state_left_signal, prv_state_left_signal);
-  fsm_state_init(state_right_signal, prv_state_right_signal);
+  fsm_state_init(state_no_signal, prv_state_output);
+  fsm_state_init(state_left_signal, prv_state_output);
+  fsm_state_init(state_right_signal, prv_state_output);
 
   fsm_init(turn_signal_fsm, "turn_signal_fsm", &state_no_signal, prv_check_signal);
 }

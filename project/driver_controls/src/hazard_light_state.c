@@ -19,17 +19,13 @@ static bool prv_check_hazard(const Event *e) {
 }
 
 // Output functions for the hazard light state
-static void prv_state_hazard_on(FSM *fsm, const Event *e, void *context) {
-  fsm->context = prv_check_hazard;
-}
-
-static void prv_state_hazard_off(FSM *fsm, const Event *e, void *context) {
+static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   fsm->context = prv_check_hazard;
 }
 
 void hazard_light_state_init(FSM *hazard_light_fsm, void *context) {
-  fsm_state_init(state_hazard_on, prv_state_hazard_on);
-  fsm_state_init(state_hazard_off, prv_state_hazard_off);
+  fsm_state_init(state_hazard_on, prv_state_output);
+  fsm_state_init(state_hazard_off, prv_state_output);
 
   fsm_init(hazard_light_fsm, "hazard_light_fsm", &state_hazard_off, prv_check_hazard);
 }

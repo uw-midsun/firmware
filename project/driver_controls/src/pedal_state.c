@@ -31,36 +31,20 @@ FSM_STATE_TRANSITION(state_cruise_control) {
 }
 
 // Transition check functions
-static bool prv_check_brake(const Event *e) {
-  return true;
-}
-
 static bool prv_check_event(const Event *e) {
   return true;
 }
 
 // State output functions
-static void prv_state_brake(FSM *fsm, const Event *e, void *context) {
-  fsm->context = prv_check_brake;
-}
-
-static void prv_state_coast(FSM *fsm, const Event *e, void *context) {
-  fsm->context = prv_check_event;
-}
-
-static void prv_state_driving(FSM *fsm, const Event *e, void *context) {
-  fsm->context = prv_check_event;
-}
-
-static void prv_state_cruise_control(FSM *fsm, const Event *e, void *context) {
+static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   fsm->context = prv_check_event;
 }
 
 void pedal_state_init(FSM *pedal_fsm, void *context) {
-  fsm_state_init(state_brake, prv_state_brake);
-  fsm_state_init(state_coast, prv_state_coast);
-  fsm_state_init(state_driving, prv_state_driving);
-  fsm_state_init(state_cruise_control, prv_state_cruise_control);
+  fsm_state_init(state_brake, prv_state_output);
+  fsm_state_init(state_coast, prv_state_output);
+  fsm_state_init(state_driving, prv_state_output);
+  fsm_state_init(state_cruise_control, prv_state_output);
 
-  fsm_init(pedal_fsm, "pedal_fsm", &state_brake, prv_check_brake);
+  fsm_init(pedal_fsm, "pedal_fsm", &state_brake, prv_check_event);
 }

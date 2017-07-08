@@ -14,11 +14,7 @@ FSM_STATE_TRANSITION(state_on) {
 
 // Transition check functions
 static bool prv_check_off(const Event *e) {
-  if (e->id == INPUT_EVENT_POWER || e->id == INPUT_EVENT_MECHANICAL_BRAKE) {
-    return true;
-  }
-
-  return false;
+ return (e->id == INPUT_EVENT_POWER || e->id == INPUT_EVENT_MECHANICAL_BRAKE);
 }
 
 static bool prv_check_on(const Event *e) {
