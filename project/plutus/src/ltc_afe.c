@@ -151,12 +151,12 @@ StatusCode prv_read_voltage(LtcAfeSettings *afe, uint8_t voltage_register, uint8
   uint8_t cmd[4] = { 0 };
 
   // p. 49
-  // RDCVA: 0x04
-  // RDCVB: 0x06
-  // RDCVC: 0x08
-  // RDCVD: 0x0A
+  // RDCVA: 0x04 = 0x04 + 0x00
+  // RDCVB: 0x06 = 0x04 + 0x02
+  // RDCVC: 0x08 = 0x04 + 0x04
+  // RDCVD: 0x0A = 0x04 + 0x06
   cmd[0] = 0x00;
-  cmd[1] = 0x04 + (1 << voltage_register);
+  cmd[1] = 0x04 + (2 * voltage_register);
 
   uint16_t cmd_pec = crc15_calculate(cmd, 2);
 
