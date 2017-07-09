@@ -2,34 +2,36 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "gpio.h"
-#include "status.h"
-#include "spi.h"
 #include "crc15.h"
+#include "gpio.h"
+#include "spi.h"
+#include "status.h"
 
-#define LTC_AFE_CELL_IN_REG 6
+#define LTC_AFE_CELLS_IN_REG                    3
 
 // used to allocate static memory
-#define LTC_DEVICES_IN_CHAIN 3
+#define LTC_DEVICES_IN_CHAIN                    1
 
-#define LTC6804_ADCOPT        (1 << 0)
-#define LTC6804_SWTRD         (1 << 1)
-#define LTC6804_GPIO1         (1 << 3)
-#define LTC6804_GPIO2         (1 << 4)
-#define LTC6804_GPIO3         (1 << 5)
-#define LTC6804_GPIO4         (1 << 6)
-#define LTC6804_GPIO5         (1 << 7)
+#define LTC6804_ADCOPT                          (1 << 0)
+#define LTC6804_SWTRD                           (1 << 1)
+#define LTC6804_GPIO1                           (1 << 3)
+#define LTC6804_GPIO2                           (1 << 4)
+#define LTC6804_GPIO3                           (1 << 5)
+#define LTC6804_GPIO4                           (1 << 6)
+#define LTC6804_GPIO5                           (1 << 7)
 
-#define LTC6804_CNVT_CELL_ALL   0
-#define LTC6804_CNVT_CELL_1_7   1
-#define LTC6804_CNVT_CELL_2_8   2
-#define LTC6804_CNVT_CELL_3_9   3
-#define LTC6804_CNVT_CELL_4_10  4
-#define LTC6804_CNVT_CELL_5_11  5
-#define LTC6804_CNVT_CELL_6_12  6
+#define LTC6804_CNVT_CELL_ALL                   0
+#define LTC6804_CNVT_CELL_1_7                   1
+#define LTC6804_CNVT_CELL_2_8                   2
+#define LTC6804_CNVT_CELL_3_9                   3
+#define LTC6804_CNVT_CELL_4_10                  4
+#define LTC6804_CNVT_CELL_5_11                  5
+#define LTC6804_CNVT_CELL_6_12                  6
 
-#define LTC6804_ADCV_DISCHARGE_PERMITTED     (1 << 4)
-#define LTC6804_ADCV_RESERVED ((1 << 6) | (1 << 5) | (1 << 9))
+#define LTC6804_ADCV_DISCHARGE_PERMITTED        (1 << 4)
+#define LTC6804_ADCV_RESERVED                   ((1 << 9) | (1 << 6) | (1 << 5))
+
+#define LTC6804_RDAUX_RESERVED                  ((1 << 3) | (1 << 2))
 
 typedef enum {
   LTC_AFE_DISCHARGE_TIMEOUT_DISABLED = 0,
@@ -85,3 +87,5 @@ StatusCode LtcAfe_read_all_aux(const LtcAfeSettings *afe);
 // discharge cells
 StatusCode LtcAfe_toggle_discharge_cells(const LtcAfeSettings *afe, uint8_t device,
                                           uint8_t cell, bool discharge);
+
+StatusCode LtcAfe_read_config(const LtcAfeSettings *afe);
