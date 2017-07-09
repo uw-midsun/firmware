@@ -8,7 +8,7 @@
 #		TE: [TEST=] - Specifies the target test (only valid for tests, requires LI or PR to be specified)
 #		CM: [COMPILER=] - Specifies the compiler to use on x86. Defaults to gcc [gcc | clang].
 #		CO: [COPTIONS=] - Specifies compiler options on x86 [asan | tsan].
-#   PB: [PROBE=] - Specifies which debug probe to use on STM32F0xx. Defaults to cmsis-dap [cmsis-dap | stlink-v2].
+#       PB: [PROBE=] - Specifies which debug probe to use on STM32F0xx. Defaults to cmsis-dap [cmsis-dap | stlink-v2].
 #
 # Usage:
 #		make [all] [PL] [PR] - Builds the target project and its dependencies
@@ -18,10 +18,10 @@
 #		make lint - Lints all non-vendor code
 #		make test [PL] [PR|LI] [TE] - Builds and runs the specified unit test, assuming all tests if TE is not defined
 #		make gdb [PL] [PR] - Builds and runs the project and connects an instance of GDB for debugging
-#   make gdb [PL] [PR|LI] [TE] - Builds and runs the specified unit test and connects an instance of GDB
+#       make gdb [PL] [PR|LI] [TE] - Builds and runs the specified unit test and connects an instance of GDB
 # Platform specific:
 #		make program [PL=stm32f0xx] [PR] [PB] - Programs and runs the project through OpenOCD
-#	  make gdb [PL=stm32f0xx] [PL] [PR] [PB]
+#	    make gdb [PL=stm32f0xx] [PL] [PR] [PB]
 #		make <build | test | remake | all> [PL=x86] [CM=clang [CO]]
 #
 ###################################################################################################
