@@ -1,6 +1,7 @@
 #pragma once
-// Generic blocking I2C master driver
-// Supports 7-bit addresses
+// Blocking I2C master driver
+
+// Supports 7-bit addresses, does not support fast mode plus
 #include <stdint.h>
 #include <stddef.h>
 #include "i2c_mcu.h"
@@ -12,7 +13,6 @@ typedef uint8_t I2CAddress;
 typedef enum {
   I2C_SPEED_STANDARD = 0, // 100kHz
   I2C_SPEED_FAST, // 400 kHz
-  I2C_SPEED_FAST_PLUS // 1 Mhz
 } I2CSpeed;
 
 typedef struct {
