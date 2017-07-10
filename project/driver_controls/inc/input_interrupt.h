@@ -3,8 +3,7 @@
 #include "gpio.h"
 #include "driver_state.h"
 
-#define COAST_THRESHOLD 40
-#define DRIVE_THRESHOLD 130
+void pedal_callback(ADCChannel adc_channel, void *context);
 
 void input_callback(GPIOAddress *address, void *context);
 
