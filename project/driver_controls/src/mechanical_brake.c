@@ -21,20 +21,23 @@ static void prv_state_mechanical_brake_engaged(FSM *fsm, const Event *e, void *c
     case INPUT_EVENT_CRUISE_CONTROL_INC:
     case INPUT_EVENT_CRUISE_CONTROL_DEC:
       *(bool*)fsm->context = false;
+      return;
     default:
       *(bool*)fsm->context = true;
+      return;
   }
 }
 
 static void prv_state_mechanical_brake_disengaged(FSM *fsm, const Event *e, void *context) {
-  
   switch (e->id) {
     case INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL:
     case INPUT_EVENT_DIRECTION_SELECTOR_DRIVE:
     case INPUT_EVENT_DIRECTION_SELECTOR_REVERSE:
       *(bool*)fsm->context = false;
+      return;
     default:
       *(bool*)fsm->context = true;
+      return;
   }
 }
 

@@ -10,13 +10,18 @@ static FSM *s_driver_fsms[MAX_FSMS];
 static uint8_t s_active_fsms = 0;
 
 static bool prv_get_permit(Event *e) {
-  bool transitioned = 1;
+  bool transitioned;
+
   for (uint8_t i = 0; i < s_active_fsms; i++) {
-    s_driver_fsms[i]->current_state->output(s_driver_fsms[i], e, &transitioned);
-    //printf("%s = %d\n", s_driver_fsms[i]->current_state->name, transitioned);
-    //transitioned &= *(bool*)s_driver_fsms[i]->context;
+    s_driver_fsms[i]->current_state->output(s_driver_fsms[i], e, NULL);
+    transitioned = (*(bool*)s_driver_fsms[i]->context);
+
+    if (!transitioned) {
+      return false;
+    }
   }
-  return transitioned;
+
+  return true;
 }
 
 StatusCode driver_state_add_fsm(FSM *fsm, DriverFSMInit driver_fsm_init) {
