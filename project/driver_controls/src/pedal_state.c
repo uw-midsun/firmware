@@ -30,14 +30,9 @@ FSM_STATE_TRANSITION(state_cruise_control) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_brake);
 }
 
-// Transition check functions
-static bool prv_check_event(const Event *e) {
-  return true;
-}
-
 // State output functions
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  fsm->context = prv_check_event;
+  *(bool*)fsm->context = true;
 }
 
 void pedal_state_init(FSM *pedal_fsm, void *context) {
@@ -46,5 +41,6 @@ void pedal_state_init(FSM *pedal_fsm, void *context) {
   fsm_state_init(state_driving, prv_state_output);
   fsm_state_init(state_cruise_control, prv_state_output);
 
-  fsm_init(pedal_fsm, "pedal_fsm", &state_brake, prv_check_event);
+  bool approval;
+  fsm_init(pedal_fsm, "pedal_fsm", &state_brake, &approval);
 }

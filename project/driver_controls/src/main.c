@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "adc.h"
 #include "input_interrupt.h"
 #include "event_queue.h"
 #include "driver_state.h"
@@ -14,7 +15,7 @@
 #include "hazard_light_state.h"
 #include "mechanical_brake.h"
 
-#define INPUT_DEVICES 10
+#define INPUT_DEVICES 16
 #define OUTPUT_DEVICES 1
 
 // The struct of FSMs to be used in the system
@@ -26,6 +27,8 @@ typedef struct FSMGroup {
   FSM hazard_light;
   FSM mechanical_brake;
 } FSMGroup;
+
+//Keep interrupt priority low so that debounce can work properly
 
 void device_init() {
   driver_controls_init();
@@ -61,7 +64,7 @@ void device_init() {
     { { GPIO_PORT_C, 9 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING,
       GPIO_ALTFN_NONE, input_callback },
 
-    { { GPIO_PORT_C, 10 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING,
+    { { GPIO_PORT_C, 10 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING,
       GPIO_ALTFN_NONE, input_callback }
   };
 
@@ -79,8 +82,9 @@ void device_init() {
 }
 
 int main() {
-  // Declare and initialize the FSMs to be used
   FSMGroup fsm_group;
+  Event e;
+  uint16_t reading;
 
   driver_state_add_fsm(&fsm_group.power, power_state_init);
   driver_state_add_fsm(&fsm_group.pedal, pedal_state_init);
@@ -93,19 +97,18 @@ int main() {
   device_init();
   event_queue_init();
   soft_timer_init();
-
-  Event e;
-
+  
   for (;;) {
     if (!event_process(&e)) {
       if (driver_state_process_event(&e)) {
-        printf("Event = %d\t%s\t%s\t%s\t%s\t\t%s\n",
+        printf("Event = %d\t%s\t%s\t%s\t%s\t\t%s\t%s\n",
             e.id,
             fsm_group.power.current_state->name,
             fsm_group.pedal.current_state->name,
             fsm_group.direction.current_state->name,
             fsm_group.turn_signal.current_state->name,
-            fsm_group.hazard_light.current_state->name);
+            fsm_group.hazard_light.current_state->name,
+            fsm_group.mechanical_brake.current_state->name);
       }
     }
   }

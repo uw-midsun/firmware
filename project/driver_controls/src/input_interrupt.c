@@ -40,10 +40,13 @@ static void prv_direction_selector(GPIOAddress *address, Event *e) {
   switch ((GPIOB->IDR & (GPIO_IDR_2 | GPIO_IDR_3)) >> 2) {
     case 0:
       e->id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
+      return;
     case 1:
       e->id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
+      return;
     case 2:
       e->id = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
+      return;
   }
 }
 
@@ -63,10 +66,13 @@ static void prv_turn_signal(GPIOAddress *address, Event *e) {
   switch ((GPIOC->IDR & (GPIO_IDR_7 | GPIO_IDR_8)) >> 7) {
     case 0:
       e->id = INPUT_EVENT_TURN_SIGNAL_NONE;
+      return;
     case 1:
       e->id = INPUT_EVENT_TURN_SIGNAL_LEFT;
+      return;
     case 2:
       e->id = INPUT_EVENT_TURN_SIGNAL_RIGHT;
+      return;
   }
 }
 
@@ -82,7 +88,6 @@ void pedal_callback(ADCChannel adc_channel, void *context) {
   Event e;
 
   adc_read_raw(adc_channel, &e.data);
-  //printf("pedal = %d | adc_channel = %d\n", e.data, adc_channel);
   
   if (e.data < COAST_THRESHOLD) {
     e.id = INPUT_EVENT_GAS_BRAKE;
@@ -104,7 +109,6 @@ void input_callback(GPIOAddress *address, void *context) {
   debounce(address, &key_pressed);
 
   s_driver_inputs[address->pin](address, &e);
-
   event_raise(e.id, 0);
   return;
 }

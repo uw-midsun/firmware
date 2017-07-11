@@ -12,43 +12,36 @@ FSM_STATE_TRANSITION(state_disengaged) {
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE, state_engaged);
 }
 
-// Transition check functions
-static bool prv_check_mechanical_brake_engaged(const Event *e) {
+// State output functions
+static void prv_state_mechanical_brake_engaged(FSM *fsm, const Event *e, void *context) {
   switch (e->id) {
     case INPUT_EVENT_GAS_COAST:
     case INPUT_EVENT_GAS_PRESSED:
     case INPUT_EVENT_CRUISE_CONTROL:
     case INPUT_EVENT_CRUISE_CONTROL_INC:
     case INPUT_EVENT_CRUISE_CONTROL_DEC:
-      return false;
+      *(bool*)fsm->context = false;
     default:
-      return true;
+      *(bool*)fsm->context = true;
   }
 }
 
-static bool prv_check_mechanical_brake_disengaged(const Event *e) {
+static void prv_state_mechanical_brake_disengaged(FSM *fsm, const Event *e, void *context) {
+  
   switch (e->id) {
     case INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL:
     case INPUT_EVENT_DIRECTION_SELECTOR_DRIVE:
     case INPUT_EVENT_DIRECTION_SELECTOR_REVERSE:
-      return false;
+      *(bool*)fsm->context = false;
     default:
-      return true;
+      *(bool*)fsm->context = true;
   }
-}
-
-// State output functions
-static void prv_state_mechanical_brake_engaged(FSM *fsm, const Event *e, void *context) {
-  fsm->context = prv_check_mechanical_brake_engaged;
-}
-
-static void prv_state_mechanical_brake_disengaged(FSM *fsm, const Event *e, void *context) {
-  fsm->context = prv_check_mechanical_brake_disengaged;
 }
 
 void mechanical_brake_state_init(FSM *power_fsm, void *context) {
   fsm_state_init(state_engaged, prv_state_mechanical_brake_engaged);
   fsm_state_init(state_disengaged, prv_state_mechanical_brake_disengaged);
 
-  fsm_init(power_fsm, "power_fsm", &state_disengaged, prv_check_mechanical_brake_disengaged);
+  bool approval;
+  fsm_init(power_fsm, "power_fsm", &state_disengaged, &approval);
 }
