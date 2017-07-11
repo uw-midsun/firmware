@@ -8,16 +8,16 @@
 #define COAST_THRESHOLD 819
 #define DRIVE_THRESHOLD 2662
 
-typedef void (*DriverInput)(GPIOAddress *address, Event *e);
+typedef void (*DriverInput)(GPIOState *key_pressed, Event *e);
 
-static void prv_power_switch(GPIOAddress *address, Event *e);
-static void prv_direction_selector(GPIOAddress *address, Event *e);
-static void prv_cruise_control_switch(GPIOAddress *address, Event *e);
-static void prv_cruise_control_inc(GPIOAddress *address, Event *e);
-static void prv_cruise_control_dec(GPIOAddress *address, Event *e);
-static void prv_turn_signal(GPIOAddress *address, Event *e);
-static void prv_hazard_light(GPIOAddress *address, Event *e);
-static void prv_mechanical_brake(GPIOAddress *address, Event *e);
+static void prv_power_switch(GPIOState *key_pressed, Event *e);
+static void prv_direction_selector(GPIOState *key_pressed, Event *e);
+static void prv_cruise_control_switch(GPIOState *key_pressed, Event *e);
+static void prv_cruise_control_inc(GPIOState *key_pressed, Event *e);
+static void prv_cruise_control_dec(GPIOState *key_pressed, Event *e);
+static void prv_turn_signal(GPIOState *key_pressed, Event *e);
+static void prv_hazard_light(GPIOState *key_pressed, Event *e);
+static void prv_mechanical_brake(GPIOState *key_pressed, Event *e);
 
 static const DriverInput s_driver_inputs[NUM_INPUT_EVENTS] = {
   prv_power_switch,
@@ -33,10 +33,12 @@ static const DriverInput s_driver_inputs[NUM_INPUT_EVENTS] = {
   prv_mechanical_brake
 };
 
-static void prv_power_switch(GPIOAddress *address, Event *e) {
-  e->id = INPUT_EVENT_POWER;
+static void prv_power_switch(GPIOState *key_pressed, Event *e) {
+  if (*key_pressed) {
+    e->id = INPUT_EVENT_POWER;
+  }
 }
-static void prv_direction_selector(GPIOAddress *address, Event *e) {
+static void prv_direction_selector(GPIOState *key_pressed, Event *e) {
   switch ((GPIOB->IDR & (GPIO_IDR_2 | GPIO_IDR_3)) >> 2) {
     case 0:
       e->id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
@@ -50,19 +52,25 @@ static void prv_direction_selector(GPIOAddress *address, Event *e) {
   }
 }
 
-static void prv_cruise_control_switch(GPIOAddress *address, Event *e) {
-  e->id = INPUT_EVENT_CRUISE_CONTROL;
+static void prv_cruise_control_switch(GPIOState *key_pressed, Event *e) {
+  if (*key_pressed) {
+    e->id = INPUT_EVENT_CRUISE_CONTROL;
+  }
 }
 
-static void prv_cruise_control_inc(GPIOAddress *address, Event *e) {
-  e->id = INPUT_EVENT_CRUISE_CONTROL_INC;
+static void prv_cruise_control_inc(GPIOState *key_pressed, Event *e) {
+  if (*key_pressed) {
+    e->id = INPUT_EVENT_CRUISE_CONTROL_INC;
+  }
 }
 
-static void prv_cruise_control_dec(GPIOAddress *address, Event *e) {
-  e->id = INPUT_EVENT_CRUISE_CONTROL_DEC;
+static void prv_cruise_control_dec(GPIOState *key_pressed, Event *e) {
+  if (*key_pressed) {
+    e->id = INPUT_EVENT_CRUISE_CONTROL_DEC;
+  }
 }
 
-static void prv_turn_signal(GPIOAddress *address, Event *e) {
+static void prv_turn_signal(GPIOState *key_pressed, Event *e) {
   switch ((GPIOC->IDR & (GPIO_IDR_7 | GPIO_IDR_8)) >> 7) {
     case 0:
       e->id = INPUT_EVENT_TURN_SIGNAL_NONE;
@@ -76,11 +84,13 @@ static void prv_turn_signal(GPIOAddress *address, Event *e) {
   }
 }
 
-static void prv_hazard_light(GPIOAddress *address, Event *e) {
-  e->id = INPUT_EVENT_HAZARD_LIGHT;
+static void prv_hazard_light(GPIOState *key_pressed, Event *e) {
+  if (*key_pressed) {
+    e->id = INPUT_EVENT_HAZARD_LIGHT;
+  }
 }
 
-static void prv_mechanical_brake(GPIOAddress *address, Event *e) {
+static void prv_mechanical_brake(GPIOState *key_pressed, Event *e) {
   e->id = INPUT_EVENT_MECHANICAL_BRAKE;
 }
 
@@ -103,12 +113,12 @@ void pedal_callback(ADCChannel adc_channel, void *context) {
 
 void input_callback(GPIOAddress *address, void *context) {
   GPIOState key_pressed;
-  Event e;
+  Event e = { .id = INPUT_EVENT_NONE };
 
   gpio_get_value(address, &key_pressed);
   debounce(address, &key_pressed);
 
-  s_driver_inputs[address->pin](address, &e);
+  s_driver_inputs[address->pin](&key_pressed, &e);
   event_raise(e.id, 0);
   return;
 }
