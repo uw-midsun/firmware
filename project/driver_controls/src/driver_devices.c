@@ -13,7 +13,7 @@ void driver_controls_init() {
 void driver_controls_add_device(Device *device) {
   GPIOSettings gpio_settings = { device->direction, GPIO_STATE_LOW,
                                   GPIO_RES_NONE, device->alt_function };
-  InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_NORMAL };
+  InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_LOW };
 
   gpio_init_pin(&device->address, &gpio_settings);
 

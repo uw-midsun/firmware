@@ -3,28 +3,32 @@
 #include <stdio.h>
 #include "soft_timer.h"
 
+#define CHECK_MSEC    2       // Sampling interval in milliseconds
+#define HOLD_MSEC     50      // Hold time for button presses
+
 static void prv_output(SoftTimerID timer_id, void *context) {
   return;
 }
 
-void debounce(GPIOAddress *address, GPIOState *key_pressed) {
-  uint8_t count = (*key_pressed) ?
-                   (PRESS_MSEC / CHECK_MSEC) :
-                   (RELEASE_MSEC / CHECK_MSEC);
+void debounce(GPIOAddress *address, GPIOState *current_state) {
+  GPIOState prev_state = *current_state;
 
-  GPIOState prev_state = 0;
-  SoftTimerID timer_a;
+  SoftTimerID timer_id;
 
-  for (uint8_t i = 0; i < count; i++) {
-    soft_timer_start(CHECK_MSEC*1000, prv_output, 0, &timer_a);
+  uint32_t count = HOLD_MSEC / CHECK_MSEC;
 
-    while (soft_timer_remaining_time(timer_a) > 0) {}
-    soft_timer_cancel(timer_a);
+  for (uint32_t i = 0; i < count; i++) {
+    soft_timer_start_millis(CHECK_MSEC, prv_output, NULL, &timer_id);
+    while (soft_timer_inuse()) { }
+    soft_timer_cancel(timer_id);
 
-    if (*key_pressed != prev_state) {
+    gpio_get_value(address, current_state);
+
+    if (*current_state != prev_state) {
       i = 0;
+      prev_state = *current_state;
     }
-
-    prev_state = *key_pressed;
   }
+
+  return STATUS_CODE_OK;
 }

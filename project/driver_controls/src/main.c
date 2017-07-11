@@ -97,18 +97,18 @@ int main() {
   device_init();
   event_queue_init();
   soft_timer_init();
-  
+
   for (;;) {
     if (!event_process(&e)) {
       if (driver_state_process_event(&e)) {
-        printf("Event = %d\t%s\t%s\t%s\t%s\t\t%s\t%s\n",
+        printf("Event = %d   :   %s   :   %s   :   %s   :   %s   :   %s   :   %s\n",
             e.id,
             fsm_group.power.current_state->name,
             fsm_group.pedal.current_state->name,
             fsm_group.direction.current_state->name,
-            fsm_group.turn_signal.current_state->name,
             fsm_group.hazard_light.current_state->name,
-            fsm_group.mechanical_brake.current_state->name);
+            fsm_group.mechanical_brake.current_state->name,
+            fsm_group.turn_signal.current_state->name);
       }
     }
   }
