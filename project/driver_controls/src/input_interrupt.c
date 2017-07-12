@@ -98,7 +98,7 @@ void pedal_callback(ADCChannel adc_channel, void *context) {
   Event e;
 
   adc_read_raw(adc_channel, &e.data);
-  
+
   if (e.data < COAST_THRESHOLD) {
     e.id = INPUT_EVENT_GAS_BRAKE;
   } else if (e.data > DRIVE_THRESHOLD) {

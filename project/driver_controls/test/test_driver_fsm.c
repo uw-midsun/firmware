@@ -53,6 +53,7 @@ void teardown_test(void) {
   driver_state_process_event(&e);
 
   prv_toggle_power(false);
+  TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
 }
 
 void test_setup() {
@@ -91,14 +92,6 @@ void test_power_fsm() {
     TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
   }
 
-  // Check that mechanical brakes work even when power is off
-  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
-  TEST_ASSERT_TRUE(driver_state_process_event(&e));
-  TEST_ASSERT_EQUAL_STRING("state_engaged", s_fsm_group.mechanical_brake.current_state->name);
-
-  TEST_ASSERT_TRUE(driver_state_process_event(&e));
-  TEST_ASSERT_EQUAL_STRING("state_disengaged", s_fsm_group.mechanical_brake.current_state->name);
-
   // Check that the power FSM tranisitions when receiving INPUT_EVENT_POWER
   e.id = INPUT_EVENT_POWER;
   TEST_ASSERT_TRUE(driver_state_process_event(&e));
@@ -114,42 +107,67 @@ void test_mechanical_brake_fsm() {
   TEST_ASSERT_TRUE(driver_state_process_event(&e));
   TEST_ASSERT_EQUAL_STRING("state_engaged", s_fsm_group.mechanical_brake.current_state->name);
 
+  // Check that the correct events are blocked when the brake is engaged
+  InputEvent forbidden_engaged[] = { INPUT_EVENT_GAS_COAST, INPUT_EVENT_GAS_PRESSED,
+    INPUT_EVENT_CRUISE_CONTROL, INPUT_EVENT_CRUISE_CONTROL_INC, INPUT_EVENT_CRUISE_CONTROL_DEC };
+
+  for (uint8_t i = 0; i < 5; i++) {
+    e.id = forbidden_engaged[i];
+    TEST_ASSERT_FALSE(driver_state_process_event(&e));
+  }
+
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
   TEST_ASSERT_TRUE(driver_state_process_event(&e));
   TEST_ASSERT_EQUAL_STRING("state_disengaged", s_fsm_group.mechanical_brake.current_state->name);
+
+  // Check that the correct events are blocked when the brake is disengaged
+  InputEvent forbidden_disengaged[] = { INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL,
+    INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, INPUT_EVENT_DIRECTION_SELECTOR_REVERSE };
+
+  for (uint8_t i = 0; i < 3; i++) {
+    e.id = forbidden_disengaged[i];
+    TEST_ASSERT_FALSE(driver_state_process_event(&e));
+  }
 }
 
 void test_direction_fsm() {
   Event e;
+  Event mech_brake = { .id = INPUT_EVENT_MECHANICAL_BRAKE };
 
   // Turn on the power
   prv_toggle_power(true);
-
-  // Check that gear shifts cannot be made while the brake is disengaged
-  TEST_ASSERT_EQUAL_STRING("state_disengaged", s_fsm_group.mechanical_brake.current_state->name);
-
-  e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
-  TEST_ASSERT_FALSE(driver_state_process_event(&e));
+  TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
   TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
 
-  e.id = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
+  // Check that the car cannot accelerate in neutral
+  e.id = INPUT_EVENT_GAS_COAST;
   TEST_ASSERT_FALSE(driver_state_process_event(&e));
-  TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
 
-  e.id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
+  e.id = INPUT_EVENT_GAS_PRESSED;
   TEST_ASSERT_FALSE(driver_state_process_event(&e));
-  TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
 
-  // Check that gear shifts cannot be made while the mechanical brake is disengaged
+  // Check that gear shifts can be made while mechanical brake is engaged, and that the power
+  // cannot be turned off when not in neutral
   e.id = INPUT_EVENT_MECHANICAL_BRAKE;
   driver_state_process_event(&e);
+  TEST_ASSERT_EQUAL_STRING("state_engaged", s_fsm_group.mechanical_brake.current_state->name);
 
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
   TEST_ASSERT_TRUE(driver_state_process_event(&e));
   TEST_ASSERT_EQUAL_STRING("state_forward", s_fsm_group.direction.current_state->name);
 
+  e.id = INPUT_EVENT_POWER;
+  TEST_ASSERT_FALSE(driver_state_process_event(&e));
+
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
   TEST_ASSERT_TRUE(driver_state_process_event(&e));
   TEST_ASSERT_EQUAL_STRING("state_reverse", s_fsm_group.direction.current_state->name);
+
+  e.id = INPUT_EVENT_POWER;
+  TEST_ASSERT_FALSE(driver_state_process_event(&e));
 
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
   TEST_ASSERT_TRUE(driver_state_process_event(&e));
@@ -165,15 +183,8 @@ void test_pedal_fsm() {
 
   // Turn on the power
   prv_toggle_power(true);
+  TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
 
-  // Check that transitions do not happen while direction is set to neutral
-  e.id = INPUT_EVENT_GAS_COAST;
-  TEST_ASSERT_FALSE(driver_state_process_event(&e));
-  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
-
-  e.id = INPUT_EVENT_GAS_PRESSED;
-  TEST_ASSERT_FALSE(driver_state_process_event(&e));
-  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
 
   // Check that the car moves after switching to the forward direction
   TEST_ASSERT_TRUE(driver_state_process_event(&mech_brake));
@@ -204,11 +215,7 @@ void test_cruise_control() {
 
   // Turn on the power
   prv_toggle_power(true);
-
-  // Check that cruise control cannot be transitioned to while in neutral
-  e.id = INPUT_EVENT_CRUISE_CONTROL;
-  TEST_ASSERT_FALSE(driver_state_process_event(&e));
-  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
 
   // Switch to forward direction
   driver_state_process_event(&mech_brake);
@@ -248,6 +255,7 @@ void test_turn_signal_fsm() {
 
   // Turn on the power
   prv_toggle_power(true);
+  TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
 
   e.id = INPUT_EVENT_TURN_SIGNAL_LEFT;
   TEST_ASSERT_TRUE(driver_state_process_event(&e));
@@ -267,10 +275,12 @@ void test_turn_signal_fsm() {
 }
 
 void test_hazard_signal_fsm() {
+  Event e;
   Event hazard_light = { .id = INPUT_EVENT_HAZARD_LIGHT };
 
   // Turn on the power
   prv_toggle_power(true);
+  TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
 
   TEST_ASSERT_TRUE(driver_state_process_event(&hazard_light));
   TEST_ASSERT_EQUAL_STRING("state_hazard_on", s_fsm_group.hazard_light.current_state->name);

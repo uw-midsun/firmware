@@ -22,6 +22,5 @@ void hazard_light_state_init(FSM *hazard_light_fsm, void *context) {
   fsm_state_init(state_hazard_on, prv_state_output);
   fsm_state_init(state_hazard_off, prv_state_output);
 
-  bool approval;
-  fsm_init(hazard_light_fsm, "hazard_light_fsm", &state_hazard_off, &approval);
+  fsm_init(hazard_light_fsm, "hazard_light_fsm", &state_hazard_off, context);
 }

@@ -28,8 +28,6 @@ typedef struct FSMGroup {
   FSM mechanical_brake;
 } FSMGroup;
 
-//Keep interrupt priority low so that debounce can work properly
-
 void device_init() {
   driver_controls_init();
 
@@ -98,6 +96,10 @@ int main() {
   event_queue_init();
   soft_timer_init();
 
+  adc_init(ADC_MODE_CONTINUOUS);
+  adc_set_channel(ADC_CHANNEL_11, true);
+  adc_register_callback(ADC_CHANNEL_11, pedal_callback, NULL);
+  
   for (;;) {
     if (!event_process(&e)) {
       if (driver_state_process_event(&e)) {

@@ -25,6 +25,5 @@ void power_state_init(FSM *power_fsm, void *context) {
   fsm_state_init(state_off, prv_state_off);
   fsm_state_init(state_on, prv_state_on);
 
-  bool approval;
-  fsm_init(power_fsm, "power_fsm", &state_off, &approval);
+  fsm_init(power_fsm, "power_fsm", &state_off, context);
 }

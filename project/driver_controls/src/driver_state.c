@@ -1,12 +1,14 @@
 #include <stdio.h>
 
 #include "driver_state.h"
-
+#include "log.h"
 #define MAX_FSMS 10
 
 typedef bool (*TransitionCheck)(Event *e);
 
 static FSM *s_driver_fsms[MAX_FSMS];
+static bool s_fsm_approval[MAX_FSMS];
+
 static uint8_t s_active_fsms = 0;
 
 static bool prv_get_permit(Event *e) {
@@ -14,7 +16,7 @@ static bool prv_get_permit(Event *e) {
 
   for (uint8_t i = 0; i < s_active_fsms; i++) {
     s_driver_fsms[i]->current_state->output(s_driver_fsms[i], e, NULL);
-    transitioned = (*(bool*)s_driver_fsms[i]->context);
+    transitioned = s_fsm_approval[i];
 
     if (!transitioned) {
       return false;
@@ -25,11 +27,11 @@ static bool prv_get_permit(Event *e) {
 }
 
 StatusCode driver_state_add_fsm(FSM *fsm, DriverFSMInit driver_fsm_init) {
-  if (s_active_fsms == 10) {
+  if (s_active_fsms == MAX_FSMS) {
     return STATUS_CODE_RESOURCE_EXHAUSTED;
   }
 
-  driver_fsm_init(fsm, NULL);
+  driver_fsm_init(fsm, &s_fsm_approval[s_active_fsms]);
   s_driver_fsms[s_active_fsms] = fsm;
   s_active_fsms++;
   return STATUS_CODE_OK;
@@ -44,6 +46,5 @@ bool driver_state_process_event(Event *e) {
       }
     }
   }
-
   return false;
 }

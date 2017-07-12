@@ -31,6 +31,5 @@ void turn_signal_state_init(FSM* turn_signal_fsm, void *context) {
   fsm_state_init(state_left_signal, prv_state_output);
   fsm_state_init(state_right_signal, prv_state_output);
 
-  bool approval;
-  fsm_init(turn_signal_fsm, "turn_signal_fsm", &state_no_signal, &approval);
+  fsm_init(turn_signal_fsm, "turn_signal_fsm", &state_no_signal, context);
 }

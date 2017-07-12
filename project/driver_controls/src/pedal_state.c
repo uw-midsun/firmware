@@ -41,6 +41,5 @@ void pedal_state_init(FSM *pedal_fsm, void *context) {
   fsm_state_init(state_driving, prv_state_output);
   fsm_state_init(state_cruise_control, prv_state_output);
 
-  bool approval;
-  fsm_init(pedal_fsm, "pedal_fsm", &state_brake, &approval);
+  fsm_init(pedal_fsm, "pedal_fsm", &state_brake, context);
 }

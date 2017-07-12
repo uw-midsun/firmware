@@ -35,6 +35,5 @@ void direction_state_init(FSM *direction_fsm, void *context) {
   fsm_state_init(state_forward, prv_state_forward);
   fsm_state_init(state_reverse, prv_state_forward);
 
-  bool approval;
-  fsm_init(direction_fsm, "direction_fsm", &state_neutral, &approval);
+  fsm_init(direction_fsm, "direction_fsm", &state_neutral, context);
 }
