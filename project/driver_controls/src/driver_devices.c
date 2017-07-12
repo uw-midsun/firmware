@@ -2,7 +2,6 @@
 
 #include "driver_devices.h"
 #include "gpio_it.h"
-#include "adc.h"
 
 void driver_controls_init() {
   gpio_init();

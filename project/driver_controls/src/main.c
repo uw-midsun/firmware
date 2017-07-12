@@ -3,7 +3,6 @@
 
 #include "adc.h"
 #include "input_interrupt.h"
-#include "event_queue.h"
 #include "driver_state.h"
 #include "soft_timer.h"
 #include "driver_devices.h"
@@ -99,7 +98,7 @@ int main() {
   adc_init(ADC_MODE_CONTINUOUS);
   adc_set_channel(ADC_CHANNEL_11, true);
   adc_register_callback(ADC_CHANNEL_11, pedal_callback, NULL);
-  
+
   for (;;) {
     if (!event_process(&e)) {
       if (driver_state_process_event(&e)) {
