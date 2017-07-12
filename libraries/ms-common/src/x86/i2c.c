@@ -8,7 +8,7 @@ StatusCode i2c_read(I2CPort i2c, I2CAddress addr, uint8_t *rx_data, size_t rx_le
   return STATUS_CODE_UNIMPLEMENTED;
 }
 
-StatusCode i2c_write(I2CPort i2c, I2CAddress addr, uint8_t *tx_data, size_t tx_data) {
+StatusCode i2c_write(I2CPort i2c, I2CAddress addr, uint8_t *tx_data, size_t tx_len) {
   return STATUS_CODE_UNIMPLEMENTED;
 }
 
