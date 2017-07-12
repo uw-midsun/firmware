@@ -1,5 +1,6 @@
 #pragma once
 // Delay function library
+// Requires soft timers and interrupts to be initalized.
 //
 // Blocking delay for a fixed period of time. Still allows interrupts to
 // trigger.

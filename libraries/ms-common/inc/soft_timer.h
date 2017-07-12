@@ -1,5 +1,6 @@
 #pragma once
-
+// Software-based timers backed by single hardware timer
+// Requires interrupts to be initialized.
 #include <stdbool.h>
 #include <stdint.h>
 
