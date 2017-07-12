@@ -1,4 +1,4 @@
-#include "power_state.h"
+#include "mechanical_brake.h"
 
 FSM_DECLARE_STATE(state_engaged);
 FSM_DECLARE_STATE(state_disengaged);
@@ -41,10 +41,9 @@ static void prv_state_mechanical_brake_disengaged(FSM *fsm, const Event *e, void
   }
 }
 
-void mechanical_brake_state_init(FSM *power_fsm, void *context) {
+void mechanical_brake_state_init(FSM *mechanical_brake_fsm, void *context) {
   fsm_state_init(state_engaged, prv_state_mechanical_brake_engaged);
   fsm_state_init(state_disengaged, prv_state_mechanical_brake_disengaged);
 
-  bool approval;
-  fsm_init(power_fsm, "power_fsm", &state_disengaged, &approval);
+  fsm_init(mechanical_brake_fsm, "mechanical_brake_fsm", &state_disengaged, context);
 }
