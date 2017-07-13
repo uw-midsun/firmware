@@ -1,5 +1,8 @@
-// Non-blocking UART driver
 #pragma once
+// Non-blocking UART driver
+// Requires GPIO and interrupts to be initialized.
+
+// Uses internal FIFOs to buffer RX and TX.
 #include <stdint.h>
 #include "uart_mcu.h"
 #include "gpio.h"

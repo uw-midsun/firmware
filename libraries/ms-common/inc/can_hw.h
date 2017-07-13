@@ -1,5 +1,6 @@
 #pragma once
 // CAN HW Interface
+// Requires interrupts to be initalized.
 //
 // Used to initiate CAN TX and RX directly through the MCU, without any preprocessing or queues.
 // Note that none of our systems currently support more than one CAN interface natively.
