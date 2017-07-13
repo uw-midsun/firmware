@@ -1,7 +1,6 @@
 #pragma once
-
 // Analog to Digital Converter HAL Inteface
-
+// Requires GPIO and interrupts to be initialized.
 #include <stdbool.h>
 #include <stdint.h>
 

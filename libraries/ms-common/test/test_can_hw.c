@@ -2,6 +2,7 @@
 #include "log.h"
 #include "unity.h"
 #include "test_helpers.h"
+#include "interrupt.h"
 
 static CANHwConfig s_can;
 static volatile size_t s_msg_rx;
@@ -23,6 +24,7 @@ static void prv_wait_rx(size_t wait_for) {
 }
 
 void setup_test(void) {
+  interrupt_init();
   can_hw_init(&s_can, 250, true);
   can_hw_register_callback(&s_can, CAN_HW_EVENT_MSG_RX, prv_handle_rx, NULL);
   s_msg_rx = 0;
