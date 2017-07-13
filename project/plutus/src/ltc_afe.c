@@ -1,6 +1,8 @@
 #include "ltc_afe.h"
 #include "delay.h"
 
+static bool s_discharging_cells[12 * LTC_DEVICES_IN_CHAIN] = { false };
+
 static void prv_wakeup_idle(const LtcAfeSettings *afe) {
   gpio_toggle_state(&afe->cs);
   delay_us(2);
@@ -246,14 +248,16 @@ StatusCode prv_read_aux_cmd(const LtcAfeSettings *afe, uint8_t aux_register, uin
 }
 
 StatusCode LtcAfe_read_all_aux(const LtcAfeSettings *afe) {
-  // GPIO
-  uint8_t data_counter = 0;
-  for (uint8_t gpio_register = 0; gpio_register < LTC_AFE_CELLS_IN_REG; gpio_register++) {
-  }
+  // due to our hardware, in order to read all the auxilary inputs we need to
+  // for cell 1-12:
+  // a. write the CFG register for GPIO2, GPIO3, GPIO4, GPIO5
+  // b. send the RDAUXA command
+  // c. read GPIO1 data (we only care about AVAR0 and AVAR1), which actually
+  //    corresponds to the cell specified by GPIO5, GPIO4, GPIO3, GPIO2 in binary
+
   return STATUS_CODE_OK;
 }
 
-StatusCode LtcAfe_toggle_discharge_cells(const LtcAfeSettings *afe, uint8_t device,
-                                          uint8_t cell, bool discharge) {
+StatusCode LtcAfe_toggle_discharge_cells(const LtcAfeSettings *afe, uint8_t cell, bool discharge) {
   return STATUS_CODE_OK;
 }

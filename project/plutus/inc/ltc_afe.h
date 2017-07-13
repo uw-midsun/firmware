@@ -91,7 +91,6 @@ StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result);
 StatusCode LtcAfe_read_all_aux(const LtcAfeSettings *afe);
 
 // discharge cells
-StatusCode LtcAfe_toggle_discharge_cells(const LtcAfeSettings *afe, uint8_t device,
-                                          uint8_t cell, bool discharge);
+StatusCode LtcAfe_toggle_discharge_cells(const LtcAfeSettings *afe, uint16_t cell, bool discharge);
 
 StatusCode LtcAfe_read_config(const LtcAfeSettings *afe);
