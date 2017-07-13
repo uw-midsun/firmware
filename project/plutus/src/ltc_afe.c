@@ -29,7 +29,7 @@ void prv_write_config(const LtcAfeSettings *afe) {
   // send CFGR registers starting with the bottom slave in the stack
   for (uint8_t device = afe->devices_in_chain; device > 0; --device) {
     // TODO(KARL-1): get these values from config struct
-    uint8_t enable = LTC6804_GPIO1 | LTC6804_GPIO2 | LTC6804_GPIO3 | LTC6804_GPIO4 | LTC6804_GPIO5;
+    uint8_t enable = LTC6804_GPIO1_PD_ON | LTC6804_GPIO2_PD_ON | LTC6804_GPIO3_PD_ON | LTC6804_GPIO4_PD_ON | LTC6804_GPIO5_PD_ON;
     uint16_t undervoltage = 0;
     uint16_t overvoltage = 0;
     uint16_t cells_to_discharge = 0;
@@ -43,6 +43,7 @@ void prv_write_config(const LtcAfeSettings *afe) {
     //    - true: CFGR0[0] = 0
     //    - false: CFGR0[0] = 1
     // CFGR0: bit0 is the ADC Mode
+    // TODO: fix this
     configuration_cmd[configuration_index++] |= !((afe->adc_mode + 1) > 3);
 
     // CFGR1: VUV[7...0]
@@ -74,8 +75,8 @@ void prv_write_config(const LtcAfeSettings *afe) {
   prv_wakeup_idle(afe);
 
   // don't care about SPI results
-  uint8_t *cfg_offset = (2 + 2) + ((6 + 2) * afe->devices_in_chain);
-  spi_exchange(afe->spi_port, configuration_cmd, cfg_offset, NULL, 0);
+  uint8_t cfg_len = (2 + 2) + ((6 + 2) * afe->devices_in_chain);
+  spi_exchange(afe->spi_port, configuration_cmd, cfg_len, NULL, 0);
 }
 
 StatusCode LtcAfe_read_config(const LtcAfeSettings *afe) {
@@ -92,8 +93,8 @@ StatusCode LtcAfe_read_config(const LtcAfeSettings *afe) {
   uint16_t cmd_pec = crc15_calculate(cmd, 2);
 
   // set PEC high bits
-  cmd[3] = (uint8_t)(cmd_pec >> 8);
-  cmd[4] = (uint8_t)cmd_pec;
+  cmd[2] = (uint8_t)(cmd_pec >> 8);
+  cmd[3] = (uint8_t)cmd_pec;
 
   prv_wakeup_idle(afe);
   spi_exchange(afe->spi_port, cmd, 4, received_data, 8 * afe->devices_in_chain);
@@ -112,14 +113,6 @@ StatusCode LtcAfe_read_config(const LtcAfeSettings *afe) {
     }
   }
 
-  for (uint16_t i = 0; i < 6 * LTC_DEVICES_IN_CHAIN; ++i) {
-    printf("Register %d: %d\n", i, configuration_registers[i]);
-  }
-
-  for (uint16_t i = 0; i < (6 + 2) * LTC_DEVICES_IN_CHAIN; ++i) {
-    printf("Received %d: %d\n", i, received_data[i]);
-  }
-
   return status;
 }
 
@@ -127,7 +120,7 @@ StatusCode LtcAfe_init(const LtcAfeSettings *afe) {
   crc15_init_table();
 
   SPISettings spi_config = {
-    .baudrate = 1000000,
+    .baudrate = 250000,
     .mode = SPI_MODE_3,
     .mosi = afe->mosi,
     .miso = afe->miso,
@@ -216,8 +209,6 @@ StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result_d
       uint16_t data_pec = crc15_calculate(&afe_data[afe_device * 8], 6);
       if (received_pec != data_pec) {
         result_status = STATUS_CODE_UNKNOWN;
-        printf("Received: %d\n", received_pec);
-        printf("Calculated: %d\n", data_pec);
       }
       data_counter += 2;
     }
@@ -246,6 +237,7 @@ StatusCode prv_read_aux_cmd(const LtcAfeSettings *afe, uint8_t aux_register, uin
   cmd[3] = (uint8_t)cmd_pec;
 
   // wakeup idle.. is this necessary?
+  prv_wakeup_idle(afe);
 
   // get data
   spi_exchange(afe->spi_port, cmd, 4, data, (6 + 2) * afe->devices_in_chain);

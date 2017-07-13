@@ -5,6 +5,7 @@
 #include "crc15.h"
 #include "gpio.h"
 #include "spi.h"
+#include "log.h"
 #include "status.h"
 
 #define LTC_AFE_CELLS_IN_REG                    3
@@ -14,11 +15,16 @@
 
 #define LTC6804_ADCOPT                          (1 << 0)
 #define LTC6804_SWTRD                           (1 << 1)
-#define LTC6804_GPIO1                           (1 << 3)
-#define LTC6804_GPIO2                           (1 << 4)
-#define LTC6804_GPIO3                           (1 << 5)
-#define LTC6804_GPIO4                           (1 << 6)
-#define LTC6804_GPIO5                           (1 << 7)
+#define LTC6804_GPIO1_PD_OFF                    (1 << 3)
+#define LTC6804_GPIO1_PD_ON                     (0 << 3)
+#define LTC6804_GPIO2_PD_OFF                    (1 << 4)
+#define LTC6804_GPIO2_PD_ON                     (0 << 4)
+#define LTC6804_GPIO3_PD_OFF                    (1 << 5)
+#define LTC6804_GPIO3_PD_ON                     (0 << 5)
+#define LTC6804_GPIO4_PD_OFF                    (1 << 6)
+#define LTC6804_GPIO4_PD_ON                     (0 << 6)
+#define LTC6804_GPIO5_PD_OFF                    (1 << 7)
+#define LTC6804_GPIO5_PD_ON                     (0 << 7)
 
 #define LTC6804_CNVT_CELL_ALL                   0
 #define LTC6804_CNVT_CELL_1_7                   1
