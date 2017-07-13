@@ -151,7 +151,7 @@ $(BIN_DIR)/%.bin: $(BIN_DIR)/%$(PLATFORM_EXT)
 .PHONY: clean reallyclean remake new
 
 new:
-	@python3 $(MAKE_DIR)/new_project.py $(NEW_TYPE) $(PROJECT)$(LIBRARY)
+	@python3 $(MAKE_DIR)/new_target.py $(NEW_TYPE) $(PROJECT)$(LIBRARY)
 
 clean:
 	@find ./ -name '*~' | xargs rm -f
