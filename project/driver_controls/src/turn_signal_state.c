@@ -1,11 +1,13 @@
 #include "turn_signal_state.h"
 #include "input_event.h"
 
+// Turn signal FSM state definitions
+
 FSM_DECLARE_STATE(state_no_signal);
 FSM_DECLARE_STATE(state_left_signal);
 FSM_DECLARE_STATE(state_right_signal);
 
-// State machine transition tables
+// Turn signal FSM transition table definitions
 
 FSM_STATE_TRANSITION(state_no_signal) {
   FSM_ADD_TRANSITION(INPUT_EVENT_TURN_SIGNAL_LEFT, state_left_signal);
@@ -22,11 +24,14 @@ FSM_STATE_TRANSITION(state_right_signal) {
   FSM_ADD_TRANSITION(INPUT_EVENT_TURN_SIGNAL_NONE, state_no_signal);
 }
 
+// Turn signal FSM arbiter function
+
 static bool prv_check_turn_signal(Event *e) {
   return true;
 }
 
-// State output functions
+// Turn signal FSM output function
+
 static void prv_state_output(FSM* fsm, const Event* e, void *context) {
   InputEventCheck *event_check = fsm->context;
   *event_check = prv_check_turn_signal;

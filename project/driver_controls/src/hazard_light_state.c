@@ -1,10 +1,12 @@
 #include "hazard_light_state.h"
 #include "input_event.h"
 
+// Hazard light FSM state definitions
+
 FSM_DECLARE_STATE(state_hazard_on);
 FSM_DECLARE_STATE(state_hazard_off);
 
-// State machine transition tables
+// Hazard light FSM transition table definitions
 
 FSM_STATE_TRANSITION(state_hazard_on) {
   FSM_ADD_TRANSITION(INPUT_EVENT_HAZARD_LIGHT, state_hazard_off);
@@ -14,11 +16,14 @@ FSM_STATE_TRANSITION(state_hazard_off) {
   FSM_ADD_TRANSITION(INPUT_EVENT_HAZARD_LIGHT, state_hazard_on);
 }
 
+// Hazard light FSM arbiter function
+
 static bool prv_check_hazard_light(Event *e) {
   return true;
 }
 
-// Output functions for the hazard light state
+// Hazard light FSM output function
+
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   InputEventCheck *event_check = fsm->context;
   *event_check = prv_check_hazard_light;

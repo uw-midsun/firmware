@@ -7,17 +7,17 @@
 #define MAX_FSMS 10
 
 static FSM *s_driver_fsms[MAX_FSMS];
-static InputEventCheck s_event_checks[MAX_FSMS];
+static InputEventCheck s_event_checks[MAX_FSMS];  // Function pointer array to FSM arbiter functions
 
 static uint8_t s_active_fsms = 0;
 
-static bool prv_get_permit(Event *e) {
-  bool transitioned;
+static bool prv_event_permitted(Event *e) {
+  bool permitted;
 
   for (uint8_t i = 0; i < s_active_fsms; i++) {
-    transitioned = s_event_checks[i](e);
+    permitted = s_event_checks[i](e);
 
-    if (!transitioned) {
+    if (!permitted) {
       return false;
     }
   }
@@ -29,6 +29,7 @@ StatusCode driver_state_add_fsm(FSM *fsm, DriverFSMInit driver_fsm_init) {
     return STATUS_CODE_RESOURCE_EXHAUSTED;
   }
 
+  // Initialize the FSM with a pointer to the corresponding entry in the function pointer array
   driver_fsm_init(fsm, &s_event_checks[s_active_fsms]);
   s_driver_fsms[s_active_fsms] = fsm;
   s_active_fsms++;
@@ -36,7 +37,7 @@ StatusCode driver_state_add_fsm(FSM *fsm, DriverFSMInit driver_fsm_init) {
 }
 
 bool driver_state_process_event(Event *e) {
-  if (prv_get_permit(e)) {
+  if (prv_event_permitted(e)) {
     for (uint8_t i = 0; i < s_active_fsms; i++) {
       bool transitioned = fsm_process_event(s_driver_fsms[i], e);
       if (transitioned) {

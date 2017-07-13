@@ -2,10 +2,10 @@
 #include "input_interrupt.h"
 #include "input_event.h"
 #include "event_queue.h"
-#include "stm32f0xx.h"
 
 #define NUM_INPUT_EVENTS 16
 
+// Arbitrary thresholds for gas pedal
 #define COAST_THRESHOLD 1000
 #define DRIVE_THRESHOLD 3000
 

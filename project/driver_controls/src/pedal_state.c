@@ -1,12 +1,14 @@
 #include "pedal_state.h"
 #include "input_event.h"
 
-FSM_DECLARE_STATE(state_brake);           // Brake State: Driver is holding down the brake pedal
-FSM_DECLARE_STATE(state_coast);
-FSM_DECLARE_STATE(state_driving);         // Driving State: Car is in motion due to the gas pedal
-FSM_DECLARE_STATE(state_cruise_control);  // Driving State: Car is in motion due to the gas pedal
+// Pedal FSM state definitions
 
-// State machine transition tables
+FSM_DECLARE_STATE(state_brake);
+FSM_DECLARE_STATE(state_coast);
+FSM_DECLARE_STATE(state_driving);
+FSM_DECLARE_STATE(state_cruise_control);
+
+// Pedal FSM transition table definitions
 
 FSM_STATE_TRANSITION(state_brake) {
   FSM_ADD_TRANSITION(INPUT_EVENT_GAS_COAST, state_coast);
@@ -30,11 +32,14 @@ FSM_STATE_TRANSITION(state_cruise_control) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_brake);
 }
 
+// Pedal FSM arbiter function
+
 static bool prv_check_pedal(Event *e) {
   return true;
 }
 
-// State output functions
+// Pedal FSM output functions
+
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   InputEventCheck *event_check = fsm->context;
   *event_check = prv_check_pedal;

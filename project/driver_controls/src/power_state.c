@@ -1,10 +1,13 @@
 #include "power_state.h"
 #include "input_event.h"
 
+// Power FSM state definitions
+
 FSM_DECLARE_STATE(state_off);
 FSM_DECLARE_STATE(state_on);
 
-// State machine transition tables
+// Power FSM transition table definitions
+
 FSM_STATE_TRANSITION(state_off) {
   FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_on);
 }
@@ -12,6 +15,8 @@ FSM_STATE_TRANSITION(state_off) {
 FSM_STATE_TRANSITION(state_on) {
   FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_off);
 }
+
+// Power FSM arbiter functions
 
 static bool prv_check_off(Event *e) {
   return (e->id == INPUT_EVENT_POWER || e->id == INPUT_EVENT_MECHANICAL_BRAKE);
@@ -21,7 +26,8 @@ static bool prv_check_on(Event *e) {
   return true;
 }
 
-// State output functions
+// Power FSM output functions
+
 static void prv_state_off(FSM *fsm, const Event *e, void *context) {
   InputEventCheck *event_check = fsm->context;
   *event_check = prv_check_off;

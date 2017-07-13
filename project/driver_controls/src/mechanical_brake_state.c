@@ -1,10 +1,13 @@
 #include "mechanical_brake_state.h"
 #include "input_event.h"
 
+// Mechanical Brake FSM state definitions
+
 FSM_DECLARE_STATE(state_engaged);
 FSM_DECLARE_STATE(state_disengaged);
 
-// State machine transition tables
+// Mechanical Brake FSM transition table definitions
+
 FSM_STATE_TRANSITION(state_engaged) {
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE, state_disengaged);
 }
@@ -12,6 +15,8 @@ FSM_STATE_TRANSITION(state_engaged) {
 FSM_STATE_TRANSITION(state_disengaged) {
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE, state_engaged);
 }
+
+// Mechanical Brake FSM arbiter functions
 
 static bool prv_check_mechanical_brake_engaged(Event *e) {
   switch (e->id) {
@@ -37,7 +42,8 @@ static bool prv_check_mechanical_brake_disengaged(Event *e) {
   }
 }
 
-// State output functions
+// Mechanical Brake FSM output functions
+
 static void prv_state_mechanical_brake_engaged(FSM *fsm, const Event *e, void *context) {
   InputEventCheck *event_check = fsm->context;
   *event_check = prv_check_mechanical_brake_engaged;

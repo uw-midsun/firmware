@@ -1,11 +1,13 @@
 #include "direction_state.h"
 #include "input_event.h"
 
+// Direction selector FSM state definitions
+
 FSM_DECLARE_STATE(state_neutral);
 FSM_DECLARE_STATE(state_forward);
 FSM_DECLARE_STATE(state_reverse);
 
-// State machine transition tables
+// Direction selector FSM transition table definitions
 
 FSM_STATE_TRANSITION(state_neutral) {
   FSM_ADD_TRANSITION(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, state_forward);
@@ -22,6 +24,8 @@ FSM_STATE_TRANSITION(state_reverse) {
   FSM_ADD_TRANSITION(INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL, state_neutral);
 }
 
+// Direction selector FSM arbiter functions
+
 static bool prv_check_neutral(Event *e) {
   return !(e->id == INPUT_EVENT_GAS_COAST || e->id == INPUT_EVENT_GAS_PRESSED);
 }
@@ -30,7 +34,8 @@ static bool prv_check_driver(Event *e) {
   return (e->id != INPUT_EVENT_POWER);
 }
 
-// State output functions
+// Direction selector FSM output functions
+
 static void prv_state_neutral(FSM *fsm, const Event *e, void *context) {
   InputEventCheck *event_check = fsm->context;
   *event_check = prv_check_neutral;
