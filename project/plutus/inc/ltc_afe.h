@@ -10,7 +10,7 @@
 
 #define LTC_AFE_CELLS_IN_REG                    3
 
-// used to allocate static memory
+// number of devices in daisy chain (including master)
 #define LTC_DEVICES_IN_CHAIN                    1
 
 #define LTC6804_ADCOPT                          (1 << 0)
@@ -78,7 +78,6 @@ typedef struct LtcAfeSettings {
   const SPIPort spi_port;
 
   LtcAfeAdcMode adc_mode;
-  uint8_t devices_in_chain;
 } LtcAfeSettings;
 
 // initialize the LTC6804

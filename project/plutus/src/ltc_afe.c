@@ -29,12 +29,15 @@ void prv_write_config(const LtcAfeSettings *afe) {
   configuration_cmd[configuration_index++] = (uint8_t)cmd_pec;
 
   // send CFGR registers starting with the bottom slave in the stack
-  for (uint8_t device = afe->devices_in_chain; device > 0; --device) {
+  for (uint8_t device = LTC_DEVICES_IN_CHAIN; device > 0; --device) {
     // TODO(KARL-1): get these values from config struct
     uint8_t enable = LTC6804_GPIO1_PD_ON | LTC6804_GPIO2_PD_ON | LTC6804_GPIO3_PD_ON | LTC6804_GPIO4_PD_ON | LTC6804_GPIO5_PD_ON;
     uint16_t undervoltage = 0;
     uint16_t overvoltage = 0;
     uint16_t cells_to_discharge = 0;
+    for (uint8_t cell = 0; cell < 12; ++cell) {
+      cells_to_discharge |= (s_discharging_cells[(LTC_DEVICES_IN_CHAIN - device) * 12 + cell] << cell);
+    }
     LtcDischargeTimeout timeout = LTC_AFE_DISCHARGE_TIMEOUT_DISABLED;
 
     // CFGR0, ..., CFGR5 + 2 bytes for PEC
@@ -68,7 +71,7 @@ void prv_write_config(const LtcAfeSettings *afe) {
     configuration_cmd[configuration_index++] |= (timeout << 4);
 
     // adjust the configuration_cmd pointer to point to the start of slave's configuration
-    uint8_t *cfg_offset = configuration_cmd + (8 * (afe->devices_in_chain - device)) + (2 + 2);
+    uint8_t *cfg_offset = configuration_cmd + (8 * (LTC_DEVICES_IN_CHAIN - device)) + (2 + 2);
     uint16_t cfgr_pec = crc15_calculate(cfg_offset, 6);
     configuration_cmd[configuration_index++] = (uint8_t)(cfgr_pec >> 8);
     configuration_cmd[configuration_index++] = (uint8_t)cfgr_pec;
@@ -77,7 +80,7 @@ void prv_write_config(const LtcAfeSettings *afe) {
   prv_wakeup_idle(afe);
 
   // don't care about SPI results
-  uint8_t cfg_len = (2 + 2) + ((6 + 2) * afe->devices_in_chain);
+  uint8_t cfg_len = (2 + 2) + ((6 + 2) * LTC_DEVICES_IN_CHAIN);
   spi_exchange(afe->spi_port, configuration_cmd, cfg_len, NULL, 0);
 }
 
@@ -99,10 +102,10 @@ StatusCode LtcAfe_read_config(const LtcAfeSettings *afe) {
   cmd[3] = (uint8_t)cmd_pec;
 
   prv_wakeup_idle(afe);
-  spi_exchange(afe->spi_port, cmd, 4, received_data, 8 * afe->devices_in_chain);
+  spi_exchange(afe->spi_port, cmd, 4, received_data, 8 * LTC_DEVICES_IN_CHAIN);
 
   uint16_t index = 0;
-  for (uint8_t device = 0; device < afe->devices_in_chain; ++device) {
+  for (uint8_t device = 0; device < LTC_DEVICES_IN_CHAIN; ++device) {
     for (uint8_t current_byte = 0; current_byte < 6; ++current_byte) {
       configuration_registers[index] = received_data[device * 8 + current_byte];
       index += 1;
@@ -164,7 +167,7 @@ StatusCode prv_read_voltage(LtcAfeSettings *afe, uint8_t voltage_register, uint8
   prv_wakeup_idle(afe);
 
   // 6 bytes in register + 2 bytes for PEC
-  spi_exchange(afe->spi_port, cmd, 4, data, (6 + 2) * afe->devices_in_chain);
+  spi_exchange(afe->spi_port, cmd, 4, data, (6 + 2) * LTC_DEVICES_IN_CHAIN);
 
   return STATUS_CODE_OK;
 }
@@ -196,7 +199,7 @@ StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result_d
 
     prv_read_voltage(afe, cell_reg, afe_data);
 
-    for (uint8_t afe_device = 0; afe_device < afe->devices_in_chain; ++afe_device) {
+    for (uint8_t afe_device = 0; afe_device < LTC_DEVICES_IN_CHAIN; ++afe_device) {
       for (uint16_t cell = 0; cell < LTC_AFE_CELLS_IN_REG; ++cell) {
         uint16_t cell_voltage = afe_data[data_counter] + (afe_data[data_counter + 1] << 8);
         result_data[afe_device * 12 + cell] = cell_voltage;
@@ -242,7 +245,7 @@ StatusCode prv_read_aux_cmd(const LtcAfeSettings *afe, uint8_t aux_register, uin
   prv_wakeup_idle(afe);
 
   // get data
-  spi_exchange(afe->spi_port, cmd, 4, data, (6 + 2) * afe->devices_in_chain);
+  spi_exchange(afe->spi_port, cmd, 4, data, (6 + 2) * LTC_DEVICES_IN_CHAIN);
 
   return STATUS_CODE_OK;
 }
@@ -255,9 +258,25 @@ StatusCode LtcAfe_read_all_aux(const LtcAfeSettings *afe) {
   // c. read GPIO1 data (we only care about AVAR0 and AVAR1), which actually
   //    corresponds to the cell specified by GPIO5, GPIO4, GPIO3, GPIO2 in binary
 
+  uint16_t result_data[12 * LTC_DEVICES_IN_CHAIN] = { 0 };
+  for (uint8_t cell = 0; cell < 12; ++cell) {
+    // setup GPIO5, ..., GPIO2 in CFG register with binary representation of cell
+    prv_write_config(afe);
+
+    uint8_t register_data[6 * LTC_DEVICES_IN_CHAIN] = { 0 };
+
+    // RDAUXA
+    prv_read_aux_cmd(afe, 0, register_data);
+
+    // only read GPIO1 data
+    for (uint8_t device = 0; device < LTC_DEVICES_IN_CHAIN; ++device) {
+      result_data[device * 12 + cell] = (uint16_t)register_data[6 * device] | ((uint16_t)register_data[6 * device + 1] << 8);
+    }
+  }
+
   return STATUS_CODE_OK;
 }
 
-StatusCode LtcAfe_toggle_discharge_cells(const LtcAfeSettings *afe, uint8_t cell, bool discharge) {
+StatusCode LtcAfe_toggle_discharge_cells(const LtcAfeSettings *afe, uint16_t cell, bool discharge) {
   return STATUS_CODE_OK;
 }

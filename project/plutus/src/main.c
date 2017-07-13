@@ -15,8 +15,7 @@ int main(void) {
     .cs = { GPIO_PORT_A, 4 },
 
     .spi_port = SPI_PORT_1,
-    .adc_mode = LTC_AFE_ADC_MODE_27KHZ,
-    .devices_in_chain = 1
+    .adc_mode = LTC_AFE_ADC_MODE_27KHZ
   };
 
   LtcAfe_init(&afe_settings);
