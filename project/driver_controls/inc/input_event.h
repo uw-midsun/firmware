@@ -1,7 +1,13 @@
 #pragma once
 
-// Common type definitions for the FSMs to be used
+// Define common typedefs for the various FSMs to use.
 
+#include "event_queue.h"
+
+// Typedef for the FSM arbitration functions
+typedef bool (*InputEventCheck)(Event *e);
+
+// ID definitions for the driver input events.
 typedef enum {
   INPUT_EVENT_NONE = 0,                     // Pedal         00
   INPUT_EVENT_POWER,                        // Pedal         01
