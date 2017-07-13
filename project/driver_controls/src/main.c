@@ -5,7 +5,7 @@
 #include "input_interrupt.h"
 #include "driver_state.h"
 #include "soft_timer.h"
-#include "driver_devices.h"
+#include "driver_device.h"
 
 #include "power_state.h"
 #include "pedal_state.h"
@@ -28,9 +28,9 @@ typedef struct FSMGroup {
 } FSMGroup;
 
 void device_init() {
-  driver_controls_init();
+  driver_device_init();
 
-  Device inputs[INPUT_DEVICES] = {
+  DriverDevice inputs[INPUT_DEVICES] = {
     { { GPIO_PORT_C, 0 }, GPIO_DIR_IN, INTERRUPT_EDGE_RISING,
       GPIO_ALTFN_NONE, input_callback },
 
@@ -65,16 +65,16 @@ void device_init() {
       GPIO_ALTFN_NONE, input_callback }
   };
 
-  Device outputs[OUTPUT_DEVICES] = {
+  DriverDevice outputs[OUTPUT_DEVICES] = {
     { { GPIO_PORT_C, 11 }, GPIO_DIR_OUT, 0, GPIO_ALTFN_NONE }
   };
 
   for (uint8_t i = 0; i < INPUT_DEVICES; i++) {
-    driver_controls_add_device(&inputs[i]);
+    driver_device_add_device(&inputs[i]);
   }
 
   for (uint8_t i = 0; i < OUTPUT_DEVICES; i++) {
-    driver_controls_add_device(&outputs[i]);
+    driver_device_add_device(&outputs[i]);
   }
 }
 
