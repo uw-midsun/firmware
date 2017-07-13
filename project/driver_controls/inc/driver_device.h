@@ -18,4 +18,4 @@ typedef struct DriverDevice {
 void driver_device_init();
 
 // Configure a pin for a specific device
-void driver_device_add_device(DriverDevice *driver_device);
+void driver_device_init_pin(DriverDevice *driver_device);
