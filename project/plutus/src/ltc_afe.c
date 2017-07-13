@@ -30,7 +30,6 @@ static void prv_write_config(const LtcAfeSettings *afe, uint8_t gpio_pins) {
 
   // send CFGR registers starting with the bottom slave in the stack
   for (uint8_t device = LTC_DEVICES_IN_CHAIN; device > 0; --device) {
-    // TODO(KARL-1): get these values from config struct
     uint8_t enable = gpio_pins;
     uint16_t undervoltage = 0;
     uint16_t overvoltage = 0;
@@ -43,11 +42,10 @@ static void prv_write_config(const LtcAfeSettings *afe, uint8_t gpio_pins) {
     // CFGR0
     configuration_cmd[configuration_index] = enable;
     // (adc mode enum + 1) > 3:
-    //    - true: CFGR0[0] = 0
-    //    - false: CFGR0[0] = 1
+    //    - true: CFGR0[0] = 1
+    //    - false: CFGR0[0] = 0
     // CFGR0: bit0 is the ADC Mode
-    // TODO: fix this
-    configuration_cmd[configuration_index++] |= !((afe->adc_mode + 1) > 3);
+    configuration_cmd[configuration_index++] |= ((afe->adc_mode + 1) > 3);
 
     // CFGR1: VUV[7...0]
     configuration_cmd[configuration_index++] = (undervoltage & 0xFF);
