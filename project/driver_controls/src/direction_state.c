@@ -22,21 +22,30 @@ FSM_STATE_TRANSITION(state_reverse) {
   FSM_ADD_TRANSITION(INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL, state_neutral);
 }
 
-// State output functions
-static void prv_state_neutral(FSM *fsm, const Event *e, void *context) {
-  bool *permitted = fsm->context;
-  *permitted = !(e->id == INPUT_EVENT_GAS_COAST || e->id == INPUT_EVENT_GAS_PRESSED);
+static bool prv_check_neutral(Event *e) {
+  return !(e->id == INPUT_EVENT_GAS_COAST || e->id == INPUT_EVENT_GAS_PRESSED);
 }
 
-static void prv_state_forward(FSM *fsm, const Event *e, void *context) {
-  bool *permitted = fsm->context;
-  *permitted = (e->id != INPUT_EVENT_POWER);
+static bool prv_check_driver(Event *e) {
+  return (e->id != INPUT_EVENT_POWER);
+}
+
+// State output functions
+static void prv_state_neutral(FSM *fsm, const Event *e, void *context) {
+  InputEventCheck *event_check = fsm->context;
+  *event_check = prv_check_neutral;
+}
+
+static void prv_state_drive(FSM *fsm, const Event *e, void *context) {
+  InputEventCheck *event_check = fsm->context;
+  *event_check = prv_check_driver;
 }
 
 void direction_state_init(FSM *direction_fsm, void *context) {
   fsm_state_init(state_neutral, prv_state_neutral);
-  fsm_state_init(state_forward, prv_state_forward);
-  fsm_state_init(state_reverse, prv_state_forward);
+  fsm_state_init(state_forward, prv_state_drive);
+  fsm_state_init(state_reverse, prv_state_drive);
 
   fsm_init(direction_fsm, "direction_fsm", &state_neutral, context);
+  prv_state_neutral(direction_fsm, INPUT_EVENT_NONE, direction_fsm->context);
 }

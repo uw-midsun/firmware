@@ -1,6 +1,5 @@
 #include "pedal_state.h"
 #include "input_event.h"
-#include <stdio.h>
 
 FSM_DECLARE_STATE(state_brake);           // Brake State: Driver is holding down the brake pedal
 FSM_DECLARE_STATE(state_coast);
@@ -31,10 +30,14 @@ FSM_STATE_TRANSITION(state_cruise_control) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_brake);
 }
 
+static bool prv_check_pedal(Event *e) {
+  return true;
+}
+
 // State output functions
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  bool *permitted = fsm->context;
-  *permitted = true;
+  InputEventCheck *event_check = fsm->context;
+  *event_check = prv_check_pedal;
 }
 
 void pedal_state_init(FSM *pedal_fsm, void *context) {
@@ -44,4 +47,5 @@ void pedal_state_init(FSM *pedal_fsm, void *context) {
   fsm_state_init(state_cruise_control, prv_state_output);
 
   fsm_init(pedal_fsm, "pedal_fsm", &state_brake, context);
+  prv_state_output(pedal_fsm, INPUT_EVENT_NONE, pedal_fsm->context);
 }
