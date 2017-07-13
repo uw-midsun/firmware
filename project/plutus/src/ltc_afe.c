@@ -4,9 +4,9 @@
 static bool s_discharging_cells[LTC_CELLS_PER_DEVICE * LTC_DEVICES_IN_CHAIN] = { false };
 
 static void prv_wakeup_idle(const LtcAfeSettings *afe) {
-  gpio_toggle_state(&afe->cs);
+  gpio_set_pin_state(&afe->cs, GPIO_STATE_LOW);
   delay_us(2);
-  gpio_toggle_state(&afe->cs);
+  gpio_set_pin_state(&afe->cs, GPIO_STATE_HIGH);
 }
 
 // write config to all devices
