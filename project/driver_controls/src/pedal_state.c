@@ -32,7 +32,8 @@ FSM_STATE_TRANSITION(state_cruise_control) {
 
 // State output functions
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  *(bool*)fsm->context = true;
+  bool *permitted = fsm->context;
+  *permitted = true;
 }
 
 void pedal_state_init(FSM *pedal_fsm, void *context) {

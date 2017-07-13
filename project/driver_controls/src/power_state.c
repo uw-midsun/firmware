@@ -14,11 +14,13 @@ FSM_STATE_TRANSITION(state_on) {
 
 // State output functions
 static void prv_state_off(FSM *fsm, const Event *e, void *context) {
-  *(bool*)fsm->context = (e->id == INPUT_EVENT_POWER || e->id == INPUT_EVENT_MECHANICAL_BRAKE);
+  bool *permitted = fsm->context;
+  *permitted = (e->id == INPUT_EVENT_POWER || e->id == INPUT_EVENT_MECHANICAL_BRAKE);
 }
 
 static void prv_state_on(FSM *fsm, const Event *e, void *context) {
-  *(bool*)fsm->context = true;
+  bool *permitted = fsm->context;
+  *permitted = true;
 }
 
 void power_state_init(FSM *power_fsm, void *context) {

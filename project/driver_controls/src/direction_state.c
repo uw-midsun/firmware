@@ -23,11 +23,13 @@ FSM_STATE_TRANSITION(state_reverse) {
 
 // State output functions
 static void prv_state_neutral(FSM *fsm, const Event *e, void *context) {
-  *(bool*)fsm->context = !(e->id == INPUT_EVENT_GAS_COAST || e->id == INPUT_EVENT_GAS_PRESSED);
+  bool *permitted = fsm->context;
+  *permitted = !(e->id == INPUT_EVENT_GAS_COAST || e->id == INPUT_EVENT_GAS_PRESSED);
 }
 
 static void prv_state_forward(FSM *fsm, const Event *e, void *context) {
-  *(bool*)fsm->context = (e->id != INPUT_EVENT_POWER);
+  bool *permitted = fsm->context;
+  *permitted = (e->id != INPUT_EVENT_POWER);
 }
 
 void direction_state_init(FSM *direction_fsm, void *context) {

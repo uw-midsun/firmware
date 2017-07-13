@@ -15,7 +15,8 @@ FSM_STATE_TRANSITION(state_hazard_off) {
 
 // Output functions for the hazard light state
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  *(bool*)fsm->context = true;
+  bool *permitted = fsm->context;
+  *permitted = true;
 }
 
 void hazard_light_state_init(FSM *hazard_light_fsm, void *context) {

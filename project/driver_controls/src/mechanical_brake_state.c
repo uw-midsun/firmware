@@ -14,29 +14,33 @@ FSM_STATE_TRANSITION(state_disengaged) {
 
 // State output functions
 static void prv_state_mechanical_brake_engaged(FSM *fsm, const Event *e, void *context) {
+  bool *permitted = fsm->context;
+
   switch (e->id) {
     case INPUT_EVENT_GAS_COAST:
     case INPUT_EVENT_GAS_PRESSED:
     case INPUT_EVENT_CRUISE_CONTROL:
     case INPUT_EVENT_CRUISE_CONTROL_INC:
     case INPUT_EVENT_CRUISE_CONTROL_DEC:
-      *(bool*)fsm->context = false;
+      *permitted = false;
       return;
     default:
-      *(bool*)fsm->context = true;
+      *permitted = true;
       return;
   }
 }
 
 static void prv_state_mechanical_brake_disengaged(FSM *fsm, const Event *e, void *context) {
+  bool *permitted = fsm->context;
+
   switch (e->id) {
     case INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL:
     case INPUT_EVENT_DIRECTION_SELECTOR_DRIVE:
     case INPUT_EVENT_DIRECTION_SELECTOR_REVERSE:
-      *(bool*)fsm->context = false;
+      *permitted = false;
       return;
     default:
-      *(bool*)fsm->context = true;
+      *permitted = true;
       return;
   }
 }

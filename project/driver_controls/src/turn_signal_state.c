@@ -23,7 +23,8 @@ FSM_STATE_TRANSITION(state_right_signal) {
 
 // State output functions
 static void prv_state_output(FSM* fsm, const Event* e, void *context) {
-  *(bool*)fsm->context = true;
+  bool *permitted = fsm->context;
+  *permitted = true;
 }
 
 void turn_signal_state_init(FSM* turn_signal_fsm, void *context) {
