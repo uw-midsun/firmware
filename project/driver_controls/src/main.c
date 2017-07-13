@@ -12,7 +12,7 @@
 #include "direction_state.h"
 #include "turn_signal_state.h"
 #include "hazard_light_state.h"
-#include "mechanical_brake.h"
+#include "mechanical_brake_state.h"
 
 #define INPUT_DEVICES 16
 #define OUTPUT_DEVICES 1

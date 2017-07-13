@@ -1,4 +1,4 @@
-#include "mechanical_brake.h"
+#include "mechanical_brake_state.h"
 
 FSM_DECLARE_STATE(state_engaged);
 FSM_DECLARE_STATE(state_disengaged);
