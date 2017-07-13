@@ -1,5 +1,6 @@
 #pragma once
 // Generic blocking SPI driver
+// Requires GPIO to be initialized.
 #include <stddef.h>
 #include "spi_mcu.h"
 #include "gpio.h"

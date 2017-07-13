@@ -1,5 +1,6 @@
 #pragma once
 // CAN ACK handling
+// Requires soft timers and interrupts to be initialized.
 //
 // ACK request objects are provided with critical messages.
 // They define a callback that should be run when the ACK status is updated.

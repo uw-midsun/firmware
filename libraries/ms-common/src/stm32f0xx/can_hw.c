@@ -1,5 +1,6 @@
 #include "can_hw.h"
 #include "stm32f0xx.h"
+#include "interrupt.h"
 
 #define CAN_HW_PRESCALER 12
 
@@ -14,12 +15,7 @@ StatusCode can_hw_init(CANHwConfig *can_hw, uint16_t bus_speed, bool loopback) {
 
   s_can = can_hw;
 
-  NVIC_InitTypeDef nvic_cfg = {
-    .NVIC_IRQChannel = CEC_CAN_IRQn,
-    .NVIC_IRQChannelPriority = 0,
-    .NVIC_IRQChannelCmd = ENABLE
-  };
-  NVIC_Init(&nvic_cfg);
+  stm32f0xx_interrupt_nvic_enable(CEC_CAN_IRQn, INTERRUPT_PRIORITY_HIGH);
 
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN, ENABLE);
 
