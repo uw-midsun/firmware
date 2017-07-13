@@ -1,4 +1,5 @@
 #include "direction_state.h"
+#include "input_event.h"
 
 FSM_DECLARE_STATE(state_neutral);
 FSM_DECLARE_STATE(state_forward);

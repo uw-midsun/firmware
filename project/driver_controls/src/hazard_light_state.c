@@ -1,4 +1,5 @@
 #include "hazard_light_state.h"
+#include "input_event.h"
 
 FSM_DECLARE_STATE(state_hazard_on);
 FSM_DECLARE_STATE(state_hazard_off);

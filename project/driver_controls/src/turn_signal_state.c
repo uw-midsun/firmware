@@ -1,4 +1,5 @@
 #include "turn_signal_state.h"
+#include "input_event.h"
 
 FSM_DECLARE_STATE(state_no_signal);
 FSM_DECLARE_STATE(state_left_signal);

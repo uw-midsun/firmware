@@ -1,5 +1,4 @@
 #pragma once
-#include "fsm.h"
 
 // Common type definitions for the FSMs to be used
 

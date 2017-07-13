@@ -1,4 +1,4 @@
 #pragma once
-#include "fsm_state.h"
+#include "fsm.h"
 
 void power_state_init(FSM *power_fsm, void *context);

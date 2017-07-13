@@ -1,7 +1,9 @@
 #include <stdio.h>
 
 #include "driver_state.h"
+#include "input_event.h"
 #include "log.h"
+
 #define MAX_FSMS 10
 
 typedef bool (*TransitionCheck)(Event *e);

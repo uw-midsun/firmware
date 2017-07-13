@@ -1,4 +1,5 @@
 #include "pedal_state.h"
+#include "input_event.h"
 #include <stdio.h>
 
 FSM_DECLARE_STATE(state_brake);           // Brake State: Driver is holding down the brake pedal

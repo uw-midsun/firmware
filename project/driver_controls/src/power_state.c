@@ -1,4 +1,5 @@
 #include "power_state.h"
+#include "input_event.h"
 
 FSM_DECLARE_STATE(state_off);
 FSM_DECLARE_STATE(state_on);

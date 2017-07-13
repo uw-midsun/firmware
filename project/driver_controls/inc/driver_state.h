@@ -1,6 +1,5 @@
 #pragma once
-#include "event_queue.h"
-#include "fsm_state.h"
+#include "fsm.h"
 #include "status.h"
 
 typedef void (*DriverFSMInit)(FSM *power_fsm, void *context);
