@@ -12,6 +12,7 @@
 
 // number of devices in daisy chain (including master)
 #define LTC_DEVICES_IN_CHAIN                    1
+#define LTC_CELLS_PER_DEVICE                    12
 
 #define LTC6804_ADCOPT                          (1 << 0)
 #define LTC6804_SWTRD                           (1 << 1)
@@ -92,4 +93,4 @@ StatusCode LtcAfe_read_all_aux(const LtcAfeSettings *afe);
 // discharge cells
 StatusCode LtcAfe_toggle_discharge_cells(const LtcAfeSettings *afe, uint16_t cell, bool discharge);
 
-StatusCode LtcAfe_read_config(const LtcAfeSettings *afe);
+StatusCode LtcAfe_read_config(const LtcAfeSettings *afe, uint8_t *config);
