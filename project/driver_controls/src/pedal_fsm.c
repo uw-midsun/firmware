@@ -34,7 +34,7 @@ FSM_STATE_TRANSITION(state_cruise_control) {
 
 // Pedal FSM arbiter function
 
-static bool prv_check_pedal(Event *e) {
+static bool prv_check_pedal(const Event *e) {
   return true;
 }
 

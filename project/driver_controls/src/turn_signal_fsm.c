@@ -26,7 +26,7 @@ FSM_STATE_TRANSITION(state_right_signal) {
 
 // Turn signal FSM arbiter function
 
-static bool prv_check_turn_signal(Event *e) {
+static bool prv_check_turn_signal(const Event *e) {
   return true;
 }
 

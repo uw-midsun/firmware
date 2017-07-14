@@ -5,7 +5,7 @@
 #include "event_queue.h"
 
 // Typedef for the FSM arbitration functions
-typedef bool (*InputEventCheck)(Event *e);
+typedef bool (*InputEventCheck)(const Event *e);
 
 // ID definitions for the driver input events.
 typedef enum {

@@ -18,7 +18,7 @@ FSM_STATE_TRANSITION(state_disengaged) {
 
 // Mechanical Brake FSM arbiter functions
 
-static bool prv_check_mechanical_brake_engaged(Event *e) {
+static bool prv_check_mechanical_brake_engaged(const Event *e) {
   switch (e->id) {
     case INPUT_EVENT_GAS_COAST:
     case INPUT_EVENT_GAS_PRESSED:
@@ -31,7 +31,7 @@ static bool prv_check_mechanical_brake_engaged(Event *e) {
   }
 }
 
-static bool prv_check_mechanical_brake_disengaged(Event *e) {
+static bool prv_check_mechanical_brake_disengaged(const Event *e) {
   switch (e->id) {
     case INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL:
     case INPUT_EVENT_DIRECTION_SELECTOR_DRIVE:

@@ -18,7 +18,7 @@ FSM_STATE_TRANSITION(state_hazard_off) {
 
 // Hazard light FSM arbiter function
 
-static bool prv_check_hazard_light(Event *e) {
+static bool prv_check_hazard_light(const Event *e) {
   return true;
 }
 

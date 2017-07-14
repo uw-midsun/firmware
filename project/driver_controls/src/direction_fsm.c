@@ -26,11 +26,11 @@ FSM_STATE_TRANSITION(state_reverse) {
 
 // Direction selector FSM arbiter functions
 
-static bool prv_check_neutral(Event *e) {
+static bool prv_check_neutral(const Event *e) {
   return !(e->id == INPUT_EVENT_GAS_COAST || e->id == INPUT_EVENT_GAS_PRESSED);
 }
 
-static bool prv_check_driver(Event *e) {
+static bool prv_check_driver(const Event *e) {
   return (e->id != INPUT_EVENT_POWER);
 }
 
