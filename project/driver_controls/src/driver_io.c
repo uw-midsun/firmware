@@ -4,6 +4,18 @@
 #include "gpio_it.h"
 #include "input_interrupt.h"
 
+static const DriverIO driver_io[NUM_DRIVER_IO_INPUTS] = {
+    DRIVER_IO_POWER_SWITCH,
+    DRIVER_IO_GAS_PEDAL,
+    DRIVER_IO_DIRECTION_SELECTOR,
+    DRIVER_IO_CRUISE_CONTROL,
+    DRIVER_IO_CRUISE_CONTROL_INC,
+    DRIVER_IO_CRUISE_CONTROL_DEC,
+    DRIVER_IO_TURN_SIGNAL,
+    DRIVER_IO_HAZARD_LIGHT,
+    DRIVER_IO_MECHANICAL_BRAKE
+  };
+
 static void prv_init_pin(DriverIODevice *driver_io) {
   GPIOSettings gpio_settings = { driver_io->direction, GPIO_STATE_LOW,
                                   GPIO_RES_NONE, driver_io->alt_function };
@@ -25,48 +37,59 @@ void driver_io_init() {
   // Configure driver devices with their individual settings
   DriverIODevice inputs[] = {
     { .address = { GPIO_PORT_C, 0 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback },
+      .edge = INTERRUPT_EDGE_RISING, .alt_function = GPIO_ALTFN_NONE,
+      .callback = input_callback, .context = &driver_io[DRIVER_IO_POWER_SWITCH] 
+    },
 
     { .address = { GPIO_PORT_C, 1 }, .direction = GPIO_DIR_IN,
       .edge = INTERRUPT_EDGE_RISING_FALLING, .alt_function = GPIO_ALTFN_ANALOG,
-      .callback = input_callback },
+      .callback = input_callback, .context = &driver_io[DRIVER_IO_GAS_PEDAL]
+    },
 
     { .address = { GPIO_PORT_B, 2 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING_FALLING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback },
+      .edge = INTERRUPT_EDGE_RISING_FALLING, .alt_function = GPIO_ALTFN_NONE,
+      .callback = input_callback, .context = &driver_io[DRIVER_IO_DIRECTION_SELECTOR]
+    },
 
     { .address = { GPIO_PORT_B, 3 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING_FALLING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback },
+      .edge = INTERRUPT_EDGE_RISING_FALLING, .alt_function = GPIO_ALTFN_NONE,
+      .callback = input_callback, .context = &driver_io[DRIVER_IO_DIRECTION_SELECTOR]
+    },
 
     { .address = { GPIO_PORT_C, 4 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback },
+      .edge = INTERRUPT_EDGE_RISING, .alt_function = GPIO_ALTFN_NONE,
+      .callback = input_callback, .context = &driver_io[DRIVER_IO_CRUISE_CONTROL]
+    },
 
     { .address = { GPIO_PORT_C, 5 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback },
+      .edge = INTERRUPT_EDGE_RISING, .alt_function = GPIO_ALTFN_NONE,
+      .callback = input_callback, .context = &driver_io[DRIVER_IO_CRUISE_CONTROL_INC]
+    },
 
     { .address = { GPIO_PORT_C, 6 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback },
+      .edge = INTERRUPT_EDGE_RISING, .alt_function = GPIO_ALTFN_NONE,
+      .callback = input_callback, .context = &driver_io[DRIVER_IO_CRUISE_CONTROL_DEC]
+    },
 
     { .address = { GPIO_PORT_C, 7 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING_FALLING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback },
+      .edge = INTERRUPT_EDGE_RISING_FALLING, .alt_function = GPIO_ALTFN_NONE,
+      .callback = input_callback, .context = &driver_io[DRIVER_IO_TURN_SIGNAL]
+    },
 
     { .address = { GPIO_PORT_C, 8 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING_FALLING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback },
+      .edge = INTERRUPT_EDGE_RISING_FALLING, .alt_function = GPIO_ALTFN_NONE,
+      .callback = input_callback, .context = &driver_io[DRIVER_IO_TURN_SIGNAL]
+    },
 
     { .address = { GPIO_PORT_C, 9 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback },
+      .edge = INTERRUPT_EDGE_RISING, .alt_function = GPIO_ALTFN_NONE,
+      .callback = input_callback, .context = &driver_io[DRIVER_IO_HAZARD_LIGHT]
+    },
 
     { .address = { GPIO_PORT_C, 10 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING_FALLING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback }
+      .edge = INTERRUPT_EDGE_RISING_FALLING, .alt_function = GPIO_ALTFN_NONE,
+      .callback = input_callback, .context = &driver_io[DRIVER_IO_MECHANICAL_BRAKE]
+    }
   };
 
   DriverIODevice outputs[] = {

@@ -40,8 +40,10 @@ int main() {
   // Initialize the various driver control devices
   driver_io_init();
 
+  input_interrupt_init();
   event_queue_init();
   soft_timer_init();
+
 
   for (;;) {
     if (status_ok(event_process(&e))) {

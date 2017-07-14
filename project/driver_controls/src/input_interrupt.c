@@ -1,13 +1,32 @@
-#include "adc.h"
 #include "input_interrupt.h"
 #include "input_event.h"
 #include "event_queue.h"
+#include "driver_io.h"
 
+// Number of available GPIO interrupt channels
 #define NUM_INPUT_EVENTS 16
 
 // Arbitrary thresholds for gas pedal
 #define COAST_THRESHOLD 1000
 #define DRIVE_THRESHOLD 3000
+
+// Driver IO pin definitions
+#define DRIVER_PIN_0  0
+#define DRIVER_PIN_1  1
+#define DRIVER_PIN_2  2
+#define DRIVER_PIN_3  3
+#define DRIVER_PIN_4  4
+#define DRIVER_PIN_5  5
+#define DRIVER_PIN_6  6
+#define DRIVER_PIN_7  7
+#define DRIVER_PIN_8  8
+#define DRIVER_PIN_9  9
+#define DRIVER_PIN_10 10
+#define DRIVER_PIN_11 11
+#define DRIVER_PIN_12 12
+#define DRIVER_PIN_13 13
+#define DRIVER_PIN_14 14
+#define DRIVER_PIN_15 15
 
 typedef void (*DriverInput)(GPIOAddress address, Event *e);
 
@@ -21,41 +40,16 @@ static void prv_mechanical_brake(GPIOAddress address, Event *e);
 static void prv_event(GPIOAddress address, Event *e);
 
 static AnalogStatus s_analog_status;
+static bool s_input_status[NUM_INPUT_EVENTS];
 
-// Possibly replace with uint16_t later on
-static bool s_input_status[16];
-
-static const DriverInput s_driver_inputs[] = {
-  prv_event,
-  NULL,
-  prv_direction_selector,
-  prv_direction_selector,
-  prv_event,
-  prv_event,
-  prv_event,
-  prv_turn_signal,
-  prv_turn_signal,
-  prv_event,
-  prv_mechanical_brake
-};
-
-static InputEvent s_event_lookup[NUM_INPUT_EVENTS] = {
-  INPUT_EVENT_POWER,
-  INPUT_EVENT_GAS_BRAKE,
-  INPUT_EVENT_GAS_COAST,
-  INPUT_EVENT_GAS_PRESSED,
-  INPUT_EVENT_CRUISE_CONTROL,
-  INPUT_EVENT_CRUISE_CONTROL_INC,
-  INPUT_EVENT_CRUISE_CONTROL_DEC,
-  INPUT_EVENT_HAZARD_LIGHT
-};
+static DriverInput s_driver_inputs[NUM_DRIVER_IO_INPUTS];
 
 static prv_update_status(GPIOAddress address, GPIOState key_pressed) {
   s_input_status[address.pin] = key_pressed;
 }
 
 static void prv_direction_selector(GPIOAddress address, Event *e) {
-  uint8_t status = (s_input_status[3] << 1) | s_input_status[2];
+  uint8_t status = (s_input_status[DRIVER_PIN_3] << 1) | s_input_status[DRIVER_PIN_2];
 
   switch (status) {
     case 0:
@@ -71,7 +65,7 @@ static void prv_direction_selector(GPIOAddress address, Event *e) {
 }
 
 static void prv_turn_signal(GPIOAddress address, Event *e) {
-  uint8_t status = (s_input_status[8] << 1) | s_input_status[7];
+  uint8_t status = (s_input_status[DRIVER_PIN_8] << 1) | s_input_status[DRIVER_PIN_7];
 
   switch (status) {
     case 0:
@@ -115,6 +109,18 @@ static void prv_event(GPIOAddress address, Event *e) {
   }
 }
 
+void input_interrupt_init() {
+  s_driver_inputs[DRIVER_IO_POWER_SWITCH] = prv_event;
+  s_driver_inputs[DRIVER_IO_GAS_PEDAL] = NULL;
+  s_driver_inputs[DRIVER_IO_DIRECTION_SELECTOR] = prv_direction_selector;
+  s_driver_inputs[DRIVER_IO_CRUISE_CONTROL] = prv_event;
+  s_driver_inputs[DRIVER_IO_CRUISE_CONTROL_INC] = prv_event;
+  s_driver_inputs[DRIVER_IO_CRUISE_CONTROL_DEC] = prv_event;
+  s_driver_inputs[DRIVER_IO_TURN_SIGNAL] = prv_turn_signal;
+  s_driver_inputs[DRIVER_IO_HAZARD_LIGHT] = prv_event;
+  s_driver_inputs[DRIVER_IO_MECHANICAL_BRAKE] = prv_mechanical_brake;
+}
+
 void pedal_callback(ADCChannel adc_channel, void *context) {
   Event e;
 
@@ -132,7 +138,6 @@ void pedal_callback(ADCChannel adc_channel, void *context) {
     event_raise(e.id, e.data);
     s_analog_status.pedal = e.id;
   }
-  return;
 }
 
 void input_callback(GPIOAddress *address, void *context) {
@@ -144,7 +149,6 @@ void input_callback(GPIOAddress *address, void *context) {
 
   prv_update_status(*address, key_pressed);
 
-  s_driver_inputs[address->pin]((*address), &e);
+  s_driver_inputs[*(uint8_t*)context]((*address), &e);
   event_raise(e.id, e.data);
-  return;
 }
