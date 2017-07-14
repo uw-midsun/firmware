@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "adc.h"
-#include "input_interrupt.h"
 #include "driver_state.h"
 #include "soft_timer.h"
 #include "driver_device.h"
@@ -27,71 +25,6 @@ typedef struct FSMGroup {
   FSM mechanical_brake;
 } FSMGroup;
 
-void device_init() {
-  driver_device_init();
-
-  // Configure driver devices with their individual settings
-  DriverDevice inputs[INPUT_DEVICES] = {
-    { .address = { GPIO_PORT_C, 0 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback },
-
-    { .address = { GPIO_PORT_C, 1 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING_FALLING, .alt_function = GPIO_ALTFN_ANALOG,
-      .callback = input_callback },
-
-    { .address = { GPIO_PORT_B, 2 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING_FALLING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback },
-
-    { .address = { GPIO_PORT_B, 3 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING_FALLING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback },
-
-    { .address = { GPIO_PORT_C, 4 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback },
-
-    { .address = { GPIO_PORT_C, 5 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback },
-
-    { .address = { GPIO_PORT_C, 6 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback },
-
-    { .address = { GPIO_PORT_C, 7 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING_FALLING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback },
-
-    { .address = { GPIO_PORT_C, 8 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING_FALLING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback },
-
-    { .address = { GPIO_PORT_C, 9 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback },
-
-    { .address = { GPIO_PORT_C, 10 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING_FALLING,
-      .alt_function = GPIO_ALTFN_NONE, .callback = input_callback }
-  };
-
-  DriverDevice outputs[OUTPUT_DEVICES] = {
-    { .address = { GPIO_PORT_C, 11 },
-      .direction = GPIO_DIR_OUT,
-      .alt_function = GPIO_ALTFN_NONE }
-  };
-
-  for (uint8_t i = 0; i < INPUT_DEVICES; i++) {
-    driver_device_init_pin(&inputs[i]);
-  }
-
-  for (uint8_t i = 0; i < OUTPUT_DEVICES; i++) {
-    driver_device_init_pin(&outputs[i]);
-  }
-}
-
 int main() {
   FSMGroup fsm_group;
   Event e;
@@ -105,14 +38,10 @@ int main() {
   driver_state_add_fsm(&fsm_group.mechanical_brake, mechanical_brake_state_init);
 
   // Initialize the various driver control devices
-  device_init();
+  driver_device_init();
 
   event_queue_init();
   soft_timer_init();
-
-  adc_init(ADC_MODE_CONTINUOUS);
-  adc_set_channel(ADC_CHANNEL_11, true);
-  adc_register_callback(ADC_CHANNEL_11, pedal_callback, NULL);
 
   for (;;) {
     if (status_ok(event_process(&e))) {
