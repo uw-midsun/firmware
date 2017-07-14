@@ -141,7 +141,6 @@ void input_callback(GPIOAddress *address, void *context) {
   Event e = { .id = INPUT_EVENT_NONE };
 
   gpio_get_value(address, &key_pressed);
-  debounce(address, &key_pressed);
 
   s_input_status[address->pin] = key_pressed;
 

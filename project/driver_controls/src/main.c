@@ -2,7 +2,6 @@
 #include <stdint.h>
 
 #include "event_arbiter.h"
-#include "soft_timer.h"
 #include "driver_io.h"
 
 #include "power_fsm.h"
@@ -42,8 +41,6 @@ int main() {
 
   input_interrupt_init();
   event_queue_init();
-  soft_timer_init();
-
 
   for (;;) {
     if (status_ok(event_process(&e))) {
