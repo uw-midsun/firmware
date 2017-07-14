@@ -37,7 +37,7 @@ static void prv_state_output(FSM* fsm, const Event* e, void *context) {
   *event_check = prv_check_turn_signal;
 }
 
-void turn_signal_state_init(FSM* turn_signal_fsm, void *context) {
+void turn_signal_fsm_init(FSM* turn_signal_fsm, void *context) {
   fsm_state_init(state_no_signal, prv_state_output);
   fsm_state_init(state_left_signal, prv_state_output);
   fsm_state_init(state_right_signal, prv_state_output);

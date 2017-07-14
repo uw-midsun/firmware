@@ -29,7 +29,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   *event_check = prv_check_hazard_light;
 }
 
-void hazard_light_state_init(FSM *hazard_light_fsm, void *context) {
+void hazard_light_fsm_init(FSM *hazard_light_fsm, void *context) {
   fsm_state_init(state_hazard_on, prv_state_output);
   fsm_state_init(state_hazard_off, prv_state_output);
 

@@ -38,7 +38,7 @@ static void prv_state_on(FSM *fsm, const Event *e, void *context) {
   *event_check = prv_check_on;
 }
 
-void power_state_init(FSM *power_fsm, void *context) {
+void power_fsm_init(FSM *power_fsm, void *context) {
   fsm_state_init(state_off, prv_state_off);
   fsm_state_init(state_on, prv_state_on);
 

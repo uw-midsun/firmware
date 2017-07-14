@@ -29,12 +29,12 @@ int main() {
   Event e;
   uint16_t reading;
 
-  event_arbiter_add_fsm(&fsm_group.power, power_state_init);
-  event_arbiter_add_fsm(&fsm_group.pedal, pedal_state_init);
-  event_arbiter_add_fsm(&fsm_group.direction, direction_state_init);
-  event_arbiter_add_fsm(&fsm_group.turn_signal, turn_signal_state_init);
-  event_arbiter_add_fsm(&fsm_group.hazard_light, hazard_light_state_init);
-  event_arbiter_add_fsm(&fsm_group.mechanical_brake, mechanical_brake_state_init);
+  event_arbiter_add_fsm(&fsm_group.power, power_fsm_init);
+  event_arbiter_add_fsm(&fsm_group.pedal, pedal_fsm_init);
+  event_arbiter_add_fsm(&fsm_group.direction, direction_fsm_init);
+  event_arbiter_add_fsm(&fsm_group.turn_signal, turn_signal_fsm_init);
+  event_arbiter_add_fsm(&fsm_group.hazard_light, hazard_light_fsm_init);
+  event_arbiter_add_fsm(&fsm_group.mechanical_brake, mechanical_brake_fsm_init);
 
   // Initialize the various driver control devices
   driver_io_init();

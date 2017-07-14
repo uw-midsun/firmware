@@ -45,7 +45,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   *event_check = prv_check_pedal;
 }
 
-void pedal_state_init(FSM *pedal_fsm, void *context) {
+void pedal_fsm_init(FSM *pedal_fsm, void *context) {
   fsm_state_init(state_brake, prv_state_output);
   fsm_state_init(state_coast, prv_state_output);
   fsm_state_init(state_driving, prv_state_output);
