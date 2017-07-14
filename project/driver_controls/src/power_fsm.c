@@ -1,4 +1,4 @@
-#include "power_state.h"
+#include "power_fsm.h"
 #include "input_event.h"
 
 // Power FSM state definitions

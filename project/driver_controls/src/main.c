@@ -5,12 +5,12 @@
 #include "soft_timer.h"
 #include "driver_io.h"
 
-#include "power_state.h"
-#include "pedal_state.h"
-#include "direction_state.h"
-#include "turn_signal_state.h"
-#include "hazard_light_state.h"
-#include "mechanical_brake_state.h"
+#include "power_fsm.h"
+#include "pedal_fsm.h"
+#include "direction_fsm.h"
+#include "turn_signal_fsm.h"
+#include "hazard_light_fsm.h"
+#include "mechanical_brake_fsm.h"
 
 #define INPUT_DEVICES 16
 #define OUTPUT_DEVICES 1

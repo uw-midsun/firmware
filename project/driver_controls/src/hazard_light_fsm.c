@@ -1,4 +1,4 @@
-#include "hazard_light_state.h"
+#include "hazard_light_fsm.h"
 #include "input_event.h"
 
 // Hazard light FSM state definitions

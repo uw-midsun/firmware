@@ -1,4 +1,4 @@
-#include "pedal_state.h"
+#include "pedal_fsm.h"
 #include "input_event.h"
 
 // Pedal FSM state definitions

@@ -1,4 +1,4 @@
-#include "mechanical_brake_state.h"
+#include "mechanical_brake_fsm.h"
 #include "input_event.h"
 
 // Mechanical Brake FSM state definitions
