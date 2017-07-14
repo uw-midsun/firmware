@@ -13,7 +13,7 @@
 typedef void (*DriverFSMInit)(FSM *fsm, void *context);
 
 // Initializes an FSM with the given init function
-StatusCode driver_state_add_fsm(FSM *fsm, DriverFSMInit driver_fsm_init);
+StatusCode event_arbiter_add_fsm(FSM *fsm, DriverFSMInit driver_fsm_init);
 
 // Process an event if allowed in the current state
-bool driver_state_process_event(Event *e);
+bool event_arbiter_process_event(Event *e);

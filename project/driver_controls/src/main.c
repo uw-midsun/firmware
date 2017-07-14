@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "driver_state.h"
+#include "event_arbiter.h"
 #include "soft_timer.h"
 #include "driver_io.h"
 
@@ -30,12 +30,12 @@ int main() {
   Event e;
   uint16_t reading;
 
-  driver_state_add_fsm(&fsm_group.power, power_state_init);
-  driver_state_add_fsm(&fsm_group.pedal, pedal_state_init);
-  driver_state_add_fsm(&fsm_group.direction, direction_state_init);
-  driver_state_add_fsm(&fsm_group.turn_signal, turn_signal_state_init);
-  driver_state_add_fsm(&fsm_group.hazard_light, hazard_light_state_init);
-  driver_state_add_fsm(&fsm_group.mechanical_brake, mechanical_brake_state_init);
+  event_arbiter_add_fsm(&fsm_group.power, power_state_init);
+  event_arbiter_add_fsm(&fsm_group.pedal, pedal_state_init);
+  event_arbiter_add_fsm(&fsm_group.direction, direction_state_init);
+  event_arbiter_add_fsm(&fsm_group.turn_signal, turn_signal_state_init);
+  event_arbiter_add_fsm(&fsm_group.hazard_light, hazard_light_state_init);
+  event_arbiter_add_fsm(&fsm_group.mechanical_brake, mechanical_brake_state_init);
 
   // Initialize the various driver control devices
   driver_io_init();
@@ -45,7 +45,7 @@ int main() {
 
   for (;;) {
     if (status_ok(event_process(&e))) {
-      if (driver_state_process_event(&e)) {
+      if (event_arbiter_process_event(&e)) {
         printf("Event = %d   :   %s   :   %s   :   %s   :   %s   :   %s   :   %s\n",
             e.id,
             fsm_group.power.current_state->name,
