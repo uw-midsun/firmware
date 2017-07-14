@@ -7,7 +7,7 @@
 #include "gpio.h"
 #include "interrupt.h"
 
-typedef void (*DriverDeviceCallback)(GPIOAddress *address, void *context);
+typedef void (*DriverIOCallback)(GPIOAddress *address, void *context);
 
 typedef enum {
   DRIVER_IO_POWER_SWITCH = 0,
@@ -23,14 +23,14 @@ typedef enum {
 } DriverIO;
 
 // TODO: order for byte alignment
-typedef struct DriverDevice {
+typedef struct DriverIODevice {
   GPIOAddress address;
   GPIODir direction;
   GPIOAltFn alt_function;
   InterruptEdge edge;
-  DriverDeviceCallback callback;
+  DriverIOCallback callback;
   void *context;
-} DriverDevice;
+} DriverIODevice;
 
 // Initialize gpio pins and interrupts
-void driver_device_init();
+void driver_io_init();

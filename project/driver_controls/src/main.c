@@ -3,7 +3,7 @@
 
 #include "driver_state.h"
 #include "soft_timer.h"
-#include "driver_device.h"
+#include "driver_io.h"
 
 #include "power_state.h"
 #include "pedal_state.h"
@@ -38,7 +38,7 @@ int main() {
   driver_state_add_fsm(&fsm_group.mechanical_brake, mechanical_brake_state_init);
 
   // Initialize the various driver control devices
-  driver_device_init();
+  driver_io_init();
 
   event_queue_init();
   soft_timer_init();
