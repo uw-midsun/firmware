@@ -14,7 +14,7 @@ static void prv_write_config(const LtcAfeSettings *afe, uint8_t gpio_pins) {
   // see p.54 in datasheet
   // (2 bits for WRCFG + 2 bits for WRCFG PEC) +
   // (6 bits for CFGR + 2 bits for CFGR PEC) * devices_in_chain
-  uint8_t configuration_cmd[4 + 8 * LTC_DEVICES_IN_CHAIN] = { 0 };
+  uint8_t configuration_cmd[(2 + 2) + (6 + 2) * LTC_DEVICES_IN_CHAIN] = { 0 };
   uint8_t configuration_index = 0;
 
   // WRCFG
@@ -37,6 +37,7 @@ static void prv_write_config(const LtcAfeSettings *afe, uint8_t gpio_pins) {
     for (uint8_t cell = 0; cell < LTC_CELLS_PER_DEVICE; ++cell) {
       cells_to_discharge |= (s_discharging_cells[(LTC_DEVICES_IN_CHAIN - device) * LTC_CELLS_PER_DEVICE + cell] << cell);
     }
+    printf("Cells to discharge: %d\n", cells_to_discharge);
     LtcDischargeTimeout timeout = LTC_AFE_DISCHARGE_TIMEOUT_DISABLED;
 
     // CFGR0
@@ -77,16 +78,19 @@ static void prv_write_config(const LtcAfeSettings *afe, uint8_t gpio_pins) {
 
   // don't care about SPI results
   uint8_t cfg_len = (2 + 2) + ((6 + 2) * LTC_DEVICES_IN_CHAIN);
+  for (uint16_t i = 0; i < cfg_len; ++i) {
+    printf("Config %d: %d\n", i, configuration_cmd[i]);
+  }
   spi_exchange(afe->spi_port, configuration_cmd, cfg_len, NULL, 0);
 }
 
 // recieved_data should be len((6 + 2) * LTC_DEVICES_IN_CHAIN)
-StatusCode LtcAfe_read_config(const LtcAfeSettings *afe, uint8_t *received_data) {
+StatusCode LtcAfe_read_config(const LtcAfeSettings *afe, uint8_t *configuration_registers) {
   StatusCode status = STATUS_CODE_OK;
   // RDCFG
   uint8_t cmd[4] = { 0 };
 
-  uint8_t configuration_registers[6 * LTC_DEVICES_IN_CHAIN] = { 0 };
+  // uint8_t configuration_registers[6 * LTC_DEVICES_IN_CHAIN] = { 0 };
 
   cmd[0] = 0x00;
   cmd[1] = 0x02;
@@ -97,7 +101,14 @@ StatusCode LtcAfe_read_config(const LtcAfeSettings *afe, uint8_t *received_data)
   cmd[3] = (uint8_t)cmd_pec;
 
   prv_wakeup_idle(afe);
+  uint8_t received_data[8 * LTC_DEVICES_IN_CHAIN] = { 0 };
   spi_exchange(afe->spi_port, cmd, 4, received_data, (6 + 2) * LTC_DEVICES_IN_CHAIN);
+
+  printf("Received data\n");
+  for (uint8_t i = 0; i < 8 * LTC_DEVICES_IN_CHAIN; ++i) {
+    printf("%d ", received_data[i]);
+  }
+  printf("\n");
 
   uint16_t index = 0;
   for (uint8_t device = 0; device < LTC_DEVICES_IN_CHAIN; ++device) {
@@ -107,7 +118,7 @@ StatusCode LtcAfe_read_config(const LtcAfeSettings *afe, uint8_t *received_data)
     }
 
     uint16_t received_pec = ((uint16_t)received_data[device * (6 + 2) + 6] << 8) + received_data[device * (6 + 2) + 7];
-    uint16_t calculated_pec = crc15_calculate(configuration_registers + (device * (6 + 2)), 6);
+    uint16_t calculated_pec = crc15_calculate(received_data + (device * (6 + 2)), 6);
     if (calculated_pec != received_pec) {
       status = STATUS_CODE_UNKNOWN;
     }
@@ -240,7 +251,6 @@ StatusCode prv_read_aux_cmd(const LtcAfeSettings *afe, uint8_t aux_register, uin
   // wakeup idle.. is this necessary?
   prv_wakeup_idle(afe);
 
-  // get data
   spi_exchange(afe->spi_port, cmd, 4, data, (6 + 2) * LTC_DEVICES_IN_CHAIN);
 
   return STATUS_CODE_OK;
