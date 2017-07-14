@@ -38,7 +38,7 @@ void driver_io_init() {
   DriverIODevice inputs[] = {
     { .address = { GPIO_PORT_C, 0 }, .direction = GPIO_DIR_IN,
       .edge = INTERRUPT_EDGE_RISING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = input_callback, .context = &driver_io[DRIVER_IO_POWER_SWITCH] 
+      .callback = input_callback, .context = &driver_io[DRIVER_IO_POWER_SWITCH]
     },
 
     { .address = { GPIO_PORT_C, 1 }, .direction = GPIO_DIR_IN,

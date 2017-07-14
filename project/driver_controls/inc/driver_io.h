@@ -22,7 +22,6 @@ typedef enum {
   NUM_DRIVER_IO_INPUTS
 } DriverIO;
 
-// TODO: order for byte alignment
 typedef struct DriverIODevice {
   GPIOAddress address;
   GPIODir direction;

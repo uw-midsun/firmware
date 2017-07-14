@@ -44,10 +44,6 @@ static bool s_input_status[NUM_INPUT_EVENTS];
 
 static DriverInput s_driver_inputs[NUM_DRIVER_IO_INPUTS];
 
-static prv_update_status(GPIOAddress address, GPIOState key_pressed) {
-  s_input_status[address.pin] = key_pressed;
-}
-
 static void prv_direction_selector(GPIOAddress address, Event *e) {
   uint8_t status = (s_input_status[DRIVER_PIN_3] << 1) | s_input_status[DRIVER_PIN_2];
 
@@ -147,7 +143,7 @@ void input_callback(GPIOAddress *address, void *context) {
   gpio_get_value(address, &key_pressed);
   debounce(address, &key_pressed);
 
-  prv_update_status(*address, key_pressed);
+  s_input_status[address->pin] = key_pressed;
 
   s_driver_inputs[*(uint8_t*)context]((*address), &e);
   event_raise(e.id, e.data);
