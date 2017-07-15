@@ -260,7 +260,8 @@ StatusCode LtcAfe_read_all_aux(const LtcAfeSettings *afe) {
   uint16_t result_data[LTC_CELLS_PER_DEVICE * LTC_DEVICES_IN_CHAIN] = { 0 };
   for (uint8_t cell = 0; cell < LTC_CELLS_PER_DEVICE; ++cell) {
     // setup GPIO5, ..., GPIO2 in CFG register with binary representation of cell
-    prv_write_config(afe, cell);
+    uint8_t enable_cells = (cell << 3);
+    prv_write_config(afe, enable_cells);
 
     uint8_t register_data[6 * LTC_DEVICES_IN_CHAIN] = { 0 };
 
