@@ -11,9 +11,6 @@
 #include "hazard_light_fsm.h"
 #include "mechanical_brake_fsm.h"
 
-#define INPUT_DEVICES 16
-#define OUTPUT_DEVICES 1
-
 // Struct of FSMs to be used in the program
 typedef struct FSMGroup {
   FSM power;
@@ -39,7 +36,6 @@ int main() {
   // Initialize the various driver control devices
   driver_io_init();
 
-  input_interrupt_init();
   event_queue_init();
 
   for (;;) {
