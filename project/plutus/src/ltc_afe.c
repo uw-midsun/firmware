@@ -52,9 +52,9 @@ static void prv_write_config(const LtcAfeSettings *afe, uint8_t gpio_pins) {
     configuration_cmd[configuration_index++] = (undervoltage & 0xFF);
 
     // CFGR2: VUV[11...8] in bit3, ..., bit0
-    configuration_cmd[configuration_index] = ((undervoltage >> 8) & 0xF0);
+    configuration_cmd[configuration_index] = ((undervoltage >> 8) & 0x0F);
     // CFGR2: VOV[3...0] in bit7, ..., bit4
-    configuration_cmd[configuration_index++] |= (overvoltage & 0x0F);
+    configuration_cmd[configuration_index++] |= ((overvoltage << 4) & 0xF0);
 
     // CFGR3: VOV[11...4]
     configuration_cmd[configuration_index++] = ((overvoltage >> 4) & 0xFF);
