@@ -46,10 +46,10 @@ typedef enum {
 } DriverIODevices;
 
 // Store the id of the device as well as the intended event to raise
-typedef struct DriverIO {
+typedef struct DriverIOData {
   DriverIODevices id;
   InputEvent event;
-} DriverIO;
+} DriverIOData;
 
 // Initialize gpio pins and interrupts
 void driver_io_init();
