@@ -66,7 +66,7 @@ void driver_io_init() {
 
     prv_settings((GPIOAddress){ GPIO_PORT_C, DRIVER_IO_PIN_1 },
       GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_ANALOG, NULL),
-    
+
     prv_settings((GPIOAddress){ GPIO_PORT_B, DRIVER_IO_PIN_2 },
       GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE, driver_callback_input),
 
@@ -93,7 +93,7 @@ void driver_io_init() {
 
     prv_settings((GPIOAddress){ GPIO_PORT_C, DRIVER_IO_PIN_10 },
       GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE, driver_callback_input)
-  }
+  };
 
   for (uint8_t i = 0; i < NUM_DRIVER_IO_PIN; i++) {
     prv_init_pin(&inputs[i]);
