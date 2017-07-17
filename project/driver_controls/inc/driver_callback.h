@@ -9,7 +9,7 @@
 #include "gpio.h"
 
 // Since the gas pedal is monitored through ADC interrupts, a separate callback is needed
-void pedal_callback(ADCChannel adc_channel, void *context);
+void driver_callback_pedal(ADCChannel adc_channel, void *context);
 
 // Main ISR for GPIO device interrupts
-void input_callback(GPIOAddress *address, void *context);
+void driver_callback_input(GPIOAddress *address, void *context);

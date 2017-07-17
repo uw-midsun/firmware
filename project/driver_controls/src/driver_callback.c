@@ -1,4 +1,4 @@
-#include "input_interrupt.h"
+#include "driver_callback.h"
 #include "input_event.h"
 #include "event_queue.h"
 #include "driver_io.h"
@@ -42,7 +42,7 @@ static void prv_event(DriverIO *driver_io, Event *e, GPIOState key_pressed) {
   }
 }
 
-void pedal_callback(ADCChannel adc_channel, void *context) {
+void driver_callback_pedal(ADCChannel adc_channel, void *context) {
   Event e;
 
   adc_read_raw(adc_channel, &e.data);
@@ -61,7 +61,7 @@ void pedal_callback(ADCChannel adc_channel, void *context) {
   }
 }
 
-void input_callback(GPIOAddress *address, void *context) {
+void driver_callback_input(GPIOAddress *address, void *context) {
   GPIOState key_pressed;
   Event e = { .id = INPUT_EVENT_NONE };
 

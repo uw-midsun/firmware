@@ -2,9 +2,7 @@
 
 #include "driver_io.h"
 #include "gpio_it.h"
-#include "input_interrupt.h"
-
-// Documentation to be added
+#include "driver_callback.h"
 
 typedef struct DriverIOSettings {
   GPIOAddress address;
@@ -14,6 +12,7 @@ typedef struct DriverIOSettings {
   DriverIOCallback callback;
 } DriverIOSettings;
 
+// Lookup table to map specific input devices to specific pins
 static DriverIO s_devices[NUM_DRIVER_IO_PIN] = {
   [DRIVER_IO_PIN_0] = { .id = DRIVER_IO_POWER_SWITCH, .event = INPUT_EVENT_POWER },
   [DRIVER_IO_PIN_2] = { .id = DRIVER_IO_DIRECTION_SELECTOR,
@@ -53,7 +52,7 @@ void driver_io_init() {
   DriverIOSettings inputs[] = {
     { .address = { GPIO_PORT_C, DRIVER_IO_PIN_0 }, .direction = GPIO_DIR_IN,
       .edge = INTERRUPT_EDGE_RISING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = input_callback
+      .callback = driver_callback_input
     },
 
     { .address = { GPIO_PORT_C, DRIVER_IO_PIN_1 }, .direction = GPIO_DIR_IN,
@@ -63,47 +62,47 @@ void driver_io_init() {
 
     { .address = { GPIO_PORT_B, DRIVER_IO_PIN_2 }, .direction = GPIO_DIR_IN,
       .edge = INTERRUPT_EDGE_RISING_FALLING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = input_callback
+      .callback = driver_callback_input
     },
 
     { .address = { GPIO_PORT_B, DRIVER_IO_PIN_3 }, .direction = GPIO_DIR_IN,
       .edge = INTERRUPT_EDGE_RISING_FALLING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = input_callback
+      .callback = driver_callback_input
     },
 
     { .address = { GPIO_PORT_C, DRIVER_IO_PIN_4 }, .direction = GPIO_DIR_IN,
       .edge = INTERRUPT_EDGE_RISING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = input_callback
+      .callback = driver_callback_input
     },
 
     { .address = { GPIO_PORT_C, DRIVER_IO_PIN_5 }, .direction = GPIO_DIR_IN,
       .edge = INTERRUPT_EDGE_RISING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = input_callback
+      .callback = driver_callback_input
     },
 
     { .address = { GPIO_PORT_C, DRIVER_IO_PIN_6 }, .direction = GPIO_DIR_IN,
       .edge = INTERRUPT_EDGE_RISING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = input_callback
+      .callback = driver_callback_input
     },
 
     { .address = { GPIO_PORT_C, DRIVER_IO_PIN_7 }, .direction = GPIO_DIR_IN,
       .edge = INTERRUPT_EDGE_RISING_FALLING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = input_callback
+      .callback = driver_callback_input
     },
 
     { .address = { GPIO_PORT_C, DRIVER_IO_PIN_8 }, .direction = GPIO_DIR_IN,
       .edge = INTERRUPT_EDGE_RISING_FALLING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = input_callback
+      .callback = driver_callback_input
     },
 
     { .address = { GPIO_PORT_C, DRIVER_IO_PIN_9 }, .direction = GPIO_DIR_IN,
       .edge = INTERRUPT_EDGE_RISING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = input_callback
+      .callback = driver_callback_input
     },
 
     { .address = { GPIO_PORT_C, DRIVER_IO_PIN_10 }, .direction = GPIO_DIR_IN,
       .edge = INTERRUPT_EDGE_RISING_FALLING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = input_callback
+      .callback = driver_callback_input
     }
   };
 
@@ -123,5 +122,5 @@ void driver_io_init() {
   // Initialize analog inputs
   adc_init(ADC_MODE_CONTINUOUS);
   adc_set_channel(ADC_CHANNEL_11, true);
-  adc_register_callback(ADC_CHANNEL_11, pedal_callback, NULL);
+  adc_register_callback(ADC_CHANNEL_11, driver_callback_pedal, NULL);
 }
