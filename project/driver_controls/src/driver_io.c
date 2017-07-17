@@ -1,9 +1,8 @@
 #include <stddef.h>
 
-#include "adc.h"
 #include "gpio_it.h"
 #include "driver_io.h"
-#include "event_queue.h"
+#include "driver_callback.h"
 
 // Arbitrary thresholds for gas pedal
 #define COAST_THRESHOLD 1000
@@ -16,13 +15,6 @@ typedef struct DriverIOSettings {
   InterruptEdge edge;
   DriverIOCallback callback;
 } DriverIOSettings;
-
-typedef struct AnalogStatus {
-  InputEvent pedal;
-} AnalogStatus;
-
-static AnalogStatus s_analog_status;
-static bool s_input_status[NUM_DRIVER_IO_PIN];
 
 // Lookup table to map specific input devices to specific pins
 static DriverIOData s_devices[NUM_DRIVER_IO_PIN] = {
@@ -42,59 +34,11 @@ static DriverIOData s_devices[NUM_DRIVER_IO_PIN] = {
   [DRIVER_IO_PIN_10] = { .id = DRIVER_IO_MECHANICAL_BRAKE, .event = INPUT_EVENT_MECHANICAL_BRAKE }
 };
 
-static void prv_event(DriverIOData *driver_io_data, Event *e, GPIOState key_pressed) {
-  switch (driver_io_data->id) {
-    case DRIVER_IO_DIRECTION_SELECTOR:
-      if (key_pressed == GPIO_STATE_LOW) {
-        e->id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
-        return;
-      }
-    case DRIVER_IO_TURN_SIGNAL:
-      if (key_pressed == GPIO_STATE_LOW) {
-        e->id = INPUT_EVENT_TURN_SIGNAL_NONE;
-        return;
-      }
-    case DRIVER_IO_POWER_SWITCH:
-    case DRIVER_IO_CRUISE_CONTROL:
-    case DRIVER_IO_CRUISE_CONTROL_INC:
-    case DRIVER_IO_CRUISE_CONTROL_DEC:
-    case DRIVER_IO_HAZARD_LIGHT:
-    case DRIVER_IO_MECHANICAL_BRAKE:
-      e->id = driver_io_data->event;
-      return;
-  }
-}
-
-static void prv_callback_pedal(ADCChannel adc_channel, void *context) {
-  Event e;
-
-  adc_read_raw(adc_channel, &e.data);
-
-  if (e.data < COAST_THRESHOLD) {
-    e.id = INPUT_EVENT_GAS_BRAKE;
-  } else if (e.data > DRIVE_THRESHOLD) {
-    e.id = INPUT_EVENT_GAS_PRESSED;
-  } else {
-    e.id = INPUT_EVENT_GAS_COAST;
-  }
-
-  if (e.id != s_analog_status.pedal) {
-    event_raise(e.id, e.data);
-    s_analog_status.pedal = e.id;
-  }
-}
-
-static void prv_callback_input(GPIOAddress *address, void *context) {
-  GPIOState key_pressed;
-  Event e = { .id = INPUT_EVENT_NONE };
-
-  gpio_get_value(address, &key_pressed);
-
-  s_input_status[address->pin] = key_pressed;
-
-  prv_event(context, &e, key_pressed);
-
-  event_raise(e.id, e.data);
+static DriverIOSettings prv_settings(GPIOAddress address, GPIODir dir, InterruptEdge edge,
+                                      GPIOAltFn altfn, void *context) {
+  DriverIOSettings settings = { .address = address, .direction = dir, .edge = edge,
+    .alt_function = altfn, .callback = context };
+  return settings;
 }
 
 static void prv_init_pin(DriverIOSettings *driver_io_data) {
@@ -117,77 +61,46 @@ void driver_io_init() {
 
   // Configure driver devices with their individual settings
   DriverIOSettings inputs[] = {
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_0 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = prv_callback_input
-    },
+    prv_settings((GPIOAddress){ GPIO_PORT_C, DRIVER_IO_PIN_0 },
+      GPIO_DIR_IN, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE, driver_callback_input),
 
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_1 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING_FALLING, .alt_function = GPIO_ALTFN_ANALOG,
-      .callback = NULL
-    },
+    prv_settings((GPIOAddress){ GPIO_PORT_C, DRIVER_IO_PIN_1 },
+      GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_ANALOG, NULL),
+    
+    prv_settings((GPIOAddress){ GPIO_PORT_B, DRIVER_IO_PIN_2 },
+      GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE, driver_callback_input),
 
-    { .address = { GPIO_PORT_B, DRIVER_IO_PIN_2 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING_FALLING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = prv_callback_input
-    },
+    prv_settings((GPIOAddress){ GPIO_PORT_B, DRIVER_IO_PIN_3 },
+      GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE, driver_callback_input),
 
-    { .address = { GPIO_PORT_B, DRIVER_IO_PIN_3 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING_FALLING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = prv_callback_input
-    },
+    prv_settings((GPIOAddress){ GPIO_PORT_C, DRIVER_IO_PIN_4 },
+      GPIO_DIR_IN, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE, driver_callback_input),
 
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_4 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = prv_callback_input
-    },
+    prv_settings((GPIOAddress){ GPIO_PORT_C, DRIVER_IO_PIN_5 },
+      GPIO_DIR_IN, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE, driver_callback_input),
 
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_5 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = prv_callback_input
-    },
+    prv_settings((GPIOAddress){ GPIO_PORT_C, DRIVER_IO_PIN_6 },
+      GPIO_DIR_IN, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE, driver_callback_input),
 
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_6 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = prv_callback_input
-    },
+    prv_settings((GPIOAddress){ GPIO_PORT_C, DRIVER_IO_PIN_7 },
+      GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE, driver_callback_input),
 
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_7 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING_FALLING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = prv_callback_input
-    },
+    prv_settings((GPIOAddress){ GPIO_PORT_C, DRIVER_IO_PIN_8 },
+      GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE, driver_callback_input),
 
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_8 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING_FALLING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = prv_callback_input
-    },
+    prv_settings((GPIOAddress){ GPIO_PORT_C, DRIVER_IO_PIN_9 },
+      GPIO_DIR_IN, INTERRUPT_EDGE_RISING, GPIO_ALTFN_NONE, driver_callback_input),
 
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_9 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = prv_callback_input
-    },
-
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_10 }, .direction = GPIO_DIR_IN,
-      .edge = INTERRUPT_EDGE_RISING_FALLING, .alt_function = GPIO_ALTFN_NONE,
-      .callback = prv_callback_input
-    }
-  };
-
-  DriverIOSettings outputs[] = {
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_11 }, .direction = GPIO_DIR_OUT,
-      .alt_function = GPIO_ALTFN_NONE, .callback = NULL }
-  };
-
-  for (uint8_t i = 0; i < sizeof(inputs)/sizeof(*inputs); i++) {
-    prv_init_pin(&inputs[i]);
+    prv_settings((GPIOAddress){ GPIO_PORT_C, DRIVER_IO_PIN_10 },
+      GPIO_DIR_IN, INTERRUPT_EDGE_RISING_FALLING, GPIO_ALTFN_NONE, driver_callback_input)
   }
 
-  for (uint8_t i = 0; i < sizeof(outputs)/sizeof(*outputs); i++) {
-    prv_init_pin(&outputs[i]);
+  for (uint8_t i = 0; i < NUM_DRIVER_IO_PIN; i++) {
+    prv_init_pin(&inputs[i]);
   }
 
   // Initialize analog inputs
   adc_init(ADC_MODE_CONTINUOUS);
   adc_set_channel(ADC_CHANNEL_11, true);
-  adc_register_callback(ADC_CHANNEL_11, prv_callback_pedal, NULL);
+  adc_register_callback(ADC_CHANNEL_11, driver_callback_pedal, NULL);
 }
