@@ -35,6 +35,8 @@
 #define LTC6804_CNVT_CELL_5_11                  5
 #define LTC6804_CNVT_CELL_6_12                  6
 
+#define LTC6804_WRCFG_RESERVED                  (1 << 0)
+
 #define LTC6804_ADCV_DISCHARGE_PERMITTED        (1 << 4)
 #define LTC6804_ADCV_RESERVED                   ((1 << 9) | (1 << 6) | (1 << 5))
 

@@ -18,16 +18,18 @@ static void prv_write_config(const LtcAfeSettings *afe, uint8_t gpio_pins) {
   uint8_t configuration_index = 0;
 
   // WRCFG
-  configuration_cmd[configuration_index++] = 0x00;
-  configuration_cmd[configuration_index++] = 0x01;
+  uint16_t wrcfg = LTC6804_WRCFG_RESERVED;
+  configuration_cmd[configuration_index + 0] = (uint8_t)(wrcfg >> 8);
+  configuration_cmd[configuration_index + 1] = wrcfg & 0xFF;
 
   uint16_t cmd_pec = crc15_calculate(configuration_cmd, 2);
 
   // set PEC high bits
-  configuration_cmd[configuration_index++] = (uint8_t)(cmd_pec >> 8);
+  configuration_cmd[configuration_index + 2] = (uint8_t)(cmd_pec >> 8);
   // set PEC low bits
-  configuration_cmd[configuration_index++] = (uint8_t)cmd_pec;
+  configuration_cmd[configuration_index + 3] = (uint8_t)cmd_pec;
 
+  configuration_index += 4;
   // send CFGR registers starting with the bottom slave in the stack
   for (uint8_t device = LTC_DEVICES_IN_CHAIN; device > 0; --device) {
     uint8_t enable = gpio_pins;
@@ -41,37 +43,39 @@ static void prv_write_config(const LtcAfeSettings *afe, uint8_t gpio_pins) {
     LtcDischargeTimeout timeout = LTC_AFE_DISCHARGE_TIMEOUT_DISABLED;
 
     // CFGR0
-    configuration_cmd[configuration_index] = enable;
+    configuration_cmd[configuration_index + 0] = enable;
     // (adc mode enum + 1) > 3:
     //    - true: CFGR0[0] = 1
     //    - false: CFGR0[0] = 0
     // CFGR0: bit0 is the ADC Mode
-    configuration_cmd[configuration_index++] |= ((afe->adc_mode + 1) > 3);
+    configuration_cmd[configuration_index + 0] |= ((afe->adc_mode + 1) > 3);
 
     // CFGR1: VUV[7...0]
-    configuration_cmd[configuration_index++] = (undervoltage & 0xFF);
+    configuration_cmd[configuration_index + 1] = (undervoltage & 0xFF);
 
     // CFGR2: VUV[11...8] in bit3, ..., bit0
-    configuration_cmd[configuration_index] = ((undervoltage >> 8) & 0x0F);
+    configuration_cmd[configuration_index + 2] = ((undervoltage >> 8) & 0x0F);
     // CFGR2: VOV[3...0] in bit7, ..., bit4
-    configuration_cmd[configuration_index++] |= ((overvoltage << 4) & 0xF0);
+    configuration_cmd[configuration_index + 2] |= ((overvoltage << 4) & 0xF0);
 
     // CFGR3: VOV[11...4]
-    configuration_cmd[configuration_index++] = ((overvoltage >> 4) & 0xFF);
+    configuration_cmd[configuration_index + 3] = ((overvoltage >> 4) & 0xFF);
 
     // CFGR4: DCC8, ..., DCC1
-    configuration_cmd[configuration_index++] = cells_to_discharge & 0xFF;
+    configuration_cmd[configuration_index + 4] = cells_to_discharge & 0xFF;
 
     // CFGR5: DCC12, ..., DCC9
-    configuration_cmd[configuration_index] = ((cells_to_discharge >> 8) & 0x0F);
+    configuration_cmd[configuration_index + 5] = ((cells_to_discharge >> 8) & 0x0F);
     // CFGR5: DCTO5, ... DCTO0 in bit7, ..., bit4
-    configuration_cmd[configuration_index++] |= (timeout << 4);
+    configuration_cmd[configuration_index + 5] |= (timeout << 4);
 
-    // adjust the configuration_cmd pointer to point to the start of slave's configuration
+    // adjust the offset to point to the start of slave's configuration
     uint8_t *cfg_offset = configuration_cmd + (8 * (LTC_DEVICES_IN_CHAIN - device)) + (2 + 2);
     uint16_t cfgr_pec = crc15_calculate(cfg_offset, 6);
-    configuration_cmd[configuration_index++] = (uint8_t)(cfgr_pec >> 8);
-    configuration_cmd[configuration_index++] = (uint8_t)cfgr_pec;
+    configuration_cmd[configuration_index + 6] = (uint8_t)(cfgr_pec >> 8);
+    configuration_cmd[configuration_index + 7] = (uint8_t)cfgr_pec;
+
+    configuration_index += 8;
   }
 
   prv_wakeup_idle(afe);
@@ -181,10 +185,13 @@ StatusCode prv_read_voltage(LtcAfeSettings *afe, uint8_t voltage_register, uint8
 
 // start cell voltage conversion
 static void prv_trigger_adc_conversion(const LtcAfeSettings *afe) {
+  uint8_t mode = (uint8_t)((afe->adc_mode) % 3);
   // ADCV command
+  uint16_t adcv = LTC6804_ADCV_RESERVED | LTC6804_ADCV_DISCHARGE_PERMITTED | LTC6804_CNVT_CELL_ALL | (mode << 7);
+
   uint8_t cmd[4] = { 0 };
-  cmd[0] = LTC6804_CNVT_CELL_ALL | LTC6804_ADCV_DISCHARGE_PERMITTED | LTC6804_ADCV_RESERVED;
-  cmd[0] |= (uint8_t)((afe->adc_mode) % 3);
+  cmd[0] = adcv >> 8;
+  cmd[1] = adcv & 0xFF;
 
   uint16_t cmd_pec = crc15_calculate(cmd, 2);
   cmd[2] = (uint8_t)(cmd_pec >> 8);
@@ -209,7 +216,7 @@ StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result_d
     for (uint8_t afe_device = 0; afe_device < LTC_DEVICES_IN_CHAIN; ++afe_device) {
       for (uint16_t cell = 0; cell < LTC_AFE_CELLS_IN_REG; ++cell) {
         uint16_t cell_voltage = (uint16_t)afe_data[data_counter] + (uint16_t)(afe_data[data_counter + 1] << 8);
-        result_data[afe_device * 12 + cell + cell_reg] = cell_voltage;
+        result_data[afe_device * 12 + cell + (cell_reg * 3)] = cell_voltage;
 
         data_counter += 2;
       }
