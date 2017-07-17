@@ -59,18 +59,18 @@ void teardown_test(void) {
 
 void test_setup() {
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
-                    event_arbiter_add_fsm(&s_fsm_group.power, power_state_init));
+                    event_arbiter_add_fsm(&s_fsm_group.power, power_fsm_init));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
-                    event_arbiter_add_fsm(&s_fsm_group.pedal, pedal_state_init));
+                    event_arbiter_add_fsm(&s_fsm_group.pedal, pedal_fsm_init));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
-                    event_arbiter_add_fsm(&s_fsm_group.direction, direction_state_init));
+                    event_arbiter_add_fsm(&s_fsm_group.direction, direction_fsm_init));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
-                    event_arbiter_add_fsm(&s_fsm_group.turn_signal, turn_signal_state_init));
+                    event_arbiter_add_fsm(&s_fsm_group.turn_signal, turn_signal_fsm_init));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
-                    event_arbiter_add_fsm(&s_fsm_group.hazard_light, hazard_light_state_init));
+                    event_arbiter_add_fsm(&s_fsm_group.hazard_light, hazard_light_fsm_init));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
                     event_arbiter_add_fsm(&s_fsm_group.mechanical_brake,
-                                          mechanical_brake_state_init));
+                                          mechanical_brake_fsm_init));
 
   TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
   TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
