@@ -47,7 +47,7 @@ static void prv_state_drive(FSM *fsm, const Event *e, void *context) {
   *event_check = prv_check_driver;
 }
 
-void direction_fsm_init(FSM *fsm) {
+StatusCode direction_fsm_init(FSM *fsm) {
   fsm_state_init(state_neutral, prv_state_neutral);
   fsm_state_init(state_forward, prv_state_drive);
   fsm_state_init(state_reverse, prv_state_drive);
@@ -58,4 +58,6 @@ void direction_fsm_init(FSM *fsm) {
 
   fsm_init(fsm, "direction_fsm", &state_neutral, context);
   prv_state_neutral(fsm, INPUT_EVENT_NONE, fsm->context);
+
+  return STATUS_CODE_OK;
 }

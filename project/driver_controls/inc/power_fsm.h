@@ -7,4 +7,4 @@
 
 #include "fsm.h"
 
-void power_fsm_init(FSM *fsm);
+StatusCode power_fsm_init(FSM *fsm);

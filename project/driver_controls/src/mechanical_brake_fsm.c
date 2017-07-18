@@ -55,7 +55,7 @@ static void prv_state_mechanical_brake_disengaged(FSM *fsm, const Event *e, void
   *event_check = prv_check_mechanical_brake_disengaged;
 }
 
-void mechanical_brake_fsm_init(FSM *fsm) {
+StatusCode mechanical_brake_fsm_init(FSM *fsm) {
   fsm_state_init(state_engaged, prv_state_mechanical_brake_engaged);
   fsm_state_init(state_disengaged, prv_state_mechanical_brake_disengaged);
 
@@ -65,4 +65,6 @@ void mechanical_brake_fsm_init(FSM *fsm) {
 
   fsm_init(fsm, "mechanical_brake_fsm", &state_disengaged, context);
   prv_state_mechanical_brake_disengaged(fsm, INPUT_EVENT_NONE, fsm->context);
+
+  return STATUS_CODE_OK;
 }

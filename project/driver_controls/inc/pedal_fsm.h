@@ -9,4 +9,4 @@
 
 #include "fsm.h"
 
-void pedal_fsm_init(FSM *fsm);
+StatusCode pedal_fsm_init(FSM *fsm);

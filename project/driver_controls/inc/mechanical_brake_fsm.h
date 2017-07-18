@@ -9,4 +9,4 @@
 
 #include "fsm.h"
 
-void mechanical_brake_fsm_init(FSM *fsm);
+StatusCode mechanical_brake_fsm_init(FSM *fsm);
