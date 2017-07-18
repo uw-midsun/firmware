@@ -60,6 +60,7 @@ StatusCode gpio_init_pin(GPIOAddress *address, GPIOSettings *settings) {
 
   // These are default values which are not intended to be changed.
   init_struct.GPIO_Speed = GPIO_Speed_Level_3;
+  // TODO(ELEC-227): Clean up open-drain support
   init_struct.GPIO_OType = (settings->direction == GPIO_DIR_OUT_OD) ? GPIO_OType_OD : GPIO_OType_PP;
   if (init_struct.GPIO_Mode == GPIO_Mode_AF) {
     // Subtract 1 due to the offset of the enum from the ALTFN_NONE entry
