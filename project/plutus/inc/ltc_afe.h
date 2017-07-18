@@ -37,10 +37,26 @@
 
 #define LTC6804_WRCFG_RESERVED                  (1 << 0)
 
-#define LTC6804_ADCV_DISCHARGE_PERMITTED        (1 << 4)
+#define LTC6804_RDCFG_RESERVED                  (1 << 1)
+
 #define LTC6804_ADCV_RESERVED                   ((1 << 9) | (1 << 6) | (1 << 5))
+#define LTC6804_ADCV_DISCHARGE_PERMITTED        (1 << 4)
 
 #define LTC6804_RDAUX_RESERVED                  ((1 << 3) | (1 << 2))
+
+#define LTC6804_CLRCELL_RESERVED                (1 << 0) | (1 << 4) | (1 << 8) | (1 << 9) | (1 << 10)
+
+#define LTC6804_CLRSTAT_RESERVED                (1 << 0) | (1 << 1) | (1 << 4) | (1 << 8) | (1 << 9) | (1 << 10)
+
+#define LTC6804_PLADC_RESERVED                  (1 << 2) | (1 << 4) | (1 << 8) | (1 << 9) | (1 << 10)
+
+#define LTC6804_DIAGNC_RESERVED                 (1 << 0) | (1 << 2) | (1 << 4) | (1 << 8) | (1 << 9) | (1 << 10)
+
+#define LTC6804_WRCOMM_RESERVED                 (1 << 0) | (1 << 5) | (1 << 8) | (1 << 9) | (1 << 10)
+
+#define LTC6804_RDCOMM_RESERVED                 (1 << 1) | (1 << 5) | (1 << 8) | (1 << 9) | (1 << 10)
+
+#define LTC6804_STCOMM_RESERVED                 (1 << 0) | (1 << 1) | (1 << 5) | (1 << 8) | (1 << 9) | (1 << 10)
 
 typedef enum {
   LTC_AFE_DISCHARGE_TIMEOUT_DISABLED = 0,

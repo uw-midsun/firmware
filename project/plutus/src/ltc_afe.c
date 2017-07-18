@@ -20,14 +20,14 @@ static void prv_write_config(const LtcAfeSettings *afe, uint8_t gpio_pins) {
   // WRCFG
   uint16_t wrcfg = LTC6804_WRCFG_RESERVED;
   configuration_cmd[configuration_index + 0] = (uint8_t)(wrcfg >> 8);
-  configuration_cmd[configuration_index + 1] = wrcfg & 0xFF;
+  configuration_cmd[configuration_index + 1] = (uint8_t)(wrcfg & 0xFF);
 
   uint16_t cmd_pec = crc15_calculate(configuration_cmd, 2);
 
   // set PEC high bits
   configuration_cmd[configuration_index + 2] = (uint8_t)(cmd_pec >> 8);
   // set PEC low bits
-  configuration_cmd[configuration_index + 3] = (uint8_t)cmd_pec;
+  configuration_cmd[configuration_index + 3] = (uint8_t)(cmd_pec & 0xFF);
 
   configuration_index += 4;
   // send CFGR registers starting with the bottom slave in the stack
@@ -39,7 +39,6 @@ static void prv_write_config(const LtcAfeSettings *afe, uint8_t gpio_pins) {
     for (uint8_t cell = 0; cell < LTC_CELLS_PER_DEVICE; ++cell) {
       cells_to_discharge |= (s_discharging_cells[(LTC_DEVICES_IN_CHAIN - device) * LTC_CELLS_PER_DEVICE + cell] << cell);
     }
-    printf("Cells to discharge: %d\n", cells_to_discharge);
     LtcDischargeTimeout timeout = LTC_AFE_DISCHARGE_TIMEOUT_DISABLED;
 
     // CFGR0
@@ -73,7 +72,7 @@ static void prv_write_config(const LtcAfeSettings *afe, uint8_t gpio_pins) {
     uint8_t *cfg_offset = configuration_cmd + (8 * (LTC_DEVICES_IN_CHAIN - device)) + (2 + 2);
     uint16_t cfgr_pec = crc15_calculate(cfg_offset, 6);
     configuration_cmd[configuration_index + 6] = (uint8_t)(cfgr_pec >> 8);
-    configuration_cmd[configuration_index + 7] = (uint8_t)cfgr_pec;
+    configuration_cmd[configuration_index + 7] = (uint8_t)(cfgr_pec & 0xFF);
 
     configuration_index += 8;
   }
@@ -82,9 +81,6 @@ static void prv_write_config(const LtcAfeSettings *afe, uint8_t gpio_pins) {
 
   // don't care about SPI results
   uint8_t cfg_len = (2 + 2) + ((6 + 2) * LTC_DEVICES_IN_CHAIN);
-  for (uint16_t i = 0; i < cfg_len; ++i) {
-    printf("Config %d: %d\n", i, configuration_cmd[i]);
-  }
   spi_exchange(afe->spi_port, configuration_cmd, cfg_len, NULL, 0);
 }
 
@@ -92,27 +88,20 @@ static void prv_write_config(const LtcAfeSettings *afe, uint8_t gpio_pins) {
 StatusCode LtcAfe_read_config(const LtcAfeSettings *afe, uint8_t *configuration_registers) {
   StatusCode status = STATUS_CODE_OK;
   // RDCFG
+  uint16_t rdcfg = LTC6804_RDCFG_RESERVED;
   uint8_t cmd[4] = { 0 };
 
-  // uint8_t configuration_registers[6 * LTC_DEVICES_IN_CHAIN] = { 0 };
-
-  cmd[0] = 0x00;
-  cmd[1] = 0x02;
+  cmd[0] = (uint8_t)(rdcfg >> 8);
+  cmd[1] = (uint8_t)(rdcfg & 0xFF);
   uint16_t cmd_pec = crc15_calculate(cmd, 2);
 
   // set PEC high bits
   cmd[2] = (uint8_t)(cmd_pec >> 8);
-  cmd[3] = (uint8_t)cmd_pec;
+  cmd[3] = (uint8_t)(cmd_pec & 0xFF);
 
   prv_wakeup_idle(afe);
   uint8_t received_data[8 * LTC_DEVICES_IN_CHAIN] = { 0 };
   spi_exchange(afe->spi_port, cmd, 4, received_data, (6 + 2) * LTC_DEVICES_IN_CHAIN);
-
-  printf("Received data\n");
-  for (uint8_t i = 0; i < 8 * LTC_DEVICES_IN_CHAIN; ++i) {
-    printf("%d ", received_data[i]);
-  }
-  printf("\n");
 
   uint16_t index = 0;
   for (uint8_t device = 0; device < LTC_DEVICES_IN_CHAIN; ++device) {
@@ -135,7 +124,7 @@ StatusCode LtcAfe_init(const LtcAfeSettings *afe) {
   crc15_init_table();
 
   SPISettings spi_config = {
-    .baudrate = 250000, // TODO: fix baudrate
+    .baudrate = 250000, // TODO: fix SPI baudrate
     .mode = SPI_MODE_3,
     .mosi = afe->mosi,
     .miso = afe->miso,
@@ -157,24 +146,24 @@ StatusCode prv_read_voltage(LtcAfeSettings *afe, uint8_t voltage_register, uint8
   if (voltage_register > 4) {
     return STATUS_CODE_INVALID_ARGS;
   }
-  uint8_t cmd[4] = { 0 };
-
   // p. 49
   // RDCVA: 0x04 = 0x04 + 0x00
   // RDCVB: 0x06 = 0x04 + 0x02
   // RDCVC: 0x08 = 0x04 + 0x04
   // RDCVD: 0x0A = 0x04 + 0x06
-  cmd[0] = 0x00;
-  cmd[1] = 0x04 + (2 * voltage_register);
+  uint16_t rdcv = 0x04 + (2 * voltage_register);
+  uint8_t cmd[4] = { 0 };
+
+  cmd[0] = (uint8_t)(rdcv >> 8);
+  cmd[1] = (uint8_t)(rdcv & 0xFF);
 
   uint16_t cmd_pec = crc15_calculate(cmd, 2);
 
   // set high bits
   cmd[2] = (uint8_t)(cmd_pec >> 8);
   // set low bits
-  cmd[3] = (uint8_t)(cmd_pec);
+  cmd[3] = (uint8_t)(cmd_pec & 0xFF);
 
-  // wakeup idle.. is this necessary?
   prv_wakeup_idle(afe);
 
   // 6 bytes in register + 2 bytes for PEC
@@ -188,8 +177,8 @@ static void prv_trigger_adc_conversion(const LtcAfeSettings *afe) {
   uint8_t mode = (uint8_t)((afe->adc_mode) % 3);
   // ADCV command
   uint16_t adcv = LTC6804_ADCV_RESERVED | LTC6804_ADCV_DISCHARGE_PERMITTED | LTC6804_CNVT_CELL_ALL | (mode << 7);
-
   uint8_t cmd[4] = { 0 };
+
   cmd[0] = adcv >> 8;
   cmd[1] = adcv & 0xFF;
 
@@ -242,20 +231,22 @@ StatusCode prv_read_aux_cmd(const LtcAfeSettings *afe, uint8_t aux_register, uin
     return STATUS_CODE_INVALID_ARGS;
   }
 
-  uint8_t cmd[4] = { 0 };
-
+  // RDAUX
   // Auxiliary Register Group A: 0x0C (12)
   // Auxiliary Register Group B: 0x0E (14)
-  cmd[4] = LTC6804_RDAUX_RESERVED | (aux_register << 1);
+  uint16_t rdaux = LTC6804_RDAUX_RESERVED | (aux_register << 1);
+  uint8_t cmd[4] = { 0 };
+
+  cmd[0] = (uint8_t)(rdaux >> 8);
+  cmd[1] = (uint8_t)(rdaux & 0xFF);
 
   uint16_t cmd_pec = crc15_calculate(cmd, 2);
 
   // set high bits
   cmd[2] = (uint8_t)(cmd_pec >> 8);
   // set low bits
-  cmd[3] = (uint8_t)cmd_pec;
+  cmd[3] = (uint8_t)(cmd_pec & 0xFF);
 
-  // wakeup idle.. is this necessary?
   prv_wakeup_idle(afe);
 
   spi_exchange(afe->spi_port, cmd, 4, data, (6 + 2) * LTC_DEVICES_IN_CHAIN);
