@@ -10,27 +10,6 @@
 
 typedef void (*DriverIOCallback)(GPIOAddress *address, void *context);
 
-// Driver IO pin definitions
-typedef enum {
-  DRIVER_IO_PIN_0 = 0,
-  DRIVER_IO_PIN_1,
-  DRIVER_IO_PIN_2,
-  DRIVER_IO_PIN_3,
-  DRIVER_IO_PIN_4,
-  DRIVER_IO_PIN_5,
-  DRIVER_IO_PIN_6,
-  DRIVER_IO_PIN_7,
-  DRIVER_IO_PIN_8,
-  DRIVER_IO_PIN_9,
-  DRIVER_IO_PIN_10,
-  DRIVER_IO_PIN_11,
-  DRIVER_IO_PIN_12,
-  DRIVER_IO_PIN_13,
-  DRIVER_IO_PIN_14,
-  DRIVER_IO_PIN_15,
-  NUM_DRIVER_IO_PIN
-} DriverIOPins;
-
 // Device identifiers
 typedef enum {
   DRIVER_IO_POWER_SWITCH = 0,
@@ -45,7 +24,7 @@ typedef enum {
   NUM_DRIVER_IO_INPUTS
 } DriverIODevices;
 
-// Store the id of the device as well as the intended event to raise
+// Store the id of the device as well as the id of the event the device raises
 typedef struct DriverIOData {
   DriverIODevices id;
   InputEvent event;
