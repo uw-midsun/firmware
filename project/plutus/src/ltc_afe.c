@@ -169,7 +169,7 @@ StatusCode prv_read_voltage(LtcAfeSettings *afe, uint8_t voltage_register, uint8
   prv_wakeup_idle(afe);
 
   // 6 bytes in register + 2 bytes for PEC
-  spi_exchange(afe->spi_port, cmd, 4, data, (6 + 2) * LTC_DEVICES_IN_CHAIN);
+  spi_exchange(afe->spi_port, cmd, 4, data, ((LTC_AFE_CELLS_IN_REG * 2) + 2) * LTC_DEVICES_IN_CHAIN);
 
   return STATUS_CODE_OK;
 }
@@ -199,7 +199,7 @@ StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result_d
   StatusCode result_status = STATUS_CODE_OK;
 
   for (uint8_t cell_reg = 0; cell_reg < 4; ++cell_reg) {
-    uint8_t afe_data[(6 + 2) * LTC_DEVICES_IN_CHAIN] = { 0 };
+    uint8_t afe_data[((LTC_AFE_CELLS_IN_REG * 2) + 2) * LTC_DEVICES_IN_CHAIN] = { 0 };
     uint16_t data_counter = 0;
 
     prv_read_voltage(afe, cell_reg, afe_data);
@@ -207,7 +207,7 @@ StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result_d
     for (uint8_t afe_device = 0; afe_device < LTC_DEVICES_IN_CHAIN; ++afe_device) {
       for (uint16_t cell = 0; cell < LTC_AFE_CELLS_IN_REG; ++cell) {
         uint16_t cell_voltage = (uint16_t)afe_data[data_counter] + (uint16_t)(afe_data[data_counter + 1] << 8);
-        result_data[afe_device * 12 + cell + (cell_reg * 3)] = cell_voltage;
+        result_data[afe_device * LTC_CELLS_PER_DEVICE + cell + (cell_reg * LTC_AFE_CELLS_IN_REG)] = cell_voltage;
 
         data_counter += 2;
       }
@@ -251,7 +251,7 @@ StatusCode prv_read_aux_cmd(const LtcAfeSettings *afe, uint8_t aux_register, uin
 
   prv_wakeup_idle(afe);
 
-  spi_exchange(afe->spi_port, cmd, 4, data, (6 + 2) * LTC_DEVICES_IN_CHAIN);
+  spi_exchange(afe->spi_port, cmd, 4, data, ((LTC_AFE_CELLS_IN_REG * 2) + 2) * LTC_DEVICES_IN_CHAIN);
 
   return STATUS_CODE_OK;
 }
@@ -263,7 +263,7 @@ StatusCode LtcAfe_read_all_aux(const LtcAfeSettings *afe) {
     uint8_t enable_cells = (cell << 3);
     prv_write_config(afe, enable_cells);
 
-    uint8_t register_data[6 * LTC_DEVICES_IN_CHAIN] = { 0 };
+    uint8_t register_data[(LTC_AFE_CELLS_IN_REG * 2) * LTC_DEVICES_IN_CHAIN] = { 0 };
 
     // RDAUXA
     prv_read_aux_cmd(afe, 0, register_data);
@@ -271,7 +271,8 @@ StatusCode LtcAfe_read_all_aux(const LtcAfeSettings *afe) {
     // read GPIO1 data (we only care about AVAR0 and AVAR1), which actually
     // corresponds to the cell specified by GPIO5, GPIO4, GPIO3, GPIO2 in binary
     for (uint8_t device = 0; device < LTC_DEVICES_IN_CHAIN; ++device) {
-      result_data[device * 12 + cell] = (uint16_t)register_data[6 * device] | ((uint16_t)register_data[6 * device + 1] << 8);
+      result_data[device * LTC_CELLS_PER_DEVICE + cell] = (uint16_t)(register_data[(LTC_AFE_CELLS_IN_REG * 2) * * device] << 8)
+                                                          + ((uint16_t)register_data[(LTC_AFE_CELLS_IN_REG * 2) * device + 1]);
     }
   }
 
