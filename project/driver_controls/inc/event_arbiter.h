@@ -12,6 +12,9 @@
 #include "fsm.h"
 #include "status.h"
 
+// Arbitrary FSM cap
+#define MAX_FSMS 10
+
 // Typedef for the FSM arbitration functions
 typedef bool (*EventArbiterCheck)(const Event *e);
 

@@ -4,9 +4,6 @@
 #include "input_event.h"
 #include "log.h"
 
-// Arbitrary FSM cap
-#define MAX_FSMS 10
-
 static FSM *s_driver_fsms[MAX_FSMS];
 static EventArbiterCheck s_event_checks[MAX_FSMS];  // Function pointer array to FSM arbiter functions
 

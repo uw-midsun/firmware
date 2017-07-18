@@ -54,7 +54,9 @@ StatusCode direction_fsm_init(FSM *fsm) {
 
   void *context;
 
-  event_arbiter_add_fsm(fsm, &context);
+  if (!status_ok(event_arbiter_add_fsm(fsm, &context))) {
+    return STATUS_CODE_RESOURCE_EXHAUSTED;
+  }
 
   fsm_init(fsm, "direction_fsm", &state_neutral, context);
   prv_state_neutral(fsm, INPUT_EVENT_NONE, fsm->context);
