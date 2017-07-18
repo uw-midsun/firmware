@@ -1,5 +1,6 @@
 #include "direction_fsm.h"
 #include "input_event.h"
+#include "event_arbiter.h"
 
 // Direction selector FSM state definitions
 
@@ -37,12 +38,12 @@ static bool prv_check_driver(const Event *e) {
 // Direction selector FSM output functions
 
 static void prv_state_neutral(FSM *fsm, const Event *e, void *context) {
-  InputEventCheck *event_check = fsm->context;
+  EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_neutral;
 }
 
 static void prv_state_drive(FSM *fsm, const Event *e, void *context) {
-  InputEventCheck *event_check = fsm->context;
+  EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_driver;
 }
 

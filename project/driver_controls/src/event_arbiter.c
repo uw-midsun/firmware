@@ -8,7 +8,7 @@
 #define MAX_FSMS 10
 
 static FSM *s_driver_fsms[MAX_FSMS];
-static InputEventCheck s_event_checks[MAX_FSMS];  // Function pointer array to FSM arbiter functions
+static EventArbiterCheck s_event_checks[MAX_FSMS];  // Function pointer array to FSM arbiter functions
 
 static uint8_t s_num_active_fsms = 0;
 

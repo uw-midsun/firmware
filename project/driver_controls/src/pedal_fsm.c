@@ -1,5 +1,6 @@
 #include "pedal_fsm.h"
 #include "input_event.h"
+#include "event_arbiter.h"
 
 // Pedal FSM state definitions
 
@@ -27,6 +28,7 @@ FSM_STATE_TRANSITION(state_driving) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_cruise_control);
 }
 
+// TODO: Add transition for cruise control increase and decrease
 FSM_STATE_TRANSITION(state_cruise_control) {
   FSM_ADD_TRANSITION(INPUT_EVENT_GAS_BRAKE, state_brake);
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_brake);
@@ -41,7 +43,7 @@ static bool prv_check_pedal(const Event *e) {
 // Pedal FSM output functions
 
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  InputEventCheck *event_check = fsm->context;
+  EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_pedal;
 }
 

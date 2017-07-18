@@ -10,6 +10,9 @@
 #include "fsm.h"
 #include "status.h"
 
+// Typedef for the FSM arbitration functions
+typedef bool (*EventArbiterCheck)(const Event *e);
+
 typedef void (*DriverFSMInit)(FSM *fsm, void *context);
 
 // Initializes an FSM with the given init function

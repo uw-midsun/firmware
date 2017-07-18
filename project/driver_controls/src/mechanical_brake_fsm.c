@@ -1,5 +1,6 @@
 #include "mechanical_brake_fsm.h"
 #include "input_event.h"
+#include "event_arbiter.h"
 
 // Mechanical Brake FSM state definitions
 
@@ -45,12 +46,12 @@ static bool prv_check_mechanical_brake_disengaged(const Event *e) {
 // Mechanical Brake FSM output functions
 
 static void prv_state_mechanical_brake_engaged(FSM *fsm, const Event *e, void *context) {
-  InputEventCheck *event_check = fsm->context;
+  EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_mechanical_brake_engaged;
 }
 
 static void prv_state_mechanical_brake_disengaged(FSM *fsm, const Event *e, void *context) {
-  InputEventCheck *event_check = fsm->context;
+  EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_mechanical_brake_disengaged;
 }
 
