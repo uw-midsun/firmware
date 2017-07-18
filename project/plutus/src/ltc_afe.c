@@ -1,5 +1,7 @@
-#include "ltc_afe.h"
+#include "crc15.h"
 #include "delay.h"
+#include "ltc_afe.h"
+#include "ltc68041.h"
 
 static bool s_discharging_cells[LTC_CELLS_PER_DEVICE * LTC_DEVICES_IN_CHAIN] = { false };
 
