@@ -25,14 +25,24 @@ static bool prv_event_permitted(Event *e) {
   return true;
 }
 
-StatusCode event_arbiter_add_fsm(FSM *fsm, DriverFSMInit driver_fsm_init) {
+StatusCode event_arbiter_init() {
+  for (uint8_t i = 0; i < MAX_FSMS; i++) {
+    s_driver_fsms[i] = NULL;
+    s_event_checks[i] = NULL;
+  }
+  s_num_active_fsms = 0;
+}
+
+StatusCode event_arbiter_add_fsm(FSM *fsm, void *context) {
   if (s_num_active_fsms == MAX_FSMS) {
     return STATUS_CODE_RESOURCE_EXHAUSTED;
   }
 
-  // Initialize the FSM with a pointer to the corresponding entry in the function pointer array
-  driver_fsm_init(fsm, &s_event_checks[s_num_active_fsms]);
+  EventArbiterCheck *event_check = context;
+  *event_check = &s_event_checks[s_num_active_fsms];
+
   s_driver_fsms[s_num_active_fsms] = fsm;
+  
   s_num_active_fsms++;
   return STATUS_CODE_OK;
 }

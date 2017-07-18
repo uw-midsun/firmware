@@ -4,4 +4,4 @@
 
 #include "fsm.h"
 
-void turn_signal_fsm_init(FSM *turn_signal_fsm, void *context);
+void turn_signal_fsm_init(FSM *turn_signal_fsm);

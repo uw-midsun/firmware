@@ -4,4 +4,4 @@
 
 #include "fsm.h"
 
-void hazard_light_fsm_init(FSM *hazard_light_fsm, void *context);
+void hazard_light_fsm_init(FSM *fsm);

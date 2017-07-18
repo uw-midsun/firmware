@@ -26,16 +26,17 @@ int main() {
   Event e;
   uint16_t reading;
 
-  event_arbiter_add_fsm(&fsm_group.power, power_fsm_init);
-  event_arbiter_add_fsm(&fsm_group.pedal, pedal_fsm_init);
-  event_arbiter_add_fsm(&fsm_group.direction, direction_fsm_init);
-  event_arbiter_add_fsm(&fsm_group.turn_signal, turn_signal_fsm_init);
-  event_arbiter_add_fsm(&fsm_group.hazard_light, hazard_light_fsm_init);
-  event_arbiter_add_fsm(&fsm_group.mechanical_brake, mechanical_brake_fsm_init);
+  event_arbiter_init();
+
+  power_fsm_init(&fsm_group.power);
+  pedal_fsm_init(&fsm_group.pedal);
+  direction_fsm_init(&fsm_group.direction);
+  turn_signal_fsm_init(&fsm_group.turn_signal);
+  hazard_light_fsm_init(&fsm_group.hazard_light);
+  mechanical_brake_fsm_init(&fsm_group.mechanical_brake);
 
   // Initialize the various driver control devices
   driver_io_init();
-
   event_queue_init();
 
   for (;;) {
@@ -46,9 +47,10 @@ int main() {
             fsm_group.power.current_state->name,
             fsm_group.pedal.current_state->name,
             fsm_group.direction.current_state->name,
+            fsm_group.turn_signal.current_state->name,
             fsm_group.hazard_light.current_state->name,
-            fsm_group.mechanical_brake.current_state->name,
-            fsm_group.turn_signal.current_state->name);
+            fsm_group.mechanical_brake.current_state->name
+            );
       }
     }
   }

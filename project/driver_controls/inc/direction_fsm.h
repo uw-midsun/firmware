@@ -7,4 +7,4 @@
 
 #include "fsm.h"
 
-void direction_fsm_init(FSM *direction_fsm, void *context);
+void direction_fsm_init(FSM *fsm);
