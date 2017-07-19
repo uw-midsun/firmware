@@ -1,8 +1,8 @@
 #include <stddef.h>
 
+#include "adc.h"
 #include "gpio_it.h"
 #include "driver_io.h"
-#include "driver_callback.h"
 
 // Arbitrary thresholds for gas pedal
 #define COAST_THRESHOLD 1000
@@ -65,7 +65,7 @@ void driver_io_init() {
   for (uint8_t i = 0; i < sizeof(digital_inputs)/sizeof(*digital_inputs); i++) {
     digital_inputs[i].direction = GPIO_DIR_IN;
     digital_inputs[i].alt_function = GPIO_ALTFN_NONE;
-    digital_inputs[i].callback = driver_callback_input;
+    digital_inputs[i].callback = NULL;
     digital_inputs[i].data = data[i];
     prv_init_pin(&digital_inputs[i]);
   }
@@ -80,9 +80,4 @@ void driver_io_init() {
     analog_inputs[i].callback = NULL;
     prv_init_pin(&analog_inputs[i]);
   }
-
-  // Initialize analog inputs
-  adc_init(ADC_MODE_CONTINUOUS);
-  adc_set_channel(ADC_CHANNEL_11, true);
-  adc_register_callback(ADC_CHANNEL_11, driver_callback_pedal, NULL);
 }
