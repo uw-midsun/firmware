@@ -21,8 +21,8 @@ FSM_STATE_TRANSITION(state_disengaged) {
 
 static bool prv_check_mechanical_brake_engaged(const Event *e) {
   switch (e->id) {
-    case INPUT_EVENT_GAS_COAST:
-    case INPUT_EVENT_GAS_PRESSED:
+    case INPUT_EVENT_PEDAL_COAST:
+    case INPUT_EVENT_PEDAL_PRESSED:
     case INPUT_EVENT_CRUISE_CONTROL:
     case INPUT_EVENT_CRUISE_CONTROL_INC:
     case INPUT_EVENT_CRUISE_CONTROL_DEC:
