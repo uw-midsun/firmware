@@ -17,14 +17,17 @@ FSM_STATE_TRANSITION(state_brake) {
 }
 
 FSM_STATE_TRANSITION(state_coast) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_COAST, state_coast);
   FSM_ADD_TRANSITION(INPUT_EVENT_GAS_PRESSED, state_driving);
   FSM_ADD_TRANSITION(INPUT_EVENT_GAS_BRAKE, state_brake);
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_cruise_control);
 }
 
+// TODO: Gas pressed event transitions back into state driving
 FSM_STATE_TRANSITION(state_driving) {
   FSM_ADD_TRANSITION(INPUT_EVENT_GAS_BRAKE, state_brake);
   FSM_ADD_TRANSITION(INPUT_EVENT_GAS_COAST, state_coast);
+  FSM_ADD_TRANSITION(INPUT_EVENT_GAS_PRESSED, state_driving);
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_cruise_control);
 }
 
@@ -32,6 +35,8 @@ FSM_STATE_TRANSITION(state_driving) {
 FSM_STATE_TRANSITION(state_cruise_control) {
   FSM_ADD_TRANSITION(INPUT_EVENT_GAS_BRAKE, state_brake);
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_brake);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL_INC, state_cruise_control);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL_DEC, state_cruise_control);
 }
 
 // Pedal FSM arbiter function
