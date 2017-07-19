@@ -37,7 +37,7 @@ void test_event_arbiter_add() {
   TEST_ASSERT_NOT_OK(power_fsm_init(&fsm));
 }
 
-void test_event_arbiter_process() {
+void test_event_arbiter_process_1() {
   power_fsm_init(&s_fsm_group.power);
   pedal_fsm_init(&s_fsm_group.pedal);
   direction_fsm_init(&s_fsm_group.direction);

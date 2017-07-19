@@ -4,6 +4,8 @@
 
 #include "event_queue.h"
 
+#include <stdio.h>
+
 // ID definitions for the driver input events.
 typedef enum {
   INPUT_EVENT_NONE = 0,                     // Pedal         00

@@ -3,9 +3,6 @@
 #include "event_queue.h"
 #include "driver_io.h"
 
-// Number of available GPIO interrupt channels
-#define NUM_INPUT_EVENTS 16
-
 // Arbitrary thresholds for gas pedal
 #define COAST_THRESHOLD 1000
 #define DRIVE_THRESHOLD 3000

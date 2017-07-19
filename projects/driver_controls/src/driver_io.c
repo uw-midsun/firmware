@@ -37,16 +37,16 @@ void driver_io_init() {
 
   // Configure driver devices with their individual settings
   DriverIOSettings digital_inputs[] = {
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_0 }, .edge = INTERRUPT_EDGE_RISING,},
-    { .address = { GPIO_PORT_B, DRIVER_IO_PIN_2 }, .edge = INTERRUPT_EDGE_RISING_FALLING, },
-    { .address = { GPIO_PORT_B, DRIVER_IO_PIN_3 }, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_4 }, .edge = INTERRUPT_EDGE_RISING },
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_5 }, .edge = INTERRUPT_EDGE_RISING },
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_6 }, .edge = INTERRUPT_EDGE_RISING },
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_7 }, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_8 }, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_9 }, .edge = INTERRUPT_EDGE_RISING },
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_10 }, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = { GPIO_PORT_C, 0 }, .edge = INTERRUPT_EDGE_RISING,},
+    { .address = { GPIO_PORT_B, 2 }, .edge = INTERRUPT_EDGE_RISING_FALLING, },
+    { .address = { GPIO_PORT_B, 3 }, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = { GPIO_PORT_C, 4 }, .edge = INTERRUPT_EDGE_RISING },
+    { .address = { GPIO_PORT_C, 5 }, .edge = INTERRUPT_EDGE_RISING },
+    { .address = { GPIO_PORT_C, 6 }, .edge = INTERRUPT_EDGE_RISING },
+    { .address = { GPIO_PORT_C, 7 }, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = { GPIO_PORT_C, 8 }, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = { GPIO_PORT_C, 9 }, .edge = INTERRUPT_EDGE_RISING },
+    { .address = { GPIO_PORT_C, 10 }, .edge = INTERRUPT_EDGE_RISING_FALLING },
   };
 
   DriverIOData data[] = {
@@ -71,7 +71,7 @@ void driver_io_init() {
   }
 
   DriverIOSettings analog_inputs[] = {
-    { .address = { GPIO_PORT_C, DRIVER_IO_PIN_1 }, .edge = INTERRUPT_EDGE_RISING_FALLING }
+    { .address = { GPIO_PORT_C, 1 }, .edge = INTERRUPT_EDGE_RISING_FALLING }
   };
 
   for (uint8_t i = 0; i < sizeof(analog_inputs)/sizeof(*analog_inputs); i++) {
