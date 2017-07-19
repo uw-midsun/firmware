@@ -5,57 +5,86 @@
 #include "input_event.h"
 #include "test_helpers.h"
 
-#include "power_fsm.h"
-#include "pedal_fsm.h"
-#include "direction_fsm.h"
-#include "turn_signal_fsm.h"
-#include "hazard_light_fsm.h"
-#include "mechanical_brake_fsm.h"
+typedef enum {
+  TEST_EVENT_ARBITER_EVENT_A,
+  TEST_EVENT_ARBITER_EVENT_B,
+  TEST_EVENT_ARBITER_EVENT_C,
+  TEST_EVENT_ARBITER_EVENT_D
+} TEST_EVENT_ARBITER_EVENT;
 
-typedef struct FSMGroup {
-  FSM power;
-  FSM pedal;
-  FSM direction;
-  FSM turn_signal;
-  FSM hazard_light;
-  FSM mechanical_brake;
-} FSMGroup;
+FSM_DECLARE_STATE(state_a);
+FSM_DECLARE_STATE(state_b);
+FSM_DECLARE_STATE(state_c);
+FSM_DECLARE_STATE(state_d);
 
-static FSMGroup s_fsm_group;
+FSM_STATE_TRANSITION(state_a) {
+  FSM_ADD_TRANSITION(TEST_EVENT_ARBITER_EVENT_B, state_b);
+}
+
+FSM_STATE_TRANSITION(state_b) {
+  FSM_ADD_TRANSITION(TEST_EVENT_ARBITER_EVENT_A, state_a);
+}
+
+FSM_STATE_TRANSITION(state_c) {
+  FSM_ADD_TRANSITION(TEST_EVENT_ARBITER_EVENT_D, state_d);
+}
+
+FSM_STATE_TRANSITION(state_d) {
+  FSM_ADD_TRANSITION(TEST_EVENT_ARBITER_EVENT_C, state_c);
+}
+
+static FSM s_fsm_a;
+static FSM s_fsm_b;
+
+static bool prv_no_check(const Event *e) {
+  return true;
+}
+
+static bool prv_check_state_c(const Event *e) {
+  return (e->id != TEST_EVENT_ARBITER_EVENT_B);
+}
+
+static void prv_state_c(FSM *fsm, const Event *e, void *context) {
+  EventArbiterCheck *event_check = fsm->context;
+  *event_check = prv_check_state_c;
+}
+
+static void prv_state_d(FSM *fsm, const Event *e, void *context) {
+  EventArbiterCheck *event_check = fsm->context;
+  *event_check = prv_no_check;
+}
 
 void setup_test() {
+  fsm_state_init(state_c, prv_state_c);
+  fsm_state_init(state_d, prv_state_d);
+
+  fsm_init(&s_fsm_a, "test_fsm_a", &state_a, prv_no_check);
+  fsm_init(&s_fsm_b, "test_fsm_b", &state_c, prv_check_state_c);
+
   event_arbiter_init();
 }
 
 void teardown_test() {}
 
 void test_event_arbiter_add() {
-  FSM fsm;
   for (uint8_t i = 0; i < MAX_FSMS; i++) {
-    TEST_ASSERT_OK(power_fsm_init(&fsm));
+    TEST_ASSERT_OK(event_arbiter_add_fsm(&s_fsm_a, prv_no_check));
   }
-  TEST_ASSERT_NOT_OK(power_fsm_init(&fsm));
+  TEST_ASSERT_NOT_OK(event_arbiter_add_fsm(&s_fsm_a, prv_no_check));
 }
 
-void test_event_arbiter_process_1() {
-  power_fsm_init(&s_fsm_group.power);
-  pedal_fsm_init(&s_fsm_group.pedal);
-  direction_fsm_init(&s_fsm_group.direction);
-
+void test_event_arbiter_process() {
   Event e;
 
-  e.id = INPUT_EVENT_GAS_PRESSED;
+  event_arbiter_add_fsm(&s_fsm_a, prv_no_check);
+  event_arbiter_add_fsm(&s_fsm_b, prv_check_state_c);
+
+  e.id = TEST_EVENT_ARBITER_EVENT_B;
   TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
 
-  e.id = INPUT_EVENT_POWER;
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));  
+  e.id = TEST_EVENT_ARBITER_EVENT_D;
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
-  e.id = INPUT_EVENT_GAS_PRESSED;
-  TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
-
-  e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e)); 
-
-  e.id = INPUT_EVENT_GAS_PRESSED;
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e)); 
+  e.id = TEST_EVENT_ARBITER_EVENT_B;
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }
