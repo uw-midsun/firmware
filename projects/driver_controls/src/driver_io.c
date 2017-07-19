@@ -4,10 +4,6 @@
 #include "driver_io.h"
 #include "driver_callback.h"
 
-// Arbitrary thresholds for gas pedal
-#define COAST_THRESHOLD 1000
-#define DRIVE_THRESHOLD 3000
-
 typedef struct DriverIOSettings {
   GPIOAddress address;
   GPIODir direction;
@@ -37,7 +33,7 @@ void driver_io_init() {
 
   // Configure driver devices with their individual settings
   DriverIOSettings digital_inputs[] = {
-    { .address = { GPIO_PORT_C, 0 }, .edge = INTERRUPT_EDGE_RISING,},
+    { .address = { GPIO_PORT_C, 0 }, .edge = INTERRUPT_EDGE_RISING},
     { .address = { GPIO_PORT_B, 2 }, .edge = INTERRUPT_EDGE_RISING_FALLING, },
     { .address = { GPIO_PORT_B, 3 }, .edge = INTERRUPT_EDGE_RISING_FALLING },
     { .address = { GPIO_PORT_C, 4 }, .edge = INTERRUPT_EDGE_RISING },
