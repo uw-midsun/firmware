@@ -30,16 +30,16 @@ StatusCode event_arbiter_init() {
   s_num_active_fsms = 0;
 }
 
-StatusCode event_arbiter_add_fsm(FSM *fsm, void *context) {
+StatusCode event_arbiter_add_fsm(FSM *fsm, EventArbiterCheck default_checker) {
   if (s_num_active_fsms == MAX_FSMS) {
     return STATUS_CODE_RESOURCE_EXHAUSTED;
   }
 
-  EventArbiterCheck *event_check = context;
-  *event_check = &s_event_checks[s_num_active_fsms];
-
   s_driver_fsms[s_num_active_fsms] = fsm;
-  
+  s_event_checks[s_num_active_fsms] = default_checker;
+
+  fsm->context = &s_event_checks[s_num_active_fsms];
+    
   s_num_active_fsms++;
   return STATUS_CODE_OK;
 }

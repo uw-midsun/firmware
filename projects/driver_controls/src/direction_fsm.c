@@ -52,14 +52,11 @@ StatusCode direction_fsm_init(FSM *fsm) {
   fsm_state_init(state_forward, prv_state_drive);
   fsm_state_init(state_reverse, prv_state_drive);
 
-  void *context;
+  fsm_init(fsm, "direction_fsm", &state_neutral, NULL);
 
-  if (!status_ok(event_arbiter_add_fsm(fsm, &context))) {
+  if (!status_ok(event_arbiter_add_fsm(fsm, prv_state_neutral))) {
     return STATUS_CODE_RESOURCE_EXHAUSTED;
   }
-
-  fsm_init(fsm, "direction_fsm", &state_neutral, context);
-  prv_state_neutral(fsm, INPUT_EVENT_NONE, fsm->context);
-
+  
   return STATUS_CODE_OK;
 }

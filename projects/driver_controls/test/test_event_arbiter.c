@@ -67,7 +67,7 @@ void setup_test() {
 void teardown_test() {}
 
 void test_event_arbiter_add() {
-  for (uint8_t i = 0; i < MAX_FSMS; i++) {
+  for (uint8_t i = 0; i < EVENT_ARBITER_MAX_FSMS; i++) {
     TEST_ASSERT_OK(event_arbiter_add_fsm(&s_fsm_a, prv_no_check));
   }
   TEST_ASSERT_NOT_OK(event_arbiter_add_fsm(&s_fsm_a, prv_no_check));

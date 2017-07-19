@@ -13,7 +13,7 @@
 #include "status.h"
 
 // Arbitrary FSM cap
-#define MAX_FSMS 10
+#define EVENT_ARBITER_MAX_FSMS 10
 
 // Typedef for the FSM arbitration functions
 typedef bool (*EventArbiterCheck)(const Event *e);
@@ -21,8 +21,8 @@ typedef bool (*EventArbiterCheck)(const Event *e);
 // Initializes the event arbiter to the default state
 StatusCode event_arbiter_init();
 
-// Initializes an FSM with the given init function
-StatusCode event_arbiter_add_fsm(FSM *fsm, void *context);
+// Registers an FSM and sets the context pointer to point to the given event check function
+StatusCode event_arbiter_add_fsm(FSM *fsm, EventArbiterCheck default_checker);
 
 // Process an event if allowed in the current state
 bool event_arbiter_process_event(Event *e);

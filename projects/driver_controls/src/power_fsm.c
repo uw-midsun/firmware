@@ -43,14 +43,11 @@ StatusCode power_fsm_init(FSM *fsm) {
   fsm_state_init(state_off, prv_state_off);
   fsm_state_init(state_on, prv_state_on);
 
-  void *context;
+  fsm_init(fsm, "power_fsm", &state_off, NULL);
 
-  if (!status_ok(event_arbiter_add_fsm(fsm, &context))) {
+  if (!status_ok(event_arbiter_add_fsm(fsm, prv_check_off))) {
     return STATUS_CODE_RESOURCE_EXHAUSTED;
   }
-
-  fsm_init(fsm, "power_fsm", &state_off, context);
-  prv_state_off(fsm, INPUT_EVENT_NONE, context);
 
   return STATUS_CODE_OK;
 }
