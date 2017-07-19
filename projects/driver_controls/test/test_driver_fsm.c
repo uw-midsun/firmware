@@ -38,7 +38,7 @@ void setup_test() { }
 void teardown_test(void) {
   Event e;
 
-  e.id = INPUT_EVENT_GAS_BRAKE;
+  e.id = INPUT_EVENT_PEDAL_BRAKE;
   event_arbiter_process_event(&e);
 
   e.id = INPUT_EVENT_MECHANICAL_BRAKE;
@@ -87,10 +87,10 @@ void test_driver_fsm_move_car() {
   e.id = INPUT_EVENT_MECHANICAL_BRAKE;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
-  e.id = INPUT_EVENT_GAS_COAST;
+  e.id = INPUT_EVENT_PEDAL_COAST;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
-  e.id = INPUT_EVENT_GAS_PRESSED;
+  e.id = INPUT_EVENT_PEDAL_PRESSED;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   // Shift to reverse gear and move the car
@@ -103,10 +103,10 @@ void test_driver_fsm_move_car() {
   e.id = INPUT_EVENT_MECHANICAL_BRAKE;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
-  e.id = INPUT_EVENT_GAS_COAST;
+  e.id = INPUT_EVENT_PEDAL_COAST;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
-  e.id = INPUT_EVENT_GAS_PRESSED;
+  e.id = INPUT_EVENT_PEDAL_PRESSED;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }
 
@@ -125,7 +125,7 @@ void test_driver_fsm_cruise_control() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   // Coast and enter cruise control
-  e.id = INPUT_EVENT_GAS_COAST;
+  e.id = INPUT_EVENT_PEDAL_COAST;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   e.id = INPUT_EVENT_CRUISE_CONTROL;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
