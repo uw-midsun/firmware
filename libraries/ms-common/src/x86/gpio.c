@@ -80,7 +80,7 @@ StatusCode gpio_get_value(GPIOAddress *address, GPIOState *state) {
   uint32_t index = prv_get_index(address);
 
   // Behave how hardware does when the direction is set to out.
-  if (s_pin_settings[index].direction == GPIO_DIR_OUT) {
+  if (s_pin_settings[index].direction != GPIO_DIR_IN) {
     *state = s_pin_settings[index].state;
   } else {
     *state = s_gpio_pin_input_value[index];
