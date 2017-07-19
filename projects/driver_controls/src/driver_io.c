@@ -37,7 +37,7 @@ void driver_io_init() {
 
   // Configure driver devices with their individual settings
   DriverIOSettings digital_inputs[] = {
-    { .address = { GPIO_PORT_C, 0 }, .edge = INTERRUPT_EDGE_RISING,},
+    { .address = { GPIO_PORT_C, 0 }, .edge = INTERRUPT_EDGE_RISING},
     { .address = { GPIO_PORT_B, 2 }, .edge = INTERRUPT_EDGE_RISING_FALLING, },
     { .address = { GPIO_PORT_B, 3 }, .edge = INTERRUPT_EDGE_RISING_FALLING },
     { .address = { GPIO_PORT_C, 4 }, .edge = INTERRUPT_EDGE_RISING },
