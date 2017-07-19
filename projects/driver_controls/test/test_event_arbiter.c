@@ -2,7 +2,6 @@
 #include "unity.h"
 #include "status.h"
 #include "log.h"
-#include "input_event.h"
 #include "test_helpers.h"
 
 typedef enum {
