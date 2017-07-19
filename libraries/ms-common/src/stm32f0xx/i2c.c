@@ -82,7 +82,7 @@ StatusCode i2c_init(I2CPort i2c, const I2CSettings *settings) {
   I2C_Init(s_port[i2c].base, &i2c_init);
 
   I2C_Cmd(s_port[i2c].base, ENABLE);
-  
+
   return STATUS_CODE_OK;
 }
 
