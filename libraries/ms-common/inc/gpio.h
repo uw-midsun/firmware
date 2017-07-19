@@ -15,6 +15,7 @@ typedef struct GPIOAddress {
 typedef enum {
   GPIO_DIR_IN = 0,
   GPIO_DIR_OUT,
+  GPIO_DIR_OUT_OD, // Output open-drain
   NUM_GPIO_DIR,
 } GPIODir;
 

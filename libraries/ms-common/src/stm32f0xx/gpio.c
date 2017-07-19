@@ -51,7 +51,7 @@ StatusCode gpio_init_pin(GPIOAddress *address, GPIOSettings *settings) {
   if (settings->alt_function == GPIO_ALTFN_ANALOG) {
     init_struct.GPIO_Mode = GPIO_Mode_AN;
   } else if (settings->alt_function == GPIO_ALTFN_NONE) {
-    init_struct.GPIO_Mode = (GPIOMode_TypeDef)settings->direction;
+    init_struct.GPIO_Mode = (GPIOMode_TypeDef)(settings->direction != GPIO_DIR_IN);
   } else {
     init_struct.GPIO_Mode = GPIO_Mode_AF;
   }
@@ -60,7 +60,8 @@ StatusCode gpio_init_pin(GPIOAddress *address, GPIOSettings *settings) {
 
   // These are default values which are not intended to be changed.
   init_struct.GPIO_Speed = GPIO_Speed_Level_3;
-  init_struct.GPIO_OType = GPIO_OType_PP;
+  // TODO(ELEC-227): Clean up open-drain support
+  init_struct.GPIO_OType = (settings->direction == GPIO_DIR_OUT_OD) ? GPIO_OType_OD : GPIO_OType_PP;
   if (init_struct.GPIO_Mode == GPIO_Mode_AF) {
     // Subtract 1 due to the offset of the enum from the ALTFN_NONE entry
     GPIO_PinAFConfig(s_gpio_port_map[address->port], address->pin, settings->alt_function - 1);
