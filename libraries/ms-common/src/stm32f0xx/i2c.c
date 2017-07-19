@@ -82,6 +82,8 @@ StatusCode i2c_init(I2CPort i2c, const I2CSettings *settings) {
   I2C_Init(s_port[i2c].base, &i2c_init);
 
   I2C_Cmd(s_port[i2c].base, ENABLE);
+  
+  return STATUS_CODE_OK;
 }
 
 StatusCode i2c_read(I2CPort i2c, I2CAddress addr, uint8_t *rx_data, size_t rx_len) {
