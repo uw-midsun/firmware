@@ -4,8 +4,8 @@
 #include "input_event.h"
 #include "log.h"
 
-static FSM *s_driver_fsms[MAX_FSMS];
-static EventArbiterCheck s_event_checks[MAX_FSMS];  // Function pointer array to FSM arbiter functions
+static FSM *s_driver_fsms[EVENT_ARBITER_MAX_FSMS];
+static EventArbiterCheck s_event_checks[EVENT_ARBITER_MAX_FSMS];  // Function pointer array to FSM arbiter functions
 
 static uint8_t s_num_active_fsms = 0;
 
@@ -23,7 +23,7 @@ static bool prv_event_permitted(Event *e) {
 }
 
 StatusCode event_arbiter_init() {
-  for (uint8_t i = 0; i < MAX_FSMS; i++) {
+  for (uint8_t i = 0; i < EVENT_ARBITER_MAX_FSMS; i++) {
     s_driver_fsms[i] = NULL;
     s_event_checks[i] = NULL;
   }
@@ -31,7 +31,7 @@ StatusCode event_arbiter_init() {
 }
 
 StatusCode event_arbiter_add_fsm(FSM *fsm, EventArbiterCheck default_checker) {
-  if (s_num_active_fsms == MAX_FSMS) {
+  if (s_num_active_fsms == EVENT_ARBITER_MAX_FSMS) {
     return STATUS_CODE_RESOURCE_EXHAUSTED;
   }
 
