@@ -7,8 +7,6 @@
 // discarded. This is to prevent situations like processing a gear shift while the brake is
 // not pressed, which would be dangerous for the driver.
 
-// TODO: Decide whether the event arbiter should be used directly, or through the FSMs
-
 #include "fsm.h"
 #include "status.h"
 

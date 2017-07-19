@@ -9,18 +9,20 @@ FSM_DECLARE_STATE(state_left_signal);
 FSM_DECLARE_STATE(state_right_signal);
 
 // Turn signal FSM transition table definitions
-// TODO: Power off event turns signals off
+
 FSM_STATE_TRANSITION(state_no_signal) {
   FSM_ADD_TRANSITION(INPUT_EVENT_TURN_SIGNAL_LEFT, state_left_signal);
   FSM_ADD_TRANSITION(INPUT_EVENT_TURN_SIGNAL_RIGHT, state_right_signal);
 }
 
 FSM_STATE_TRANSITION(state_left_signal) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_no_signal);
   FSM_ADD_TRANSITION(INPUT_EVENT_TURN_SIGNAL_NONE, state_no_signal);
   FSM_ADD_TRANSITION(INPUT_EVENT_TURN_SIGNAL_RIGHT, state_right_signal);
 }
 
 FSM_STATE_TRANSITION(state_right_signal) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_no_signal);
   FSM_ADD_TRANSITION(INPUT_EVENT_TURN_SIGNAL_LEFT, state_left_signal);
   FSM_ADD_TRANSITION(INPUT_EVENT_TURN_SIGNAL_NONE, state_no_signal);
 }

@@ -49,8 +49,7 @@ int main() {
             fsm_group.direction.current_state->name,
             fsm_group.turn_signal.current_state->name,
             fsm_group.hazard_light.current_state->name,
-            fsm_group.mechanical_brake.current_state->name
-            );
+            fsm_group.mechanical_brake.current_state->name);
       }
     }
   }

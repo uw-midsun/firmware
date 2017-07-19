@@ -23,7 +23,6 @@ FSM_STATE_TRANSITION(state_coast) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_cruise_control);
 }
 
-// TODO: Gas pressed event transitions back into state driving
 FSM_STATE_TRANSITION(state_driving) {
   FSM_ADD_TRANSITION(INPUT_EVENT_GAS_BRAKE, state_brake);
   FSM_ADD_TRANSITION(INPUT_EVENT_GAS_COAST, state_coast);
@@ -31,8 +30,8 @@ FSM_STATE_TRANSITION(state_driving) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_cruise_control);
 }
 
-// TODO: Add transition for cruise control increase and decrease
 FSM_STATE_TRANSITION(state_cruise_control) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE, state_brake);
   FSM_ADD_TRANSITION(INPUT_EVENT_GAS_BRAKE, state_brake);
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_brake);
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL_INC, state_cruise_control);
@@ -63,6 +62,6 @@ StatusCode pedal_fsm_init(FSM *fsm) {
   if (!status_ok(event_arbiter_add_fsm(fsm, prv_check_pedal))) {
     return STATUS_CODE_RESOURCE_EXHAUSTED;
   }
-  
+
   return STATUS_CODE_OK;
 }
