@@ -116,27 +116,36 @@ void test_driver_fsm_cruise_control() {
   prv_toggle_power(true);
   TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
 
+  // Change gear to forward
   e.id = INPUT_EVENT_MECHANICAL_BRAKE;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-
   e.id = INPUT_EVENT_MECHANICAL_BRAKE;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
+  // Coast and enter cruise control
   e.id = INPUT_EVENT_GAS_COAST;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-
   e.id = INPUT_EVENT_CRUISE_CONTROL;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
+  // Increase and decrease cruise control speed
   e.id = INPUT_EVENT_CRUISE_CONTROL_INC;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   e.id = INPUT_EVENT_CRUISE_CONTROL_DEC;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
-  e.id = INPUT_EVENT_CRUISE_CONTROL;
+  // Get out of cruise control
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+
+  // Ensure that cruise control does not happen in reverse
+  e.id = INPUT_EVENT_CRUISE_CONTROL;
+  TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
 }
 
