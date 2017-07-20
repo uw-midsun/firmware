@@ -14,6 +14,7 @@ static bool prv_event_permitted(Event *e) {
 
   for (uint8_t i = 0; i < s_num_active_fsms; i++) {
     permitted = s_event_checks[i](e);
+
     if (!permitted) {
       return false;
     }
@@ -29,18 +30,15 @@ StatusCode event_arbiter_init() {
   s_num_active_fsms = 0;
 }
 
-StatusCode event_arbiter_add_fsm(FSM *fsm, EventArbiterCheck default_checker) {
+EventArbiterCheck* event_arbiter_add_fsm(FSM *fsm, EventArbiterCheck default_checker) {
   if (s_num_active_fsms == EVENT_ARBITER_MAX_FSMS) {
-    return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
+    return NULL;
   }
 
   s_driver_fsms[s_num_active_fsms] = fsm;
   s_event_checks[s_num_active_fsms] = default_checker;
 
-  fsm->context = &s_event_checks[s_num_active_fsms];
-
-  s_num_active_fsms++;
-  return STATUS_CODE_OK;
+  return &s_event_checks[s_num_active_fsms++];
 }
 
 bool event_arbiter_process_event(Event *e) {

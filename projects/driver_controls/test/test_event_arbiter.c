@@ -67,16 +67,19 @@ void teardown_test() {}
 
 void test_event_arbiter_add() {
   for (uint8_t i = 0; i < EVENT_ARBITER_MAX_FSMS; i++) {
-    TEST_ASSERT_OK(event_arbiter_add_fsm(&s_fsm_a, prv_no_check));
+    TEST_ASSERT_NOT_EQUAL(NULL, event_arbiter_add_fsm(&s_fsm_a, prv_no_check));
   }
-  TEST_ASSERT_NOT_OK(event_arbiter_add_fsm(&s_fsm_a, prv_no_check));
+  TEST_ASSERT_EQUAL(NULL, event_arbiter_add_fsm(&s_fsm_a, prv_no_check));
 }
 
 void test_event_arbiter_process() {
   Event e;
 
-  event_arbiter_add_fsm(&s_fsm_a, prv_no_check);
-  event_arbiter_add_fsm(&s_fsm_b, prv_check_state_c);
+  s_fsm_a.context = event_arbiter_add_fsm(&s_fsm_a, prv_no_check);
+  s_fsm_b.context = event_arbiter_add_fsm(&s_fsm_b, prv_check_state_c);
+
+  TEST_ASSERT_NOT_EQUAL(NULL, s_fsm_a.context);
+  TEST_ASSERT_NOT_EQUAL(NULL, s_fsm_b.context);
 
   e.id = TEST_EVENT_ARBITER_EVENT_B;
   TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
