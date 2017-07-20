@@ -39,7 +39,11 @@ static bool prv_check_turn_signal(const Event *e) {
 static void prv_state_output(FSM* fsm, const Event* e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_turn_signal;
-  LOG_DEBUG("Turn signal in %s\n", fsm->current_state->name);
+
+  uint8_t state = (fsm->current_state->table == state_left_signal->table) |
+                  ((fsm->current_state->table == state_right_signal->table) << 1);
+
+  LOG_DEBUG("State = %d\n", state);
 }
 
 StatusCode turn_signal_fsm_init(FSM* fsm) {

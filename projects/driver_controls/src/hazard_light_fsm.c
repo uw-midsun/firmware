@@ -29,7 +29,9 @@ static bool prv_check_hazard_light(const Event *e) {
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_hazard_light;
-  LOG_DEBUG("Turn hazard light to %s\n", fsm->current_state->name);
+
+  uint8_t state = (fsm->current_state->table == state_hazard_on) ? 1 : 0;
+  LOG_DEBUG("Hazard Light State = %d\n", state);
 }
 
 StatusCode hazard_light_fsm_init(FSM *fsm) {

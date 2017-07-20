@@ -51,17 +51,12 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_pedal;
 
-  switch (e->id) {
-    case INPUT_EVENT_PEDAL_BRAKE:
-    case INPUT_EVENT_PEDAL_COAST:
-    case INPUT_EVENT_PEDAL_PRESSED:
-      LOG_DEBUG("Pedal in %s\n", fsm->current_state->name);
-    case INPUT_EVENT_CRUISE_CONTROL:
-      LOG_DEBUG("Car in %s\n", fsm->current_state->name);
-    case INPUT_EVENT_CRUISE_CONTROL_INC:
-      LOG_DEBUG("Cruise control increase speed\n");
-    case INPUT_EVENT_CRUISE_CONTROL_DEC:
-      LOG_DEBUG("Cruise control decrease speed\n");
+  StateTransition current_state;
+  uint8_t state;
+
+  state = (current_state == state_coast->table) | ((current_state == state_driving->table) << 1)
+  if (current_state == state_cruise_control->table) {
+    state = 3;
   }
 }
 

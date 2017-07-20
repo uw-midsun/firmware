@@ -34,14 +34,16 @@ static void prv_state_off(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_off;
 
-  LOG_DEBUG("%s\n", "Car is powered off");
+  uint8_t state = 0;
+  LOG_DEBUG("Power State = %d\n", state);
 }
 
 static void prv_state_on(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_on;
 
-  LOG_DEBUG("%s\n", "Car is powered on");
+  uint8_t state = 1;
+  LOG_DEBUG("Power State = %d\n", state);
 }
 
 StatusCode power_fsm_init(FSM *fsm) {

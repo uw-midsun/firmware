@@ -45,19 +45,25 @@ static bool prv_check_reverse(const Event *e) {
 static void prv_state_neutral(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_neutral;
-  LOG_DEBUG("Direction selector in %s\n", fsm->current_state->name);
+
+  uint8_t state = 0;
+  LOG_DEBUG("Direction Selector State = %d\n", state);
 }
 
 static void prv_state_forward(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_forward;
-  LOG_DEBUG("Direction selector is in %s\n", fsm->current_state->name);
+
+  uint8_t state = 1;
+  LOG_DEBUG("Direction Selector State = %d\n", state);
 }
 
 static void prv_state_reverse(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_reverse;
-  LOG_DEBUG("Direction selector is in %s\n", fsm->current_state->name);
+
+  uint8_t state = 2;
+  LOG_DEBUG("Direction Selector State = %d\n", state);
 }
 
 StatusCode direction_fsm_init(FSM *fsm) {
