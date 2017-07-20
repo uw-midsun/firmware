@@ -31,4 +31,4 @@ typedef struct DriverIOData {
 } DriverIOData;
 
 // Initialize gpio pins and interrupts
-void driver_io_init();
+void driver_io_init(void);

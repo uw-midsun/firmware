@@ -30,7 +30,7 @@ StatusCode event_arbiter_init() {
   s_num_active_fsms = 0;
 }
 
-EventArbiterCheck* event_arbiter_add_fsm(FSM *fsm, EventArbiterCheck default_checker) {
+EventArbiterCheck *event_arbiter_add_fsm(FSM *fsm, EventArbiterCheck default_checker) {
   if (s_num_active_fsms == EVENT_ARBITER_MAX_FSMS) {
     return NULL;
   }
