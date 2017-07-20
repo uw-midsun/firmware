@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #include "adc.h"
+#include "gpio.h"
 
 #include "event_arbiter.h"
 #include "digital_io.h"

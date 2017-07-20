@@ -30,7 +30,7 @@ typedef struct DigitalIOSettings {
   DigitalIOData *data;
 } DigitalIOSettings;
 
-// Index the objects using their respective pins 
+// Index the objects using their respective pins
 static DigitalIOData s_input_data[] = {
   [0] = { .id = DIGITAL_IO_POWER_SWITCH, .event = INPUT_EVENT_POWER },
   [2] = { .id = DIGITAL_IO_DIRECTION_SELECTOR, .event = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE },
@@ -44,6 +44,7 @@ static DigitalIOData s_input_data[] = {
   [10] = { .id = DIGITAL_IO_MECHANICAL_BRAKE, .event = INPUT_EVENT_MECHANICAL_BRAKE }
 };
 
+// Genarate the event based on the identity of the triggering device
 static void prv_get_event(DigitalIOData *digital_io_data, Event *e, GPIOState state) {
   switch (digital_io_data->id) {
     case DIGITAL_IO_DIRECTION_SELECTOR:
@@ -86,8 +87,9 @@ static void prv_init_pin(DigitalIOSettings *settings, GPIOSettings *gpio_setting
                               prv_input_callback, settings->data);
 }
 
+
+// Configure driver devices with their individual settings
 void digital_io_init() {
-  // Configure driver devices with their individual settings
   DigitalIOSettings digital_inputs[] = {
     { .address = { GPIO_PORT_C, 0 }, .edge = INTERRUPT_EDGE_RISING,
       .data = &s_input_data[0] },
