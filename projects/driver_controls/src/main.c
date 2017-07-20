@@ -36,6 +36,9 @@ int main() {
   mechanical_brake_fsm_init(&fsm_group.mechanical_brake);
 
   // Initialize the various driver control devices
+  gpio_init();
+  interrupt_init();
+  gpio_it_init();
   driver_io_init();
   event_queue_init();
 
