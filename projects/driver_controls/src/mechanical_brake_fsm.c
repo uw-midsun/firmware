@@ -49,13 +49,13 @@ static bool prv_check_mechanical_brake_disengaged(const Event *e) {
 static void prv_state_mechanical_brake_engaged(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_mechanical_brake_engaged;
-  LOG_DEBUG("Mechanical brake pressed");
+  LOG_DEBUG("Mechanical brake pressed\n");
 }
 
 static void prv_state_mechanical_brake_disengaged(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_mechanical_brake_disengaged;
-  LOG_DEBUG("Mechanical brake released");
+  LOG_DEBUG("Mechanical brake released\n");
 }
 
 StatusCode mechanical_brake_fsm_init(FSM *fsm) {

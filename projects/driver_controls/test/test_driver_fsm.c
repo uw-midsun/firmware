@@ -71,6 +71,65 @@ void test_driver_fsm_setup() {
   TEST_ASSERT_EQUAL_STRING("state_disengaged", s_fsm_group.mechanical_brake.current_state->name);
 }
 
+// Check that nothing can happen while the car is powered off 
+void test_driver_fsm_power_off() {
+  Event e;
+
+  prv_toggle_power(false);
+  TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
+
+  // Shift to forward gear and move the car
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
+  TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
+
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
+  TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
+
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+
+  e.id = INPUT_EVENT_PEDAL_COAST;
+  TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
+
+  e.id = INPUT_EVENT_PEDAL_PRESSED;
+  TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
+}
+
+// Check that the car does not move when the mechanical brake is pressed
+void test_driver_fsm_mechanical_brake() {
+  Event e;
+
+  prv_toggle_power(true);
+  TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
+
+  // Shift to forward gear and move the car
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+
+  e.id = INPUT_EVENT_PEDAL_COAST;
+  TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
+
+  e.id = INPUT_EVENT_PEDAL_PRESSED;
+  TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
+
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+
+  e.id = INPUT_EVENT_PEDAL_COAST;
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+
+  e.id = INPUT_EVENT_PEDAL_PRESSED;
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+}
+
+
+// Move the car forward and then back up
 void test_driver_fsm_move_car() {
   Event e;
 
@@ -110,6 +169,7 @@ void test_driver_fsm_move_car() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }
 
+// Turn on the car and then move into cruise test_driver_fsm_cruise_control
 void test_driver_fsm_cruise_control() {
   Event e;
 
@@ -148,4 +208,3 @@ void test_driver_fsm_cruise_control() {
   e.id = INPUT_EVENT_CRUISE_CONTROL;
   TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
 }
-
