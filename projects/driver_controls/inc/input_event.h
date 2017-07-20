@@ -6,8 +6,7 @@
 
 // ID definitions for the driver input events.
 typedef enum {
-  INPUT_EVENT_NONE = 0,
-  INPUT_EVENT_POWER,
+  INPUT_EVENT_POWER = 0,
   INPUT_EVENT_PEDAL_BRAKE,
   INPUT_EVENT_PEDAL_COAST,
   INPUT_EVENT_PEDAL_PRESSED,
