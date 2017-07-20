@@ -50,7 +50,7 @@ static void prv_state_mechanical_brake_engaged(FSM *fsm, const Event *e, void *c
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_mechanical_brake_engaged;
 
-  uint8_t state = 0;
+  uint8_t state = 1;
   LOG_DEBUG("Mechanical Brake State = %d\n", state);
 }
 
@@ -58,7 +58,7 @@ static void prv_state_mechanical_brake_disengaged(FSM *fsm, const Event *e, void
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_mechanical_brake_disengaged;
 
-  uint8_t state = 1;
+  uint8_t state = 0;
   LOG_DEBUG("Mechanical Brake State = %d\n", state);
 }
 
