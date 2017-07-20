@@ -55,7 +55,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   uint8_t state;
 
   state = (current_state == state_coast.table) | ((current_state == state_driving.table) << 1);
-  
+
   if (current_state == state_cruise_control.table) {
     state = 3;
   }
