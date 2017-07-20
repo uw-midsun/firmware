@@ -71,7 +71,7 @@ void test_driver_fsm_setup() {
   TEST_ASSERT_EQUAL_STRING("state_disengaged", s_fsm_group.mechanical_brake.current_state->name);
 }
 
-// Check that nothing can happen while the car is powered off 
+// Check that nothing can happen while the car is powered off
 void test_driver_fsm_power_off() {
   Event e;
 
