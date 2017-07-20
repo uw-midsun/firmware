@@ -2,7 +2,6 @@
 #include <stdint.h>
 
 #include "event_arbiter.h"
-#include "driver_io.h"
 
 #include "power_fsm.h"
 #include "pedal_fsm.h"
@@ -34,13 +33,6 @@ int main() {
   turn_signal_fsm_init(&fsm_group.turn_signal);
   hazard_light_fsm_init(&fsm_group.hazard_light);
   mechanical_brake_fsm_init(&fsm_group.mechanical_brake);
-
-  // Initialize the various driver control devices
-  gpio_init();
-  interrupt_init();
-  gpio_it_init();
-  driver_io_init();
-  event_queue_init();
 
   for (;;) {
     if (status_ok(event_process(&e))) {
