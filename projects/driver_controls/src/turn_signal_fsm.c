@@ -43,7 +43,7 @@ static void prv_state_output(FSM* fsm, const Event* e, void *context) {
   uint8_t state = (fsm->current_state->table == state_left_signal->table) |
                   ((fsm->current_state->table == state_right_signal->table) << 1);
 
-  LOG_DEBUG("State = %d\n", state);
+  LOG_DEBUG("Turn Signal State = %d\n", state);
 }
 
 StatusCode turn_signal_fsm_init(FSM* fsm) {

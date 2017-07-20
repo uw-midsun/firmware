@@ -58,6 +58,8 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   if (current_state == state_cruise_control->table) {
     state = 3;
   }
+
+  LOG_DEBUG("Pedal State = %d\n", state);
 }
 
 StatusCode pedal_fsm_init(FSM *fsm) {
