@@ -17,7 +17,7 @@
 typedef bool (*EventArbiterCheck)(const Event *e);
 
 // Initializes the event arbiter to the default state
-StatusCode event_arbiter_init();
+StatusCode event_arbiter_init(void);
 
 // Registers an FSM and sets the context pointer to point to the given event check function
 StatusCode event_arbiter_add_fsm(FSM *fsm, EventArbiterCheck default_checker);

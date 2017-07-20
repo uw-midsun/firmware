@@ -61,9 +61,5 @@ StatusCode mechanical_brake_fsm_init(FSM *fsm) {
 
   fsm_init(fsm, "mechanical_brake_fsm", &state_disengaged, NULL);
 
-  if (!status_ok(event_arbiter_add_fsm(fsm, prv_check_mechanical_brake_disengaged))) {
-    return STATUS_CODE_RESOURCE_EXHAUSTED;
-  }
-
-  return STATUS_CODE_OK;
+  return event_arbiter_add_fsm(fsm, prv_check_mechanical_brake_disengaged);
 }

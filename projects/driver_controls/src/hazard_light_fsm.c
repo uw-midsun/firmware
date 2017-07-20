@@ -36,9 +36,5 @@ StatusCode hazard_light_fsm_init(FSM *fsm) {
 
   fsm_init(fsm, "hazard_light_fsm", &state_hazard_off, NULL);
 
-  if (!status_ok(event_arbiter_add_fsm(fsm, prv_check_hazard_light))) {
-    return STATUS_CODE_RESOURCE_EXHAUSTED;
-  }
-
-  return STATUS_CODE_OK;
+  return event_arbiter_add_fsm(fsm, prv_check_hazard_light);
 }

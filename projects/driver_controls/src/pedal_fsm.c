@@ -59,9 +59,5 @@ StatusCode pedal_fsm_init(FSM *fsm) {
 
   fsm_init(fsm, "pedal_fsm", &state_brake, NULL);
 
-  if (!status_ok(event_arbiter_add_fsm(fsm, prv_check_pedal))) {
-    return STATUS_CODE_RESOURCE_EXHAUSTED;
-  }
-
-  return STATUS_CODE_OK;
+  return event_arbiter_add_fsm(fsm, prv_check_pedal);
 }

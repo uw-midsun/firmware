@@ -47,9 +47,5 @@ StatusCode turn_signal_fsm_init(FSM* fsm) {
 
   fsm_init(fsm, "turn_signal_fsm", &state_no_signal, NULL);
 
-  if (!status_ok(event_arbiter_add_fsm(fsm, prv_check_turn_signal))) {
-    return STATUS_CODE_RESOURCE_EXHAUSTED;
-  }
-
-  return STATUS_CODE_OK;
+  return event_arbiter_add_fsm(fsm, prv_check_turn_signal);
 }

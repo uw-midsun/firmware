@@ -63,9 +63,5 @@ StatusCode direction_fsm_init(FSM *fsm) {
 
   fsm_init(fsm, "direction_fsm", &state_neutral, NULL);
 
-  if (!status_ok(event_arbiter_add_fsm(fsm, prv_check_neutral))) {
-    return STATUS_CODE_RESOURCE_EXHAUSTED;
-  }
-
-  return STATUS_CODE_OK;
+  return event_arbiter_add_fsm(fsm, prv_check_neutral);
 }
