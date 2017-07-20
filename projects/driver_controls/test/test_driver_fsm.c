@@ -169,7 +169,7 @@ void test_driver_fsm_move_car() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }
 
-// Turn on the car and then move into cruise test_driver_fsm_cruise_control
+// Turn on the car and then move into cruise control
 void test_driver_fsm_cruise_control() {
   Event e;
 
