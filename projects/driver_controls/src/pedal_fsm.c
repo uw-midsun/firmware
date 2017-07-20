@@ -1,6 +1,7 @@
 #include "pedal_fsm.h"
 #include "input_event.h"
 #include "event_arbiter.h"
+#include "log.h"
 
 // Pedal FSM state definitions
 
@@ -49,6 +50,19 @@ static bool prv_check_pedal(const Event *e) {
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_pedal;
+
+  switch (e->id) {
+    case INPUT_EVENT_PEDAL_BRAKE:
+    case INPUT_EVENT_PEDAL_COAST:
+    case INPUT_EVENT_PEDAL_PRESSED:
+      LOG_DEBUG("Pedal in %s\n", fsm->current_state->name);
+    case INPUT_EVENT_CRUISE_CONTROL:
+      LOG_DEBUG("Car in %s\n", fsm->current_state->name);
+    case INPUT_EVENT_CRUISE_CONTROL_INC:
+      LOG_DEBUG("Cruise control increase speed\n");
+    case INPUT_EVENT_CRUISE_CONTROL_DEC:
+      LOG_DEBUG("Cruise control decrease speed\n");
+  }
 }
 
 StatusCode pedal_fsm_init(FSM *fsm) {

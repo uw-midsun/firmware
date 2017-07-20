@@ -1,6 +1,7 @@
 #include "power_fsm.h"
 #include "input_event.h"
 #include "event_arbiter.h"
+#include "log.h"
 
 // Power FSM state definitions
 
@@ -32,11 +33,15 @@ static bool prv_check_on(const Event *e) {
 static void prv_state_off(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_off;
+
+  LOG_DEBUG("%s\n", "Car is powered off");
 }
 
 static void prv_state_on(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_on;
+
+  LOG_DEBUG("%s\n", "Car is powered on");
 }
 
 StatusCode power_fsm_init(FSM *fsm) {

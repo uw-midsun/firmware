@@ -1,6 +1,7 @@
 #include "direction_fsm.h"
 #include "input_event.h"
 #include "event_arbiter.h"
+#include "log.h"
 
 // Direction selector FSM state definitions
 
@@ -44,16 +45,19 @@ static bool prv_check_reverse(const Event *e) {
 static void prv_state_neutral(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_neutral;
+  LOG_DEBUG("Direction selector in %s\n", fsm->current_state->name);
 }
 
 static void prv_state_forward(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_forward;
+  LOG_DEBUG("Direction selector is in %s\n", fsm->current_state->name);
 }
 
 static void prv_state_reverse(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_reverse;
+  LOG_DEBUG("Direction selector is in %s\n", fsm->current_state->name);
 }
 
 StatusCode direction_fsm_init(FSM *fsm) {

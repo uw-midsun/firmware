@@ -1,6 +1,7 @@
 #include "turn_signal_fsm.h"
 #include "input_event.h"
 #include "event_arbiter.h"
+#include "log.h"
 
 // Turn signal FSM state definitions
 
@@ -38,6 +39,7 @@ static bool prv_check_turn_signal(const Event *e) {
 static void prv_state_output(FSM* fsm, const Event* e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_turn_signal;
+  LOG_DEBUG("Turn signal in %s\n", fsm->current_state->name);
 }
 
 StatusCode turn_signal_fsm_init(FSM* fsm) {

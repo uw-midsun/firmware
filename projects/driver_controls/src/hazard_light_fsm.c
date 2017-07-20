@@ -1,6 +1,7 @@
 #include "hazard_light_fsm.h"
 #include "input_event.h"
 #include "event_arbiter.h"
+#include "log.h"
 
 // Hazard light FSM state definitions
 
@@ -28,6 +29,7 @@ static bool prv_check_hazard_light(const Event *e) {
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_hazard_light;
+  LOG_DEBUG("Turn hazard light to %s\n", fsm->current_state->name);
 }
 
 StatusCode hazard_light_fsm_init(FSM *fsm) {
