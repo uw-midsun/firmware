@@ -21,7 +21,9 @@ FSM_STATE_TRANSITION(state_on) {
 // Power FSM arbiter functions
 
 static bool prv_check_off(const Event *e) {
-  return (e->id == INPUT_EVENT_POWER || e->id == INPUT_EVENT_MECHANICAL_BRAKE);
+  return (e->id == INPUT_EVENT_POWER ||
+          e->id == INPUT_EVENT_MECHANICAL_BRAKE_RELEASED ||
+          e->id == INPUT_EVENT_MECHANICAL_BRAKE_PRESSED);
 }
 
 static bool prv_check_on(const Event *e) {

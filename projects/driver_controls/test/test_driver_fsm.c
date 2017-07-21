@@ -41,13 +41,13 @@ void teardown_test(void) {
   e.id = INPUT_EVENT_PEDAL_BRAKE;
   event_arbiter_process_event(&e);
 
-  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE_PRESSED;
   event_arbiter_process_event(&e);
 
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
   event_arbiter_process_event(&e);
 
-  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
   event_arbiter_process_event(&e);
 
   TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
@@ -79,7 +79,8 @@ void test_driver_fsm_power_off() {
   TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
 
   // Shift to forward gear and move the car
-  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE_PRESSED;
+  e.data = 0xFFF;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
@@ -88,7 +89,7 @@ void test_driver_fsm_power_off() {
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
   TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
 
-  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   e.id = INPUT_EVENT_PEDAL_COAST;
@@ -106,7 +107,7 @@ void test_driver_fsm_mechanical_brake() {
   TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
 
   // Shift to forward gear and move the car
-  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE_PRESSED;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
@@ -118,7 +119,7 @@ void test_driver_fsm_mechanical_brake() {
   e.id = INPUT_EVENT_PEDAL_PRESSED;
   TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
 
-  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   e.id = INPUT_EVENT_PEDAL_COAST;
@@ -137,13 +138,13 @@ void test_driver_fsm_move_car() {
   TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
 
   // Shift to forward gear and move the car
-  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE_PRESSED;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
-  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   e.id = INPUT_EVENT_PEDAL_COAST;
@@ -153,13 +154,13 @@ void test_driver_fsm_move_car() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   // Shift to reverse gear and move the car
-  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE_PRESSED;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
-  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   e.id = INPUT_EVENT_PEDAL_COAST;
@@ -177,11 +178,11 @@ void test_driver_fsm_cruise_control() {
   TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
 
   // Change gear to forward
-  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE_PRESSED;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   // Coast and enter cruise control
@@ -197,11 +198,11 @@ void test_driver_fsm_cruise_control() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   // Get out of cruise control
-  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE_PRESSED;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  e.id = INPUT_EVENT_MECHANICAL_BRAKE;
+  e.id = INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   // Ensure that cruise control does not happen in reverse

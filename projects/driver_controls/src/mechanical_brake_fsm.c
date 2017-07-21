@@ -11,11 +11,13 @@ FSM_DECLARE_STATE(state_disengaged);
 // Mechanical Brake FSM transition table definitions
 
 FSM_STATE_TRANSITION(state_engaged) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE, state_disengaged);
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_engaged);
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_disengaged);
 }
 
 FSM_STATE_TRANSITION(state_disengaged) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE, state_engaged);
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_engaged);
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_disengaged);
 }
 
 // Mechanical Brake FSM arbiter functions
