@@ -1,6 +1,12 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "adc.h"
+#include "gpio_it.h"
+
+#include "digital_io.h"
+#include "analog_io.h"
+
 #include "event_arbiter.h"
 
 #include "power_fsm.h"
@@ -25,6 +31,19 @@ int main() {
   Event e;
   uint16_t reading;
 
+  // Initialize the various driver control devices
+  gpio_init();
+  interrupt_init();
+  gpio_it_init();
+
+  adc_init(ADC_MODE_CONTINUOUS);
+
+  digital_io_init();
+  analog_io_init();
+
+  event_queue_init();
+
+  // Initialize FSMs
   event_arbiter_init();
 
   power_fsm_init(&fsm_group.power);
@@ -33,6 +52,8 @@ int main() {
   turn_signal_fsm_init(&fsm_group.turn_signal);
   hazard_light_fsm_init(&fsm_group.hazard_light);
   mechanical_brake_fsm_init(&fsm_group.mechanical_brake);
+
+
 
   for (;;) {
     if (status_ok(event_process(&e))) {
