@@ -150,7 +150,7 @@ void test_read_continuous() {
 
 void test_adc_get_channel() {
   ADCChannel adc_channel;
-  GPIOAddress address[] = { 
+  GPIOAddress address[] = {
     { .port = GPIO_PORT_A },
     { .port = GPIO_PORT_B },
     { .port = GPIO_PORT_C }
