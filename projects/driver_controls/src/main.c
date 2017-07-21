@@ -53,8 +53,6 @@ int main() {
   hazard_light_fsm_init(&fsm_group.hazard_light);
   mechanical_brake_fsm_init(&fsm_group.mechanical_brake);
 
-
-
   for (;;) {
     if (status_ok(event_process(&e))) {
       if (event_arbiter_process_event(&e)) {
