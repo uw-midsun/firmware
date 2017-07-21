@@ -53,7 +53,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   *event_check = prv_check_pedal;
 
   State *current_state = fsm->current_state;
-  uint8_t state;
+  uint8_t state = 0;
 
   if (current_state == &state_brake) {
     state = 0;
