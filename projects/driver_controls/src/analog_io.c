@@ -30,11 +30,11 @@ static void prv_input_callback(ADCChannel adc_channel, void *context) {
   switch (s_analog_devices[adc_channel]) {
     case ANALOG_IO_DEVICE_GAS_PEDAL:
       if (e.data < ANALOG_IO_COAST_THRESHOLD) {
-        e.id = INPUT_EVENT_GAS_BRAKE;
+        e.id = INPUT_EVENT_PEDAL_BRAKE;
       } else if (e.data > ANALOG_IO_DRIVE_THRESHOLD) {
-        e.id = INPUT_EVENT_GAS_PRESSED;
+        e.id = INPUT_EVENT_PEDAL_PRESSED;
       } else {
-        e.id = INPUT_EVENT_GAS_COAST;
+        e.id = INPUT_EVENT_PEDAL_COAST;
       }
       break;
   }
