@@ -77,7 +77,7 @@ void analog_io_init() {
 
   for (uint8_t i = 0; i < SIZEOF_ARRAY(analog_inputs); i++) {
     adc_get_channel(analog_inputs[i].address, &adc_channel);
-    adc_set_channel(adc_channel, 1);
+    adc_set_channel(adc_channel, true);
     adc_register_callback(adc_channel, prv_input_callback, NULL);
 
     s_analog_devices[adc_channel] = analog_inputs[i].device;
