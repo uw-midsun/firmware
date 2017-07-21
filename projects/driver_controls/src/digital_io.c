@@ -47,22 +47,22 @@ static DigitalIOData s_input_data[] = {
 // Genarate the event based on the identity of the triggering device
 static void prv_get_event(DigitalIOData *digital_io_data, Event *e, GPIOState state) {
   switch (digital_io_data->id) {
-    case DIGITAL_IO_DIRECTION_SELECTOR:
+    case DIGITAL_IO_DEVICE_DIRECTION_SELECTOR:
       if (state != GPIO_STATE_LOW) {
         e->id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
         return;
       }
-    case DIGITAL_IO_TURN_SIGNAL:
+    case DIGITAL_IO_DEVICE_TURN_SIGNAL:
       if (state != GPIO_STATE_LOW) {
         e->id = INPUT_EVENT_TURN_SIGNAL_NONE;
         return;
       }
-    case DIGITAL_IO_POWER_SWITCH:
-    case DIGITAL_IO_CRUISE_CONTROL:
-    case DIGITAL_IO_CRUISE_CONTROL_INC:
-    case DIGITAL_IO_CRUISE_CONTROL_DEC:
-    case DIGITAL_IO_HAZARD_LIGHT:
-    case DIGITAL_IO_MECHANICAL_BRAKE:
+    case DIGITAL_IO_DEVICE_POWER_SWITCH:
+    case DIGITAL_IO_DEVICE_CRUISE_CONTROL:
+    case DIGITAL_IO_DEVICE_CRUISE_CONTROL_INC:
+    case DIGITAL_IO_DEVICE_CRUISE_CONTROL_DEC:
+    case DIGITAL_IO_DEVICE_HAZARD_LIGHT:
+    case DIGITAL_IO_DEVICE_MECHANICAL_BRAKE:
       e->id = digital_io_data->event;
       return;
   }
