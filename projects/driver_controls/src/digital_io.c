@@ -114,59 +114,15 @@ static void prv_init_pin(DigitalIOSettings *settings, GPIOSettings *gpio_setting
 // Configure driver devices with their individual settings
 void digital_io_init() {
   DigitalIOSettings digital_inputs[] = {
-    { .address = {
-        DRIVER_IO_POWER_SWITCH_PORT,
-        DRIVER_IO_POWER_SWITCH_PIN
-      },
-      .edge = INTERRUPT_EDGE_RISING },
-
-    { .address = {
-        DRIVER_IO_DIRECTION_SELECTOR_PORT,
-        DRIVER_IO_DIRECTION_SELECTOR_PIN_FORWARD
-      },
-      .edge = INTERRUPT_EDGE_RISING_FALLING },
-
-    { .address = {
-        DRIVER_IO_DIRECTION_SELECTOR_PORT,
-        DRIVER_IO_DIRECTION_SELECTOR_PIN_REVERSE
-      },
-      .edge = INTERRUPT_EDGE_RISING_FALLING },
-
-    { .address = {
-        DRIVER_IO_CRUISE_CONTROL_PORT,
-        DRIVER_IO_CRUISE_CONTROL_PIN
-      },
-      .edge = INTERRUPT_EDGE_RISING },
-
-    { .address = {
-        DRIVER_IO_CRUISE_CONTROL_INC_PORT,
-        DRIVER_IO_CRUISE_CONTROL_INC_PIN
-      },
-      .edge = INTERRUPT_EDGE_RISING },
-
-    { .address = {
-        DRIVER_IO_CRUISE_CONTROL_DEC_PORT,
-        DRIVER_IO_CRUISE_CONTROL_DEC_PIN
-      },
-      .edge = INTERRUPT_EDGE_RISING },
-
-    { .address = {
-        DRIVER_IO_TURN_SIGNAL_PORT,
-        DRIVER_IO_TURN_SIGNAL_PIN_RIGHT
-      },
-      .edge = INTERRUPT_EDGE_RISING_FALLING },
-
-    { .address = {
-        DRIVER_IO_TURN_SIGNAL_PORT,
-        DRIVER_IO_TURN_SIGNAL_PIN_LEFT
-      },
-      .edge = INTERRUPT_EDGE_RISING_FALLING },
-
-    { .address = {
-        DRIVER_IO_HAZARD_LIGHT_PORT,
-        DRIVER_IO_HAZARD_LIGHT_PIN
-      },
-      .edge = INTERRUPT_EDGE_RISING }
+    { .address = DRIVER_IO_POWER_SWITCH, .edge = INTERRUPT_EDGE_RISING },
+    { .address = DRIVER_IO_DIRECTION_SELECTOR_FORWARD, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = DRIVER_IO_DIRECTION_SELECTOR_REVERSE, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = DRIVER_IO_CRUISE_CONTROL_PORT, .edge = INTERRUPT_EDGE_RISING },
+    { .address = DRIVER_IO_CRUISE_CONTROL_INC, .edge = INTERRUPT_EDGE_RISING },
+    { .address = DRIVER_IO_CRUISE_CONTROL_DEC, .edge = INTERRUPT_EDGE_RISING },
+    { .address = DRIVER_IO_TURN_SIGNAL_RIGHT, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = DRIVER_IO_TURN_SIGNAL_LEFT, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = DRIVER_IO_HAZARD_LIGHT, .edge = INTERRUPT_EDGE_RISING }
   };
 
   GPIOSettings settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_NONE };
