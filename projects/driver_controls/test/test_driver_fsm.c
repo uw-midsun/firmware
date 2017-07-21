@@ -80,7 +80,6 @@ void test_driver_fsm_power_off() {
 
   // Shift to forward gear and move the car
   e.id = INPUT_EVENT_MECHANICAL_BRAKE_PRESSED;
-  e.data = 0xFFF;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;

@@ -132,6 +132,37 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
   return STATUS_CODE_OK;
 }
 
+// ADC Channel to GPIO Address mapping found in table 13 of the specific device datasheet.
+// Channels 0 to 7 are occupied by port A, 8 to 9 by prt B, and 10 to 15 by port C
+StatusCode adc_get_channel(GPIOAddress address, ADCChannel *adc_channel) {
+  *adc_channel = address.pin;
+
+  switch (address.port) {
+    case GPIO_PORT_A:
+      if (address.pin > 7) {
+        return status_code(STATUS_CODE_INVALID_ARGS);
+      }
+      break;
+    case GPIO_PORT_B:
+      if (address.pin > 1) {
+        return status_code(STATUS_CODE_INVALID_ARGS);
+      }
+      *adc_channel += 8;
+      break;
+    case GPIO_PORT_C:
+      if (address.pin > 5) {
+        return status_code(STATUS_CODE_INVALID_ARGS);
+      }
+      *adc_channel += 10;
+      break;
+  }
+
+  if (*adc_channel > ADC_CHANNEL_15) {
+    return STATUS_CODE_INVALID_ARGS;
+  }
+  return STATUS_CODE_OK;
+}
+
 StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, void *context) {
   // Returns invalid if the given address is not connected to an ADC channel
   StatusCode valid = prv_channel_valid(adc_channel);

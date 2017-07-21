@@ -6,6 +6,10 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
   return STATUS_CODE_UNIMPLEMENTED;
 }
 
+StatusCode adc_get_channel(GPIOAddress address, ADCChannel *adc_channel) {
+  return STATUS_CODE_UNIMPLEMENTED;
+}
+
 StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, void *context) {
   return STATUS_CODE_UNIMPLEMENTED;
 }

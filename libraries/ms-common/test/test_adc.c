@@ -2,6 +2,7 @@
 #include "gpio.h"
 #include "unity.h"
 #include "log.h"
+#include "test_helpers.h"
 
 static GPIOAddress address[] = { { GPIO_PORT_A, 0 }, { GPIO_PORT_A, 1 }, { GPIO_PORT_A, 2 } };
 
@@ -145,4 +146,28 @@ void test_read_continuous() {
   adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL);
 
   prv_adc_check_range(ADC_CHANNEL_0);
+}
+
+void test_adc_get_channel() {
+  ADCChannel adc_channel;
+  GPIOAddress address[] = {
+    { .port = GPIO_PORT_A },
+    { .port = GPIO_PORT_B },
+    { .port = GPIO_PORT_C }
+  };
+
+  address[0].pin = 0;
+  TEST_ASSERT_OK(adc_get_channel(address[0], &adc_channel));
+  address[0].pin = 8;
+  TEST_ASSERT_NOT_OK(adc_get_channel(address[0], &adc_channel));
+
+  address[1].pin = 0;
+  TEST_ASSERT_OK(adc_get_channel(address[1], &adc_channel));
+  address[1].pin = 2;
+  TEST_ASSERT_NOT_OK(adc_get_channel(address[1], &adc_channel));
+
+  address[2].pin = 0;
+  TEST_ASSERT_OK(adc_get_channel(address[2], &adc_channel));
+  address[2].pin = 6;
+  TEST_ASSERT_NOT_OK(adc_get_channel(address[2], &adc_channel));
 }
