@@ -139,19 +139,27 @@ StatusCode adc_get_channel(GPIOAddress address, ADCChannel *adc_channel) {
 
   switch (address.port) {
     case GPIO_PORT_A:
-      if (address.pin > 7) { return STATUS_CODE_INVALID_ARGS; }
+      if (address.pin > 7) {
+        return status_code(STATUS_CODE_INVALID_ARGS);
+      }
       break;
     case GPIO_PORT_B:
-      if (address.pin > 1) { return STATUS_CODE_INVALID_ARGS; }
+      if (address.pin > 1) {
+        return status_code(STATUS_CODE_INVALID_ARGS);
+      }
       *adc_channel += 8;
       break;
     case GPIO_PORT_C:
-      if (address.pin > 5) { return STATUS_CODE_INVALID_ARGS; }
+      if (address.pin > 5) {
+        return status_code(STATUS_CODE_INVALID_ARGS);
+      }
       *adc_channel += 10;
       break;
   }
 
-  if (*adc_channel > ADC_CHANNEL_15) { return STATUS_CODE_INVALID_ARGS; }
+  if (*adc_channel > ADC_CHANNEL_15) {
+    return STATUS_CODE_INVALID_ARGS;
+  }
   return STATUS_CODE_OK;
 }
 
