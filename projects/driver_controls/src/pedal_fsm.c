@@ -13,6 +13,7 @@ FSM_DECLARE_STATE(state_cruise_control);
 // Pedal FSM transition table definitions
 
 FSM_STATE_TRANSITION(state_brake) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_BRAKE, state_brake);
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_COAST, state_coast);
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_PRESSED, state_driving);
 }
@@ -51,12 +52,16 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_pedal;
 
-  StateTransition current_state;
+  State *current_state = fsm->current_state;
   uint8_t state;
 
-  state = (current_state == state_coast.table) | ((current_state == state_driving.table) << 1);
-
-  if (current_state == state_cruise_control.table) {
+  if (current_state == &state_brake) {
+    state = 0;
+  } else if (current_state == &state_coast) {
+    state = 1;
+  } else if (current_state == &state_driving) {
+    state = 2;
+  } else if (current_state == &state_cruise_control) {
     state = 3;
   }
 

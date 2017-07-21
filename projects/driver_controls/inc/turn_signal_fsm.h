@@ -4,4 +4,4 @@
 
 #include "fsm.h"
 
-StatusCode turn_signal_fsm_init(FSM *turn_signal_fsm);
+StatusCode turn_signal_fsm_init(FSM *fsm);
