@@ -42,25 +42,6 @@ static void prv_input_callback(ADCChannel adc_channel, void *context) {
   event_raise(e.id, e.data);
 }
 
-// Obtain the ADC channel from the GPIO Address
-static ADCChannel prv_get_channel(GPIOAddress address) {
-  ADCChannel adc_channel;
-
-  switch (address.port) {
-    case GPIO_PORT_A:
-      adc_channel += address.pin;
-      break;
-    case GPIO_PORT_B:
-      adc_channel += (address.pin + 8);
-      break;
-    case GPIO_PORT_C:
-      adc_channel += (address.pin + 10);
-      break;
-  }
-
-  return adc_channel;
-}
-
 void analog_io_init() {
   typedef struct InputConfig {
     GPIOAddress address;
