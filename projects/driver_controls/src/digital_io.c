@@ -92,31 +92,24 @@ static void prv_init_pin(DigitalIOSettings *settings, GPIOSettings *gpio_setting
 // Configure driver devices with their individual settings
 void digital_io_init() {
   DigitalIOSettings digital_inputs[] = {
-    { .address = { GPIO_PORT_C, 0 }, .edge = INTERRUPT_EDGE_RISING,
-      .data = &s_input_data[0] },
-    { .address = { GPIO_PORT_B, 2 }, .edge = INTERRUPT_EDGE_RISING_FALLING,
-      .data = &s_input_data[2] },
-    { .address = { GPIO_PORT_B, 3 }, .edge = INTERRUPT_EDGE_RISING_FALLING,
-      .data = &s_input_data[3] },
-    { .address = { GPIO_PORT_C, 4 }, .edge = INTERRUPT_EDGE_RISING,
-      .data = &s_input_data[4] },
-    { .address = { GPIO_PORT_C, 5 }, .edge = INTERRUPT_EDGE_RISING,
-      .data = &s_input_data[5] },
-    { .address = { GPIO_PORT_C, 6 }, .edge = INTERRUPT_EDGE_RISING,
-      .data = &s_input_data[6] },
-    { .address = { GPIO_PORT_C, 7 }, .edge = INTERRUPT_EDGE_RISING_FALLING,
-      .data = &s_input_data[7] },
-    { .address = { GPIO_PORT_C, 8 }, .edge = INTERRUPT_EDGE_RISING_FALLING,
-      .data = &s_input_data[8] },
-    { .address = { GPIO_PORT_C, 9 }, .edge = INTERRUPT_EDGE_RISING,
-      .data = &s_input_data[9] },
-    { .address = { GPIO_PORT_C, 10 }, .edge = INTERRUPT_EDGE_RISING_FALLING,
-      .data = &s_input_data[10] },
+    { .address = { GPIO_PORT_C, 0 }, .edge = INTERRUPT_EDGE_RISING },
+    { .address = { GPIO_PORT_B, 2 }, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = { GPIO_PORT_B, 3 }, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = { GPIO_PORT_C, 4 }, .edge = INTERRUPT_EDGE_RISING },
+    { .address = { GPIO_PORT_C, 5 }, .edge = INTERRUPT_EDGE_RISING },
+    { .address = { GPIO_PORT_C, 6 }, .edge = INTERRUPT_EDGE_RISING },
+    { .address = { GPIO_PORT_C, 7 }, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = { GPIO_PORT_C, 8 }, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = { GPIO_PORT_C, 9 }, .edge = INTERRUPT_EDGE_RISING },
+    { .address = { GPIO_PORT_C, 10 }, .edge = INTERRUPT_EDGE_RISING_FALLING }
   };
 
   GPIOSettings settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_NONE };
 
   for (uint8_t i = 0; i < SIZEOF_ARRAY(digital_inputs); i++) {
+    uint8_t pin = digital_inputs[i].address.pin;
+
+    digital_inputs[i].data = &s_input_data[pin];
     prv_init_pin(&digital_inputs[i], &settings);
   }
 }
