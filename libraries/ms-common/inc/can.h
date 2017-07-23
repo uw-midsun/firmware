@@ -1,6 +1,6 @@
 #pragma once
 // CAN application interface
-// Requires soft timers and interrupts to be initialized.
+// Requires GPIO, soft timers, and interrupts to be initialized.
 //
 // Application code should only use functions in this header.
 #include <stdint.h>
