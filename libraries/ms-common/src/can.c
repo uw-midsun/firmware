@@ -13,10 +13,10 @@
 // - Bus error: In case of a bus error, we set a timer and wait to see if the bus has recovered
 //              after the timeout. If it's still down, we raise an event.
 #include "can.h"
+#include <string.h>
 #include "soft_timer.h"
 #include "can_hw.h"
 #include "can_rx_fsm.h"
-#include <string.h>
 
 #define CAN_BUS_OFF_RECOVERY_TIME_MS 500
 
