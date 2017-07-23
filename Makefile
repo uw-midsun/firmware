@@ -131,9 +131,14 @@ lint:
 	@find $(PROJ_DIR) -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
 	@find "$(LIB_DIR)/ms-common" -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
 
-# Builds the project
+# Builds the project or library
+ifneq (,$(PROJECT))
 build: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+else
+build: $(STATIC_LIB_DIR)/lib$(LIBRARY).a
+endif
 
+# Assumes that all libraries are used and will be built along with the projects
 build_all: $(VALID_PROJECTS:%=$(BIN_DIR)/%$(PLATFORM_EXT))
 
 $(DIRS):
