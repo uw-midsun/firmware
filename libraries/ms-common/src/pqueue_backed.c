@@ -1,4 +1,5 @@
 #include "pqueue_backed.h"
+#include <string.h>
 
 static void prv_init_node(void *node, void *context) {
   PQueueBacked *queue = context;

@@ -1,6 +1,8 @@
 #include "can.h"
 #include "soft_timer.h"
+#include "can_hw.h"
 #include "can_rx_fsm.h"
+#include <string.h>
 
 #define CAN_BUS_OFF_RECOVERY_TIME_MS 500
 
@@ -12,7 +14,7 @@ StatusCode prv_transmit(const CANConfig *can, const CANMessage *msg) {
     .msg_id = msg->msg_id
   };
 
-  return can_hw_transmit(&can->hw, msg_id.raw, msg->data_u8, msg->dlc);
+  return can_hw_transmit(msg_id.raw, msg->data_u8, msg->dlc);
 }
 
 // Handler for CAN HW TX ready events
@@ -42,7 +44,7 @@ void prv_rx_handler(void *context) {
   CANMessage rx_msg = { 0 };
   size_t counter = 0;
 
-  while (can_hw_receive(&can->hw, &rx_id.raw, &rx_msg.data, &rx_msg.dlc)) {
+  while (can_hw_receive(&rx_id.raw, &rx_msg.data, &rx_msg.dlc)) {
     CAN_MSG_SET_RAW_ID(&rx_msg, rx_id.raw);
 
     StatusCode result = can_queue_push(&can->rx_queue, &rx_msg);
@@ -63,7 +65,7 @@ void prv_rx_handler(void *context) {
 void prv_bus_error_timeout_handler(SoftTimerID timer_id, void *context) {
   CANConfig *can = context;
 
-  if (can_hw_bus_status(&can->hw) == CAN_HW_BUS_STATUS_OFF) {
+  if (can_hw_bus_status() == CAN_HW_BUS_STATUS_OFF) {
     event_raise(can->fault_event, 0);
   }
 }
@@ -77,14 +79,20 @@ void prv_bus_error_handler(void *context) {
 }
 
 StatusCode can_init(CANConfig *can, uint16_t device_id, uint16_t bus_speed, bool loopback,
-                    EventID rx_event, EventID fault_event) {
+                    GPIOAddress tx, GPIOAddress rx, EventID rx_event, EventID fault_event) {
   if (device_id >= CAN_MSG_MAX_DEVICES) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: Invalid device ID");
   }
 
   memset(can, 0, sizeof(*can));
 
-  can_hw_init(&can->hw, bus_speed, loopback);
+  CANHwSettings can_hw_settings = {
+    .bus_speed = bus_speed,
+    .loopback = loopback,
+    .tx = tx,
+    .rx = rx
+  };
+  can_hw_init(&can_hw_settings);
 
   can_rx_fsm_init(&can->fsm, can);
   can_queue_init(&can->tx_queue);
@@ -96,9 +104,9 @@ StatusCode can_init(CANConfig *can, uint16_t device_id, uint16_t bus_speed, bool
   can->rx_event = rx_event;
   can->fault_event = fault_event;
 
-  can_hw_register_callback(&can->hw, CAN_HW_EVENT_TX_READY, prv_tx_handler, can);
-  can_hw_register_callback(&can->hw, CAN_HW_EVENT_MSG_RX, prv_rx_handler, can);
-  can_hw_register_callback(&can->hw, CAN_HW_EVENT_BUS_ERROR, prv_bus_error_handler, can);
+  can_hw_register_callback(CAN_HW_EVENT_TX_READY, prv_tx_handler, can);
+  can_hw_register_callback(CAN_HW_EVENT_MSG_RX, prv_rx_handler, can);
+  can_hw_register_callback(CAN_HW_EVENT_BUS_ERROR, prv_bus_error_handler, can);
 
   return STATUS_CODE_OK;
 }
@@ -114,7 +122,7 @@ StatusCode can_add_filter(CANConfig *can, CANMessageID msg_id) {
     .msg_id = UINT16_MAX
   };
 
-  return can_hw_add_filter(&can->hw, can_id.raw, mask.raw);
+  return can_hw_add_filter(can_id.raw, mask.raw);
 }
 
 StatusCode can_register_rx_default_handler(CANConfig *can, CANRxHandlerCb handler, void *context) {

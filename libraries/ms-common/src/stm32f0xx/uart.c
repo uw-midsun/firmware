@@ -7,6 +7,7 @@
 // and call the registered RX handler.
 #include "uart.h"
 #include "stm32f0xx.h"
+#include <string.h>
 
 // basic idea: tx is stored in a buffer, interrupt-driven
 // rx is buffered, once a newline is hit or the buffer is full, call rx_handler
