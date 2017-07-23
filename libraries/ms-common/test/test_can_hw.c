@@ -10,7 +10,7 @@ static volatile uint64_t s_rx_data;
 static volatile size_t s_rx_len;
 
 static void prv_handle_rx(void *context) {
-  while (can_hw_receive(&s_can, &s_rx_id, &s_rx_data, &s_rx_len)) {
+  while (can_hw_receive(&s_rx_id, &s_rx_data, &s_rx_len)) {
     s_msg_rx++;
   }
 }
