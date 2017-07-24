@@ -46,24 +46,30 @@ static void prv_state_neutral(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_neutral;
 
-  uint8_t state = 0;
-  LOG_DEBUG("Direction Selector State = %d\n", state);
+  InputEventData *data = &e->data;
+  data->components.state = 0;
+
+  event_raise(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, e->data);
 }
 
 static void prv_state_forward(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_forward;
 
-  uint8_t state = 1;
-  LOG_DEBUG("Direction Selector State = %d\n", state);
+  InputEventData *data = &e->data;
+  data->components.state = 1;
+
+  event_raise(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, e->data);
 }
 
 static void prv_state_reverse(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_reverse;
 
-  uint8_t state = 2;
-  LOG_DEBUG("Direction Selector State = %d\n", state);
+  InputEventData *data = &e->data;
+  data->components.state = 2;
+
+  event_raise(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, e->data);
 }
 
 StatusCode direction_fsm_init(FSM *fsm) {

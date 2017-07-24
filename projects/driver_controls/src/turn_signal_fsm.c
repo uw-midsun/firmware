@@ -40,10 +40,16 @@ static void prv_state_output(FSM* fsm, const Event* e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_turn_signal;
 
-  uint8_t state = (fsm->current_state == &state_left_signal) |
-                  ((fsm->current_state == &state_right_signal) << 1);
+  InputEventData *data = &e->data;
 
-  LOG_DEBUG("Turn Signal State = %d\n", state);
+  // Use bitwise operation to determine state
+  // 0 = state_no_signal
+  // 1 = state_left_signal
+  // 2 = state_right_signal
+  data->components.state = (fsm->current_state == &state_left_signal) |
+                          ((fsm->current_state == &state_right_signal) << 1);
+
+  event_raise(INPUT_EVENT_CAN_ID_TURN_SIGNAL, e->data);
 }
 
 StatusCode turn_signal_fsm_init(FSM* fsm) {

@@ -36,16 +36,20 @@ static void prv_state_off(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_off;
 
-  uint8_t state = 0;
-  LOG_DEBUG("Power State = %d\n", state);
+  InputEventData *data = &e->data;
+  data->components.state = 0;
+
+  event_raise(INPUT_EVENT_CAN_ID_POWER, e->data);
 }
 
 static void prv_state_on(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_on;
 
-  uint8_t state = 1;
-  LOG_DEBUG("Power State = %d\n", state);
+  InputEventData *data = &e->data;
+  data->components.state = 1;
+
+  event_raise(INPUT_EVENT_CAN_ID_POWER, e->data);
 }
 
 StatusCode power_fsm_init(FSM *fsm) {

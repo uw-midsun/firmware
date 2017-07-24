@@ -30,8 +30,11 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_hazard_light;
 
-  uint8_t state = (fsm->current_state == &state_hazard_on);
-  LOG_DEBUG("Hazard Light State = %d\n", state);
+  InputEventData *data = &e->data;
+
+  data->components.state = (fsm->current_state == &state_hazard_on);
+  
+  event_raise(INPUT_EVENT_CAN_ID_HAZARD_LIGHT, e->data);
 }
 
 StatusCode hazard_light_fsm_init(FSM *fsm) {

@@ -7,6 +7,7 @@
 #include "pedal_fsm.h"
 #include "input_event.h"
 #include "event_arbiter.h"
+#include "event_queue.h"
 #include "log.h"
 
 // Pedal FSM state definitions
@@ -72,20 +73,21 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_pedal;
 
-  State *current_state = fsm->current_state;
-  uint8_t state = 0;
+  InputEventData *data = &e->data;
 
+  State *current_state = fsm->current_state;
+  
   if (current_state == &state_brake) {
-    state = 0;
+    data->components.state = 0;
   } else if (current_state == &state_coast) {
-    state = 1;
+    data->components.state = 1;
   } else if (current_state == &state_driving) {
-    state = 2;
+    data->components.state = 2;
   } else if (current_state == &state_cruise_control) {
-    state = 3;
+    data->components.state = 3;
   }
 
-  LOG_DEBUG("Pedal State = %d\n", state);
+  event_raise(INPUT_EVENT_CAN_ID_PEDAL, e->data);
 }
 
 StatusCode pedal_fsm_init(FSM *fsm) {
