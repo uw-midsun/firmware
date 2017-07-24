@@ -50,6 +50,8 @@ typedef enum {
 
 #define LTC6804_CVST_RESERVED                   ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 9))
 
+#define LTC6804_ADAX_RESERVED                   (1 << 10) | (1 << 6) | (1 << 5)
+
 #define LTC6804_CLRCELL_RESERVED                (1 << 0) | (1 << 4) | (1 << 8) | (1 << 9) | (1 << 10)
 
 #define LTC6804_CLRAUX_RESERVED                 (1 << 1) | (1 << 4) | (1 << 8) | (1 << 9) | (1 << 10)
@@ -94,6 +96,5 @@ typedef enum {
 
 #define LTC6804_SWTRD                           (1 << 1)
 
-#define LTC6804_ADAX_RESERVED                   (1 << 10) | (1 << 6) | (1 << 5)
 #define LTC6804_ADAX_GPIO1                      0x01
 #define LTC6804_ADAX_MODE_FAST                  (0 << 8) | (1 << 7)

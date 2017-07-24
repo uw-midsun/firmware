@@ -72,4 +72,4 @@ StatusCode LtcAfe_toggle_discharge_cells(const LtcAfeSettings *afe, uint16_t cel
 StatusCode LtcAfe_read_config(const LtcAfeSettings *afe, uint8_t *config);
 
 // write config registers
-StatusCode LtcAfe_write_config(const LtcAfeSettings *afe, uint8_t gpio_pins);
+StatusCode LtcAfe_write_config(const LtcAfeSettings *afe, uint8_t gpio_enable_pins);

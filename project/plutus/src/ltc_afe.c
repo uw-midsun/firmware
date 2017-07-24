@@ -43,7 +43,7 @@ static StatusCode prv_read_register(const LtcAfeSettings *afe, LtcAfeRegister re
 }
 
 // write config to all devices
-StatusCode LtcAfe_write_config(const LtcAfeSettings *afe, uint8_t gpio_pins) {
+StatusCode LtcAfe_write_config(const LtcAfeSettings *afe, uint8_t gpio_enable_pins) {
   // see p.54 in datasheet
   // (2 bits for WRCFG + 2 bits for WRCFG PEC) +
   // (6 bits for CFGR + 2 bits for CFGR PEC) * LTC_DEVICES_IN_CHAIN
@@ -64,7 +64,7 @@ StatusCode LtcAfe_write_config(const LtcAfeSettings *afe, uint8_t gpio_pins) {
   configuration_index += 4;
   // send CFGR registers starting with the bottom slave in the stack
   for (uint8_t device = LTC_DEVICES_IN_CHAIN; device > 0; --device) {
-    uint8_t enable = gpio_pins;
+    uint8_t enable = gpio_enable_pins;
     uint16_t undervoltage = 0;
     uint16_t overvoltage = 0;
     uint16_t cells_to_discharge = 0;
@@ -146,7 +146,7 @@ StatusCode LtcAfe_init(const LtcAfeSettings *afe) {
   crc15_init_table();
 
   SPISettings spi_config = {
-    .baudrate = 250000, // TODO: fix SPI baudrate
+    .baudrate = 250000,
     .mode = SPI_MODE_3,
     .mosi = afe->mosi,
     .miso = afe->miso,
@@ -207,8 +207,9 @@ static void prv_trigger_adc_conversion(const LtcAfeSettings *afe) {
 }
 
 static void prv_trigger_aux_adc_conversion(const LtcAfeSettings *afe) {
+  uint8_t mode = (uint8_t)((afe->adc_mode + 1) % 3);
   // ADAX
-  uint16_t adax = LTC6804_ADAX_RESERVED | LTC6804_ADAX_GPIO1 | LTC6804_ADAX_MODE_FAST;
+  uint16_t adax = LTC6804_ADAX_RESERVED | LTC6804_ADAX_GPIO1 | (mode << 7);
   uint8_t cmd[4] = { 0 };
   cmd[0] = (uint8_t)(adax >> 8);
   cmd[1] = (uint8_t)(adax & 0xFF);
