@@ -24,7 +24,8 @@ static void prv_wakeup_idle(const LtcAfeSettings *afe) {
   gpio_set_pin_state(&afe->cs, GPIO_STATE_HIGH);
 }
 
-static StatusCode prv_read_register(const LtcAfeSettings *afe, LtcAfeRegister reg, uint8_t *data, size_t len) {
+static StatusCode prv_read_register(const LtcAfeSettings *afe,
+                                    LtcAfeRegister reg, uint8_t *data, size_t len) {
   if (reg > NUM_LTC_AFE_REGISTER) {
     return STATUS_CODE_INVALID_ARGS;
   }
@@ -130,8 +131,10 @@ StatusCode LtcAfe_write_config(const LtcAfeSettings *afe, uint8_t gpio_enable_pi
     uint16_t undervoltage = 0;
     uint16_t overvoltage = 0;
     uint16_t cells_to_discharge = 0;
+
     for (uint8_t cell = 0; cell < LTC_CELLS_PER_DEVICE; ++cell) {
-      cells_to_discharge |= (s_discharging_cells[(LTC_DEVICES_IN_CHAIN - device) * LTC_CELLS_PER_DEVICE + cell] << cell);
+      uint16_t cell_index = (LTC_DEVICES_IN_CHAIN - device) * LTC_CELLS_PER_DEVICE + cell;
+      cells_to_discharge |= (s_discharging_cells[cell_index] << cell);
     }
     LtcDischargeTimeout timeout = LTC_AFE_DISCHARGE_TIMEOUT_DISABLED;
 
@@ -194,7 +197,8 @@ StatusCode LtcAfe_read_config(const LtcAfeSettings *afe, uint8_t *configuration_
       index += 1;
     }
 
-    uint16_t received_pec = (uint16_t)(received_data[device * (6 + 2) + 6] << 8) + received_data[device * (6 + 2) + 7];
+    uint16_t received_pec = (uint16_t)(received_data[device * (6 + 2) + 6] << 8)
+                             + received_data[device * (6 + 2) + 7];
     uint16_t calculated_pec = crc15_calculate(received_data + (device * (6 + 2)), 6);
     if (calculated_pec != received_pec) {
       status = STATUS_CODE_UNKNOWN;
@@ -236,11 +240,12 @@ StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result_d
 
     prv_read_voltage(afe, cell_reg, afe_data);
 
-    for (uint8_t afe_device = 0; afe_device < LTC_DEVICES_IN_CHAIN; ++afe_device) {
+    for (uint8_t device = 0; device < LTC_DEVICES_IN_CHAIN; ++device) {
       for (uint16_t cell = 0; cell < LTC_AFE_CELLS_IN_REG; ++cell) {
         // LSB of the reading is 100 uV
-        uint16_t voltage = (uint16_t)afe_data[data_counter] + (uint16_t)(afe_data[data_counter + 1] << 8);
-        uint16_t index = afe_device * LTC_CELLS_PER_DEVICE + cell + (cell_reg * LTC_AFE_CELLS_IN_REG);
+        uint16_t voltage = (uint16_t)afe_data[data_counter]
+                            + (uint16_t)(afe_data[data_counter + 1] << 8);
+        uint16_t index = device * LTC_CELLS_PER_DEVICE + cell + (cell_reg * LTC_AFE_CELLS_IN_REG);
         result_data[index] = voltage;
 
         data_counter += 2;
@@ -248,7 +253,7 @@ StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result_d
 
       // the Packet Error Code is transmitted after the cell data (see p.45)
       uint16_t received_pec = (afe_data[data_counter] << 8) + afe_data[data_counter + 1];
-      uint16_t data_pec = crc15_calculate(&afe_data[afe_device * 8], 6);
+      uint16_t data_pec = crc15_calculate(&afe_data[device * 8], 6);
       if (received_pec != data_pec) {
         result_status = STATUS_CODE_UNKNOWN;
       }
