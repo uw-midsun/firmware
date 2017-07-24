@@ -76,7 +76,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   InputEventData *data = &e->data;
 
   State *current_state = fsm->current_state;
-  
+
   if (current_state == &state_brake) {
     data->components.state = 0;
   } else if (current_state == &state_coast) {

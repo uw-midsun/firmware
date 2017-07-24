@@ -15,7 +15,6 @@ FSM_STATE_TRANSITION(state_can_transmit) {
 }
 
 static StatusCode prv_transmit_data(FSM *fsm, const Event *e, void *context) {
-  // TODO: printf your shit
   InputEventData *data = &e->data;
 
   printf("Device = %d, State = %d, Data = %d\n",
@@ -25,7 +24,7 @@ static StatusCode prv_transmit_data(FSM *fsm, const Event *e, void *context) {
 }
 
 static bool prv_check_state(const Event *e) {
-	return true;
+  return true;
 }
 
 StatusCode can_fsm_init(FSM *fsm) {

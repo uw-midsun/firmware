@@ -33,7 +33,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   InputEventData *data = &e->data;
 
   data->components.state = (fsm->current_state == &state_hazard_on);
-  
+
   event_raise(INPUT_EVENT_CAN_ID_HAZARD_LIGHT, e->data);
 }
 
