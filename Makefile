@@ -15,6 +15,7 @@
 #		make clean [PL] [PR] - Removes the project's build output and associated linker and object files
 #		make remake [PL] [PR] - Cleans and rebuilds the target project (does not force-rebuild dependencies)
 #		make reallyclean - Completely deletes all build output
+#   make new [PR|LI] - Creates folder structure for new project or library
 #		make lint - Lints all non-vendor code
 #		make test [PL] [PR|LI] [TE] - Builds and runs the specified unit test, assuming all tests if TE is not defined
 #		make gdb [PL] [PR] - Builds and runs the project and connects an instance of GDB for debugging
@@ -29,38 +30,15 @@
 # CONFIG
 
 # Default directories
-PROJ_DIR := project
+PROJ_DIR := projects
 PLATFORMS_DIR := platform
 LIB_DIR := libraries
 MAKE_DIR := make
 
-VALID_PROJECTS := $(patsubst $(PROJ_DIR)/%/rules.mk,%,$(wildcard $(PROJ_DIR)/*/rules.mk))
-VALID_PLATFORMS := $(patsubst $(PLATFORMS_DIR)/%/platform.mk,%,$(wildcard $(PLATFORMS_DIR)/*/platform.mk))
-VALID_LIBRARIES := $(patsubst $(LIB_DIR)/%/rules.mk,%,$(wildcard $(LIB_DIR)/*/rules.mk))
-
-PROJECT := $(filter $(VALID_PROJECTS),$(PROJECT))
-
-# TODO: allow valid platforms to be defined by projects?
 PLATFORM := stm32f0xx
-override PLATFORM := $(filter $(VALID_PLATFORMS),$(PLATFORM))
-override PROJECT := $(filter $(VALID_PROJECTS),$(PROJECT))
-override LIBRARY := $(filter $(VALID_LIBRARIES),$(LIBRARY))
 
-# Only ignore project and platform if we're doing a full clean or lint
-ifeq (,$(filter reallyclean lint build_all test_all,$(MAKECMDGOALS)))
-# If not running a test, only care about project
-ifeq (,$(filter test gdb program,$(MAKECMDGOALS)))
-ifeq (,$(PROJECT))
-  $(error Invalid project. Expected PROJECT=[$(VALID_PROJECTS)])
-endif
-else ifeq (,$(PROJECT)$(LIBRARY))
-  $(error Invalid project or library. Expected PROJECT=[$(VALID_PROJECTS)] or LIBRARY=[$(VALID_LIBRARIES)])
-endif
-
-ifeq (,$(PLATFORM))
-  $(error Invalid platform. Expected PLATFORM=[$(VALID_PLATFORMS)])
-endif
-endif
+# Include argument filters
+include $(MAKE_DIR)/filter.mk
 
 # Location of project
 PROJECT_DIR := $(PROJ_DIR)/$(PROJECT)
@@ -134,10 +112,10 @@ ROOT := $(shell pwd)
 
 # MAKE PROJECT
 
-.PHONY: all lint project
+.PHONY: all lint project build_all
 
 # Actually calls the make
-all: project lint
+all: build lint
 
 # Includes platform-specific configurations
 include $(PLATFORMS_DIR)/$(PLATFORM)/platform.mk
@@ -154,7 +132,7 @@ lint:
 	@find "$(LIB_DIR)/ms-common" -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
 
 # Builds the project
-project: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+build: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 
 build_all: $(VALID_PROJECTS:%=$(BIN_DIR)/%$(PLATFORM_EXT))
 
@@ -169,6 +147,11 @@ $(BIN_DIR)/%.bin: $(BIN_DIR)/%$(PLATFORM_EXT)
 # EXTRA
 
 # clean and remake rules, use reallyclean to clean everything
+
+.PHONY: clean reallyclean remake new
+
+new:
+	@python3 $(MAKE_DIR)/new_target.py $(NEW_TYPE) $(PROJECT)$(LIBRARY)
 
 clean:
 	@find ./ -name '*~' | xargs rm -f

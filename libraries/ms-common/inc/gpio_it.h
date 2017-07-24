@@ -1,5 +1,6 @@
 #pragma once
-
+// GPIO Interrupt Handlers
+// Requires GPIO and interrupts to be initialized.
 #include <stdint.h>
 
 #include "gpio.h"
