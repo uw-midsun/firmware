@@ -10,6 +10,7 @@
 #define LTC_DEVICES_IN_CHAIN                    1
 
 #define LTC_AFE_CELLS_IN_REG                    3
+#define LTC_AFE_GPIOS_IN_REG                    3
 #define LTC_CELLS_PER_DEVICE                    12
 
 typedef enum {

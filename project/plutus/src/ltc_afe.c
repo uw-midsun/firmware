@@ -155,7 +155,9 @@ StatusCode LtcAfe_init(const LtcAfeSettings *afe) {
   };
   spi_init(afe->spi_port, &spi_config);
 
-  uint8_t gpio_bits = LTC6804_GPIO1_PD_OFF | LTC6804_GPIO2_PD_ON | LTC6804_GPIO3_PD_ON | LTC6804_GPIO4_PD_ON | LTC6804_GPIO5_PD_ON;
+  uint8_t gpio_bits = LTC6804_GPIO1_PD_OFF | LTC6804_GPIO2_PD_ON
+                      | LTC6804_GPIO3_PD_ON | LTC6804_GPIO4_PD_ON
+                      | LTC6804_GPIO5_PD_ON;
   LtcAfe_write_config(afe, gpio_bits);
 
   return STATUS_CODE_OK;
@@ -185,7 +187,8 @@ StatusCode prv_read_voltage(LtcAfeSettings *afe, LtcAfeVoltageRegister reg, uint
 static void prv_trigger_adc_conversion(const LtcAfeSettings *afe) {
   uint8_t mode = (uint8_t)((afe->adc_mode + 1) % 3);
   // ADCV command
-  uint16_t adcv = LTC6804_ADCV_RESERVED | LTC6804_ADCV_DISCHARGE_PERMITTED | LTC6804_CNVT_CELL_ALL | (mode << 7);
+  uint16_t adcv = LTC6804_ADCV_RESERVED | LTC6804_ADCV_DISCHARGE_PERMITTED
+                  | LTC6804_CNVT_CELL_ALL | (mode << 7);
   uint8_t cmd[4] = { 0 };
 
   cmd[0] = (uint8_t)(adcv >> 8);
@@ -236,7 +239,8 @@ StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result_d
       for (uint16_t cell = 0; cell < LTC_AFE_CELLS_IN_REG; ++cell) {
         // LSB of the reading is 100 uV
         uint16_t voltage = (uint16_t)afe_data[data_counter] + (uint16_t)(afe_data[data_counter + 1] << 8);
-        result_data[afe_device * LTC_CELLS_PER_DEVICE + cell + (cell_reg * LTC_AFE_CELLS_IN_REG)] = voltage;
+        uint16_t index = afe_device * LTC_CELLS_PER_DEVICE + cell + (cell_reg * LTC_AFE_CELLS_IN_REG);
+        result_data[index] = voltage;
 
         data_counter += 2;
       }
@@ -263,17 +267,19 @@ StatusCode LtcAfe_read_all_aux(const LtcAfeSettings *afe, uint16_t *result_data)
 
     prv_trigger_aux_adc_conversion(afe);
 
-    uint8_t register_data[(6 + 2) * LTC_DEVICES_IN_CHAIN] = { 0 };
-    size_t len = (6 + 2) * LTC_DEVICES_IN_CHAIN;
+    uint8_t register_data[((LTC_AFE_GPIOS_IN_REG * 2) + 2) * LTC_DEVICES_IN_CHAIN] = { 0 };
+    size_t len = ((LTC_AFE_GPIOS_IN_REG * 2) + 2) * LTC_DEVICES_IN_CHAIN;
     prv_read_register(afe, LTC_AFE_REGISTER_AUX_A, register_data, len);
 
     for (uint16_t device = 0; device < LTC_DEVICES_IN_CHAIN; ++device) {
       // data comes in in the form { 1, 1, 2, 2, 3, 3, PEC, PEC }
       // we only care about GPIO1 and the PEC
-      uint16_t voltage = (uint16_t)(register_data[device * 6 + 1] << 8) + (uint16_t)register_data[device * 6];
+      uint16_t voltage = (uint16_t)(register_data[device * (LTC_AFE_GPIOS_IN_REG * 2) + 1] << 8)
+                          + (uint16_t)register_data[device * (LTC_AFE_GPIOS_IN_REG * 2)];
       result_data[device * LTC_CELLS_PER_DEVICE + cell] = voltage;
 
-      uint16_t received_pec = (register_data[device * 6 + 6] << 8) + register_data[device * 6 + 7];
+      uint16_t received_pec = (register_data[device * (LTC_AFE_GPIOS_IN_REG * 2) + 6] << 8)
+                              + register_data[device * (LTC_AFE_GPIOS_IN_REG * 2) + 7];
       uint16_t data_pec = crc15_calculate(register_data, 6);
       if (received_pec != data_pec) {
         result_status = STATUS_CODE_UNKNOWN;
