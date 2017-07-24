@@ -31,7 +31,6 @@ typedef enum {
   LTC_AFE_DISCHARGE_TIMEOUT_120_MIN
 } LtcDischargeTimeout;
 
-
 typedef enum {
   LTC_AFE_ADC_MODE_27KHZ = 0,
   LTC_AFE_ADC_MODE_7KHZ,
@@ -57,12 +56,19 @@ typedef struct LtcAfeSettings {
 StatusCode LtcAfe_init(const LtcAfeSettings *afe);
 
 // read all voltages
+// result should be an array of size LTC_CELLS_PER_DEVICE * LTC_DEVICES_IN_CHAIN
 StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result);
 
 // read all auxilary registers
-StatusCode LtcAfe_read_all_aux(const LtcAfeSettings *afe);
+// result should be an array of size LTC_CELLS_PER_DEVICE * LTC_DEVICES_IN_CHAIN
+StatusCode LtcAfe_read_all_aux(const LtcAfeSettings *afe, uint16_t *result);
 
-// discharge cells
+// mark cells for discharging (takes effect after config is re-written)
 StatusCode LtcAfe_toggle_discharge_cells(const LtcAfeSettings *afe, uint16_t cell, bool discharge);
 
+// read config registers
+// config should be an array of size 6 * LTC_DEVICES_IN_CHAIN
 StatusCode LtcAfe_read_config(const LtcAfeSettings *afe, uint8_t *config);
+
+// write config registers
+StatusCode LtcAfe_write_config(const LtcAfeSettings *afe, uint8_t gpio_pins);
