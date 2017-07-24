@@ -42,6 +42,68 @@ static StatusCode prv_read_register(const LtcAfeSettings *afe, LtcAfeRegister re
   return spi_exchange(afe->spi_port, cmd, 4, data, len);
 }
 
+static StatusCode prv_read_voltage(LtcAfeSettings *afe, LtcAfeVoltageRegister reg, uint8_t *data) {
+  if (reg > NUM_LTC_AFE_VOLTAGE_REGISTER) {
+    return STATUS_CODE_INVALID_ARGS;
+  }
+
+  // 6 bytes in register + 2 bytes for PEC
+  size_t len = ((LTC_AFE_CELLS_IN_REG * 2) + 2) * LTC_DEVICES_IN_CHAIN;
+
+  if (reg == LTC_AFE_VOLTAGE_REGISTER_A) {
+    return prv_read_register(afe, LTC_AFE_REGISTER_CELL_VOLTAGE_A, data, len);
+  }
+  if (reg == LTC_AFE_VOLTAGE_REGISTER_B) {
+    return prv_read_register(afe, LTC_AFE_REGISTER_CELL_VOLTAGE_B, data, len);
+  }
+  if (reg == LTC_AFE_VOLTAGE_REGISTER_C) {
+    return prv_read_register(afe, LTC_AFE_REGISTER_CELL_VOLTAGE_C, data, len);
+  }
+  return prv_read_register(afe, LTC_AFE_REGISTER_CELL_VOLTAGE_D, data, len);
+}
+
+// start cell voltage conversion
+static void prv_trigger_adc_conversion(const LtcAfeSettings *afe) {
+  uint8_t mode = (uint8_t)((afe->adc_mode + 1) % 3);
+  // ADCV command
+  uint16_t adcv = LTC6804_ADCV_RESERVED | LTC6804_ADCV_DISCHARGE_PERMITTED
+                  | LTC6804_CNVT_CELL_ALL | (mode << 7);
+  uint8_t cmd[4] = { 0 };
+
+  cmd[0] = (uint8_t)(adcv >> 8);
+  cmd[1] = (uint8_t)(adcv & 0xFF);
+
+  uint16_t cmd_pec = crc15_calculate(cmd, 2);
+  cmd[2] = (uint8_t)(cmd_pec >> 8);
+  cmd[3] = (uint8_t)(cmd_pec);
+
+  prv_wakeup_idle(afe);
+
+  spi_exchange(afe->spi_port, cmd, 4, NULL, 0);
+
+  // wait for conversions to finish
+  delay_ms(100);
+}
+
+static void prv_trigger_aux_adc_conversion(const LtcAfeSettings *afe) {
+  uint8_t mode = (uint8_t)((afe->adc_mode + 1) % 3);
+  // ADAX
+  uint16_t adax = LTC6804_ADAX_RESERVED | LTC6804_ADAX_GPIO1 | (mode << 7);
+  uint8_t cmd[4] = { 0 };
+  cmd[0] = (uint8_t)(adax >> 8);
+  cmd[1] = (uint8_t)(adax & 0xFF);
+
+  uint16_t cmd_pec = crc15_calculate(cmd, 2);
+
+  cmd[2] = (uint8_t)(cmd_pec >> 8);
+  cmd[3] = (uint8_t)(cmd_pec & 0xFF);
+
+  spi_exchange(afe->spi_port, cmd, 4, NULL, 0);
+
+  // wait for conversions to finish
+  delay_ms(10);
+}
+
 // write config to all devices
 StatusCode LtcAfe_write_config(const LtcAfeSettings *afe, uint8_t gpio_enable_pins) {
   // see p.54 in datasheet
@@ -161,68 +223,6 @@ StatusCode LtcAfe_init(const LtcAfeSettings *afe) {
   LtcAfe_write_config(afe, gpio_bits);
 
   return STATUS_CODE_OK;
-}
-
-StatusCode prv_read_voltage(LtcAfeSettings *afe, LtcAfeVoltageRegister reg, uint8_t *data) {
-  if (reg > NUM_LTC_AFE_VOLTAGE_REGISTER) {
-    return STATUS_CODE_INVALID_ARGS;
-  }
-
-  // 6 bytes in register + 2 bytes for PEC
-  size_t len = ((LTC_AFE_CELLS_IN_REG * 2) + 2) * LTC_DEVICES_IN_CHAIN;
-
-  if (reg == LTC_AFE_VOLTAGE_REGISTER_A) {
-    return prv_read_register(afe, LTC_AFE_REGISTER_CELL_VOLTAGE_A, data, len);
-  }
-  if (reg == LTC_AFE_VOLTAGE_REGISTER_B) {
-    return prv_read_register(afe, LTC_AFE_REGISTER_CELL_VOLTAGE_B, data, len);
-  }
-  if (reg == LTC_AFE_VOLTAGE_REGISTER_C) {
-    return prv_read_register(afe, LTC_AFE_REGISTER_CELL_VOLTAGE_C, data, len);
-  }
-  return prv_read_register(afe, LTC_AFE_REGISTER_CELL_VOLTAGE_D, data, len);
-}
-
-// start cell voltage conversion
-static void prv_trigger_adc_conversion(const LtcAfeSettings *afe) {
-  uint8_t mode = (uint8_t)((afe->adc_mode + 1) % 3);
-  // ADCV command
-  uint16_t adcv = LTC6804_ADCV_RESERVED | LTC6804_ADCV_DISCHARGE_PERMITTED
-                  | LTC6804_CNVT_CELL_ALL | (mode << 7);
-  uint8_t cmd[4] = { 0 };
-
-  cmd[0] = (uint8_t)(adcv >> 8);
-  cmd[1] = (uint8_t)(adcv & 0xFF);
-
-  uint16_t cmd_pec = crc15_calculate(cmd, 2);
-  cmd[2] = (uint8_t)(cmd_pec >> 8);
-  cmd[3] = (uint8_t)(cmd_pec);
-
-  prv_wakeup_idle(afe);
-
-  spi_exchange(afe->spi_port, cmd, 4, NULL, 0);
-
-  // wait for conversions to finish
-  delay_ms(100);
-}
-
-static void prv_trigger_aux_adc_conversion(const LtcAfeSettings *afe) {
-  uint8_t mode = (uint8_t)((afe->adc_mode + 1) % 3);
-  // ADAX
-  uint16_t adax = LTC6804_ADAX_RESERVED | LTC6804_ADAX_GPIO1 | (mode << 7);
-  uint8_t cmd[4] = { 0 };
-  cmd[0] = (uint8_t)(adax >> 8);
-  cmd[1] = (uint8_t)(adax & 0xFF);
-
-  uint16_t cmd_pec = crc15_calculate(cmd, 2);
-
-  cmd[2] = (uint8_t)(cmd_pec >> 8);
-  cmd[3] = (uint8_t)(cmd_pec & 0xFF);
-
-  spi_exchange(afe->spi_port, cmd, 4, NULL, 0);
-
-  // wait for conversions to finish
-  delay_ms(10);
 }
 
 StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result_data) {
