@@ -15,6 +15,7 @@
 #include "turn_signal_fsm.h"
 #include "hazard_light_fsm.h"
 #include "mechanical_brake_fsm.h"
+#include "can_fsm.h"
 
 // Struct of FSMs to be used in the program
 typedef struct FSMGroup {
@@ -24,6 +25,7 @@ typedef struct FSMGroup {
   FSM turn_signal;
   FSM hazard_light;
   FSM mechanical_brake;
+  FSM can;
 } FSMGroup;
 
 int main() {
@@ -52,19 +54,11 @@ int main() {
   turn_signal_fsm_init(&fsm_group.turn_signal);
   hazard_light_fsm_init(&fsm_group.hazard_light);
   mechanical_brake_fsm_init(&fsm_group.mechanical_brake);
+  can_fsm_init(&fsm_group.can);
 
   for (;;) {
     if (status_ok(event_process(&e))) {
-      if (event_arbiter_process_event(&e)) {
-        printf("Event = %d   :   %s   :   %s   :   %s   :   %s   :   %s   :   %s\n",
-            e.id,
-            fsm_group.power.current_state->name,
-            fsm_group.pedal.current_state->name,
-            fsm_group.direction.current_state->name,
-            fsm_group.turn_signal.current_state->name,
-            fsm_group.hazard_light.current_state->name,
-            fsm_group.mechanical_brake.current_state->name);
-      }
+      event_arbiter_process_event(&e);
     }
   }
 }
