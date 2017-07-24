@@ -27,7 +27,7 @@ static void prv_wakeup_idle(const LtcAfeSettings *afe) {
 static StatusCode prv_read_register(const LtcAfeSettings *afe,
                                     LtcAfeRegister reg, uint8_t *data, size_t len) {
   if (reg > NUM_LTC_AFE_REGISTER) {
-    return STATUS_CODE_INVALID_ARGS;
+    return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
   uint16_t reg_cmd = s_read_reg_cmd[reg];
@@ -45,7 +45,7 @@ static StatusCode prv_read_register(const LtcAfeSettings *afe,
 
 static StatusCode prv_read_voltage(LtcAfeSettings *afe, LtcAfeVoltageRegister reg, uint8_t *data) {
   if (reg > NUM_LTC_AFE_VOLTAGE_REGISTER) {
-    return STATUS_CODE_INVALID_ARGS;
+    return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
   // 6 bytes in register + 2 bytes for PEC
@@ -103,6 +103,27 @@ static void prv_trigger_aux_adc_conversion(const LtcAfeSettings *afe) {
 
   // wait for conversions to finish
   delay_ms(10);
+}
+
+StatusCode LtcAfe_init(const LtcAfeSettings *afe) {
+  crc15_init_table();
+
+  SPISettings spi_config = {
+    .baudrate = 250000,
+    .mode = SPI_MODE_3,
+    .mosi = afe->mosi,
+    .miso = afe->miso,
+    .sclk = afe->sclk,
+    .cs = afe->cs
+  };
+  spi_init(afe->spi_port, &spi_config);
+
+  uint8_t gpio_bits = LTC6804_GPIO1_PD_OFF | LTC6804_GPIO2_PD_ON
+                      | LTC6804_GPIO3_PD_ON | LTC6804_GPIO4_PD_ON
+                      | LTC6804_GPIO5_PD_ON;
+  LtcAfe_write_config(afe, gpio_bits);
+
+  return STATUS_CODE_OK;
 }
 
 // write config to all devices
@@ -201,32 +222,11 @@ StatusCode LtcAfe_read_config(const LtcAfeSettings *afe, uint8_t *configuration_
                              + received_data[device * (6 + 2) + 7];
     uint16_t calculated_pec = crc15_calculate(received_data + (device * (6 + 2)), 6);
     if (calculated_pec != received_pec) {
-      status = STATUS_CODE_UNKNOWN;
+      status = status_code(STATUS_CODE_UNKNOWN);
     }
   }
 
   return status;
-}
-
-StatusCode LtcAfe_init(const LtcAfeSettings *afe) {
-  crc15_init_table();
-
-  SPISettings spi_config = {
-    .baudrate = 250000,
-    .mode = SPI_MODE_3,
-    .mosi = afe->mosi,
-    .miso = afe->miso,
-    .sclk = afe->sclk,
-    .cs = afe->cs
-  };
-  spi_init(afe->spi_port, &spi_config);
-
-  uint8_t gpio_bits = LTC6804_GPIO1_PD_OFF | LTC6804_GPIO2_PD_ON
-                      | LTC6804_GPIO3_PD_ON | LTC6804_GPIO4_PD_ON
-                      | LTC6804_GPIO5_PD_ON;
-  LtcAfe_write_config(afe, gpio_bits);
-
-  return STATUS_CODE_OK;
 }
 
 StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result_data) {
@@ -255,7 +255,7 @@ StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result_d
       uint16_t received_pec = (afe_data[data_counter] << 8) + afe_data[data_counter + 1];
       uint16_t data_pec = crc15_calculate(&afe_data[device * 8], 6);
       if (received_pec != data_pec) {
-        result_status = STATUS_CODE_UNKNOWN;
+        result_status = status_code(STATUS_CODE_UNKNOWN);
       }
       data_counter += 2;
     }
@@ -288,7 +288,7 @@ StatusCode LtcAfe_read_all_aux(const LtcAfeSettings *afe, uint16_t *result_data)
                               + register_data[device * (LTC_AFE_GPIOS_IN_REG * 2) + 7];
       uint16_t data_pec = crc15_calculate(register_data, 6);
       if (received_pec != data_pec) {
-        result_status = STATUS_CODE_UNKNOWN;
+        result_status = status_code(STATUS_CODE_UNKNOWN);
       }
     }
   }
@@ -298,7 +298,7 @@ StatusCode LtcAfe_read_all_aux(const LtcAfeSettings *afe, uint16_t *result_data)
 
 StatusCode LtcAfe_toggle_discharge_cells(const LtcAfeSettings *afe, uint16_t cell, bool discharge) {
   if (cell < LTC_CELLS_PER_DEVICE * LTC_DEVICES_IN_CHAIN) {
-    return STATUS_CODE_INVALID_ARGS;
+    return status_code(STATUS_CODE_INVALID_ARGS);
   }
   s_discharging_cells[cell] = discharge;
 
