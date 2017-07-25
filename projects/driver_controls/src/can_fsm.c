@@ -26,9 +26,10 @@ static StatusCode prv_transmit_data(FSM *fsm, const Event *e, void *context) {
 StatusCode can_fsm_init(FSM *fsm) {
   fsm_state_init(state_can_transmit, prv_transmit_data);
 
-  fsm_init(fsm, "can_fsm", &state_can_transmit, event_arbiter_add_fsm(fsm, NULL));
+  void *context = event_arbiter_add_fsm(fsm, NULL);
+  fsm_init(fsm, "can_fsm", &state_can_transmit, context);
 
-  if (fsm->context == NULL) {
+  if (context == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
