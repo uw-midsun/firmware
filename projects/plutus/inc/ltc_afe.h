@@ -7,7 +7,7 @@
 #include "status.h"
 
 // number of devices in daisy chain (including master)
-#define LTC_DEVICES_IN_CHAIN                    1
+#define LTC_AFE_DEVICES_IN_CHAIN                1
 
 #define LTC_AFE_CELLS_IN_REG                    3
 #define LTC_AFE_GPIOS_IN_REG                    3
@@ -30,7 +30,7 @@ typedef enum {
   LTC_AFE_DISCHARGE_TIMEOUT_75_MIN,
   LTC_AFE_DISCHARGE_TIMEOUT_90_MIN,
   LTC_AFE_DISCHARGE_TIMEOUT_120_MIN
-} LtcDischargeTimeout;
+} LTCAFEDischargeTimeout;
 
 typedef enum {
   LTC_AFE_ADC_MODE_27KHZ = 0,
@@ -39,10 +39,10 @@ typedef enum {
   LTC_AFE_ADC_MODE_14KHZ,
   LTC_AFE_ADC_MODE_3KHZ,
   LTC_AFE_ADC_MODE_2KHZ,
-  LTC_AFE_ADC_MODE_NUM
-} LtcAfeAdcMode;
+  NUM_LTC_AFE_ADC_MODE
+} LTCAFEADCMode;
 
-typedef struct LtcAfeSettings {
+typedef struct LTCAFESettings {
   GPIOAddress cs;
   GPIOAddress mosi;
   GPIOAddress miso;
@@ -50,26 +50,26 @@ typedef struct LtcAfeSettings {
 
   const SPIPort spi_port;
 
-  LtcAfeAdcMode adc_mode;
-} LtcAfeSettings;
+  LTCAFEADCMode adc_mode;
+} LTCAFESettings;
 
 // initialize the LTC6804
-StatusCode LtcAfe_init(const LtcAfeSettings *afe);
+StatusCode ltc_afe_init(const LTCAFESettings *afe);
 
 // read all voltages
-// result should be an array of size LTC_CELLS_PER_DEVICE * LTC_DEVICES_IN_CHAIN
-StatusCode LtcAfe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result);
+// result should be an array of size LTC_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
+StatusCode ltc_afe_read_all_voltage(const LTCAFESettings *afe, uint16_t *result);
 
 // read all auxilary registers
-// result should be an array of size LTC_CELLS_PER_DEVICE * LTC_DEVICES_IN_CHAIN
-StatusCode LtcAfe_read_all_aux(const LtcAfeSettings *afe, uint16_t *result);
+// result should be an array of size LTC_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
+StatusCode ltc_afe_read_all_aux(const LTCAFESettings *afe, uint16_t *result);
 
 // mark cells for discharging (takes effect after config is re-written)
-StatusCode LtcAfe_toggle_discharge_cells(const LtcAfeSettings *afe, uint16_t cell, bool discharge);
+StatusCode ltc_afe_toggle_discharge_cells(const LTCAFESettings *afe, uint16_t cell, bool discharge);
 
 // read config registers
-// config should be an array of size 6 * LTC_DEVICES_IN_CHAIN
-StatusCode LtcAfe_read_config(const LtcAfeSettings *afe, uint8_t *config);
+// config should be an array of size 6 * LTC_AFE_DEVICES_IN_CHAIN
+StatusCode ltc_afe_read_config(const LTCAFESettings *afe, uint8_t *config);
 
 // write config registers
-StatusCode LtcAfe_write_config(const LtcAfeSettings *afe, uint8_t gpio_enable_pins);
+StatusCode ltc_afe_write_config(const LTCAFESettings *afe, uint8_t gpio_enable_pins);

@@ -8,7 +8,7 @@ int main(void) {
   interrupt_init();
   soft_timer_init();
 
-  LtcAfeSettings afe_settings = {
+  LTCAFESettings afe_settings = {
     .mosi = { GPIO_PORT_A, 7 },
     .miso = { GPIO_PORT_A, 6 },
     .sclk = { GPIO_PORT_A, 5 },
@@ -18,11 +18,11 @@ int main(void) {
     .adc_mode = LTC_AFE_ADC_MODE_27KHZ
   };
 
-  LtcAfe_init(&afe_settings);
+  ltc_afe_init(&afe_settings);
 
   while (true) {
-    uint8_t received_data[(6 + 2) * LTC_DEVICES_IN_CHAIN] = { 0 };
-    StatusCode status = LtcAfe_read_config(&afe_settings, received_data);
+    uint8_t received_data[(6 + 2) * LTC_AFE_DEVICES_IN_CHAIN] = { 0 };
+    StatusCode status = ltc_afe_read_config(&afe_settings, received_data);
     if (status != STATUS_CODE_OK) {
       LOG_DEBUG("Invalid status\n");
     }

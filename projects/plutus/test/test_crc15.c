@@ -108,14 +108,14 @@ void test_crc15_calculate_rdcomm_slave_result() {
 
 void test_crc15_calculate_readcfg() {
   uint8_t data[] = { 0x00, 0x02 };
-  uint16_t pec = 0x2b0a;
+  uint16_t pec = 0x2B0A;
 
   TEST_ASSERT_EQUAL(pec, crc15_calculate(data, SIZEOF_ARRAY(data)));
 }
 
 void test_crc15_calculate_wrcfg() {
   uint8_t data[] = { 0x00, 0x01 };
-  uint16_t pec = 0x3d6e;
+  uint16_t pec = 0x3D6E;
 
   TEST_ASSERT_EQUAL(pec, crc15_calculate(data, SIZEOF_ARRAY(data)));
 }

@@ -12,7 +12,7 @@ typedef enum {
   LTC_AFE_REGISTER_STATUS_B,
   LTC_AFE_REGISTER_COMM,
   NUM_LTC_AFE_REGISTER
-} LtcAfeRegister;
+} LTCAFERegister;
 
 typedef enum {
   LTC_AFE_VOLTAGE_REGISTER_A,
@@ -20,7 +20,7 @@ typedef enum {
   LTC_AFE_VOLTAGE_REGISTER_C,
   LTC_AFE_VOLTAGE_REGISTER_D,
   NUM_LTC_AFE_VOLTAGE_REGISTER
-} LtcAfeVoltageRegister;
+} LTCAFEVoltageRegister;
 
 // command codes
 // see Table 34 (p.49)
