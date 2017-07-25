@@ -1,6 +1,7 @@
 #pragma once
 
 #define DRIVER_IO_GET_PIN(address) ((GPIOAddress)address.pin)
+#define DRIVER_IO_NUM_ADDRESSES 9
 
 // Digital address definitions
 
@@ -13,8 +14,6 @@
 #define DRIVER_IO_TURN_SIGNAL_RIGHT         { GPIO_PORT_C, 7 }
 #define DRIVER_IO_TURN_SIGNAL_LEFT          { GPIO_PORT_C, 8 }
 #define DRIVER_IO_HAZARD_LIGHT              { GPIO_PORT_C, 9 }
-
-#define DRIVER_IO_NUM_ADDRESSES             9
 
 // Analog address definitions
 
