@@ -47,6 +47,18 @@ static void prv_toggle_mech_brake(bool new_state) {
 }
 
 void setup_test() {
+  event_arbiter_init();
+
+  power_fsm_init(&s_fsm_group.power);
+  pedal_fsm_init(&s_fsm_group.pedal);
+  direction_fsm_init(&s_fsm_group.direction);
+  turn_signal_fsm_init(&s_fsm_group.turn_signal);
+  hazard_light_fsm_init(&s_fsm_group.hazard_light);
+  mechanical_brake_fsm_init(&s_fsm_group.mechanical_brake);
+
+  powered = false;
+  mech_brake = false;
+
   event_queue_init();
 }
 
@@ -69,13 +81,6 @@ void teardown_test(void) {
 }
 
 void test_driver_fsm_setup() {
-  TEST_ASSERT_OK(power_fsm_init(&s_fsm_group.power));
-  TEST_ASSERT_OK(pedal_fsm_init(&s_fsm_group.pedal));
-  TEST_ASSERT_OK(direction_fsm_init(&s_fsm_group.direction));
-  TEST_ASSERT_OK(turn_signal_fsm_init(&s_fsm_group.turn_signal));
-  TEST_ASSERT_OK(hazard_light_fsm_init(&s_fsm_group.hazard_light));
-  TEST_ASSERT_OK(mechanical_brake_fsm_init(&s_fsm_group.mechanical_brake));
-
   TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
   TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
   TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
