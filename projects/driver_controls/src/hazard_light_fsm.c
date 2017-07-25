@@ -36,9 +36,11 @@ StatusCode hazard_light_fsm_init(FSM *fsm) {
   fsm_state_init(state_hazard_on, prv_state_output);
   fsm_state_init(state_hazard_off, prv_state_output);
 
-  fsm_init(fsm, "hazard_light_fsm", &state_hazard_off, event_arbiter_add_fsm(fsm, NULL));
+  void *context = event_arbiter_add_fsm(fsm, NULL);
 
-  if (fsm->context == NULL) {
+  fsm_init(fsm, "hazard_light_fsm", &state_hazard_off, context);
+
+  if (context == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
