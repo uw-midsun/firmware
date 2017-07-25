@@ -37,8 +37,14 @@ static void prv_state_output(FSM* fsm, const Event* e, void *context) {
   // 0 = state_no_signal
   // 1 = state_left_signal
   // 2 = state_right_signal
-  data->components.state = (fsm->current_state == &state_left_signal) |
-                          ((fsm->current_state == &state_right_signal) << 1);
+
+  if (current_state == &state_no_signal) {
+    data->components.state = TURN_SIGNAL_FSM_STATE_NO_SIGNAL;
+  } else if (current_state == &state_left_signal) {
+    data->components.state = TURN_SIGNAL_FSM_STATE_LEFT_SIGNAL;
+  } else if (current_state == &state_right_signal) {
+    data->components.state = TURN_SIGNAL_FSM_STATE_RIGHT_SIGNAL;
+  }
 
   event_raise(INPUT_EVENT_CAN_ID_TURN_SIGNAL, e->data);
 }

@@ -34,7 +34,7 @@ static void prv_state_off(FSM *fsm, const Event *e, void *context) {
   *event_check = prv_check_off;
 
   InputEventData *data = &e->data;
-  data->components.state = 0;
+  data->components.state = POWER_FSM_STATE_OFF;
 
   event_raise(INPUT_EVENT_CAN_ID_POWER, e->data);
 }
@@ -44,7 +44,7 @@ static void prv_state_on(FSM *fsm, const Event *e, void *context) {
   *event_check = NULL;
 
   InputEventData *data = &e->data;
-  data->components.state = 1;
+  data->components.state = POWER_FSM_STATE_ON;
 
   event_raise(INPUT_EVENT_CAN_ID_POWER, e->data);
 }

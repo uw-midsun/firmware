@@ -68,13 +68,13 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   State *current_state = fsm->current_state;
 
   if (current_state == &state_brake) {
-    data->components.state = 0;
+    data->components.state = PEDAL_FSM_STATE_BRAKE;
   } else if (current_state == &state_coast) {
-    data->components.state = 1;
+    data->components.state = PEDAL_FSM_STATE_COAST;
   } else if (current_state == &state_driving) {
-    data->components.state = 2;
+    data->components.state = PEDAL_FSM_STATE_DRIVING;
   } else if (current_state == &state_cruise_control) {
-    data->components.state = 3;
+    data->components.state = PEDAL_FSM_STATE_CRUISE_CONTROL;
   }
 
   event_raise(INPUT_EVENT_CAN_ID_PEDAL, e->data);

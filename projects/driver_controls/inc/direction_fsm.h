@@ -7,4 +7,10 @@
 
 #include "fsm.h"
 
+typedef enum {
+  DIRECTION_FSM_STATE_NEUTRAL,
+  DIRECTION_FSM_STATE_FORWARD,
+  DIRECTION_FSM_STATE_REVERSE
+} DirectionFSMState;
+
 StatusCode direction_fsm_init(FSM *fsm);

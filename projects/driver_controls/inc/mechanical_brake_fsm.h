@@ -9,4 +9,9 @@
 
 #include "fsm.h"
 
+typedef enum {
+  MECHANICAL_BRAKE_FSM_STATE_ENGAGED,
+  MECHANICAL_BRAKE_FSM_STATE_DISENGAGED
+} MechanicalBrakeFSMState;
+
 StatusCode mechanical_brake_fsm_init(FSM *fsm);
