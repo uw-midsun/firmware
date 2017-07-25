@@ -49,6 +49,18 @@ static void prv_toggle_mech_brake(bool new_state) {
 }
 
 void setup_test() {
+  event_arbiter_init();
+
+  power_fsm_init(&s_fsm_group.power);
+  pedal_fsm_init(&s_fsm_group.pedal);
+  direction_fsm_init(&s_fsm_group.direction);
+  turn_signal_fsm_init(&s_fsm_group.turn_signal);
+  hazard_light_fsm_init(&s_fsm_group.hazard_light);
+  mechanical_brake_fsm_init(&s_fsm_group.mechanical_brake);
+
+  powered = false;
+  mech_brake = false;
+
   event_queue_init();
 }
 
@@ -64,31 +76,10 @@ void teardown_test(void) {
   event_arbiter_process_event(&e);
 
   prv_toggle_mech_brake(false);
-
-  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_disengaged", s_fsm_group.mechanical_brake.current_state->name);
-}
-
-// Set up the FSMs
-void test_driver_fsm_setup() {
-  TEST_ASSERT_OK(power_fsm_init(&s_fsm_group.power));
-  TEST_ASSERT_OK(pedal_fsm_init(&s_fsm_group.pedal));
-  TEST_ASSERT_OK(direction_fsm_init(&s_fsm_group.direction));
-  TEST_ASSERT_OK(turn_signal_fsm_init(&s_fsm_group.turn_signal));
-  TEST_ASSERT_OK(hazard_light_fsm_init(&s_fsm_group.hazard_light));
-  TEST_ASSERT_OK(mechanical_brake_fsm_init(&s_fsm_group.mechanical_brake));
-
-  TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_no_signal", s_fsm_group.turn_signal.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_hazard_off", s_fsm_group.hazard_light.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_disengaged", s_fsm_group.mechanical_brake.current_state->name);
 }
 
 // Test that the power fsm correctly generates CAN events
-void test_driver_fsm_can_power() {
+void test_can_fsm_power() {
   Event e;
 
   InputEventData *data = &e.data;
@@ -106,7 +97,7 @@ void test_driver_fsm_can_power() {
   TEST_ASSERT_EQUAL(POWER_FSM_STATE_OFF, data->components.state);
 }
 
-void test_driver_fsm_can_mechanical_brake() {
+void test_can_fsm_mechanical_brake() {
   Event e;
   InputEventData *data = &e.data;
 
@@ -127,7 +118,7 @@ void test_driver_fsm_can_mechanical_brake() {
   TEST_ASSERT_EQUAL(0, data->components.data);
 }
 
-void test_driver_fsm_can_hazard_light() {
+void test_can_fsm_hazard_light() {
   Event e;
   InputEventData *data = &e.data;
 
@@ -152,7 +143,7 @@ void test_driver_fsm_can_hazard_light() {
   TEST_ASSERT_EQUAL(HAZARD_LIGHT_FSM_STATE_OFF, data->components.state);
 }
 
-void test_driver_fsm_can_turn_signal() {
+void test_can_fsm_turn_signal() {
   Event e;
   InputEventData *data = &e.data;
 
@@ -186,7 +177,7 @@ void test_driver_fsm_can_turn_signal() {
 }
 
 
-void test_driver_fsm_can_direction() {
+void test_can_fsm_direction() {
   Event e;
   InputEventData *data = &e.data;
 
@@ -222,7 +213,7 @@ void test_driver_fsm_can_direction() {
   TEST_ASSERT_EQUAL(DIRECTION_FSM_STATE_NEUTRAL, data->components.state);
 }
 
-void test_driver_fsm_can_pedal() {
+void test_can_fsm_pedal() {
   Event e = { .data = 0xdef };
   InputEventData *data = &e.data;
 
