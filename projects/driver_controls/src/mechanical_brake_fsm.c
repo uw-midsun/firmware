@@ -23,6 +23,7 @@ FSM_STATE_TRANSITION(state_disengaged) {
 // Mechanical Brake FSM arbiter functions
 
 static bool prv_check_mechanical_brake_engaged(const Event *e) {
+  // While the brakes are engaged, the car should not accept any commands to move
   switch (e->id) {
     case INPUT_EVENT_PEDAL_COAST:
     case INPUT_EVENT_PEDAL_PRESSED:
@@ -36,6 +37,7 @@ static bool prv_check_mechanical_brake_engaged(const Event *e) {
 }
 
 static bool prv_check_mechanical_brake_disengaged(const Event *e) {
+  // The brake must be engaged in order for gear shifts to happen.
   switch (e->id) {
     case INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL:
     case INPUT_EVENT_DIRECTION_SELECTOR_DRIVE:

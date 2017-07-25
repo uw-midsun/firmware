@@ -29,14 +29,18 @@ FSM_STATE_TRANSITION(state_reverse) {
 // Direction selector FSM arbiter functions
 
 static bool prv_check_neutral(const Event *e) {
+  // The car must not be able to move while in the neutral state
   return !(e->id == INPUT_EVENT_PEDAL_COAST || e->id == INPUT_EVENT_PEDAL_PRESSED);
 }
 
 static bool prv_check_forward(const Event *e) {
+  // Powering off while the car is moving can be dangerous. As a result, powering off is
+  // forbidden while in forward gear
   return (e->id != INPUT_EVENT_POWER);
 }
 
 static bool prv_check_reverse(const Event *e) {
+  // Same as forward, except that cruise control is forbidden in reverse for obvious reasons
   return !(e->id == INPUT_EVENT_POWER || e->id == INPUT_EVENT_CRUISE_CONTROL);
 }
 

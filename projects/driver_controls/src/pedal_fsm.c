@@ -62,7 +62,6 @@ FSM_STATE_TRANSITION(state_cruise_control) {
 }
 
 // Pedal FSM output functions
-// TODO: NULL may not need to be assigned every time the function is called
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   InputEventData *data = &e->data;
 
