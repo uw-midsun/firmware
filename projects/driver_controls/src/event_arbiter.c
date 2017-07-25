@@ -10,18 +10,11 @@ static EventArbiterCheck s_event_checks[EVENT_ARBITER_MAX_FSMS];
 static uint8_t s_num_active_fsms = 0;
 
 static bool prv_event_permitted(Event *e) {
-  bool permitted;
-
   for (uint8_t i = 0; i < s_num_active_fsms; i++) {
-    if (s_event_checks[i] == NULL) {
-      permitted = true;
-    } else {
-      permitted = s_event_checks[i](e);
-    }
-
-    if (!permitted) {
+    if (s_event_checks[i] != NULL && !s_event_checks[i](e)) {
       return false;
     }
+
   }
   return true;
 }
