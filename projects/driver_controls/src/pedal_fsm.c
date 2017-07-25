@@ -87,9 +87,7 @@ StatusCode pedal_fsm_init(FSM *fsm) {
   fsm_state_init(state_driving, prv_state_output);
   fsm_state_init(state_cruise_control, prv_state_output);
 
-  fsm_init(fsm, "pedal_fsm", &state_brake, NULL);
-
-  fsm->context = event_arbiter_add_fsm(fsm, NULL);
+  fsm_init(fsm, "pedal_fsm", &state_brake, event_arbiter_add_fsm(fsm, NULL));
 
   if (fsm->context == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);

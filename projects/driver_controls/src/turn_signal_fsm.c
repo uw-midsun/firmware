@@ -48,9 +48,7 @@ StatusCode turn_signal_fsm_init(FSM* fsm) {
   fsm_state_init(state_left_signal, prv_state_output);
   fsm_state_init(state_right_signal, prv_state_output);
 
-  fsm_init(fsm, "turn_signal_fsm", &state_no_signal, NULL);
-
-  fsm->context = event_arbiter_add_fsm(fsm, NULL);
+  fsm_init(fsm, "turn_signal_fsm", &state_no_signal, event_arbiter_add_fsm(fsm, NULL));
 
   if (fsm->context == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
