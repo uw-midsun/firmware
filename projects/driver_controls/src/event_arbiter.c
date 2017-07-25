@@ -13,7 +13,11 @@ static bool prv_event_permitted(Event *e) {
   bool permitted;
 
   for (uint8_t i = 0; i < s_num_active_fsms; i++) {
-    permitted = s_event_checks[i](e);
+    if (s_event_checks[i] == NULL) {
+      permitted = true;
+    } else {
+      permitted = s_event_checks[i](e);
+    }
 
     if (!permitted) {
       return false;

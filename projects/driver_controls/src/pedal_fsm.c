@@ -61,18 +61,9 @@ FSM_STATE_TRANSITION(state_cruise_control) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_brake);
 }
 
-// Pedal FSM arbiter function
-
-static bool prv_check_pedal(const Event *e) {
-  return true;
-}
-
 // Pedal FSM output functions
-
+// TODO: NULL may not need to be assigned every time the function is called
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  EventArbiterCheck *event_check = fsm->context;
-  *event_check = prv_check_pedal;
-
   InputEventData *data = &e->data;
 
   State *current_state = fsm->current_state;
@@ -98,7 +89,7 @@ StatusCode pedal_fsm_init(FSM *fsm) {
 
   fsm_init(fsm, "pedal_fsm", &state_brake, NULL);
 
-  fsm->context = event_arbiter_add_fsm(fsm, prv_check_pedal);
+  fsm->context = event_arbiter_add_fsm(fsm, NULL);
 
   if (fsm->context == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);

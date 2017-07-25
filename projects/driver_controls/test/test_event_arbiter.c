@@ -35,10 +35,6 @@ FSM_STATE_TRANSITION(state_d) {
 static FSM s_fsm_a;
 static FSM s_fsm_b;
 
-static bool prv_no_check(const Event *e) {
-  return true;
-}
-
 static bool prv_check_state_c(const Event *e) {
   return (e->id != TEST_EVENT_ARBITER_EVENT_B);
 }
@@ -50,14 +46,14 @@ static void prv_state_c(FSM *fsm, const Event *e, void *context) {
 
 static void prv_state_d(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
-  *event_check = prv_no_check;
+  *event_check = NULL;
 }
 
 void setup_test() {
   fsm_state_init(state_c, prv_state_c);
   fsm_state_init(state_d, prv_state_d);
 
-  fsm_init(&s_fsm_a, "test_fsm_a", &state_a, prv_no_check);
+  fsm_init(&s_fsm_a, "test_fsm_a", &state_a, NULL);
   fsm_init(&s_fsm_b, "test_fsm_b", &state_c, prv_check_state_c);
 
   event_arbiter_init();
@@ -67,17 +63,18 @@ void teardown_test() {}
 
 void test_event_arbiter_add() {
   for (uint8_t i = 0; i < EVENT_ARBITER_MAX_FSMS; i++) {
-    TEST_ASSERT_NOT_EQUAL(NULL, event_arbiter_add_fsm(&s_fsm_a, prv_no_check));
+    TEST_ASSERT_NOT_EQUAL(NULL, event_arbiter_add_fsm(&s_fsm_a, NULL));
   }
-  TEST_ASSERT_EQUAL(NULL, event_arbiter_add_fsm(&s_fsm_a, prv_no_check));
+  TEST_ASSERT_EQUAL(NULL, event_arbiter_add_fsm(&s_fsm_a, NULL));
 }
 
 void test_event_arbiter_process() {
   Event e;
 
-  s_fsm_a.context = event_arbiter_add_fsm(&s_fsm_a, prv_no_check);
+  s_fsm_a.context = event_arbiter_add_fsm(&s_fsm_a, NULL);
   s_fsm_b.context = event_arbiter_add_fsm(&s_fsm_b, prv_check_state_c);
 
+  // Test that the context pointers point to the stored arbiter functions
   TEST_ASSERT_NOT_EQUAL(NULL, s_fsm_a.context);
   TEST_ASSERT_NOT_EQUAL(NULL, s_fsm_b.context);
 

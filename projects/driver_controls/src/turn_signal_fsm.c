@@ -28,18 +28,9 @@ FSM_STATE_TRANSITION(state_right_signal) {
   FSM_ADD_TRANSITION(INPUT_EVENT_TURN_SIGNAL_NONE, state_no_signal);
 }
 
-// Turn signal FSM arbiter function
-
-static bool prv_check_turn_signal(const Event *e) {
-  return true;
-}
-
 // Turn signal FSM output function
 
 static void prv_state_output(FSM* fsm, const Event* e, void *context) {
-  EventArbiterCheck *event_check = fsm->context;
-  *event_check = prv_check_turn_signal;
-
   InputEventData *data = &e->data;
 
   // Use bitwise operation to determine state
@@ -59,7 +50,7 @@ StatusCode turn_signal_fsm_init(FSM* fsm) {
 
   fsm_init(fsm, "turn_signal_fsm", &state_no_signal, NULL);
 
-  fsm->context = event_arbiter_add_fsm(fsm, prv_check_turn_signal);
+  fsm->context = event_arbiter_add_fsm(fsm, NULL);
 
   if (fsm->context == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);

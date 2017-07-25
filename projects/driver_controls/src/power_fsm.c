@@ -19,15 +19,10 @@ FSM_STATE_TRANSITION(state_on) {
 }
 
 // Power FSM arbiter functions
-
 static bool prv_check_off(const Event *e) {
   return (e->id == INPUT_EVENT_POWER ||
           e->id == INPUT_EVENT_MECHANICAL_BRAKE_RELEASED ||
           e->id == INPUT_EVENT_MECHANICAL_BRAKE_PRESSED);
-}
-
-static bool prv_check_on(const Event *e) {
-  return true;
 }
 
 // Power FSM output functions
@@ -44,7 +39,7 @@ static void prv_state_off(FSM *fsm, const Event *e, void *context) {
 
 static void prv_state_on(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
-  *event_check = prv_check_on;
+  *event_check = NULL;
 
   InputEventData *data = &e->data;
   data->components.state = 1;
