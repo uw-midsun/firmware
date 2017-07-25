@@ -27,11 +27,12 @@ StatusCode can_fsm_init(FSM *fsm) {
   fsm_state_init(state_can_transmit, prv_transmit_data);
 
   void *context = event_arbiter_add_fsm(fsm, NULL);
-  fsm_init(fsm, "can_fsm", &state_can_transmit, context);
 
   if (context == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
+
+  fsm_init(fsm, "can_fsm", &state_can_transmit, context);
 
   return STATUS_CODE_OK;
 }

@@ -82,11 +82,12 @@ StatusCode direction_fsm_init(FSM *fsm) {
   fsm_state_init(state_reverse, prv_state_reverse);
 
   void *context = event_arbiter_add_fsm(fsm, prv_check_neutral);
-  fsm_init(fsm, "direction_fsm", &state_neutral, context);
 
   if (context == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
+
+  fsm_init(fsm, "direction_fsm", &state_neutral, context);
 
   return STATUS_CODE_OK;
 }

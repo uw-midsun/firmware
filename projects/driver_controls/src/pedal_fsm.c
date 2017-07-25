@@ -88,11 +88,11 @@ StatusCode pedal_fsm_init(FSM *fsm) {
 
   void *context = event_arbiter_add_fsm(fsm, NULL);
 
-  fsm_init(fsm, "pedal_fsm", &state_brake, context);
-
   if (context == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
+
+  fsm_init(fsm, "pedal_fsm", &state_brake, context);
 
   return STATUS_CODE_OK;
 }
