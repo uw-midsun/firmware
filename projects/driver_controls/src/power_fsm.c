@@ -33,18 +33,21 @@ static void prv_state_off(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_off;
 
-  InputEventData *data = &e->data;
-  data->components.state = POWER_FSM_STATE_OFF;
-  event_raise(INPUT_EVENT_CAN_ID_POWER, e->data);
+  InputEventData data;
+  data.raw = e->data;
+
+  data.components.state = POWER_FSM_STATE_OFF;
+  event_raise(INPUT_EVENT_CAN_ID_POWER, data.raw);
 }
 
 static void prv_state_on(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = NULL;
 
-  InputEventData *data = &e->data;
-  data->components.state = POWER_FSM_STATE_ON;
-  event_raise(INPUT_EVENT_CAN_ID_POWER, e->data);
+  InputEventData data;
+  data.raw = e->data;
+  data.components.state = POWER_FSM_STATE_ON;
+  event_raise(INPUT_EVENT_CAN_ID_POWER, data.raw);
 }
 
 StatusCode power_fsm_init(FSM *fsm) {
@@ -52,7 +55,7 @@ StatusCode power_fsm_init(FSM *fsm) {
   fsm_state_init(state_on, prv_state_on);
 
   void *context = event_arbiter_add_fsm(fsm, prv_check_off);
-  
+
   if (context == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
