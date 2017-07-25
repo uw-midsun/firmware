@@ -33,10 +33,7 @@ FSM_STATE_TRANSITION(state_right_signal) {
 static void prv_state_output(FSM* fsm, const Event* e, void *context) {
   InputEventData *data = &e->data;
 
-  // Use bitwise operation to determine state
-  // 0 = state_no_signal
-  // 1 = state_left_signal
-  // 2 = state_right_signal
+  State *current_state = fsm->current_state;
 
   if (current_state == &state_no_signal) {
     data->components.state = TURN_SIGNAL_FSM_STATE_NO_SIGNAL;

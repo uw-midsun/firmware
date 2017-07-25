@@ -23,9 +23,11 @@ FSM_STATE_TRANSITION(state_hazard_off) {
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   InputEventData *data = &e->data;
 
-  data->components.state = (fsm->current_state == &state_hazard_on) ?
-                            HAZARD_LIGHT_FSM_STATE_ON :
-                            HAZARD_LIGHT_FSM_STATE_OFF;
+  if (fsm->current_state == &state_hazard_on) {
+    data->components.state = HAZARD_LIGHT_FSM_STATE_ON;
+  } else if (fsm->current_state == &state_hazard_off) {
+    data->components.state = HAZARD_LIGHT_FSM_STATE_OFF;
+  }
 
   event_raise(INPUT_EVENT_CAN_ID_HAZARD_LIGHT, e->data);
 }
