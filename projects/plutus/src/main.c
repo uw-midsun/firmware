@@ -21,7 +21,7 @@ int main(void) {
   ltc_afe_init(&afe_settings);
 
   while (true) {
-    uint8_t received_data[(6 + 2) * LTC_AFE_DEVICES_IN_CHAIN] = { 0 };
+    uint8_t received_data[6 * LTC_AFE_DEVICES_IN_CHAIN] = { 0 };
     StatusCode status = ltc_afe_read_config(&afe_settings, received_data);
     if (status != STATUS_CODE_OK) {
       LOG_DEBUG("Invalid status\n");
