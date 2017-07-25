@@ -42,7 +42,7 @@ static void prv_toggle_mech_brake(bool new_state) {
 
   e.id = (new_state == true) ?
             INPUT_EVENT_MECHANICAL_BRAKE_PRESSED :
-            INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;  
+            INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
 
   event_arbiter_process_event(&e);
   mech_brake = new_state;
