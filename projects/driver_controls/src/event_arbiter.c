@@ -14,7 +14,6 @@ static bool prv_event_permitted(Event *e) {
     if (s_event_checks[i] != NULL && !s_event_checks[i](e)) {
       return false;
     }
-
   }
   return true;
 }
