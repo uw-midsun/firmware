@@ -35,9 +35,8 @@ typedef enum {
   NUM_INPUT_EVENT
 } InputEvent;
 
-// Format for event data.
-// The first 4 bits are dedicated to holding the device state, while the last
-// 12 bits are used for holding the event data
+// 4 bits of the data field are used for holding the device state, while the last
+// 12 bits are used for holding the event data.
 typedef union InputEventData {
   uint16_t raw;
   struct {

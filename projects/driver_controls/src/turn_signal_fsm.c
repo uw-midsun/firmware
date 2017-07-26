@@ -32,7 +32,7 @@ FSM_STATE_TRANSITION(state_right_signal) {
 
 static void prv_state_output(FSM* fsm, const Event* e, void *context) {
   InputEventData data;
-  
+
   data.components.data = &e->data;
 
   State *current_state = fsm->current_state;
