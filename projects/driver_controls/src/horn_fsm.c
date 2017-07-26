@@ -18,7 +18,7 @@ FSM_STATE_TRANSITION(state_horn_on) {
   FSM_ADD_TRANSITION(INPUT_EVENT_HORN, state_horn_off);
 }
 
-// Horn FSM output functions
+// Horn FSM output function
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   InputEventData data;
   data.raw = e->data;
