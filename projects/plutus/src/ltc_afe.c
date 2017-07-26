@@ -134,7 +134,7 @@ static StatusCode prv_write_config(const LTCAFESettings *afe, uint8_t gpio_enabl
       uint16_t cell_index = current_device * LTC6804_CELLS_PER_DEVICE + cell;
       cells_to_discharge |= (s_discharging_cells[cell_index] << cell);
     }
-    LTCAFEDischargeTimeout timeout = LTC_AFE_DISCHARGE_TIMEOUT_DISABLED;
+    LTCAFEDischargeTimeout timeout = LTC_AFE_DISCHARGE_TIMEOUT_1_MIN;
 
     // CFGR0
     configuration_cmd[configuration_index + 0] = enable;
