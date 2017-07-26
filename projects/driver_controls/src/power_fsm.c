@@ -22,9 +22,16 @@ FSM_STATE_TRANSITION(state_on) {
 static bool prv_check_off(const Event *e) {
   // The car must accept a command to power on while off. It must also acknowledge mechanical brake
   // events, as the mechanical brake does not rely on the car being powered.
-  return (e->id == INPUT_EVENT_POWER ||
-          e->id == INPUT_EVENT_MECHANICAL_BRAKE_RELEASED ||
-          e->id == INPUT_EVENT_MECHANICAL_BRAKE_PRESSED);
+  switch (e->id) {
+    case INPUT_EVENT_POWER:
+    case INPUT_EVENT_MECHANICAL_BRAKE_RELEASED:
+    case INPUT_EVENT_MECHANICAL_BRAKE_PRESSED:
+    case INPUT_EVENT_CAN_ID_POWER:
+    case INPUT_EVENT_CAN_ID_MECHANICAL_BRAKE:
+      return true;
+    default:
+      return false;
+  }
 }
 
 // Power FSM output functions

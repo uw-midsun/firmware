@@ -1,3 +1,6 @@
+
+// Test that the CAN events can be correctly generated and processed
+
 #include "event_arbiter.h"
 #include "unity.h"
 #include "status.h"
@@ -14,6 +17,8 @@
 #include "mechanical_brake_fsm.h"
 #include "horn_fsm.h"
 
+#include "can_fsm.h"
+
 typedef struct FSMGroup {
   FSM power;
   FSM pedal;
@@ -22,6 +27,7 @@ typedef struct FSMGroup {
   FSM hazard_light;
   FSM mechanical_brake;
   FSM horn;
+  FSM can;
 } FSMGroup;
 
 static FSMGroup s_fsm_group;
@@ -58,6 +64,7 @@ void setup_test() {
   hazard_light_fsm_init(&s_fsm_group.hazard_light);
   mechanical_brake_fsm_init(&s_fsm_group.mechanical_brake);
   horn_fsm_init(&s_fsm_group.horn);
+  can_fsm_init(&s_fsm_group.can);
 
   powered = false;
   mech_brake = false;
@@ -90,12 +97,14 @@ void test_can_fsm_power() {
 
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_POWER, e.id);
   TEST_ASSERT_EQUAL(POWER_FSM_STATE_ON, data->components.state);
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   prv_toggle_power(false);
   event_process(&e);
 
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_POWER, e.id);
   TEST_ASSERT_EQUAL(POWER_FSM_STATE_OFF, data->components.state);
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }
 
 void test_can_fsm_mechanical_brake() {
@@ -109,6 +118,7 @@ void test_can_fsm_mechanical_brake() {
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_MECHANICAL_BRAKE, e.id);
   TEST_ASSERT_EQUAL(MECHANICAL_BRAKE_FSM_STATE_ENGAGED, data->components.state);
   TEST_ASSERT_EQUAL(0, data->components.data);
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   // Test that releasing the brake generates the correct event
   prv_toggle_mech_brake(false);
@@ -117,6 +127,7 @@ void test_can_fsm_mechanical_brake() {
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_MECHANICAL_BRAKE, e.id);
   TEST_ASSERT_EQUAL(MECHANICAL_BRAKE_FSM_STATE_DISENGAGED, data->components.state);
   TEST_ASSERT_EQUAL(0, data->components.data);
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }
 
 void test_can_fsm_hazard_light() {
@@ -134,6 +145,7 @@ void test_can_fsm_hazard_light() {
 
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_HAZARD_LIGHT, e.id);
   TEST_ASSERT_EQUAL(HAZARD_LIGHT_FSM_STATE_ON, data->components.state);
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   // Test that the transition to the OFF state generates the correct event
   e.id = INPUT_EVENT_HAZARD_LIGHT;
@@ -142,6 +154,7 @@ void test_can_fsm_hazard_light() {
 
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_HAZARD_LIGHT, e.id);
   TEST_ASSERT_EQUAL(HAZARD_LIGHT_FSM_STATE_OFF, data->components.state);
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }
 
 void test_can_fsm_turn_signal() {
@@ -159,6 +172,7 @@ void test_can_fsm_turn_signal() {
 
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_TURN_SIGNAL, e.id);
   TEST_ASSERT_EQUAL(TURN_SIGNAL_FSM_STATE_LEFT_SIGNAL, data->components.state);
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   // Test that a right turn signal generates the correct event
   e.id = INPUT_EVENT_TURN_SIGNAL_RIGHT;
@@ -167,6 +181,7 @@ void test_can_fsm_turn_signal() {
 
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_TURN_SIGNAL, e.id);
   TEST_ASSERT_EQUAL(TURN_SIGNAL_FSM_STATE_RIGHT_SIGNAL, data->components.state);
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   // Test that turning the signals off generates the correct event
   e.id = INPUT_EVENT_TURN_SIGNAL_NONE;
@@ -175,6 +190,7 @@ void test_can_fsm_turn_signal() {
 
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_TURN_SIGNAL, e.id);
   TEST_ASSERT_EQUAL(TURN_SIGNAL_FSM_STATE_NO_SIGNAL, data->components.state);
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }
 
 
@@ -196,6 +212,7 @@ void test_can_fsm_direction() {
 
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, e.id);
   TEST_ASSERT_EQUAL(DIRECTION_FSM_STATE_FORWARD, data->components.state);
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   // Test that a reverse shift generates the correct event
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
@@ -204,6 +221,7 @@ void test_can_fsm_direction() {
 
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, e.id);
   TEST_ASSERT_EQUAL(DIRECTION_FSM_STATE_REVERSE, data->components.state);
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   // Test that a neutral shift generates the correct event
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
@@ -212,6 +230,7 @@ void test_can_fsm_direction() {
 
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, e.id);
   TEST_ASSERT_EQUAL(DIRECTION_FSM_STATE_NEUTRAL, data->components.state);
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }
 
 void test_can_fsm_pedal() {
@@ -239,6 +258,7 @@ void test_can_fsm_pedal() {
 
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_PEDAL, e.id);
   TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_COAST, data->components.state);
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   // Test that pressing the gas generates the correct event
   e.id = INPUT_EVENT_PEDAL_PRESSED;
@@ -247,6 +267,7 @@ void test_can_fsm_pedal() {
 
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_PEDAL, e.id);
   TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_DRIVING, data->components.state);
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   // Test that cruise control generates the correct event
   e.id = INPUT_EVENT_CRUISE_CONTROL;
@@ -255,6 +276,7 @@ void test_can_fsm_pedal() {
 
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_PEDAL, e.id);
   TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_CRUISE_CONTROL, data->components.state);
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   // Exit cruise control
   e.id = INPUT_EVENT_CRUISE_CONTROL;
@@ -268,6 +290,7 @@ void test_can_fsm_pedal() {
 
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_PEDAL, e.id);
   TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_BRAKE, data->components.state);
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }
 
 void test_can_fsm_horn() {
@@ -284,6 +307,7 @@ void test_can_fsm_horn() {
 
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_HORN, e.id);
   TEST_ASSERT_EQUAL(HORN_FSM_STATE_ON, data->components.state);
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   // Test that releasing the horn generates the correct event
   e.id = INPUT_EVENT_HORN;
@@ -292,4 +316,5 @@ void test_can_fsm_horn() {
 
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_HORN, e.id);
   TEST_ASSERT_EQUAL(HORN_FSM_STATE_OFF, data->components.state);
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }

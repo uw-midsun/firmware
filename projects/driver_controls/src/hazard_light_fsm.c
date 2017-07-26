@@ -22,7 +22,7 @@ FSM_STATE_TRANSITION(state_hazard_off) {
 
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   InputEventData data;
-  data.raw = &e->data;
+  data.raw = e->data;
 
   if (fsm->current_state == &state_hazard_on) {
     data.components.state = HAZARD_LIGHT_FSM_STATE_ON;
