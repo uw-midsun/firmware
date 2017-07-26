@@ -5,10 +5,14 @@
 #include "gpio.h"
 #include "event_queue.h"
 #include "input_event.h"
+#include "driver_io.h"
 
 // Arbitrary thresholds for gas pedal
 #define ANALOG_IO_COAST_THRESHOLD 1000
 #define ANALOG_IO_DRIVE_THRESHOLD 3000
+
+// Arbitrary threshold for mechanical brake
+#define ANALOG_IO_BRAKE_THRESHOLD 2047
 
 // Max number of devices based on external ADC channels
 #define ANALOG_IO_DEVICES 16
@@ -16,6 +20,7 @@
 // Analog device identifiers
 typedef enum {
   ANALOG_IO_DEVICE_GAS_PEDAL = 0,
+  ANALOG_IO_DEVICE_MECHANICAL_BRAKE,
   NUM_ANALOG_IO_DEVICE
 } AnalogIODevice;
 
@@ -37,6 +42,11 @@ static void prv_input_callback(ADCChannel adc_channel, void *context) {
         e.id = INPUT_EVENT_PEDAL_COAST;
       }
       break;
+    case ANALOG_IO_DEVICE_MECHANICAL_BRAKE:
+      e.id = (e.data > ANALOG_IO_BRAKE_THRESHOLD) ?
+              INPUT_EVENT_MECHANICAL_BRAKE_PRESSED :
+              INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
+      break;
   }
 
   event_raise(e.id, e.data);
@@ -51,7 +61,8 @@ void analog_io_init() {
   ADCChannel adc_channel;
 
   InputConfig analog_inputs[] = {
-    { .address = { GPIO_PORT_C, 1 }, .device = ANALOG_IO_DEVICE_GAS_PEDAL }
+    { .address = DRIVER_IO_GAS_PEDAL, .device = ANALOG_IO_DEVICE_GAS_PEDAL },
+    { .address = DRIVER_IO_MECHANICAL_BRAKE, .device = ANALOG_IO_DEVICE_MECHANICAL_BRAKE }
   };
 
   GPIOSettings settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_NONE };
