@@ -15,6 +15,7 @@ typedef enum {
   DIGITAL_IO_DEVICE_TURN_SIGNAL,
   DIGITAL_IO_DEVICE_HAZARD_LIGHT,
   DIGITAL_IO_DEVICE_HORN,
+  DIGITAL_IO_DEVICE_PUSH_TO_TALK,
   NUM_DIGITAL_IO_DEVICE
 } DigitalIODevice;
 
@@ -116,8 +117,12 @@ void digital_io_init() {
       .event = INPUT_EVENT_HAZARD_LIGHT };
 
   s_input_data[DRIVER_IO_HORN_PIN] = (DigitalIOData){
-      .id = DIGITAL_IO_DEVICE_HAZARD_LIGHT,
-      .event = INPUT_EVENT_HAZARD_LIGHT };
+      .id = DIGITAL_IO_DEVICE_HORN,
+      .event = INPUT_EVENT_HORN };
+
+  s_input_data[DRIVER_IO_PUSH_TO_TALK_PIN] = (DigitalIOData){
+      .id = DIGITAL_IO_DEVICE_PUSH_TO_TALK,
+      .event = INPUT_EVENT_PUSH_TO_TALK };
 
   // Array to store configuration settings for each pin
   DigitalIOSettings digital_inputs[] = {
@@ -129,7 +134,9 @@ void digital_io_init() {
     { .address = DRIVER_IO_CRUISE_CONTROL_DEC, .edge = INTERRUPT_EDGE_RISING },
     { .address = DRIVER_IO_TURN_SIGNAL_RIGHT, .edge = INTERRUPT_EDGE_RISING_FALLING },
     { .address = DRIVER_IO_TURN_SIGNAL_LEFT, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = DRIVER_IO_HAZARD_LIGHT, .edge = INTERRUPT_EDGE_RISING }
+    { .address = DRIVER_IO_HAZARD_LIGHT, .edge = INTERRUPT_EDGE_RISING },
+    { .address = DRIVER_IO_HORN, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = DRIVER_IO_PUSH_TO_TALK, .edge = INTERRUPT_EDGE_RISING_FALLING }
   };
 
   GPIOSettings settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_NONE };

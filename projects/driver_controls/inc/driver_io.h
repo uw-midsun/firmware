@@ -1,7 +1,7 @@
 #pragma once
 
 #define DRIVER_IO_GET_PIN(address) ((GPIOAddress)address.pin)
-#define DRIVER_IO_NUM_ADDRESSES 10
+#define DRIVER_IO_NUM_ADDRESSES 11
 
 // Digital address definitions
 
@@ -15,6 +15,7 @@
 #define DRIVER_IO_TURN_SIGNAL_LEFT          { GPIO_PORT_C, 8 }
 #define DRIVER_IO_HAZARD_LIGHT              { GPIO_PORT_C, 9 }
 #define DRIVER_IO_HORN                      { GPIO_PORT_C, 10 }
+#define DRIVER_IO_PUSH_TO_TALK              { GPIO_PORT_C, 11 }
 
 // Analog address definitions
 
@@ -32,6 +33,7 @@
 #define DRIVER_IO_TURN_SIGNAL_PIN_LEFT      DRIVER_IO_GET_PIN(DRIVER_IO_TURN_SIGNAL_LEFT)
 #define DRIVER_IO_HAZARD_LIGHT_PIN          DRIVER_IO_GET_PIN(DRIVER_IO_HAZARD_LIGHT)
 #define DRIVER_IO_HORN_PIN                  DRIVER_IO_GET_PIN(DRIVER_IO_HORN)
+#define DRIVER_IO_PUSH_TO_TALK_PIN          DRIVER_IO_GET_PIN(DRIVER_IO_PUSH_TO_TALK)
 
 #define DRIVER_IO_GAS_PEDAL_PIN             DRIVER_IO_GET_PIN(DRIVER_IO_GAS_PEDAL)
 #define DRIVER_IO_MECHANICAL_BRAKE_PIN      DRIVER_IO_GET_PIN(DRIVER_IO_MECHANICAL_BRAKE)

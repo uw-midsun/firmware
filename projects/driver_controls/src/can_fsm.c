@@ -13,6 +13,7 @@ FSM_STATE_TRANSITION(state_can_transmit) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CAN_ID_HAZARD_LIGHT, state_can_transmit);
   FSM_ADD_TRANSITION(INPUT_EVENT_CAN_ID_MECHANICAL_BRAKE, state_can_transmit);
   FSM_ADD_TRANSITION(INPUT_EVENT_CAN_ID_HORN, state_can_transmit);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CAN_PUSH_TO_TALK, state_can_transmit);
 }
 
 static StatusCode prv_transmit_data(FSM *fsm, const Event *e, void *context) {
