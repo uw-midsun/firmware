@@ -22,7 +22,7 @@ FSM_STATE_TRANSITION(state_inactive) {
 
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   InputEventData data;
-  data.raw = e->data;
+  data.components.data = e->data;
 
   if (fsm->current_state == &state_active) {
     data.components.state = PUSH_TO_TALK_FSM_STATE_ACTIVE;

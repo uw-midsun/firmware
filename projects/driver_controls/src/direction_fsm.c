@@ -58,7 +58,8 @@ static void prv_state_neutral(FSM *fsm, const Event *e, void *context) {
   *event_check = prv_check_neutral;
 
   InputEventData data;
-  data.raw = e->data;
+
+  data.components.data = e->data;
   data.components.state = DIRECTION_FSM_STATE_NEUTRAL;
 
   event_raise(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, data.raw);
@@ -69,7 +70,8 @@ static void prv_state_forward(FSM *fsm, const Event *e, void *context) {
   *event_check = prv_check_forward;
 
   InputEventData data;
-  data.raw = e->data;
+
+  data.components.data = e->data;
   data.components.state = DIRECTION_FSM_STATE_FORWARD;
 
   event_raise(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, data.raw);
@@ -80,7 +82,8 @@ static void prv_state_reverse(FSM *fsm, const Event *e, void *context) {
   *event_check = prv_check_reverse;
 
   InputEventData data;
-  data.raw = e->data;
+
+  data.components.data = e->data;
   data.components.state = DIRECTION_FSM_STATE_REVERSE;
 
   event_raise(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, data.raw);
