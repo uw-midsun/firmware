@@ -12,7 +12,7 @@
 #include "turn_signal_fsm.h"
 #include "hazard_light_fsm.h"
 #include "mechanical_brake_fsm.h"
-#include "can_fsm.h"
+#include "horn_fsm.h"
 
 typedef struct FSMGroup {
   FSM power;
@@ -21,7 +21,7 @@ typedef struct FSMGroup {
   FSM turn_signal;
   FSM hazard_light;
   FSM mechanical_brake;
-  FSM can;
+  FSM horn;
 } FSMGroup;
 
 static FSMGroup s_fsm_group;
@@ -57,6 +57,7 @@ void setup_test() {
   turn_signal_fsm_init(&s_fsm_group.turn_signal);
   hazard_light_fsm_init(&s_fsm_group.hazard_light);
   mechanical_brake_fsm_init(&s_fsm_group.mechanical_brake);
+  horn_fsm_init(&s_fsm_group.horn);
 
   powered = false;
   mech_brake = false;
@@ -267,4 +268,28 @@ void test_can_fsm_pedal() {
 
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_PEDAL, e.id);
   TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_BRAKE, data->components.state);
+}
+
+void test_can_fsm_horn() {
+  Event e;
+  InputEventData *data = &e.data;
+
+  prv_toggle_power(true);
+  event_process(&e);
+
+  // Test that pressing the horn generates the correct event
+  e.id = INPUT_EVENT_HORN;
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  event_process(&e);
+
+  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_HORN, e.id);
+  TEST_ASSERT_EQUAL(HORN_FSM_STATE_ON, data->components.state);
+
+  // Test that releasing the horn generates the correct event
+  e.id = INPUT_EVENT_HORN;
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  event_process(&e);
+
+  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_HORN, e.id);
+  TEST_ASSERT_EQUAL(HORN_FSM_STATE_OFF, data->components.state);
 }

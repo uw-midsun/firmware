@@ -12,6 +12,7 @@
 #include "turn_signal_fsm.h"
 #include "hazard_light_fsm.h"
 #include "mechanical_brake_fsm.h"
+#include "horn_fsm.h"
 
 typedef struct FSMGroup {
   FSM power;
@@ -20,6 +21,7 @@ typedef struct FSMGroup {
   FSM turn_signal;
   FSM hazard_light;
   FSM mechanical_brake;
+  FSM horn;
 } FSMGroup;
 
 static FSMGroup s_fsm_group;
@@ -55,6 +57,7 @@ void setup_test() {
   turn_signal_fsm_init(&s_fsm_group.turn_signal);
   hazard_light_fsm_init(&s_fsm_group.hazard_light);
   mechanical_brake_fsm_init(&s_fsm_group.mechanical_brake);
+  mechanical_brake_fsm_init(&s_fsm_group.horn);
 
   powered = false;
   mech_brake = false;
