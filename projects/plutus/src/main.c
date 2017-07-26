@@ -4,6 +4,7 @@
 #include "ltc_afe.h"
 #include "log.h"
 #include "spi.h"
+#include "plutus_config.h"
 
 int main(void) {
   gpio_init();

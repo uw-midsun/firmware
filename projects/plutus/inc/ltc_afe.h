@@ -9,9 +9,6 @@
 #include "spi.h"
 #include "status.h"
 
-// number of devices in daisy chain (including master)
-#define LTC_AFE_DEVICES_IN_CHAIN                1
-
 typedef enum {
   LTC_AFE_DISCHARGE_TIMEOUT_DISABLED = 0,
   LTC_AFE_DISCHARGE_TIMEOUT_30_S,

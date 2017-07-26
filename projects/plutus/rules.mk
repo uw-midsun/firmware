@@ -7,3 +7,5 @@
 
 # Specify the device library you want to include
 $(T)_DEPS := ms-common
+
+$(T)_INC_DIRS += $($(T)_DIR)/config
