@@ -30,7 +30,14 @@ FSM_STATE_TRANSITION(state_reverse) {
 
 static bool prv_check_neutral(const Event *e) {
   // The car must not be able to move while in the neutral state
-  return !(e->id == INPUT_EVENT_PEDAL_COAST || e->id == INPUT_EVENT_PEDAL_PRESSED);
+  switch (e->id) {
+    case INPUT_EVENT_PEDAL_COAST:
+    case INPUT_EVENT_PEDAL_PRESSED:
+    case INPUT_EVENT_CRUISE_CONTROL:
+      return false;
+    default:
+      return true;
+  }
 }
 
 static bool prv_check_forward(const Event *e) {
