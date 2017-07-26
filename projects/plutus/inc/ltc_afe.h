@@ -1,4 +1,6 @@
 #pragma once
+// driver for LTC6804-1 AFE chip
+// requires GPIO, Interrupts and Soft Timers to be initialized
 
 #include <stdbool.h>
 #include <stdint.h>

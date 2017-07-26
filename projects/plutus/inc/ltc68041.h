@@ -1,4 +1,5 @@
 #pragma once
+// used internally by the LTC AFE driver
 
 typedef enum {
   LTC_AFE_REGISTER_CONFIG = 0,
