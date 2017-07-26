@@ -31,6 +31,8 @@ typedef enum {
   LTC_AFE_DISCHARGE_TIMEOUT_120_MIN
 } LTCAFEDischargeTimeout;
 
+// select the ADC mode (trade-off between speed or minimizing noise)
+// see p.50 for conversion times and p.23 for noise
 typedef enum {
   LTC_AFE_ADC_MODE_27KHZ = 0,
   LTC_AFE_ADC_MODE_7KHZ,
