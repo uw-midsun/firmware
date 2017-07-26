@@ -18,6 +18,13 @@ static uint16_t s_read_reg_cmd[NUM_LTC_AFE_REGISTER] = {
   LTC6804_RDCOMM_RESERVED
 };
 
+static uint8_t s_voltage_reg[NUM_LTC_AFE_VOLTAGE_REGISTER] = {
+  LTC_AFE_REGISTER_CELL_VOLTAGE_A,
+  LTC_AFE_REGISTER_CELL_VOLTAGE_B,
+  LTC_AFE_REGISTER_CELL_VOLTAGE_C,
+  LTC_AFE_REGISTER_CELL_VOLTAGE_D
+};
+
 static void prv_wakeup_idle(const LTCAFESettings *afe) {
   gpio_set_pin_state(&afe->cs, GPIO_STATE_LOW);
   delay_us(2);
@@ -51,16 +58,7 @@ static StatusCode prv_read_voltage(LTCAFESettings *afe, LTCAFEVoltageRegister re
   // 6 bytes in register + 2 bytes for PEC
   size_t len = ((LTC_AFE_CELLS_IN_REG * 2) + 2) * LTC_AFE_DEVICES_IN_CHAIN;
 
-  if (reg == LTC_AFE_VOLTAGE_REGISTER_A) {
-    return prv_read_register(afe, LTC_AFE_REGISTER_CELL_VOLTAGE_A, data, len);
-  }
-  if (reg == LTC_AFE_VOLTAGE_REGISTER_B) {
-    return prv_read_register(afe, LTC_AFE_REGISTER_CELL_VOLTAGE_B, data, len);
-  }
-  if (reg == LTC_AFE_VOLTAGE_REGISTER_C) {
-    return prv_read_register(afe, LTC_AFE_REGISTER_CELL_VOLTAGE_C, data, len);
-  }
-  return prv_read_register(afe, LTC_AFE_REGISTER_CELL_VOLTAGE_D, data, len);
+  return prv_read_register(afe, s_voltage_reg[reg], data, len);
 }
 
 // start cell voltage conversion
