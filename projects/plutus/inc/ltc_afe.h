@@ -52,6 +52,7 @@ typedef struct LTCAFESettings {
   GPIOAddress sclk;
 
   const SPIPort spi_port;
+  uint32_t spi_baudrate;
 
   LTCAFEADCMode adc_mode;
 } LTCAFESettings;

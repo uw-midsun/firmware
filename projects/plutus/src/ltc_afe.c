@@ -42,8 +42,8 @@ static StatusCode prv_read_register(const LTCAFESettings *afe,
 
   cmd[0] = (uint8_t)(reg_cmd >> 8);
   cmd[1] = (uint8_t)(reg_cmd & 0xFF);
-  uint16_t cmd_pec = crc15_calculate(cmd, 2);
 
+  uint16_t cmd_pec = crc15_calculate(cmd, 2);
   cmd[2] = (uint8_t)(cmd_pec >> 8);
   cmd[3] = (uint8_t)(cmd_pec & 0xFF);
 
@@ -93,7 +93,6 @@ static void prv_trigger_aux_adc_conversion(const LTCAFESettings *afe) {
   cmd[1] = (uint8_t)(adax & 0xFF);
 
   uint16_t cmd_pec = crc15_calculate(cmd, 2);
-
   cmd[2] = (uint8_t)(cmd_pec >> 8);
   cmd[3] = (uint8_t)(cmd_pec & 0xFF);
 
@@ -107,7 +106,7 @@ StatusCode ltc_afe_init(const LTCAFESettings *afe) {
   crc15_init_table();
 
   SPISettings spi_config = {
-    .baudrate = 250000,
+    .baudrate = afe->spi_baudrate,
     .mode = SPI_MODE_3,
     .mosi = afe->mosi,
     .miso = afe->miso,
@@ -139,7 +138,6 @@ StatusCode ltc_afe_write_config(const LTCAFESettings *afe, uint8_t gpio_enable_p
   configuration_cmd[configuration_index + 1] = (uint8_t)(wrcfg & 0xFF);
 
   uint16_t cmd_pec = crc15_calculate(configuration_cmd, 2);
-
   configuration_cmd[configuration_index + 2] = (uint8_t)(cmd_pec >> 8);
   configuration_cmd[configuration_index + 3] = (uint8_t)(cmd_pec & 0xFF);
 
