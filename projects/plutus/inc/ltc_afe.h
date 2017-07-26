@@ -66,10 +66,3 @@ StatusCode ltc_afe_read_all_aux(const LTCAFESettings *afe, uint16_t *result);
 
 // mark cells for discharging (takes effect after config is re-written)
 StatusCode ltc_afe_toggle_discharge_cells(const LTCAFESettings *afe, uint16_t cell, bool discharge);
-
-// read config registers
-// config should be an array of size 6 * LTC_AFE_DEVICES_IN_CHAIN
-StatusCode ltc_afe_read_config(const LTCAFESettings *afe, uint8_t *config);
-
-// write config registers
-StatusCode ltc_afe_write_config(const LTCAFESettings *afe, uint8_t gpio_enable_pins);

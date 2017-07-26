@@ -102,29 +102,8 @@ static void prv_trigger_aux_adc_conversion(const LTCAFESettings *afe) {
   delay_ms(10);
 }
 
-StatusCode ltc_afe_init(const LTCAFESettings *afe) {
-  crc15_init_table();
-
-  SPISettings spi_config = {
-    .baudrate = afe->spi_baudrate,
-    .mode = SPI_MODE_3,
-    .mosi = afe->mosi,
-    .miso = afe->miso,
-    .sclk = afe->sclk,
-    .cs = afe->cs
-  };
-  spi_init(afe->spi_port, &spi_config);
-
-  uint8_t gpio_bits = LTC6804_GPIO1_PD_OFF | LTC6804_GPIO2_PD_ON
-                      | LTC6804_GPIO3_PD_ON | LTC6804_GPIO4_PD_ON
-                      | LTC6804_GPIO5_PD_ON;
-  ltc_afe_write_config(afe, gpio_bits);
-
-  return STATUS_CODE_OK;
-}
-
 // write config to all devices
-StatusCode ltc_afe_write_config(const LTCAFESettings *afe, uint8_t gpio_enable_pins) {
+static StatusCode prv_write_config(const LTCAFESettings *afe, uint8_t gpio_enable_pins) {
   // see p.54 in datasheet
   // (2 bits for WRCFG + 2 bits for WRCFG PEC) +
   // (6 bits for CFGR + 2 bits for CFGR PEC) * LTC_AFE_DEVICES_IN_CHAIN
@@ -198,7 +177,7 @@ StatusCode ltc_afe_write_config(const LTCAFESettings *afe, uint8_t gpio_enable_p
   return spi_exchange(afe->spi_port, configuration_cmd, cfg_len, NULL, 0);
 }
 
-StatusCode ltc_afe_read_config(const LTCAFESettings *afe, uint8_t *configuration_registers) {
+static StatusCode prv_read_config(const LTCAFESettings *afe, uint8_t *configuration_registers) {
   StatusCode status = STATUS_CODE_OK;
 
   prv_wakeup_idle(afe);
@@ -224,6 +203,27 @@ StatusCode ltc_afe_read_config(const LTCAFESettings *afe, uint8_t *configuration
   }
 
   return status;
+}
+
+StatusCode ltc_afe_init(const LTCAFESettings *afe) {
+  crc15_init_table();
+
+  SPISettings spi_config = {
+    .baudrate = afe->spi_baudrate,
+    .mode = SPI_MODE_3,
+    .mosi = afe->mosi,
+    .miso = afe->miso,
+    .sclk = afe->sclk,
+    .cs = afe->cs
+  };
+  spi_init(afe->spi_port, &spi_config);
+
+  uint8_t gpio_bits = LTC6804_GPIO1_PD_OFF | LTC6804_GPIO2_PD_ON
+                      | LTC6804_GPIO3_PD_ON | LTC6804_GPIO4_PD_ON
+                      | LTC6804_GPIO5_PD_ON;
+  prv_write_config(afe, gpio_bits);
+
+  return STATUS_CODE_OK;
 }
 
 StatusCode ltc_afe_read_all_voltage(const LTCAFESettings *afe, uint16_t *result_data, size_t len) {
@@ -271,7 +271,7 @@ StatusCode ltc_afe_read_all_aux(const LTCAFESettings *afe, uint16_t *result_data
 
   for (uint8_t cell = 0; cell < 12; ++cell) {
     // configure the mux to read from cell
-    ltc_afe_write_config(afe, (cell << 4) | LTC6804_GPIO1_PD_OFF);
+    prv_write_config(afe, (cell << 4) | LTC6804_GPIO1_PD_OFF);
 
     prv_trigger_aux_adc_conversion(afe);
 

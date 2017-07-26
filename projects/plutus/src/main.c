@@ -1,3 +1,5 @@
+#include <stddef.h>
+
 #include "gpio.h"
 #include "ltc_afe.h"
 #include "log.h"
@@ -22,8 +24,9 @@ int main(void) {
   ltc_afe_init(&afe_settings);
 
   while (true) {
-    uint8_t received_data[6 * LTC_AFE_DEVICES_IN_CHAIN] = { 0 };
-    StatusCode status = ltc_afe_read_config(&afe_settings, received_data);
+    uint16_t voltage_data[12 * LTC_AFE_DEVICES_IN_CHAIN] = { 0 };
+    size_t voltage_len = 12 * LTC_AFE_DEVICES_IN_CHAIN;
+    StatusCode status = ltc_afe_read_all_voltage(&afe_settings, voltage_data, voltage_len);
     if (status != STATUS_CODE_OK) {
       LOG_DEBUG("Invalid status\n");
     }
