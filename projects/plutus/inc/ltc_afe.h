@@ -62,7 +62,7 @@ StatusCode ltc_afe_init(const LTCAFESettings *afe);
 // result should be an array of size LTC6804_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
 StatusCode ltc_afe_read_all_voltage(const LTCAFESettings *afe, uint16_t *result, size_t len);
 
-// read all auxilary registers
+// read all auxiliary registers
 // result should be an array of size LTC6804_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
 StatusCode ltc_afe_read_all_aux(const LTCAFESettings *afe, uint16_t *result);
 
