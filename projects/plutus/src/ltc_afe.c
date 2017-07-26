@@ -230,7 +230,11 @@ StatusCode ltc_afe_read_config(const LTCAFESettings *afe, uint8_t *configuration
   return status;
 }
 
-StatusCode ltc_afe_read_all_voltage(const LTCAFESettings *afe, uint16_t *result_data) {
+StatusCode ltc_afe_read_all_voltage(const LTCAFESettings *afe, uint16_t *result_data, size_t len) {
+  if (len != LTC_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+
   StatusCode result_status = STATUS_CODE_OK;
 
   prv_trigger_adc_conversion(afe);

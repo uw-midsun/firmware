@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include "gpio.h"
 #include "spi.h"
 #include "status.h"
@@ -58,7 +59,7 @@ StatusCode ltc_afe_init(const LTCAFESettings *afe);
 
 // read all voltages
 // result should be an array of size LTC_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
-StatusCode ltc_afe_read_all_voltage(const LTCAFESettings *afe, uint16_t *result);
+StatusCode ltc_afe_read_all_voltage(const LTCAFESettings *afe, uint16_t *result, size_t len);
 
 // read all auxilary registers
 // result should be an array of size LTC_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
