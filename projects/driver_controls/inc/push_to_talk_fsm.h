@@ -1,6 +1,6 @@
 #pragma once
 
-// TODO: Document this
+// Monitors the Push-to-Talk system
 
 #include "fsm.h"
 

@@ -60,7 +60,7 @@ int main() {
   mechanical_brake_fsm_init(&fsm_group.mechanical_brake);
   horn_fsm_init(&fsm_group.horn);
   push_to_talk_fsm_init(&fsm_group.push_to_talk);
-  
+
   can_fsm_init(&fsm_group.can);
 
   for (;;) {
