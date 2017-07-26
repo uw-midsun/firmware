@@ -1,6 +1,10 @@
 #pragma once
 // used internally by the LTC AFE driver
 
+#define LTC6804_CELLS_IN_REG                    3
+#define LTC6804_GPIOS_IN_REG                    3
+#define LTC6804_CELLS_PER_DEVICE                12
+
 typedef enum {
   LTC_AFE_REGISTER_CONFIG = 0,
   LTC_AFE_REGISTER_CELL_VOLTAGE_A,

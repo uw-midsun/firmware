@@ -3,7 +3,7 @@
 #include "ltc_afe.h"
 #include "ltc68041.h"
 
-static bool s_discharging_cells[LTC_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN] = { false };
+static bool s_discharging_cells[LTC6804_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN] = { false };
 
 static uint16_t s_read_reg_cmd[NUM_LTC_AFE_REGISTER] = {
   LTC6804_RDCFG_RESERVED,
@@ -56,7 +56,7 @@ static StatusCode prv_read_voltage(LTCAFESettings *afe, LTCAFEVoltageRegister re
   }
 
   // 6 bytes in register + 2 bytes for PEC
-  size_t len = ((LTC_AFE_CELLS_IN_REG * 2) + 2) * LTC_AFE_DEVICES_IN_CHAIN;
+  size_t len = ((LTC6804_CELLS_IN_REG * 2) + 2) * LTC_AFE_DEVICES_IN_CHAIN;
 
   return prv_read_register(afe, s_voltage_reg[reg], data, len);
 }
@@ -150,8 +150,8 @@ StatusCode ltc_afe_write_config(const LTCAFESettings *afe, uint8_t gpio_enable_p
     uint16_t overvoltage = 0;
     uint16_t cells_to_discharge = 0;
 
-    for (uint8_t cell = 0; cell < LTC_CELLS_PER_DEVICE; ++cell) {
-      uint16_t cell_index = current_device * LTC_CELLS_PER_DEVICE + cell;
+    for (uint8_t cell = 0; cell < LTC6804_CELLS_PER_DEVICE; ++cell) {
+      uint16_t cell_index = current_device * LTC6804_CELLS_PER_DEVICE + cell;
       cells_to_discharge |= (s_discharging_cells[cell_index] << cell);
     }
     LTCAFEDischargeTimeout timeout = LTC_AFE_DISCHARGE_TIMEOUT_DISABLED;
@@ -227,7 +227,7 @@ StatusCode ltc_afe_read_config(const LTCAFESettings *afe, uint8_t *configuration
 }
 
 StatusCode ltc_afe_read_all_voltage(const LTCAFESettings *afe, uint16_t *result_data, size_t len) {
-  if (len != LTC_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN) {
+  if (len != LTC6804_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
@@ -236,17 +236,18 @@ StatusCode ltc_afe_read_all_voltage(const LTCAFESettings *afe, uint16_t *result_
   prv_trigger_adc_conversion(afe);
 
   for (uint8_t cell_reg = 0; cell_reg < 4; ++cell_reg) {
-    uint8_t afe_data[((LTC_AFE_CELLS_IN_REG * 2) + 2) * LTC_AFE_DEVICES_IN_CHAIN] = { 0 };
+    uint8_t afe_data[((LTC6804_CELLS_IN_REG * 2) + 2) * LTC_AFE_DEVICES_IN_CHAIN] = { 0 };
     uint16_t data_counter = 0;
 
     prv_read_voltage(afe, cell_reg, afe_data);
 
     for (uint8_t device = 0; device < LTC_AFE_DEVICES_IN_CHAIN; ++device) {
-      for (uint16_t cell = 0; cell < LTC_AFE_CELLS_IN_REG; ++cell) {
+      for (uint16_t cell = 0; cell < LTC6804_CELLS_IN_REG; ++cell) {
         // LSB of the reading is 100 uV
         uint16_t voltage = (uint16_t)afe_data[data_counter]
                             + (uint16_t)(afe_data[data_counter + 1] << 8);
-        uint16_t index = device * LTC_CELLS_PER_DEVICE + cell + (cell_reg * LTC_AFE_CELLS_IN_REG);
+        uint16_t index = device * LTC6804_CELLS_PER_DEVICE + cell +
+                        (cell_reg * LTC6804_CELLS_IN_REG);
         result_data[index] = voltage;
 
         data_counter += 2;
@@ -274,19 +275,19 @@ StatusCode ltc_afe_read_all_aux(const LTCAFESettings *afe, uint16_t *result_data
 
     prv_trigger_aux_adc_conversion(afe);
 
-    uint8_t register_data[((LTC_AFE_GPIOS_IN_REG * 2) + 2) * LTC_AFE_DEVICES_IN_CHAIN] = { 0 };
-    size_t len = ((LTC_AFE_GPIOS_IN_REG * 2) + 2) * LTC_AFE_DEVICES_IN_CHAIN;
+    uint8_t register_data[((LTC6804_GPIOS_IN_REG * 2) + 2) * LTC_AFE_DEVICES_IN_CHAIN] = { 0 };
+    size_t len = ((LTC6804_GPIOS_IN_REG * 2) + 2) * LTC_AFE_DEVICES_IN_CHAIN;
     prv_read_register(afe, LTC_AFE_REGISTER_AUX_A, register_data, len);
 
     for (uint16_t device = 0; device < LTC_AFE_DEVICES_IN_CHAIN; ++device) {
       // data comes in in the form { 1, 1, 2, 2, 3, 3, PEC, PEC }
       // we only care about GPIO1 and the PEC
-      uint16_t voltage = (uint16_t)(register_data[device * (LTC_AFE_GPIOS_IN_REG * 2) + 1] << 8)
-                          + (uint16_t)register_data[device * (LTC_AFE_GPIOS_IN_REG * 2)];
-      result_data[device * LTC_CELLS_PER_DEVICE + cell] = voltage;
+      uint16_t voltage = (uint16_t)(register_data[device * (LTC6804_GPIOS_IN_REG * 2) + 1] << 8)
+                          + (uint16_t)register_data[device * (LTC6804_GPIOS_IN_REG * 2)];
+      result_data[device * LTC6804_CELLS_PER_DEVICE + cell] = voltage;
 
-      uint16_t received_pec = (register_data[device * (LTC_AFE_GPIOS_IN_REG * 2) + 6] << 8)
-                              + register_data[device * (LTC_AFE_GPIOS_IN_REG * 2) + 7];
+      uint16_t received_pec = (register_data[device * (LTC6804_GPIOS_IN_REG * 2) + 6] << 8)
+                              + register_data[device * (LTC6804_GPIOS_IN_REG * 2) + 7];
       uint16_t data_pec = crc15_calculate(register_data, 6);
       if (received_pec != data_pec) {
         result_status = status_code(STATUS_CODE_UNKNOWN);
@@ -299,7 +300,7 @@ StatusCode ltc_afe_read_all_aux(const LTCAFESettings *afe, uint16_t *result_data
 
 StatusCode ltc_afe_toggle_discharge_cells(const LTCAFESettings *afe,
                                           uint16_t cell, bool discharge) {
-  if (cell < LTC_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN) {
+  if (cell < LTC6804_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   s_discharging_cells[cell] = discharge;

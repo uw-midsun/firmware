@@ -12,10 +12,6 @@
 // number of devices in daisy chain (including master)
 #define LTC_AFE_DEVICES_IN_CHAIN                1
 
-#define LTC_AFE_CELLS_IN_REG                    3
-#define LTC_AFE_GPIOS_IN_REG                    3
-#define LTC_CELLS_PER_DEVICE                    12
-
 typedef enum {
   LTC_AFE_DISCHARGE_TIMEOUT_DISABLED = 0,
   LTC_AFE_DISCHARGE_TIMEOUT_30_S,
@@ -61,11 +57,11 @@ typedef struct LTCAFESettings {
 StatusCode ltc_afe_init(const LTCAFESettings *afe);
 
 // read all voltages
-// result should be an array of size LTC_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
+// result should be an array of size LTC6804_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
 StatusCode ltc_afe_read_all_voltage(const LTCAFESettings *afe, uint16_t *result, size_t len);
 
 // read all auxilary registers
-// result should be an array of size LTC_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
+// result should be an array of size LTC6804_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
 StatusCode ltc_afe_read_all_aux(const LTCAFESettings *afe, uint16_t *result);
 
 // mark cells for discharging (takes effect after config is re-written)
