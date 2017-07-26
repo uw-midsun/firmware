@@ -7,13 +7,15 @@
 
 #define TEST_CAN_UNKNOWN_MSG_ID 0xA
 #define TEST_CAN_DEVICE_ID 0x1
+#define TEST_CAN_NUM_RX_HANDLERS 3
 
 typedef enum {
   TEST_CAN_EVENT_RX = 10,
   TEST_CAN_EVENT_FAULT
 } TestCanEvent;
 
-static volatile CANConfig s_can;
+static CANStorage s_can_storage;
+static CANRxHandler s_rx_handlers[TEST_CAN_NUM_RX_HANDLERS];
 
 static StatusCode prv_rx_callback(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   CANMessage *rx_msg = context;
@@ -46,16 +48,26 @@ void setup_test(void) {
   event_queue_init();
   interrupt_init();
   soft_timer_init();
-  can_init(&s_can, TEST_CAN_DEVICE_ID, 125, true, TEST_CAN_EVENT_RX, TEST_CAN_EVENT_FAULT);
+
+  CANSettings can_settings = {
+    .device_id = TEST_CAN_DEVICE_ID,
+    .bus_speed = 125,
+    .rx_event = TEST_CAN_EVENT_RX,
+    .fault_event = TEST_CAN_EVENT_FAULT,
+    .tx = { GPIO_PORT_A, 12 },
+    .rx = { GPIO_PORT_A, 11 },
+    .loopback = true
+  };
+  can_init(&can_settings, &s_can_storage, &s_rx_handlers, TEST_CAN_NUM_RX_HANDLERS);
 }
 
 void teardown_test(void) { }
 
 void test_can_basic(void) {
   volatile CANMessage rx_msg = { 0 };
-  can_register_rx_handler(&s_can, 0x6, prv_rx_callback, &rx_msg);
-  can_register_rx_handler(&s_can, 0x1, prv_rx_callback, &rx_msg);
-  can_register_rx_handler(&s_can, 0x5, prv_rx_callback, &rx_msg);
+  can_register_rx_handler(0x6, prv_rx_callback, &rx_msg);
+  can_register_rx_handler(0x1, prv_rx_callback, &rx_msg);
+  can_register_rx_handler(0x5, prv_rx_callback, &rx_msg);
 
   CANMessage msg = {
     .msg_id = 0x5,
@@ -64,7 +76,7 @@ void test_can_basic(void) {
     .dlc = 1
   };
 
-  StatusCode ret = can_transmit(&s_can, &msg, NULL);
+  StatusCode ret = can_transmit(&msg, NULL);
   TEST_ASSERT_OK(ret);
 
   Event e = { 0 };
@@ -72,7 +84,7 @@ void test_can_basic(void) {
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
   TEST_ASSERT_EQUAL(1, e.data);
 
-  bool processed = fsm_process_event(&s_can.fsm, &e);
+  bool processed = fsm_process_event(CAN_FSM, &e);
   TEST_ASSERT_TRUE(processed);
 
   TEST_ASSERT_EQUAL(msg.msg_id, rx_msg.msg_id);
@@ -81,10 +93,10 @@ void test_can_basic(void) {
 
 void test_can_filter(void) {
   volatile CANMessage rx_msg = { 0 };
-  can_add_filter(&s_can, 0x2);
+  can_add_filter(0x2);
 
-  can_register_rx_handler(&s_can, 0x1, prv_rx_callback, &rx_msg);
-  can_register_rx_handler(&s_can, 0x2, prv_rx_callback, &rx_msg);
+  can_register_rx_handler(0x1, prv_rx_callback, &rx_msg);
+  can_register_rx_handler(0x2, prv_rx_callback, &rx_msg);
 
   CANMessage msg = {
     .msg_id = 0x1,
@@ -93,10 +105,10 @@ void test_can_filter(void) {
     .dlc = 8
   };
 
-  StatusCode ret = can_transmit(&s_can, &msg, NULL);
+  StatusCode ret = can_transmit(&msg, NULL);
   TEST_ASSERT_OK(ret);
   msg.msg_id = 0x2;
-  ret = can_transmit(&s_can, &msg, NULL);
+  ret = can_transmit(&msg, NULL);
   TEST_ASSERT_OK(ret);
 
   Event e = { 0 };
@@ -104,7 +116,7 @@ void test_can_filter(void) {
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
   TEST_ASSERT_EQUAL(1, e.data);
 
-  bool processed = fsm_process_event(&s_can.fsm, &e);
+  bool processed = fsm_process_event(CAN_FSM, &e);
   TEST_ASSERT_TRUE(processed);
 
   TEST_ASSERT_EQUAL(msg.msg_id, rx_msg.msg_id);
@@ -127,20 +139,20 @@ void test_can_ack(void) {
     .num_expected = 1
   };
 
-  StatusCode ret = can_transmit(&s_can, &msg, &ack_req);
+  StatusCode ret = can_transmit(&msg, &ack_req);
   TEST_ASSERT_OK(ret);
 
   Event e = { 0 };
   // Handle RX of message and attempt transmit of ACK
   while (event_process(&e) != STATUS_CODE_OK) { }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
-  bool processed = fsm_process_event(&s_can.fsm, &e);
+  bool processed = fsm_process_event(CAN_FSM, &e);
   TEST_ASSERT_TRUE(processed);
 
   // Handle RX of ACK
   while (event_process(&e) != STATUS_CODE_OK) { }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
-  processed = fsm_process_event(&s_can.fsm, &e);
+  processed = fsm_process_event(CAN_FSM, &e);
   TEST_ASSERT_TRUE(processed);
 
   TEST_ASSERT_EQUAL(TEST_CAN_DEVICE_ID, device_acked);
@@ -161,7 +173,7 @@ void test_can_ack_expire(void) {
     .num_expected = 4
   };
 
-  StatusCode ret = can_transmit(&s_can, &msg, &ack_req);
+  StatusCode ret = can_transmit(&msg, &ack_req);
   TEST_ASSERT_OK(ret);
 
   while (ack_status == NUM_ACK_STATUSES) { }
@@ -185,22 +197,22 @@ void test_can_ack_status(void) {
     .num_expected = 1
   };
 
-  can_register_rx_handler(&s_can, TEST_CAN_UNKNOWN_MSG_ID, prv_rx_callback, &rx_msg);
+  can_register_rx_handler(TEST_CAN_UNKNOWN_MSG_ID, prv_rx_callback, &rx_msg);
 
-  StatusCode ret = can_transmit(&s_can, &msg, &ack_req);
+  StatusCode ret = can_transmit(&msg, &ack_req);
   TEST_ASSERT_OK(ret);
 
   Event e = { 0 };
   // Handle RX of message and attempt transmit of ACK
   while (event_process(&e) != STATUS_CODE_OK) { }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
-  bool processed = fsm_process_event(&s_can.fsm, &e);
+  bool processed = fsm_process_event(CAN_FSM, &e);
   TEST_ASSERT_TRUE(processed);
 
   // Handle RX of ACK
   while (event_process(&e) != STATUS_CODE_OK) { }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
-  processed = fsm_process_event(&s_can.fsm, &e);
+  processed = fsm_process_event(CAN_FSM, &e);
   TEST_ASSERT_TRUE(processed);
 
   TEST_ASSERT_EQUAL(CAN_ACK_STATUS_UNKNOWN, ack_status);
@@ -215,16 +227,16 @@ void test_can_default(void) {
     .dlc = 1
   };
 
-  can_register_rx_default_handler(&s_can, prv_rx_callback, &rx_msg);
+  can_register_rx_default_handler(prv_rx_callback, &rx_msg);
 
-  StatusCode ret = can_transmit(&s_can, &msg, NULL);
+  StatusCode ret = can_transmit(&msg, NULL);
   TEST_ASSERT_OK(ret);
 
   Event e = { 0 };
   // Handle message RX
   while (event_process(&e) != STATUS_CODE_OK) { }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
-  bool processed = fsm_process_event(&s_can.fsm, &e);
+  bool processed = fsm_process_event(CAN_FSM, &e);
   TEST_ASSERT_TRUE(processed);
 
   TEST_ASSERT_EQUAL(msg.msg_id, rx_msg.msg_id);

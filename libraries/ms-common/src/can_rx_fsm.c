@@ -5,12 +5,12 @@
 FSM_DECLARE_STATE(can_rx_fsm_handle);
 
 FSM_STATE_TRANSITION(can_rx_fsm_handle) {
-  CANConfig *can = fsm->context;
-  FSM_ADD_TRANSITION(can->rx_event, can_rx_fsm_handle);
+  CANStorage *can_storage = fsm->context;
+  FSM_ADD_TRANSITION(can_storage->rx_event, can_rx_fsm_handle);
 }
 
-static StatusCode prv_handle_data_msg(CANConfig *can, const CANMessage *rx_msg) {
-  CANRxHandler *handler = can_rx_get_handler(&can->rx_handlers, rx_msg->msg_id);
+static StatusCode prv_handle_data_msg(CANStorage *can_storage, const CANMessage *rx_msg) {
+  CANRxHandler *handler = can_rx_get_handler(&can_storage->rx_handlers, rx_msg->msg_id);
   CANAckStatus ack_status = CAN_ACK_STATUS_OK;
   StatusCode ret = STATUS_CODE_OK;
 
@@ -26,7 +26,7 @@ static StatusCode prv_handle_data_msg(CANConfig *can, const CANMessage *rx_msg) 
       .data = ack_status
     };
 
-    ret = can_transmit(can, &ack, NULL);
+    ret = can_transmit(&ack, NULL);
     status_ok_or_return(ret);
   }
 
@@ -34,10 +34,10 @@ static StatusCode prv_handle_data_msg(CANConfig *can, const CANMessage *rx_msg) 
 }
 
 static void prv_handle_rx(FSM *fsm, const Event *e, void *context) {
-  CANConfig *can = context;
+  CANStorage *can_storage = context;
   CANMessage rx_msg = { 0 };
 
-  StatusCode result = can_queue_pop(&can->rx_queue, &rx_msg);
+  StatusCode result = can_queue_pop(&can_storage->rx_queue, &rx_msg);
   if (result != STATUS_CODE_OK) {
     // We had a mismatch between number of events and number of messages, so return silently
     // Alternatively, we could use the data value of the event.
@@ -48,11 +48,11 @@ static void prv_handle_rx(FSM *fsm, const Event *e, void *context) {
   // If needed, we could push it back to the queue.
   switch (rx_msg.type) {
     case CAN_MSG_TYPE_ACK:
-      result = can_ack_handle_msg(&can->ack_requests, &rx_msg);
+      result = can_ack_handle_msg(&can_storage->ack_requests, &rx_msg);
 
       break;
     case CAN_MSG_TYPE_DATA:
-      result = prv_handle_data_msg(can, &rx_msg);
+      result = prv_handle_data_msg(can_storage, &rx_msg);
 
       break;
     default:
@@ -63,18 +63,18 @@ static void prv_handle_rx(FSM *fsm, const Event *e, void *context) {
       break;
   }
 
-  if (can_queue_size(&can->rx_queue) > 0) {
+  if (can_queue_size(&can_storage->rx_queue) > 0) {
     // Re-raise event to process the next element in the queue
     event_raise(e->id, e->data);
   }
 }
 
-StatusCode can_rx_fsm_init(FSM *rx_fsm, CANConfig *can) {
+StatusCode can_rx_fsm_init(FSM *rx_fsm, CANStorage *can_storage) {
   if (rx_fsm == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  fsm_init(rx_fsm, "can_rx_fsm", &can_rx_fsm_handle, can);
+  fsm_init(rx_fsm, "can_rx_fsm", &can_rx_fsm_handle, can_storage);
   fsm_state_init(can_rx_fsm_handle, prv_handle_rx);
 
   return STATUS_CODE_OK;

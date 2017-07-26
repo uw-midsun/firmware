@@ -6,6 +6,7 @@
 // a newline or the buffer is full. Once that occurs, we pop the data into another buffer
 // and call the registered RX handler.
 #include "uart.h"
+#include <string.h>
 #include "stm32f0xx.h"
 
 // basic idea: tx is stored in a buffer, interrupt-driven

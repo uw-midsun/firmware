@@ -4,14 +4,13 @@
 #include "test_helpers.h"
 #include "interrupt.h"
 
-static CANHwConfig s_can;
 static volatile size_t s_msg_rx;
 static volatile uint16_t s_rx_id;
 static volatile uint64_t s_rx_data;
 static volatile size_t s_rx_len;
 
 static void prv_handle_rx(void *context) {
-  while (can_hw_receive(&s_can, &s_rx_id, &s_rx_data, &s_rx_len)) {
+  while (can_hw_receive(&s_rx_id, &s_rx_data, &s_rx_len)) {
     s_msg_rx++;
   }
 }
@@ -25,8 +24,15 @@ static void prv_wait_rx(size_t wait_for) {
 
 void setup_test(void) {
   interrupt_init();
-  can_hw_init(&s_can, 250, true);
-  can_hw_register_callback(&s_can, CAN_HW_EVENT_MSG_RX, prv_handle_rx, NULL);
+
+  CANHwSettings can_settings = {
+    .bus_speed = 250,
+    .loopback = true,
+    .tx = { GPIO_PORT_A, 12 },
+    .rx = { GPIO_PORT_A, 11 }
+  };
+  can_hw_init(&can_settings);
+  can_hw_register_callback(CAN_HW_EVENT_MSG_RX, prv_handle_rx, NULL);
   s_msg_rx = 0;
   s_rx_id = 0;
   s_rx_data = 0;
@@ -41,7 +47,7 @@ void test_can_hw_loop(void) {
   uint64_t tx_data = 0x1122334455667788;
   size_t tx_len = 8;
 
-  StatusCode ret = can_hw_transmit(&s_can, tx_id, &tx_data, tx_len);
+  StatusCode ret = can_hw_transmit(tx_id, &tx_data, tx_len);
   TEST_ASSERT_OK(ret);
 
   prv_wait_rx(1);
@@ -53,18 +59,18 @@ void test_can_hw_loop(void) {
 
 void test_can_hw_filter(void) {
   // Mask 0b11, require 0b01
-  can_hw_add_filter(&s_can, 0x03, 0x01);
+  can_hw_add_filter(0x03, 0x01);
 
   // 0b0011 - fail
-  StatusCode ret = can_hw_transmit(&s_can, 0x3, 0, 0);
+  StatusCode ret = can_hw_transmit(0x3, 0, 0);
   TEST_ASSERT_OK(ret);
 
   // 0b0101 - pass
-  ret = can_hw_transmit(&s_can, 0x5, 0, 0);
+  ret = can_hw_transmit(0x5, 0, 0);
   TEST_ASSERT_OK(ret);
 
   // 0b00111001 - pass
-  ret = can_hw_transmit(&s_can, 0x39, 0, 0);
+  ret = can_hw_transmit(0x39, 0, 0);
   TEST_ASSERT_OK(ret);
 
   prv_wait_rx(2);

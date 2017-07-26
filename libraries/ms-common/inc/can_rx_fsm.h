@@ -1,5 +1,6 @@
 #pragma once
 // CAN RX event handlers
+// This is an internal module and should not be used.
 #include "fsm.h"
 #include "can.h"
 
@@ -10,4 +11,4 @@
 //         we send an ACK as a response. The callback may choose to set the ACK's status.
 // * ACK: Find the corresponding pending ACK request and process the ACK.
 
-StatusCode can_rx_fsm_init(FSM *rx_fsm, CANConfig *can);
+StatusCode can_rx_fsm_init(FSM *rx_fsm, CANStorage *can_storage);
