@@ -269,7 +269,7 @@ StatusCode ltc_afe_read_all_voltage(const LTCAFESettings *afe, uint16_t *result_
 StatusCode ltc_afe_read_all_aux(const LTCAFESettings *afe, uint16_t *result_data) {
   StatusCode result_status = STATUS_CODE_OK;
 
-  for (uint8_t cell = 0; cell < 12; ++cell) {
+  for (uint8_t cell = 0; cell < LTC6804_CELLS_PER_DEVICE; ++cell) {
     // configure the mux to read from cell
     prv_write_config(afe, (cell << 4) | LTC6804_GPIO1_PD_OFF);
 
