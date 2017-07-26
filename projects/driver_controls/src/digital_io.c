@@ -53,6 +53,8 @@ static void prv_get_event(DigitalIOData *digital_io_data, Event *e, GPIOState st
     case DIGITAL_IO_DEVICE_CRUISE_CONTROL_INC:
     case DIGITAL_IO_DEVICE_CRUISE_CONTROL_DEC:
     case DIGITAL_IO_DEVICE_HAZARD_LIGHT:
+    case DIGITAL_IO_DEVICE_HORN:
+    case DIGITAL_IO_DEVICE_PUSH_TO_TALK:
       e->id = digital_io_data->event;
       return;
   }

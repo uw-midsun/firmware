@@ -1,7 +1,7 @@
 #pragma once
 
 #define DRIVER_IO_GET_PIN(address) ((GPIOAddress)address.pin)
-#define DRIVER_IO_NUM_ADDRESSES 11
+#define DRIVER_IO_NUM_ADDRESSES 12
 
 // Digital address definitions
 
