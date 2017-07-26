@@ -235,7 +235,7 @@ StatusCode ltc_afe_read_all_voltage(const LTCAFESettings *afe, uint16_t *result_
 
   prv_trigger_adc_conversion(afe);
 
-  for (uint8_t cell_reg = 0; cell_reg < 4; ++cell_reg) {
+  for (uint8_t cell_reg = 0; cell_reg < NUM_LTC_AFE_VOLTAGE_REGISTER; ++cell_reg) {
     uint8_t afe_data[((LTC6804_CELLS_IN_REG * 2) + 2) * LTC_AFE_DEVICES_IN_CHAIN] = { 0 };
     uint16_t data_counter = 0;
 
