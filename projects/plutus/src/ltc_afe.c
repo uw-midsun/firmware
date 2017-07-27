@@ -66,7 +66,7 @@ static StatusCode prv_read_voltage(LTCAFESettings *afe, LTCAFEVoltageRegister re
 static void prv_trigger_adc_conversion(const LTCAFESettings *afe) {
   uint8_t mode = (uint8_t)((afe->adc_mode + 1) % 3);
   // ADCV command
-  uint16_t adcv = LTC6804_ADCV_RESERVED | LTC6804_ADCV_DISCHARGE_PERMITTED
+  uint16_t adcv = LTC6804_ADCV_RESERVED | LTC6804_ADCV_DISCHARGE_NOT_PERMITTED
                   | LTC6804_CNVT_CELL_ALL | (mode << 7);
   uint8_t cmd[4] = { 0 };
 

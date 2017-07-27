@@ -114,6 +114,7 @@ typedef enum {
 #define LTC6804_CNVT_CELL_5_11                0x05
 #define LTC6804_CNVT_CELL_6_12                0x06
 
+#define LTC6804_ADCV_DISCHARGE_NOT_PERMITTED  (0 << 4)
 #define LTC6804_ADCV_DISCHARGE_PERMITTED      (1 << 4)
 
 #define LTC6804_ADCOPT                        (1 << 0)
