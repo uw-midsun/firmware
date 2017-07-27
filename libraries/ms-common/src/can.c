@@ -17,6 +17,7 @@
 #include "soft_timer.h"
 #include "can_hw.h"
 #include "can_rx_fsm.h"
+#include "log.h"
 
 #define CAN_BUS_OFF_RECOVERY_TIME_MS 500
 
@@ -53,6 +54,7 @@ StatusCode can_init(const CANSettings *settings, CANStorage *storage,
   storage->device_id = settings->device_id;
 
   s_can_storage = storage;
+  LOG_DEBUG("Setting s_can_storage to %p\n", s_can_storage);
 
   CANHwSettings can_hw_settings = {
     .bus_speed = settings->bus_speed,
@@ -127,11 +129,12 @@ StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request)
   // but there really isn't any point. We get an interrupt whenever a TX mailbox is empty and
   // attempt to fill it, so that should usually take precedence over this function.
   StatusCode tx_result = prv_transmit(msg);
-  if (tx_result != STATUS_CODE_OK) {
-    // As long as the timer for the ACK request is started, it's okay for the message to fail.
-    // An optimization would be to fail early and signal that as an error.
-    return can_queue_push(&s_can_storage->tx_queue, msg);
-  }
+  // TODO: Figure out why this is causing duplicates
+  // if (tx_result != STATUS_CODE_OK) {
+  //   // As long as the timer for the ACK request is started, it's okay for the message to fail.
+  //   // An optimization would be to fail early and signal that as an error.
+  //   return can_queue_push(&s_can_storage->tx_queue, msg);
+  // }
 
   return STATUS_CODE_OK;
 }
@@ -158,8 +161,11 @@ void prv_tx_handler(void *context) {
   CANStorage *can_storage = context;
   CANMessage tx_msg;
 
+  // TODO: add rate limiting for retries
   while (can_queue_size(&can_storage->tx_queue) > 0) {
-    can_queue_peek(&can_storage->tx_queue, &tx_msg);
+    can_queue_pop(&can_storage->tx_queue, &tx_msg);
+
+    // printf("Actually sending msg %d (0x%x%x)\n", tx_msg.msg_id, tx_msg.data_u32[1], tx_msg.data_u32[0]);
 
     StatusCode result = prv_transmit(&tx_msg);
 
@@ -167,42 +173,52 @@ void prv_tx_handler(void *context) {
       return;
     }
 
-    can_queue_pop(&can_storage->tx_queue, NULL);
+    // can_queue_pop(&can_storage->tx_queue, NULL);
   }
 }
 
+// TODO: Flesh this out
+// Now assumes that the ISR will be fired once for each message and we should only process one at a
+// time
+// TODO: Why are we receiving multiple times?
 void prv_rx_handler(void *context) {
   CANStorage *can_storage = context;
   CANId rx_id = { 0 };
   CANMessage rx_msg = { 0 };
   size_t counter = 0;
 
-  while (can_hw_receive(&rx_id.raw, &rx_msg.data, &rx_msg.dlc)) {
-    CAN_MSG_SET_RAW_ID(&rx_msg, rx_id.raw);
+  can_hw_receive(&rx_id.raw, &rx_msg.data, &rx_msg.dlc);
+  CAN_MSG_SET_RAW_ID(&rx_msg, rx_id.raw);
+  // printf("rx msg %d\n", rx_msg.msg_id);
 
-    StatusCode result = can_queue_push(&can_storage->rx_queue, &rx_msg);
-    if (result != STATUS_CODE_OK) {
-      return;
-    }
-
-    counter++;
+  StatusCode result = can_queue_push(&can_storage->rx_queue, &rx_msg);
+  // TODO: add error handling for FSMs
+  if (result != STATUS_CODE_OK) {
+    // printf("error pushing msg to rx queue\n");
+    return;
   }
 
-  if (counter != 0) {
-    event_raise(can_storage->rx_event, counter);
-  }
+  // printf("raising rx event\n");
+  event_raise(can_storage->rx_event, 1);
 }
 
 void prv_bus_error_timeout_handler(SoftTimerID timer_id, void *context) {
   CANStorage *can_storage = context;
 
-  if (can_hw_bus_status() == CAN_HW_BUS_STATUS_OFF) {
+  printf("bus error timeout\n");
+
+  CANHwBusStatus status = can_hw_bus_status();
+
+  if (status == CAN_HW_BUS_STATUS_OFF) {
+    printf("raising fault event\n");
     event_raise(can_storage->fault_event, 0);
   }
 }
 
 void prv_bus_error_handler(void *context) {
   CANStorage *can_storage = context;
+
+  printf("Bus error\n");
 
   soft_timer_start_millis(CAN_BUS_OFF_RECOVERY_TIME_MS, prv_bus_error_timeout_handler,
                           can_storage, NULL);

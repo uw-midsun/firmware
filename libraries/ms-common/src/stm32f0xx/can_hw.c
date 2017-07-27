@@ -2,6 +2,7 @@
 #include <string.h>
 #include "stm32f0xx.h"
 #include "interrupt.h"
+#include "log.h"
 
 #define CAN_HW_BASE CAN
 #define CAN_HW_PRESCALER 12
@@ -120,7 +121,7 @@ StatusCode can_hw_transmit(uint16_t id, const uint8_t *data, size_t len) {
   uint8_t tx_status = CAN_Transmit(CAN_HW_BASE, &tx_msg);
   switch (tx_status) {
     case CAN_TxStatus_NoMailBox:
-    // case CAN_TxStatus_Failed:
+    case CAN_TxStatus_Failed:
       return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN HW TX failed");
       break;
     default:
@@ -135,8 +136,8 @@ bool can_hw_receive(uint16_t *id, uint64_t *data, size_t *len) {
   // 1: FIFO0 has received a message
   // 2: FIFO1 has received a message
   // 3: Both have received messages: arbitrarily pick FIFO0
-  uint8_t fifo_status = (CAN_GetITStatus(CAN_HW_BASE, CAN_IT_FMP0) == SET) |
-                        (CAN_GetITStatus(CAN_HW_BASE, CAN_IT_FMP1) == SET) << 1;
+  uint8_t fifo_status = (CAN_MessagePending(CAN_HW_BASE, CAN_FIFO0) != 0) |
+                        (CAN_MessagePending(CAN_HW_BASE, CAN_FIFO1) != 0) << 1;
   uint8_t fifo = (fifo_status == 2);
 
   if (fifo_status == 0) {
@@ -144,6 +145,7 @@ bool can_hw_receive(uint16_t *id, uint64_t *data, size_t *len) {
     return false;
   }
 
+  // printf("fifo %d - %d\n", fifo, CAN_MessagePending(CAN_HW_BASE, CAN_FIFO0));
   CanRxMsg rx_msg = { 0 };
   CAN_Receive(CAN_HW_BASE, fifo, &rx_msg);
 
@@ -166,8 +168,12 @@ void CEC_CAN_IRQHandler(void) {
     CANHwEventHandler *handler = &s_handlers[event];
     if (handler->callback != NULL && run_cb[event]) {
       handler->callback(handler->context);
+      break;
     }
   }
 
+  CAN_ClearITPendingBit(CAN_HW_BASE, CAN_IT_FMP0);
+  CAN_ClearITPendingBit(CAN_HW_BASE, CAN_IT_FMP1);
+  CAN_ClearITPendingBit(CAN_HW_BASE, CAN_IT_BOF);
   CAN_ClearITPendingBit(CAN_HW_BASE, CAN_IT_TME);
 }

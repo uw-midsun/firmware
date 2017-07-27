@@ -37,35 +37,37 @@ static void prv_handle_rx(FSM *fsm, const Event *e, void *context) {
   CANStorage *can_storage = context;
   CANMessage rx_msg = { 0 };
 
-  StatusCode result = can_queue_pop(&can_storage->rx_queue, &rx_msg);
-  if (result != STATUS_CODE_OK) {
-    // We had a mismatch between number of events and number of messages, so return silently
-    // Alternatively, we could use the data value of the event.
-    return;
-  }
+  // Only process the number of messages that we popped in the corresponding event
 
-  // We currently ignore failures to handle the message.
-  // If needed, we could push it back to the queue.
-  switch (rx_msg.type) {
-    case CAN_MSG_TYPE_ACK:
-      result = can_ack_handle_msg(&can_storage->ack_requests, &rx_msg);
+  uint16_t messages = e->data;
 
-      break;
-    case CAN_MSG_TYPE_DATA:
-      result = prv_handle_data_msg(can_storage, &rx_msg);
-
-      break;
-    default:
-      status_msg(STATUS_CODE_UNREACHABLE, "CAN RX: Invalid type");
-
+  // printf("RX handling %d\n", e->data);
+  while (messages--) {
+    StatusCode result = can_queue_pop(&can_storage->rx_queue, &rx_msg);
+    if (result != STATUS_CODE_OK) {
+      // We had a mismatch between number of events and number of messages, so return silently
+      // Alternatively, we could use the data value of the event.
       return;
-      // error
-      break;
-  }
+    }
 
-  if (can_queue_size(&can_storage->rx_queue) > 0) {
-    // Re-raise event to process the next element in the queue
-    event_raise(e->id, e->data);
+    // We currently ignore failures to handle the message.
+    // If needed, we could push it back to the queue.
+    switch (rx_msg.type) {
+      case CAN_MSG_TYPE_ACK:
+        result = can_ack_handle_msg(&can_storage->ack_requests, &rx_msg);
+
+        break;
+      case CAN_MSG_TYPE_DATA:
+        result = prv_handle_data_msg(can_storage, &rx_msg);
+
+        break;
+      default:
+        status_msg(STATUS_CODE_UNREACHABLE, "CAN RX: Invalid type");
+
+        return;
+        // error
+        break;
+    }
   }
 }
 
