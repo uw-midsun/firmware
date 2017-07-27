@@ -16,10 +16,11 @@
 typedef struct CANSettings {
   uint16_t device_id;
   uint16_t bus_speed;
-  EventID rx_event;
-  EventID fault_event;
   GPIOAddress tx;
   GPIOAddress rx;
+  EventID rx_event;
+  EventID tx_event;
+  EventID fault_event;
   bool loopback;
 } CANSettings;
 
@@ -30,6 +31,7 @@ typedef struct CANStorage {
   CANAckRequests ack_requests;
   CANRxHandlers rx_handlers;
   EventID rx_event;
+  EventID tx_event;
   EventID fault_event;
   uint16_t device_id;
 } CANStorage;

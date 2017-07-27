@@ -16,7 +16,7 @@
 #include <string.h>
 #include "soft_timer.h"
 #include "can_hw.h"
-#include "can_rx_fsm.h"
+#include "can_fsm.h"
 #include "log.h"
 
 #define CAN_BUS_OFF_RECOVERY_TIME_MS 500
@@ -50,6 +50,7 @@ StatusCode can_init(const CANSettings *settings, CANStorage *storage,
 
   memset(storage, 0, sizeof(*storage));
   storage->rx_event = settings->rx_event;
+  storage->tx_event = settings->tx_event;
   storage->fault_event = settings->fault_event;
   storage->device_id = settings->device_id;
 
@@ -64,7 +65,7 @@ StatusCode can_init(const CANSettings *settings, CANStorage *storage,
   };
   can_hw_init(&can_hw_settings);
 
-  can_rx_fsm_init(&s_can_storage->fsm, s_can_storage);
+  can_fsm_init(&s_can_storage->fsm, s_can_storage);
   can_queue_init(&s_can_storage->tx_queue);
   can_queue_init(&s_can_storage->rx_queue);
   can_ack_init(&s_can_storage->ack_requests);
@@ -128,7 +129,7 @@ StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request)
   // We could push the message first and attempt to transmit the message with the lowest ID,
   // but there really isn't any point. We get an interrupt whenever a TX mailbox is empty and
   // attempt to fill it, so that should usually take precedence over this function.
-  StatusCode tx_result = prv_transmit(msg);
+  // StatusCode tx_result = prv_transmit(msg);
   // TODO: Figure out why this is causing duplicates
   // if (tx_result != STATUS_CODE_OK) {
   //   // As long as the timer for the ACK request is started, it's okay for the message to fail.
@@ -136,7 +137,9 @@ StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request)
   //   return can_queue_push(&s_can_storage->tx_queue, msg);
   // }
 
-  return STATUS_CODE_OK;
+  // Basically, the idea is that all the TX and RX should be happening in the main event loop.
+  event_raise(s_can_storage->tx_event, 1);
+  return can_queue_push(&s_can_storage->tx_queue, msg);
 }
 
 FSM *can_get_fsm(void) {
@@ -147,33 +150,13 @@ FSM *can_get_fsm(void) {
   return &s_can_storage->fsm;
 }
 
-StatusCode prv_transmit(const CANMessage *msg) {
-  CANId msg_id = {
-    .source_id = s_can_storage->device_id,
-    .type = msg->type,
-    .msg_id = msg->msg_id
-  };
-
-  return can_hw_transmit(msg_id.raw, msg->data_u8, msg->dlc);
-}
-
 void prv_tx_handler(void *context) {
   CANStorage *can_storage = context;
   CANMessage tx_msg;
 
-  // TODO: add rate limiting for retries
-  while (can_queue_size(&can_storage->tx_queue) > 0) {
-    can_queue_pop(&can_storage->tx_queue, &tx_msg);
-
-    // printf("Actually sending msg %d (0x%x%x)\n", tx_msg.msg_id, tx_msg.data_u32[1], tx_msg.data_u32[0]);
-
-    StatusCode result = prv_transmit(&tx_msg);
-
-    if (result != STATUS_CODE_OK) {
-      return;
-    }
-
-    // can_queue_pop(&can_storage->tx_queue, NULL);
+  if (can_queue_size(&can_storage->tx_queue) > 0) {
+    // Notify of the ability to TX?
+    event_raise(can_storage->tx_event, 1);
   }
 }
 

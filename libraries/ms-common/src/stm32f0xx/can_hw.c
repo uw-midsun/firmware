@@ -117,15 +117,9 @@ StatusCode can_hw_transmit(uint16_t id, const uint8_t *data, size_t len) {
 
   memcpy(tx_msg.Data, data, len);
 
-  // TX returns failed on loopback
-  uint8_t tx_status = CAN_Transmit(CAN_HW_BASE, &tx_msg);
-  switch (tx_status) {
-    case CAN_TxStatus_NoMailBox:
-    case CAN_TxStatus_Failed:
+  uint8_t tx_mailbox = CAN_Transmit(CAN_HW_BASE, &tx_msg);
+  if (tx_mailbox == CAN_TxStatus_NoMailBox) {
       return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN HW TX failed");
-      break;
-    default:
-      break;
   }
 
   return STATUS_CODE_OK;
