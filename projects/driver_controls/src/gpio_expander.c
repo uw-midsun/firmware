@@ -48,21 +48,24 @@ static uint8_t s_register[NUM_GPIO_EXPANDER_REGISTERS] = {
 };
 
 static void prv_update_registers() {
-  i2c_read_reg(I2C_PORT_1, GPIO_EXPANDER_ADDRESS, GPIO_EXPANDER_INTCAP, &s_register[GPIO_EXPANDER_INTCAP], 1);
-  i2c_read_reg(I2C_PORT_1, GPIO_EXPANDER_ADDRESS, GPIO_EXPANDER_GPIO, &s_register[GPIO_EXPANDER_GPIO], 1);
+  i2c_read_reg(I2C_PORT_1, GPIO_EXPANDER_ADDRESS, GPIO_EXPANDER_INTCAP,
+                &s_register[GPIO_EXPANDER_INTCAP], 1);
+  i2c_read_reg(I2C_PORT_1, GPIO_EXPANDER_ADDRESS, GPIO_EXPANDER_GPIO,
+                &s_register[GPIO_EXPANDER_GPIO], 1);
 }
 
 static void prv_interrupt_handler(GPIOAddress *address, void *context) {
   GPIOExpanderPin current_pin;
 
-  // Update interrupt flag register. 
-  i2c_read_reg(I2C_PORT_1, GPIO_EXPANDER_ADDRESS, GPIO_EXPANDER_INTF, &s_register[GPIO_EXPANDER_INTF], 1);
+  // Update interrupt flag register.
+  i2c_read_reg(I2C_PORT_1, GPIO_EXPANDER_ADDRESS, GPIO_EXPANDER_INTF,
+                &s_register[GPIO_EXPANDER_INTF], 1);
 
   while (s_register[GPIO_EXPANDER_INTF] != 0) {
     current_pin = __builtin_ffs(s_register[GPIO_EXPANDER_INTF]) - 1;
     s_interrupts[current_pin].callback(current_pin, s_interrupts[current_pin].context);
 
-    s_register[GPIO_EXPANDER_INTF] &= ~(1 << current_pin); 
+    s_register[GPIO_EXPANDER_INTF] &= ~(1 << current_pin);
   }
 
   // Clear the interrupt by reading the port registers
@@ -70,8 +73,6 @@ static void prv_interrupt_handler(GPIOAddress *address, void *context) {
 }
 
 static void prv_set_bit(uint8_t *data, GPIOExpanderPin pin, bool bit) {
-  // TODO: Better documentation
-  printf("Bit = %d, %#x -> ", bit, *data);
   if (bit) {
     *data |= (1 << pin);
   } else {
@@ -111,7 +112,7 @@ StatusCode gpio_expander_init(GPIOAddress address) {
 
 StatusCode gpio_expander_init_pin(GPIOExpanderPin pin, GPIOSettings *settings) {
   if (pin >= NUM_GPIO_EXPANDER_PIN) {
-    return status_code(STATUS_CODE_INVALID_ARGS); 
+    return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
   // Set the direction of the data I/O
@@ -157,7 +158,8 @@ StatusCode gpio_expander_set_state(GPIOExpanderPin pin, bool new_state) {
   }
 
   prv_set_bit(&s_register[GPIO_EXPANDER_GPIO], pin, new_state);
-  i2c_write_reg(I2C_PORT_1, GPIO_EXPANDER_ADDRESS, GPIO_EXPANDER_GPIO, &s_register[GPIO_EXPANDER_GPIO], 1);
+  i2c_write_reg(I2C_PORT_1, GPIO_EXPANDER_ADDRESS, GPIO_EXPANDER_GPIO,
+                &s_register[GPIO_EXPANDER_GPIO], 1);
 
   return STATUS_CODE_OK;
 }

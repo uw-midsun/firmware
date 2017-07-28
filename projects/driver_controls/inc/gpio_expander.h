@@ -24,7 +24,7 @@ typedef void (*GPIOExpanderCallback)(GPIOExpanderPin pin, void *context);
 // Initialize the expander and configure the given address to receive interrupts
 StatusCode gpio_expander_init(GPIOAddress address);
 
-// Initialize one of the expander's pins. 
+// Initialize one of the expander's pins.
 StatusCode gpio_expander_init_pin(GPIOExpanderPin pin, GPIOSettings *settings);
 
 // Obtain the current state of the pin
