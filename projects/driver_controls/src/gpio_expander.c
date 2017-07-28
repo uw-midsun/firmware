@@ -78,7 +78,6 @@ static void prv_set_bit(uint8_t *data, GPIOExpanderPin pin, bool bit) {
   } else {
     *data &= ~(1 << pin);
   }
-  printf("%#x\n", *data);
 }
 
 StatusCode gpio_expander_init(GPIOAddress address) {
