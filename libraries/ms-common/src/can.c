@@ -139,7 +139,10 @@ StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request)
 
   // Basically, the idea is that all the TX and RX should be happening in the main event loop.
   // We raise an event just to ensure that the CAN TX is postponed until the main event loop.
-  event_raise(s_can_storage->tx_event, 1);
+  if (can_queue_size(&s_can_storage->tx_queue) == 0) {
+    event_raise(s_can_storage->tx_event, 1);
+  }
+
   return can_queue_push(&s_can_storage->tx_queue, msg);
 }
 
@@ -156,11 +159,11 @@ void prv_tx_handler(void *context) {
   CANMessage tx_msg;
 
   // TODO: Figure out if we even need
-  // if (can_queue_size(&can_storage->tx_queue) > 0) {
-  //   // Notify of the ability to TX?
-  //   // TODO: Replace data value with something meaningful
-  //   event_raise(can_storage->tx_event, 0);
-  // }
+  if (can_queue_size(&can_storage->tx_queue) > 0) {
+    // Notify of the ability to TX?
+    // TODO: Replace data value with something meaningful
+    event_raise(can_storage->tx_event, 0);
+  }
 }
 
 // TODO: Flesh this out

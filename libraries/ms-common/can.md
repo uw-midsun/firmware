@@ -13,3 +13,13 @@ transmits using the TX ready interrupt, it's very easy to starve the main loop. 
 events to trigger an attempt to transmit. Normally, we use the TX ready ISR to trigger the next
 transmit. If no transmit is currently in progress (so no TX ready interrupt), we kickstart the
 transmit cycle with a TX event.
+
+Right now, it seems to be better if we just throw away messages that failed to transmit.
+Receive seems to work perfectly fine - it's just transmit that's having problems.
+Right now, I'm trying to check if any messages are being dropped. Unfortunately, the only way I have
+to test this is to increment the message ID and see if there are any gaps in the received packets.
+However, this is limited to the maximum message ID, after which it overflows back to 0. Since we
+use a min priority queue to buffer the messages, the order may be swapped at that point, giving
+a false positive. This is also why we can't rely on the ordering of our messages to be constant,
+as the priority queue algorithm isn't stable. This means we can't just increment the data field
+and keep the ID the same. This may have been a poor decision for transmits.

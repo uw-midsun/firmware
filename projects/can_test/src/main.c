@@ -16,13 +16,13 @@ static CANStorage s_can_storage;
 static CANRxHandler s_rx_handlers[CAN_TEST_NUM_RX_HANDLERS];
 
 static StatusCode prv_handle_can_rx(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
-  uint16_t *prev_msg = context;
+  uint32_t *prev_data = context;
 
-  if (msg->msg_id != (*prev_msg + 1) % CAN_MSG_MAX_IDS) {
-    printf("RX %d (expected %d)\n", msg->msg_id, (*prev_msg + 1) % CAN_MSG_MAX_IDS);
+  if (msg->data_u32[0] != (*prev_data + 1)) {
+    printf("RX %d (expected %d)\n", msg->data_u32[0], (*prev_data + 1));
   }
 
-  *prev_msg = msg->msg_id;
+  *prev_data = msg->data_u32[0];
   // printf("RX %d\n", msg->msg_id, msg->source_id);
   // printf("> Data 0x%x%x\n", msg->data_u32[1], msg->data_u32[0]);
 
@@ -31,20 +31,25 @@ static StatusCode prv_handle_can_rx(const CANMessage *msg, void *context, CANAck
 
 static void prv_timeout_cb(SoftTimerID timer_id, void *context) {
   CANMessage *msg = context;
-  msg->msg_id = (msg->msg_id + 1) % CAN_MSG_MAX_IDS;
-  msg->data++;
 
-  // printf("TX %d\n", msg->msg_id);
-  StatusCode ret = can_transmit(msg, NULL);
-  if (ret != STATUS_CODE_OK) {
-    printf("> CAN failed to TX! - %d\n", ret);
+  for (int i = 0; i < 10; i++) {
+    msg->msg_id = (msg->msg_id + 1) % CAN_MSG_MAX_IDS;
+    // msg->msg_id = i;
+    msg->data_u32[0]++;
+
+    printf("TX %d\n", msg->data_u32[0]);
+    StatusCode ret = can_transmit(msg, NULL);
+    if (ret != STATUS_CODE_OK) {
+      printf("TX fail %d - %d\n", msg->data_u32[0], ret);
+    }
   }
 
-  soft_timer_start_millis(2, prv_timeout_cb, msg, NULL);
+  soft_timer_start_millis(10, prv_timeout_cb, msg, NULL);
 }
 
 static void prv_hello_world(SoftTimerID timer_id, void *context) {
-  printf("Hello - %d\n", *(uint16_t *)context);
+  uint32_t *prev_data = context;
+  printf("Hello - %d\n", *prev_data);
   gpio_toggle_state(&s_led);
   soft_timer_start_seconds(1, prv_hello_world, context, NULL);
 }
@@ -63,7 +68,7 @@ int main(void) {
 
   CANSettings can_settings = {
     .device_id = 0x4,
-    .bus_speed = 250,
+    .bus_speed = 125,
     .rx_event = CAN_TEST_EVENT_RX,
     .tx_event = CAN_TEST_EVENT_TX,
     .fault_event = CAN_TEST_EVENT_FAULT,
@@ -71,16 +76,16 @@ int main(void) {
     .rx = { GPIO_PORT_A, 11 },
   };
   can_init(&can_settings, &s_can_storage, s_rx_handlers, CAN_TEST_NUM_RX_HANDLERS);
-  uint16_t prev_msg = 0;
-  can_register_rx_default_handler(prv_handle_can_rx, &prev_msg);
+  uint32_t prev_data = 0;
+  can_register_rx_default_handler(prv_handle_can_rx, &prev_data);
 
   CANMessage msg = {
     .msg_id = 0x1,
     .dlc = 8,
     .data = 0
   };
-  soft_timer_start_millis(1, prv_timeout_cb, &msg, NULL);
-  soft_timer_start_seconds(1, prv_hello_world, &prev_msg, NULL);
+  soft_timer_start_millis(100, prv_timeout_cb, &msg, NULL);
+  soft_timer_start_seconds(1, prv_hello_world, &prev_data, NULL);
 
   while (true) {
     Event e = { 0 };

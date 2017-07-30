@@ -80,10 +80,7 @@ static void prv_handle_rx(FSM *fsm, const Event *e, void *context) {
 
 // TODO: flesh out design
 // now assuming that TX is always 1-to-1
-// TX events are raised to kick off a TX event
-// basically the idea is that we wait until the TX event is processed to actually transmit it
-// If we already have something queued to transmit, we wait until it's done before transmitting
-// the next message.
+// basically want to be able to rate-limit tx attempts - delay processing until TX happens
 static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
   CANStorage *can_storage = context;
   CANMessage tx_msg = { 0 };
@@ -104,13 +101,13 @@ static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
 
   // If added to mailbox, pop message from the TX queue
   StatusCode ret = can_hw_transmit(msg_id.raw, tx_msg.data_u8, tx_msg.dlc);
-  if (true || ret == STATUS_CODE_OK) {
-    // printf("pop %d\n", tx_msg.msg_id);
+  if (ret == STATUS_CODE_OK) {
     can_queue_pop(&can_storage->tx_queue, NULL);
+    // printf("pop %d\n", tx_msg.msg_id);
   } else {
     // TODO: This may end up being a problem - may be easier to just throw away packet
     event_raise(can_storage->tx_event, 2);
-    // printf("%d TX fail\n", tx_msg.msg_id);
+    printf("%d TX fail\n", tx_msg.msg_id);
     // TODO: on error, re-raise event after some time - this will be our rate limiting
   }
 }
