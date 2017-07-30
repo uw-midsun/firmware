@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include "can_ack.h"
 #include "can_queue.h"
+#include "can_fifo.h"
 #include "can_rx.h"
 #include "gpio.h"
 #include "fsm.h"
@@ -26,7 +27,7 @@ typedef struct CANSettings {
 
 typedef struct CANStorage {
   FSM fsm;
-  volatile CANQueue tx_queue;
+  volatile CANFifo tx_fifo;
   volatile CANQueue rx_queue;
   CANAckRequests ack_requests;
   CANRxHandlers rx_handlers;

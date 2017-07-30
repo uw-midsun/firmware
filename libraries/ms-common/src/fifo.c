@@ -36,6 +36,20 @@ StatusCode fifo_push_impl(Fifo *fifo, void *source_elem, size_t elem_size) {
   return STATUS_CODE_OK;
 }
 
+StatusCode fifo_peek_impl(Fifo *fifo, void *dest_elem, size_t elem_size) {
+  if (fifo->num_elems == 0) {
+    return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
+  } else if (fifo->elem_size != elem_size && dest_elem != NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+
+  if (dest_elem != NULL) {
+    memcpy(dest_elem, fifo->head, fifo->elem_size);
+  }
+
+  return STATUS_CODE_OK;
+}
+
 StatusCode fifo_pop_impl(Fifo *fifo, void *dest_elem, size_t elem_size) {
   if (fifo->num_elems == 0) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);

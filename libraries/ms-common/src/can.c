@@ -66,7 +66,7 @@ StatusCode can_init(const CANSettings *settings, CANStorage *storage,
   can_hw_init(&can_hw_settings);
 
   can_fsm_init(&s_can_storage->fsm, s_can_storage);
-  can_queue_init(&s_can_storage->tx_queue);
+  can_fifo_init(&s_can_storage->tx_fifo);
   can_queue_init(&s_can_storage->rx_queue);
   can_ack_init(&s_can_storage->ack_requests);
   can_rx_init(&s_can_storage->rx_handlers, rx_handlers, num_rx_handlers);
@@ -139,11 +139,11 @@ StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request)
 
   // Basically, the idea is that all the TX and RX should be happening in the main event loop.
   // We raise an event just to ensure that the CAN TX is postponed until the main event loop.
-  if (can_queue_size(&s_can_storage->tx_queue) == 0) {
+  // if (can_fifo_size(&s_can_storage->tx_fifo) == 0) {
     event_raise(s_can_storage->tx_event, 1);
-  }
+  // }
 
-  return can_queue_push(&s_can_storage->tx_queue, msg);
+  return can_fifo_push(&s_can_storage->tx_fifo, msg);
 }
 
 FSM *can_get_fsm(void) {
@@ -159,7 +159,7 @@ void prv_tx_handler(void *context) {
   CANMessage tx_msg;
 
   // TODO: Figure out if we even need
-  if (can_queue_size(&can_storage->tx_queue) > 0) {
+  if (can_fifo_size(&can_storage->tx_fifo) > 0) {
     // Notify of the ability to TX?
     // TODO: Replace data value with something meaningful
     event_raise(can_storage->tx_event, 0);

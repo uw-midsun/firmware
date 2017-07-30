@@ -85,9 +85,9 @@ static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
   CANStorage *can_storage = context;
   CANMessage tx_msg = { 0 };
 
-  // printf("E: TX (%d) - %d queued\n", e->data, can_queue_size(&can_storage->tx_queue));
+  // printf("E: TX (%d) - %d queued\n", e->data, can_fifo_size(&can_storage->tx_fifo));
 
-  StatusCode result = can_queue_peek(&can_storage->tx_queue, &tx_msg);
+  StatusCode result = can_fifo_peek(&can_storage->tx_fifo, &tx_msg);
   if (result != STATUS_CODE_OK) {
     // Mismatch
     return;
@@ -102,12 +102,12 @@ static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
   // If added to mailbox, pop message from the TX queue
   StatusCode ret = can_hw_transmit(msg_id.raw, tx_msg.data_u8, tx_msg.dlc);
   if (ret == STATUS_CODE_OK) {
-    can_queue_pop(&can_storage->tx_queue, NULL);
+    can_fifo_pop(&can_storage->tx_fifo, NULL);
     // printf("pop %d\n", tx_msg.msg_id);
   } else {
     // TODO: This may end up being a problem - may be easier to just throw away packet
     event_raise(can_storage->tx_event, 2);
-    printf("%d TX fail\n", tx_msg.msg_id);
+    printf("%d TX fail\n", tx_msg.data_u32[0]);
     // TODO: on error, re-raise event after some time - this will be our rate limiting
   }
 }

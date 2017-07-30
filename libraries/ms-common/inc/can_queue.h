@@ -1,4 +1,5 @@
 #pragma once
+// Specific instance of backed PQueue for CAN
 #include "pqueue_backed.h"
 #include "can_msg.h"
 

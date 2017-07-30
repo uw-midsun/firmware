@@ -6,8 +6,8 @@
 #define CAN_TEST_NUM_RX_HANDLERS 5
 
 typedef enum {
-  CAN_TEST_EVENT_RX = 0,
-  CAN_TEST_EVENT_TX,
+  CAN_TEST_EVENT_TX = 0,
+  CAN_TEST_EVENT_RX,
   CAN_TEST_EVENT_FAULT
 } CANTestEvent;
 
@@ -32,19 +32,16 @@ static StatusCode prv_handle_can_rx(const CANMessage *msg, void *context, CANAck
 static void prv_timeout_cb(SoftTimerID timer_id, void *context) {
   CANMessage *msg = context;
 
-  for (int i = 0; i < 10; i++) {
-    msg->msg_id = (msg->msg_id + 1) % CAN_MSG_MAX_IDS;
-    // msg->msg_id = i;
-    msg->data_u32[0]++;
+  // msg->msg_id = (msg->msg_id + 1) % CAN_MSG_MAX_IDS;
+  msg->data_u32[0]++;
 
-    printf("TX %d\n", msg->data_u32[0]);
-    StatusCode ret = can_transmit(msg, NULL);
-    if (ret != STATUS_CODE_OK) {
-      printf("TX fail %d - %d\n", msg->data_u32[0], ret);
-    }
+  // printf("TX %d\n", msg->data_u32[0]);
+  StatusCode ret = can_transmit(msg, NULL);
+  if (ret != STATUS_CODE_OK) {
+    printf("TX fail %d - %d\n", msg->data_u32[0], ret);
   }
 
-  soft_timer_start_millis(10, prv_timeout_cb, msg, NULL);
+  soft_timer_start_millis(2, prv_timeout_cb, msg, NULL);
 }
 
 static void prv_hello_world(SoftTimerID timer_id, void *context) {
@@ -68,7 +65,7 @@ int main(void) {
 
   CANSettings can_settings = {
     .device_id = 0x4,
-    .bus_speed = 125,
+    .bus_speed = 250,
     .rx_event = CAN_TEST_EVENT_RX,
     .tx_event = CAN_TEST_EVENT_TX,
     .fault_event = CAN_TEST_EVENT_FAULT,
