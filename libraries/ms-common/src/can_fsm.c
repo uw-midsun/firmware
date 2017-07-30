@@ -1,5 +1,6 @@
 #include "can_fsm.h"
 #include "can_rx.h"
+#include "can_hw.h"
 #include "can.h"
 
 FSM_DECLARE_STATE(can_rx_fsm_handle);
@@ -79,9 +80,15 @@ static void prv_handle_rx(FSM *fsm, const Event *e, void *context) {
 
 // TODO: flesh out design
 // now assuming that TX is always 1-to-1
+// TX events are raised to kick off a TX event
+// basically the idea is that we wait until the TX event is processed to actually transmit it
+// If we already have something queued to transmit, we wait until it's done before transmitting
+// the next message.
 static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
   CANStorage *can_storage = context;
   CANMessage tx_msg = { 0 };
+
+  // printf("E: TX (%d) - %d queued\n", e->data, can_queue_size(&can_storage->tx_queue));
 
   StatusCode result = can_queue_peek(&can_storage->tx_queue, &tx_msg);
   if (result != STATUS_CODE_OK) {
@@ -97,9 +104,13 @@ static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
 
   // If added to mailbox, pop message from the TX queue
   StatusCode ret = can_hw_transmit(msg_id.raw, tx_msg.data_u8, tx_msg.dlc);
-  if (ret == STATUS_CODE_OK) {
+  if (true || ret == STATUS_CODE_OK) {
+    // printf("pop %d\n", tx_msg.msg_id);
     can_queue_pop(&can_storage->tx_queue, NULL);
   } else {
+    // TODO: This may end up being a problem - may be easier to just throw away packet
+    event_raise(can_storage->tx_event, 2);
+    // printf("%d TX fail\n", tx_msg.msg_id);
     // TODO: on error, re-raise event after some time - this will be our rate limiting
   }
 }
