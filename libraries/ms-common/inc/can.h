@@ -28,13 +28,14 @@ typedef struct CANSettings {
 typedef struct CANStorage {
   FSM fsm;
   volatile CANFifo tx_fifo;
-  volatile CANQueue rx_queue;
+  volatile CANFifo rx_fifo;
   CANAckRequests ack_requests;
   CANRxHandlers rx_handlers;
   EventID rx_event;
   EventID tx_event;
   EventID fault_event;
   uint16_t device_id;
+  volatile uint16_t num_failed_tx;
 } CANStorage;
 
 // Initializes the specified CAN configuration given pointers to persistant storage.

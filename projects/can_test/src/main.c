@@ -19,7 +19,7 @@ static StatusCode prv_handle_can_rx(const CANMessage *msg, void *context, CANAck
   uint32_t *prev_data = context;
 
   if (msg->data_u32[0] != (*prev_data + 1)) {
-    printf("RX %d (expected %d)\n", msg->data_u32[0], (*prev_data + 1));
+    printf("RX %d (expected %d) - %d\n", msg->data_u32[0], (*prev_data + 1), msg->msg_id);
   }
 
   *prev_data = msg->data_u32[0];
@@ -35,13 +35,13 @@ static void prv_timeout_cb(SoftTimerID timer_id, void *context) {
   // msg->msg_id = (msg->msg_id + 1) % CAN_MSG_MAX_IDS;
   msg->data_u32[0]++;
 
-  // printf("TX %d\n", msg->data_u32[0]);
+  // printf("TX %d - %d\n", msg->data_u32[0], msg->msg_id);
   StatusCode ret = can_transmit(msg, NULL);
   if (ret != STATUS_CODE_OK) {
     printf("TX fail %d - %d\n", msg->data_u32[0], ret);
   }
 
-  soft_timer_start_millis(2, prv_timeout_cb, msg, NULL);
+  soft_timer_start_millis(5, prv_timeout_cb, msg, NULL);
 }
 
 static void prv_hello_world(SoftTimerID timer_id, void *context) {
@@ -76,7 +76,7 @@ int main(void) {
   uint32_t prev_data = 0;
   can_register_rx_default_handler(prv_handle_can_rx, &prev_data);
 
-  CANMessage msg = {
+  volatile CANMessage msg = {
     .msg_id = 0x1,
     .dlc = 8,
     .data = 0

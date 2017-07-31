@@ -51,7 +51,7 @@ static void prv_handle_rx(FSM *fsm, const Event *e, void *context) {
   uint16_t messages = e->data;
 
   // printf("RX handling %d\n", e->data);
-  StatusCode result = can_queue_pop(&can_storage->rx_queue, &rx_msg);
+  StatusCode result = can_fifo_pop(&can_storage->rx_fifo, &rx_msg);
   if (result != STATUS_CODE_OK) {
     // We had a mismatch between number of events and number of messages, so return silently
     // Alternatively, we could use the data value of the event.
@@ -99,16 +99,24 @@ static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
     .msg_id = tx_msg.msg_id
   };
 
+  // TODO: race condition here?
+  if (tx_msg.data_u32[0] == 0 && tx_msg.type == CAN_MSG_TYPE_DATA) {
+    printf("TX FSM %d - %d\n", tx_msg.data_u32[0], tx_msg.msg_id);
+  }
+
   // If added to mailbox, pop message from the TX queue
   StatusCode ret = can_hw_transmit(msg_id.raw, tx_msg.data_u8, tx_msg.dlc);
   if (ret == STATUS_CODE_OK) {
     can_fifo_pop(&can_storage->tx_fifo, NULL);
     // printf("pop %d\n", tx_msg.msg_id);
   } else {
-    // TODO: This may end up being a problem - may be easier to just throw away packet
-    event_raise(can_storage->tx_event, 2);
+    // CAN TX attempt failed - record attempt for TX ready interrupt
+    // Once TX is ready again, it will raise new TX events
+    // technically, there's a race condition here - if the TX ready interrupt fires before we
+    // increment, then we'll fail to kickstart the TX loop so the failed TX won't occur until the
+    // next transmit.
+    can_storage->num_failed_tx++;
     printf("%d TX fail\n", tx_msg.data_u32[0]);
-    // TODO: on error, re-raise event after some time - this will be our rate limiting
   }
 }
 

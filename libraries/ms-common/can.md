@@ -23,3 +23,7 @@ use a min priority queue to buffer the messages, the order may be swapped at tha
 a false positive. This is also why we can't rely on the ordering of our messages to be constant,
 as the priority queue algorithm isn't stable. This means we can't just increment the data field
 and keep the ID the same. This may have been a poor decision for transmits.
+
+We might want to just keep track of the number of missed transmits. Then, when the TX ready interrupt
+fires, it can generate an event for each missed TX. We could even generate a single event, as there
+isn't any point in trying to transmit more than once for each TX ready interrupt.

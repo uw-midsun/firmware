@@ -1,6 +1,7 @@
 // Basically, this module glues all the components of CAN together.
 //
 // It hooks into the CAN HW callbacks:
+// TODO: update this
 // - TX ready: When a transmit is requested, it will first try to immediately send the message.
 //             If that fails, then the message is pushed into a queue. When the TX ready callback
 //             runs, it tries to send any messages in that queue. This callback should run before
@@ -53,6 +54,7 @@ StatusCode can_init(const CANSettings *settings, CANStorage *storage,
   storage->tx_event = settings->tx_event;
   storage->fault_event = settings->fault_event;
   storage->device_id = settings->device_id;
+  storage->num_failed_tx = 0;
 
   s_can_storage = storage;
   LOG_DEBUG("Setting s_can_storage to %p\n", s_can_storage);
@@ -67,7 +69,7 @@ StatusCode can_init(const CANSettings *settings, CANStorage *storage,
 
   can_fsm_init(&s_can_storage->fsm, s_can_storage);
   can_fifo_init(&s_can_storage->tx_fifo);
-  can_queue_init(&s_can_storage->rx_queue);
+  can_fifo_init(&s_can_storage->rx_fifo);
   can_ack_init(&s_can_storage->ack_requests);
   can_rx_init(&s_can_storage->rx_handlers, rx_handlers, num_rx_handlers);
 
@@ -126,22 +128,13 @@ StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request)
     status_ok_or_return(ret);
   }
 
-  // We could push the message first and attempt to transmit the message with the lowest ID,
-  // but there really isn't any point. We get an interrupt whenever a TX mailbox is empty and
-  // attempt to fill it, so that should usually take precedence over this function.
-  // StatusCode tx_result = prv_transmit(msg);
-  // TODO: Figure out why this is causing duplicates
-  // if (tx_result != STATUS_CODE_OK) {
-  //   // As long as the timer for the ACK request is started, it's okay for the message to fail.
-  //   // An optimization would be to fail early and signal that as an error.
-  //   return can_queue_push(&s_can_storage->tx_queue, msg);
-  // }
-
   // Basically, the idea is that all the TX and RX should be happening in the main event loop.
   // We raise an event just to ensure that the CAN TX is postponed until the main event loop.
-  // if (can_fifo_size(&s_can_storage->tx_fifo) == 0) {
-    event_raise(s_can_storage->tx_event, 1);
-  // }
+  event_raise(s_can_storage->tx_event, 1);
+
+  if (msg->data_u32[0] == 0 && msg->type == CAN_MSG_TYPE_DATA) {
+    printf("> tx %d msg %d\n", msg->data_u32[0], msg->msg_id);
+  }
 
   return can_fifo_push(&s_can_storage->tx_fifo, msg);
 }
@@ -158,10 +151,12 @@ void prv_tx_handler(void *context) {
   CANStorage *can_storage = context;
   CANMessage tx_msg;
 
-  // TODO: Figure out if we even need
-  if (can_fifo_size(&can_storage->tx_fifo) > 0) {
-    // Notify of the ability to TX?
+  // If we failed to TX some messages, raise a TX event to trigger a transmit attempt.
+  // We only raise one event since TX ready interrupts are 1-to-1.
+  if (can_storage->num_failed_tx > 0) {
+    // Notify of the ability to TX
     // TODO: Replace data value with something meaningful
+    can_storage->num_failed_tx--;
     event_raise(can_storage->tx_event, 0);
   }
 }
@@ -178,9 +173,12 @@ void prv_rx_handler(void *context) {
 
   can_hw_receive(&rx_id.raw, &rx_msg.data, &rx_msg.dlc);
   CAN_MSG_SET_RAW_ID(&rx_msg, rx_id.raw);
-  // printf("rx msg %d\n", rx_msg.msg_id);
+  if (rx_msg.data_u32[0] == 0 && rx_msg.type == CAN_MSG_TYPE_DATA) {
+    printf("%d\n", rx_id.raw);
+    printf("> rx %d msg %d\n", rx_msg.data_u32[0], rx_msg.msg_id);
+  }
 
-  StatusCode result = can_queue_push(&can_storage->rx_queue, &rx_msg);
+  StatusCode result = can_fifo_push(&can_storage->rx_fifo, &rx_msg);
   // TODO: add error handling for FSMs
   if (result != STATUS_CODE_OK) {
     // printf("error pushing msg to rx queue\n");
