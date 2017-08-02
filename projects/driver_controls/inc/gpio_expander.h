@@ -1,11 +1,12 @@
 #pragma once
 
-// Requires GPIO and Interrupts to be initialized
+// Requires GPIO, Interrupts, and I2C to be initialized
 
 #include <stdbool.h>
 
 #include "gpio.h"
 #include "interrupt.h"
+#include "i2c.h"
 
 typedef enum {
   GPIO_EXPANDER_PIN_0 = 0,
@@ -21,8 +22,8 @@ typedef enum {
 
 typedef void (*GPIOExpanderCallback)(GPIOExpanderPin pin, void *context);
 
-// Initialize the expander and configure the given address to receive interrupts
-StatusCode gpio_expander_init(GPIOAddress address);
+// Initialize the expander and pass in an address to use for the interrupt pin
+StatusCode gpio_expander_init(GPIOAddress address, I2CPort i2c_port);
 
 // Initialize one of the expander's pins.
 StatusCode gpio_expander_init_pin(GPIOExpanderPin pin, GPIOSettings *settings);
