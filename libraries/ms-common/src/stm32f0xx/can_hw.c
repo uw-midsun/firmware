@@ -51,7 +51,9 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
   CAN_ITConfig(CAN_HW_BASE, CAN_IT_TME, ENABLE);
   CAN_ITConfig(CAN_HW_BASE, CAN_IT_FMP0, ENABLE);
   CAN_ITConfig(CAN_HW_BASE, CAN_IT_FMP1, ENABLE);
-  CAN_ITConfig(CAN_HW_BASE, CAN_IT_BOF, ENABLE);
+  CAN_ITConfig(CAN_HW_BASE, CAN_FLAG_EWG, ENABLE);
+  // TODO: what is going on and why is my interrupt not firing
+  CAN_ITConfig(CAN_HW_BASE, CAN_IT_ERR, ENABLE);
   stm32f0xx_interrupt_nvic_enable(CEC_CAN_IRQn, INTERRUPT_PRIORITY_HIGH);
 
   can_hw_add_filter(0, 0);
@@ -155,7 +157,8 @@ void CEC_CAN_IRQHandler(void) {
     [CAN_HW_EVENT_TX_READY] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_TME) == SET,
     [CAN_HW_EVENT_MSG_RX] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_FMP0) == SET ||
                             CAN_GetITStatus(CAN_HW_BASE, CAN_IT_FMP1) == SET,
-    [CAN_HW_EVENT_BUS_ERROR] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_BOF) == SET
+    [CAN_HW_EVENT_BUS_ERROR] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_BOF) == SET ||
+                               CAN_GetITStatus(CAN_HW_BASE, CAN_FLAG_EWG) == SET
   };
 
   for (int event = 0; event < NUM_CAN_HW_EVENTS; event++) {
@@ -166,8 +169,7 @@ void CEC_CAN_IRQHandler(void) {
     }
   }
 
-  CAN_ClearITPendingBit(CAN_HW_BASE, CAN_IT_FMP0);
-  CAN_ClearITPendingBit(CAN_HW_BASE, CAN_IT_FMP1);
+  CAN_ClearITPendingBit(CAN_HW_BASE, CAN_FLAG_EWG);
   CAN_ClearITPendingBit(CAN_HW_BASE, CAN_IT_BOF);
   CAN_ClearITPendingBit(CAN_HW_BASE, CAN_IT_TME);
 }

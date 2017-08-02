@@ -104,11 +104,15 @@ static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
     printf("TX FSM %d - %d\n", tx_msg.data_u32[0], tx_msg.msg_id);
   }
 
+  // TODO: Semes to be some sort of deadlock if the bus is flooded - why does this not turn off the
+  // bus?
   // If added to mailbox, pop message from the TX queue
   StatusCode ret = can_hw_transmit(msg_id.raw, tx_msg.data_u8, tx_msg.dlc);
   if (ret == STATUS_CODE_OK) {
     can_fifo_pop(&can_storage->tx_fifo, NULL);
     // printf("pop %d\n", tx_msg.msg_id);
+  } else if (can_hw_bus_status() != CAN_HW_BUS_STATUS_OK) {
+    printf("bus error??? %d\n", can_hw_bus_status());
   } else {
     // CAN TX attempt failed - record attempt for TX ready interrupt
     // Once TX is ready again, it will raise new TX events
@@ -116,7 +120,8 @@ static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
     // increment, then we'll fail to kickstart the TX loop so the failed TX won't occur until the
     // next transmit.
     can_storage->num_failed_tx++;
-    printf("%d TX fail\n", tx_msg.data_u32[0]);
+    printf("%d TX fail (%d) %d\n", tx_msg.data_u32[0], can_fifo_size(&can_storage->tx_fifo),
+           can_storage->num_failed_tx);
   }
 }
 

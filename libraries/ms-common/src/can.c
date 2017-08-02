@@ -157,7 +157,9 @@ void prv_tx_handler(void *context) {
     // Notify of the ability to TX
     // TODO: Replace data value with something meaningful
     can_storage->num_failed_tx--;
+    // TODO: The race condition I anticipated may have occurred
     event_raise(can_storage->tx_event, 0);
+    printf("TX ready %d\n", can_storage->num_failed_tx);
   }
 }
 

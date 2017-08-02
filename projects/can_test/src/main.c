@@ -31,6 +31,7 @@ static StatusCode prv_handle_can_rx(const CANMessage *msg, void *context, CANAck
 
 static void prv_timeout_cb(SoftTimerID timer_id, void *context) {
   CANMessage *msg = context;
+  uint32_t timeout = 2;
 
   // msg->msg_id = (msg->msg_id + 1) % CAN_MSG_MAX_IDS;
   msg->data_u32[0]++;
@@ -39,9 +40,10 @@ static void prv_timeout_cb(SoftTimerID timer_id, void *context) {
   StatusCode ret = can_transmit(msg, NULL);
   if (ret != STATUS_CODE_OK) {
     printf("TX fail %d - %d\n", msg->data_u32[0], ret);
+    timeout = 10000;
   }
 
-  soft_timer_start_millis(5, prv_timeout_cb, msg, NULL);
+  soft_timer_start_millis(timeout, prv_timeout_cb, msg, NULL);
 }
 
 static void prv_hello_world(SoftTimerID timer_id, void *context) {
