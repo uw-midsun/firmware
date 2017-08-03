@@ -25,15 +25,15 @@ typedef void (*GPIOExpanderCallback)(GPIOExpanderPin pin, void *context);
 // Initialize the expander and pass in an address to use for the interrupt pin
 StatusCode gpio_expander_init(GPIOAddress address, I2CPort i2c_port);
 
-// Initialize one of the expander's pins.
+// Initialize one of the expander pins.
 StatusCode gpio_expander_init_pin(GPIOExpanderPin pin, GPIOSettings *settings);
 
-// Obtain the current state of the pin
+// Obtain the current state of the pin from the 
 bool gpio_expander_get_state(GPIOExpanderPin pin);
 
-// Set the current state of the pin
+// Set the state of an output pin
 StatusCode gpio_expander_set_state(GPIOExpanderPin pin, bool new_state);
 
-// Register a callback
+// Register a callback for a specific pin
 StatusCode gpio_expander_register_callback(GPIOExpanderPin pin,
                                            GPIOExpanderCallback callback, void *context);
