@@ -31,6 +31,7 @@ static uint8_t s_register[NUM_MCP23008_REGISTERS] = {
   [MCP23008_OLAT]    = 0x00
 };
 
+// Check to see if the pin passed in has a correct value
 static StatusCode prv_pin_is_valid(GPIOExpanderPin pin) {
   if (pin >= NUM_GPIO_EXPANDER_PIN) {
     return status_code(STATUS_CODE_INVALID_ARGS);
