@@ -2,10 +2,9 @@
 #include "log.h"
 #include "test_helpers.h"
 #include "gpio_expander.h"
+#include "i2c.h"
 
-#define I2C_PORT_1 0
-
-void callback(GPIOExpanderPin pin, GPIOState state, void *context) { }
+void prv_callback(GPIOExpanderPin pin, GPIOState state, void *context) { }
 
 void setup_test(void) {
   // GPIO initialization
@@ -25,7 +24,7 @@ void setup_test(void) {
   TEST_ASSERT_OK(gpio_expander_init(address, I2C_PORT_1));
 }
 
-void teardown_test(void) {}
+void teardown_test(void) { }
 
 void test_gpio_expander_init_pin(void) {
   GPIOSettings input_settings = { .direction = GPIO_DIR_IN };
@@ -44,13 +43,13 @@ void test_gpio_expander_register_callback(void) {
 }
 
 void test_gpio_expander_get_state(void) {
-  GPIOState state;
+  GPIOState state = GPIO_STATE_LOW;
   TEST_ASSERT_NOT_OK(gpio_expander_get_state(NUM_GPIO_EXPANDER_PINS, &state));
   TEST_ASSERT_OK(gpio_expander_get_state(GPIO_EXPANDER_PIN_0, &state));
 }
 
 void test_gpio_expander_set_state(void) {
-  GPIOState state = 0;
+  GPIOState state = GPIO_STATE_LOW;
   TEST_ASSERT_NOT_OK(gpio_expander_set_state(NUM_GPIO_EXPANDER_PINS, state));
   TEST_ASSERT_NOT_OK(gpio_expander_set_state(NUM_GPIO_EXPANDER_PINS, state));
 }
