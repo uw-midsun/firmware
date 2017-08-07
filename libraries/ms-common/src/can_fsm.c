@@ -99,11 +99,6 @@ static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
     .msg_id = tx_msg.msg_id
   };
 
-  // TODO: race condition here?
-  if (tx_msg.data_u32[0] == 0 && tx_msg.type == CAN_MSG_TYPE_DATA) {
-    printf("TX FSM %d - %d\n", tx_msg.data_u32[0], tx_msg.msg_id);
-  }
-
   // TODO: Semes to be some sort of deadlock if the bus is flooded - why does this not turn off the
   // bus?
   // If added to mailbox, pop message from the TX queue

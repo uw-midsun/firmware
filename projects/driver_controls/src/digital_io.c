@@ -76,7 +76,7 @@ static void prv_input_callback(GPIOAddress *address, void *context) {
 
   DigitalIOData *data = context;
 
-  gpio_get_value(address, &state);
+  gpio_get_state(address, &state);
   prv_get_event(data, &e, state);
   event_raise(e.id, e.data);
 }

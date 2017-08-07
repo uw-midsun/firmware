@@ -68,14 +68,14 @@ StatusCode gpio_init_pin(GPIOAddress *address, GPIOSettings *settings) {
   }
 
   // Set the pin state.
-  gpio_set_pin_state(address, settings->state);
+  gpio_set_state(address, settings->state);
 
   // Use the init_struct to set the pin.
   GPIO_Init(s_gpio_port_map[address->port], &init_struct);
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_set_pin_state(GPIOAddress *address, GPIOState state) {
+StatusCode gpio_set_state(GPIOAddress *address, GPIOState state) {
   if (!prv_is_address_valid(address) || !prv_is_state_valid(&state)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -99,7 +99,7 @@ StatusCode gpio_toggle_state(GPIOAddress *address) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_get_value(GPIOAddress *address, GPIOState *input_state) {
+StatusCode gpio_get_state(GPIOAddress *address, GPIOState *input_state) {
   if (!prv_is_address_valid(address)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }

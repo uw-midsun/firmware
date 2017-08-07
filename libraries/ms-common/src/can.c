@@ -157,7 +157,6 @@ void prv_tx_handler(void *context) {
     // Notify of the ability to TX
     // TODO: Replace data value with something meaningful
     can_storage->num_failed_tx--;
-    // TODO: The race condition I anticipated may have occurred
     event_raise(can_storage->tx_event, 0);
     printf("TX ready %d\n", can_storage->num_failed_tx);
   }
@@ -166,7 +165,6 @@ void prv_tx_handler(void *context) {
 // TODO: Flesh this out
 // Now assumes that the ISR will be fired once for each message and we should only process one at a
 // time
-// TODO: Why are we receiving multiple times?
 void prv_rx_handler(void *context) {
   CANStorage *can_storage = context;
   CANId rx_id = { 0 };

@@ -67,10 +67,10 @@ StatusCode gpio_init(void);
 StatusCode gpio_init_pin(GPIOAddress *address, GPIOSettings *settings);
 
 // Set the pin state by address.
-StatusCode gpio_set_pin_state(GPIOAddress *address, GPIOState state);
+StatusCode gpio_set_state(GPIOAddress *address, GPIOState state);
 
 // Toggles the output state of the pin.
 StatusCode gpio_toggle_state(GPIOAddress *address);
 
 // Gets the value of the input register for a pin and assigns it to the state that is passed in.
-StatusCode gpio_get_value(GPIOAddress *address, GPIOState *input_state);
+StatusCode gpio_get_state(GPIOAddress *address, GPIOState *input_state);

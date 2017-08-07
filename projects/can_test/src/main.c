@@ -31,9 +31,9 @@ static StatusCode prv_handle_can_rx(const CANMessage *msg, void *context, CANAck
 
 static void prv_timeout_cb(SoftTimerID timer_id, void *context) {
   CANMessage *msg = context;
-  uint32_t timeout = 2;
+  uint32_t timeout = 1;
 
-  // msg->msg_id = (msg->msg_id + 1) % CAN_MSG_MAX_IDS;
+  msg->msg_id = (msg->msg_id + 1) % CAN_MSG_MAX_IDS;
   msg->data_u32[0]++;
 
   // printf("TX %d - %d\n", msg->data_u32[0], msg->msg_id);
@@ -64,6 +64,17 @@ int main(void) {
     .state = GPIO_STATE_LOW
   };
   gpio_init_pin(&s_led, &gpio_settings);
+
+  GPIOAddress pin_out = { GPIO_PORT_A, 0 };
+  GPIOAddress pin_in = { GPIO_PORT_A, 1 };
+  gpio_init_pin(&pin_out, &gpio_settings);
+  gpio_settings.direction = GPIO_DIR_IN;
+  gpio_settings.resistor = GPIO_RES_PULLUP;
+  gpio_init_pin(&pin_in, &gpio_settings);
+  GPIOState io_state = GPIO_STATE_LOW;
+  gpio_get_state(&pin_in, &io_state);
+
+  printf("CAN ID: %d\n", 0x4 + (io_state == GPIO_STATE_LOW));
 
   CANSettings can_settings = {
     .device_id = 0x4,

@@ -24,6 +24,9 @@ a false positive. This is also why we can't rely on the ordering of our messages
 as the priority queue algorithm isn't stable. This means we can't just increment the data field
 and keep the ID the same. This may have been a poor decision for transmits.
 
+I've now moved CAN to use FIFOs instead. Priority queue was not a great idea since we might have
+some messages that rely on ordering.
+
 We might want to just keep track of the number of missed transmits. Then, when the TX ready interrupt
 fires, it can generate an event for each missed TX. We could even generate a single event, as there
 isn't any point in trying to transmit more than once for each TX ready interrupt.

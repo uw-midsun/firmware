@@ -49,7 +49,7 @@ StatusCode gpio_init_pin(GPIOAddress *address, GPIOSettings *settings) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_set_pin_state(GPIOAddress *address, GPIOState state) {
+StatusCode gpio_set_state(GPIOAddress *address, GPIOState state) {
   if (!prv_is_address_valid(address) || !prv_is_state_valid(&state)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -72,7 +72,7 @@ StatusCode gpio_toggle_state(GPIOAddress *address) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_get_value(GPIOAddress *address, GPIOState *state) {
+StatusCode gpio_get_state(GPIOAddress *address, GPIOState *state) {
   if (!prv_is_address_valid(address)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
