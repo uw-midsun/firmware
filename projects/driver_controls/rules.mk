@@ -7,6 +7,7 @@
 
 # Specify the device library you want to include
 $(T)_DEPS := ms-common
+
 ifeq (x86,$(PLATFORM))
 $(T)_EXCLUDE_TESTS := can can_hw adc gpio_expander
 endif

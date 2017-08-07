@@ -49,7 +49,14 @@ void test_gpio_expander_get_state(void) {
 }
 
 void test_gpio_expander_set_state(void) {
+  GPIOSettings output_settings = { .direction = GPIO_DIR_OUT, .state = GPIO_STATE_HIGH };
+  gpio_expander_init_pin(GPIO_EXPANDER_PIN_0, &output_settings)
+
+  TEST_ASSERT_NOT_OK(gpio_expander_set_state(NUM_GPIO_EXPANDER_PINS, GPIO_STATE_LOW));
+  TEST_ASSERT_OK(gpio_expander_set_state(GPIO_EXPANDER_PIN_0, GPIO_STATE_LOW));
+
   GPIOState state = GPIO_STATE_LOW;
-  TEST_ASSERT_NOT_OK(gpio_expander_set_state(NUM_GPIO_EXPANDER_PINS, state));
-  TEST_ASSERT_NOT_OK(gpio_expander_set_state(NUM_GPIO_EXPANDER_PINS, state));
+
+  gpio_expander_get_state(GPIO_EXPANDER_PIN_0, &state);
+  TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
 }
