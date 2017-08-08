@@ -36,10 +36,10 @@ void test_gpio_expander_init_pin(void) {
 }
 
 void test_gpio_expander_register_callback(void) {
-  TEST_ASSERT_NOT_OK(gpio_expander_register_callback(NUM_GPIO_EXPANDER_PINS, callback, NULL));
+  TEST_ASSERT_NOT_OK(gpio_expander_register_callback(NUM_GPIO_EXPANDER_PINS, prv_callback, NULL));
 
-  TEST_ASSERT_OK(gpio_expander_register_callback(GPIO_EXPANDER_PIN_0, callback, NULL));
-  TEST_ASSERT_OK(gpio_expander_register_callback(GPIO_EXPANDER_PIN_1, callback, NULL));
+  TEST_ASSERT_OK(gpio_expander_register_callback(GPIO_EXPANDER_PIN_0, prv_callback, NULL));
+  TEST_ASSERT_OK(gpio_expander_register_callback(GPIO_EXPANDER_PIN_1, prv_callback, NULL));
 }
 
 void test_gpio_expander_get_state(void) {
@@ -49,14 +49,24 @@ void test_gpio_expander_get_state(void) {
 }
 
 void test_gpio_expander_set_state(void) {
+  GPIOSettings input_settings = { .direction = GPIO_DIR_IN };
   GPIOSettings output_settings = { .direction = GPIO_DIR_OUT, .state = GPIO_STATE_HIGH };
-  gpio_expander_init_pin(GPIO_EXPANDER_PIN_0, &output_settings)
+
+  gpio_expander_init_pin(GPIO_EXPANDER_PIN_0, &input_settings);
+  gpio_expander_init_pin(GPIO_EXPANDER_PIN_1, &output_settings);
+  gpio_expander_init_pin(GPIO_EXPANDER_PIN_2, &output_settings);
 
   TEST_ASSERT_NOT_OK(gpio_expander_set_state(NUM_GPIO_EXPANDER_PINS, GPIO_STATE_LOW));
-  TEST_ASSERT_OK(gpio_expander_set_state(GPIO_EXPANDER_PIN_0, GPIO_STATE_LOW));
+  TEST_ASSERT_NOT_OK(gpio_expander_set_state(GPIO_EXPANDER_PIN_0, GPIO_STATE_LOW));
 
-  GPIOState state = GPIO_STATE_LOW;
+  TEST_ASSERT_OK(gpio_expander_set_state(GPIO_EXPANDER_PIN_1, GPIO_STATE_LOW));
+  TEST_ASSERT_OK(gpio_expander_set_state(GPIO_EXPANDER_PIN_2, GPIO_STATE_HIGH));
 
-  gpio_expander_get_state(GPIO_EXPANDER_PIN_0, &state);
+  GPIOState state;
+
+  gpio_expander_get_state(GPIO_EXPANDER_PIN_1, &state);
   TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
+
+  gpio_expander_get_state(GPIO_EXPANDER_PIN_2, &state);
+  TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
 }
