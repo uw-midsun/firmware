@@ -16,6 +16,7 @@ $(T)_OBJ_ROOT := $(OBJ_CACHE)/$(T)
 $(T)_INC_DIRS := $($(T)_DIR)/inc $($(T)_DIR)/inc/$(PLATFORM)
 
 $(T)_CFLAGS := $(CFLAGS)
+$(T)_DEPS :=
 
 # Include library variables - we expect to have $(T)_SRC, $(T)_INC, $(T)_DEPS, and $(T)_CFLAGS
 include $($(T)_DIR)/rules.mk
@@ -40,32 +41,41 @@ $(STATIC_LIB_DIR)/lib$(T).a: $($(T)_OBJ) $(call dep_to_lib,$($(T)_DEPS)) | $(STA
 	@$(AR) -r $@ $^
 
 # Application target
-$(BIN_DIR)/$(T)$(PLATFORM_EXT): $($(T)_OBJ) $(call dep_to_lib,$($(T)_DEPS)) | $(BIN_DIR)
+$(BIN_DIR)/$(T)$(PLATFORM_EXT): $($(T)_OBJ) $(call dep_to_lib,$($(T)_DEPS)) | $(T) $(BIN_DIR)
 	@echo "Building $(notdir $@) for $(PLATFORM)"
 	@$(CC) $(CFLAGS) -Wl,-Map=$(BIN_DIR)/$(notdir $(@:%$(PLATFORM_EXT)=%.map)) $^ -o $@ -L$(STATIC_LIB_DIR) \
-		$(addprefix -l,$(APP_DEPS)) \
-		$(LDFLAGS) $(addprefix -I,$(INC_DIRS))
+		$(addprefix -l,$($(firstword $|)_DEPS)) \
+		$(LDFLAGS) $(addprefix -I,$($(firstword $|)_INC_DIRS))
 	@$(OBJDUMP) -St $@ >$(basename $@).lst
 	@$(SIZE) $@
 
 # Object target - use first order-only dependency to expand the library name for subshells
 $($(T)_OBJ_ROOT)/%.o: $($(T)_SRC_ROOT)/%.c | $(T) $(dir $($(T)_OBJ))
 	@echo "$(firstword $|): $(notdir $<) -> $(notdir $@)"
-	@$(CC) -MD -MP -w -c -o $@ $< $($(firstword $|)_CFLAGS) $(addprefix -I,$(INC_DIRS))
+	@$(CC) -MD -MP -w -c -o $@ $< $($(firstword $|)_CFLAGS) $(addprefix -I,$($(firstword $|)_INC_DIRS))
 
 $($(T)_OBJ_ROOT)/%.o: $($(T)_SRC_ROOT)/%.s | $(T) $(dir $($(T)_OBJ))
 	@echo "$(firstword $|): $(notdir $<) -> $(notdir $@)"
-	@$(CC) -MD -MP -w -c -o $@ $< $($(firstword $|)_CFLAGS) $(addprefix -I,$(INC_DIRS))
+	@$(CC) -MD -MP -w -c -o $@ $< $($(firstword $|)_CFLAGS) $(addprefix -I,$($(firstword $|)_INC_DIRS))
 
 .PHONY: $(T) $(TARGET_TYPE)
-$(T): | $(TARGET_TYPE)
-	$(eval APP_DEPS += $($(@)_DEPS))
+
+# Postpone dependency and include directory resolution
+# We use make's dependency resolution to ensure that the libraries and projects
+# are resolved in the correct order.
+$(T): $($(T)_DEPS) | $(TARGET_TYPE)
+	$(eval $(@)_DEPS += $(foreach dep,$^,$($(dep)_DEPS)))
+	$(eval $(@)_INC_DIRS += $(LIB_INC_DIRS))
 	@echo "Processing $(firstword $|) $@"
 
 $(TARGET_TYPE):
 
 ifneq (unity,$(T))
   include $(MAKE_DIR)/build_test.mk
+endif
+
+ifeq (LIB,$(TARGET_TYPE))
+  LIB_INC_DIRS := $(sort $(LIB_INC_DIRS) $($(T)_INC_DIRS))
 endif
 
 DIRS := $(sort $(DIRS) $($(T)_OBJ_DIR) $(dir $($(T)_OBJ)))

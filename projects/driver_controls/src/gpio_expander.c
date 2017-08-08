@@ -14,65 +14,50 @@ typedef struct GPIOExpanderInterrupt {
 static GPIOAddress s_address;
 static I2CPort s_i2c_port;
 
-static GPIOExpanderInterrupt s_interrupts[NUM_GPIO_EXPANDER_PIN];
 
-// Default register values (Datasheet Table 1-3)
-static uint8_t s_register[NUM_MCP23008_REGISTERS] = {
-  [MCP23008_IODIR]   = 0xff,
-  [MCP23008_IPOL]    = 0x00,
-  [MCP23008_GPINTEN] = 0x00,
-  [MCP23008_DEFVAL]  = 0x00,
-  [MCP23008_INTCON]  = 0x00,
-  [MCP23008_IOCON]   = 0x00,
-  [MCP23008_GPPU]    = 0x00,
-  [MCP23008_INTF]    = 0x00,
-  [MCP23008_INTCAP]  = 0x00,
-  [MCP23008_GPIO]    = 0x00,
-  [MCP23008_OLAT]    = 0x00
-};
+static GPIOExpanderInterrupt s_interrupts[NUM_GPIO_EXPANDER_PINS];
 
 // Check to see if the pin passed in has a correct value
 static StatusCode prv_pin_is_valid(GPIOExpanderPin pin) {
-  if (pin >= NUM_GPIO_EXPANDER_PIN) {
+  if (pin >= NUM_GPIO_EXPANDER_PINS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   return STATUS_CODE_OK;
 }
 
-static void prv_update_registers() {
-  // INTCAP and GPIO are the only registers that need to be read when updating, as they are the
-  // only registers that can change without program intervention
-  i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_INTCAP, &s_register[MCP23008_INTCAP], 1);
-  i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPIO, &s_register[MCP23008_GPIO], 1);
-}
-
 static void prv_interrupt_handler(GPIOAddress *address, void *context) {
-  // Update interrupt flag register.
-  i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_INTF, &s_register[MCP23008_INTF], 1);
+  uint8_t intf = 0, intcap = 0;
+
+  // Read the contents of the interrupt flag and interrupt capture registers
+  i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_INTF, &intf, 1);
+  i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_INTCAP, &intcap, 1);
 
   // Identify all pins with a pending interrupt and execute their callbacks
   GPIOExpanderPin current_pin;
-  while (s_register[MCP23008_INTF] != 0) {
-    current_pin = __builtin_ffs(s_register[MCP23008_INTF]) - 1;
+  while (intf != 0) {
+    current_pin = __builtin_ffs(intf) - 1;
 
     if (s_interrupts[current_pin].callback != NULL) {
-      s_interrupts[current_pin].callback(current_pin, s_interrupts[current_pin].context);
+      s_interrupts[current_pin].callback(
+        current_pin,
+        (intcap >> current_pin) & 1,
+        s_interrupts[current_pin].context);
     }
 
-    s_register[MCP23008_INTF] &= ~(1 << current_pin);
+    intf &= ~(1 << current_pin);
   }
-
-  // Clear the interrupt by reading the port registers
-  prv_update_registers();
 }
 
-// Set the value of a specific bit in a register
-static void prv_set_bit(uint8_t *data, GPIOExpanderPin pin, bool bit) {
+// Set a specific bit in a given register
+static void prv_set_bit(uint8_t reg, GPIOExpanderPin pin, bool bit) {
+  uint8_t data;
+  i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, reg, &data, 1);
   if (bit) {
-    *data |= (1 << pin);
+    data |= (1 << pin);
   } else {
-    *data &= ~(1 << pin);
+    data &= ~(1 << pin);
   }
+  i2c_write_reg(s_i2c_port, MCP23008_ADDRESS, reg, &data, 1);
 }
 
 StatusCode gpio_expander_init(GPIOAddress address, I2CPort i2c_port) {
@@ -89,12 +74,9 @@ StatusCode gpio_expander_init(GPIOAddress address, I2CPort i2c_port) {
                               prv_interrupt_handler, NULL);
 
   // Initialize the interrupt callbacks to NULL
-  for (uint8_t i = 0; i < NUM_GPIO_EXPANDER_PIN; i++) {
+  for (uint8_t i = 0; i < NUM_GPIO_EXPANDER_PINS; i++) {
     s_interrupts[i].callback = NULL;
   }
-
-  // Use Sequential write to set each register to the default value
-  i2c_write_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_IODIR, &s_register[MCP23008_IODIR], 11);
 
   return STATUS_CODE_OK;
 }
@@ -103,55 +85,50 @@ StatusCode gpio_expander_init_pin(GPIOExpanderPin pin, GPIOSettings *settings) {
   StatusCode valid = prv_pin_is_valid(pin);
   status_ok_or_return(valid);
 
-  if (pin >= NUM_GPIO_EXPANDER_PIN) {
-    return status_code(STATUS_CODE_INVALID_ARGS);
-  }
-
   // Set the direction of the data I/O
-  prv_set_bit(&s_register[MCP23008_IODIR], pin, (settings->direction == GPIO_DIR_IN));
-  i2c_write_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_IODIR, &s_register[MCP23008_IODIR], 1);
+  prv_set_bit(MCP23008_IODIR, pin, (settings->direction == GPIO_DIR_IN));
 
   if (settings->direction == GPIO_DIR_OUT) {
     // Set the output state if the pin is an output
-    prv_set_bit(&s_register[MCP23008_GPIO], pin, (settings->state == GPIO_STATE_HIGH));
-    i2c_write_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPIO, &s_register[MCP23008_GPIO], 1);
+    prv_set_bit(MCP23008_GPIO, pin, (settings->state == GPIO_STATE_HIGH));
   } else {
     // Enable interrupts if the pin is an input
-    prv_set_bit(&s_register[MCP23008_GPINTEN], pin, true);
-    i2c_write_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPINTEN, &s_register[MCP23008_GPINTEN], 1);
+    prv_set_bit(MCP23008_GPINTEN, pin, true);
 
     // Configure so that any change in value triggers an interrupt
-    prv_set_bit(&s_register[MCP23008_INTCON], pin, false);
-    i2c_write_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_INTCON, &s_register[MCP23008_INTCON], 1);
+    prv_set_bit(MCP23008_INTCON, pin, false);
   }
 
   return STATUS_CODE_OK;
 }
 
-bool gpio_expander_get_state(GPIOExpanderPin pin) {
+StatusCode gpio_expander_get_state(GPIOExpanderPin pin, GPIOState *state) {
   StatusCode valid = prv_pin_is_valid(pin);
   status_ok_or_return(valid);
 
   // Update our GPIO register value and read the pin state
-  prv_update_registers();
-  bool state = (s_register[MCP23008_GPIO] >> pin) & 1;
+  uint8_t data;
+  status_ok_or_return(i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPIO, &data, 1));
 
-  return state;
+  *state = (data >> pin) & 1;
+
+  return STATUS_CODE_OK;
 }
 
-StatusCode gpio_expander_set_state(GPIOExpanderPin pin, bool new_state) {
+StatusCode gpio_expander_set_state(GPIOExpanderPin pin, GPIOState new_state) {
   StatusCode valid = prv_pin_is_valid(pin);
   status_ok_or_return(valid);
 
   // Return if the pin is configured as an input
-  uint8_t io_dir = s_register[MCP23008_IODIR];
+  uint8_t io_dir;
+  status_ok_or_return(i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_IODIR, &io_dir, 1));
+
   if ((io_dir >> pin) & 1) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
   // Set the output latch to the new logical state
-  prv_set_bit(&s_register[MCP23008_OLAT], pin, new_state);
-  i2c_write_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_OLAT, &s_register[MCP23008_OLAT], 1);
+  prv_set_bit(MCP23008_OLAT, pin, new_state);
 
   return STATUS_CODE_OK;
 }
