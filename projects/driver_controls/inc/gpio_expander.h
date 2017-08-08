@@ -29,7 +29,7 @@ StatusCode gpio_expander_init(GPIOAddress address, I2CPort i2c_port);
 // Initialize one of the expander pins.
 StatusCode gpio_expander_init_pin(GPIOExpanderPin pin, GPIOSettings *settings);
 
-// Obtain the current state of the pin from the internal registers
+// Returns the set output value or the current input value based on the pin configuration
 StatusCode gpio_expander_get_state(GPIOExpanderPin pin, GPIOState *state);
 
 // Set the state of an output pin
