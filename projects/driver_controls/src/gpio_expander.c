@@ -25,10 +25,9 @@ static StatusCode prv_pin_is_valid(GPIOExpanderPin pin) {
 }
 
 static void prv_interrupt_handler(GPIOAddress *address, void *context) {
-  // Read the contents of the interrupt flag and interrupt capture registers
-  uint8_t intf;
-  uint8_t intcap;
+  uint8_t intf = 0, intcap = 0;
 
+  // Read the contents of the interrupt flag and interrupt capture registers
   i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_INTF, &intf, 1);
   i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_INTCAP, &intcap, 1);
 
