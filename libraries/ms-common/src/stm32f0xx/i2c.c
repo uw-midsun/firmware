@@ -56,7 +56,9 @@ static StatusCode prv_transfer(I2CPort port, uint8_t addr, bool read,
       I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_TXIS, RESET);
       I2C_SendData(i2c, data[i]);
     }
-    I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_TC, RESET);
+    if (end_mode == I2C_SoftEnd_Mode) {
+      I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_TC, RESET);
+    }
   }
 
   return STATUS_CODE_OK;
