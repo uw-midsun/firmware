@@ -1,7 +1,5 @@
 #pragma once
 
-// TODO: Add register bitmasks
-
 // TLV493D default I2C address definition (Datasheet Chapter 4.2)
 #define TLV493D_ADDRESS   0x5E
 

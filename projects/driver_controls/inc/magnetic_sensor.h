@@ -14,4 +14,4 @@ typedef enum {
 
 StatusCode magnetic_sensor_init(I2CPort i2c_port);
 
-StatusCode magnetic_sensor_read_data(I2CPort i2c_port, MagneticSensorProbe probe);
+StatusCode magnetic_sensor_read_data(I2CPort i2c_port, int16_t *reading);
