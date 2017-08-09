@@ -24,3 +24,6 @@
 #define TLV493D_MOD2      0x3
 
 #define NUM_TLV493D_WRITE_REGISTERS 4
+
+// Constant to convert from LSB to microteslas (Datasheet chapter 3.1)
+#define TLV493D_LSB_TO_TESLA 98
