@@ -6,6 +6,7 @@
 static uint8_t s_read_reg[NUM_TLV493D_READ_REGISTERS];
 static uint8_t s_write_reg[NUM_TLV493D_WRITE_REGISTERS];
 
+// Returns reading in microteslas. Conversion method described in chapter 3.1 of the datasheet
 static int16_t prv_flux_conversion(uint8_t msb, uint8_t lsb) {
   uint16_t data = (msb << 4) | (lsb & 0xF);
 
@@ -13,15 +14,16 @@ static int16_t prv_flux_conversion(uint8_t msb, uint8_t lsb) {
     data -= 4096;
   }
 
-  return data;
+  return (data * TLV493D_LSB_TO_TESLA);
 }
 
 StatusCode magnetic_sensor_init(I2CPort i2c_port) {
   // Reset device by calling address 0x0
-  i2c_read(i2c_port, 0x0, s_read_reg, 0);
+  status_ok_or_return(i2c_read(i2c_port, 0x0, s_read_reg, 0));
 
   // Obtain the values of the read registers
-  i2c_read(i2c_port, TLV493D_ADDRESS, s_read_reg, NUM_TLV493D_READ_REGISTERS);
+  status_ok_or_return(i2c_read(i2c_port, TLV493D_ADDRESS, s_read_reg,
+                                NUM_TLV493D_READ_REGISTERS));
 
   // Correctly configure the write bits
   s_write_reg[TLV493D_RES1] = 0x00;
@@ -35,11 +37,15 @@ StatusCode magnetic_sensor_init(I2CPort i2c_port) {
   // FACTSET3 [4:0] -> MOD2 [4:0]
   s_write_reg[TLV493D_MOD2] = (s_read_reg[TLV493D_FACTSET2] & 0x1F);
 
-  i2c_write(i2c_port, TLV493D_ADDRESS, s_write_reg, NUM_TLV493D_WRITE_REGISTERS);
+  status_ok_or_return(i2c_write(i2c_port, TLV493D_ADDRESS, s_write_reg,
+                                NUM_TLV493D_WRITE_REGISTERS));
+
+  return STATUS_CODE_OK;
 }
 
 StatusCode magnetic_sensor_read_data(I2CPort i2c_port, int16_t *reading) {
-  i2c_read(i2c_port, TLV493D_ADDRESS, s_read_reg, NUM_TLV493D_READ_REGISTERS);
+  status_ok_or_return(i2c_read(i2c_port, TLV493D_ADDRESS, s_read_reg,
+                      NUM_TLV493D_READ_REGISTERS));
 
   reading[TLV493D_BX] = prv_flux_conversion(s_read_reg[TLV493D_BX],
                                             s_read_reg[TLV493D_BX2] >> 4);
@@ -50,6 +56,5 @@ StatusCode magnetic_sensor_read_data(I2CPort i2c_port, int16_t *reading) {
   reading[TLV493D_BZ] = prv_flux_conversion(s_read_reg[TLV493D_BZ],
                                             s_read_reg[TLV493D_BZ2] & 0xF);
 
-  int16_t raw = (s_read_reg[TLV493D_BX] << 4) | ((s_read_reg[TLV493D_BX2] >> 4));
-  printf("x = [ %d : %d ]\n", raw, reading[TLV493D_BX]);
+  return STATUS_CODE_OK;
 }
