@@ -1,5 +1,6 @@
 #include "magnetic_sensor.h"
 #include "tlv493d.h"
+#include "delay.h"
 
 // Registers need to be read out and stored so that configuration registers aren't
 // accidentally overwritten on write
@@ -55,6 +56,8 @@ StatusCode magnetic_sensor_read_data(I2CPort i2c_port, int16_t *reading) {
 
   reading[TLV493D_BZ] = prv_flux_conversion(s_read_reg[TLV493D_BZ],
                                             s_read_reg[TLV493D_BZ2] & 0xF);
+
+  delay_ms(10);
 
   return STATUS_CODE_OK;
 }
