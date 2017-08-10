@@ -25,9 +25,9 @@ int main(void) {
   ltc_afe_init(&afe_settings);
 
   while (true) {
-    uint16_t voltage_data[12 * PLUTUS_AFE_DEVICES_IN_CHAIN] = { 0 };
-    size_t voltage_len = 12 * PLUTUS_AFE_DEVICES_IN_CHAIN;
-    StatusCode status = ltc_afe_read_all_voltage(&afe_settings, voltage_data, voltage_len);
+    uint16_t voltages[12 * PLUTUS_AFE_DEVICES_IN_CHAIN] = { 0 };
+    size_t len = SIZEOF_ARRAY(voltages);
+    StatusCode status = ltc_afe_read_all_voltage(&afe_settings, voltages, len);
     if (status != STATUS_CODE_OK) {
       LOG_DEBUG("Invalid status\n");
     }

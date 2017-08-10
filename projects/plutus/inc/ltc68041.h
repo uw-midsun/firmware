@@ -1,4 +1,6 @@
 #pragma once
+#include "plutus_config.h"
+
 // used internally by the LTC AFE driver
 
 #define LTC6804_CELLS_IN_REG                    3
@@ -45,6 +47,60 @@ typedef enum {
   LTC_AFE_DISCHARGE_TIMEOUT_90_MIN,
   LTC_AFE_DISCHARGE_TIMEOUT_120_MIN
 } LTCAFEDischargeTimeout;
+
+
+// SPI Packets
+// WRCFG command
+typedef struct {
+  uint8_t data_hi;
+  uint8_t data_lo;
+
+  uint8_t pec_hi;
+  uint8_t pec_lo;
+} _PACKED LTCAFEWriteConfigCmdPacket;
+STATIC_ASSERT(sizeof(LTCAFEWriteConfigCmdPacket) == 4,
+              "LTCAFEWriteConfigCmdPacket must be 4 bytes");
+
+// WRCFG register contents
+typedef struct {
+  LTCAFEConfigRegisterData reg;
+
+  uint16_t pec;
+} _PACKED LTCAFEWriteDeviceConfigPacket;
+
+// WRCFG + all slave registers
+typedef struct {
+  LTCAFEWriteConfigCmdPacket wrcfg;
+
+  // devices are ordered with the last slave first
+  LTCAFEWriteDeviceConfigPacket devices[PLUTUS_AFE_DEVICES_IN_CHAIN];
+} _PACKED LTCAFEWriteConfigPacket;
+STATIC_ASSERT(sizeof(LTCAFEWriteConfigPacket) == 4 + 8 * PLUTUS_AFE_DEVICES_IN_CHAIN,
+              "LTCAFEWriteConfigPacket is not expected size");
+
+typedef union {
+  uint16_t voltages[3];
+
+  uint8_t values[6];
+} LTCAFERegisterGroup;
+STATIC_ASSERT(sizeof(LTCAFERegisterGroup) == 6,
+              "LTCAFERegisterGroup must be 6 bytes");
+
+typedef struct {
+  LTCAFERegisterGroup reg;
+
+  uint16_t pec;
+} _PACKED LTCAFEVoltageRegisterGroup;
+STATIC_ASSERT(sizeof(LTCAFEVoltageRegisterGroup) == 8,
+              "LTCAFEVoltageRegisterGroup must be 8 bytes");
+
+typedef struct {
+  LTCAFERegisterGroup reg;
+
+  uint16_t pec;
+} _PACKED LTCAFEAuxRegisterGroupPacket;
+STATIC_ASSERT(sizeof(LTCAFEAuxRegisterGroupPacket) == 8,
+              "LTCAFEAuxRegisterGroupPacket must be 8 bytes");
 
 // command codes
 // see Table 34 (p.49)
