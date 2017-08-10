@@ -112,7 +112,9 @@ static StatusCode prv_write_config(const LTCAFESettings *afe, uint8_t gpio_enabl
   config_packet.wrcfg.pec_hi = (uint8_t)(cmd_pec >> 8);
   config_packet.wrcfg.pec_lo = (uint8_t)(cmd_pec & 0xFF);
 
-  // send CFGR registers starting with the bottom slave in the stack
+  // essentially, each set of CFGR registers are clocked through each device,
+  // until the first set reaches the last device (like a giant shift register)
+  // thus, we send CFGR registers starting with the bottom slave in the stack
   for (uint8_t device = PLUTUS_AFE_DEVICES_IN_CHAIN; device > 0; --device) {
     uint8_t curr_device = PLUTUS_AFE_DEVICES_IN_CHAIN - device;
     uint8_t enable = gpio_enable_pins;
