@@ -1,11 +1,17 @@
 #include "unity.h"
 #include "log.h"
 #include "test_helpers.h"
-#include "magnetic_sensor.h"
+
+#include "gpio.h"
+#include "interrupt.h"
+#include "soft_timer.h"
 #include "i2c.h"
+#include "magnetic_sensor.h"
 
 void setup_test(void) {
   gpio_init();
+  interrupt_init();
+  soft_timer_init();
 
   I2CSettings settings = {
     .speed = I2C_SPEED_FAST,
