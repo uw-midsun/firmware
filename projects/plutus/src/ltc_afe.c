@@ -274,7 +274,7 @@ StatusCode ltc_afe_read_all_aux(const LTCAFESettings *afe, uint16_t *result_data
 
 StatusCode ltc_afe_toggle_discharge_cells(const LTCAFESettings *afe,
                                           uint16_t cell, bool discharge) {
-  if (cell < LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN) {
+  if (cell > LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN - 1) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   s_discharging_cells[cell] = discharge;
