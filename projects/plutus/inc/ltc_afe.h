@@ -14,6 +14,8 @@
 #include "spi.h"
 #include "status.h"
 
+#define LTC6804_CELLS_PER_DEVICE                12
+
 #define SWAP_UINT16(x) (uint16_t)(((uint16_t)(x) >> 8) | ((uint16_t)(x) << 8))
 
 #if defined(__GNUC__)
