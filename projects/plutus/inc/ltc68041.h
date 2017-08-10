@@ -51,6 +51,39 @@ typedef enum {
 
 
 // SPI Packets
+
+typedef struct {
+  uint8_t adcopt : 1;
+  uint8_t swtrd : 1;
+  uint8_t refon : 1;
+
+  uint8_t gpio1 : 1;              // GPIO1 Pin Control
+  uint8_t gpio2 : 1;              // GPIO2 Pin Control
+  uint8_t gpio3 : 1;              // GPIO3 Pin Control
+  uint8_t gpio4 : 1;              // GPIO4 Pin Control
+  uint8_t gpio5 : 1;              // GPIO5 Pin Control
+
+  uint32_t undervoltage : 12;     // Undervoltage Comparison Voltage
+  uint32_t overvoltage : 12;      // Overvoltage Comparison Voltage
+
+  uint8_t discharge_c1 : 1;
+  uint8_t discharge_c2 : 1;
+  uint8_t discharge_c3 : 1;
+  uint8_t discharge_c4 : 1;
+  uint8_t discharge_c5 : 1;
+  uint8_t discharge_c6 : 1;
+  uint8_t discharge_c7 : 1;
+  uint8_t discharge_c8 : 1;
+  uint8_t discharge_c9 : 1;
+  uint8_t discharge_c10 : 1;
+  uint8_t discharge_c11 : 1;
+  uint8_t discharge_c12 : 1;
+
+  uint8_t discharge_timeout : 4;
+} _PACKED LTCAFEConfigRegisterData;
+static_assert(sizeof(LTCAFEConfigRegisterData) == 6,
+              "LTCAFEConfigRegisterData must be 6 bytes");
+
 // WRCFG command
 typedef struct {
   uint8_t data_hi;
