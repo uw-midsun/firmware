@@ -161,8 +161,6 @@ static StatusCode prv_write_config(const LTCAFESettings *afe, uint8_t gpio_enabl
 
 static StatusCode prv_read_config(const LTCAFESettings *afe,
                                   LTCAFEConfigRegisterData *configuration_registers) {
-  StatusCode status = STATUS_CODE_OK;
-
   prv_wakeup_idle(afe);
 
   LTCAFEWriteDeviceConfigPacket received_data[PLUTUS_AFE_DEVICES_IN_CHAIN] = { 0 };
@@ -177,11 +175,11 @@ static StatusCode prv_read_config(const LTCAFESettings *afe,
     uint16_t calculated_pec = crc15_calculate((uint8_t *)&received_data[device].reg,
                                               sizeof(LTCAFEConfigRegisterData));
     if (calculated_pec != received_pec) {
-      status = status_code(STATUS_CODE_CRC_MISMATCH);
+      return status_code(STATUS_CODE_CRC_MISMATCH);
     }
   }
 
-  return status;
+  return STATUS_CODE_OK;
 }
 
 StatusCode ltc_afe_init(const LTCAFESettings *afe) {
@@ -210,8 +208,6 @@ StatusCode ltc_afe_read_all_voltage(const LTCAFESettings *afe, uint16_t *result_
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  StatusCode result_status = STATUS_CODE_OK;
-
   prv_trigger_adc_conversion(afe);
 
   for (uint8_t cell_reg = 0; cell_reg < NUM_LTC_AFE_VOLTAGE_REGISTER; ++cell_reg) {
@@ -232,20 +228,19 @@ StatusCode ltc_afe_read_all_voltage(const LTCAFESettings *afe, uint16_t *result_
       uint16_t received_pec = SWAP_UINT16(voltage_register[device].pec);
       uint16_t data_pec = crc15_calculate((uint8_t *)&voltage_register[device], 6);
       if (received_pec != data_pec) {
-        result_status = status_code(STATUS_CODE_CRC_MISMATCH);
+        // return early on failure
+        return status_code(STATUS_CODE_CRC_MISMATCH);
       }
     }
   }
 
-  return result_status;
+  return STATUS_CODE_OK;
 }
 
 StatusCode ltc_afe_read_all_aux(const LTCAFESettings *afe, uint16_t *result_data, size_t len) {
   if (len != LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
-
-  StatusCode result_status = STATUS_CODE_OK;
 
   for (uint8_t cell = 0; cell < LTC6804_CELLS_PER_DEVICE; ++cell) {
     // configure the mux to read from cell
@@ -269,12 +264,12 @@ StatusCode ltc_afe_read_all_aux(const LTCAFESettings *afe, uint16_t *result_data
       uint16_t received_pec = SWAP_UINT16(register_data[device].pec);
       uint16_t data_pec = crc15_calculate((uint8_t *)&register_data, 6);
       if (received_pec != data_pec) {
-        result_status = status_code(STATUS_CODE_CRC_MISMATCH);
+        return status_code(STATUS_CODE_CRC_MISMATCH);
       }
     }
   }
 
-  return result_status;
+  return STATUS_CODE_OK;
 }
 
 StatusCode ltc_afe_toggle_discharge_cells(const LTCAFESettings *afe,
