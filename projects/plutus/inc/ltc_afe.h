@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "gpio.h"
 #include "spi.h"
 #include "status.h"
@@ -59,33 +60,33 @@ typedef struct LTCAFESettings {
 } LTCAFESettings;
 
 typedef struct {
-  unsigned int adcopt : 1;
-  unsigned int swtrd : 1;
-  unsigned int refon : 1;
+  uint8_t adcopt : 1;
+  uint8_t swtrd : 1;
+  uint8_t refon : 1;
 
-  unsigned int gpio1 : 1;             // GPIO1 Pin Control
-  unsigned int gpio2 : 1;             // GPIO2 Pin Control
-  unsigned int gpio3 : 1;             // GPIO3 Pin Control
-  unsigned int gpio4 : 1;             // GPIO4 Pin Control
-  unsigned int gpio5 : 1;             // GPIO5 Pin Control
+  uint8_t gpio1 : 1;              // GPIO1 Pin Control
+  uint8_t gpio2 : 1;              // GPIO2 Pin Control
+  uint8_t gpio3 : 1;              // GPIO3 Pin Control
+  uint8_t gpio4 : 1;              // GPIO4 Pin Control
+  uint8_t gpio5 : 1;              // GPIO5 Pin Control
 
-  unsigned int undervoltage : 12;     // Undervoltage Comparison Voltage
-  unsigned int overvoltage : 12;      // Overvoltage Comparison Voltage
+  uint32_t undervoltage : 12;     // Undervoltage Comparison Voltage
+  uint32_t overvoltage : 12;      // Overvoltage Comparison Voltage
 
-  unsigned int discharge_c1 : 1;
-  unsigned int discharge_c2 : 1;
-  unsigned int discharge_c3 : 1;
-  unsigned int discharge_c4 : 1;
-  unsigned int discharge_c5 : 1;
-  unsigned int discharge_c6 : 1;
-  unsigned int discharge_c7 : 1;
-  unsigned int discharge_c8 : 1;
-  unsigned int discharge_c9 : 1;
-  unsigned int discharge_c10 : 1;
-  unsigned int discharge_c11 : 1;
-  unsigned int discharge_c12 : 1;
+  uint8_t discharge_c1 : 1;
+  uint8_t discharge_c2 : 1;
+  uint8_t discharge_c3 : 1;
+  uint8_t discharge_c4 : 1;
+  uint8_t discharge_c5 : 1;
+  uint8_t discharge_c6 : 1;
+  uint8_t discharge_c7 : 1;
+  uint8_t discharge_c8 : 1;
+  uint8_t discharge_c9 : 1;
+  uint8_t discharge_c10 : 1;
+  uint8_t discharge_c11 : 1;
+  uint8_t discharge_c12 : 1;
 
-  unsigned int discharge_timeout : 4;
+  uint8_t discharge_timeout : 4;
 } _PACKED LTCAFEConfigRegisterData;
 STATIC_ASSERT(sizeof(LTCAFEConfigRegisterData) == 6,
               "LTCAFEConfigRegisterData must be 6 bytes");
