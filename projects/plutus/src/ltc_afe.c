@@ -177,7 +177,7 @@ static StatusCode prv_read_config(const LTCAFESettings *afe,
     uint16_t calculated_pec = crc15_calculate((uint8_t *)&received_data[device].reg,
                                               sizeof(LTCAFEConfigRegisterData));
     if (calculated_pec != received_pec) {
-      status = status_code(STATUS_CODE_UNKNOWN);
+      status = status_code(STATUS_CODE_CRC_MISMATCH);
     }
   }
 
@@ -232,7 +232,7 @@ StatusCode ltc_afe_read_all_voltage(const LTCAFESettings *afe, uint16_t *result_
       uint16_t received_pec = SWAP_UINT16(voltage_register[device].pec);
       uint16_t data_pec = crc15_calculate((uint8_t *)&voltage_register[device], 6);
       if (received_pec != data_pec) {
-        result_status = status_code(STATUS_CODE_UNKNOWN);
+        result_status = status_code(STATUS_CODE_CRC_MISMATCH);
       }
     }
   }
@@ -269,7 +269,7 @@ StatusCode ltc_afe_read_all_aux(const LTCAFESettings *afe, uint16_t *result_data
       uint16_t received_pec = SWAP_UINT16(register_data[device].pec);
       uint16_t data_pec = crc15_calculate((uint8_t *)&register_data, 6);
       if (received_pec != data_pec) {
-        result_status = status_code(STATUS_CODE_UNKNOWN);
+        result_status = status_code(STATUS_CODE_CRC_MISMATCH);
       }
     }
   }
