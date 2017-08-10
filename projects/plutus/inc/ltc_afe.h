@@ -1,5 +1,9 @@
 #pragma once
 // driver for LTC6804-1 AFE chip
+// assumes that:
+// - a 16 channel analog MUX is attached to the GPIO outputs
+// - GPIO2, GPIO3, GPIO4, GPIO5 are used as AUX channel select outputs
+// - GPIO1 is used as a thermistor input
 // requires GPIO, Interrupts and Soft Timers to be initialized
 
 #include <stdbool.h>
