@@ -1,4 +1,5 @@
 #pragma once
+#include <assert.h>
 #include "plutus_config.h"
 
 // used internally by the LTC AFE driver
@@ -58,7 +59,7 @@ typedef struct {
   uint8_t pec_hi;
   uint8_t pec_lo;
 } _PACKED LTCAFEWriteConfigCmdPacket;
-STATIC_ASSERT(sizeof(LTCAFEWriteConfigCmdPacket) == 4,
+static_assert(sizeof(LTCAFEWriteConfigCmdPacket) == 4,
               "LTCAFEWriteConfigCmdPacket must be 4 bytes");
 
 // WRCFG register contents
@@ -75,7 +76,7 @@ typedef struct {
   // devices are ordered with the last slave first
   LTCAFEWriteDeviceConfigPacket devices[PLUTUS_AFE_DEVICES_IN_CHAIN];
 } _PACKED LTCAFEWriteConfigPacket;
-STATIC_ASSERT(sizeof(LTCAFEWriteConfigPacket) == 4 + 8 * PLUTUS_AFE_DEVICES_IN_CHAIN,
+static_assert(sizeof(LTCAFEWriteConfigPacket) == 4 + 8 * PLUTUS_AFE_DEVICES_IN_CHAIN,
               "LTCAFEWriteConfigPacket is not expected size");
 
 typedef union {
@@ -83,7 +84,7 @@ typedef union {
 
   uint8_t values[6];
 } LTCAFERegisterGroup;
-STATIC_ASSERT(sizeof(LTCAFERegisterGroup) == 6,
+static_assert(sizeof(LTCAFERegisterGroup) == 6,
               "LTCAFERegisterGroup must be 6 bytes");
 
 typedef struct {
@@ -91,7 +92,7 @@ typedef struct {
 
   uint16_t pec;
 } _PACKED LTCAFEVoltageRegisterGroup;
-STATIC_ASSERT(sizeof(LTCAFEVoltageRegisterGroup) == 8,
+static_assert(sizeof(LTCAFEVoltageRegisterGroup) == 8,
               "LTCAFEVoltageRegisterGroup must be 8 bytes");
 
 typedef struct {
@@ -99,7 +100,7 @@ typedef struct {
 
   uint16_t pec;
 } _PACKED LTCAFEAuxRegisterGroupPacket;
-STATIC_ASSERT(sizeof(LTCAFEAuxRegisterGroupPacket) == 8,
+static_assert(sizeof(LTCAFEAuxRegisterGroupPacket) == 8,
               "LTCAFEAuxRegisterGroupPacket must be 8 bytes");
 
 // command codes

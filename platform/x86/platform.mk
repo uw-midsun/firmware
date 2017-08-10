@@ -37,7 +37,7 @@ else
   CSFLAGS := -O1 -g
 endif
 
-CFLAGS := $(CSFLAGS) -std=gnu99 -Wall -Werror -Wno-unused-variable -pedantic \
+CFLAGS := $(CSFLAGS) -std=gnu11 -Wall -Werror -Wno-unused-variable -pedantic \
           -ffunction-sections -fdata-sections \
           -Wl,-Map=$(BIN_DIR)/$(PROJECT).map \
           $(ARCH_CLAGS) $(addprefix -D,$(CDEFINES))
