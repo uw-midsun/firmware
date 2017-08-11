@@ -32,13 +32,19 @@ static void prv_wakeup_idle(const LtcAfeSettings *afe) {
   gpio_set_pin_state(&afe->cs, GPIO_STATE_HIGH);
 }
 
-static void prv_build_cmd(uint16_t command, uint8_t *cmd) {
+static StatusCode prv_build_cmd(uint16_t command, uint8_t *cmd, size_t len) {
+  if (len != 4) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+
   cmd[0] = (uint8_t)(command >> 8);
   cmd[1] = (uint8_t)(command & 0xFF);
 
   uint16_t cmd_pec = crc15_calculate(cmd, 2);
   cmd[2] = (uint8_t)(cmd_pec >> 8);
   cmd[3] = (uint8_t)(cmd_pec);
+
+  return STATUS_CODE_OK;
 }
 
 static StatusCode prv_read_register(const LtcAfeSettings *afe,
@@ -50,7 +56,7 @@ static StatusCode prv_read_register(const LtcAfeSettings *afe,
   uint16_t reg_cmd = s_read_reg_cmd[reg];
 
   uint8_t cmd[4] = { 0 };
-  prv_build_cmd(reg_cmd, cmd);
+  prv_build_cmd(reg_cmd, cmd, SIZEOF_ARRAY(cmd));
 
   prv_wakeup_idle(afe);
   return spi_exchange(afe->spi_port, cmd, 4, data, len);
@@ -75,7 +81,7 @@ static void prv_trigger_adc_conversion(const LtcAfeSettings *afe) {
                   | LTC6804_CNVT_CELL_ALL | (mode << 7);
 
   uint8_t cmd[4] = { 0 };
-  prv_build_cmd(adcv, cmd);
+  prv_build_cmd(adcv, cmd, SIZEOF_ARRAY(cmd));
 
   prv_wakeup_idle(afe);
   spi_exchange(afe->spi_port, cmd, 4, NULL, 0);
@@ -90,7 +96,7 @@ static void prv_trigger_aux_adc_conversion(const LtcAfeSettings *afe) {
   uint16_t adax = LTC6804_ADAX_RESERVED | LTC6804_ADAX_GPIO1 | (mode << 7);
 
   uint8_t cmd[4] = { 0 };
-  prv_build_cmd(adax, cmd);
+  prv_build_cmd(adax, cmd, SIZEOF_ARRAY(cmd));
 
   prv_wakeup_idle(afe);
   spi_exchange(afe->spi_port, cmd, 4, NULL, 0);
@@ -104,7 +110,7 @@ static StatusCode prv_write_config(const LtcAfeSettings *afe, uint8_t gpio_enabl
   // see p.54 in datasheet
   LtcAfeWriteConfigPacket config_packet = { 0 };
 
-  prv_build_cmd(LTC6804_WRCFG_RESERVED, config_packet.wrcfg);
+  prv_build_cmd(LTC6804_WRCFG_RESERVED, config_packet.wrcfg, SIZEOF_ARRAY(config_packet.wrcfg));
 
   // essentially, each set of CFGR registers are clocked through each device,
   // until the first set reaches the last device (like a giant shift register)
