@@ -144,11 +144,7 @@ static StatusCode prv_write_config(const LTCAFESettings *afe, uint8_t gpio_enabl
     config_packet.devices[curr_device].reg.overvoltage = overvoltage;
 
     // GPIO5, ..., GPIO2 are used to MUX data
-    config_packet.devices[curr_device].reg.gpio1 = ((enable >> 3) >> 0) & 1;
-    config_packet.devices[curr_device].reg.gpio2 = ((enable >> 3) >> 1) & 1;
-    config_packet.devices[curr_device].reg.gpio3 = ((enable >> 3) >> 2) & 1;
-    config_packet.devices[curr_device].reg.gpio4 = ((enable >> 3) >> 3) & 1;
-    config_packet.devices[curr_device].reg.gpio5 = ((enable >> 3) >> 4) & 1;
+    config_packet.devices[curr_device].reg.gpio = (enable >> 3);
 
     uint16_t cfgr_pec = crc15_calculate((uint8_t *)&config_packet.devices[curr_device].reg, 6);
     config_packet.devices[curr_device].pec = SWAP_UINT16(cfgr_pec);

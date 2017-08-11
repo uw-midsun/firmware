@@ -56,11 +56,7 @@ typedef struct {
   uint8_t swtrd : 1;
   uint8_t refon : 1;
 
-  uint8_t gpio1 : 1;              // GPIO1 Pin Control
-  uint8_t gpio2 : 1;              // GPIO2 Pin Control
-  uint8_t gpio3 : 1;              // GPIO3 Pin Control
-  uint8_t gpio4 : 1;              // GPIO4 Pin Control
-  uint8_t gpio5 : 1;              // GPIO5 Pin Control
+  uint8_t gpio : 5;               // GPIO pin control
 
   uint32_t undervoltage : 12;     // Undervoltage Comparison Voltage
   uint32_t overvoltage : 12;      // Overvoltage Comparison Voltage
