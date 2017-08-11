@@ -109,14 +109,14 @@ void test_ltc_afe_read_all_aux_wrong_size(void) {
 }
 
 void test_ltc_afe_toggle_discharge_cells_valid_range(void) {
-  size_t valid_cell = 0;
+  uint16_t valid_cell = 0;
   StatusCode status = ltc_afe_toggle_discharge_cells(&s_afe_settings, valid_cell, true);
 
   TEST_ASSERT_OK(status);
 }
 
 void test_ltc_afe_toggle_discharge_cells_invalid_range(void) {
-  size_t invalid_cell = LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN;
+  uint16_t invalid_cell = LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN;
   StatusCode status = ltc_afe_toggle_discharge_cells(&s_afe_settings, invalid_cell, true);
 
   TEST_ASSERT_NOT_OK(status);
