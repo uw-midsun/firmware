@@ -25,9 +25,11 @@ void setup_test(void) {
 void teardown_test(void) { }
 
 void test_magnetic_sensor_read_data(void) {
-  magnetic_sensor_init(I2C_PORT_1);
-
-  MagneticSensorReading reading;
+  MagneticSensorReading reading = {
+    .x = 2048,
+    .y = 2048,
+    .z = 2048
+  };
 
   TEST_ASSERT_OK(magnetic_sensor_read_data(I2C_PORT_1, &reading));
 
