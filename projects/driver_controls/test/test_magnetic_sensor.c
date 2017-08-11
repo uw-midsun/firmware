@@ -27,11 +27,11 @@ void teardown_test(void) { }
 void test_magnetic_sensor_read_data(void) {
   magnetic_sensor_init(I2C_PORT_1);
 
-  int16_t readings[3];
+  MagneticSensorReading reading;
 
-  TEST_ASSERT_OK(magnetic_sensor_read_data(I2C_PORT_1, readings));
+  TEST_ASSERT_OK(magnetic_sensor_read_data(I2C_PORT_1, &reading));
 
-  for (uint8_t i = 0; i < NUM_MAGNETIC_SENSOR_PROBES; i++) {
-    TEST_ASSERT_TRUE(readings[i] > -2048 || readings[i] < 2047);
-  }
+  TEST_ASSERT_TRUE(reading.x > -2048 || reading.x < 2047);
+  TEST_ASSERT_TRUE(reading.y > -2048 || reading.y < 2047);
+  TEST_ASSERT_TRUE(reading.z > -2048 || reading.z < 2047);
 }

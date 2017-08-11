@@ -9,10 +9,10 @@ static uint8_t s_write_reg[NUM_TLV493D_WRITE_REGISTERS];
 
 // Returns reading in microteslas. Conversion method described in chapter 3.1 of the datasheet
 static int16_t prv_flux_conversion(uint8_t msb, uint8_t lsb) {
-  uint16_t data = (msb << 4) | (lsb & 0xF);
+  int16_t data = (msb << 4) | (lsb & 0xF);
 
-  if (data > 1024) {
-    data -= 4096;
+  if (data & 2048) {
+    data |= 0xF000;
   }
 
   return (data * TLV493D_LSB_TO_TESLA);
@@ -30,13 +30,14 @@ StatusCode magnetic_sensor_init(I2CPort i2c_port) {
   s_write_reg[TLV493D_RES1] = 0x00;
 
   // FACTSET1 [4:3] -> MOD1 [4:3]
-  s_write_reg[TLV493D_MOD1] = (s_read_reg[TLV493D_FACTSET1] & 0x18) | 0x3;
+  s_write_reg[TLV493D_MOD1] = (s_read_reg[TLV493D_FACTSET1] & TLV493D_FACTSET1_MASK) |
+                                TLV493D_MASTER_CONTROLLED_MODE;
 
   // FACTSET2 [7:0] -> RES2 [7:0]
   s_write_reg[TLV493D_RES2] = s_read_reg[TLV493D_FACTSET2];
 
   // FACTSET3 [4:0] -> MOD2 [4:0]
-  s_write_reg[TLV493D_MOD2] = (s_read_reg[TLV493D_FACTSET2] & 0x1F);
+  s_write_reg[TLV493D_MOD2] = (s_read_reg[TLV493D_FACTSET3] & TLV493D_FACTSET3_MASK);
 
   status_ok_or_return(i2c_write(i2c_port, TLV493D_ADDRESS, s_write_reg,
                                 NUM_TLV493D_WRITE_REGISTERS));
@@ -44,18 +45,13 @@ StatusCode magnetic_sensor_init(I2CPort i2c_port) {
   return STATUS_CODE_OK;
 }
 
-StatusCode magnetic_sensor_read_data(I2CPort i2c_port, int16_t *reading) {
+StatusCode magnetic_sensor_read_data(I2CPort i2c_port, MagneticSensorReading *reading) {
   status_ok_or_return(i2c_read(i2c_port, TLV493D_ADDRESS, s_read_reg,
                       NUM_TLV493D_READ_REGISTERS));
 
-  reading[TLV493D_BX] = prv_flux_conversion(s_read_reg[TLV493D_BX],
-                                            s_read_reg[TLV493D_BX2] >> 4);
-
-  reading[TLV493D_BY] = prv_flux_conversion(s_read_reg[TLV493D_BY],
-                                            s_read_reg[TLV493D_BX2] & 0xF);
-
-  reading[TLV493D_BZ] = prv_flux_conversion(s_read_reg[TLV493D_BZ],
-                                            s_read_reg[TLV493D_BZ2] & 0xF);
+  reading->x = prv_flux_conversion(s_read_reg[TLV493D_BX], s_read_reg[TLV493D_BX2] >> 4);
+  reading->y = prv_flux_conversion(s_read_reg[TLV493D_BY], s_read_reg[TLV493D_BX2] & 0xF);
+  reading->z = prv_flux_conversion(s_read_reg[TLV493D_BZ], s_read_reg[TLV493D_BZ2] & 0xF);
 
   delay_ms(10);
 
