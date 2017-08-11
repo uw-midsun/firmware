@@ -14,7 +14,6 @@ typedef struct GPIOExpanderInterrupt {
 static GPIOAddress s_address;
 static I2CPort s_i2c_port;
 
-
 static GPIOExpanderInterrupt s_interrupts[NUM_GPIO_EXPANDER_PINS];
 
 // Check to see if the pin passed in has a correct value
