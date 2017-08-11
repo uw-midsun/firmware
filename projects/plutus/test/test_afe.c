@@ -6,7 +6,7 @@
 #include "plutus_config.h"
 
 #define AFE_TEST_SAMPLES 5
-#define AFE_TEST_VOLTAGE_VARIATION_TOLERANCE 10
+#define AFE_TEST_VOLTAGE_VARIATION 10
 
 // check that a and b are within tolerance of each other
 static bool prv_within_range(uint16_t a, uint16_t b, uint16_t tolerance) {
@@ -50,8 +50,9 @@ void test_ltc_afe_adc_conversion_initiated(void) {
 void test_ltc_afe_read_all_voltage_repeated_within_tolerances(void) {
   // the idea here is that we repeatedly take samples and verify that the values being read
   // are within an acceptable tolerance
-
-  uint16_t historical[LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN * AFE_TEST_SAMPLES] = { 0 };
+  uint16_t samples[LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN * AFE_TEST_SAMPLES] = {
+    0
+  };
 
   for (int sample = 0; sample < AFE_TEST_SAMPLES; ++sample) {
     uint16_t voltages[LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN] = { 0 };
@@ -59,11 +60,11 @@ void test_ltc_afe_read_all_voltage_repeated_within_tolerances(void) {
     TEST_ASSERT_OK(status);
 
     for (int cell = 0; cell < LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN; ++cell) {
-      historical[sample * LTC6804_CELLS_PER_DEVICE + cell] = voltages[cell];
+      samples[sample * LTC6804_CELLS_PER_DEVICE + cell] = voltages[cell];
 
       for (int old_sample = 0; old_sample < sample; ++old_sample) {
-        uint16_t old_value = historical[sample * LTC6804_CELLS_PER_DEVICE + old_sample];
-        TEST_ASSERT_TRUE(prv_within_range(old_value, voltages[cell], AFE_TEST_VOLTAGE_VARIATION_TOLERANCE));
+        uint16_t old_value = samples[sample * LTC6804_CELLS_PER_DEVICE + old_sample];
+        TEST_ASSERT_TRUE(prv_within_range(old_value, voltages[cell], AFE_TEST_VOLTAGE_VARIATION));
       }
     }
   }
@@ -80,8 +81,9 @@ void test_ltc_afe_read_all_voltage_wrong_size(void) {
 void test_ltc_afe_read_all_aux_repeated_within_tolerances(void) {
   // the idea here is that we repeatedly take samples and verify that the values being read
   // are within an acceptable tolerance
-
-  uint16_t historical[LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN * AFE_TEST_SAMPLES] = { 0 };
+  uint16_t samples[LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN * AFE_TEST_SAMPLES] = {
+    0
+  };
 
   for (int sample = 0; sample < AFE_TEST_SAMPLES; ++sample) {
     uint16_t voltages[LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN] = { 0 };
@@ -89,11 +91,11 @@ void test_ltc_afe_read_all_aux_repeated_within_tolerances(void) {
     TEST_ASSERT_OK(status);
 
     for (int cell = 0; cell < LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN; ++cell) {
-      historical[sample * LTC6804_CELLS_PER_DEVICE + cell] = voltages[cell];
+      samples[sample * LTC6804_CELLS_PER_DEVICE + cell] = voltages[cell];
 
       for (int old_sample = 0; old_sample < sample; ++old_sample) {
-        uint16_t old_value = historical[sample * LTC6804_CELLS_PER_DEVICE + old_sample];
-        TEST_ASSERT_TRUE(prv_within_range(old_value, voltages[cell], AFE_TEST_VOLTAGE_VARIATION_TOLERANCE));
+        uint16_t old_value = samples[sample * LTC6804_CELLS_PER_DEVICE + old_sample];
+        TEST_ASSERT_TRUE(prv_within_range(old_value, voltages[cell], AFE_TEST_VOLTAGE_VARIATION));
       }
     }
   }
