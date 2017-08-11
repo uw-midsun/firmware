@@ -79,18 +79,7 @@ typedef struct {
 static_assert(sizeof(LTCAFEConfigRegisterData) == 6,
               "LTCAFEConfigRegisterData must be 6 bytes");
 
-// WRCFG command
-typedef struct {
-  uint8_t data_hi;
-  uint8_t data_lo;
-
-  uint8_t pec_hi;
-  uint8_t pec_lo;
-} _PACKED LTCAFEWriteConfigCmdPacket;
-static_assert(sizeof(LTCAFEWriteConfigCmdPacket) == 4,
-              "LTCAFEWriteConfigCmdPacket must be 4 bytes");
-
-// WRCFG register contents
+// CFGR packet
 typedef struct {
   LTCAFEConfigRegisterData reg;
 
@@ -99,7 +88,7 @@ typedef struct {
 
 // WRCFG + all slave registers
 typedef struct {
-  LTCAFEWriteConfigCmdPacket wrcfg;
+  uint8_t wrcfg[4];
 
   // devices are ordered with the last slave first
   LTCAFEWriteDeviceConfigPacket devices[PLUTUS_AFE_DEVICES_IN_CHAIN];

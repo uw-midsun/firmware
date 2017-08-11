@@ -104,13 +104,7 @@ static StatusCode prv_write_config(const LTCAFESettings *afe, uint8_t gpio_enabl
   // see p.54 in datasheet
   LTCAFEWriteConfigPacket config_packet = { 0 };
 
-  // WRCFG
-  config_packet.wrcfg.data_hi = (uint8_t)(LTC6804_WRCFG_RESERVED >> 8);
-  config_packet.wrcfg.data_lo = (uint8_t)(LTC6804_WRCFG_RESERVED & 0xFF);
-
-  uint16_t cmd_pec = crc15_calculate((uint8_t *)&config_packet.wrcfg, 2);
-  config_packet.wrcfg.pec_hi = (uint8_t)(cmd_pec >> 8);
-  config_packet.wrcfg.pec_lo = (uint8_t)(cmd_pec & 0xFF);
+  prv_build_cmd(LTC6804_WRCFG_RESERVED, config_packet.wrcfg);
 
   // essentially, each set of CFGR registers are clocked through each device,
   // until the first set reaches the last device (like a giant shift register)
