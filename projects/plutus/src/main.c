@@ -11,7 +11,7 @@ int main(void) {
   interrupt_init();
   soft_timer_init();
 
-  LTCAFESettings afe_settings = {
+  LtcAfeSettings afe_settings = {
     .mosi = { GPIO_PORT_A, 7 },
     .miso = { GPIO_PORT_A, 6 },
     .sclk = { GPIO_PORT_A, 5 },

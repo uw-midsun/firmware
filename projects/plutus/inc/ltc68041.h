@@ -19,7 +19,7 @@ typedef enum {
   LTC_AFE_REGISTER_STATUS_B,
   LTC_AFE_REGISTER_COMM,
   NUM_LTC_AFE_REGISTER
-} LTCAFERegister;
+} LtcAfeRegister;
 
 typedef enum {
   LTC_AFE_VOLTAGE_REGISTER_A = 0,
@@ -27,7 +27,7 @@ typedef enum {
   LTC_AFE_VOLTAGE_REGISTER_C,
   LTC_AFE_VOLTAGE_REGISTER_D,
   NUM_LTC_AFE_VOLTAGE_REGISTER
-} LTCAFEVoltageRegister;
+} LtcAfeVoltageRegister;
 
 typedef enum {
   LTC_AFE_DISCHARGE_TIMEOUT_DISABLED = 0,
@@ -46,7 +46,7 @@ typedef enum {
   LTC_AFE_DISCHARGE_TIMEOUT_75_MIN,
   LTC_AFE_DISCHARGE_TIMEOUT_90_MIN,
   LTC_AFE_DISCHARGE_TIMEOUT_120_MIN
-} LTCAFEDischargeTimeout;
+} LtcAfeDischargeTimeout;
 
 
 // SPI Packets
@@ -75,45 +75,45 @@ typedef struct {
   uint8_t discharge_c12 : 1;
 
   uint8_t discharge_timeout : 4;
-} _PACKED LTCAFEConfigRegisterData;
-static_assert(sizeof(LTCAFEConfigRegisterData) == 6,
-              "LTCAFEConfigRegisterData must be 6 bytes");
+} _PACKED LtcAfeConfigRegisterData;
+static_assert(sizeof(LtcAfeConfigRegisterData) == 6,
+              "LtcAfeConfigRegisterData must be 6 bytes");
 
 // CFGR packet
 typedef struct {
-  LTCAFEConfigRegisterData reg;
+  LtcAfeConfigRegisterData reg;
 
   uint16_t pec;
-} _PACKED LTCAFEWriteDeviceConfigPacket;
+} _PACKED LtcAfeWriteDeviceConfigPacket;
 
 // WRCFG + all slave registers
 typedef struct {
   uint8_t wrcfg[4];
 
   // devices are ordered with the last slave first
-  LTCAFEWriteDeviceConfigPacket devices[PLUTUS_AFE_DEVICES_IN_CHAIN];
-} _PACKED LTCAFEWriteConfigPacket;
-static_assert(sizeof(LTCAFEWriteConfigPacket) == 4 + 8 * PLUTUS_AFE_DEVICES_IN_CHAIN,
-              "LTCAFEWriteConfigPacket is not expected size");
+  LtcAfeWriteDeviceConfigPacket devices[PLUTUS_AFE_DEVICES_IN_CHAIN];
+} _PACKED LtcAfeWriteConfigPacket;
+static_assert(sizeof(LtcAfeWriteConfigPacket) == 4 + 8 * PLUTUS_AFE_DEVICES_IN_CHAIN,
+              "LtcAfeWriteConfigPacket is not expected size");
 
 typedef union {
   uint16_t voltages[3];
 
   uint8_t values[6];
-} LTCAFERegisterGroup;
-static_assert(sizeof(LTCAFERegisterGroup) == 6,
-              "LTCAFERegisterGroup must be 6 bytes");
+} LtcAfeRegisterGroup;
+static_assert(sizeof(LtcAfeRegisterGroup) == 6,
+              "LtcAfeRegisterGroup must be 6 bytes");
 
 typedef struct {
-  LTCAFERegisterGroup reg;
+  LtcAfeRegisterGroup reg;
 
   uint16_t pec;
-} _PACKED LTCAFEVoltageRegisterGroup;
-static_assert(sizeof(LTCAFEVoltageRegisterGroup) == 8,
-              "LTCAFEVoltageRegisterGroup must be 8 bytes");
+} _PACKED LtcAfeVoltageRegisterGroup;
+static_assert(sizeof(LtcAfeVoltageRegisterGroup) == 8,
+              "LtcAfeVoltageRegisterGroup must be 8 bytes");
 
 typedef struct {
-  LTCAFERegisterGroup reg;
+  LtcAfeRegisterGroup reg;
 
   uint16_t pec;
 } _PACKED LTCAFEAuxRegisterGroupPacket;

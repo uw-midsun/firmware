@@ -34,9 +34,9 @@ typedef enum {
   LTC_AFE_ADC_MODE_3KHZ,
   LTC_AFE_ADC_MODE_2KHZ,
   NUM_LTC_AFE_ADC_MODE
-} LTCAFEADCMode;
+} LtcAfeAdcMode;
 
-typedef struct LTCAFESettings {
+typedef struct LtcAfeSettings {
   GPIOAddress cs;
   GPIOAddress mosi;
   GPIOAddress miso;
@@ -45,21 +45,21 @@ typedef struct LTCAFESettings {
   const SPIPort spi_port;
   uint32_t spi_baudrate;
 
-  LTCAFEADCMode adc_mode;
-} LTCAFESettings;
+  LtcAfeAdcMode adc_mode;
+} LtcAfeSettings;
 
 // initialize the LTC6804
-StatusCode ltc_afe_init(const LTCAFESettings *afe);
+StatusCode ltc_afe_init(const LtcAfeSettings *afe);
 
 // read all voltages
 // result is an array of size LTC6804_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
 // len should be SIZEOF_ARRAY(result)
-StatusCode ltc_afe_read_all_voltage(const LTCAFESettings *afe, uint16_t *result, size_t len);
+StatusCode ltc_afe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result, size_t len);
 
 // read all auxiliary registers
 // result should be an array of size LTC6804_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
 // len should be SIZEOF_ARRAY(result)
-StatusCode ltc_afe_read_all_aux(const LTCAFESettings *afe, uint16_t *result, size_t len);
+StatusCode ltc_afe_read_all_aux(const LtcAfeSettings *afe, uint16_t *result, size_t len);
 
 // mark cells for discharging (takes effect after config is re-written)
-StatusCode ltc_afe_toggle_discharge_cells(const LTCAFESettings *afe, uint16_t cell, bool discharge);
+StatusCode ltc_afe_toggle_discharge_cells(const LtcAfeSettings *afe, uint16_t cell, bool discharge);
