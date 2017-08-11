@@ -11,6 +11,7 @@ static uint8_t s_write_reg[NUM_TLV493D_WRITE_REGISTERS];
 static int16_t prv_flux_conversion(uint8_t msb, uint8_t lsb) {
   int16_t data = (msb << 4) | (lsb & 0xF);
 
+  // If the 12th bit is set, use sign extension to get the proper negative value
   if (data & 2048) {
     data |= 0xF000;
   }
