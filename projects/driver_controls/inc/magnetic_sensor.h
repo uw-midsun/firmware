@@ -11,7 +11,7 @@ typedef struct MagneticSensorReading {
   int16_t z;
 } MagneticSensorReading;
 
-// Start up the sensor with an intiailized i2c port
+// Start up the sensor with an intialized i2c port
 StatusCode magnetic_sensor_init(I2CPort i2c_port);
 
 // Read converted magnetic sensor values
