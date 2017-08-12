@@ -19,7 +19,7 @@ static LtcAfeSettings s_afe_settings = {
     .sclk = { GPIO_PORT_A, 5 },
     .cs = { GPIO_PORT_A, 4 },
 
-    .spi_port = 0, // to make the build pass on x86,
+    .spi_port = SPI_PORT_1,
     .spi_baudrate = 250000,
     .adc_mode = LTC_AFE_ADC_MODE_27KHZ
   };
