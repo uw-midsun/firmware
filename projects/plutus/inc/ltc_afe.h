@@ -16,6 +16,8 @@
 
 #define LTC6804_CELLS_PER_DEVICE                12
 
+// - 12-bit, 16-bit and 24-bit values are little endian
+// - commands and PEC are big endian
 #define SWAP_UINT16(x) (uint16_t)(((uint16_t)(x) >> 8) | ((uint16_t)(x) << 8))
 
 #if defined(__GNUC__)
