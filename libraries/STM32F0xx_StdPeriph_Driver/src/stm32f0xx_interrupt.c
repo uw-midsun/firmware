@@ -36,9 +36,9 @@ StatusCode stm32f0xx_interrupt_nvic_enable(uint8_t irq_channel, InterruptPriorit
   }
 
   s_stm32f0xx_interrupt_priorities[irq_channel] = priority;
-  NVIC_InitTypeDef init_struct = {.NVIC_IRQChannel = irq_channel,
-                                  .NVIC_IRQChannelPriority = priority,
-                                  .NVIC_IRQChannelCmd = ENABLE };
+  NVIC_InitTypeDef init_struct = { .NVIC_IRQChannel = irq_channel,
+                                   .NVIC_IRQChannelPriority = priority,
+                                   .NVIC_IRQChannelCmd = ENABLE };
 
   NVIC_Init(&init_struct);
 
@@ -52,10 +52,10 @@ StatusCode stm32f0xx_interrupt_exti_enable(uint8_t line, InterruptSettings *sett
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  EXTI_InitTypeDef init_struct = {.EXTI_Line = 0x01 << line,
-                                  .EXTI_Mode = 0x04 * settings->type,
-                                  .EXTI_Trigger = 0x08 + 0x04 * edge,
-                                  .EXTI_LineCmd = ENABLE };
+  EXTI_InitTypeDef init_struct = { .EXTI_Line = 0x01 << line,
+                                   .EXTI_Mode = 0x04 * settings->type,
+                                   .EXTI_Trigger = 0x08 + 0x04 * edge,
+                                   .EXTI_LineCmd = ENABLE };
   EXTI_Init(&init_struct);
 
   return STATUS_CODE_OK;

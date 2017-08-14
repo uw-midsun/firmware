@@ -41,6 +41,7 @@ build/
 
 # Vim
 tags
+.clang-format
 .ycm_extra_conf.py
 *.swp
 __pycache__
