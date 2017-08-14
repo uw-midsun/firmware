@@ -6,4 +6,4 @@
 # $(T)_SRC: $(T)_DIR/src{/$(PLATFORM)}/*.{c,s}
 
 # Specify the device library you want to include
-$(T)_DEPS := ms-common libcore
+$(T)_DEPS := ms-common
