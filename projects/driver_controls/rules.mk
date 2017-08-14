@@ -6,7 +6,7 @@
 # $(T)_INC: $(T)_DIR/inc{/$(PLATFORM}}/*.h
 
 # Specify the device library you want to include
-$(T)_DEPS := ms-common
+$(T)_DEPS := ms-common libcore
 
 ifeq (x86,$(PLATFORM))
 $(T)_EXCLUDE_TESTS := gpio_expander magnetic_sensor
