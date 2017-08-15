@@ -45,7 +45,7 @@ StatusCode stm32f0xx_interrupt_nvic_enable(uint8_t irq_channel, InterruptPriorit
   return STATUS_CODE_OK;
 }
 
-StatusCode stm32f0xx_interrupt_exti_enable(uint8_t line, InterruptSettings *settings,
+StatusCode stm32f0xx_interrupt_exti_enable(uint8_t line, const InterruptSettings *settings,
                                            InterruptEdge edge) {
   if (line >= NUM_STM32F0XX_INTERRUPT_LINES || settings->type >= NUM_INTERRUPT_TYPE ||
       edge >= NUM_INTERRUPT_EDGE) {

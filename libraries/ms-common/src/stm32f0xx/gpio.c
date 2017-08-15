@@ -32,12 +32,11 @@ static bool prv_are_settings_valid(const GPIOSettings *settings) {
            settings->resistor >= NUM_GPIO_RES || settings->alt_function >= NUM_GPIO_ALTFN);
 }
 
-
 StatusCode gpio_init(void) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_init_pin(GPIOAddress *address, GPIOSettings *settings) {
+StatusCode gpio_init_pin(const GPIOAddress *address, const GPIOSettings *settings) {
   if (!prv_is_address_valid(address) || !prv_are_settings_valid(settings)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -75,7 +74,7 @@ StatusCode gpio_init_pin(GPIOAddress *address, GPIOSettings *settings) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_set_pin_state(GPIOAddress *address, GPIOState state) {
+StatusCode gpio_set_pin_state(const GPIOAddress *address, GPIOState state) {
   if (!prv_is_address_valid(address) || !prv_is_state_valid(&state)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -84,7 +83,7 @@ StatusCode gpio_set_pin_state(GPIOAddress *address, GPIOState state) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_toggle_state(GPIOAddress *address) {
+StatusCode gpio_toggle_state(const GPIOAddress *address) {
   if (!prv_is_address_valid(address)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -99,7 +98,7 @@ StatusCode gpio_toggle_state(GPIOAddress *address) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_get_value(GPIOAddress *address, GPIOState *input_state) {
+StatusCode gpio_get_value(const GPIOAddress *address, GPIOState *input_state) {
   if (!prv_is_address_valid(address)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }

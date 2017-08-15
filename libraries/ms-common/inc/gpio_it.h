@@ -13,8 +13,8 @@ typedef void (*gpio_it_callback)(GPIOAddress *address, void *context);
 void gpio_it_init(void);
 
 // Registers a new callback on a given port pin combination with the desired settings.
-StatusCode gpio_it_register_interrupt(GPIOAddress *address, InterruptSettings *settings,
+StatusCode gpio_it_register_interrupt(const GPIOAddress *address, const InterruptSettings *settings,
                                       InterruptEdge edge, gpio_it_callback callback, void *context);
 
 // Triggers an interrupt in software.
-StatusCode gpio_it_trigger_interrupt(GPIOAddress *address);
+StatusCode gpio_it_trigger_interrupt(const GPIOAddress *address);

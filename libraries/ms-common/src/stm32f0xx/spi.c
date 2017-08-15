@@ -10,19 +10,17 @@ typedef struct {
 } SPIPortData;
 
 static SPIPortData s_port[SPI_MCU_NUM_PORTS] = {
-  {
-    .rcc_cmd = RCC_APB2PeriphClockCmd,
-    .periph = RCC_APB2Periph_SPI1,
-    .base = SPI1
+  { .rcc_cmd = RCC_APB2PeriphClockCmd,
+  	.periph = RCC_APB2Periph_SPI1,
+  	.base = SPI1
   },
-  {
-    .rcc_cmd = RCC_APB1PeriphClockCmd,
-    .periph = RCC_APB1Periph_SPI2,
-    .base = SPI2
+  { .rcc_cmd = RCC_APB1PeriphClockCmd,
+  	.periph = RCC_APB1Periph_SPI2,
+  	.base = SPI2
   }
 };
 
-StatusCode spi_init(SPIPort spi, SPISettings *settings) {
+StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
   RCC_ClocksTypeDef clocks;
   RCC_GetClocksFreq(&clocks);
 
@@ -49,17 +47,15 @@ StatusCode spi_init(SPIPort spi, SPISettings *settings) {
   gpio_settings.alt_function = GPIO_ALTFN_NONE;
   gpio_init_pin(&settings->cs, &gpio_settings);
 
-  SPI_InitTypeDef init = {
-    .SPI_Direction = SPI_Direction_2Lines_FullDuplex,
-    .SPI_Mode = SPI_Mode_Master,
-    .SPI_DataSize = SPI_DataSize_8b,
-    .SPI_CPHA = (settings->mode & 0x01) ? SPI_CPHA_2Edge : SPI_CPHA_1Edge,
-    .SPI_CPOL = (settings->mode & 0x02) ? SPI_CPOL_High : SPI_CPOL_Low,
-    .SPI_NSS = SPI_NSS_Soft,
-    .SPI_BaudRatePrescaler = (index - 2) << 3,
-    .SPI_FirstBit = SPI_FirstBit_MSB,
-    .SPI_CRCPolynomial = 7
-  };
+  SPI_InitTypeDef init = { .SPI_Direction = SPI_Direction_2Lines_FullDuplex,
+                           .SPI_Mode = SPI_Mode_Master,
+                           .SPI_DataSize = SPI_DataSize_8b,
+                           .SPI_CPHA = (settings->mode & 0x01) ? SPI_CPHA_2Edge : SPI_CPHA_1Edge,
+                           .SPI_CPOL = (settings->mode & 0x02) ? SPI_CPOL_High : SPI_CPOL_Low,
+                           .SPI_NSS = SPI_NSS_Soft,
+                           .SPI_BaudRatePrescaler = (index - 2) << 3,
+                           .SPI_FirstBit = SPI_FirstBit_MSB,
+                           .SPI_CRCPolynomial = 7 };
   SPI_Init(s_port[spi].base, &init);
 
   // Set the RX threshold to 1 byte
@@ -70,8 +66,8 @@ StatusCode spi_init(SPIPort spi, SPISettings *settings) {
   return STATUS_CODE_OK;
 }
 
-StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len,
-                        uint8_t *rx_data, size_t rx_len) {
+StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *rx_data,
+                        size_t rx_len) {
   gpio_set_pin_state(&s_port[spi].cs, GPIO_STATE_LOW);
 
   for (int i = 0; i < tx_len; i++) {
