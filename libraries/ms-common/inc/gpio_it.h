@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include "gpio.h"
-#include "interrupt.h"
+#include "interrupt_def.h"
 #include "status.h"
 
 typedef void (*gpio_it_callback)(GPIOAddress *address, void *context);

@@ -1,7 +1,12 @@
 #include "soft_timer.h"
-#include "unity.h"
-#include "test_helpers.h"
+
+#include <stdbool.h>
+
+#include "critical_section.h"
+#include "interrupt.h"
 #include "log.h"
+#include "test_helpers.h"
+#include "unity.h"
 
 static void prv_timeout_cb(SoftTimerID timer_id, void *context) {
   SoftTimerID *cb_id = context;
@@ -138,8 +143,10 @@ void test_soft_timer_remaining(void) {
 
   uint32_t prev_time_remaining = soft_timer_remaining_time(id);
   while (cb_id == SOFT_TIMER_INVALID_TIMER) {
+    bool crit = critical_section_start();
     uint32_t time_remaining = soft_timer_remaining_time(id);
     TEST_ASSERT_TRUE(time_remaining <= prev_time_remaining);
+    critical_section_end(crit);
     prev_time_remaining = time_remaining;
   }
 

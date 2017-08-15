@@ -5,7 +5,4 @@
 # $(T)_INC_DIRS: $(T)_DIR/inc{/$(PLATFORM)}
 # $(T)_SRC: $(T)_DIR/src{/$(PLATFORM)}/*.{c,s}
 
-$(T)_DEPS := CMSIS libcore
-
-# Specifies library specific build flags
-$(T)_CFLAGS += -ffreestanding -nostdlib
+$(T)_DEPS := 

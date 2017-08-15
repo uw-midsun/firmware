@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <unistd.h>
 
-#include "interrupt.h"
+#include "interrupt_def.h"
 #include "status.h"
 
 #define NUM_X86_INTERRUPT_HANDLERS 64

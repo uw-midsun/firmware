@@ -2,7 +2,6 @@
 
 #include <stdbool.h>
 
-#include "interrupt.h"
 #include "stm32f0xx_misc.h"
 
 bool critical_section_start(void) {

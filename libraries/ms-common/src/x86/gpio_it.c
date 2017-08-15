@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "gpio.h"
-#include "interrupt.h"
+#include "interrupt_def.h"
 #include "x86_interrupt.h"
 #include "status.h"
 
