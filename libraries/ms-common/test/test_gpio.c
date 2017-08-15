@@ -87,20 +87,15 @@ void test_gpio_init_pin_invalid_settings(void) {
 // register.
 void test_gpio_init_pin_valid_output(void) {
   // Default high settings for a pin.
-  GPIOSettings settings = { .direction = GPIO_DIR_IN,
+  GPIOSettings settings = { .direction = GPIO_DIR_OUT,
                             .state = GPIO_STATE_HIGH,
-                            .resistor = GPIO_RES_PULLUP,
+                            .resistor = GPIO_RES_NONE,
                             .alt_function = GPIO_ALTFN_NONE };
   // A pin that should be valid on all configurations.
   GPIOAddress address = { .port = VALID_PORT, .pin = VALID_PIN };
   TEST_ASSERT_OK(gpio_init());
   TEST_ASSERT_OK(gpio_init_pin(&address, &settings));
   GPIOState state;
-  TEST_ASSERT_OK(gpio_get_value(&address, &state));
-  // Check low (assuming nothing is being input on the pin!)
-  TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
-  settings.direction = GPIO_DIR_OUT;
-  TEST_ASSERT_OK(gpio_init_pin(&address, &settings));
   // Check high
   TEST_ASSERT_OK(gpio_get_value(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
