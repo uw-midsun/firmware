@@ -1,6 +1,6 @@
 #pragma once
 // CAN HW Interface
-// Requires interrupts to be initalized.
+// Requires interrupts to be initialized.
 //
 // Used to initiate CAN TX and RX directly through the MCU, without any preprocessing or queues.
 // Note that none of our systems currently support more than one CAN interface natively.
@@ -33,7 +33,7 @@ typedef enum {
 
 typedef struct CANHwConfig {
   CANHwBase base;
-  uint16_t bus_speed; // in kbps
+  uint16_t bus_speed;  // in kbps
   uint8_t num_filters;
   bool loopback;
   CANHwEventHandler handlers[NUM_CAN_HW_EVENTS];

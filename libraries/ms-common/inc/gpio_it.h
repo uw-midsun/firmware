@@ -7,7 +7,7 @@
 #include "interrupt_def.h"
 #include "status.h"
 
-typedef void (*gpio_it_callback)(GPIOAddress *address, void *context);
+typedef void (*gpio_it_callback)(const GPIOAddress *address, void *context);
 
 // Initializes the interrupt handler for GPIO.
 void gpio_it_init(void);
