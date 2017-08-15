@@ -29,19 +29,20 @@ typedef union ADS1015Register {
   uint8_t data[2];
 } ADS1015Register;
 
+// The address to be used as the ISR pin
 static GPIOAddress s_address;
 
+// Initiates a read as outlined in section 8.5.3 of the datasheet
 static StatusCode prv_read(I2CPort i2c_port, uint8_t reg, uint8_t *data) {
-  // Update the address pointer register with the proper value for the target register
   status_ok_or_return(i2c_write(i2c_port, ADS1015_I2C_ADDRESS, &reg, 1));
-
   status_ok_or_return(i2c_read(i2c_port, ADS1015_I2C_ADDRESS, data, 2));
 
   return STATUS_CODE_OK;
 }
+
+// Initiates a write as outlined in section 8.5.3 of the datasheet
 static StatusCode prv_write(I2CPort i2c_port, uint8_t reg, uint8_t *data) {
-  //TODO: DOCUMENT
-  // Update the address pointer register and write the data to the proper address
+  // For writes, the input data must be sent in the same frame as the address pointer register
   uint8_t write_data[] = { reg, data[0], data[1] };
   status_ok_or_return(i2c_write(i2c_port, ADS1015_I2C_ADDRESS, write_data, 3));
 
@@ -109,8 +110,9 @@ StatusCode ads1015_read_raw(ADS1015Channel channel, uint16_t *reading) {
   status_ok_or_return(prv_read(I2C_PORT_1, ADS1015_CONVERSION_REGISTER, reg.data));
 
   // Data is stored in the 12 most significant bits
-  *reading = (reg.raw >> 4);
-  printf("%d\n", *reading);
+  //printf("reg.raw = %#x\n", reg.raw);
+  *reading = (reg.data[0] << 4) | (reg.data[1] >> 4);
+  printf("reading = 0x%03x | data = 0x%02x%x\n", *reading, reg.data[0], reg.data[1]);
   return STATUS_CODE_OK;
 }
 
