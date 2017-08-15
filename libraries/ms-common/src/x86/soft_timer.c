@@ -8,7 +8,7 @@
 #include <time.h>
 
 #include "critical_section.h"
-#include "interrupt.h"
+#include "interrupt_def.h"
 #include "status.h"
 #include "x86_interrupt.h"
 

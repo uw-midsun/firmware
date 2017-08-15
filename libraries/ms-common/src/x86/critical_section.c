@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 
-#include "interrupt.h"
+#include "interrupt_def.h"
 
 static bool s_interrupts_disabled = false;
 
