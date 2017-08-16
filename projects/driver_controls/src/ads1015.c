@@ -4,31 +4,7 @@
 #include <stdio.h>
 
 #include "gpio_it.h"
-
-// ADS1015 I2C address definition (Datasheet Section 8.5.1.1)
-#define ADS1015_I2C_ADDRESS             0x48
-
-// ADS1015 I2C reset byte (Datasheet Section 8.5.1.2)
-#define ADS1015_RESET_BYTE              0x06
-
-// Register pointer definitions (Datasheet Table 4)
-#define ADS1015_CONVERSION_REGISTER     0x00
-#define ADS1015_CONFIG_REGISTER         0x01
-#define ADS1015_LO_THRESH_REGISTER      0x02
-#define ADS1015_HI_THRESH_REGISTER      0x03
-
-// ADS1015 Bitmasks
-#define ADS1015_CONFIG_MODE             0x100
-
-#define ADS1015_CONFIG_MUX_AIN0         0x4000
-#define ADS1015_CONFIG_MUX_AIN1         0x5000
-#define ADS1015_CONFIG_MUX_AIN2         0x6000
-#define ADS1015_CONFIG_MUX_AIN3         0x7000
-
-// Number of successive conversions required before asserting ALERT/RDY
-#define ADS1015_CONFIG_COMP_QUE_ONE     0x1
-#define ADS1015_CONFIG_COMP_QUE_TWO     0x2
-#define ADS1015_CONFIG_COMP_QUE_FOUR    0x4
+#include "ads1015_bitmasks.h"
 
 // Union definition to help process 16-bit registers
 // Due to endian-ness, index 0 refers to the most significant byte
@@ -92,20 +68,18 @@ static void prv_interrupt_handler(GPIOAddress *address, void *context) {
   status_ok_or_return(prv_read(I2C_PORT_1, ADS1015_CONFIG_REGISTER, reg.data));
 
   // Set bits 12-14 based on the current channel
-  reg.data[0] &= 0x81;
-
   switch (s_current_channel) {
     case ADS1015_CHANNEL_0:
-      reg.raw |= (ADS1015_CONFIG_MUX_AIN0 >> 8);
+      reg.data[0] = ADS1015_CONFIG_MUX_AIN0(reg.data[0]);
       break;
     case ADS1015_CHANNEL_1:
-      reg.raw |= (ADS1015_CONFIG_MUX_AIN1 >> 8);
+      reg.data[0] = ADS1015_CONFIG_MUX_AIN1(reg.data[0]);
       break;
     case ADS1015_CHANNEL_2:
-      reg.raw |= (ADS1015_CONFIG_MUX_AIN2 >> 8);
+      reg.data[0] = ADS1015_CONFIG_MUX_AIN2(reg.data[0]);
       break;
     case ADS1015_CHANNEL_3:
-      reg.raw |= (ADS1015_CONFIG_MUX_AIN3 >> 8);
+      reg.data[0] = ADS1015_CONFIG_MUX_AIN3(reg.data[0]);
       break;
   }
 
@@ -115,16 +89,6 @@ static void prv_interrupt_handler(GPIOAddress *address, void *context) {
 }
 
 StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress address) {
-  // Reset the internal registers to their default values
-  uint8_t reset = ADS1015_RESET_BYTE;
-  status_ok_or_return(i2c_write(i2c_port, 0, &reset, 1));
-
-  // Initialize the ADC in continuous mode
-  ADS1015Register config;
-  status_ok_or_return(prv_read(I2C_PORT_1, ADS1015_CONFIG_REGISTER, config.data));
-  config.data[0] &= ~(ADS1015_CONFIG_MODE >> 8);
-  status_ok_or_return(prv_write(I2C_PORT_1, ADS1015_CONFIG_REGISTER, config.data));
-
   // Configure the given GPIO address as a conversion ready pin
   GPIOSettings gpio_settings = { .direction = GPIO_DIR_IN, .alt_function = GPIO_ALTFN_NONE };
   InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_NORMAL };
@@ -133,17 +97,28 @@ StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress address) {
   gpio_it_register_interrupt(&address, &it_settings, INTERRUPT_EDGE_FALLING,
                               prv_interrupt_handler, NULL);
 
+  // Reset the internal registers to their default values
+  uint8_t reset = ADS1015_RESET_BYTE;
+  status_ok_or_return(i2c_write(i2c_port, 0, &reset, 1));
+
+  
+  ADS1015Register reg;
+  
+  // Read config register and write the proper configuration settings
+  status_ok_or_return(prv_read(I2C_PORT_1, ADS1015_CONFIG_REGISTER, reg.data));
+
+  reg.data[0] = ADS1015_CONFIG_MODE_CONT(reg.data[0]);
+  reg.data[1] = ADS1015_CONFIG_COMP_QUE_FOUR(reg.data[1]);
+  reg.data[1] = ADS1015_CONFIG_DR_128_SPS(reg.data[1]);
+
+  prv_write(I2C_PORT_1, ADS1015_CONFIG_REGISTER, reg.data);
+
   // Conversion ready must be initialized by setting the MSB of the HI_THRESH and LO_THRESH to 1
   // and 0 respectively
-  uint8_t data[] = { 0x80, 0x00 };
-  prv_write(I2C_PORT_1, ADS1015_HI_THRESH_REGISTER, data);
-
-  data[0] = 0x00;
-  prv_write(I2C_PORT_1, ADS1015_LO_THRESH_REGISTER, data);
-
-  // Enable ALERT/RDY pin
-  data[1] = ADS1015_CONFIG_COMP_QUE_FOUR;
-  prv_write(I2C_PORT_1, ADS1015_CONFIG_REGISTER, data);
+  reg.data[0] = ADS1015_HI_THRESH_RDY;
+  prv_write(I2C_PORT_1, ADS1015_HI_THRESH_REGISTER, reg.data);
+  reg.data[0] = ADS1015_LO_THRESH_RDY;
+  prv_write(I2C_PORT_1, ADS1015_LO_THRESH_REGISTER, reg.data);
 
   // Initialize interrupt callbacks
   for (uint8_t i = 0; i < NUM_ADS1015_CHANNELS; i++) {
