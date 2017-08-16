@@ -1,7 +1,8 @@
 #include <stddef.h>
 
-#include "gpio_it.h"
 #include "digital_io.h"
+#include "driver_io.h"
+#include "gpio_it.h"
 #include "input_event.h"
 
 // Digital device identifiers
@@ -13,7 +14,8 @@ typedef enum {
   DIGITAL_IO_DEVICE_CRUISE_CONTROL_DEC,
   DIGITAL_IO_DEVICE_TURN_SIGNAL,
   DIGITAL_IO_DEVICE_HAZARD_LIGHT,
-  DIGITAL_IO_DEVICE_MECHANICAL_BRAKE,
+  DIGITAL_IO_DEVICE_HORN,
+  DIGITAL_IO_DEVICE_PUSH_TO_TALK,
   NUM_DIGITAL_IO_DEVICE
 } DigitalIODevice;
 
@@ -31,20 +33,7 @@ typedef struct DigitalIOSettings {
 } DigitalIOSettings;
 
 // Index the objects using their respective pins
-static DigitalIOData s_input_data[] = {
-  [0] = { .id = DIGITAL_IO_DEVICE_POWER_SWITCH, .event = INPUT_EVENT_POWER },
-  [2] = { .id = DIGITAL_IO_DEVICE_DIRECTION_SELECTOR,
-          .event = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE },
-  [3] = { .id = DIGITAL_IO_DEVICE_DIRECTION_SELECTOR,
-          .event = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE },
-  [4] = { .id = DIGITAL_IO_DEVICE_CRUISE_CONTROL, .event = INPUT_EVENT_CRUISE_CONTROL },
-  [5] = { .id = DIGITAL_IO_DEVICE_CRUISE_CONTROL_INC, .event = INPUT_EVENT_CRUISE_CONTROL_INC },
-  [6] = { .id = DIGITAL_IO_DEVICE_CRUISE_CONTROL_DEC, .event = INPUT_EVENT_CRUISE_CONTROL_DEC },
-  [7] = { .id = DIGITAL_IO_DEVICE_TURN_SIGNAL, .event = INPUT_EVENT_TURN_SIGNAL_RIGHT },
-  [8] = { .id = DIGITAL_IO_DEVICE_TURN_SIGNAL, .event = INPUT_EVENT_TURN_SIGNAL_LEFT },
-  [9] = { .id = DIGITAL_IO_DEVICE_HAZARD_LIGHT, .event = INPUT_EVENT_HAZARD_LIGHT },
-  [10] = { .id = DIGITAL_IO_DEVICE_MECHANICAL_BRAKE, .event = INPUT_EVENT_MECHANICAL_BRAKE }
-};
+static DigitalIOData s_input_data[DRIVER_IO_NUM_ADDRESSES];
 
 // Genarate the event based on the identity of the triggering device
 static void prv_get_event(DigitalIOData *digital_io_data, Event *e, GPIOState state) {
@@ -64,7 +53,8 @@ static void prv_get_event(DigitalIOData *digital_io_data, Event *e, GPIOState st
     case DIGITAL_IO_DEVICE_CRUISE_CONTROL_INC:
     case DIGITAL_IO_DEVICE_CRUISE_CONTROL_DEC:
     case DIGITAL_IO_DEVICE_HAZARD_LIGHT:
-    case DIGITAL_IO_DEVICE_MECHANICAL_BRAKE:
+    case DIGITAL_IO_DEVICE_HORN:
+    case DIGITAL_IO_DEVICE_PUSH_TO_TALK:
       e->id = digital_io_data->event;
       return;
   }
@@ -91,17 +81,64 @@ static void prv_init_pin(DigitalIOSettings *settings, GPIOSettings *gpio_setting
 
 // Configure driver devices with their individual settings
 void digital_io_init() {
+  // Initialize the static array with device information
+  s_input_data[DRIVER_IO_POWER_SWITCH_PIN] = (DigitalIOData){
+    .id = DIGITAL_IO_DEVICE_POWER_SWITCH,
+    .event = INPUT_EVENT_POWER };
+
+  s_input_data[DRIVER_IO_DIR_SELECT_PIN_FORWARD] = (DigitalIOData){
+      .id = DIGITAL_IO_DEVICE_DIRECTION_SELECTOR,
+      .event = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE };
+
+  s_input_data[DRIVER_IO_DIR_SELECT_PIN_REVERSE] = (DigitalIOData){
+      .id = DIGITAL_IO_DEVICE_DIRECTION_SELECTOR,
+      .event = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE };
+
+  s_input_data[DRIVER_IO_CRUISE_CONTROL_PIN] = (DigitalIOData){
+      .id = DIGITAL_IO_DEVICE_CRUISE_CONTROL,
+      .event = INPUT_EVENT_CRUISE_CONTROL };
+
+  s_input_data[DRIVER_IO_CRUISE_CONTROL_INC_PIN] = (DigitalIOData){
+      .id = DIGITAL_IO_DEVICE_CRUISE_CONTROL_INC,
+      .event = INPUT_EVENT_CRUISE_CONTROL_INC };
+
+  s_input_data[DRIVER_IO_CRUISE_CONTROL_DEC_PIN] = (DigitalIOData){
+      .id = DIGITAL_IO_DEVICE_CRUISE_CONTROL_DEC,
+      .event = INPUT_EVENT_CRUISE_CONTROL_DEC };
+
+  s_input_data[DRIVER_IO_TURN_SIGNAL_PIN_RIGHT] = (DigitalIOData){
+      .id = DIGITAL_IO_DEVICE_TURN_SIGNAL,
+      .event = INPUT_EVENT_TURN_SIGNAL_RIGHT };
+
+  s_input_data[DRIVER_IO_TURN_SIGNAL_PIN_LEFT] = (DigitalIOData){
+      .id = DIGITAL_IO_DEVICE_TURN_SIGNAL,
+      .event = INPUT_EVENT_TURN_SIGNAL_LEFT };
+
+  s_input_data[DRIVER_IO_HAZARD_LIGHT_PIN] = (DigitalIOData){
+      .id = DIGITAL_IO_DEVICE_HAZARD_LIGHT,
+      .event = INPUT_EVENT_HAZARD_LIGHT };
+
+  s_input_data[DRIVER_IO_HORN_PIN] = (DigitalIOData){
+      .id = DIGITAL_IO_DEVICE_HORN,
+      .event = INPUT_EVENT_HORN };
+
+  s_input_data[DRIVER_IO_PUSH_TO_TALK_PIN] = (DigitalIOData){
+      .id = DIGITAL_IO_DEVICE_PUSH_TO_TALK,
+      .event = INPUT_EVENT_PUSH_TO_TALK };
+
+  // Array to store configuration settings for each pin
   DigitalIOSettings digital_inputs[] = {
-    { .address = { GPIO_PORT_C, 0 }, .edge = INTERRUPT_EDGE_RISING },
-    { .address = { GPIO_PORT_B, 2 }, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = { GPIO_PORT_B, 3 }, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = { GPIO_PORT_C, 4 }, .edge = INTERRUPT_EDGE_RISING },
-    { .address = { GPIO_PORT_C, 5 }, .edge = INTERRUPT_EDGE_RISING },
-    { .address = { GPIO_PORT_C, 6 }, .edge = INTERRUPT_EDGE_RISING },
-    { .address = { GPIO_PORT_C, 7 }, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = { GPIO_PORT_C, 8 }, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = { GPIO_PORT_C, 9 }, .edge = INTERRUPT_EDGE_RISING },
-    { .address = { GPIO_PORT_C, 10 }, .edge = INTERRUPT_EDGE_RISING_FALLING }
+    { .address = DRIVER_IO_POWER_SWITCH, .edge = INTERRUPT_EDGE_RISING },
+    { .address = DRIVER_IO_DIR_SELECT_FORWARD, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = DRIVER_IO_DIR_SELECT_REVERSE, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = DRIVER_IO_CRUISE_CONTROL_PORT, .edge = INTERRUPT_EDGE_RISING },
+    { .address = DRIVER_IO_CRUISE_CONTROL_INC, .edge = INTERRUPT_EDGE_RISING },
+    { .address = DRIVER_IO_CRUISE_CONTROL_DEC, .edge = INTERRUPT_EDGE_RISING },
+    { .address = DRIVER_IO_TURN_SIGNAL_RIGHT, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = DRIVER_IO_TURN_SIGNAL_LEFT, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = DRIVER_IO_HAZARD_LIGHT, .edge = INTERRUPT_EDGE_RISING },
+    { .address = DRIVER_IO_HORN, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = DRIVER_IO_PUSH_TO_TALK, .edge = INTERRUPT_EDGE_RISING_FALLING }
   };
 
   GPIOSettings settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_NONE };
