@@ -77,7 +77,7 @@ int main(void) {
   printf("CAN ID: %d\n", 0x4 + (io_state == GPIO_STATE_LOW));
 
   CANSettings can_settings = {
-    .device_id = 0x4,
+    .device_id = 0x4 + (io_state == GPIO_STATE_LOW),
     .bus_speed = 250,
     .rx_event = CAN_TEST_EVENT_RX,
     .tx_event = CAN_TEST_EVENT_TX,

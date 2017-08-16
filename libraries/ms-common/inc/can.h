@@ -6,7 +6,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "can_ack.h"
-#include "can_queue.h"
 #include "can_fifo.h"
 #include "can_rx.h"
 #include "gpio.h"
