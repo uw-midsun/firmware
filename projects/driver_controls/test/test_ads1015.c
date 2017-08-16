@@ -7,11 +7,10 @@
 #include "delay.h"
 
 static bool s_callback_ran;
-static uint8_t s_callback_runs;
 
 static void prv_callback(ADS1015Channel channel, void *context) {
+  printf("Callback called by channel #%d\n", channel);
   s_callback_ran = true;
-  s_callback_runs++;
 }
 
 static void prv_adc_check_range(ADS1015Channel channel) {
@@ -41,27 +40,19 @@ void setup_test(void) {
   ads1015_init(I2C_PORT_1, address);
 
   s_callback_ran = false;
-  s_callback_runs = 0;
 
-  ads1015_init(I2C_PORT_1, address);
+  TEST_ASSERT_OK(ads1015_init(I2C_PORT_1, address));
 }
 
 void teardown_test(void) { }
 
-void test_ads1015_read(void) {
-  TEST_ASSERT_NOT_OK(ads1015_read_raw(NUM_ADS1015_CHANNELS, NULL));
-  prv_adc_check_range(ADS1015_CHANNEL_0);
-}
-
 void test_ads1015_callback(void) {
   TEST_ASSERT_NOT_OK(ads1015_register_callback(NUM_ADS1015_CHANNELS, prv_callback, NULL));
-
   TEST_ASSERT_OK(ads1015_register_callback(ADS1015_CHANNEL_0, prv_callback, NULL));
 
   while (!s_callback_ran) {
-    printf("ran = %d | runs = %d\n", s_callback_ran, s_callback_runs);
+    printf("Runs = %d\n", s_callback_ran);
   }
 
   TEST_ASSERT_TRUE(s_callback_ran);
-  TEST_ASSERT_TRUE(s_callback_runs > 0);
 }

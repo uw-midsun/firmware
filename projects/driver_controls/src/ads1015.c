@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "i2c.h"
 #include "gpio_it.h"
 #include "ads1015_bitmasks.h"
 
@@ -101,9 +102,8 @@ StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress address) {
   uint8_t reset = ADS1015_RESET_BYTE;
   status_ok_or_return(i2c_write(i2c_port, 0, &reset, 1));
 
-  
   ADS1015Register reg;
-  
+
   // Read config register and write the proper configuration settings
   status_ok_or_return(prv_read(I2C_PORT_1, ADS1015_CONFIG_REGISTER, reg.data));
 
