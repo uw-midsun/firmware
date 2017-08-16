@@ -16,6 +16,7 @@ typedef enum {
 
 typedef void (*ADS1015Callback)(ADS1015Channel channel, void *context);
 
+// Start up the device with an initialized I2C port
 StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress address);
 
 // Register a callback function to be called when the specified channel completes a conversion

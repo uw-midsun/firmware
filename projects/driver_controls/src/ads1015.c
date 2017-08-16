@@ -122,9 +122,7 @@ StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress address) {
   // Initialize the ADC in continuous mode
   ADS1015Register config;
   status_ok_or_return(prv_read(I2C_PORT_1, ADS1015_CONFIG_REGISTER, config.data));
-  printf("data = %#x%x\n", config.data[0], config.data[1]);
   config.data[0] &= ~(ADS1015_CONFIG_MODE >> 8);
-  printf("data = %#x%x\n", config.data[0], config.data[1]);
   status_ok_or_return(prv_write(I2C_PORT_1, ADS1015_CONFIG_REGISTER, config.data));
 
   // Configure the given GPIO address as a conversion ready pin
