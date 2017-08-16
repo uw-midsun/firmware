@@ -46,7 +46,7 @@ void test_ads1015_read(void) {
   TEST_ASSERT_NOT_OK(ads1015_read_raw(NUM_ADS1015_CHANNELS, NULL));
   TEST_ASSERT_NOT_OK(ads1015_read_converted(NUM_ADS1015_CHANNELS, NULL));
 
-  // 
+  // Confirm that the readings are in the correct ranges
   for (uint8_t i = 0; i < 12; i++) {
     ads1015_read_raw(ADS1015_CHANNEL_0, &reading);
     TEST_ASSERT_TRUE(0 <= reading && reading < 0x7FF);
