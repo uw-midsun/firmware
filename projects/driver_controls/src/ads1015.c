@@ -143,10 +143,27 @@ StatusCode ads1015_register_callback(ADS1015Channel channel,
   return STATUS_CODE_OK;
 }
 
-StatusCode ads1015_read_raw(ADS1015Channel channel, uint16_t *reading) {
+StatusCode ads1015_read_raw(ADS1015Channel channel, int16_t *reading) {
   status_ok_or_return(prv_channel_valid(channel));
 
+  if (reading == NULL) {
+    return status_code(STATUS_CODE_EMPTY);
+  }
+
   *reading = s_interrupts[channel].reading;
+  return STATUS_CODE_OK;
 }
 
-StatusCode ads1015_read_converted(ADS1015Channel channel, uint16_t *reading) { }
+StatusCode ads1015_read_converted(ADS1015Channel channel, int16_t *reading) {
+  int16_t raw_reading;
+
+  StatusCode ret = ads1015_read_raw(channel, &raw_reading);
+
+  if (ret != STATUS_CODE_OK) {
+    return ret;
+  }
+
+  *reading = (raw_reading * ADS1015_REFERENCE_VOLTAGE)/2047;
+
+  return ret;
+}

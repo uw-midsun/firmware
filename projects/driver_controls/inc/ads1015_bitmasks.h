@@ -6,6 +6,9 @@
 // ADS1015 I2C reset byte (Datasheet Section 8.5.1.2)
 #define ADS1015_RESET_BYTE              0x06
 
+// Used Reference voltage in mv.
+#define ADS1015_REFERENCE_VOLTAGE       3300
+
 // Register pointer definitions (Datasheet Table 4)
 #define ADS1015_CONVERSION_REGISTER     0x00
 #define ADS1015_CONFIG_REGISTER         0x01

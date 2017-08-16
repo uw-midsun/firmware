@@ -24,7 +24,7 @@ StatusCode ads1015_register_callback(ADS1015Channel channel,
                                       ADS1015Callback callback, void *context);
 
 // Obtain the raw 12-bit value read by the specified channel
-StatusCode ads1015_read_raw(ADS1015Channel channel, uint16_t *reading);
+StatusCode ads1015_read_raw(ADS1015Channel channel, int16_t *reading);
 
 // Obtain the converted value at the specified channel
-StatusCode ads1015_read_converted(ADS1015Channel channel, uint16_t *reading);
+StatusCode ads1015_read_converted(ADS1015Channel channel, int16_t *reading);

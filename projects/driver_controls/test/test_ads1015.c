@@ -6,20 +6,13 @@
 #include "ads1015.h"
 #include "delay.h"
 
+#include "ads1015_bitmasks.h"
+
 static bool s_callback_ran;
 
 static void prv_callback(ADS1015Channel channel, void *context) {
   printf("Callback called by channel #%d\n", channel);
   s_callback_ran = true;
-}
-
-static void prv_adc_check_range(ADS1015Channel channel) {
-  uint16_t reading;
-
-  for (uint8_t i = 0; i < 12; i++) {
-    ads1015_read_raw(channel, &reading);
-    TEST_ASSERT_TRUE(0 <= reading && reading < 0x7FF);
-  }
 }
 
 void setup_test(void) {
@@ -45,6 +38,23 @@ void setup_test(void) {
 }
 
 void teardown_test(void) { }
+
+void test_ads1015_read(void) {
+  int16_t reading;
+
+  // Check that you cannot read from invalid channels
+  TEST_ASSERT_NOT_OK(ads1015_read_raw(NUM_ADS1015_CHANNELS, NULL));
+  TEST_ASSERT_NOT_OK(ads1015_read_converted(NUM_ADS1015_CHANNELS, NULL));
+
+  // 
+  for (uint8_t i = 0; i < 12; i++) {
+    ads1015_read_raw(ADS1015_CHANNEL_0, &reading);
+    TEST_ASSERT_TRUE(0 <= reading && reading < 0x7FF);
+
+    ads1015_read_raw(ADS1015_CHANNEL_0, &reading);
+    TEST_ASSERT_TRUE(0 <= reading && reading < ADS1015_REFERENCE_VOLTAGE);
+  }
+}
 
 void test_ads1015_callback(void) {
   TEST_ASSERT_NOT_OK(ads1015_register_callback(NUM_ADS1015_CHANNELS, prv_callback, NULL));
