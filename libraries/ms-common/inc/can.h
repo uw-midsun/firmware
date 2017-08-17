@@ -10,12 +10,13 @@
 #include "can_rx.h"
 #include "gpio.h"
 #include "fsm.h"
+#include "can_hw.h" // TODO figure out way of not needing this?
 
 #define CAN_FSM can_get_fsm()
 
 typedef struct CANSettings {
   uint16_t device_id;
-  uint16_t bus_speed;
+  CANHwBitrate bitrate;
   GPIOAddress tx;
   GPIOAddress rx;
   EventID rx_event;
@@ -34,7 +35,6 @@ typedef struct CANStorage {
   EventID tx_event;
   EventID fault_event;
   uint16_t device_id;
-  volatile uint16_t num_failed_tx;
 } CANStorage;
 
 // Initializes the specified CAN configuration given pointers to persistant storage.

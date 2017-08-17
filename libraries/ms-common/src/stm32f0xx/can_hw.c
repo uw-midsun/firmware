@@ -5,14 +5,25 @@
 #include "log.h"
 
 #define CAN_HW_BASE CAN
-#define CAN_HW_PRESCALER 12
 #define CAN_HW_NUM_FILTER_BANKS 14
+
+typedef struct CANHwTiming {
+  uint16_t prescaler;
+  uint8_t bs1;
+  uint8_t bs2;
+} CANHwTiming;
 
 typedef struct CANHwEventHandler {
   CANHwEventHandlerCb callback;
   void *context;
 } CANHwEventHandler;
 
+static CANHwTiming s_timing[NUM_CAN_HW_BITRATES] = { // For 48MHz clock
+  [CAN_HW_BITRATE_125KBPS] = { .prescaler = 24, .bs1 = 13, .bs2 = 2 },
+  [CAN_HW_BITRATE_250KBPS] = { .prescaler = 12, .bs1 = 13, .bs2 = 2 },
+  [CAN_HW_BITRATE_500KBPS] = { .prescaler = 6, .bs1 = 13, .bs2 = 2 },
+  [CAN_HW_BITRATE_1000KBPS] = { .prescaler = 3, .bs1 = 13, .bs2 = 2 }
+};
 static CANHwEventHandler s_handlers[NUM_CAN_HW_EVENTS];
 static uint8_t s_num_filters;
 
@@ -30,12 +41,6 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
 
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN, ENABLE);
 
-  RCC_ClocksTypeDef clocks;
-  RCC_GetClocksFreq(&clocks);
-  // time quanta = (APB1 / Prescaler) / baudrate, -1 for start bit
-  uint16_t tq = clocks.PCLK_Frequency / 1000 / CAN_HW_PRESCALER / settings->bus_speed - 1;
-  uint16_t bs1 = tq * 7 / 8; // 87.5% sample point
-
   CAN_DeInit(CAN_HW_BASE);
 
   CAN_InitTypeDef can_cfg;
@@ -43,9 +48,9 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
 
   can_cfg.CAN_Mode = settings->loopback ? CAN_Mode_Silent_LoopBack : CAN_Mode_Normal;
   can_cfg.CAN_SJW = CAN_SJW_1tq;
-  can_cfg.CAN_BS1 = bs1;
-  can_cfg.CAN_BS2 = tq - bs1;
-  can_cfg.CAN_Prescaler = CAN_HW_PRESCALER;
+  can_cfg.CAN_BS1 = s_timing[settings->bitrate].bs1;
+  can_cfg.CAN_BS2 = s_timing[settings->bitrate].bs2;
+  can_cfg.CAN_Prescaler = s_timing[settings->bitrate].prescaler;
   CAN_Init(CAN_HW_BASE, &can_cfg);
 
   CAN_ITConfig(CAN_HW_BASE, CAN_IT_TME, ENABLE);

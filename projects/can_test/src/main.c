@@ -63,7 +63,7 @@ int main(void) {
 
   CANSettings can_settings = {
     .device_id = 0x4 + is_sender,
-    .bus_speed = 125, // TODO: figure out A) why the optimization level needed to be changed B) why bus speed does not seem to change the actual throughput
+    .bitrate = CAN_HW_BITRATE_250KBPS, // TODO: figure out A) why the optimization level needed to be changed B) why bus speed does not seem to change the actual throughput
     .rx_event = CAN_TEST_EVENT_RX,
     .tx_event = CAN_TEST_EVENT_TX,
     .fault_event = CAN_TEST_EVENT_FAULT,

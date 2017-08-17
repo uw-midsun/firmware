@@ -108,15 +108,6 @@ static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
     // printf("pop %d\n", tx_msg.data_u32[0]);
   } else if (can_hw_bus_status() != CAN_HW_BUS_STATUS_OK) {
     // printf("bus error??? %d\n", can_hw_bus_status());
-  } else {
-    // CAN TX attempt failed - record attempt for TX ready interrupt
-    // Once TX is ready again, it will raise new TX events
-    // technically, there's a race condition here - if the TX ready interrupt fires before we
-    // increment, then we'll fail to kickstart the TX loop so the failed TX won't occur until the
-    // next transmit.
-    can_storage->num_failed_tx++;
-    // printf("%d TX fail (%d) %d\n", tx_msg.data_u32[0], can_fifo_size(&can_storage->tx_fifo),
-    //        can_storage->num_failed_tx);
   }
 }
 

@@ -26,10 +26,18 @@ typedef enum {
   CAN_HW_BUS_STATUS_OFF
 } CANHwBusStatus;
 
+typedef enum {
+  CAN_HW_BITRATE_125KBPS,
+  CAN_HW_BITRATE_250KBPS,
+  CAN_HW_BITRATE_500KBPS,
+  CAN_HW_BITRATE_1000KBPS,
+  NUM_CAN_HW_BITRATES
+} CANHwBitrate;
+
 typedef struct CANHwSettings {
   GPIOAddress tx;
   GPIOAddress rx;
-  uint16_t bus_speed; // kbps
+  CANHwBitrate bitrate;
   bool loopback;
 } CANHwSettings;
 

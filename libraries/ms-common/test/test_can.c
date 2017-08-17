@@ -51,7 +51,7 @@ void setup_test(void) {
 
   CANSettings can_settings = {
     .device_id = TEST_CAN_DEVICE_ID,
-    .bus_speed = 125,
+    .bitrate = CAN_HW_BITRATE_125KBPS,
     .rx_event = TEST_CAN_EVENT_RX,
     .fault_event = TEST_CAN_EVENT_FAULT,
     .tx = { GPIO_PORT_A, 12 },

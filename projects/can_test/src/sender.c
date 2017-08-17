@@ -16,8 +16,6 @@ static void prv_tx_cb(SoftTimerID timer_id, void *context) {
   StatusCode ret = can_transmit(&s_sender.msg, NULL);
   if (status_ok(ret)) {
     s_sender.msg.data_u32[0]++;
-  } else {
-    printf("?");
   }
 
   soft_timer_start(s_sender.timeout_us, prv_tx_cb, NULL, NULL);
@@ -35,7 +33,7 @@ static void prv_periodic_tx_cb(SoftTimerID timer_id, void *context) {
 void sender_init(void) {
   s_sender.msg.msg_id = 15;
   s_sender.msg.dlc = 8;
-  s_sender.timeout_us = 1000;
+  s_sender.timeout_us = 100;
   soft_timer_start(s_sender.timeout_us, prv_tx_cb, NULL, NULL);
   soft_timer_start_seconds(1, prv_periodic_tx_cb, NULL, NULL);
 }

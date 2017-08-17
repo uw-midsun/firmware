@@ -54,13 +54,12 @@ StatusCode can_init(const CANSettings *settings, CANStorage *storage,
   storage->tx_event = settings->tx_event;
   storage->fault_event = settings->fault_event;
   storage->device_id = settings->device_id;
-  storage->num_failed_tx = 0;
 
   s_can_storage = storage;
   LOG_DEBUG("Setting s_can_storage to %p\n", s_can_storage);
 
   CANHwSettings can_hw_settings = {
-    .bus_speed = settings->bus_speed,
+    .bitrate = settings->bitrate,
     .loopback = settings->loopback,
     .tx = settings->tx,
     .rx = settings->rx
@@ -153,12 +152,11 @@ void prv_tx_handler(void *context) {
 
   // If we failed to TX some messages, raise a TX event to trigger a transmit attempt.
   // We only raise one event since TX ready interrupts are 1-to-1.
-  if (can_storage->num_failed_tx > 0) {
+  // TODO: this will cause a lot of CAN TX events to happen
+  if (can_fifo_size(&can_storage->tx_fifo) > 0) {
     // Notify of the ability to TX
     // TODO: Replace data value with something meaningful
-    can_storage->num_failed_tx--;
     event_raise(can_storage->tx_event, 0);
-    // printf("TX ready %d\n", can_storage->num_failed_tx);
   }
 }
 
