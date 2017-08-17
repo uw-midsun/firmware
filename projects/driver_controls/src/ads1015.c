@@ -28,7 +28,7 @@ static ADS1015Interrupt s_interrupts[NUM_ADS1015_CHANNELS];
 
 static StatusCode prv_channel_valid(ADS1015Channel channel) {
   if (channel >= NUM_ADS1015_CHANNELS) {
-    return STATUS_CODE_INVALID_ARGS;
+    return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
   return STATUS_CODE_OK;
@@ -87,6 +87,13 @@ static void prv_interrupt_handler(GPIOAddress *address, void *context) {
 
   status_ok_or_return(prv_write(s_i2c_port, ADS1015_CONFIG_REGISTER, reg.data));
 
+  /*
+  printf("[ %d\t%d\t%d\t%d ]\n",
+          s_interrupts[ADS1015_CHANNEL_0].reading,
+          s_interrupts[ADS1015_CHANNEL_1].reading,
+          s_interrupts[ADS1015_CHANNEL_2].reading,
+          s_interrupts[ADS1015_CHANNEL_3].reading);
+  */
   return STATUS_CODE_OK;
 }
 
@@ -103,7 +110,7 @@ StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress address) {
 
   // Reset the internal registers to their default values
   uint8_t reset = ADS1015_RESET_BYTE;
-  status_ok_or_return(i2c_write(s_i2c_port, 0, &reset, 1));
+  status_ok_or_return(i2c_write(i2c_port, ADS1015_I2C_ADDRESS, &reset, 1));
 
   ADS1015Register reg;
 
@@ -111,6 +118,7 @@ StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress address) {
   status_ok_or_return(prv_read(s_i2c_port, ADS1015_CONFIG_REGISTER, reg.data));
 
   reg.data[0] = ADS1015_CONFIG_MODE_CONT(reg.data[0]);
+  //reg.data[0] = ADS1015_FULL_SCALE_4096(reg.data[0]);
   reg.data[1] = ADS1015_CONFIG_COMP_QUE_FOUR(reg.data[1]);
   reg.data[1] = ADS1015_CONFIG_DR_128_SPS(reg.data[1]);
 
@@ -133,8 +141,7 @@ StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress address) {
   return STATUS_CODE_OK;
 }
 
-StatusCode ads1015_register_callback(ADS1015Channel channel,
-                                      ADS1015Callback callback, void *context) {
+StatusCode ads1015_register_callback(ADS1015Channel channel, ADS1015Callback callback, void *context) {
   status_ok_or_return(prv_channel_valid(channel));
 
   s_interrupts[channel].callback = callback;
@@ -163,7 +170,7 @@ StatusCode ads1015_read_converted(ADS1015Channel channel, int16_t *reading) {
     return ret;
   }
 
-  *reading = (raw_reading * ADS1015_REFERENCE_VOLTAGE)/2047;
+  *reading = (raw_reading * ADS1015_REFERENCE_VOLTAGE_4096)/2047;
 
   return ret;
 }
