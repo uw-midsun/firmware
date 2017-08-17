@@ -153,7 +153,7 @@ $(BIN_DIR)/%.bin: $(BIN_DIR)/%$(PLATFORM_EXT)
 
 # clean and remake rules, use reallyclean to clean everything
 
-.PHONY: clean reallyclean remake new
+.PHONY: clean reallyclean remake new vscode
 
 new:
 	@python3 $(MAKE_DIR)/new_target.py $(NEW_TYPE) $(PROJECT)$(LIBRARY)
@@ -166,3 +166,6 @@ reallyclean: clean
 	@rm -rf $(BUILD_DIR)
 
 remake: clean all
+
+vscode:
+	@$(foreach inc,$(INC_DIRS),echo '"$${workspaceRoot}/$(inc)",';)

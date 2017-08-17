@@ -133,7 +133,7 @@ StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request)
   event_raise(s_can_storage->tx_event, 1);
 
   if (msg->data_u32[0] == 0 && msg->type == CAN_MSG_TYPE_DATA) {
-    printf("> tx %d msg %d\n", msg->data_u32[0], msg->msg_id);
+    // printf("> tx %d msg %d\n", msg->data_u32[0], msg->msg_id);
   }
 
   return can_fifo_push(&s_can_storage->tx_fifo, msg);
@@ -158,7 +158,7 @@ void prv_tx_handler(void *context) {
     // TODO: Replace data value with something meaningful
     can_storage->num_failed_tx--;
     event_raise(can_storage->tx_event, 0);
-    printf("TX ready %d\n", can_storage->num_failed_tx);
+    // printf("TX ready %d\n", can_storage->num_failed_tx);
   }
 }
 
@@ -174,8 +174,8 @@ void prv_rx_handler(void *context) {
   can_hw_receive(&rx_id.raw, &rx_msg.data, &rx_msg.dlc);
   CAN_MSG_SET_RAW_ID(&rx_msg, rx_id.raw);
   if (rx_msg.data_u32[0] == 0 && rx_msg.type == CAN_MSG_TYPE_DATA) {
-    printf("%d\n", rx_id.raw);
-    printf("> rx %d msg %d\n", rx_msg.data_u32[0], rx_msg.msg_id);
+    // printf("%d\n", rx_id.raw);
+    // printf("> rx %d msg %d\n", rx_msg.data_u32[0], rx_msg.msg_id);
   }
 
   StatusCode result = can_fifo_push(&can_storage->rx_fifo, &rx_msg);

@@ -1,7 +1,12 @@
+// CAN driver bus flooding test
+// Attempts to flood the CAN bus - would like to ensure that the main thread doesn't starve
+// and figure out how quickly we can realistically send messages
 #include "gpio.h"
 #include "soft_timer.h"
 #include "interrupt.h"
 #include "can.h"
+#include "sender.h"
+#include "receiver.h"
 
 #define CAN_TEST_NUM_RX_HANDLERS 5
 
@@ -15,42 +20,29 @@ static GPIOAddress s_led = { GPIO_PORT_B, 3 };
 static CANStorage s_can_storage;
 static CANRxHandler s_rx_handlers[CAN_TEST_NUM_RX_HANDLERS];
 
-static StatusCode prv_handle_can_rx(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
-  uint32_t *prev_data = context;
-
-  if (msg->data_u32[0] != (*prev_data + 1)) {
-    printf("RX %d (expected %d) - %d\n", msg->data_u32[0], (*prev_data + 1), msg->msg_id);
-  }
-
-  *prev_data = msg->data_u32[0];
-  // printf("RX %d\n", msg->msg_id, msg->source_id);
-  // printf("> Data 0x%x%x\n", msg->data_u32[1], msg->data_u32[0]);
-
-  return STATUS_CODE_OK;
-}
-
-static void prv_timeout_cb(SoftTimerID timer_id, void *context) {
-  CANMessage *msg = context;
-  uint32_t timeout = 1;
-
-  msg->msg_id = (msg->msg_id + 1) % CAN_MSG_MAX_IDS;
-  msg->data_u32[0]++;
-
-  // printf("TX %d - %d\n", msg->data_u32[0], msg->msg_id);
-  StatusCode ret = can_transmit(msg, NULL);
-  if (ret != STATUS_CODE_OK) {
-    printf("TX fail %d - %d\n", msg->data_u32[0], ret);
-    timeout = 10000;
-  }
-
-  soft_timer_start_millis(timeout, prv_timeout_cb, msg, NULL);
-}
-
-static void prv_hello_world(SoftTimerID timer_id, void *context) {
-  uint32_t *prev_data = context;
-  printf("Hello - %d\n", *prev_data);
+static void prv_blink_led(SoftTimerID timer_id, void *context) {
   gpio_toggle_state(&s_led);
-  soft_timer_start_seconds(1, prv_hello_world, context, NULL);
+  soft_timer_start_seconds(1, prv_blink_led, NULL, NULL);
+}
+
+static bool prv_is_sender(void) {
+  GPIOAddress pin_out = { GPIO_PORT_A, 0 };
+  GPIOAddress pin_in = { GPIO_PORT_A, 1 };
+
+  GPIOSettings gpio_settings = {
+    .direction = GPIO_DIR_OUT,
+    .state = GPIO_STATE_LOW
+  };
+  gpio_init_pin(&pin_out, &gpio_settings);
+
+  gpio_settings.direction = GPIO_DIR_IN;
+  gpio_settings.resistor = GPIO_RES_PULLUP;
+  gpio_init_pin(&pin_in, &gpio_settings);
+
+  GPIOState io_state = GPIO_STATE_LOW;
+  gpio_get_state(&pin_in, &io_state);
+
+  return io_state == GPIO_STATE_LOW;
 }
 
 int main(void) {
@@ -64,21 +56,14 @@ int main(void) {
     .state = GPIO_STATE_LOW
   };
   gpio_init_pin(&s_led, &gpio_settings);
+  prv_blink_led(0, NULL);
 
-  GPIOAddress pin_out = { GPIO_PORT_A, 0 };
-  GPIOAddress pin_in = { GPIO_PORT_A, 1 };
-  gpio_init_pin(&pin_out, &gpio_settings);
-  gpio_settings.direction = GPIO_DIR_IN;
-  gpio_settings.resistor = GPIO_RES_PULLUP;
-  gpio_init_pin(&pin_in, &gpio_settings);
-  GPIOState io_state = GPIO_STATE_LOW;
-  gpio_get_state(&pin_in, &io_state);
-
-  printf("CAN ID: %d\n", 0x4 + (io_state == GPIO_STATE_LOW));
+  bool is_sender = prv_is_sender();
+  printf("Is sender: %d\n", is_sender);
 
   CANSettings can_settings = {
-    .device_id = 0x4 + (io_state == GPIO_STATE_LOW),
-    .bus_speed = 250,
+    .device_id = 0x4 + is_sender,
+    .bus_speed = 125, // TODO: figure out A) why the optimization level needed to be changed B) why bus speed does not seem to change the actual throughput
     .rx_event = CAN_TEST_EVENT_RX,
     .tx_event = CAN_TEST_EVENT_TX,
     .fault_event = CAN_TEST_EVENT_FAULT,
@@ -86,16 +71,12 @@ int main(void) {
     .rx = { GPIO_PORT_A, 11 },
   };
   can_init(&can_settings, &s_can_storage, s_rx_handlers, CAN_TEST_NUM_RX_HANDLERS);
-  uint32_t prev_data = 0;
-  can_register_rx_default_handler(prv_handle_can_rx, &prev_data);
 
-  volatile CANMessage msg = {
-    .msg_id = 0x1,
-    .dlc = 8,
-    .data = 0
-  };
-  soft_timer_start_millis(100, prv_timeout_cb, &msg, NULL);
-  soft_timer_start_seconds(1, prv_hello_world, &prev_data, NULL);
+  if (is_sender) {
+    sender_init();
+  } else {
+    receiver_init();
+  }
 
   while (true) {
     Event e = { 0 };
