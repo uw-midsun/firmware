@@ -52,7 +52,7 @@ $($(T)_TESTS): $($(T)_TEST_BIN_DIR)/%_runner$(PLATFORM_EXT): \
                  $(call dep_to_lib,$($(T)_TEST_DEPS)) | $(T) $($(T)_TEST_BIN_DIR)
 	@echo "Building test $(notdir $@) for $(PLATFORM)"
 	@$(CC) $(CFLAGS) -Wl,-Map=$(lastword $|)/$(notdir $(@:%$(PLATFORM_EXT)=%.map)) $^ -o $@ -L$(STATIC_LIB_DIR) \
-		$(addprefix -l,$($(firstword $|)_TEST_DEPS) $($(firstword $|)_DEPS)) \
+		$(addprefix -l,$(foreach lib,$($(firstword $|)_TEST_DEPS),$($(lib)_DEPS))) \
 		$(LDFLAGS) $(addprefix -I,$($(firstword $|)_INC_DIRS) $(unity_INC_DIRS))
 
 .PHONY: test test_ test_$(T)
@@ -60,11 +60,12 @@ $($(T)_TESTS): $($(T)_TEST_BIN_DIR)/%_runner$(PLATFORM_EXT): \
 ifeq ($(T),$(filter $(T),$(LIBRARY) $(PROJECT)))
 ifeq (,$(TEST))
 test: test_$(T)
+
+build: $($(T)_TESTS)
 else
 test: $($(T)_TEST_BIN_DIR)/test_$(TEST)_runner$(PLATFORM_EXT)
 	@echo "Running test - $(TEST)"
 	@$(call session_wrapper,$(call test_run,$<))
-
 endif
 endif
 
