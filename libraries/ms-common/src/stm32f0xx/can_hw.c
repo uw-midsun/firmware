@@ -18,6 +18,7 @@ typedef struct CANHwEventHandler {
   void *context;
 } CANHwEventHandler;
 
+// Generated settings using http://www.bittiming.can-wiki.info/
 static CANHwTiming s_timing[NUM_CAN_HW_BITRATES] = { // For 48MHz clock
   [CAN_HW_BITRATE_125KBPS] = { .prescaler = 24, .bs1 = 13, .bs2 = 2 },
   [CAN_HW_BITRATE_250KBPS] = { .prescaler = 12, .bs1 = 13, .bs2 = 2 },
@@ -61,6 +62,8 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
   CAN_ITConfig(CAN_HW_BASE, CAN_IT_ERR, ENABLE);
   stm32f0xx_interrupt_nvic_enable(CEC_CAN_IRQn, INTERRUPT_PRIORITY_HIGH);
 
+  // Allow all messages by default, but reset the filter count so it's overwritten on the first
+  // filter
   can_hw_add_filter(0, 0);
   s_num_filters = 0;
 
