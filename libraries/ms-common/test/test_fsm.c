@@ -52,7 +52,9 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_fsm_transition(void) {
-  Event e = {.id = TEST_FSM_EVENT_A, .data = 10 };
+  Event e = {
+    .id = TEST_FSM_EVENT_A, .data = 10,
+  };
 
   // Expect A -> A -> B -> fail (B) -> C (output) -> C (output) -> fail (C)
   bool transitioned = fsm_process_event(&s_fsm, &e);
@@ -80,7 +82,9 @@ void test_fsm_transition(void) {
 }
 
 void test_fsm_guard(void) {
-  Event e = {.id = TEST_FSM_EVENT_C, .data = false };
+  Event e = {
+    .id = TEST_FSM_EVENT_C, .data = false,
+  };
 
   // Expect A -> C -> guard fail (C) -> B
   bool transitioned = fsm_process_event(&s_fsm, &e);

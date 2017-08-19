@@ -18,12 +18,14 @@ void gyro_cmd(bool read, bool autoincrement, uint8_t addr, uint8_t *data) {
 int main(void) {
   gpio_init();
 
-  SPISettings spi_settings = {.baudrate = 1500000,
-                              .mode = SPI_MODE_0,
-                              .mosi = { GPIO_PORT_B, 15 },
-                              .miso = { GPIO_PORT_B, 14 },
-                              .sclk = { GPIO_PORT_B, 13 },
-                              .cs = { GPIO_PORT_C, 0 } };
+  SPISettings spi_settings = {
+    .baudrate = 1500000,
+    .mode = SPI_MODE_0,
+    .mosi = { GPIO_PORT_B, 15 },
+    .miso = { GPIO_PORT_B, 14 },
+    .sclk = { GPIO_PORT_B, 13 },
+    .cs = { GPIO_PORT_C, 0 },
+  };
 
   // Using SPI port 2 - not using enum so build on x86 will pass
   spi_init(1, &spi_settings);

@@ -19,10 +19,12 @@ static StatusCode prv_handle_data_msg(CANConfig *can, const CANMessage *rx_msg) 
   }
 
   if (CAN_MSG_IS_CRITICAL(rx_msg)) {
-    CANMessage ack = {.msg_id = rx_msg->msg_id,
-                      .type = CAN_MSG_TYPE_ACK,
-                      .dlc = sizeof(ack_status),
-                      .data = ack_status };
+    CANMessage ack = {
+      .msg_id = rx_msg->msg_id,
+      .type = CAN_MSG_TYPE_ACK,
+      .dlc = sizeof(ack_status),
+      .data = ack_status,
+    };
 
     ret = can_transmit(can, &ack, NULL);
     status_ok_or_return(ret);

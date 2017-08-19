@@ -68,7 +68,9 @@ StatusCode i2c_init(I2CPort i2c, const I2CSettings *settings) {
   RCC_APB1PeriphClockCmd(s_port[i2c].periph, ENABLE);
   RCC_I2CCLKConfig(RCC_I2C1CLK_SYSCLK);
 
-  GPIOSettings io_settings = {.direction = GPIO_DIR_OUT_OD, .alt_function = GPIO_ALTFN_1 };
+  GPIOSettings io_settings = {
+    .direction = GPIO_DIR_OUT_OD, .alt_function = GPIO_ALTFN_1,
+  };
   gpio_init_pin(&settings->scl, &io_settings);
   gpio_init_pin(&settings->sda, &io_settings);
 

@@ -21,7 +21,11 @@
     (can_msg)->type = id.type;              \
   } while (0)
 
-typedef enum { CAN_MSG_TYPE_DATA = 0, CAN_MSG_TYPE_ACK, NUM_CAN_MSG_TYPES } CANMsgType;
+typedef enum {
+  CAN_MSG_TYPE_DATA = 0,
+  CAN_MSG_TYPE_ACK,
+  NUM_CAN_MSG_TYPES,
+} CANMsgType;
 
 typedef uint16_t CANMessageID;
 
