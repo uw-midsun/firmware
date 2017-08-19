@@ -22,7 +22,7 @@ static SPIPortData s_port[SPI_MCU_NUM_PORTS] = {
   }
 };
 
-StatusCode spi_init(SPIPort spi, SPISettings *settings) {
+StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
   RCC_ClocksTypeDef clocks;
   RCC_GetClocksFreq(&clocks);
 
@@ -70,8 +70,8 @@ StatusCode spi_init(SPIPort spi, SPISettings *settings) {
   return STATUS_CODE_OK;
 }
 
-StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len,
-                        uint8_t *rx_data, size_t rx_len) {
+StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *rx_data,
+                        size_t rx_len) {
   gpio_set_pin_state(&s_port[spi].cs, GPIO_STATE_LOW);
 
   for (int i = 0; i < tx_len; i++) {

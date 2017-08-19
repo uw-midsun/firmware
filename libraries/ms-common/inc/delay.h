@@ -5,7 +5,9 @@
 // Blocking delay for a fixed period of time. Still allows interrupts to
 // trigger.
 //
-// Max allowable time is UINT32_MAX in microseconds.
+// Max allowable time is UINT32_MAX in microseconds (4294.967295 seconds).
+// If a longer duration is needed, check the condition you are waiting on in a loop and then call
+// this function again if the condition is not met.
 
 #include <stdint.h>
 

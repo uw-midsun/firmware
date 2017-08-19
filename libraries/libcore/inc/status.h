@@ -3,9 +3,9 @@
 //
 // Usage:
 // Use this library in any function where an error could occur. A verbose error will improve
-// debugability and allow for logging and attempts at recovery.
+// debug-ability and allow for logging and attempts at recovery.
 //
-// If an error has occured in a function that returns a StatusCode then:
+// If an error has occurred in a function that returns a StatusCode then:
 // return status_code(SomeStatusCode);
 // OR
 // return status_msg(SomeStatusCode, "error message");
@@ -67,7 +67,7 @@ typedef void (*status_callback)(const Status* status);
 
 // Updates a status struct containing an error code and optionally a message. This should only be
 // called via the macros.
-StatusCode status_impl_update(const StatusCode code, const char* source, const char* caller,
+StatusCode status_impl_update(StatusCode code, const char* source, const char* caller,
                               const char* message);
 
 // Get a copy of the global status so it can be used safely.
