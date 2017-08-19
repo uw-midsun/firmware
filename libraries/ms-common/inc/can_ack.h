@@ -12,8 +12,8 @@
 // from the list. We use an object pool and an array of pointers to do so efficiently.
 #include "can_msg.h"
 #include "objpool.h"
-#include "status.h"
 #include "soft_timer.h"
+#include "status.h"
 
 // ACK timeout: Should account for transit and computation time
 // Note that this timeout is currently an arbitrary value, but should be minimized.

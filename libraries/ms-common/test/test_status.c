@@ -6,9 +6,9 @@
 #include "misc.h"
 #include "unity.h"
 
-void setup_test(void) { }
+void setup_test(void) {}
 
-void teardown_test(void) { }
+void teardown_test(void) {}
 
 static StatusCode prv_with_msg() {
   return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "my-message");

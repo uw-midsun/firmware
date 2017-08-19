@@ -1,6 +1,6 @@
 #include "turn_signal_fsm.h"
-#include "input_event.h"
 #include "event_arbiter.h"
+#include "input_event.h"
 #include "log.h"
 
 // Turn signal FSM state definitions
@@ -30,12 +30,12 @@ FSM_STATE_TRANSITION(state_right_signal) {
 
 // Turn signal FSM output function
 
-static void prv_state_output(FSM* fsm, const Event* e, void *context) {
+static void prv_state_output(FSM* fsm, const Event* e, void* context) {
   InputEventData data;
 
   data.components.data = &e->data;
 
-  State *current_state = fsm->current_state;
+  State* current_state = fsm->current_state;
 
   if (current_state == &state_no_signal) {
     data.components.state = TURN_SIGNAL_FSM_STATE_NO_SIGNAL;
@@ -53,7 +53,7 @@ StatusCode turn_signal_fsm_init(FSM* fsm) {
   fsm_state_init(state_left_signal, prv_state_output);
   fsm_state_init(state_right_signal, prv_state_output);
 
-  void *context = event_arbiter_add_fsm(fsm, NULL);
+  void* context = event_arbiter_add_fsm(fsm, NULL);
 
   if (context == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);

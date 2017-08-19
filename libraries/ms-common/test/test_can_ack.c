@@ -1,9 +1,9 @@
 #include "can_ack.h"
 #include "interrupt.h"
-#include "soft_timer.h"
 #include "log.h"
-#include "unity.h"
+#include "soft_timer.h"
 #include "test_helpers.h"
+#include "unity.h"
 
 #define TEST_CAN_ACK_INVALID_DEVICE 10
 
@@ -18,8 +18,8 @@ typedef struct TestResponse {
 
 static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
                                    uint16_t num_remaining, void *context) {
-  LOG_DEBUG("ACK handled: status %d from %d (msg %d) (%d remaining)\n",
-            status, device, msg_id, num_remaining);
+  LOG_DEBUG("ACK handled: status %d from %d (msg %d) (%d remaining)\n", status, device, msg_id,
+            num_remaining);
   TestResponse *data = context;
   data->msg_id = msg_id;
   data->device = device;
@@ -40,19 +40,12 @@ void setup_test(void) {
   can_ack_init(&s_ack_requests);
 }
 
-void teardown_test(void) { }
+void teardown_test(void) {}
 
 void test_can_ack_handle_devices(void) {
   TestResponse data = { 0 };
-  CANMessage can_msg = {
-    .source_id = 0,
-    .type = CAN_MSG_TYPE_ACK,
-    .msg_id = 0
-  };
-  CANAckRequest ack_request = {
-    .callback = prv_ack_callback,
-    .context = &data
-  };
+  CANMessage can_msg = {.source_id = 0, .type = CAN_MSG_TYPE_ACK, .msg_id = 0 };
+  CANAckRequest ack_request = {.callback = prv_ack_callback, .context = &data };
 
   ack_request.num_expected = 6;
   can_ack_add_request(&s_ack_requests, 0x4, &ack_request);
@@ -114,35 +107,23 @@ void test_can_ack_handle_devices(void) {
 void test_can_ack_expiry(void) {
   // Basic expiry test
   volatile TestResponse data = { 0 };
-  CANAckRequest ack_request = {
-    .callback = prv_ack_callback,
-    .context = &data,
-    .num_expected = 5
-  };
+  CANAckRequest ack_request = {.callback = prv_ack_callback, .context = &data, .num_expected = 5 };
 
   can_ack_add_request(&s_ack_requests, 0x2, &ack_request);
 
-  while (data.msg_id == 0) { }
+  while (data.msg_id == 0) {
+  }
 
   TEST_ASSERT_EQUAL(0x2, data.msg_id);
   TEST_ASSERT_EQUAL(CAN_ACK_STATUS_TIMEOUT, data.status);
   TEST_ASSERT_EQUAL(0, s_ack_requests.num_requests);
 }
 
-
 void test_can_ack_expiry_moved(void) {
   // Ensure that ACK expiry can handle being shuffled around
   volatile TestResponse data = { 0 };
-  CANMessage can_msg = {
-    .source_id = 0,
-    .type = CAN_MSG_TYPE_ACK,
-    .msg_id = 0x4
-  };
-  CANAckRequest ack_request = {
-    .callback = prv_ack_callback,
-    .context = &data,
-    .num_expected = 1
-  };
+  CANMessage can_msg = {.source_id = 0, .type = CAN_MSG_TYPE_ACK, .msg_id = 0x4 };
+  CANAckRequest ack_request = {.callback = prv_ack_callback, .context = &data, .num_expected = 1 };
 
   can_ack_add_request(&s_ack_requests, 0x4, &ack_request);
   ack_request.num_expected = 5;
@@ -154,7 +135,8 @@ void test_can_ack_expiry_moved(void) {
   TEST_ASSERT_EQUAL(can_msg.msg_id, data.msg_id);
   TEST_ASSERT_EQUAL(1, s_ack_requests.num_requests);
 
-  while (data.msg_id == can_msg.msg_id) { }
+  while (data.msg_id == can_msg.msg_id) {
+  }
 
   TEST_ASSERT_EQUAL(0x2, data.msg_id);
   TEST_ASSERT_EQUAL(CAN_ACK_STATUS_TIMEOUT, data.status);

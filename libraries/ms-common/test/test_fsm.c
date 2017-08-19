@@ -1,6 +1,6 @@
 #include "fsm.h"
-#include "unity.h"
 #include "log.h"
+#include "unity.h"
 
 typedef enum {
   TEST_FSM_EVENT_A = 0,
@@ -37,9 +37,8 @@ FSM_STATE_TRANSITION(test_c) {
 }
 
 static void prv_output(FSM *fsm, const Event *e, void *context) {
-  LOG_DEBUG("[%s:%s] State reached from %s (Event %d, data %d)\n",
-            fsm->name, fsm->current_state->name, fsm->last_state->name,
-            e->id, e->data);
+  LOG_DEBUG("[%s:%s] State reached from %s (Event %d, data %d)\n", fsm->name,
+            fsm->current_state->name, fsm->last_state->name, e->id, e->data);
   TEST_ASSERT_EQUAL(fsm, context);
   s_num_output++;
 }
@@ -50,13 +49,10 @@ void setup_test(void) {
   s_num_output = 0;
 }
 
-void teardown_test(void) { }
+void teardown_test(void) {}
 
 void test_fsm_transition(void) {
-  Event e = {
-    .id = TEST_FSM_EVENT_A,
-    .data = 10
-  };
+  Event e = {.id = TEST_FSM_EVENT_A, .data = 10 };
 
   // Expect A -> A -> B -> fail (B) -> C (output) -> C (output) -> fail (C)
   bool transitioned = fsm_process_event(&s_fsm, &e);
@@ -84,10 +80,7 @@ void test_fsm_transition(void) {
 }
 
 void test_fsm_guard(void) {
-  Event e = {
-    .id = TEST_FSM_EVENT_C,
-    .data = false
-  };
+  Event e = {.id = TEST_FSM_EVENT_C, .data = false };
 
   // Expect A -> C -> guard fail (C) -> B
   bool transitioned = fsm_process_event(&s_fsm, &e);

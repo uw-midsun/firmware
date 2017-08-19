@@ -5,9 +5,9 @@
 
 #define PERIOD_MS 100
 
-void setup_test(void) { }
+void setup_test(void) {}
 
-void teardown_test(void) { }
+void teardown_test(void) {}
 
 void test_pwm_guards(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_UNINITIALIZED, pwm_set_pulse(50));

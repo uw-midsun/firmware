@@ -2,21 +2,19 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "critical_section.h"
 #include "objpool.h"
 #include "status.h"
-#include "critical_section.h"
 
 #define OBJPOOL_GET(pool, index) \
   ((void *)((uintptr_t)(pool)->nodes + ((index) * (pool)->node_size)))
 
 // Check in range and alignment
-#define OBJPOOL_NODE_INVALID(pool, node) \
-  ((pool)->nodes > (node) || \
-   ((pool)->nodes + (pool)->num_nodes * (pool)->node_size) <= (node) || \
+#define OBJPOOL_NODE_INVALID(pool, node)                                                          \
+  ((pool)->nodes > (node) || ((pool)->nodes + (pool)->num_nodes * (pool)->node_size) <= (node) || \
    ((node) - (pool)->nodes) % (pool)->node_size != 0)
 
-#define OBJPOOL_GET_INDEX(pool, node) \
-  (((node) - (pool)->nodes) / (pool->node_size))
+#define OBJPOOL_GET_INDEX(pool, node) (((node) - (pool)->nodes) / (pool->node_size))
 
 StatusCode objpool_init_verbose(ObjectPool *pool, void *nodes, size_t node_size, size_t num_nodes,
                                 objpool_node_init_fn init_node, void *context) {

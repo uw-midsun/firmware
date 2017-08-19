@@ -1,8 +1,8 @@
 #include "adc.h"
 #include "gpio.h"
-#include "unity.h"
 #include "log.h"
 #include "test_helpers.h"
+#include "unity.h"
 
 static GPIOAddress address[] = { { GPIO_PORT_A, 0 }, { GPIO_PORT_A, 1 }, { GPIO_PORT_A, 2 } };
 
@@ -40,7 +40,7 @@ void setup_test() {
   adc_init(ADC_MODE_SINGLE);
 }
 
-void teardown_test(void) { }
+void teardown_test(void) {}
 
 void test_set_channel(void) {
   // Check that channels can only be set with the correct channel arguments
@@ -99,7 +99,8 @@ void test_single() {
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, adc_read_raw(NUM_ADC_CHANNEL, &reading));
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, adc_read_raw(ADC_CHANNEL_3, &reading));
 
-  while (!s_callback_ran) { }
+  while (!s_callback_ran) {
+  }
 
   TEST_ASSERT_TRUE(s_callback_ran);
   TEST_ASSERT_TRUE(s_callback_runs > 0);
@@ -122,7 +123,8 @@ void test_continuous() {
   adc_register_callback(ADC_CHANNEL_2, prv_callback, NULL);
 
   // Run a busy loop until a callback is triggered
-  while (!s_callback_runs) { }
+  while (!s_callback_runs) {
+  }
 
   TEST_ASSERT_TRUE(s_callback_ran);
   TEST_ASSERT_TRUE(s_callback_runs > 0);
@@ -151,9 +153,7 @@ void test_read_continuous() {
 void test_adc_get_channel() {
   ADCChannel adc_channel;
   GPIOAddress address[] = {
-    { .port = GPIO_PORT_A },
-    { .port = GPIO_PORT_B },
-    { .port = GPIO_PORT_C }
+    {.port = GPIO_PORT_A }, {.port = GPIO_PORT_B }, {.port = GPIO_PORT_C }
   };
 
   address[0].pin = 0;
