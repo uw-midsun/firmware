@@ -1,8 +1,8 @@
 #pragma once
 // Defines the CAN message type
 // This is kept in a separate file to prevent cyclic dependencies
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #define CAN_MSG_INVALID_ID (UINT16_MAX)
 #define CAN_MSG_INVALID_DEVICE (UINT16_MAX)
@@ -14,18 +14,14 @@
 #define CAN_MSG_IS_CRITICAL(msg) ((msg)->msg_id < 14)
 
 #define CAN_MSG_SET_RAW_ID(can_msg, can_id) \
-do { \
-  CANId id = { .raw = (can_id) }; \
-  (can_msg)->source_id = id.source_id; \
-  (can_msg)->msg_id = id.msg_id; \
-  (can_msg)->type = id.type; \
-} while (0)
+  do {                                      \
+    CANId id = {.raw = (can_id) };          \
+    (can_msg)->source_id = id.source_id;    \
+    (can_msg)->msg_id = id.msg_id;          \
+    (can_msg)->type = id.type;              \
+  } while (0)
 
-typedef enum {
-  CAN_MSG_TYPE_DATA = 0,
-  CAN_MSG_TYPE_ACK,
-  NUM_CAN_MSG_TYPES
-} CANMsgType;
+typedef enum { CAN_MSG_TYPE_DATA = 0, CAN_MSG_TYPE_ACK, NUM_CAN_MSG_TYPES } CANMsgType;
 
 typedef uint16_t CANMessageID;
 
@@ -45,8 +41,8 @@ typedef struct CANMessage {
 typedef union CANId {
   uint16_t raw;
   struct {
-    uint16_t source_id:4;
-    uint16_t type:1;
-    uint16_t msg_id:6;
+    uint16_t source_id : 4;
+    uint16_t type : 1;
+    uint16_t msg_id : 6;
   };
 } CANId;

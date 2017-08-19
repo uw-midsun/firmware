@@ -1,13 +1,11 @@
-#include "test_helpers.h"
 #include "objpool.h"
+#include "test_helpers.h"
 #include "unity.h"
 
 #define TEST_OBJPOOL_SIZE 15
 #define TEST_OBJPOOL_DEFAULT UINT16_MAX
 
-typedef struct TestObject {
-  uint16_t data;
-} TestObject;
+typedef struct TestObject { uint16_t data; } TestObject;
 
 static ObjectPool gv_pool;
 static TestObject gv_nodes[TEST_OBJPOOL_SIZE];
@@ -21,7 +19,7 @@ void setup_test(void) {
   objpool_init(&gv_pool, gv_nodes, prv_node_init, NULL);
 }
 
-void teardown_test(void) { }
+void teardown_test(void) {}
 
 void test_objpool_multi(void) {
   TestObject *nodes[TEST_OBJPOOL_SIZE] = { 0 };
@@ -90,7 +88,7 @@ void test_objpool_free_other_pool(void) {
 }
 
 void test_objpool_copy_free(void) {
-  TestObject data = { .data = 0x1234 };
+  TestObject data = {.data = 0x1234 };
 
   // Copy the data from the stack object. This will result in an invalid marker.
   TestObject *node = objpool_get_node(&gv_pool);

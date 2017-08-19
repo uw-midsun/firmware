@@ -12,7 +12,7 @@ void setup_test(void) {
   pqueue_init(&gv_queue, gv_nodes, TEST_PQUEUE_SIZE);
 }
 
-void teardown_test(void) { }
+void teardown_test(void) {}
 
 void test_pqueue_desc_order(void) {
   uint16_t prios[] = { 50, 10, 20, 2, 17, 5, 4000, 0, 3, 240 };
