@@ -20,7 +20,7 @@ static InterruptSettings s_event_settings = { .type = INTERRUPT_TYPE_EVENT,
 static volatile bool s_correct_port = false;
 static volatile bool s_interrupt_ran = false;
 
-static void prv_test_callback(GPIOAddress* address, void* context) {
+static void prv_test_callback(const GPIOAddress* address, void* context) {
   if (address->port == 1) {
     s_correct_port = true;
   }

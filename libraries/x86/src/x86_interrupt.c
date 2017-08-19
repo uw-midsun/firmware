@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "interrupt_def.h"
@@ -89,7 +90,7 @@ StatusCode x86_interrupt_register_handler(x86_interrupt_handler handler, uint8_t
   return STATUS_CODE_OK;
 }
 
-StatusCode x86_interrupt_register_interrupt(uint8_t handler_id, InterruptSettings *settings,
+StatusCode x86_interrupt_register_interrupt(uint8_t handler_id, const InterruptSettings *settings,
                                             uint8_t *interrupt_id) {
   if (handler_id >= s_x86_interrupt_next_handler_id ||
       settings->priority >= NUM_INTERRUPT_PRIORITY || settings->type >= NUM_INTERRUPT_TYPE) {
