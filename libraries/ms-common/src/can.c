@@ -6,7 +6,9 @@
 
 // Attempts to transmit the specified message using the HW TX, overwriting the source device.
 StatusCode prv_transmit(const CANConfig *can, const CANMessage *msg) {
-  CANId msg_id = {.source_id = can->device_id, .type = msg->type, .msg_id = msg->msg_id };
+  CANId msg_id = {
+    .source_id = can->device_id, .type = msg->type, .msg_id = msg->msg_id,
+  };
 
   return can_hw_transmit(&can->hw, msg_id.raw, msg->data_u8, msg->dlc);
 }
@@ -104,7 +106,12 @@ StatusCode can_add_filter(CANConfig *can, CANMessageID msg_id) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: Invalid message ID");
   }
 
-  CANId can_id = {.msg_id = msg_id }, mask = {.msg_id = UINT16_MAX };
+  CANId can_id = {
+    .msg_id = msg_id,
+  };
+  CANId mask = {
+    .msg_id = UINT16_MAX,
+  };
 
   return can_hw_add_filter(&can->hw, can_id.raw, mask.raw);
 }

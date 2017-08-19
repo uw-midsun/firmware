@@ -31,7 +31,7 @@ StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
   s_port[spi].cs = settings->cs;
 
   GPIOSettings gpio_settings = {
-    .alt_function = GPIO_ALTFN_0, .direction = GPIO_DIR_IN, .state = GPIO_STATE_HIGH
+    .alt_function = GPIO_ALTFN_0, .direction = GPIO_DIR_IN, .state = GPIO_STATE_HIGH,
   };
 
   gpio_init_pin(&settings->miso, &gpio_settings);

@@ -7,6 +7,9 @@
 
 #include "fsm.h"
 
-typedef enum { POWER_FSM_STATE_OFF, POWER_FSM_STATE_ON } PowerFSMState;
+typedef enum {
+  POWER_FSM_STATE_OFF,
+  POWER_FSM_STATE_ON,
+} PowerFSMState;
 
 StatusCode power_fsm_init(FSM *fsm);

@@ -55,8 +55,9 @@ void soft_timer_init(void) {
   // Register a handler and interrupt.
   uint8_t handler_id;
   x86_interrupt_register_handler(prv_soft_timer_handler, &handler_id);
-  InterruptSettings it_settings = {.type = INTERRUPT_TYPE_INTERRUPT,
-                                   .priority = INTERRUPT_PRIORITY_NORMAL };
+  InterruptSettings it_settings = {
+    .type = INTERRUPT_TYPE_INTERRUPT, .priority = INTERRUPT_PRIORITY_NORMAL,
+  };
   uint8_t interrupt_id;
   x86_interrupt_register_interrupt(handler_id, &it_settings, &interrupt_id);
 

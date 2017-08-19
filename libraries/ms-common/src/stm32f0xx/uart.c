@@ -52,7 +52,9 @@ StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage
   fifo_init(&s_port[uart].storage->tx_fifo, s_port[uart].storage->tx_buf);
   fifo_init(&s_port[uart].storage->rx_fifo, s_port[uart].storage->rx_buf);
 
-  GPIOSettings gpio_settings = {.alt_function = settings->alt_fn, .resistor = GPIO_RES_PULLUP };
+  GPIOSettings gpio_settings = {
+    .alt_function = settings->alt_fn, .resistor = GPIO_RES_PULLUP,
+  };
 
   gpio_init_pin(&settings->tx, &gpio_settings);
   gpio_init_pin(&settings->rx, &gpio_settings);

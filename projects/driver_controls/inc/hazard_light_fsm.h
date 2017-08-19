@@ -4,6 +4,9 @@
 
 #include "fsm.h"
 
-typedef enum { HAZARD_LIGHT_FSM_STATE_OFF, HAZARD_LIGHT_FSM_STATE_ON } HazardLightFSMState;
+typedef enum {
+  HAZARD_LIGHT_FSM_STATE_OFF,
+  HAZARD_LIGHT_FSM_STATE_ON,
+} HazardLightFSMState;
 
 StatusCode hazard_light_fsm_init(FSM *fsm);

@@ -8,7 +8,10 @@
 #define TEST_CAN_UNKNOWN_MSG_ID 0xA
 #define TEST_CAN_DEVICE_ID 0x1
 
-typedef enum { TEST_CAN_EVENT_RX = 10, TEST_CAN_EVENT_FAULT } TestCanEvent;
+typedef enum {
+  TEST_CAN_EVENT_RX = 10,
+  TEST_CAN_EVENT_FAULT,
+} TestCanEvent;
 
 static volatile CANConfig s_can;
 
@@ -54,7 +57,9 @@ void test_can_basic(void) {
   can_register_rx_handler(&s_can, 0x1, prv_rx_callback, &rx_msg);
   can_register_rx_handler(&s_can, 0x5, prv_rx_callback, &rx_msg);
 
-  CANMessage msg = {.msg_id = 0x5, .type = CAN_MSG_TYPE_DATA, .data = 0x1, .dlc = 1 };
+  CANMessage msg = {
+    .msg_id = 0x5, .type = CAN_MSG_TYPE_DATA, .data = 0x1, .dlc = 1,
+  };
 
   StatusCode ret = can_transmit(&s_can, &msg, NULL);
   TEST_ASSERT_OK(ret);

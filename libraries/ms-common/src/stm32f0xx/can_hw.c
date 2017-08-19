@@ -54,7 +54,9 @@ StatusCode can_hw_register_callback(CANHwConfig *can_hw, CANHwEvent event,
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  can_hw->handlers[event] = (CANHwEventHandler){.callback = callback, .context = context };
+  can_hw->handlers[event] = (CANHwEventHandler){
+    .callback = callback, .context = context,
+  };
 
   return STATUS_CODE_OK;
 }
@@ -66,15 +68,17 @@ StatusCode can_hw_add_filter(CANHwConfig *can_hw, uint16_t mask, uint16_t filter
 
   // We currently use 32-bit filters. We could use 16-bit filters instead since we're only using
   // standard 11-bit IDs.
-  CAN_FilterInitTypeDef filter_cfg = {.CAN_FilterNumber = can_hw->num_filters,
-                                      .CAN_FilterMode = CAN_FilterMode_IdMask,
-                                      .CAN_FilterScale = CAN_FilterScale_32bit,
-                                      .CAN_FilterIdHigh = filter << 5,
-                                      .CAN_FilterIdLow = 0x0000,
-                                      .CAN_FilterMaskIdHigh = mask << 5,
-                                      .CAN_FilterMaskIdLow = 0x0000,
-                                      .CAN_FilterFIFOAssignment = (can_hw->num_filters % 2),
-                                      .CAN_FilterActivation = ENABLE };
+  CAN_FilterInitTypeDef filter_cfg = {
+    .CAN_FilterNumber = can_hw->num_filters,
+    .CAN_FilterMode = CAN_FilterMode_IdMask,
+    .CAN_FilterScale = CAN_FilterScale_32bit,
+    .CAN_FilterIdHigh = filter << 5,
+    .CAN_FilterIdLow = 0x0000,
+    .CAN_FilterMaskIdHigh = mask << 5,
+    .CAN_FilterMaskIdLow = 0x0000,
+    .CAN_FilterFIFOAssignment = (can_hw->num_filters % 2),
+    .CAN_FilterActivation = ENABLE,
+  };
   CAN_FilterInit(&filter_cfg);
 
   can_hw->num_filters++;
@@ -93,7 +97,9 @@ CANHwBusStatus can_hw_bus_status(const CANHwConfig *can_hw) {
 }
 
 StatusCode can_hw_transmit(const CANHwConfig *can_hw, uint16_t id, uint8_t *data, size_t len) {
-  CanTxMsg tx_msg = {.StdId = id, .IDE = CAN_ID_STD, .DLC = len };
+  CanTxMsg tx_msg = {
+    .StdId = id, .IDE = CAN_ID_STD, .DLC = len,
+  };
 
   memcpy(tx_msg.Data, data, sizeof(*data) * len);
 

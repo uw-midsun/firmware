@@ -44,8 +44,12 @@ void teardown_test(void) {}
 
 void test_can_ack_handle_devices(void) {
   TestResponse data = { 0 };
-  CANMessage can_msg = {.source_id = 0, .type = CAN_MSG_TYPE_ACK, .msg_id = 0 };
-  CANAckRequest ack_request = {.callback = prv_ack_callback, .context = &data };
+  CANMessage can_msg = {
+    .source_id = 0, .type = CAN_MSG_TYPE_ACK, .msg_id = 0,
+  };
+  CANAckRequest ack_request = {
+    .callback = prv_ack_callback, .context = &data,
+  };
 
   ack_request.num_expected = 6;
   can_ack_add_request(&s_ack_requests, 0x4, &ack_request);
@@ -107,7 +111,9 @@ void test_can_ack_handle_devices(void) {
 void test_can_ack_expiry(void) {
   // Basic expiry test
   volatile TestResponse data = { 0 };
-  CANAckRequest ack_request = {.callback = prv_ack_callback, .context = &data, .num_expected = 5 };
+  CANAckRequest ack_request = {
+    .callback = prv_ack_callback, .context = &data, .num_expected = 5,
+  };
 
   can_ack_add_request(&s_ack_requests, 0x2, &ack_request);
 
@@ -122,8 +128,12 @@ void test_can_ack_expiry(void) {
 void test_can_ack_expiry_moved(void) {
   // Ensure that ACK expiry can handle being shuffled around
   volatile TestResponse data = { 0 };
-  CANMessage can_msg = {.source_id = 0, .type = CAN_MSG_TYPE_ACK, .msg_id = 0x4 };
-  CANAckRequest ack_request = {.callback = prv_ack_callback, .context = &data, .num_expected = 1 };
+  CANMessage can_msg = {
+    .source_id = 0, .type = CAN_MSG_TYPE_ACK, .msg_id = 0x4,
+  };
+  CANAckRequest ack_request = {
+    .callback = prv_ack_callback, .context = &data, .num_expected = 1,
+  };
 
   can_ack_add_request(&s_ack_requests, 0x4, &ack_request);
   ack_request.num_expected = 5;

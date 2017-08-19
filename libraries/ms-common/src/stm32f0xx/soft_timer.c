@@ -112,11 +112,12 @@ static void prv_init_periph(void) {
   RCC_ClocksTypeDef clocks;
   RCC_GetClocksFreq(&clocks);
 
-  TIM_TimeBaseInitTypeDef timer_init = {.TIM_Prescaler =
-                                            (clocks.PCLK_Frequency / 1000000) - 1,  // 1 Mhz
-                                        .TIM_CounterMode = TIM_CounterMode_Up,
-                                        .TIM_Period = UINT32_MAX,
-                                        .TIM_ClockDivision = TIM_CKD_DIV1 };
+  TIM_TimeBaseInitTypeDef timer_init = {
+    .TIM_Prescaler = (clocks.PCLK_Frequency / 1000000) - 1,  // 1 Mhz
+    .TIM_CounterMode = TIM_CounterMode_Up,
+    .TIM_Period = UINT32_MAX,
+    .TIM_ClockDivision = TIM_CKD_DIV1,
+  };
   TIM_TimeBaseInit(TIM2, &timer_init);
 
   // Make sure the compare flag won't trigger from setting the counter
