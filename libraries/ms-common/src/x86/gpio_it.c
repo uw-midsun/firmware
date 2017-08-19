@@ -5,8 +5,8 @@
 
 #include "gpio.h"
 #include "interrupt_def.h"
-#include "x86_interrupt.h"
 #include "status.h"
+#include "x86_interrupt.h"
 
 typedef struct GPIOITInterrupt {
   uint8_t interrupt_id;
@@ -37,7 +37,7 @@ void gpio_it_init(void) {
   }
 }
 
-StatusCode gpio_it_register_interrupt(GPIOAddress *address, InterruptSettings *settings,
+StatusCode gpio_it_register_interrupt(const GPIOAddress *address, const InterruptSettings *settings,
                                       InterruptEdge edge, gpio_it_callback callback,
                                       void *context) {
   if (address->port >= GPIO_MCU_NUM_PORTS || address->pin >= GPIO_MCU_NUM_PINS_PER_PORT) {
@@ -58,7 +58,7 @@ StatusCode gpio_it_register_interrupt(GPIOAddress *address, InterruptSettings *s
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_it_trigger_interrupt(GPIOAddress *address) {
+StatusCode gpio_it_trigger_interrupt(const GPIOAddress *address) {
   if (address->port >= GPIO_MCU_NUM_PORTS || address->pin >= GPIO_MCU_NUM_PINS_PER_PORT) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
