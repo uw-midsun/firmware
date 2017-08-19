@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "interrupt.h"
+#include "interrupt_def.h"
 #include "status.h"
 
 typedef void (*x86_interrupt_handler)(uint8_t interrupt_id);

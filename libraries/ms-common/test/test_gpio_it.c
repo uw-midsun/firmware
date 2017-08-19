@@ -7,6 +7,7 @@
 #include "test_helpers.h"
 #include "gpio.h"
 #include "interrupt.h"
+#include "interrupt_def.h"
 #include "unity.h"
 
 static GPIOAddress s_interrupt_address = { 1, 0 };

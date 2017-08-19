@@ -6,7 +6,6 @@
 #include <stdbool.h>
 
 #include "gpio.h"
-#include "interrupt.h"
 #include "i2c.h"
 
 typedef enum {
@@ -36,5 +35,5 @@ StatusCode gpio_expander_get_state(GPIOExpanderPin pin, GPIOState *state);
 StatusCode gpio_expander_set_state(GPIOExpanderPin pin, GPIOState new_state);
 
 // Register a callback for a specific pin
-StatusCode gpio_expander_register_callback(GPIOExpanderPin pin,
-                                           GPIOExpanderCallback callback, void *context);
+StatusCode gpio_expander_register_callback(GPIOExpanderPin pin, GPIOExpanderCallback callback,
+                                           void *context);
