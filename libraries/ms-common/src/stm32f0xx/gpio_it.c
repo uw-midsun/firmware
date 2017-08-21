@@ -77,7 +77,7 @@ StatusCode gpio_it_trigger_interrupt(const GPIOAddress *address) {
 // channel. The function runs the callbacks which have a flag raised in the range [lower_bound,
 // upperbound].
 static void prv_run_gpio_callbacks(uint8_t lower_bound, uint8_t upper_bound) {
-  uint8_t pending;
+  uint8_t pending = 0;
   for (int i = lower_bound; i <= upper_bound; i++) {
     stm32f0xx_interrupt_exti_get_pending(i, &pending);
     if (pending && s_gpio_it_interrupts[i].callback != NULL) {

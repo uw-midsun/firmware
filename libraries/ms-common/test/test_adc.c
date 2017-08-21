@@ -1,5 +1,6 @@
 #include "adc.h"
 #include "gpio.h"
+#include "interrupt.h"
 #include "log.h"
 #include "test_helpers.h"
 #include "unity.h"
@@ -27,14 +28,15 @@ void prv_callback(ADCChannel adc_channel, void *context) {
 
 // Check multiple samples to ensure they are within the correct range
 void prv_adc_check_range(ADCChannel adc_channel) {
-  uint16_t raw_reading, conv_reading;
+  uint16_t raw_reading = 0;
+  uint16_t conv_reading = 0;
 
   for (uint8_t i = 0; i < 12; i++) {
     adc_read_raw(adc_channel, &raw_reading);
-    TEST_ASSERT_TRUE(0 <= raw_reading && raw_reading < 4095);
+    TEST_ASSERT_TRUE(raw_reading <= 4095);
 
     adc_read_converted(adc_channel, &conv_reading);
-    TEST_ASSERT_TRUE(0 <= conv_reading && conv_reading < 3000);
+    TEST_ASSERT_TRUE(conv_reading <= 3000);
   }
 }
 
@@ -120,7 +122,7 @@ void test_single() {
 
   TEST_ASSERT_TRUE(s_callback_ran);
   TEST_ASSERT_TRUE(s_callback_runs > 0);
-  TEST_ASSERT_TRUE(0 <= reading && reading < 4095);
+  TEST_ASSERT_TRUE(reading < 4095);
 }
 
 void test_continuous() {

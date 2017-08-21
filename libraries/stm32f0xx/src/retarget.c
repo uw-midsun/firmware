@@ -6,11 +6,9 @@
 static void prv_init_gpio(void) {
   RETARGET_CFG_UART_GPIO_ENABLE_CLK();
 
-  GPIO_PinAFConfig(RETARGET_CFG_UART_GPIO_PORT,
-                   RETARGET_CFG_UART_GPIO_TX,
+  GPIO_PinAFConfig(RETARGET_CFG_UART_GPIO_PORT, RETARGET_CFG_UART_GPIO_TX,
                    RETARGET_CFG_UART_GPIO_ALTFN);
-  GPIO_PinAFConfig(RETARGET_CFG_UART_GPIO_PORT,
-                   RETARGET_CFG_UART_GPIO_RX,
+  GPIO_PinAFConfig(RETARGET_CFG_UART_GPIO_PORT, RETARGET_CFG_UART_GPIO_RX,
                    RETARGET_CFG_UART_GPIO_ALTFN);
 
   GPIO_InitTypeDef gpio_init = {
@@ -18,7 +16,7 @@ static void prv_init_gpio(void) {
     .GPIO_Mode = GPIO_Mode_AF,
     .GPIO_Speed = GPIO_Speed_10MHz,
     .GPIO_OType = GPIO_OType_PP,
-    .GPIO_PuPd = GPIO_PuPd_UP
+    .GPIO_PuPd = GPIO_PuPd_UP,
   };
 
   GPIO_Init(RETARGET_CFG_UART_GPIO_PORT, &gpio_init);
@@ -41,8 +39,9 @@ int _write(int fd, char *ptr, int len) {
   __disable_irq();
 
   for (int i = 0; i < len; i++) {
-    while (USART_GetFlagStatus(RETARGET_CFG_UART, USART_FLAG_TXE) == RESET) { }
-    USART_SendData(RETARGET_CFG_UART, (uint8_t)*(ptr + i));
+    while (USART_GetFlagStatus(RETARGET_CFG_UART, USART_FLAG_TXE) == RESET) {
+    }
+    USART_SendData(RETARGET_CFG_UART, (uint8_t) * (ptr + i));
   }
 
   if (!primask) {
@@ -54,5 +53,6 @@ int _write(int fd, char *ptr, int len) {
 
 void HardFault_Handler(void) {
   __ASM volatile("BKPT #01");
-  while (1);
+  while (1) {
+  }
 }

@@ -30,7 +30,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     data.components.state = PUSH_TO_TALK_FSM_STATE_INACTIVE;
   }
 
-  event_raise(INPUT_EVENT_CAN_PUSH_TO_TALK, data.raw);
+  event_raise(INPUT_EVENT_CAN_ID_PUSH_TO_TALK, data.raw);
 }
 
 StatusCode push_to_talk_fsm_init(FSM *fsm) {

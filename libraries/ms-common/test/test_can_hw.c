@@ -42,7 +42,7 @@ void test_can_hw_loop(void) {
   uint64_t tx_data = 0x1122334455667788;
   size_t tx_len = 8;
 
-  StatusCode ret = can_hw_transmit(&s_can, tx_id, &tx_data, tx_len);
+  StatusCode ret = can_hw_transmit(&s_can, tx_id, (uint8_t *)&tx_data, tx_len);
   TEST_ASSERT_OK(ret);
 
   prv_wait_rx(1);

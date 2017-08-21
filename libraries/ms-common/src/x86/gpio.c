@@ -25,7 +25,7 @@ static bool prv_are_settings_valid(const GPIOSettings *settings) {
 }
 
 static uint32_t prv_get_index(const GPIOAddress *address) {
-  return address->port * GPIO_MCU_NUM_PORTS + address->pin;
+  return address->port * (uint32_t)GPIO_MCU_NUM_PORTS + address->pin;
 }
 
 StatusCode gpio_init(void) {

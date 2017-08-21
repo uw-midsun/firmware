@@ -10,6 +10,14 @@ branches:
   only:
     - master
 
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-6
+      - g++-6
+
 env:
   # add target platforms to build matrix
   # lint is a target so we don't need to lint multiple times
@@ -18,15 +26,12 @@ env:
   - TARGET='test_all PLATFORM=x86'
   - TARGET=lint
 
-before_install:
-  # update the libraries (ms-common, etc.)
-  - git submodule update --init --recursive
-
 before_script:
-  # install GCC ARM from GNU ARM Embedded Toolchain PPA
+  # install GCC ARM from GNU ARM Embedded Toolchain PPA and GCC 6
   - sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa -y
   - sudo apt-get -qq update
   - sudo apt-get -y install gcc-arm-embedded
+  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 90
 
   # build GNU Make 4.1 from source
   - wget http://ftp.gnu.org/gnu/make/make-4.1.tar.gz

@@ -24,7 +24,7 @@ static StatusCode prv_pin_is_valid(GPIOExpanderPin pin) {
   return STATUS_CODE_OK;
 }
 
-static void prv_interrupt_handler(GPIOAddress *address, void *context) {
+static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
   uint8_t intf = 0, intcap = 0;
 
   // Read the contents of the interrupt flag and interrupt capture registers
