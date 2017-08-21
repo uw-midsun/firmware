@@ -1,9 +1,5 @@
 #include "can.h"
-<<<<<<< HEAD
 #include <string.h>
-#include "soft_timer.h"
-=======
->>>>>>> master
 #include "can_rx_fsm.h"
 #include "soft_timer.h"
 
@@ -113,9 +109,7 @@ StatusCode can_add_filter(CANConfig *can, CANMessageID msg_id) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: Invalid message ID");
   }
 
-  CANId can_id = {
-    .msg_id = msg_id
-  };
+  CANId can_id = {.msg_id = msg_id };
   CANId mask = { 0 };
   mask.msg_id = ~mask.msg_id;
 

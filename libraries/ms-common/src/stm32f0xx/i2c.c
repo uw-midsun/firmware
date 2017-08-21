@@ -5,23 +5,23 @@
 
 // Arbitrary timeout
 #define I2C_TIMEOUT 1000000
-#define I2C_TIMEOUT_WHILE_FLAG(i2c, flag, status) \
-do { \
-  uint32_t timeout = (I2C_TIMEOUT); \
-  while (I2C_GetFlagStatus(i2c, flag) == status) { \
-    timeout--; \
-    if (timeout == 0) { \
-      LOG_DEBUG("Timeout: %lu waiting for %d to change\n", flag, status); \
-      return STATUS_CODE_TIMEOUT; \
-    } \
-  } \
-} while (0)
+#define I2C_TIMEOUT_WHILE_FLAG(i2c, flag, status)                           \
+  do {                                                                      \
+    uint32_t timeout = (I2C_TIMEOUT);                                       \
+    while (I2C_GetFlagStatus(i2c, flag) == status) {                        \
+      timeout--;                                                            \
+      if (timeout == 0) {                                                   \
+        LOG_DEBUG("Timeout: %lu waiting for %d to change\n", flag, status); \
+        return STATUS_CODE_TIMEOUT;                                         \
+      }                                                                     \
+    }                                                                       \
+  } while (0)
 
-#define I2C_STOP(i2c) \
-do { \
-  I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_STOPF, RESET); \
-  I2C_ClearFlag(i2c, I2C_FLAG_STOPF); \
-} while (0)
+#define I2C_STOP(i2c)                                   \
+  do {                                                  \
+    I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_STOPF, RESET); \
+    I2C_ClearFlag(i2c, I2C_FLAG_STOPF);                 \
+  } while (0)
 
 typedef struct {
   uint32_t periph;

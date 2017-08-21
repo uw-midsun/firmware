@@ -98,8 +98,8 @@ CANHwBusStatus can_hw_bus_status(const CANHwConfig *can_hw) {
   return CAN_HW_BUS_STATUS_OK;
 }
 
-StatusCode can_hw_transmit(const CANHwConfig *can_hw, uint16_t id,
-                           const uint8_t *data, size_t len) {
+StatusCode can_hw_transmit(const CANHwConfig *can_hw, uint16_t id, const uint8_t *data,
+                           size_t len) {
   CanTxMsg tx_msg = {
     .StdId = id,        //
     .IDE = CAN_ID_STD,  //

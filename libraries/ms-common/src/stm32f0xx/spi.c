@@ -68,7 +68,8 @@ StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *r
   gpio_set_pin_state(&s_port[spi].cs, GPIO_STATE_LOW);
 
   for (size_t i = 0; i < tx_len; i++) {
-    while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_TXE) == RESET) { }
+    while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_TXE) == RESET) {
+    }
     SPI_SendData8(s_port[spi].base, tx_data[i]);
 
     while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_RXNE) == RESET) {
@@ -77,7 +78,8 @@ StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *r
   }
 
   for (size_t i = 0; i < rx_len; i++) {
-    while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_TXE) == RESET) { }
+    while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_TXE) == RESET) {
+    }
     SPI_SendData8(s_port[spi].base, 0x00);
 
     while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_RXNE) == RESET) {

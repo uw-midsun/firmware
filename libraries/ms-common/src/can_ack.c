@@ -66,7 +66,8 @@ static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
     if (((req->msg_id == msg_id && timer_id == SOFT_TIMER_INVALID_TIMER) ||
          (req->timer == timer_id && msg_id == CAN_MSG_INVALID_ID) ||
          (req->msg_id == msg_id && req->timer == timer_id)) &&
-        (device == CAN_MSG_INVALID_DEVICE || (req->response_bitset & ((uint32_t)1 << device)) == 0)) {
+        (device == CAN_MSG_INVALID_DEVICE ||
+         (req->response_bitset & ((uint32_t)1 << device)) == 0)) {
       found_request = req;
       break;
     }

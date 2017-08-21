@@ -1,7 +1,7 @@
 #include "gpio_expander.h"
-#include "interrupt.h"
 #include "gpio_it.h"
 #include "i2c.h"
+#include "interrupt.h"
 #include "log.h"
 #include "test_helpers.h"
 #include "unity.h"

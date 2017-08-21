@@ -50,8 +50,7 @@ StatusCode can_hw_add_filter(CANHwConfig *can_hw, uint16_t mask, uint16_t filter
 
 CANHwBusStatus can_hw_bus_status(const CANHwConfig *can_hw);
 
-StatusCode can_hw_transmit(const CANHwConfig *can_hw, uint16_t id,
-                           const uint8_t *data, size_t len);
+StatusCode can_hw_transmit(const CANHwConfig *can_hw, uint16_t id, const uint8_t *data, size_t len);
 
 // Must be called within the RX handler, returns whether a message was processed
 bool can_hw_receive(const CANHwConfig *can_hw, uint16_t *id, uint64_t *data, size_t *len);

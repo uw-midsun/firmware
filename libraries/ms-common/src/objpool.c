@@ -10,8 +10,8 @@
   ((void *)((uint8_t *)(pool)->nodes + ((index) * (pool)->node_size)))
 
 // Check in range and alignment
-#define OBJPOOL_NODE_INVALID(pool, node) \
-  ((pool)->nodes > (node) || \
+#define OBJPOOL_NODE_INVALID(pool, node)                                                      \
+  ((pool)->nodes > (node) ||                                                                  \
    ((uint8_t *)(pool)->nodes + (pool)->num_nodes * (pool)->node_size) <= (uint8_t *)(node) || \
    (size_t)((uint8_t *)(node) - (uint8_t *)(pool)->nodes) % (pool)->node_size != 0)
 

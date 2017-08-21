@@ -235,7 +235,7 @@ void test_can_fsm_direction() {
 }
 
 void test_can_fsm_pedal() {
-  Event e = { .data = 0xdef };
+  Event e = {.data = 0xdef };
   InputEventData *data = (InputEventData *)&e.data;
 
   // Setup for the pedals to be used

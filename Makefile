@@ -137,7 +137,7 @@ lint:
 	@$(FIND) | xargs -r python2 lint.py
 
 format:
-	$(FIND) | xargs clang-format -i
+	@$(FIND) | xargs clang-format -i
 
 # Builds the project (if exists) and all its tests
 ifneq (,$(PROJECT))
