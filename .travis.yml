@@ -18,10 +18,6 @@ env:
   - TARGET='test_all PLATFORM=x86'
   - TARGET=lint
 
-before_install:
-  # update the libraries (ms-common, etc.)
-  - git submodule update --init --recursive
-
 before_script:
   # install GCC ARM from GNU ARM Embedded Toolchain PPA
   - sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa -y
