@@ -25,7 +25,7 @@ before_script:
   - sudo apt-get -qq update
   - sudo apt-get -y install gcc-arm-embedded
   - sudo apt-get -y install gcc-6
-  - alias gcc='gcc-6'
+  - export CC=gcc-6
 
   # build GNU Make 4.1 from source
   - wget http://ftp.gnu.org/gnu/make/make-4.1.tar.gz
