@@ -25,7 +25,6 @@ SCRIPT_DIR := $(PLATFORM_DIR)/scripts
 CDEFINES := USE_STDPERIPH_DRIVER STM32F072
 CFLAGS := -Wall -Wextra -Werror -g3 -Os -std=c11 \
 					-Wno-unused-variable -Wno-unused-parameter -Wsign-conversion -Wpointer-arith \
-					-Wpadded -Wno-error=padded \
 					-ffunction-sections -fdata-sections -fno-builtin -flto \
 					$(ARCH_CFLAGS) $(addprefix -D,$(CDEFINES))
 

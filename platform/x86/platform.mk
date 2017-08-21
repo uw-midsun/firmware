@@ -25,7 +25,7 @@ ARCH_CFLAGS :=
 LDSCRIPT := $(PLATFORM_DIR)/ldscripts
 
 # Build flags for the device
-CDEFINES := _GNU_SOURCE
+CDEFINES :=
 
 ifeq (gcc, $(COMPILER))
   CSFLAGS := -g -Os
@@ -37,9 +37,8 @@ else
   CSFLAGS := -O1 -g
 endif
 
-CFLAGS := $(CSFLAGS) -Wall -Wextra -Werror -std=c11 \
+CFLAGS := $(CSFLAGS) -Wall -Wextra -Werror -std=gnu11 \
           -Wno-unused-variable -Wno-unused-parameter -Wsign-conversion -Wpointer-arith \
-          -Wpadded -Wno-error=padded \
           -ffunction-sections -fdata-sections \
           $(ARCH_CFLAGS) $(addprefix -D,$(CDEFINES))
 
