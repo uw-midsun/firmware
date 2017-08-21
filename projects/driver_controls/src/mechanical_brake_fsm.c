@@ -1,6 +1,6 @@
 #include "mechanical_brake_fsm.h"
-#include "input_event.h"
 #include "event_arbiter.h"
+#include "input_event.h"
 #include "log.h"
 
 // Mechanical Brake FSM state definitions

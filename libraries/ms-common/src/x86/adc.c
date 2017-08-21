@@ -1,6 +1,6 @@
 #include "adc.h"
 
-void adc_init(ADCMode adc_mode) { }
+void adc_init(ADCMode adc_mode) {}
 
 StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
   return STATUS_CODE_UNIMPLEMENTED;

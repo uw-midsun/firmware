@@ -2,7 +2,11 @@
 
 #include <stdlib.h>
 
-static Status s_global_status = { .source = "", .caller = "", .message = "" };
+static Status s_global_status = {
+  .source = "",   //
+  .caller = "",   //
+  .message = "",  //
+};
 static status_callback s_callback;
 
 StatusCode status_impl_update(const StatusCode code, const char* source, const char* caller,

@@ -1,6 +1,6 @@
 #include "push_to_talk_fsm.h"
-#include "input_event.h"
 #include "event_arbiter.h"
+#include "input_event.h"
 #include "log.h"
 
 // Push-to-Talk FSM state definitions
@@ -47,4 +47,3 @@ StatusCode push_to_talk_fsm_init(FSM *fsm) {
 
   return STATUS_CODE_OK;
 }
-

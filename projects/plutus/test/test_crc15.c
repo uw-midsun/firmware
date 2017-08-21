@@ -1,14 +1,14 @@
-#include <stdint.h>
 #include <stddef.h>
-#include "unity.h"
-#include "test_helpers.h"
+#include <stdint.h>
 #include "crc15.h"
+#include "test_helpers.h"
+#include "unity.h"
 
 void setup_test(void) {
   crc15_init_table();
 }
 
-void teardown_test(void) { }
+void teardown_test(void) {}
 
 void test_crc15_calculate_example(void) {
   // example from table 24

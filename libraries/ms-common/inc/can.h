@@ -3,8 +3,8 @@
 // Requires soft timers and interrupts to be initialized.
 //
 // Application code should only use functions in this header.
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include "can_ack.h"
 #include "can_hw.h"
 #include "can_queue.h"
@@ -35,7 +35,7 @@ StatusCode can_add_filter(CANConfig *can, CANMessageID msg_id);
 
 StatusCode can_register_rx_default_handler(CANConfig *can, CANRxHandlerCb handler, void *context);
 
-StatusCode can_register_rx_handler(CANConfig *can, CANMessageID msg_id,
-                                   CANRxHandlerCb handler, void *context);
+StatusCode can_register_rx_handler(CANConfig *can, CANMessageID msg_id, CANRxHandlerCb handler,
+                                   void *context);
 
 StatusCode can_transmit(CANConfig *can, const CANMessage *msg, const CANAckRequest *ack_request);

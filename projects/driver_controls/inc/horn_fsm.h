@@ -6,7 +6,7 @@
 
 typedef enum {
   HORN_FSM_STATE_OFF,
-  HORN_FSM_STATE_ON
+  HORN_FSM_STATE_ON,
 } HornFSMState;
 
 StatusCode horn_fsm_init(FSM *fsm);

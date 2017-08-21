@@ -7,14 +7,14 @@
 #include "objpool.h"
 #include "stm32f0xx.h"
 
-#define SOFT_TIMER_GET_ID(timer) ((timer) - s_storage)
+#define SOFT_TIMER_GET_ID(timer) ((timer)-s_storage)
 // A expires before B:
 // A has a lower rollover count than b
 // A and B have the same rollover count and A's expiry time is less than B's
-#define SOFT_TIMER_EXPIRES_BEFORE(a, b) \
-  (((a)->expiry_rollover_count < (b)->expiry_rollover_count || \
-   ((a)->expiry_rollover_count == (b)->expiry_rollover_count && \
-    (a)->expiry_us < (b)->expiry_us)))
+#define SOFT_TIMER_EXPIRES_BEFORE(a, b)                          \
+  (((a)->expiry_rollover_count < (b)->expiry_rollover_count ||   \
+    ((a)->expiry_rollover_count == (b)->expiry_rollover_count && \
+     (a)->expiry_us < (b)->expiry_us)))
 
 typedef struct SoftTimer {
   uint32_t expiry_us;
@@ -113,10 +113,10 @@ static void prv_init_periph(void) {
   RCC_GetClocksFreq(&clocks);
 
   TIM_TimeBaseInitTypeDef timer_init = {
-    .TIM_Prescaler = (clocks.PCLK_Frequency / 1000000) - 1, // 1 Mhz
+    .TIM_Prescaler = (clocks.PCLK_Frequency / 1000000) - 1,  // 1 Mhz
     .TIM_CounterMode = TIM_CounterMode_Up,
     .TIM_Period = UINT32_MAX,
-    .TIM_ClockDivision = TIM_CKD_DIV1
+    .TIM_ClockDivision = TIM_CKD_DIV1,
   };
   TIM_TimeBaseInit(TIM2, &timer_init);
 
@@ -189,10 +189,9 @@ static void prv_update_timer(void) {
   // Loop through any timers that have expired and fire their callbacks.
   // The magic offset is most likely the time it takes for the comparison
   // and for the compare register to update. (2us)
-  while (active_timer != NULL &&
-         (active_timer->expiry_rollover_count < s_timers.rollover_count ||
-          (active_timer->expiry_rollover_count == s_timers.rollover_count &&
-           active_timer->expiry_us <= TIM_GetCounter(TIM2) + 2))) {
+  while (active_timer != NULL && (active_timer->expiry_rollover_count < s_timers.rollover_count ||
+                                  (active_timer->expiry_rollover_count == s_timers.rollover_count &&
+                                   active_timer->expiry_us <= TIM_GetCounter(TIM2) + 2))) {
     active_timer->callback(SOFT_TIMER_GET_ID(active_timer), active_timer->context);
 
     prv_remove_timer(active_timer);
