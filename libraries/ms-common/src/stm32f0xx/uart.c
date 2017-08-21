@@ -20,30 +20,24 @@ typedef struct {
   UARTStorage *storage;
 } UARTPortData;
 
-static UARTPortData s_port[] = { {
-                                     .rcc_cmd = RCC_APB2PeriphClockCmd,
-                                     .periph = RCC_APB2Periph_USART1,
-                                     .irq = USART1_IRQn,
-                                     .base = USART1,
-                                 },
-                                 {
-                                     .rcc_cmd = RCC_APB1PeriphClockCmd,
-                                     .periph = RCC_APB1Periph_USART2,
-                                     .irq = USART2_IRQn,
-                                     .base = USART2,
-                                 },
-                                 {
-                                     .rcc_cmd = RCC_APB1PeriphClockCmd,
-                                     .periph = RCC_APB1Periph_USART3,
-                                     .irq = USART3_4_IRQn,
-                                     .base = USART3,
-                                 },
-                                 {
-                                     .rcc_cmd = RCC_APB1PeriphClockCmd,
-                                     .periph = RCC_APB1Periph_USART4,
-                                     .irq = USART3_4_IRQn,
-                                     .base = USART4,
-                                 } };
+static UARTPortData s_port[] = {
+      [UART_PORT_1] = {.rcc_cmd = RCC_APB2PeriphClockCmd,
+                       .periph = RCC_APB2Periph_USART1,
+                       .irq = USART1_IRQn,
+                       .base = USART1 },
+      [UART_PORT_2] = {.rcc_cmd = RCC_APB1PeriphClockCmd,
+                       .periph = RCC_APB1Periph_USART2,
+                       .irq = USART2_IRQn,
+                       .base = USART2 },
+      [UART_PORT_3] = {.rcc_cmd = RCC_APB1PeriphClockCmd,
+                       .periph = RCC_APB1Periph_USART3,
+                       .irq = USART3_4_IRQn,
+                       .base = USART3 },
+      [UART_PORT_4] = {.rcc_cmd = RCC_APB1PeriphClockCmd,
+                       .periph = RCC_APB1Periph_USART4,
+                       .irq = USART3_4_IRQn,
+                       .base = USART4 },
+};
 
 static void prv_tx_pop(UARTPort uart);
 static void prv_rx_push(UARTPort uart);

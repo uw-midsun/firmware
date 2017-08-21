@@ -44,7 +44,7 @@ void *objpool_get_node(ObjectPool *pool) {
   bool disabled = critical_section_start();
 
   // Find first set bit - returns 0 if no bits are set, 1-indexed
-  size_t index = (size_t)__builtin_ffsll((long long)pool->free_bitset);
+  size_t index = (size_t)__builtin_ffsll((int32_t)pool->free_bitset);
   if (index == 0) {
     critical_section_end(disabled);
     return NULL;

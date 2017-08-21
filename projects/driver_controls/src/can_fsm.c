@@ -13,14 +13,10 @@ FSM_STATE_TRANSITION(state_can_transmit) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CAN_ID_HAZARD_LIGHT, state_can_transmit);
   FSM_ADD_TRANSITION(INPUT_EVENT_CAN_ID_MECHANICAL_BRAKE, state_can_transmit);
   FSM_ADD_TRANSITION(INPUT_EVENT_CAN_ID_HORN, state_can_transmit);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CAN_PUSH_TO_TALK, state_can_transmit);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CAN_ID_PUSH_TO_TALK, state_can_transmit);
 }
 
 static void prv_transmit_data(FSM *fsm, const Event *e, void *context) {
-  // this will not work
-  // TODO: what is this supposed to do?
-  // Where is this data ever set?
-  // casting to unions is gross
   InputEventData *data = (InputEventData *)&e->data;
 
   printf("Device = %d, State = %d, Data = %d\n", e->id, data->components.state,

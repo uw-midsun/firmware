@@ -62,20 +62,14 @@ void analog_io_init() {
 
   ADCChannel adc_channel = NUM_ADC_CHANNEL;
 
-  InputConfig analog_inputs[] = { {
-                                      .address = DRIVER_IO_GAS_PEDAL,        //
-                                      .device = ANALOG_IO_DEVICE_GAS_PEDAL,  //
-                                  },
-                                  {
-                                      .address = DRIVER_IO_MECHANICAL_BRAKE,        //
-                                      .device = ANALOG_IO_DEVICE_MECHANICAL_BRAKE,  //
-                                  } };
+  InputConfig analog_inputs[] = {
+    {.address = DRIVER_IO_GAS_PEDAL, .device = ANALOG_IO_DEVICE_GAS_PEDAL },
+    {.address = DRIVER_IO_MECHANICAL_BRAKE, .device = ANALOG_IO_DEVICE_MECHANICAL_BRAKE }
+  };
 
   GPIOSettings settings = {
-    GPIO_DIR_IN,      //
-    GPIO_STATE_LOW,   //
-    GPIO_RES_NONE,    //
-    GPIO_ALTFN_NONE,  //
+    .direction = GPIO_DIR_IN,  //
+    .state = GPIO_STATE_LOW,   //
   };
 
   for (uint8_t i = 0; i < SIZEOF_ARRAY(analog_inputs); i++) {

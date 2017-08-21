@@ -10,18 +10,20 @@ typedef struct {
   GPIOAddress cs;
 } SPIPortData;
 
-static SPIPortData s_port[SPI_MCU_NUM_PORTS] = {[SPI_PORT_1] = {.rcc_cmd = RCC_APB2PeriphClockCmd,
-                                                                .periph = RCC_APB2Periph_SPI1,
-                                                                .base = SPI1 },
-                                                [SPI_PORT_2] = {.rcc_cmd = RCC_APB1PeriphClockCmd,
-                                                                .periph = RCC_APB1Periph_SPI2,
-                                                                .base = SPI2 } };
+static SPIPortData s_port[SPI_MCU_NUM_PORTS] = {
+      [SPI_PORT_1] = {.rcc_cmd = RCC_APB2PeriphClockCmd,
+                      .periph = RCC_APB2Periph_SPI1,
+                      .base = SPI1 },
+      [SPI_PORT_2] = {.rcc_cmd = RCC_APB1PeriphClockCmd,
+                      .periph = RCC_APB1Periph_SPI2,
+                      .base = SPI2 },
+};
 
 StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
   RCC_ClocksTypeDef clocks;
   RCC_GetClocksFreq(&clocks);
 
-  size_t index = (size_t)__builtin_ffsl((long)(clocks.PCLK_Frequency / settings->baudrate));
+  size_t index = (size_t)__builtin_ffsl((int32_t)(clocks.PCLK_Frequency / settings->baudrate));
   if (index <= 2) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid baudrate");
   }
