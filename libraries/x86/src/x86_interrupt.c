@@ -118,7 +118,7 @@ StatusCode x86_interrupt_trigger(uint8_t interrupt_id) {
   // callback it is going to run.
   siginfo_t value_store;
   value_store.si_value.sival_int = interrupt_id;
-  sigqueue(s_main_thread_id, SIGRTMIN + s_x86_interrupt_interrupts_map[interrupt_id].priority,
+  sigqueue(s_main_thread_id, SIGRTMIN + (int)s_x86_interrupt_interrupts_map[interrupt_id].priority,
            value_store.si_value);
 
   return STATUS_CODE_OK;

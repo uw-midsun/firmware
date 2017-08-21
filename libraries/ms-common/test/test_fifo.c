@@ -9,13 +9,13 @@ static Fifo s_fifo;
 static uint16_t s_buffer[TEST_FIFO_BUFFER_LEN];
 
 static void __attribute__((unused)) prv_dump_fifo(void) {
-  printf("%d elements in use\n", fifo_size(&s_fifo));
+  printf("%u elements in use\n", (uint16_t)fifo_size(&s_fifo));
   for (size_t i = 0; i < s_fifo.max_elems; i++) {
     void *elem = (uint8_t *)s_fifo.buffer + i * s_fifo.elem_size;
     const char *head = (elem == s_fifo.head) ? "H" : "";
     const char *next = (elem == s_fifo.next) ? "T" : "";
 
-    printf("%d: 0x%x %s%s\n", i, s_buffer[i], head, next);
+    printf("%u: 0x%x %s%s\n", (uint16_t)i, s_buffer[i], head, next);
   }
 }
 
