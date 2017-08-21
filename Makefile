@@ -131,7 +131,7 @@ IGNORE_CLEANUP_LIBS := CMSIS STM32F0xx_StdPeriph_Driver unity
 FIND_PATHS := $(addprefix -o -path $(LIB_DIR)/,$(IGNORE_CLEANUP_LIBS))
 FIND := find $(PROJ_DIR) $(LIB_DIR) \
 			  \( $(wordlist 2,$(words $(FIND_PATHS)),$(FIND_PATHS)) \) -prune -o \
-				-name "*.[ch]" -print
+				-iname "*.[ch]" -print
 
 # Lints libraries and projects, excludes IGNORE_CLEANUP_LIBS
 lint:
