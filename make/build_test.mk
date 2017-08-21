@@ -39,12 +39,12 @@ $($(T)_GEN_DIR)/%_runner.c: $($(T)_TEST_ROOT)/%.c | $($(T)_GEN_DIR)
 # Compile the unit tests
 $($(T)_TEST_OBJ_DIR)/%.o: $($(T)_TEST_ROOT)/%.c | $(T) $(dir $($(T)_TEST_OBJ))
 	@echo "T: $(notdir $<) -> $(notdir $@)"
-	@$(CC) -MD -MP -w -c -o $@ $< $($(firstword $|)_CFLAGS) $(addprefix -I,$($(firstword $|)_INC_DIRS) $(unity_INC_DIRS))
+	@$(CC) -MD -MP -c -o $@ $< $($(firstword $|)_CFLAGS) $(addprefix -I,$($(firstword $|)_INC_DIRS) $(unity_INC_DIRS))
 
 # Compile the test runners
 $($(T)_TEST_OBJ_DIR)/%.o: $($(T)_GEN_DIR)/%.c | $(T) $(dir $($(T)_TEST_RUNNERS_OBJ))
 	@echo "T: $(notdir $<) -> $(notdir $@)"
-	@$(CC) -MD -MP -w -c -o $@ $< $($(firstword $|)_CFLAGS) $(addprefix -I,$($(firstword $|)_INC_DIRS) $(unity_INC_DIRS))
+	@$(CC) -MD -MP -c -o $@ $< $($(firstword $|)_CFLAGS) $(addprefix -I,$($(firstword $|)_INC_DIRS) $(unity_INC_DIRS))
 
 # Build each test - only include the test's runner and unit tests.
 $($(T)_TESTS): $($(T)_TEST_BIN_DIR)/%_runner$(PLATFORM_EXT): \

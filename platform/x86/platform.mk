@@ -25,7 +25,7 @@ ARCH_CLAGS :=
 LDSCRIPT := $(PLATFORM_DIR)/ldscripts
 
 # Build flags for the device
-CDEFINES :=
+CDEFINES := _GNU_SOURCE
 
 ifeq (gcc, $(COMPILER))
   CSFLAGS := -g -Os
@@ -37,9 +37,8 @@ else
   CSFLAGS := -O1 -g
 endif
 
-CFLAGS := $(CSFLAGS) -std=gnu99 -Wall -Werror -Wno-unused-variable -pedantic \
+CFLAGS := $(CSFLAGS) -Wall -Wextra -Werror -std=c11 -Wno-unused-variable -Wno-unused-parameter \
           -ffunction-sections -fdata-sections \
-          -Wl,-Map=$(BIN_DIR)/$(PROJECT).map \
           $(ARCH_CLAGS) $(addprefix -D,$(CDEFINES))
 
 # Linker flags
