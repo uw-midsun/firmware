@@ -28,7 +28,7 @@ typedef enum {
 static AnalogIODevice s_analog_devices[ANALOG_IO_DEVICES];
 
 static void prv_input_callback(ADCChannel adc_channel, void *context) {
-  Event e;
+  Event e = { 0 };
 
   adc_read_raw(adc_channel, &e.data);
 
@@ -58,7 +58,7 @@ void analog_io_init() {
     AnalogIODevice device;
   } InputConfig;
 
-  ADCChannel adc_channel;
+  ADCChannel adc_channel = NUM_ADC_CHANNEL;
 
   InputConfig analog_inputs[] = {
     { .address = DRIVER_IO_GAS_PEDAL, .device = ANALOG_IO_DEVICE_GAS_PEDAL },
