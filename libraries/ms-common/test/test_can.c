@@ -13,7 +13,7 @@ typedef enum {
   TEST_CAN_EVENT_FAULT
 } TestCanEvent;
 
-static volatile CANConfig s_can;
+static CANConfig s_can;
 
 static StatusCode prv_rx_callback(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   CANMessage *rx_msg = context;
@@ -53,9 +53,9 @@ void teardown_test(void) { }
 
 void test_can_basic(void) {
   volatile CANMessage rx_msg = { 0 };
-  can_register_rx_handler(&s_can, 0x6, prv_rx_callback, &rx_msg);
-  can_register_rx_handler(&s_can, 0x1, prv_rx_callback, &rx_msg);
-  can_register_rx_handler(&s_can, 0x5, prv_rx_callback, &rx_msg);
+  can_register_rx_handler(&s_can, 0x6, prv_rx_callback, (CANMessage *)&rx_msg);
+  can_register_rx_handler(&s_can, 0x1, prv_rx_callback, (CANMessage *)&rx_msg);
+  can_register_rx_handler(&s_can, 0x5, prv_rx_callback, (CANMessage *)&rx_msg);
 
   CANMessage msg = {
     .msg_id = 0x5,
@@ -83,8 +83,8 @@ void test_can_filter(void) {
   volatile CANMessage rx_msg = { 0 };
   can_add_filter(&s_can, 0x2);
 
-  can_register_rx_handler(&s_can, 0x1, prv_rx_callback, &rx_msg);
-  can_register_rx_handler(&s_can, 0x2, prv_rx_callback, &rx_msg);
+  can_register_rx_handler(&s_can, 0x1, prv_rx_callback, (CANMessage *)&rx_msg);
+  can_register_rx_handler(&s_can, 0x2, prv_rx_callback, (CANMessage *)&rx_msg);
 
   CANMessage msg = {
     .msg_id = 0x1,
@@ -123,7 +123,7 @@ void test_can_ack(void) {
 
   CANAckRequest ack_req = {
     .callback = prv_ack_callback,
-    .context = &device_acked,
+    .context = (void *)&device_acked,
     .num_expected = 1
   };
 
@@ -157,7 +157,7 @@ void test_can_ack_expire(void) {
 
   CANAckRequest ack_req = {
     .callback = prv_ack_callback_status,
-    .context = &ack_status,
+    .context = (void *)&ack_status,
     .num_expected = 4
   };
 
@@ -181,11 +181,11 @@ void test_can_ack_status(void) {
 
   CANAckRequest ack_req = {
     .callback = prv_ack_callback_status,
-    .context = &ack_status,
+    .context = (void *)&ack_status,
     .num_expected = 1
   };
 
-  can_register_rx_handler(&s_can, TEST_CAN_UNKNOWN_MSG_ID, prv_rx_callback, &rx_msg);
+  can_register_rx_handler(&s_can, TEST_CAN_UNKNOWN_MSG_ID, prv_rx_callback, (CANMessage *)&rx_msg);
 
   StatusCode ret = can_transmit(&s_can, &msg, &ack_req);
   TEST_ASSERT_OK(ret);
@@ -215,7 +215,7 @@ void test_can_default(void) {
     .dlc = 1
   };
 
-  can_register_rx_default_handler(&s_can, prv_rx_callback, &rx_msg);
+  can_register_rx_default_handler(&s_can, prv_rx_callback, (CANMessage *)&rx_msg);
 
   StatusCode ret = can_transmit(&s_can, &msg, NULL);
   TEST_ASSERT_OK(ret);

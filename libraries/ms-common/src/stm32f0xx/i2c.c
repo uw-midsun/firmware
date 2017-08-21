@@ -11,7 +11,7 @@ do { \
   while (I2C_GetFlagStatus(i2c, flag) == status) { \
     timeout--; \
     if (timeout == 0) { \
-      LOG_DEBUG("Timeout: %d waiting for %d to change\n", flag, status); \
+      LOG_DEBUG("Timeout: %lu waiting for %d to change\n", flag, status); \
       return STATUS_CODE_TIMEOUT; \
     } \
   } \
@@ -47,12 +47,12 @@ static StatusCode prv_transfer(I2CPort port, uint8_t addr, bool read,
                        read ? I2C_Generate_Start_Read : I2C_Generate_Start_Write);
 
   if (read) {
-    for (int i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
       I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_RXNE, RESET);
       data[i] = I2C_ReceiveData(i2c);
     }
   } else {
-    for (int i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
       I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_TXIS, RESET);
       I2C_SendData(i2c, data[i]);
     }

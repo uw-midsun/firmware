@@ -23,9 +23,11 @@ SCRIPT_DIR := $(PLATFORM_DIR)/scripts
 
 # Build flags for the device
 CDEFINES := USE_STDPERIPH_DRIVER STM32F072
-CFLAGS := -Wall -Wextra -Werror -g3 -Os -std=c11 -Wno-unused-variable -Wno-unused-parameter \
-          -ffunction-sections -fdata-sections -fno-builtin -flto \
-          $(ARCH_CLAGS) $(addprefix -D,$(CDEFINES))
+CFLAGS := -Wall -Wextra -Werror -g3 -Os -std=c11 \
+					-Wno-unused-variable -Wno-unused-parameter -Wsign-conversion -Wpointer-arith \
+					-Wpadded -Wno-error=padded \
+					-ffunction-sections -fdata-sections -fno-builtin -flto \
+					$(ARCH_CFLAGS) $(addprefix -D,$(CDEFINES))
 
 # Linker flags
 LDFLAGS := -L$(LDSCRIPT_DIR) -Tstm32f0.ld -fuse-linker-plugin \

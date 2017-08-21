@@ -2,6 +2,8 @@
 #include "log.h"
 #include "test_helpers.h"
 #include "gpio_expander.h"
+#include "interrupt.h"
+#include "gpio_it.h"
 #include "i2c.h"
 
 void prv_callback(GPIOExpanderPin pin, GPIOState state, void *context) { }

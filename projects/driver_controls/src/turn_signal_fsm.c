@@ -30,10 +30,11 @@ FSM_STATE_TRANSITION(state_right_signal) {
 
 // Turn signal FSM output function
 
-static void prv_state_output(FSM* fsm, const Event* e, void *context) {
-  InputEventData data;
+static void prv_state_output(FSM *fsm, const Event *e, void *context) {
+  InputEventData data = { 0 };
 
-  data.components.data = &e->data;
+  // woah this was very wrong
+  data.components.data = e->data;
 
   State *current_state = fsm->current_state;
 

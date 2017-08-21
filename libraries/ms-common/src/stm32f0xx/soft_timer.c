@@ -4,6 +4,7 @@
 // This gives us O(1) deletion, but we do have O(n) insertion due to the ordered requirement.
 // This tradeoff is worth it for faster interrupts.
 #include "soft_timer.h"
+#include <string.h>
 #include "objpool.h"
 #include "stm32f0xx.h"
 
@@ -31,8 +32,9 @@ typedef struct SoftTimerList {
   ObjectPool pool;
 } SoftTimerList;
 
-static volatile SoftTimerList s_timers = { 0 };
-static volatile SoftTimer s_storage[SOFT_TIMER_MAX_TIMERS] = { 0 };
+// TODO: does this need to be volatile?
+static SoftTimerList s_timers = { 0 };
+static SoftTimer s_storage[SOFT_TIMER_MAX_TIMERS] = { 0 };
 
 static void prv_init_periph(void);
 static bool prv_insert_timer(SoftTimer *timer);

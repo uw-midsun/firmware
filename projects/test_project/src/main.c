@@ -5,6 +5,7 @@
 
 #include "gpio.h"
 #include "spi.h"
+#include "log.h"
 
 #define GYRO_ID 0xD4
 
@@ -14,7 +15,7 @@ void gyro_cmd(bool read, bool autoincrement, uint8_t addr, uint8_t *data) {
     (read) ? 0 : *data
   };
 
-  spi_exchange(1, packet, 2 - read, data, read);
+  spi_exchange(1, packet, (size_t)(2 - read), data, read);
 }
 
 int main(void) {
@@ -45,7 +46,7 @@ int main(void) {
   gpio_init_pin(&leds[1], &led_settings);
 
   while (true) {
-    printf("ID: %d\n", whoami);
+    LOG_DEBUG("ID: %d\n", whoami);
     gpio_toggle_state(&leds[whoami == GYRO_ID]);
 
     // arbitrary software delay

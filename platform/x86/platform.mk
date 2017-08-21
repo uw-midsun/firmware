@@ -19,13 +19,13 @@ PLATFORM_LIB := x86
 PLATFORM_EXT :=
 
 # Architecture dependent variables
-ARCH_CLAGS :=
+ARCH_CFLAGS :=
 
 # Linker and startup script locations
 LDSCRIPT := $(PLATFORM_DIR)/ldscripts
 
 # Build flags for the device
-CDEFINES := _GNU_SOURCE
+CDEFINES :=
 
 ifeq (gcc, $(COMPILER))
   CSFLAGS := -g -Os
@@ -37,9 +37,11 @@ else
   CSFLAGS := -O1 -g
 endif
 
-CFLAGS := $(CSFLAGS) -Wall -Wextra -Werror -std=c11 -Wno-unused-variable -Wno-unused-parameter \
+CFLAGS := $(CSFLAGS) -Wall -Wextra -Werror -std=gnuc11 \
+          -Wno-unused-variable -Wno-unused-parameter -Wsign-conversion -Wpointer-arith \
+          -Wpadded -Wno-error=padded \
           -ffunction-sections -fdata-sections \
-          $(ARCH_CLAGS) $(addprefix -D,$(CDEFINES))
+          $(ARCH_CFLAGS) $(addprefix -D,$(CDEFINES))
 
 # Linker flags
 LDFLAGS := -lrt

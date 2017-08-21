@@ -24,7 +24,7 @@ static StatusCode prv_pin_is_valid(GPIOExpanderPin pin) {
   return STATUS_CODE_OK;
 }
 
-static void prv_interrupt_handler(GPIOAddress *address, void *context) {
+static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
   uint8_t intf = 0, intcap = 0;
 
   // Read the contents of the interrupt flag and interrupt capture registers
@@ -70,7 +70,7 @@ StatusCode gpio_expander_init(GPIOAddress address, I2CPort i2c_port) {
 
   gpio_init_pin(&address, &gpio_settings);
   gpio_it_register_interrupt(&address, &it_settings, INTERRUPT_EDGE_FALLING,
-                              prv_interrupt_handler, NULL);
+                             prv_interrupt_handler, NULL);
 
   // Initialize the interrupt callbacks to NULL
   for (uint8_t i = 0; i < NUM_GPIO_EXPANDER_PINS; i++) {

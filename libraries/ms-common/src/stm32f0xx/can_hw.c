@@ -1,10 +1,11 @@
 #include "can_hw.h"
+#include <string.h>
 #include "stm32f0xx.h"
 #include "interrupt_def.h"
 
 #define CAN_HW_PRESCALER 12
 
-static volatile CANHwConfig *s_can = NULL;
+static CANHwConfig *s_can = NULL;
 
 StatusCode can_hw_init(CANHwConfig *can_hw, uint16_t bus_speed, bool loopback) {
   memset(can_hw, 0, sizeof(*can_hw));
@@ -42,7 +43,7 @@ StatusCode can_hw_init(CANHwConfig *can_hw, uint16_t bus_speed, bool loopback) {
   CAN_ITConfig(can_hw->base, CAN_IT_FMP1, ENABLE);
   CAN_ITConfig(can_hw->base, CAN_IT_BOF, ENABLE);
 
-  can_hw_add_filter(can_hw->base, 0, 0);
+  can_hw_add_filter(can_hw, 0, 0);
   can_hw->num_filters = 0;
 
   return STATUS_CODE_OK;
@@ -97,7 +98,8 @@ CANHwBusStatus can_hw_bus_status(const CANHwConfig *can_hw) {
   return CAN_HW_BUS_STATUS_OK;
 }
 
-StatusCode can_hw_transmit(const CANHwConfig *can_hw, uint16_t id, uint8_t *data, size_t len) {
+StatusCode can_hw_transmit(const CANHwConfig *can_hw, uint16_t id,
+                           const uint8_t *data, size_t len) {
   CanTxMsg tx_msg = {
     .StdId = id,
     .IDE = CAN_ID_STD,

@@ -47,7 +47,7 @@ static StatusCode prv_channel_valid(ADCChannel adc_channel) {
     return STATUS_CODE_INVALID_ARGS;
   }
 
-  if (!(ADC1->CHSELR & (1 << adc_channel))) {
+  if (!(ADC1->CHSELR & ((uint32_t)1 << adc_channel))) {
     return STATUS_CODE_EMPTY;
   }
 
@@ -108,9 +108,9 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
   }
 
   if (new_state) {
-    ADC_ChannelConfig(ADC1, (1 << adc_channel), ADC_SampleTime_239_5Cycles);
+    ADC_ChannelConfig(ADC1, ((uint32_t)1 << adc_channel), ADC_SampleTime_239_5Cycles);
   } else {
-    ADC1->CHSELR &= ~(1 << adc_channel);
+    ADC1->CHSELR &= ~((uint32_t)1 << adc_channel);
   }
 
   // Keep internal channels enabled only when set
@@ -125,6 +125,9 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
 
     case ADC_CHANNEL_TEMP:
       ADC_TempSensorCmd(new_state);
+      break;
+
+    default:
       break;
   }
 
@@ -207,6 +210,9 @@ StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading) {
     case ADC_CHANNEL_BAT:
       adc_reading *= 2;
       break;
+
+    default:
+      break;
   }
 
   uint16_t vdda;
@@ -228,7 +234,7 @@ void ADC1_COMP_IRQHandler() {
     }
 
     s_adc_interrupts[current_channel].reading = reading;
-    s_adc_status.sequence &= ~(1 << current_channel);
+    s_adc_status.sequence &= ~((uint32_t)1 << current_channel);
   }
 
   if (ADC_GetITStatus(ADC1, ADC_IT_EOSEQ)) {

@@ -116,7 +116,7 @@ void test_can_ack_expiry(void) {
   volatile TestResponse data = { 0 };
   CANAckRequest ack_request = {
     .callback = prv_ack_callback,
-    .context = &data,
+    .context = (void *)&data,
     .num_expected = 5
   };
 
@@ -140,7 +140,7 @@ void test_can_ack_expiry_moved(void) {
   };
   CANAckRequest ack_request = {
     .callback = prv_ack_callback,
-    .context = &data,
+    .context = (void *)&data,
     .num_expected = 1
   };
 

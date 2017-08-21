@@ -24,9 +24,9 @@ StatusCode event_raise(EventID id, uint16_t data) {
     .data = data
   };
 
-  return pqueue_backed_push(&s_queue, &e, id);
+  return pqueue_backed_push(&s_queue.pqueue, &e, id);
 }
 
 StatusCode event_process(Event *e) {
-  return pqueue_backed_pop(&s_queue, e);
+  return pqueue_backed_pop(&s_queue.pqueue, e);
 }

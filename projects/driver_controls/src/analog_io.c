@@ -47,6 +47,9 @@ static void prv_input_callback(ADCChannel adc_channel, void *context) {
               INPUT_EVENT_MECHANICAL_BRAKE_PRESSED :
               INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
       break;
+
+    default:
+      break;
   }
 
   event_raise(e.id, e.data);

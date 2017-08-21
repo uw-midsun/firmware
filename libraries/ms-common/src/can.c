@@ -1,4 +1,5 @@
 #include "can.h"
+#include <string.h>
 #include "soft_timer.h"
 #include "can_rx_fsm.h"
 
@@ -110,9 +111,9 @@ StatusCode can_add_filter(CANConfig *can, CANMessageID msg_id) {
 
   CANId can_id = {
     .msg_id = msg_id
-  }, mask = {
-    .msg_id = UINT16_MAX
   };
+  CANId mask = { 0 };
+  mask.msg_id = ~mask.msg_id;
 
   return can_hw_add_filter(&can->hw, can_id.raw, mask.raw);
 }

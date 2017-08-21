@@ -91,9 +91,9 @@ void teardown_test(void) {
 
 // Test that the power fsm correctly generates CAN events
 void test_can_fsm_power() {
-  Event e;
+  Event e = { 0 };
 
-  InputEventData *data = &e.data;
+  InputEventData *data = (InputEventData *)&e.data;
 
   prv_toggle_power(true);
   event_process(&e);
@@ -111,8 +111,8 @@ void test_can_fsm_power() {
 }
 
 void test_can_fsm_mechanical_brake() {
-  Event e;
-  InputEventData *data = &e.data;
+  Event e = { 0 };
+  InputEventData *data = (InputEventData *)&e.data;
 
   // Test that pressing the brake state generates the correct event
   prv_toggle_mech_brake(true);
@@ -134,8 +134,8 @@ void test_can_fsm_mechanical_brake() {
 }
 
 void test_can_fsm_hazard_light() {
-  Event e;
-  InputEventData *data = &e.data;
+  Event e = { 0 };
+  InputEventData *data = (InputEventData *)&e.data;
 
   // Turn on the power and clean up the event queue
   prv_toggle_power(true);
@@ -161,8 +161,8 @@ void test_can_fsm_hazard_light() {
 }
 
 void test_can_fsm_turn_signal() {
-  Event e;
-  InputEventData *data = &e.data;
+  Event e = { 0 };
+  InputEventData *data = (InputEventData *)&e.data;
 
   // Turn on the power and clean up the event queue
   prv_toggle_power(true);
@@ -198,8 +198,8 @@ void test_can_fsm_turn_signal() {
 
 
 void test_can_fsm_direction() {
-  Event e;
-  InputEventData *data = &e.data;
+  Event e = { 0 };
+  InputEventData *data = (InputEventData *)&e.data;
 
   // Setup for the direction selector to be used
   prv_toggle_power(true);
@@ -238,7 +238,7 @@ void test_can_fsm_direction() {
 
 void test_can_fsm_pedal() {
   Event e = { .data = 0xdef };
-  InputEventData *data = &e.data;
+  InputEventData *data = (InputEventData *)&e.data;
 
   // Setup for the pedals to be used
   prv_toggle_power(true);
@@ -297,8 +297,8 @@ void test_can_fsm_pedal() {
 }
 
 void test_can_fsm_horn() {
-  Event e;
-  InputEventData *data = &e.data;
+  Event e = { 0 };
+  InputEventData *data = (InputEventData *)&e.data;
 
   prv_toggle_power(true);
   event_process(&e);
@@ -323,8 +323,8 @@ void test_can_fsm_horn() {
 }
 
 void test_can_fsm_push_to_talk() {
-  Event e;
-  InputEventData *data = &e.data;
+  Event e = { 0 };
+  InputEventData *data = (InputEventData *)&e.data;
 
   prv_toggle_power(true);
   event_process(&e);
