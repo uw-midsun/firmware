@@ -32,9 +32,8 @@ typedef struct SoftTimerList {
   ObjectPool pool;
 } SoftTimerList;
 
-// TODO: does this need to be volatile?
-static SoftTimerList s_timers = { 0 };
-static SoftTimer s_storage[SOFT_TIMER_MAX_TIMERS] = { 0 };
+static volatile SoftTimerList s_timers = { 0 };
+static volatile SoftTimer s_storage[SOFT_TIMER_MAX_TIMERS] = { 0 };
 
 static void prv_init_periph(void);
 static bool prv_insert_timer(SoftTimer *timer);

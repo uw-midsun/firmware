@@ -78,13 +78,13 @@ void test_fifo_arr_wrap(void) {
     TEST_ASSERT_OK(fifo_push(&s_fifo, &x));
   }
 
-  TEST_ASSERT_OK(fifo_pop(&s_fifo, (uint8_t *)NULL));
-  TEST_ASSERT_OK(fifo_pop(&s_fifo, (uint8_t *)NULL));
+  TEST_ASSERT_OK(fifo_pop(&s_fifo, NULL));
+  TEST_ASSERT_OK(fifo_pop(&s_fifo, NULL));
 
   TEST_ASSERT_OK(fifo_push_arr(&s_fifo, send_arr, SIZEOF_ARRAY(send_arr)));
   TEST_ASSERT_EQUAL(TEST_FIFO_BUFFER_LEN, fifo_size(&s_fifo));
 
-  TEST_ASSERT_OK(fifo_pop_arr(&s_fifo, (uint8_t *)NULL, TEST_FIFO_BUFFER_LEN - 4));
+  TEST_ASSERT_OK(fifo_pop_arr(&s_fifo, NULL, TEST_FIFO_BUFFER_LEN - 4));
   TEST_ASSERT_OK(fifo_pop_arr(&s_fifo, rx_arr, SIZEOF_ARRAY(rx_arr)));
 
   for (size_t i = 0; i < SIZEOF_ARRAY(rx_arr); i++) {
@@ -105,8 +105,7 @@ void test_fifo_arr_end(void) {
   TEST_ASSERT_OK(fifo_push_arr(&s_fifo, send_arr, SIZEOF_ARRAY(send_arr)));
   TEST_ASSERT_EQUAL(TEST_FIFO_BUFFER_LEN, fifo_size(&s_fifo));
 
-  // TODO: not really supposed to sizeof(NULL)
-  TEST_ASSERT_OK(fifo_pop(&s_fifo, (uint8_t *)NULL));
+  TEST_ASSERT_OK(fifo_pop(&s_fifo, NULL));
 
   uint16_t temp = 0xDEAD;
   TEST_ASSERT_OK(fifo_push(&s_fifo, &temp));

@@ -37,7 +37,7 @@ else
   CSFLAGS := -O1 -g
 endif
 
-CFLAGS := $(CSFLAGS) -Wall -Wextra -Werror -std=gnu11 \
+CFLAGS := $(CSFLAGS) -Wall -Wextra -Werror -std=gnu11 -Wno-discarded-qualifiers \
           -Wno-unused-variable -Wno-unused-parameter -Wsign-conversion -Wpointer-arith \
           -ffunction-sections -fdata-sections \
           $(ARCH_CFLAGS) $(addprefix -D,$(CDEFINES))
