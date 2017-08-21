@@ -17,11 +17,10 @@ typedef struct {
   UARTRxHandler rx_handler;
   void *context;
 
-  // TODO: does this need to be volatile?
-  Fifo tx_fifo;
-  uint8_t tx_buf[UART_MAX_BUFFER_LEN];
-  Fifo rx_fifo;
-  uint8_t rx_buf[UART_MAX_BUFFER_LEN];
+  volatile Fifo tx_fifo;
+  volatile uint8_t tx_buf[UART_MAX_BUFFER_LEN];
+  volatile Fifo rx_fifo;
+  volatile uint8_t rx_buf[UART_MAX_BUFFER_LEN];
 } UARTStorage;
 
 typedef struct {
