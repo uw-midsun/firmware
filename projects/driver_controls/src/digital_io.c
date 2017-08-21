@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdio.h>
 
 #include "digital_io.h"
 #include "driver_io.h"
@@ -36,12 +37,12 @@ typedef struct DigitalIOSettings {
 static DigitalIOData s_input_data[DRIVER_IO_NUM_ADDRESSES];
 
 // Genarate the event based on the identity of the triggering device
-static uint16_t prv_get_event(DigitalIOData *digital_io_data, GPIOState state) {
-  uint16_t event_id = digital_io_data->event;
+static uint16_t prv_get_event(DigitalIOData *data, GPIOState state) {
+  uint16_t event_id = data->event;
 
-  if (event_id == DIGITAL_IO_DEVICE_DIRECTION_SELECTOR && state == GPIO_STATE_HIGH) {
+  if (data->id == DIGITAL_IO_DEVICE_DIRECTION_SELECTOR && state == GPIO_STATE_HIGH) {
     event_id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
-  } else if (event_id == DIGITAL_IO_DEVICE_TURN_SIGNAL && state == GPIO_STATE_HIGH) {
+  } else if (data->id == DIGITAL_IO_DEVICE_TURN_SIGNAL && state == GPIO_STATE_LOW) {
     event_id = INPUT_EVENT_TURN_SIGNAL_NONE;
   }
 
@@ -50,14 +51,12 @@ static uint16_t prv_get_event(DigitalIOData *digital_io_data, GPIOState state) {
 
 static void prv_input_callback(const GPIOAddress *address, void *context) {
   // TODO: define contract for events
-  DigitalIOData *data = context;
+  DigitalIOData *data = (DigitalIOData*)context;
 
   GPIOState state = { 0 };
   gpio_get_value(address, &state);
 
-  // TODO: what is this data value supposed to represent?
-  // TODO: this needs to be fixed
-  event_raise(prv_get_event(data, state), state);
+  event_raise(prv_get_event(data, state), 0);
 }
 
 static void prv_init_pin(DigitalIOSettings *settings, GPIOSettings *gpio_settings) {
