@@ -1,3 +1,25 @@
+# Project .clang-format Settings
+# This is a .yaml file.
+
+# The documentation for clang-format can be found on 
+# https://clang.llvm.org/docs/ClangFormat.html
+
+# The style we are using is strongly based on the Google style guide for C++.
+# Notable changes include:
+# ColumnLimit: 100
+# PointerAlignment: Right
+# Cpp11BracedListStyle: false
+
+# For struct initializers the preferred initializer format is:
+# MyStruct my_struct = {
+#   .field1 = 1,  //
+#   .field2 = 2,  //
+# };
+# Note: the need for the comment to force the line break and the trailing comma
+# to force the braces to break.
+# For more details on the initializer style and solution see: 
+# https://stackoverflow.com/questions/33656800/clang-format-line-breaks
+
 Language:        Cpp
 BasedOnStyle:  Google
 AccessModifierOffset: -1
@@ -18,7 +40,7 @@ AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: true
 AlwaysBreakTemplateDeclarations: true
 BinPackArguments: true
-BinPackParameters: false
+BinPackParameters: true
 BraceWrapping:
   AfterClass:      false
   AfterControlStatement: false

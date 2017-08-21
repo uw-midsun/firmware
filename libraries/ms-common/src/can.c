@@ -7,7 +7,9 @@
 // Attempts to transmit the specified message using the HW TX, overwriting the source device.
 StatusCode prv_transmit(const CANConfig *can, const CANMessage *msg) {
   CANId msg_id = {
-    .source_id = can->device_id, .type = msg->type, .msg_id = msg->msg_id,
+    .source_id = can->device_id,  //
+    .type = msg->type,            //
+    .msg_id = msg->msg_id,        //
   };
 
   return can_hw_transmit(&can->hw, msg_id.raw, msg->data_u8, msg->dlc);

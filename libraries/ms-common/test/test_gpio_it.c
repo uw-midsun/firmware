@@ -12,11 +12,13 @@
 
 static GPIOAddress s_interrupt_address = { 1, 0 };
 static InterruptSettings s_interrupt_settings = {
-  .type = INTERRUPT_TYPE_INTERRUPT, .priority = INTERRUPT_PRIORITY_NORMAL,
+  .type = INTERRUPT_TYPE_INTERRUPT,       //
+  .priority = INTERRUPT_PRIORITY_NORMAL,  //
 };
 static GPIOAddress s_event_address = { 1, 1 };
 static InterruptSettings s_event_settings = {
-  .type = INTERRUPT_TYPE_EVENT, .priority = INTERRUPT_PRIORITY_NORMAL,
+  .type = INTERRUPT_TYPE_EVENT,           //
+  .priority = INTERRUPT_PRIORITY_NORMAL,  //
 };
 
 static volatile bool s_correct_port = false;

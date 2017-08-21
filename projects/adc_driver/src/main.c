@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "adc.h"
 #include "critical_section.h"
@@ -19,7 +20,12 @@ int main() {
                             { GPIO_PORT_C, 2 }, { GPIO_PORT_C, 3 }, { GPIO_PORT_C, 4 },
                             { GPIO_PORT_C, 5 } };
 
-  GPIOSettings settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_ANALOG };
+  GPIOSettings settings = {
+    GPIO_DIR_IN,        //
+    GPIO_STATE_LOW,     //
+    GPIO_RES_NONE,      //
+    GPIO_ALTFN_ANALOG,  //
+  };
 
   gpio_init();
   interrupt_init();
@@ -54,7 +60,6 @@ int main() {
       printf(" %d ", adc_readings[i]);
     }
     for (int i = ADC_CHANNEL_TEMP; i < NUM_ADC_CHANNEL; i++) {
-      adc_readings[i];
       printf(" %d ", adc_readings[i]);
     }
     printf("}\n");

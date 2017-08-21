@@ -4,7 +4,18 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-static GPIOAddress address[] = { { GPIO_PORT_A, 0 }, { GPIO_PORT_A, 1 }, { GPIO_PORT_A, 2 } };
+static GPIOAddress address[] = { {
+                                     GPIO_PORT_A,  //
+                                     0,            //
+                                 },
+                                 {
+                                     GPIO_PORT_A,  //
+                                     1,            //
+                                 },
+                                 {
+                                     GPIO_PORT_A,  //
+                                     2,            //
+                                 } };
 
 static volatile uint8_t s_callback_runs = 0;
 static volatile bool s_callback_ran = false;
@@ -28,7 +39,12 @@ void prv_adc_check_range(ADCChannel adc_channel) {
 }
 
 void setup_test() {
-  GPIOSettings settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_ANALOG };
+  GPIOSettings settings = {
+    GPIO_DIR_IN,        //
+    GPIO_STATE_LOW,     //
+    GPIO_RES_NONE,      //
+    GPIO_ALTFN_ANALOG,  //
+  };
 
   gpio_init();
   interrupt_init();
@@ -153,7 +169,15 @@ void test_read_continuous() {
 void test_adc_get_channel() {
   ADCChannel adc_channel;
   GPIOAddress address[] = {
-    {.port = GPIO_PORT_A }, {.port = GPIO_PORT_B }, {.port = GPIO_PORT_C }
+    {
+        .port = GPIO_PORT_A,
+    },
+    {
+        .port = GPIO_PORT_B,
+    },
+    {
+        .port = GPIO_PORT_C,
+    },
   };
 
   address[0].pin = 0;

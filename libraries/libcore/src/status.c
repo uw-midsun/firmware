@@ -3,7 +3,9 @@
 #include <stdlib.h>
 
 static Status s_global_status = {
-  .source = "", .caller = "", .message = "",
+  .source = "",   //
+  .caller = "",   //
+  .message = "",  //
 };
 static status_callback s_callback;
 

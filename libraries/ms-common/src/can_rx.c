@@ -40,8 +40,11 @@ StatusCode can_rx_register_handler(CANRxHandlers *rx_handlers, CANMessageID msg_
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN RX handler already registered");
   }
 
-  rx_handlers->storage[rx_handlers->num_handlers++] =
-      (CANRxHandler){.msg_id = msg_id, .callback = handler, .context = context };
+  rx_handlers->storage[rx_handlers->num_handlers++] = (CANRxHandler){
+    .msg_id = msg_id,     //
+    .callback = handler,  //
+    .context = context,
+  };
 
   qsort(rx_handlers->storage, rx_handlers->num_handlers, sizeof(*rx_handlers->storage),
         prv_handler_comp);

@@ -9,14 +9,16 @@ typedef struct {
   GPIOAddress cs;
 } SPIPortData;
 
-static SPIPortData s_port[SPI_MCU_NUM_PORTS] = {
-  {
-      .rcc_cmd = RCC_APB2PeriphClockCmd, .periph = RCC_APB2Periph_SPI1, .base = SPI1,
-  },
-  {
-      .rcc_cmd = RCC_APB1PeriphClockCmd, .periph = RCC_APB1Periph_SPI2, .base = SPI2,
-  }
-};
+static SPIPortData s_port[SPI_MCU_NUM_PORTS] = { {
+                                                     .rcc_cmd = RCC_APB2PeriphClockCmd,  //
+                                                     .periph = RCC_APB2Periph_SPI1,      //
+                                                     .base = SPI1,                       //
+                                                 },
+                                                 {
+                                                     .rcc_cmd = RCC_APB1PeriphClockCmd,  //
+                                                     .periph = RCC_APB1Periph_SPI2,      //
+                                                     .base = SPI2,                       //
+                                                 } };
 
 StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
   RCC_ClocksTypeDef clocks;

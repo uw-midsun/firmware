@@ -55,7 +55,8 @@ StatusCode can_hw_register_callback(CANHwConfig *can_hw, CANHwEvent event,
   }
 
   can_hw->handlers[event] = (CANHwEventHandler){
-    .callback = callback, .context = context,
+    .callback = callback,  //
+    .context = context,    //
   };
 
   return STATUS_CODE_OK;
@@ -98,7 +99,9 @@ CANHwBusStatus can_hw_bus_status(const CANHwConfig *can_hw) {
 
 StatusCode can_hw_transmit(const CANHwConfig *can_hw, uint16_t id, uint8_t *data, size_t len) {
   CanTxMsg tx_msg = {
-    .StdId = id, .IDE = CAN_ID_STD, .DLC = len,
+    .StdId = id,        //
+    .IDE = CAN_ID_STD,  //
+    .DLC = len,         //
   };
 
   memcpy(tx_msg.Data, data, sizeof(*data) * len);

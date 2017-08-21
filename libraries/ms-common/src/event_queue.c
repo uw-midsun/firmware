@@ -20,7 +20,8 @@ void event_queue_init(void) {
 
 StatusCode event_raise(EventID id, uint16_t data) {
   const Event e = {
-    .id = id, .data = data,
+    .id = id,      //
+    .data = data,  //
   };
 
   return pqueue_backed_push(&s_queue, &e, id);

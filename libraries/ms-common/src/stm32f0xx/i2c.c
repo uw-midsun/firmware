@@ -28,10 +28,15 @@ typedef struct {
   I2C_TypeDef *base;
 } I2CPortData;
 
-static I2CPortData s_port[NUM_I2C_PORTS] = {[I2C_PORT_1] = {.periph = RCC_APB1Periph_I2C1,
-                                                            .base = I2C1 },
-                                            [I2C_PORT_2] = {.periph = RCC_APB1Periph_I2C2,
-                                                            .base = I2C2 } };
+static I2CPortData s_port[NUM_I2C_PORTS] = {[I2C_PORT_1] =
+                                                {
+                                                    .periph = RCC_APB1Periph_I2C1,  //
+                                                    .base = I2C1,                   //
+                                                },
+                                            [I2C_PORT_2] = {
+                                                .periph = RCC_APB1Periph_I2C2,  //
+                                                .base = I2C2,                   //
+                                            } };
 
 // Generated using the I2C timing configuration tool (STSW-STM32126)
 static const uint32_t s_i2c_timing[] = {
