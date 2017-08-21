@@ -58,6 +58,7 @@ static void prv_state_mechanical_brake_engaged(FSM *fsm, const Event *e, void *c
 
   data.components.data = e->data;
   data.components.state = MECHANICAL_BRAKE_FSM_STATE_ENGAGED;
+  data.components.digital = false;
 
   event_raise(INPUT_EVENT_CAN_ID_MECHANICAL_BRAKE, data.raw);
 }
@@ -70,6 +71,7 @@ static void prv_state_mechanical_brake_disengaged(FSM *fsm, const Event *e, void
 
   data.components.data = e->data;
   data.components.state = MECHANICAL_BRAKE_FSM_STATE_DISENGAGED;
+  data.components.digital = false;
 
   event_raise(INPUT_EVENT_CAN_ID_MECHANICAL_BRAKE, data.raw);
 }

@@ -46,6 +46,8 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     data.components.state = TURN_SIGNAL_FSM_STATE_RIGHT_SIGNAL;
   }
 
+  data.components.digital = true;
+
   event_raise(INPUT_EVENT_CAN_ID_TURN_SIGNAL, data.raw);
 }
 

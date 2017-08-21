@@ -35,12 +35,15 @@ typedef enum {
   NUM_INPUT_EVENT
 } InputEvent;
 
-// 4 bits of the data field are used for holding the device state, while the last
 // 12 bits are used for holding the event data.
+// 3 bits of the data field are used for holding the device state, while the last
+// 1 bit to use as a flag for broadcasting the data bit
+// TODO: Add digital/analog bit
 typedef union InputEventData {
   uint16_t raw;
   struct {
+    uint8_t digital:1;
+    uint8_t state:3;
     uint16_t data:12;
-    uint16_t state:4;
   } components;
 } InputEventData;

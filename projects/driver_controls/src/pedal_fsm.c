@@ -78,6 +78,8 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     data.components.state = PEDAL_FSM_STATE_CRUISE_CONTROL;
   }
 
+  data.components.digital = false;
+
   event_raise(INPUT_EVENT_CAN_ID_PEDAL, data.raw);
 }
 

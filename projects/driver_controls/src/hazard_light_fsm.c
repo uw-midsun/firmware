@@ -30,6 +30,8 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     data.components.state = HAZARD_LIGHT_FSM_STATE_OFF;
   }
 
+  data.components.digital = true;
+
   event_raise(INPUT_EVENT_CAN_ID_HAZARD_LIGHT, data.raw);
 }
 
