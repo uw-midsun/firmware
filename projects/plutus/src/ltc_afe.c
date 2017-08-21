@@ -1,30 +1,22 @@
+#include "ltc_afe.h"
 #include "crc15.h"
 #include "delay.h"
-#include "ltc_afe.h"
 #include "ltc68041.h"
 #include "plutus_config.h"
 
 static bool s_discharging_cells[LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN] = { false };
 
 static uint16_t s_read_reg_cmd[NUM_LTC_AFE_REGISTER] = {
-  LTC6804_RDCFG_RESERVED,
-  LTC6804_RDCVA_RESERVED,
-  LTC6804_RDCVB_RESERVED,
-  LTC6804_RDCVC_RESERVED,
-  LTC6804_RDCVD_RESERVED,
-  LTC6804_RDAUXA_RESERVED,
-  LTC6804_RDAUXA_RESERVED,
-  LTC6804_RDSTATA_RESERVED,
-  LTC6804_RDSTATB_RESERVED,
+  LTC6804_RDCFG_RESERVED,  LTC6804_RDCVA_RESERVED,   LTC6804_RDCVB_RESERVED,
+  LTC6804_RDCVC_RESERVED,  LTC6804_RDCVD_RESERVED,   LTC6804_RDAUXA_RESERVED,
+  LTC6804_RDAUXA_RESERVED, LTC6804_RDSTATA_RESERVED, LTC6804_RDSTATB_RESERVED,
   LTC6804_RDCOMM_RESERVED
 };
 
-static uint8_t s_voltage_reg[NUM_LTC_AFE_VOLTAGE_REGISTER] = {
-  LTC_AFE_REGISTER_CELL_VOLTAGE_A,
-  LTC_AFE_REGISTER_CELL_VOLTAGE_B,
-  LTC_AFE_REGISTER_CELL_VOLTAGE_C,
-  LTC_AFE_REGISTER_CELL_VOLTAGE_D
-};
+static uint8_t s_voltage_reg[NUM_LTC_AFE_VOLTAGE_REGISTER] = { LTC_AFE_REGISTER_CELL_VOLTAGE_A,
+                                                               LTC_AFE_REGISTER_CELL_VOLTAGE_B,
+                                                               LTC_AFE_REGISTER_CELL_VOLTAGE_C,
+                                                               LTC_AFE_REGISTER_CELL_VOLTAGE_D };
 
 static void prv_wakeup_idle(const LtcAfeSettings *afe) {
   gpio_set_pin_state(&afe->cs, GPIO_STATE_LOW);
@@ -47,8 +39,8 @@ static StatusCode prv_build_cmd(uint16_t command, uint8_t *cmd, size_t len) {
   return STATUS_CODE_OK;
 }
 
-static StatusCode prv_read_register(const LtcAfeSettings *afe,
-                                    LtcAfeRegister reg, uint8_t *data, size_t len) {
+static StatusCode prv_read_register(const LtcAfeSettings *afe, LtcAfeRegister reg, uint8_t *data,
+                                    size_t len) {
   if (reg > NUM_LTC_AFE_REGISTER) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -63,8 +55,8 @@ static StatusCode prv_read_register(const LtcAfeSettings *afe,
 }
 
 // read from a voltage register
-static StatusCode prv_read_voltage(LtcAfeSettings *afe,
-                                    LtcAfeVoltageRegister reg, LtcAfeVoltageRegisterGroup *data) {
+static StatusCode prv_read_voltage(LtcAfeSettings *afe, LtcAfeVoltageRegister reg,
+                                   LtcAfeVoltageRegisterGroup *data) {
   if (reg > NUM_LTC_AFE_VOLTAGE_REGISTER) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -77,8 +69,8 @@ static StatusCode prv_read_voltage(LtcAfeSettings *afe,
 static void prv_trigger_adc_conversion(const LtcAfeSettings *afe) {
   uint8_t mode = (uint8_t)((afe->adc_mode + 1) % 3);
   // ADCV command
-  uint16_t adcv = LTC6804_ADCV_RESERVED | LTC6804_ADCV_DISCHARGE_NOT_PERMITTED
-                  | LTC6804_CNVT_CELL_ALL | (mode << 7);
+  uint16_t adcv = LTC6804_ADCV_RESERVED | LTC6804_ADCV_DISCHARGE_NOT_PERMITTED |
+                  LTC6804_CNVT_CELL_ALL | (mode << 7);
 
   uint8_t cmd[4] = { 0 };
   prv_build_cmd(adcv, cmd, SIZEOF_ARRAY(cmd));
@@ -151,8 +143,8 @@ static StatusCode prv_write_config(const LtcAfeSettings *afe, uint8_t gpio_enabl
   }
 
   prv_wakeup_idle(afe);
-  return spi_exchange(afe->spi_port, (uint8_t *)&config_packet,
-                      sizeof(LtcAfeWriteConfigPacket), NULL, 0);
+  return spi_exchange(afe->spi_port, (uint8_t *)&config_packet, sizeof(LtcAfeWriteConfigPacket),
+                      NULL, 0);
 }
 
 static StatusCode prv_read_config(const LtcAfeSettings *afe,
@@ -168,8 +160,8 @@ static StatusCode prv_read_config(const LtcAfeSettings *afe,
     configuration_registers[device] = received_data[device].reg;
 
     uint16_t received_pec = SWAP_UINT16(received_data[device].pec);
-    uint16_t calculated_pec = crc15_calculate((uint8_t *)&received_data[device].reg,
-                                              sizeof(LtcAfeConfigRegisterData));
+    uint16_t calculated_pec =
+        crc15_calculate((uint8_t *)&received_data[device].reg, sizeof(LtcAfeConfigRegisterData));
     if (calculated_pec != received_pec) {
       return status_code(STATUS_CODE_INTERNAL_ERROR);
     }
@@ -181,19 +173,16 @@ static StatusCode prv_read_config(const LtcAfeSettings *afe,
 StatusCode ltc_afe_init(const LtcAfeSettings *afe) {
   crc15_init_table();
 
-  SPISettings spi_config = {
-    .baudrate = afe->spi_baudrate,
-    .mode = SPI_MODE_3,
-    .mosi = afe->mosi,
-    .miso = afe->miso,
-    .sclk = afe->sclk,
-    .cs = afe->cs
-  };
+  SPISettings spi_config = {.baudrate = afe->spi_baudrate,
+                            .mode = SPI_MODE_3,
+                            .mosi = afe->mosi,
+                            .miso = afe->miso,
+                            .sclk = afe->sclk,
+                            .cs = afe->cs };
   spi_init(afe->spi_port, &spi_config);
 
-  uint8_t gpio_bits = LTC6804_GPIO1_PD_OFF | LTC6804_GPIO2_PD_ON
-                      | LTC6804_GPIO3_PD_ON | LTC6804_GPIO4_PD_ON
-                      | LTC6804_GPIO5_PD_ON;
+  uint8_t gpio_bits = LTC6804_GPIO1_PD_OFF | LTC6804_GPIO2_PD_ON | LTC6804_GPIO3_PD_ON |
+                      LTC6804_GPIO4_PD_ON | LTC6804_GPIO5_PD_ON;
   prv_write_config(afe, gpio_bits);
 
   return STATUS_CODE_OK;
@@ -215,8 +204,8 @@ StatusCode ltc_afe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result_
       for (uint16_t cell = 0; cell < LTC6804_CELLS_IN_REG; ++cell) {
         // LSB of the reading is 100 uV
         uint16_t voltage = voltage_register[device].reg.voltages[cell];
-        uint16_t index = device * LTC6804_CELLS_PER_DEVICE + cell +
-                        (cell_reg * LTC6804_CELLS_IN_REG);
+        uint16_t index =
+            device * LTC6804_CELLS_PER_DEVICE + cell + (cell_reg * LTC6804_CELLS_IN_REG);
         result_data[index] = voltage;
       }
 
@@ -268,8 +257,8 @@ StatusCode ltc_afe_read_all_aux(const LtcAfeSettings *afe, uint16_t *result_data
   return STATUS_CODE_OK;
 }
 
-StatusCode ltc_afe_toggle_discharge_cells(const LtcAfeSettings *afe,
-                                          uint16_t cell, bool discharge) {
+StatusCode ltc_afe_toggle_discharge_cells(const LtcAfeSettings *afe, uint16_t cell,
+                                          bool discharge) {
   if (cell > LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN - 1) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }

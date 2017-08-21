@@ -6,24 +6,24 @@
 // - GPIO1 is used as a thermistor input
 // requires GPIO, Interrupts and Soft Timers to be initialized
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <assert.h>
 #include "gpio.h"
 #include "spi.h"
 #include "status.h"
 
-#define LTC6804_CELLS_PER_DEVICE                12
+#define LTC6804_CELLS_PER_DEVICE 12
 
 // - 12-bit, 16-bit and 24-bit values are little endian
 // - commands and PEC are big endian
 #define SWAP_UINT16(x) (uint16_t)(((uint16_t)(x) >> 8) | ((uint16_t)(x) << 8))
 
 #if defined(__GNUC__)
-#  define _PACKED __attribute__((packed))
+#define _PACKED __attribute__((packed))
 #else
-#  define _PACKED
+#define _PACKED
 #endif
 
 // select the ADC mode (trade-off between speed or minimizing noise)

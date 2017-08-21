@@ -1,9 +1,9 @@
-#include <stdint.h>
 #include <stddef.h>
-#include "unity.h"
-#include "test_helpers.h"
+#include <stdint.h>
 #include "ltc_afe.h"
 #include "plutus_config.h"
+#include "test_helpers.h"
+#include "unity.h"
 
 #define AFE_TEST_SAMPLES 5
 #define AFE_TEST_VOLTAGE_VARIATION 10
@@ -13,16 +13,14 @@ static bool prv_within_range(uint16_t a, uint16_t b, uint16_t tolerance) {
   return a - b < tolerance || b - a < tolerance;
 }
 
-static LtcAfeSettings s_afe_settings = {
-  .mosi = { GPIO_PORT_A, 7 },
-  .miso = { GPIO_PORT_A, 6 },
-  .sclk = { GPIO_PORT_A, 5 },
-  .cs = { GPIO_PORT_A, 4 },
+static LtcAfeSettings s_afe_settings = {.mosi = { GPIO_PORT_A, 7 },
+                                        .miso = { GPIO_PORT_A, 6 },
+                                        .sclk = { GPIO_PORT_A, 5 },
+                                        .cs = { GPIO_PORT_A, 4 },
 
-  .spi_port = SPI_PORT_1,
-  .spi_baudrate = 250000,
-  .adc_mode = LTC_AFE_ADC_MODE_27KHZ
-};
+                                        .spi_port = SPI_PORT_1,
+                                        .spi_baudrate = 250000,
+                                        .adc_mode = LTC_AFE_ADC_MODE_27KHZ };
 
 void setup_test(void) {
   gpio_init();
@@ -32,7 +30,7 @@ void setup_test(void) {
   ltc_afe_init(&s_afe_settings);
 }
 
-void teardown_test(void) { }
+void teardown_test(void) {}
 
 void test_ltc_afe_adc_conversion_initiated(void) {
   uint16_t voltages[LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN] = { 0 };
@@ -76,7 +74,6 @@ void test_ltc_afe_read_all_voltage_wrong_size(void) {
 
   TEST_ASSERT_NOT_OK(status);
 }
-
 
 void test_ltc_afe_read_all_aux_repeated_within_tolerances(void) {
   // the idea here is that we repeatedly take samples and verify that the values being read
