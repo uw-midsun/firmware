@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #include <stddef.h>
 
 #include "gpio.h"
