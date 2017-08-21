@@ -13,14 +13,16 @@ static bool prv_within_range(uint16_t a, uint16_t b, uint16_t tolerance) {
   return a - b < tolerance || b - a < tolerance;
 }
 
-static LtcAfeSettings s_afe_settings = {.mosi = { GPIO_PORT_A, 7 },
-                                        .miso = { GPIO_PORT_A, 6 },
-                                        .sclk = { GPIO_PORT_A, 5 },
-                                        .cs = { GPIO_PORT_A, 4 },
+static LtcAfeSettings s_afe_settings = {
+  .mosi = { GPIO_PORT_A, 7 },  //
+  .miso = { GPIO_PORT_A, 6 },  //
+  .sclk = { GPIO_PORT_A, 5 },  //
+  .cs = { GPIO_PORT_A, 4 },    //
 
-                                        .spi_port = SPI_PORT_1,
-                                        .spi_baudrate = 250000,
-                                        .adc_mode = LTC_AFE_ADC_MODE_27KHZ };
+  .spi_port = SPI_PORT_1,  //
+  .spi_baudrate = 250000,  //
+  .adc_mode = LTC_AFE_ADC_MODE_27KHZ,
+};
 
 void setup_test(void) {
   gpio_init();

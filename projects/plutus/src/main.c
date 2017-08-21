@@ -17,7 +17,7 @@ int main(void) {
     .sclk = { GPIO_PORT_A, 5 },  //
     .cs = { GPIO_PORT_A, 4 },    //
 
-    .spi_port = 0,           //
+    .spi_port = 0,           // to make build pass on x86
     .spi_baudrate = 250000,  //
     .adc_mode = LTC_AFE_ADC_MODE_27KHZ,
   };
