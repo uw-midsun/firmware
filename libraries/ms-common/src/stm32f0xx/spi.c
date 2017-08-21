@@ -1,5 +1,6 @@
 #include "spi.h"
 #include "gpio.h"
+#include "spi_mcu.h"
 #include "stm32f0xx.h"
 
 typedef struct {
@@ -9,18 +10,12 @@ typedef struct {
   GPIOAddress cs;
 } SPIPortData;
 
-static SPIPortData s_port[SPI_MCU_NUM_PORTS] = {
-  {
-    .rcc_cmd = RCC_APB2PeriphClockCmd,
-    .periph = RCC_APB2Periph_SPI1,
-    .base = SPI1
-  },
-  {
-    .rcc_cmd = RCC_APB1PeriphClockCmd,
-    .periph = RCC_APB1Periph_SPI2,
-    .base = SPI2
-  }
-};
+static SPIPortData s_port[SPI_MCU_NUM_PORTS] = {[SPI_PORT_1] = {.rcc_cmd = RCC_APB2PeriphClockCmd,
+                                                                .periph = RCC_APB2Periph_SPI1,
+                                                                .base = SPI1 },
+                                                [SPI_PORT_2] = {.rcc_cmd = RCC_APB1PeriphClockCmd,
+                                                                .periph = RCC_APB1Periph_SPI2,
+                                                                .base = SPI2 } };
 
 StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
   RCC_ClocksTypeDef clocks;
@@ -35,9 +30,7 @@ StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
   s_port[spi].cs = settings->cs;
 
   GPIOSettings gpio_settings = {
-    .alt_function = GPIO_ALTFN_0,
-    .direction = GPIO_DIR_IN,
-    .state = GPIO_STATE_HIGH
+    .alt_function = GPIO_ALTFN_0, .direction = GPIO_DIR_IN, .state = GPIO_STATE_HIGH,
   };
 
   gpio_init_pin(&settings->miso, &gpio_settings);
@@ -58,7 +51,7 @@ StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
     .SPI_NSS = SPI_NSS_Soft,
     .SPI_BaudRatePrescaler = (index - 2) << 3,
     .SPI_FirstBit = SPI_FirstBit_MSB,
-    .SPI_CRCPolynomial = 7
+    .SPI_CRCPolynomial = 7,
   };
   SPI_Init(s_port[spi].base, &init);
 
@@ -78,7 +71,8 @@ StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *r
     while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_TXE) == RESET) { }
     SPI_SendData8(s_port[spi].base, tx_data[i]);
 
-    while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_RXNE) == RESET) { }
+    while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_RXNE) == RESET) {
+    }
     SPI_ReceiveData8(s_port[spi].base);
   }
 
@@ -86,7 +80,8 @@ StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *r
     while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_TXE) == RESET) { }
     SPI_SendData8(s_port[spi].base, 0x00);
 
-    while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_RXNE) == RESET) { }
+    while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_RXNE) == RESET) {
+    }
     rx_data[i] = SPI_ReceiveData8(s_port[spi].base);
   }
 

@@ -27,8 +27,8 @@ static ADCStatus s_adc_status;
 
 // Formula obtained from section 13.9 of the reference manual. Returns reading in kelvin
 static uint16_t prv_get_temp(uint16_t reading) {
-  uint16_t ts_cal1 = *(uint16_t*)TS_CAL1;
-  uint16_t ts_cal2 = *(uint16_t*)TS_CAL2;
+  uint16_t ts_cal1 = *(uint16_t *)TS_CAL1;
+  uint16_t ts_cal2 = *(uint16_t *)TS_CAL2;
 
   reading = ((110 - 30) * (reading - ts_cal1)) / (ts_cal2 - ts_cal1) + 30;
 
@@ -37,7 +37,7 @@ static uint16_t prv_get_temp(uint16_t reading) {
 
 // Formula obtained from section 13.9 of the reference manual. Returns Vdda in mV
 static uint16_t prv_get_vdda(uint16_t reading) {
-  uint16_t vrefint_cal = *(uint16_t*)VREFINT_CAL;
+  uint16_t vrefint_cal = *(uint16_t *)VREFINT_CAL;
   reading = (3300 * vrefint_cal) / reading;
   return reading;
 }
@@ -75,11 +75,13 @@ void adc_init(ADCMode adc_mode) {
   ADC_GetCalibrationFactor(ADC1);
 
   ADC_ContinuousModeCmd(ADC1, adc_mode);
-  while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADCAL)) { }
+  while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADCAL)) {
+  }
 
   // Enable the ADC
   ADC_Cmd(ADC1, true);
-  while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_ADRDY)) { }
+  while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_ADRDY)) {
+  }
 
   ADC_WaitModeCmd(ADC1, true);
   ADC_AutoPowerOffCmd(ADC1, !adc_mode);
@@ -100,7 +102,6 @@ void adc_init(ADCMode adc_mode) {
   // Configure internal reference channel to run by default for voltage conversions
   adc_set_channel(ADC_CHANNEL_REF, true);
 }
-
 
 StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
   if (adc_channel >= NUM_ADC_CHANNEL) {
@@ -183,7 +184,8 @@ StatusCode adc_read_raw(ADCChannel adc_channel, uint16_t *reading) {
 
   if (!s_adc_status.continuous) {
     ADC_StartOfConversion(ADC1);
-    while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOSEQ)) { }
+    while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOSEQ)) {
+    }
   }
 
   *reading = s_adc_interrupts[adc_channel].reading;
@@ -217,7 +219,7 @@ StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading) {
 
   uint16_t vdda;
   adc_read_converted(ADC_CHANNEL_REF, &vdda);
-  *reading = (adc_reading * vdda)/4095;
+  *reading = (adc_reading * vdda) / 4095;
 
   return STATUS_CODE_OK;
 }
@@ -230,7 +232,7 @@ void ADC1_COMP_IRQHandler() {
 
     if (s_adc_interrupts[current_channel].callback != NULL) {
       s_adc_interrupts[current_channel].callback(current_channel,
-                                              s_adc_interrupts[current_channel].context);
+                                                 s_adc_interrupts[current_channel].context);
     }
 
     s_adc_interrupts[current_channel].reading = reading;

@@ -1,24 +1,24 @@
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "adc.h"
 #include "gpio_it.h"
 #include "interrupt.h"
 
-#include "digital_io.h"
 #include "analog_io.h"
+#include "digital_io.h"
 
 #include "event_arbiter.h"
 
-#include "power_fsm.h"
-#include "pedal_fsm.h"
-#include "direction_fsm.h"
-#include "turn_signal_fsm.h"
-#include "hazard_light_fsm.h"
-#include "mechanical_brake_fsm.h"
-#include "horn_fsm.h"
-#include "push_to_talk_fsm.h"
 #include "can_fsm.h"
+#include "direction_fsm.h"
+#include "hazard_light_fsm.h"
+#include "horn_fsm.h"
+#include "mechanical_brake_fsm.h"
+#include "pedal_fsm.h"
+#include "power_fsm.h"
+#include "push_to_talk_fsm.h"
+#include "turn_signal_fsm.h"
 
 // Struct of FSMs to be used in the program
 typedef struct FSMGroup {

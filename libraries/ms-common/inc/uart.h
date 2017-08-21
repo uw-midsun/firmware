@@ -4,10 +4,10 @@
 
 // Uses internal FIFOs to buffer RX and TX.
 #include <stdint.h>
-#include "uart_mcu.h"
+#include "fifo.h"
 #include "gpio.h"
 #include "status.h"
-#include "fifo.h"
+#include "uart_mcu.h"
 
 #define UART_MAX_BUFFER_LEN 256
 

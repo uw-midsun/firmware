@@ -2,9 +2,9 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "critical_section.h"
 #include "objpool.h"
 #include "status.h"
-#include "critical_section.h"
 
 #define OBJPOOL_GET(pool, index) \
   ((void *)((uint8_t *)(pool)->nodes + ((index) * (pool)->node_size)))

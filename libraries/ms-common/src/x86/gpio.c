@@ -29,10 +29,12 @@ static uint32_t prv_get_index(const GPIOAddress *address) {
 }
 
 StatusCode gpio_init(void) {
-  GPIOSettings default_settings = { .direction = GPIO_DIR_IN,
-                                    .state = GPIO_STATE_LOW,
-                                    .resistor = GPIO_RES_NONE,
-                                    .alt_function = GPIO_ALTFN_NONE };
+  GPIOSettings default_settings = {
+    .direction = GPIO_DIR_IN,
+    .state = GPIO_STATE_LOW,
+    .resistor = GPIO_RES_NONE,
+    .alt_function = GPIO_ALTFN_NONE,
+  };
   for (uint32_t i = 0; i < GPIO_MCU_TOTAL_PINS; i++) {
     s_pin_settings[i] = default_settings;
     s_gpio_pin_input_value[i] = 0;

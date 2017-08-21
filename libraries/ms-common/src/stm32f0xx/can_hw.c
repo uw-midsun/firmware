@@ -1,7 +1,7 @@
 #include "can_hw.h"
 #include <string.h>
-#include "stm32f0xx.h"
 #include "interrupt_def.h"
+#include "stm32f0xx.h"
 
 #define CAN_HW_PRESCALER 12
 
@@ -24,7 +24,7 @@ StatusCode can_hw_init(CANHwConfig *can_hw, uint16_t bus_speed, bool loopback) {
   RCC_GetClocksFreq(&clocks);
   // time quanta = (APB1 / Prescaler) / baudrate, -1 for start bit
   uint16_t tq = clocks.PCLK_Frequency / 1000 / CAN_HW_PRESCALER / can_hw->bus_speed - 1;
-  uint16_t bs1 = tq * 7 / 8; // 87.5% sample point
+  uint16_t bs1 = tq * 7 / 8;  // 87.5% sample point
 
   CAN_DeInit(can_hw->base);
 
@@ -55,9 +55,9 @@ StatusCode can_hw_register_callback(CANHwConfig *can_hw, CANHwEvent event,
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  can_hw->handlers[event] = (CANHwEventHandler) {
-    .callback = callback,
-    .context = context
+  can_hw->handlers[event] = (CANHwEventHandler){
+    .callback = callback,  //
+    .context = context,    //
   };
 
   return STATUS_CODE_OK;
@@ -79,7 +79,7 @@ StatusCode can_hw_add_filter(CANHwConfig *can_hw, uint16_t mask, uint16_t filter
     .CAN_FilterMaskIdHigh = mask << 5,
     .CAN_FilterMaskIdLow = 0x0000,
     .CAN_FilterFIFOAssignment = (can_hw->num_filters % 2),
-    .CAN_FilterActivation = ENABLE
+    .CAN_FilterActivation = ENABLE,
   };
   CAN_FilterInit(&filter_cfg);
 
@@ -101,9 +101,9 @@ CANHwBusStatus can_hw_bus_status(const CANHwConfig *can_hw) {
 StatusCode can_hw_transmit(const CANHwConfig *can_hw, uint16_t id,
                            const uint8_t *data, size_t len) {
   CanTxMsg tx_msg = {
-    .StdId = id,
-    .IDE = CAN_ID_STD,
-    .DLC = len
+    .StdId = id,        //
+    .IDE = CAN_ID_STD,  //
+    .DLC = len,         //
   };
 
   memcpy(tx_msg.Data, data, sizeof(*data) * len);
@@ -112,7 +112,7 @@ StatusCode can_hw_transmit(const CANHwConfig *can_hw, uint16_t id,
   uint8_t tx_status = CAN_Transmit(can_hw->base, &tx_msg);
   switch (tx_status) {
     case CAN_TxStatus_NoMailBox:
-    // case CAN_TxStatus_Failed:
+      // case CAN_TxStatus_Failed:
       return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN HW TX failed");
       break;
     default:
@@ -151,12 +151,13 @@ void CEC_CAN_IRQHandler(void) {
     return;
   }
 
-  bool run_cb[NUM_CAN_HW_EVENTS] = {
-    [CAN_HW_EVENT_TX_READY] = CAN_GetITStatus(s_can->base, CAN_IT_TME) == SET,
-    [CAN_HW_EVENT_MSG_RX] = CAN_GetITStatus(s_can->base, CAN_IT_FMP0) == SET ||
-                            CAN_GetITStatus(s_can->base, CAN_IT_FMP1) == SET,
-    [CAN_HW_EVENT_BUS_ERROR] = CAN_GetITStatus(s_can->base, CAN_IT_BOF) == SET
-  };
+  bool run_cb[NUM_CAN_HW_EVENTS] = {[CAN_HW_EVENT_TX_READY] =
+                                        CAN_GetITStatus(s_can->base, CAN_IT_TME) == SET,
+                                    [CAN_HW_EVENT_MSG_RX] =
+                                        CAN_GetITStatus(s_can->base, CAN_IT_FMP0) == SET ||
+                                        CAN_GetITStatus(s_can->base, CAN_IT_FMP1) == SET,
+                                    [CAN_HW_EVENT_BUS_ERROR] =
+                                        CAN_GetITStatus(s_can->base, CAN_IT_BOF) == SET };
 
   for (int event = 0; event < NUM_CAN_HW_EVENTS; event++) {
     CANHwEventHandler *handler = &s_can->handlers[event];

@@ -10,10 +10,8 @@
 #define GYRO_ID 0xD4
 
 void gyro_cmd(bool read, bool autoincrement, uint8_t addr, uint8_t *data) {
-  uint8_t packet[] = {
-    (read & 0x01) << 7 | (autoincrement & 0x01) << 6 | (addr & 0x3F),
-    (read) ? 0 : *data
-  };
+  uint8_t packet[] = { (read & 0x01) << 7 | (autoincrement & 0x01) << 6 | (addr & 0x3F),
+                       (read) ? 0 : *data };
 
   spi_exchange(1, packet, (size_t)(2 - read), data, read);
 }
@@ -27,7 +25,7 @@ int main(void) {
     .mosi = { GPIO_PORT_B, 15 },
     .miso = { GPIO_PORT_B, 14 },
     .sclk = { GPIO_PORT_B, 13 },
-    .cs = { GPIO_PORT_C, 0 }
+    .cs = { GPIO_PORT_C, 0 },
   };
 
   // Using SPI port 2 - not using enum so build on x86 will pass
@@ -37,8 +35,7 @@ int main(void) {
   gyro_cmd(true, false, 0x0F, &whoami);
 
   GPIOSettings led_settings = {
-    .direction = GPIO_DIR_OUT,
-    .state = GPIO_STATE_HIGH,
+    .direction = GPIO_DIR_OUT, .state = GPIO_STATE_HIGH,
   };
 
   GPIOAddress leds[] = { { GPIO_PORT_C, 6 }, { GPIO_PORT_C, 7 } };
@@ -50,7 +47,8 @@ int main(void) {
     gpio_toggle_state(&leds[whoami == GYRO_ID]);
 
     // arbitrary software delay
-    for (volatile int i = 0; i < 2000000; i++) { }
+    for (volatile int i = 0; i < 2000000; i++) {
+    }
   }
 
   return 0;

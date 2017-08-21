@@ -1,6 +1,6 @@
 #include "can_fsm.h"
-#include "input_event.h"
 #include "event_arbiter.h"
+#include "input_event.h"
 #include "log.h"
 
 FSM_DECLARE_STATE(state_can_transmit);
@@ -23,10 +23,8 @@ static void prv_transmit_data(FSM *fsm, const Event *e, void *context) {
   // casting to unions is gross
   InputEventData *data = (InputEventData *)&e->data;
 
-  printf("Device = %d, State = %d, Data = %d\n",
-          e->id,
-          data->components.state,
-          data->components.data);
+  printf("Device = %d, State = %d, Data = %d\n", e->id, data->components.state,
+         data->components.data);
 }
 
 StatusCode can_fsm_init(FSM *fsm) {
