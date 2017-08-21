@@ -112,7 +112,7 @@ ROOT := $(shell pwd)
 
 # MAKE PROJECT
 
-.PHONY: all lint project build_all
+.PHONY: all lint format build build_all
 
 # Actually calls the make
 all: build lint
@@ -126,10 +126,18 @@ $(foreach lib,$(VALID_LIBRARIES),$(call include_lib,$(lib)))
 # Includes all projects so make can find their targets
 $(foreach proj,$(VALID_PROJECTS),$(call include_proj,$(proj)))
 
+IGNORE_CLEANUP_LIBS := CMSIS STM32F0xx_StdPeriph_Driver stm32f0xx unity
+FIND_PATHS := $(addprefix -o -path $(LIB_DIR)/,$(IGNORE_CLEANUP_LIBS))
+FIND := find $(PROJ_DIR) $(LIB_DIR) \
+			  \( $(wordlist 2,$(words $(FIND_PATHS)),$(FIND_PATHS)) \) -prune -o \
+				\( -name "*.h" -o -name "*.c" \) -print
+
 # Lints the files in ms-common and projects
 lint:
-	@find $(PROJ_DIR) -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
-	@find "$(LIB_DIR)/ms-common" -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
+	@$(FIND) | xargs -r python2 lint.py
+
+format:
+	$(FIND) | xargs clang-format -i
 
 # Builds the project (if exists) and all its tests
 ifneq (,$(PROJECT))
