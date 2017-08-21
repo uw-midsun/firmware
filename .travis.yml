@@ -13,9 +13,9 @@ branches:
 env:
   # add target platforms to build matrix
   # lint is a target so we don't need to lint multiple times
-  - TARGET='build_all PLATFORM=x86'
+  - TARGET='build_all PLATFORM=x86 CC=gcc-6 LD=gcc-6'
   - TARGET='build_all PLATFORM=stm32f0xx'
-  - TARGET='test_all PLATFORM=x86'
+  - TARGET='test_all PLATFORM=x86 CC=gcc-6 LD=gcc-6'
   - TARGET=lint
 
 before_script:
@@ -25,7 +25,6 @@ before_script:
   - sudo apt-get -qq update
   - sudo apt-get -y install gcc-arm-embedded
   - sudo apt-get -y install gcc-6
-  - export CC=gcc-6
 
   # build GNU Make 4.1 from source
   - wget http://ftp.gnu.org/gnu/make/make-4.1.tar.gz
@@ -41,5 +40,4 @@ before_script:
   - export PATH=/usr/local/bin/:$PATH
 
 script:
-  - gcc --version
   - make $TARGET
