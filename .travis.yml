@@ -41,4 +41,5 @@ before_script:
   - export PATH=/usr/local/bin/:$PATH
 
 script:
+  - gcc --version
   - make $TARGET
