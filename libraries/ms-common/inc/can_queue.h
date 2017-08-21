@@ -1,6 +1,6 @@
 #pragma once
-#include "pqueue_backed.h"
 #include "can_msg.h"
+#include "pqueue_backed.h"
 
 #define CAN_QUEUE_SIZE 10
 
