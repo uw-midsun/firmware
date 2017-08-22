@@ -150,12 +150,14 @@ static StatusCode prv_write_config(const LtcAfeSettings *afe, uint8_t gpio_enabl
 StatusCode ltc_afe_init(const LtcAfeSettings *afe) {
   crc15_init_table();
 
-  SPISettings spi_config = {.baudrate = afe->spi_baudrate,
-                            .mode = SPI_MODE_3,
-                            .mosi = afe->mosi,
-                            .miso = afe->miso,
-                            .sclk = afe->sclk,
-                            .cs = afe->cs };
+  SPISettings spi_config = {
+    .baudrate = afe->spi_baudrate,  //
+    .mode = SPI_MODE_3,             //
+    .mosi = afe->mosi,              //
+    .miso = afe->miso,              //
+    .sclk = afe->sclk,              //
+    .cs = afe->cs,
+  };
   spi_init(afe->spi_port, &spi_config);
 
   uint8_t gpio_bits = LTC6804_GPIO1_PD_OFF | LTC6804_GPIO2_PD_ON | LTC6804_GPIO3_PD_ON |
