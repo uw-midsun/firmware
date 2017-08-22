@@ -8,7 +8,7 @@
 static uint16_t s_crc15_table[256];
 
 void crc15_init_table(void) {
-  for (uint16_t i = 0; i < 256; ++i) {
+  for (uint32_t i = 0; i < 256; ++i) {
     uint32_t remainder = i << 7;
     for (uint8_t bit = 8; bit > 0; --bit) {
       if (remainder & 0x4000) {

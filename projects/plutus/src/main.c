@@ -1,9 +1,11 @@
 #include <stddef.h>
 
 #include "gpio.h"
+#include "interrupt.h"
 #include "log.h"
 #include "ltc_afe.h"
 #include "plutus_config.h"
+#include "soft_timer.h"
 #include "spi.h"
 
 int main(void) {
