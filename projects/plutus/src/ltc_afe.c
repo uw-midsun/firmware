@@ -147,29 +147,6 @@ static StatusCode prv_write_config(const LtcAfeSettings *afe, uint8_t gpio_enabl
                       NULL, 0);
 }
 
-static StatusCode prv_read_config(const LtcAfeSettings *afe,
-                                  LtcAfeConfigRegisterData *configuration_registers) {
-  prv_wakeup_idle(afe);
-
-  LtcAfeWriteDeviceConfigPacket received_data[PLUTUS_AFE_DEVICES_IN_CHAIN] = { 0 };
-
-  size_t len = sizeof(received_data);
-  prv_read_register(afe, LTC_AFE_REGISTER_CONFIG, (uint8_t *)received_data, len);
-
-  for (uint8_t device = 0; device < PLUTUS_AFE_DEVICES_IN_CHAIN; ++device) {
-    configuration_registers[device] = received_data[device].reg;
-
-    uint16_t received_pec = SWAP_UINT16(received_data[device].pec);
-    uint16_t calculated_pec =
-        crc15_calculate((uint8_t *)&received_data[device].reg, sizeof(LtcAfeConfigRegisterData));
-    if (calculated_pec != received_pec) {
-      return status_code(STATUS_CODE_INTERNAL_ERROR);
-    }
-  }
-
-  return STATUS_CODE_OK;
-}
-
 StatusCode ltc_afe_init(const LtcAfeSettings *afe) {
   crc15_init_table();
 
