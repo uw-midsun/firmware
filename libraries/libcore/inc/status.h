@@ -58,17 +58,17 @@ typedef enum {
 
 typedef struct Status {
   StatusCode code;
-  const char* source;
-  const char* caller;
-  const char* message;
+  const char *source;
+  const char *caller;
+  const char *message;
 } Status;
 
-typedef void (*status_callback)(const Status* status);
+typedef void (*status_callback)(const Status *status);
 
 // Updates a status struct containing an error code and optionally a message. This should only be
 // called via the macros.
-StatusCode status_impl_update(StatusCode code, const char* source, const char* caller,
-                              const char* message);
+StatusCode status_impl_update(StatusCode code, const char *source, const char *caller,
+                              const char *message);
 
 // Get a copy of the global status so it can be used safely.
 Status status_get(void);

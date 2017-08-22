@@ -79,7 +79,7 @@ void test_status_clear(void) {
 
 static bool s_foo = false;
 
-static void prv_test_callback(Status* status) {
+static void prv_test_callback(const Status *status) {
   s_foo = true;
   printf("CODE:%d:%s:%s: %s\n", status->code, status->source, status->caller, status->message);
 }

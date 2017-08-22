@@ -2,6 +2,7 @@
 // through an array of request pointers to minimize copying
 // ACK requests currently ordered as they were created
 #include "can_ack.h"
+#include <string.h>
 
 static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
                                  SoftTimerID timer_id, CANAckStatus status, uint16_t device);
@@ -61,11 +62,12 @@ static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
   // * The timer ID matches given an invalid message ID
   // * Both message and timer match given valid values for both
   for (index = 0; index < requests->num_requests; index++) {
-    const CANAckPendingReq *req = requests->active_requests[index];
+    CANAckPendingReq *req = requests->active_requests[index];
     if (((req->msg_id == msg_id && timer_id == SOFT_TIMER_INVALID_TIMER) ||
          (req->timer == timer_id && msg_id == CAN_MSG_INVALID_ID) ||
          (req->msg_id == msg_id && req->timer == timer_id)) &&
-        (device == CAN_MSG_INVALID_DEVICE || (req->response_bitset & (1 << device)) == 0)) {
+        (device == CAN_MSG_INVALID_DEVICE ||
+         (req->response_bitset & ((uint32_t)1 << device)) == 0)) {
       found_request = req;
       break;
     }
@@ -77,7 +79,7 @@ static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
 
   // We use a bitset to keep track of which devices we've received an ACK for this message from
   found_request->num_remaining--;
-  found_request->response_bitset |= (1 << device);
+  found_request->response_bitset |= ((uint32_t)1 << device);
 
   if (found_request->callback != NULL) {
     StatusCode ret = found_request->callback(found_request->msg_id, device, status,

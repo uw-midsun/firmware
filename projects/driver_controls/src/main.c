@@ -3,6 +3,7 @@
 
 #include "adc.h"
 #include "gpio_it.h"
+#include "interrupt.h"
 
 #include "analog_io.h"
 #include "digital_io.h"

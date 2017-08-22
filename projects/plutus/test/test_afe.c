@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include "ltc_afe.h"
 #include "plutus_config.h"
+#include "soft_timer.h"
+#include "interrupt.h"
 #include "test_helpers.h"
 #include "unity.h"
 

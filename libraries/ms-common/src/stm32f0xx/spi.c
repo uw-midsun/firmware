@@ -10,18 +10,20 @@ typedef struct {
   GPIOAddress cs;
 } SPIPortData;
 
-static SPIPortData s_port[SPI_MCU_NUM_PORTS] = {[SPI_PORT_1] = {.rcc_cmd = RCC_APB2PeriphClockCmd,
-                                                                .periph = RCC_APB2Periph_SPI1,
-                                                                .base = SPI1 },
-                                                [SPI_PORT_2] = {.rcc_cmd = RCC_APB1PeriphClockCmd,
-                                                                .periph = RCC_APB1Periph_SPI2,
-                                                                .base = SPI2 } };
+static SPIPortData s_port[SPI_MCU_NUM_PORTS] = {
+      [SPI_PORT_1] = {.rcc_cmd = RCC_APB2PeriphClockCmd,
+                      .periph = RCC_APB2Periph_SPI1,
+                      .base = SPI1 },
+      [SPI_PORT_2] = {.rcc_cmd = RCC_APB1PeriphClockCmd,
+                      .periph = RCC_APB1Periph_SPI2,
+                      .base = SPI2 },
+};
 
 StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
   RCC_ClocksTypeDef clocks;
   RCC_GetClocksFreq(&clocks);
 
-  size_t index = __builtin_ffsl(clocks.PCLK_Frequency / settings->baudrate);
+  size_t index = (size_t)__builtin_ffsl((int32_t)(clocks.PCLK_Frequency / settings->baudrate));
   if (index <= 2) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid baudrate");
   }
@@ -67,7 +69,7 @@ StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *r
                         size_t rx_len) {
   gpio_set_pin_state(&s_port[spi].cs, GPIO_STATE_LOW);
 
-  for (int i = 0; i < tx_len; i++) {
+  for (size_t i = 0; i < tx_len; i++) {
     while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_TXE) == RESET) {
     }
     SPI_SendData8(s_port[spi].base, tx_data[i]);
@@ -77,7 +79,7 @@ StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *r
     SPI_ReceiveData8(s_port[spi].base);
   }
 
-  for (int i = 0; i < rx_len; i++) {
+  for (size_t i = 0; i < rx_len; i++) {
     while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_TXE) == RESET) {
     }
     SPI_SendData8(s_port[spi].base, 0x00);

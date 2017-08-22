@@ -19,7 +19,7 @@ PLATFORM_LIB := x86
 PLATFORM_EXT :=
 
 # Architecture dependent variables
-ARCH_CLAGS :=
+ARCH_CFLAGS :=
 
 # Linker and startup script locations
 LDSCRIPT := $(PLATFORM_DIR)/ldscripts
@@ -37,10 +37,10 @@ else
   CSFLAGS := -O1 -g
 endif
 
-CFLAGS := $(CSFLAGS) -std=gnu11 -Wall -Werror -Wno-unused-variable -pedantic \
+CFLAGS := $(CSFLAGS) -Wall -Wextra -Werror -std=gnu11 -Wno-discarded-qualifiers \
+          -Wno-unused-variable -Wno-unused-parameter -Wsign-conversion -Wpointer-arith \
           -ffunction-sections -fdata-sections \
-          -Wl,-Map=$(BIN_DIR)/$(PROJECT).map \
-          $(ARCH_CLAGS) $(addprefix -D,$(CDEFINES))
+          $(ARCH_CFLAGS) $(addprefix -D,$(CDEFINES))
 
 # Linker flags
 LDFLAGS := -lrt

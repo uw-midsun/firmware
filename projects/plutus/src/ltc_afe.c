@@ -198,7 +198,7 @@ StatusCode ltc_afe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result_
   for (uint8_t cell_reg = 0; cell_reg < NUM_LTC_AFE_VOLTAGE_REGISTER; ++cell_reg) {
     LtcAfeVoltageRegisterGroup voltage_register[PLUTUS_AFE_DEVICES_IN_CHAIN] = { 0 };
 
-    prv_read_voltage(afe, cell_reg, &voltage_register);
+    prv_read_voltage(afe, cell_reg, voltage_register);
 
     for (uint8_t device = 0; device < PLUTUS_AFE_DEVICES_IN_CHAIN; ++device) {
       for (uint16_t cell = 0; cell < LTC6804_CELLS_IN_REG; ++cell) {

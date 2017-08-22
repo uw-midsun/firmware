@@ -18,7 +18,7 @@
 #   make new [PR|LI] - Creates folder structure for new project or library
 #   make lint - Lints all non-vendor code
 #   make test [PL] [PR|LI] [TE] - Builds and runs the specified unit test, assuming all tests if TE is not defined
-#   make gdb [PL] [PR] - Builds and runs the project and connects an instance of GDB for debugging
+#   make format - Formats all non-vendor code
 #   make gdb [PL] [PR|LI] [TE] - Builds and runs the specified unit test and connects an instance of GDB
 # Platform specific:
 #   make program [PL=stm32f0xx] [PR] [PB] - Programs and runs the project through OpenOCD
@@ -112,7 +112,7 @@ ROOT := $(shell pwd)
 
 # MAKE PROJECT
 
-.PHONY: all lint project build_all
+.PHONY: all lint format build build_all
 
 # Actually calls the make
 all: build lint
@@ -126,10 +126,21 @@ $(foreach lib,$(VALID_LIBRARIES),$(call include_lib,$(lib)))
 # Includes all projects so make can find their targets
 $(foreach proj,$(VALID_PROJECTS),$(call include_proj,$(proj)))
 
-# Lints the files in ms-common and projects
+IGNORE_CLEANUP_LIBS := CMSIS STM32F0xx_StdPeriph_Driver unity
+FIND_PATHS := $(addprefix -o -path $(LIB_DIR)/,$(IGNORE_CLEANUP_LIBS))
+FIND := find $(PROJ_DIR) $(LIB_DIR) \
+			  \( $(wordlist 2,$(words $(FIND_PATHS)),$(FIND_PATHS)) \) -prune -o \
+				-iname "*.[ch]" -print
+
+# Lints libraries and projects, excludes IGNORE_CLEANUP_LIBS
 lint:
-	@find $(PROJ_DIR) -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
-	@find "$(LIB_DIR)/ms-common" -name "*.c" -o -name "*.h" | xargs -P 24 -r python2 lint.py
+	@$(FIND) | xargs -r python2 lint.py
+
+# Formats libraries and projects, excludes IGNORE_CLEANUP_LIBS
+format:
+	@echo "Formatting *.[ch] in $(PROJ_DIR), $(LIB_DIR)"
+	@echo "Excluding libraries: $(IGNORE_CLEANUP_LIBS)"
+	@$(FIND) | xargs -r clang-format -i
 
 # Builds the project (if exists) and all its tests
 ifneq (,$(PROJECT))

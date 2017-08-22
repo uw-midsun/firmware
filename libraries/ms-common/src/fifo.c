@@ -6,11 +6,13 @@ StatusCode fifo_init_impl(Fifo *fifo, void *buffer, size_t elem_size, size_t num
   memset(buffer, 0, num_elems * elem_size);
 
   fifo->buffer = buffer;
-  fifo->end = buffer + num_elems * elem_size;
+  fifo->end = (uint8_t *)buffer + num_elems * elem_size;
   fifo->head = buffer;
   fifo->next = buffer;
   fifo->max_elems = num_elems;
   fifo->elem_size = elem_size;
+
+  return STATUS_CODE_OK;
 }
 
 size_t fifo_size(Fifo *fifo) {
@@ -26,7 +28,7 @@ StatusCode fifo_push_impl(Fifo *fifo, void *source_elem, size_t elem_size) {
 
   memcpy(fifo->next, source_elem, fifo->elem_size);
 
-  fifo->next += elem_size;
+  *(uint8_t **)&fifo->next += elem_size;
   if (fifo->next >= fifo->end) {
     fifo->next = fifo->buffer;
   }
@@ -49,7 +51,7 @@ StatusCode fifo_pop_impl(Fifo *fifo, void *dest_elem, size_t elem_size) {
 
   memset(fifo->head, 0, fifo->elem_size);
 
-  fifo->head += fifo->elem_size;
+  *(uint8_t **)&fifo->head += fifo->elem_size;
   if (fifo->head >= fifo->end) {
     fifo->head = fifo->buffer;
   }
@@ -66,23 +68,23 @@ StatusCode fifo_push_arr_impl(Fifo *fifo, void *source_arr, size_t elem_size, si
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  void *new_next = fifo->next + fifo->elem_size * num_elems;
+  uint8_t *new_next = (uint8_t *)fifo->next + fifo->elem_size * num_elems;
 
   size_t wrap_bytes = 0;
-  if (fifo->end < new_next) {
-    wrap_bytes = new_next - fifo->end;
+  if ((uint8_t *)fifo->end < new_next) {
+    wrap_bytes = (size_t)(new_next - (uint8_t *)fifo->end);
   }
 
   size_t nonwrap_bytes = fifo->elem_size * num_elems - wrap_bytes;
   memcpy(fifo->next, source_arr, nonwrap_bytes);
-  fifo->next += nonwrap_bytes;
+  *(uint8_t **)&fifo->next += nonwrap_bytes;
   if (fifo->next >= fifo->end) {
     fifo->next = fifo->buffer;
   }
 
   if (wrap_bytes > 0) {
-    memcpy(fifo->next, source_arr + nonwrap_bytes, wrap_bytes);
-    fifo->next += wrap_bytes;
+    memcpy(fifo->next, (uint8_t *)source_arr + nonwrap_bytes, wrap_bytes);
+    *(uint8_t **)&fifo->next += wrap_bytes;
   }
 
   fifo->num_elems += num_elems;
@@ -97,11 +99,11 @@ StatusCode fifo_pop_arr_impl(Fifo *fifo, void *dest_arr, size_t elem_size, size_
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  void *new_head = fifo->head + fifo->elem_size * num_elems;
+  uint8_t *new_head = (uint8_t *)fifo->head + fifo->elem_size * num_elems;
 
   size_t wrap_bytes = 0;
-  if (fifo->end < new_head) {
-    wrap_bytes = new_head - fifo->end;
+  if ((uint8_t *)fifo->end < new_head) {
+    wrap_bytes = (size_t)(new_head - (uint8_t *)fifo->end);
   }
 
   size_t nonwrap_bytes = fifo->elem_size * num_elems - wrap_bytes;
@@ -111,17 +113,17 @@ StatusCode fifo_pop_arr_impl(Fifo *fifo, void *dest_arr, size_t elem_size, size_
   }
   memset(fifo->head, 0, nonwrap_bytes);
 
-  fifo->head += nonwrap_bytes;
+  *(uint8_t **)&fifo->head += nonwrap_bytes;
   if (fifo->head >= fifo->end) {
     fifo->head = fifo->buffer;
   }
 
   if (wrap_bytes > 0) {
     if (dest_arr != NULL) {
-      memcpy(dest_arr + nonwrap_bytes, fifo->head, wrap_bytes);
+      memcpy((uint8_t *)dest_arr + nonwrap_bytes, fifo->head, wrap_bytes);
     }
     memset(fifo->head, 0, wrap_bytes);
-    fifo->head += wrap_bytes;
+    *(uint8_t **)&fifo->head += wrap_bytes;
   }
 
   fifo->num_elems -= num_elems;

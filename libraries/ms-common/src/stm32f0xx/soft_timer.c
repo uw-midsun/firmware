@@ -4,6 +4,7 @@
 // This gives us O(1) deletion, but we do have O(n) insertion due to the ordered requirement.
 // This tradeoff is worth it for faster interrupts.
 #include "soft_timer.h"
+#include <string.h>
 #include "objpool.h"
 #include "stm32f0xx.h"
 
