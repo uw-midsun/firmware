@@ -66,8 +66,8 @@ void analog_io_init() {
   ADCChannel adc_channel = NUM_ADC_CHANNEL;
 
   InputConfig analog_inputs[] = {
-    {.address = DRIVER_IO_GAS_PEDAL, .device = ANALOG_IO_DEVICE_GAS_PEDAL },
-    {.address = DRIVER_IO_MECHANICAL_BRAKE, .device = ANALOG_IO_DEVICE_MECHANICAL_BRAKE }
+    { .address = DRIVER_IO_GAS_PEDAL, .device = ANALOG_IO_DEVICE_GAS_PEDAL },
+    { .address = DRIVER_IO_MECHANICAL_BRAKE, .device = ANALOG_IO_DEVICE_MECHANICAL_BRAKE }
   };
 
   GPIOSettings settings = {
