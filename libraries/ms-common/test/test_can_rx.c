@@ -1,6 +1,6 @@
 #include "can_rx.h"
-#include "unity.h"
 #include "test_helpers.h"
+#include "unity.h"
 
 #define TEST_CAN_RX_NUM_HANDLERS 10
 
@@ -17,7 +17,7 @@ void setup_test(void) {
   can_rx_init(&s_rx_handlers, s_rx_handler_storage, TEST_CAN_RX_NUM_HANDLERS);
 }
 
-void teardown_test(void) { }
+void teardown_test(void) {}
 
 void test_can_rx_handle(void) {
   StatusCode ret;

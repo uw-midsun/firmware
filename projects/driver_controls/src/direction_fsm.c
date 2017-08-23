@@ -1,6 +1,6 @@
 #include "direction_fsm.h"
-#include "input_event.h"
 #include "event_arbiter.h"
+#include "input_event.h"
 #include "log.h"
 
 // Direction selector FSM state definitions

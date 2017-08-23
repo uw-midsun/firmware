@@ -1,6 +1,6 @@
 #include "turn_signal_fsm.h"
-#include "input_event.h"
 #include "event_arbiter.h"
+#include "input_event.h"
 #include "log.h"
 
 // Turn signal FSM state definitions
@@ -46,7 +46,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   input_event_raise_can(INPUT_EVENT_CAN_ID_TURN_SIGNAL, turn_signal_state, e->data);
 }
 
-StatusCode turn_signal_fsm_init(FSM* fsm) {
+StatusCode turn_signal_fsm_init(FSM *fsm) {
   fsm_state_init(state_no_signal, prv_state_output);
   fsm_state_init(state_left_signal, prv_state_output);
   fsm_state_init(state_right_signal, prv_state_output);

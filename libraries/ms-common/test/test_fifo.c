@@ -1,6 +1,6 @@
 #include "fifo.h"
-#include "unity.h"
 #include "test_helpers.h"
+#include "unity.h"
 
 #define TEST_FIFO_BUFFER_LEN 11
 #define TEST_FIFO_OFFSET 0x12
@@ -23,7 +23,7 @@ void setup_test(void) {
   fifo_init(&s_fifo, s_buffer);
 }
 
-void teardown_test(void) { }
+void teardown_test(void) {}
 
 void test_fifo_basic(void) {
   // Fill buffer
@@ -34,8 +34,7 @@ void test_fifo_basic(void) {
 
   // Attempt to push into full FIFO
   uint16_t temp = 0;
-  TEST_ASSERT_EQUAL(STATUS_CODE_RESOURCE_EXHAUSTED,
-                    fifo_push(&s_fifo, &temp));
+  TEST_ASSERT_EQUAL(STATUS_CODE_RESOURCE_EXHAUSTED, fifo_push(&s_fifo, &temp));
 
   // Pop first element from FIFO
   TEST_ASSERT_OK(fifo_pop(&s_fifo, &temp));

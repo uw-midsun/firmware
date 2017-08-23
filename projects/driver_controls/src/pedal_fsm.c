@@ -5,9 +5,9 @@
 // state
 
 #include "pedal_fsm.h"
-#include "input_event.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
+#include "input_event.h"
 #include "log.h"
 
 // Pedal FSM state definitions

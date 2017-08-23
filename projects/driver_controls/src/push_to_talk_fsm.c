@@ -1,6 +1,6 @@
 #include "push_to_talk_fsm.h"
-#include "input_event.h"
 #include "event_arbiter.h"
+#include "input_event.h"
 #include "log.h"
 
 // Push-to-Talk FSM state definitions
@@ -29,7 +29,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     push_to_talk_state = PUSH_TO_TALK_FSM_STATE_INACTIVE;
   }
 
-  input_event_raise_can(INPUT_EVENT_CAN_PUSH_TO_TALK, push_to_talk_state, e->data);
+  input_event_raise_can(INPUT_EVENT_CAN_ID_PUSH_TO_TALK, push_to_talk_state, e->data);
 }
 
 StatusCode push_to_talk_fsm_init(FSM *fsm) {
@@ -46,4 +46,3 @@ StatusCode push_to_talk_fsm_init(FSM *fsm) {
 
   return STATUS_CODE_OK;
 }
-

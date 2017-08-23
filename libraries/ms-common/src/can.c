@@ -1,16 +1,16 @@
 #include "can.h"
 #include <string.h>
-#include "soft_timer.h"
 #include "can_rx_fsm.h"
+#include "soft_timer.h"
 
 #define CAN_BUS_OFF_RECOVERY_TIME_MS 500
 
 // Attempts to transmit the specified message using the HW TX, overwriting the source device.
 StatusCode prv_transmit(const CANConfig *can, const CANMessage *msg) {
   CANId msg_id = {
-    .source_id = can->device_id,
-    .type = msg->type,
-    .msg_id = msg->msg_id
+    .source_id = can->device_id,  //
+    .type = msg->type,            //
+    .msg_id = msg->msg_id,        //
   };
 
   return can_hw_transmit(&can->hw, msg_id.raw, msg->data_u8, msg->dlc);
@@ -109,9 +109,7 @@ StatusCode can_add_filter(CANConfig *can, CANMessageID msg_id) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: Invalid message ID");
   }
 
-  CANId can_id = {
-    .msg_id = msg_id
-  };
+  CANId can_id = {.msg_id = msg_id };
   CANId mask = { 0 };
   mask.msg_id = ~mask.msg_id;
 
@@ -122,8 +120,8 @@ StatusCode can_register_rx_default_handler(CANConfig *can, CANRxHandlerCb handle
   return can_rx_register_default_handler(&can->rx_handlers, handler, context);
 }
 
-StatusCode can_register_rx_handler(CANConfig *can, CANMessageID msg_id,
-                                   CANRxHandlerCb handler, void *context) {
+StatusCode can_register_rx_handler(CANConfig *can, CANMessageID msg_id, CANRxHandlerCb handler,
+                                   void *context) {
   return can_rx_register_handler(&can->rx_handlers, msg_id, handler, context);
 }
 

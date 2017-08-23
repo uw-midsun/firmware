@@ -1,12 +1,12 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include "analog_io.h"
 #include "adc.h"
-#include "gpio.h"
-#include "event_queue.h"
-#include "input_event.h"
+#include "analog_io.h"
 #include "driver_io.h"
+#include "event_queue.h"
+#include "gpio.h"
+#include "input_event.h"
 
 // Arbitrary thresholds for gas pedal
 #define ANALOG_IO_COAST_THRESHOLD 1000
@@ -66,11 +66,14 @@ void analog_io_init() {
   ADCChannel adc_channel = NUM_ADC_CHANNEL;
 
   InputConfig analog_inputs[] = {
-    { .address = DRIVER_IO_GAS_PEDAL, .device = ANALOG_IO_DEVICE_GAS_PEDAL },
-    { .address = DRIVER_IO_MECHANICAL_BRAKE, .device = ANALOG_IO_DEVICE_MECHANICAL_BRAKE }
+    {.address = DRIVER_IO_GAS_PEDAL, .device = ANALOG_IO_DEVICE_GAS_PEDAL },
+    {.address = DRIVER_IO_MECHANICAL_BRAKE, .device = ANALOG_IO_DEVICE_MECHANICAL_BRAKE }
   };
 
-  GPIOSettings settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_NONE };
+  GPIOSettings settings = {
+    .direction = GPIO_DIR_IN,  //
+    .state = GPIO_STATE_LOW,   //
+  };
 
   for (uint8_t i = 0; i < SIZEOF_ARRAY(analog_inputs); i++) {
     adc_get_channel(analog_inputs[i].address, &adc_channel);
