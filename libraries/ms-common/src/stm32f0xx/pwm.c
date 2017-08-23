@@ -91,12 +91,12 @@ uint16_t pwm_get_period(PWMTimer timer) {
 }
 
 StatusCode pwm_set_pulse(PWMTimer timer, uint16_t pulse_width_ms) {
+  status_ok_or_return(prv_check_timer_id(timer));
   if (s_period_ms[timer] == 0) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "Pwm must be initialized.");
   } else if (pulse_width_ms > s_period_ms[timer]) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Pulse width must be leq period.");
   }
-  status_ok_or_return(prv_check_timer_id(timer));
 
   TIM_OCInitTypeDef oc_init = {
     .TIM_OCMode = TIM_OCMode_PWM1,  // Set on compare match.
