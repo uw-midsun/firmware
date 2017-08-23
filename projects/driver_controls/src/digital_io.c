@@ -50,7 +50,6 @@ static uint16_t prv_get_event(DigitalIOData *data, GPIOState state) {
 }
 
 static void prv_input_callback(const GPIOAddress *address, void *context) {
-  // TODO: define contract for events
   DigitalIOData *data = (DigitalIOData*)context;
 
   GPIOState state = { 0 };

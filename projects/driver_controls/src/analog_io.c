@@ -53,7 +53,7 @@ static void prv_input_callback(ADCChannel adc_channel, void *context) {
     default:
       break;
   }
-  
+
   event_raise(event_id, analog_data);
 }
 
