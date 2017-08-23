@@ -35,15 +35,16 @@ typedef enum {
   NUM_INPUT_EVENT
 } InputEvent;
 
-// 12 bits are used for holding the event data.
-// 3 bits of the data field are used for holding the device state, while the last
-// 1 bit to use as a flag for broadcasting the data bit
-// TODO: Add digital/analog bit
+// Struct defining how to properly fill in the event data field
+// The 12 bit analog readings are to be placed in 'data'
+// The 4-bit state number of the particular FSM is to be placed in 'state' 
+// Each FSM must properly fill this field with the required data
 typedef union InputEventData {
   uint16_t raw;
   struct {
-    uint8_t digital:1;
-    uint8_t state:3;
     uint16_t data:12;
+    uint8_t state:4;
   } components;
 } InputEventData;
+
+StatusCode input_event_raise_can(InputEvent device_id, uint8_t device_state, uint16_t device_data);

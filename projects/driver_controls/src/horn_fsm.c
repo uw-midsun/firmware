@@ -20,18 +20,15 @@ FSM_STATE_TRANSITION(state_horn_on) {
 
 // Horn FSM output function
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  InputEventData data;
-  data.components.data = e->data;
+  HornFSMState horn_state = 0;
 
   if (fsm->current_state == &state_horn_on) {
-    data.components.state = HORN_FSM_STATE_ON;
+    horn_state = HORN_FSM_STATE_ON;
   } else if (fsm->current_state == &state_horn_off) {
-    data.components.state = HORN_FSM_STATE_OFF;
+    horn_state = HORN_FSM_STATE_OFF;
   }
 
-  data.components.digital = true;
-
-  event_raise(INPUT_EVENT_CAN_ID_HORN, data.raw);
+  input_event_raise_can(INPUT_EVENT_CAN_ID_HORN, horn_state, e->id);
 }
 
 

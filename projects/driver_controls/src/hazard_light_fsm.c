@@ -21,18 +21,15 @@ FSM_STATE_TRANSITION(state_hazard_off) {
 // Hazard light FSM output function
 
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  InputEventData data;
-  data.components.data = e->data;
+  HazardLightFSMState hazard_light_state = 0;
 
   if (fsm->current_state == &state_hazard_on) {
-    data.components.state = HAZARD_LIGHT_FSM_STATE_ON;
+    hazard_light_state = HAZARD_LIGHT_FSM_STATE_ON;
   } else if (fsm->current_state == &state_hazard_off) {
-    data.components.state = HAZARD_LIGHT_FSM_STATE_OFF;
+    hazard_light_state = HAZARD_LIGHT_FSM_STATE_OFF;
   }
 
-  data.components.digital = true;
-
-  event_raise(INPUT_EVENT_CAN_ID_HAZARD_LIGHT, data.raw);
+  input_event_raise_can(INPUT_EVENT_CAN_ID_HAZARD_LIGHT, hazard_light_state, e->data);
 }
 
 StatusCode hazard_light_fsm_init(FSM *fsm) {

@@ -40,26 +40,14 @@ static void prv_state_off(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_off;
 
-  InputEventData data;
-
-  data.components.data = e->data;
-  data.components.state = POWER_FSM_STATE_OFF;
-  data.components.digital = true;
-
-  event_raise(INPUT_EVENT_CAN_ID_POWER, data.raw);
+  input_event_raise_can(INPUT_EVENT_CAN_ID_POWER, POWER_FSM_STATE_OFF, e->data);
 }
 
 static void prv_state_on(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = NULL;
 
-  InputEventData data;
-
-  data.components.data = e->data;
-  data.components.state = POWER_FSM_STATE_ON;
-  data.components.digital = true;
-
-  event_raise(INPUT_EVENT_CAN_ID_POWER, data.raw);
+  input_event_raise_can(INPUT_EVENT_CAN_ID_POWER, POWER_FSM_STATE_ON, e->data);
 }
 
 StatusCode power_fsm_init(FSM *fsm) {

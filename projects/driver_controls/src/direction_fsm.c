@@ -57,39 +57,24 @@ static void prv_state_neutral(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_neutral;
 
-  InputEventData data;
-
-  data.components.data = e->data;
-  data.components.state = DIRECTION_FSM_STATE_NEUTRAL;
-  data.components.digital = true;
-
-  event_raise(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, data.raw);
+  input_event_raise_can(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, DIRECTION_FSM_STATE_NEUTRAL,
+                        e->data);
 }
 
 static void prv_state_forward(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_forward;
 
-  InputEventData data;
-
-  data.components.data = e->data;
-  data.components.state = DIRECTION_FSM_STATE_FORWARD;
-  data.components.digital = true;
-
-  event_raise(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, data.raw);
+  input_event_raise_can(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, DIRECTION_FSM_STATE_FORWARD,
+                        e->data);
 }
 
 static void prv_state_reverse(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_reverse;
 
-  InputEventData data;
-
-  data.components.data = e->data;
-  data.components.state = DIRECTION_FSM_STATE_REVERSE;
-  data.components.digital = true;
-
-  event_raise(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, data.raw);
+  input_event_raise_can(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, DIRECTION_FSM_STATE_REVERSE,
+                        e->data);
 }
 
 StatusCode direction_fsm_init(FSM *fsm) {

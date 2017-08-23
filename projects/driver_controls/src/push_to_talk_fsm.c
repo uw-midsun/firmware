@@ -21,18 +21,15 @@ FSM_STATE_TRANSITION(state_inactive) {
 // Push-to-Talk output function
 
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  InputEventData data;
-  data.components.data = e->data;
+  PushToTalkFSMState push_to_talk_state = 0;
 
   if (fsm->current_state == &state_active) {
-    data.components.state = PUSH_TO_TALK_FSM_STATE_ACTIVE;
+    push_to_talk_state = PUSH_TO_TALK_FSM_STATE_ACTIVE;
   } else if (fsm->current_state == &state_inactive) {
-    data.components.state = PUSH_TO_TALK_FSM_STATE_INACTIVE;
+    push_to_talk_state = PUSH_TO_TALK_FSM_STATE_INACTIVE;
   }
 
-  data.components.digital = true;
-
-  event_raise(INPUT_EVENT_CAN_PUSH_TO_TALK, data.raw);
+  input_event_raise_can(INPUT_EVENT_CAN_PUSH_TO_TALK, push_to_talk_state, e->data);
 }
 
 StatusCode push_to_talk_fsm_init(FSM *fsm) {

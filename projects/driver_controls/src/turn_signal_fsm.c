@@ -31,24 +31,19 @@ FSM_STATE_TRANSITION(state_right_signal) {
 // Turn signal FSM output function
 
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  InputEventData data = { 0 };
-
-  // woah this was very wrong
-  data.components.data = e->data;
+  TurnSignalFSMState turn_signal_state = 0;
 
   State *current_state = fsm->current_state;
 
   if (current_state == &state_no_signal) {
-    data.components.state = TURN_SIGNAL_FSM_STATE_NO_SIGNAL;
+    turn_signal_state = TURN_SIGNAL_FSM_STATE_NO_SIGNAL;
   } else if (current_state == &state_left_signal) {
-    data.components.state = TURN_SIGNAL_FSM_STATE_LEFT_SIGNAL;
+    turn_signal_state = TURN_SIGNAL_FSM_STATE_LEFT_SIGNAL;
   } else if (current_state == &state_right_signal) {
-    data.components.state = TURN_SIGNAL_FSM_STATE_RIGHT_SIGNAL;
+    turn_signal_state = TURN_SIGNAL_FSM_STATE_RIGHT_SIGNAL;
   }
 
-  data.components.digital = true;
-
-  event_raise(INPUT_EVENT_CAN_ID_TURN_SIGNAL, data.raw);
+  input_event_raise_can(INPUT_EVENT_CAN_ID_TURN_SIGNAL, turn_signal_state, e->data);
 }
 
 StatusCode turn_signal_fsm_init(FSM* fsm) {

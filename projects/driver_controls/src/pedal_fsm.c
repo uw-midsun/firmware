@@ -63,24 +63,21 @@ FSM_STATE_TRANSITION(state_cruise_control) {
 
 // Pedal FSM output functions
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  InputEventData data;
-  data.components.data = e->data;
+  PedalFSMState pedal_state = 0;
 
   State *current_state = fsm->current_state;
 
   if (current_state == &state_brake) {
-    data.components.state = PEDAL_FSM_STATE_BRAKE;
+    pedal_state = PEDAL_FSM_STATE_BRAKE;
   } else if (current_state == &state_coast) {
-    data.components.state = PEDAL_FSM_STATE_COAST;
+    pedal_state = PEDAL_FSM_STATE_COAST;
   } else if (current_state == &state_driving) {
-    data.components.state = PEDAL_FSM_STATE_DRIVING;
+    pedal_state = PEDAL_FSM_STATE_DRIVING;
   } else if (current_state == &state_cruise_control) {
-    data.components.state = PEDAL_FSM_STATE_CRUISE_CONTROL;
+    pedal_state = PEDAL_FSM_STATE_CRUISE_CONTROL;
   }
 
-  data.components.digital = false;
-
-  event_raise(INPUT_EVENT_CAN_ID_PEDAL, data.raw);
+  input_event_raise_can(INPUT_EVENT_CAN_ID_PEDAL, pedal_state, e->data);
 }
 
 StatusCode pedal_fsm_init(FSM *fsm) {
