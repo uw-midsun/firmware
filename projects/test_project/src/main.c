@@ -4,7 +4,6 @@
 #include <stdint.h>
 
 #include "gpio.h"
-#include "log.h"
 #include "spi.h"
 #include "log.h"
 
