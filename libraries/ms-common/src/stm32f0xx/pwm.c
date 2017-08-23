@@ -25,13 +25,6 @@ static TIM_TypeDef *s_timer_def[NUM_PWM_TIMERS] = {
       [PWM_TIMER_17] = TIM17,  //
 };
 
-static StatusCode prv_check_timer_id(PWMTimer timer) {
-  if (timer >= NUM_PWM_TIMERS) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid timer id");
-  }
-  return STATUS_CODE_OK;
-}
-
 static void prv_enable_periph_clock(PWMTimer timer) {
   switch (timer) {
     case PWM_TIMER_1:
@@ -58,10 +51,11 @@ static void prv_enable_periph_clock(PWMTimer timer) {
 }
 
 StatusCode pwm_init(PWMTimer timer, uint16_t period_ms) {
-  if (period_ms == 0) {
+  if (timer >= NUM_PWM_TIMERS) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid timer id");
+  } else if (period_ms == 0) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Period must be greater than 0");
   }
-  status_ok_or_return(prv_check_timer_id(timer));
 
   prv_enable_periph_clock(timer);
 
@@ -86,13 +80,16 @@ StatusCode pwm_init(PWMTimer timer, uint16_t period_ms) {
 }
 
 uint16_t pwm_get_period(PWMTimer timer) {
-  status_ok_or_return(prv_check_timer_id(timer));
+  if (timer >= NUM_PWM_TIMERS) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid timer id");
+  }
   return s_period_ms[timer];
 }
 
 StatusCode pwm_set_pulse(PWMTimer timer, uint16_t pulse_width_ms) {
-  status_ok_or_return(prv_check_timer_id(timer));
-  if (s_period_ms[timer] == 0) {
+  if (timer >= NUM_PWM_TIMERS) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid timer id");
+  } else if (s_period_ms[timer] == 0) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "Pwm must be initialized.");
   } else if (pulse_width_ms > s_period_ms[timer]) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Pulse width must be leq period.");
@@ -123,10 +120,11 @@ StatusCode pwm_set_pulse(PWMTimer timer, uint16_t pulse_width_ms) {
 }
 
 StatusCode pwm_set_dc(PWMTimer timer, uint16_t dc) {
-  if (dc > 100) {
+  if (timer >= NUM_PWM_TIMERS) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid timer id");
+  } else if (dc > 100) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Duty Cycle must be leq 100%.");
   }
-  status_ok_or_return(prv_check_timer_id(timer));
 
   uint16_t pulse_width = 0;
   if (dc != 0) {
