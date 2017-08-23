@@ -28,7 +28,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     horn_state = HORN_FSM_STATE_OFF;
   }
 
-  input_event_raise_can(INPUT_EVENT_CAN_ID_HORN, horn_state, e->id);
+  input_event_raise_can(INPUT_EVENT_CAN_ID_HORN, horn_state, e->data);
 }
 
 

@@ -17,16 +17,10 @@ FSM_STATE_TRANSITION(state_can_transmit) {
 }
 
 static void prv_transmit_data(FSM *fsm, const Event *e, void *context) {
-  // this will not work
-  // TODO: what is this supposed to do?
-  // Where is this data ever set?
-  // casting to unions is gross
-  InputEventData *data = (InputEventData *)&e->data;
-
   printf("Device = %d, State = %d, Data = %d\n",
-          e->id,
-          data->components.state,
-          data->components.data);
+          e->id - 18,
+          e->data >> 12,
+          e->data & 0xFFF);
 }
 
 StatusCode can_fsm_init(FSM *fsm) {
