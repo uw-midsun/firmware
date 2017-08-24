@@ -4,22 +4,27 @@
 #include <stdlib.h>
 
 #include "critical_section.h"
-#include "test_helpers.h"
 #include "gpio.h"
 #include "interrupt.h"
+#include "interrupt_def.h"
+#include "test_helpers.h"
 #include "unity.h"
 
 static GPIOAddress s_interrupt_address = { 1, 0 };
-static InterruptSettings s_interrupt_settings = { .type = INTERRUPT_TYPE_INTERRUPT,
-                                                  .priority = INTERRUPT_PRIORITY_NORMAL };
+static InterruptSettings s_interrupt_settings = {
+  .type = INTERRUPT_TYPE_INTERRUPT,       //
+  .priority = INTERRUPT_PRIORITY_NORMAL,  //
+};
 static GPIOAddress s_event_address = { 1, 1 };
-static InterruptSettings s_event_settings = { .type = INTERRUPT_TYPE_EVENT,
-                                              .priority = INTERRUPT_PRIORITY_NORMAL };
+static InterruptSettings s_event_settings = {
+  .type = INTERRUPT_TYPE_EVENT,           //
+  .priority = INTERRUPT_PRIORITY_NORMAL,  //
+};
 
 static volatile bool s_correct_port = false;
 static volatile bool s_interrupt_ran = false;
 
-static void prv_test_callback(GPIOAddress* address, void* context) {
+static void prv_test_callback(const GPIOAddress* address, void* context) {
   if (address->port == 1) {
     s_correct_port = true;
   }

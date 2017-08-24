@@ -24,6 +24,8 @@ StatusCode event_arbiter_init() {
     s_event_checks[i] = NULL;
   }
   s_num_active_fsms = 0;
+
+  return STATUS_CODE_OK;
 }
 
 EventArbiterCheck *event_arbiter_add_fsm(FSM *fsm, EventArbiterCheck default_checker) {

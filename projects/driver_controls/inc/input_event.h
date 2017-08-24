@@ -6,7 +6,7 @@
 
 // ID definitions for the driver input events.
 typedef enum {
-  INPUT_EVENT_POWER = 0,                        // Event IDs for driver input events
+  INPUT_EVENT_POWER = 0,  // Event IDs for driver input events
   INPUT_EVENT_PEDAL_BRAKE,
   INPUT_EVENT_PEDAL_COAST,
   INPUT_EVENT_PEDAL_PRESSED,
@@ -24,14 +24,14 @@ typedef enum {
   INPUT_EVENT_MECHANICAL_BRAKE_RELEASED,
   INPUT_EVENT_HORN,
   INPUT_EVENT_PUSH_TO_TALK,
-  INPUT_EVENT_CAN_ID_POWER,                     // Event IDs for CAN output events
+  INPUT_EVENT_CAN_ID_POWER,  // Event IDs for CAN output events
   INPUT_EVENT_CAN_ID_PEDAL,
   INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR,
   INPUT_EVENT_CAN_ID_TURN_SIGNAL,
   INPUT_EVENT_CAN_ID_HAZARD_LIGHT,
   INPUT_EVENT_CAN_ID_MECHANICAL_BRAKE,
   INPUT_EVENT_CAN_ID_HORN,
-  INPUT_EVENT_CAN_PUSH_TO_TALK,
+  INPUT_EVENT_CAN_ID_PUSH_TO_TALK,
   NUM_INPUT_EVENT
 } InputEvent;
 
@@ -40,7 +40,7 @@ typedef enum {
 typedef union InputEventData {
   uint16_t raw;
   struct {
-    uint16_t data:12;
-    uint16_t state:4;
+    uint16_t data : 12;
+    uint16_t state : 4;
   } components;
 } InputEventData;

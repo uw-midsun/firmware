@@ -2,21 +2,21 @@
 // Test that the CAN events can be correctly generated and processed
 
 #include "event_arbiter.h"
-#include "unity.h"
-#include "status.h"
-#include "log.h"
-#include "input_event.h"
-#include "test_helpers.h"
 #include "event_queue.h"
+#include "input_event.h"
+#include "log.h"
+#include "status.h"
+#include "test_helpers.h"
+#include "unity.h"
 
-#include "power_fsm.h"
-#include "pedal_fsm.h"
 #include "direction_fsm.h"
-#include "turn_signal_fsm.h"
 #include "hazard_light_fsm.h"
-#include "mechanical_brake_fsm.h"
-#include "push_to_talk_fsm.h"
 #include "horn_fsm.h"
+#include "mechanical_brake_fsm.h"
+#include "pedal_fsm.h"
+#include "power_fsm.h"
+#include "push_to_talk_fsm.h"
+#include "turn_signal_fsm.h"
 
 #include "can_fsm.h"
 
@@ -46,17 +46,16 @@ static void prv_toggle_power(bool new_state) {
 }
 
 static void prv_toggle_mech_brake(bool new_state) {
-  Event e = { .data = 0 };
+  Event e = {.data = 0 };
 
-  e.id = (new_state == true) ?
-            INPUT_EVENT_MECHANICAL_BRAKE_PRESSED :
-            INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
+  e.id = (new_state == true) ? INPUT_EVENT_MECHANICAL_BRAKE_PRESSED
+                             : INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
 
   event_arbiter_process_event(&e);
   mech_brake = new_state;
 }
 
-void setup_test() {
+void setup_test(void) {
   event_arbiter_init();
 
   power_fsm_init(&s_fsm_group.power);
@@ -90,10 +89,10 @@ void teardown_test(void) {
 }
 
 // Test that the power fsm correctly generates CAN events
-void test_can_fsm_power() {
-  Event e;
+void test_can_fsm_power(void) {
+  Event e = { 0 };
 
-  InputEventData *data = &e.data;
+  InputEventData *data = (InputEventData *)&e.data;
 
   prv_toggle_power(true);
   event_process(&e);
@@ -110,9 +109,9 @@ void test_can_fsm_power() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }
 
-void test_can_fsm_mechanical_brake() {
-  Event e;
-  InputEventData *data = &e.data;
+void test_can_fsm_mechanical_brake(void) {
+  Event e = { 0 };
+  InputEventData *data = (InputEventData *)&e.data;
 
   // Test that pressing the brake state generates the correct event
   prv_toggle_mech_brake(true);
@@ -133,9 +132,9 @@ void test_can_fsm_mechanical_brake() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }
 
-void test_can_fsm_hazard_light() {
-  Event e;
-  InputEventData *data = &e.data;
+void test_can_fsm_hazard_light(void) {
+  Event e = { 0 };
+  InputEventData *data = (InputEventData *)&e.data;
 
   // Turn on the power and clean up the event queue
   prv_toggle_power(true);
@@ -160,9 +159,9 @@ void test_can_fsm_hazard_light() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }
 
-void test_can_fsm_turn_signal() {
-  Event e;
-  InputEventData *data = &e.data;
+void test_can_fsm_turn_signal(void) {
+  Event e = { 0 };
+  InputEventData *data = (InputEventData *)&e.data;
 
   // Turn on the power and clean up the event queue
   prv_toggle_power(true);
@@ -196,10 +195,9 @@ void test_can_fsm_turn_signal() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }
 
-
-void test_can_fsm_direction() {
-  Event e;
-  InputEventData *data = &e.data;
+void test_can_fsm_direction(void) {
+  Event e = { 0 };
+  InputEventData *data = (InputEventData *)&e.data;
 
   // Setup for the direction selector to be used
   prv_toggle_power(true);
@@ -236,9 +234,9 @@ void test_can_fsm_direction() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }
 
-void test_can_fsm_pedal() {
-  Event e = { .data = 0xdef };
-  InputEventData *data = &e.data;
+void test_can_fsm_pedal(void) {
+  Event e = {.data = 0xdef };
+  InputEventData *data = (InputEventData *)&e.data;
 
   // Setup for the pedals to be used
   prv_toggle_power(true);
@@ -296,9 +294,9 @@ void test_can_fsm_pedal() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }
 
-void test_can_fsm_horn() {
-  Event e;
-  InputEventData *data = &e.data;
+void test_can_fsm_horn(void) {
+  Event e = { 0 };
+  InputEventData *data = (InputEventData *)&e.data;
 
   prv_toggle_power(true);
   event_process(&e);
@@ -322,9 +320,9 @@ void test_can_fsm_horn() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }
 
-void test_can_fsm_push_to_talk() {
-  Event e;
-  InputEventData *data = &e.data;
+void test_can_fsm_push_to_talk(void) {
+  Event e = { 0 };
+  InputEventData *data = (InputEventData *)&e.data;
 
   prv_toggle_power(true);
   event_process(&e);
@@ -334,7 +332,7 @@ void test_can_fsm_push_to_talk() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_PUSH_TO_TALK, e.id);
+  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_PUSH_TO_TALK, e.id);
   TEST_ASSERT_EQUAL(PUSH_TO_TALK_FSM_STATE_ACTIVE, data->components.state);
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
@@ -343,7 +341,7 @@ void test_can_fsm_push_to_talk() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_PUSH_TO_TALK, e.id);
+  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_PUSH_TO_TALK, e.id);
   TEST_ASSERT_EQUAL(PUSH_TO_TALK_FSM_STATE_INACTIVE, data->components.state);
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }

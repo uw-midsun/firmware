@@ -1,8 +1,8 @@
 #include "can_hw.h"
-#include "log.h"
-#include "unity.h"
-#include "test_helpers.h"
 #include "interrupt.h"
+#include "log.h"
+#include "test_helpers.h"
+#include "unity.h"
 
 static volatile size_t s_msg_rx;
 static volatile uint16_t s_rx_id;
@@ -17,9 +17,10 @@ static void prv_handle_rx(void *context) {
 
 static void prv_wait_rx(size_t wait_for) {
   size_t expected = s_msg_rx + wait_for;
-  uint32_t timeout = 1000000; // Arbitrary timeout
+  uint32_t timeout = 1000000;  // Arbitrary timeout
 
-  while (s_msg_rx != expected && (timeout--)) { }
+  while (s_msg_rx != expected && (timeout--)) {
+  }
 }
 
 void setup_test(void) {
@@ -40,14 +41,14 @@ void setup_test(void) {
   LOG_DEBUG("CAN initialized\n");
 }
 
-void teardown_test(void) { }
+void teardown_test(void) {}
 
 void test_can_hw_loop(void) {
   uint16_t tx_id = 0x01;
   uint64_t tx_data = 0x1122334455667788;
   size_t tx_len = 8;
 
-  StatusCode ret = can_hw_transmit(tx_id, &tx_data, tx_len);
+  StatusCode ret = can_hw_transmit(tx_id, (uint8_t *)&tx_data, tx_len);
   TEST_ASSERT_OK(ret);
 
   prv_wait_rx(1);

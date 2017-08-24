@@ -1,7 +1,7 @@
 #pragma once
 // Implements a FIFO using a ring buffer
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 #include "status.h"
 
 typedef struct {
@@ -22,8 +22,7 @@ typedef struct {
   fifo_init_impl((fifo), (buffer), sizeof((buffer)[0]), SIZEOF_ARRAY((buffer)))
 
 // Push a single element onto the FIFO.
-#define fifo_push(fifo, source) \
-  fifo_push_impl((fifo), (source), sizeof(*(source)))
+#define fifo_push(fifo, source) fifo_push_impl((fifo), (source), sizeof(*(source)))
 
 // Peek at the first element on the FIFO.
 // TODO: Add test for peek
@@ -31,8 +30,7 @@ typedef struct {
   fifo_peek_impl((fifo), (dest), sizeof(*(dest)))
 
 // Pop a single element off of the FIFO.
-#define fifo_pop(fifo, dest) \
-  fifo_pop_impl((fifo), (dest), sizeof(*(dest)))
+#define fifo_pop(fifo, dest) fifo_pop_impl((fifo), (dest), sizeof(*VOID_PTR_UINT8(dest)))
 
 // Push an array of elements onto the FIFO. Note that the FIFO will only be modified on success.
 #define fifo_push_arr(fifo, source_arr, len) \
@@ -41,7 +39,7 @@ typedef struct {
 // Pop an array of elements off of the FIFO. Note that the FIFO will only be modified on success.
 // This is essentially a memmove from the FIFO to the destination array.
 #define fifo_pop_arr(fifo, dest_arr, len) \
-  fifo_pop_arr_impl((fifo), (dest_arr), sizeof((dest_arr)[0]), (len))
+  fifo_pop_arr_impl((fifo), (dest_arr), sizeof(VOID_PTR_UINT8((dest_arr))[0]), (len))
 
 StatusCode fifo_init_impl(Fifo *fifo, void *buffer, size_t elem_size, size_t num_elems);
 

@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "interrupt.h"
+#include "interrupt_def.h"
 #include "status.h"
 #include "stm32f0xx_exti.h"
 #include "stm32f0xx_misc.h"
@@ -45,14 +45,14 @@ StatusCode stm32f0xx_interrupt_nvic_enable(uint8_t irq_channel, InterruptPriorit
   return STATUS_CODE_OK;
 }
 
-StatusCode stm32f0xx_interrupt_exti_enable(uint8_t line, InterruptSettings *settings,
-                                     InterruptEdge edge) {
+StatusCode stm32f0xx_interrupt_exti_enable(uint8_t line, const InterruptSettings *settings,
+                                           InterruptEdge edge) {
   if (line >= NUM_STM32F0XX_INTERRUPT_LINES || settings->type >= NUM_INTERRUPT_TYPE ||
       edge >= NUM_INTERRUPT_EDGE) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  EXTI_InitTypeDef init_struct = { .EXTI_Line = 0x01 << line,
+  EXTI_InitTypeDef init_struct = { .EXTI_Line = (uint32_t)0x01 << line,
                                    .EXTI_Mode = 0x04 * settings->type,
                                    .EXTI_Trigger = 0x08 + 0x04 * edge,
                                    .EXTI_LineCmd = ENABLE };
@@ -67,7 +67,7 @@ StatusCode stm32f0xx_interrupt_exti_trigger(uint8_t line) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  EXTI_GenerateSWInterrupt(0x01 << line);
+  EXTI_GenerateSWInterrupt((uint32_t)0x01 << line);
   return STATUS_CODE_OK;
 }
 
@@ -76,7 +76,7 @@ StatusCode stm32f0xx_interrupt_exti_get_pending(uint8_t line, uint8_t *pending_b
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  *pending_bit = (uint8_t)EXTI_GetITStatus(0x01 << line);
+  *pending_bit = (uint8_t)EXTI_GetITStatus((uint32_t)0x01 << line);
   return STATUS_CODE_OK;
 }
 
@@ -85,6 +85,6 @@ StatusCode stm32f0xx_interrupt_exti_clear_pending(uint8_t line) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  EXTI_ClearITPendingBit(0x01 << line);
+  EXTI_ClearITPendingBit((uint32_t)0x01 << line);
   return STATUS_CODE_OK;
 }

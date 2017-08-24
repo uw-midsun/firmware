@@ -27,8 +27,8 @@ static ADCStatus s_adc_status;
 
 // Formula obtained from section 13.9 of the reference manual. Returns reading in kelvin
 static uint16_t prv_get_temp(uint16_t reading) {
-  uint16_t ts_cal1 = *(uint16_t*)TS_CAL1;
-  uint16_t ts_cal2 = *(uint16_t*)TS_CAL2;
+  uint16_t ts_cal1 = *(uint16_t *)TS_CAL1;
+  uint16_t ts_cal2 = *(uint16_t *)TS_CAL2;
 
   reading = ((110 - 30) * (reading - ts_cal1)) / (ts_cal2 - ts_cal1) + 30;
 
@@ -37,7 +37,7 @@ static uint16_t prv_get_temp(uint16_t reading) {
 
 // Formula obtained from section 13.9 of the reference manual. Returns Vdda in mV
 static uint16_t prv_get_vdda(uint16_t reading) {
-  uint16_t vrefint_cal = *(uint16_t*)VREFINT_CAL;
+  uint16_t vrefint_cal = *(uint16_t *)VREFINT_CAL;
   reading = (3300 * vrefint_cal) / reading;
   return reading;
 }
@@ -47,7 +47,7 @@ static StatusCode prv_channel_valid(ADCChannel adc_channel) {
     return STATUS_CODE_INVALID_ARGS;
   }
 
-  if (!(ADC1->CHSELR & (1 << adc_channel))) {
+  if (!(ADC1->CHSELR & ((uint32_t)1 << adc_channel))) {
     return STATUS_CODE_EMPTY;
   }
 
@@ -75,11 +75,13 @@ void adc_init(ADCMode adc_mode) {
   ADC_GetCalibrationFactor(ADC1);
 
   ADC_ContinuousModeCmd(ADC1, adc_mode);
-  while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADCAL)) { }
+  while (ADC_GetFlagStatus(ADC1, ADC_FLAG_ADCAL)) {
+  }
 
   // Enable the ADC
   ADC_Cmd(ADC1, true);
-  while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_ADRDY)) { }
+  while (!ADC_GetFlagStatus(ADC1, ADC_FLAG_ADRDY)) {
+  }
 
   ADC_WaitModeCmd(ADC1, true);
   ADC_AutoPowerOffCmd(ADC1, !adc_mode);
@@ -101,16 +103,15 @@ void adc_init(ADCMode adc_mode) {
   adc_set_channel(ADC_CHANNEL_REF, true);
 }
 
-
 StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
   if (adc_channel >= NUM_ADC_CHANNEL) {
     return STATUS_CODE_INVALID_ARGS;
   }
 
   if (new_state) {
-    ADC_ChannelConfig(ADC1, (1 << adc_channel), ADC_SampleTime_239_5Cycles);
+    ADC_ChannelConfig(ADC1, ((uint32_t)1 << adc_channel), ADC_SampleTime_239_5Cycles);
   } else {
-    ADC1->CHSELR &= ~(1 << adc_channel);
+    ADC1->CHSELR &= ~((uint32_t)1 << adc_channel);
   }
 
   // Keep internal channels enabled only when set
@@ -125,6 +126,9 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
 
     case ADC_CHANNEL_TEMP:
       ADC_TempSensorCmd(new_state);
+      break;
+
+    default:
       break;
   }
 
@@ -180,7 +184,8 @@ StatusCode adc_read_raw(ADCChannel adc_channel, uint16_t *reading) {
 
   if (!s_adc_status.continuous) {
     ADC_StartOfConversion(ADC1);
-    while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOSEQ)) { }
+    while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOSEQ)) {
+    }
   }
 
   *reading = s_adc_interrupts[adc_channel].reading;
@@ -207,11 +212,14 @@ StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading) {
     case ADC_CHANNEL_BAT:
       adc_reading *= 2;
       break;
+
+    default:
+      break;
   }
 
   uint16_t vdda;
   adc_read_converted(ADC_CHANNEL_REF, &vdda);
-  *reading = (adc_reading * vdda)/4095;
+  *reading = (adc_reading * vdda) / 4095;
 
   return STATUS_CODE_OK;
 }
@@ -224,11 +232,11 @@ void ADC1_COMP_IRQHandler() {
 
     if (s_adc_interrupts[current_channel].callback != NULL) {
       s_adc_interrupts[current_channel].callback(current_channel,
-                                              s_adc_interrupts[current_channel].context);
+                                                 s_adc_interrupts[current_channel].context);
     }
 
     s_adc_interrupts[current_channel].reading = reading;
-    s_adc_status.sequence &= ~(1 << current_channel);
+    s_adc_status.sequence &= ~((uint32_t)1 << current_channel);
   }
 
   if (ADC_GetITStatus(ADC1, ADC_IT_EOSEQ)) {

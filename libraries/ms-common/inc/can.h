@@ -3,8 +3,8 @@
 // Requires GPIO, soft timers, event queue, and interrupts to be initialized.
 //
 // Application code should only use functions in this header.
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include "can_ack.h"
 #include "can_fifo.h"
 #include "can_rx.h"

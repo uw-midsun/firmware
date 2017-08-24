@@ -1,18 +1,18 @@
 #include "event_arbiter.h"
-#include "unity.h"
-#include "status.h"
-#include "log.h"
-#include "input_event.h"
-#include "test_helpers.h"
 #include "event_queue.h"
+#include "input_event.h"
+#include "log.h"
+#include "status.h"
+#include "test_helpers.h"
+#include "unity.h"
 
-#include "power_fsm.h"
-#include "pedal_fsm.h"
 #include "direction_fsm.h"
-#include "turn_signal_fsm.h"
 #include "hazard_light_fsm.h"
-#include "mechanical_brake_fsm.h"
 #include "horn_fsm.h"
+#include "mechanical_brake_fsm.h"
+#include "pedal_fsm.h"
+#include "power_fsm.h"
+#include "turn_signal_fsm.h"
 
 typedef struct FSMGroup {
   FSM power;
@@ -38,11 +38,10 @@ static void prv_toggle_power(bool new_state) {
 }
 
 static void prv_toggle_mech_brake(bool new_state) {
-  Event e = { .data = 0 };
+  Event e = {.data = 0 };
 
-  e.id = (new_state == true) ?
-            INPUT_EVENT_MECHANICAL_BRAKE_PRESSED :
-            INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
+  e.id = (new_state == true) ? INPUT_EVENT_MECHANICAL_BRAKE_PRESSED
+                             : INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
 
   event_arbiter_process_event(&e);
   mech_brake = new_state;
@@ -144,7 +143,6 @@ void test_driver_fsm_mechanical_brake() {
   e.id = INPUT_EVENT_PEDAL_PRESSED;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 }
-
 
 // Move the car forward and then back up
 void test_driver_fsm_move_car() {

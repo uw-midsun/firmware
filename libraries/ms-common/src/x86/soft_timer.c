@@ -8,7 +8,7 @@
 #include <time.h>
 
 #include "critical_section.h"
-#include "interrupt.h"
+#include "interrupt_def.h"
 #include "status.h"
 #include "x86_interrupt.h"
 
@@ -26,7 +26,7 @@ static volatile uint8_t s_active_timers = 0;
 
 static void prv_soft_timer_interrupt(void) {
   const bool critical = critical_section_start();
-  struct itimerspec spec = {{0, 0}, {0, 0}};
+  struct itimerspec spec = { { 0, 0 }, { 0, 0 } };
   for (uint16_t i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {
     if (!s_active_timers) {
       // No active timers left.
@@ -55,8 +55,10 @@ void soft_timer_init(void) {
   // Register a handler and interrupt.
   uint8_t handler_id;
   x86_interrupt_register_handler(prv_soft_timer_handler, &handler_id);
-  InterruptSettings it_settings = {.type = INTERRUPT_TYPE_INTERRUPT,
-                                   .priority = INTERRUPT_PRIORITY_NORMAL};
+  InterruptSettings it_settings = {
+    .type = INTERRUPT_TYPE_INTERRUPT,       //
+    .priority = INTERRUPT_PRIORITY_NORMAL,  //
+  };
   uint8_t interrupt_id;
   x86_interrupt_register_interrupt(handler_id, &it_settings, &interrupt_id);
 
@@ -77,8 +79,8 @@ void soft_timer_init(void) {
   }
 }
 
-StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback,
-                            void *context, SoftTimerID *timer_id) {
+StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, void *context,
+                            SoftTimerID *timer_id) {
   // Start a critical section to prevent this section from being broken.
   const bool critical = critical_section_start();
   for (uint32_t i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {
@@ -86,8 +88,8 @@ StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback,
       // Look for an empty timer.
 
       // Set the timer with it_val.
-      struct itimerspec spec = {
-          {0, 0}, {duration_us / 1000000, duration_us % 1000000 * 1000}};
+      struct itimerspec spec = { { 0, 0 },
+                                 { duration_us / 1000000, duration_us % 1000000 * 1000 } };
       timer_settime(s_posix_timers[i].timer_id, 0, &spec, NULL);
       s_posix_timers[i].inuse = true;
       s_posix_timers[i].context = context;
@@ -117,7 +119,7 @@ bool soft_timer_cancel(SoftTimerID timer_id) {
   const bool critical = critical_section_start();
   if (timer_id < SOFT_TIMER_MAX_TIMERS && s_posix_timers[timer_id].inuse) {
     // Clear the timer if it is in use by setting it_val to 0, 0.
-    struct itimerspec spec = {{0, 0}, {0, 0}};
+    struct itimerspec spec = { { 0, 0 }, { 0, 0 } };
     timer_settime(s_posix_timers[timer_id].timer_id, 0, &spec, NULL);
     s_posix_timers[timer_id].inuse = false;
     s_active_timers--;
@@ -129,7 +131,7 @@ bool soft_timer_cancel(SoftTimerID timer_id) {
 }
 
 uint32_t soft_timer_remaining_time(SoftTimerID timer_id) {
-  struct itimerspec spec = {{0, 0}, {0, 0}};
+  struct itimerspec spec = { { 0, 0 }, { 0, 0 } };
   timer_gettime(s_posix_timers[timer_id].timer_id, &spec);
   return spec.it_value.tv_sec * 1000000 + spec.it_value.tv_nsec / 1000;
 }

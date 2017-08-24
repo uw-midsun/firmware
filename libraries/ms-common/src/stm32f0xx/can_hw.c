@@ -120,9 +120,9 @@ CANHwBusStatus can_hw_bus_status(void) {
 
 StatusCode can_hw_transmit(uint16_t id, const uint8_t *data, size_t len) {
   CanTxMsg tx_msg = {
-    .StdId = id,
-    .IDE = CAN_ID_STD,
-    .DLC = len
+    .StdId = id,        //
+    .IDE = CAN_ID_STD,  //
+    .DLC = len,         //
   };
 
   memcpy(tx_msg.Data, data, len);

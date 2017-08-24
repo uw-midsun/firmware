@@ -1,6 +1,10 @@
 #pragma once
 // CAN HW Interface
+<<<<<<< HEAD
 // Requires GPIO and interrupts to be initalized.
+=======
+// Requires interrupts to be initialized.
+>>>>>>> master
 //
 // Used to initiate CAN TX and RX directly through the MCU, without any preprocessing or queues.
 // Note that none of our systems currently support more than one CAN interface natively.
@@ -51,7 +55,11 @@ StatusCode can_hw_add_filter(uint16_t mask, uint16_t filter);
 
 CANHwBusStatus can_hw_bus_status(void);
 
+<<<<<<< HEAD
 StatusCode can_hw_transmit(uint16_t id, const uint8_t *data, size_t len);
+=======
+StatusCode can_hw_transmit(const CANHwConfig *can_hw, uint16_t id, const uint8_t *data, size_t len);
+>>>>>>> master
 
 // Must be called within the RX handler, returns whether a message was processed
 bool can_hw_receive(uint16_t *id, uint64_t *data, size_t *len);

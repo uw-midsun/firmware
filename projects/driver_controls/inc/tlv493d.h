@@ -1,7 +1,7 @@
 #pragma once
 
 // TLV493D default I2C address definition (Datasheet Chapter 4.2)
-#define TLV493D_ADDRESS   0x5E
+#define TLV493D_ADDRESS 0x5E
 
 // TLV493D register definitions (Datasheet Chapter 7.1)
 typedef enum {
@@ -27,11 +27,10 @@ typedef enum {
 } TLV493DWriteRegister;
 
 // TLV493D register bitmasks
-#define TLV493D_MASTER_CONTROLLED_MODE  0x3
+#define TLV493D_MASTER_CONTROLLED_MODE 0x3
 
-#define TLV493D_FACTSET1_MASK           0x18
-#define TLV493D_FACTSET3_MASK           0x1F
-
+#define TLV493D_FACTSET1_MASK 0x18
+#define TLV493D_FACTSET3_MASK 0x1F
 
 // Constant to convert from LSB to microteslas (Datasheet chapter 3.1)
 #define TLV493D_LSB_TO_TESLA 98

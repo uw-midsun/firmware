@@ -2,8 +2,8 @@
 #include "event_queue.h"
 #include "interrupt.h"
 #include "log.h"
-#include "unity.h"
 #include "test_helpers.h"
+#include "unity.h"
 
 #define TEST_CAN_UNKNOWN_MSG_ID 0xA
 #define TEST_CAN_DEVICE_ID 0x1
@@ -11,7 +11,7 @@
 
 typedef enum {
   TEST_CAN_EVENT_RX = 10,
-  TEST_CAN_EVENT_FAULT
+  TEST_CAN_EVENT_FAULT,
 } TestCanEvent;
 
 static CANStorage s_can_storage;
@@ -61,7 +61,7 @@ void setup_test(void) {
   can_init(&can_settings, &s_can_storage, &s_rx_handlers, TEST_CAN_NUM_RX_HANDLERS);
 }
 
-void teardown_test(void) { }
+void teardown_test(void) {}
 
 void test_can_basic(void) {
   volatile CANMessage rx_msg = { 0 };
@@ -70,17 +70,18 @@ void test_can_basic(void) {
   can_register_rx_handler(0x5, prv_rx_callback, &rx_msg);
 
   CANMessage msg = {
-    .msg_id = 0x5,
-    .type = CAN_MSG_TYPE_DATA,
-    .data = 0x1,
-    .dlc = 1
+    .msg_id = 0x5,              //
+    .type = CAN_MSG_TYPE_DATA,  //
+    .data = 0x1,                //
+    .dlc = 1,                   //
   };
 
   StatusCode ret = can_transmit(&msg, NULL);
   TEST_ASSERT_OK(ret);
 
   Event e = { 0 };
-  while (event_process(&e) != STATUS_CODE_OK) { }
+  while (event_process(&e) != STATUS_CODE_OK) {
+  }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
   TEST_ASSERT_EQUAL(1, e.data);
 
@@ -99,10 +100,10 @@ void test_can_filter(void) {
   can_register_rx_handler(0x2, prv_rx_callback, &rx_msg);
 
   CANMessage msg = {
-    .msg_id = 0x1,
-    .type = CAN_MSG_TYPE_DATA,
-    .data = 0x1122334455667788,
-    .dlc = 8
+    .msg_id = 0x1,               //
+    .type = CAN_MSG_TYPE_DATA,   //
+    .data = 0x1122334455667788,  //
+    .dlc = 8,                    //
   };
 
   StatusCode ret = can_transmit(&msg, NULL);
@@ -112,7 +113,8 @@ void test_can_filter(void) {
   TEST_ASSERT_OK(ret);
 
   Event e = { 0 };
-  while (event_process(&e) != STATUS_CODE_OK) { }
+  while (event_process(&e) != STATUS_CODE_OK) {
+  }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
   TEST_ASSERT_EQUAL(1, e.data);
 
@@ -127,16 +129,16 @@ void test_can_ack(void) {
   volatile uint16_t device_acked = CAN_MSG_INVALID_DEVICE;
 
   CANMessage msg = {
-    .msg_id = 0x1,
-    .type = CAN_MSG_TYPE_DATA,
-    .data = 0x1122334455667788,
-    .dlc = 8
+    .msg_id = 0x1,               //
+    .type = CAN_MSG_TYPE_DATA,   //
+    .data = 0x1122334455667788,  //
+    .dlc = 8,                    //
   };
 
   CANAckRequest ack_req = {
-    .callback = prv_ack_callback,
-    .context = &device_acked,
-    .num_expected = 1
+    .callback = prv_ack_callback,  //
+    .context = &device_acked,      //
+    .num_expected = 1,             //
   };
 
   StatusCode ret = can_transmit(&msg, &ack_req);
@@ -144,13 +146,15 @@ void test_can_ack(void) {
 
   Event e = { 0 };
   // Handle RX of message and attempt transmit of ACK
-  while (event_process(&e) != STATUS_CODE_OK) { }
+  while (event_process(&e) != STATUS_CODE_OK) {
+  }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
   bool processed = fsm_process_event(CAN_FSM, &e);
   TEST_ASSERT_TRUE(processed);
 
   // Handle RX of ACK
-  while (event_process(&e) != STATUS_CODE_OK) { }
+  while (event_process(&e) != STATUS_CODE_OK) {
+  }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
   processed = fsm_process_event(CAN_FSM, &e);
   TEST_ASSERT_TRUE(processed);
@@ -161,22 +165,23 @@ void test_can_ack(void) {
 void test_can_ack_expire(void) {
   volatile CANAckStatus ack_status = NUM_ACK_STATUSES;
   CANMessage msg = {
-    .msg_id = 0x1,
-    .type = CAN_MSG_TYPE_DATA,
-    .data = 0x1122334455667788,
-    .dlc = 8
+    .msg_id = 0x1,               //
+    .type = CAN_MSG_TYPE_DATA,   //
+    .data = 0x1122334455667788,  //
+    .dlc = 8,                    //
   };
 
   CANAckRequest ack_req = {
-    .callback = prv_ack_callback_status,
-    .context = &ack_status,
-    .num_expected = 4
+    .callback = prv_ack_callback_status,  //
+    .context = &ack_status,               //
+    .num_expected = 4,                    //
   };
 
   StatusCode ret = can_transmit(&msg, &ack_req);
   TEST_ASSERT_OK(ret);
 
-  while (ack_status == NUM_ACK_STATUSES) { }
+  while (ack_status == NUM_ACK_STATUSES) {
+  }
 
   TEST_ASSERT_EQUAL(CAN_ACK_STATUS_TIMEOUT, ack_status);
 }
@@ -188,13 +193,13 @@ void test_can_ack_status(void) {
     .msg_id = TEST_CAN_UNKNOWN_MSG_ID,
     .type = CAN_MSG_TYPE_DATA,
     .data = 0x1122334455667788,
-    .dlc = 8
+    .dlc = 8,
   };
 
   CANAckRequest ack_req = {
-    .callback = prv_ack_callback_status,
-    .context = &ack_status,
-    .num_expected = 1
+    .callback = prv_ack_callback_status,  //
+    .context = &ack_status,               //
+    .num_expected = 1,                    //
   };
 
   can_register_rx_handler(TEST_CAN_UNKNOWN_MSG_ID, prv_rx_callback, &rx_msg);
@@ -204,13 +209,15 @@ void test_can_ack_status(void) {
 
   Event e = { 0 };
   // Handle RX of message and attempt transmit of ACK
-  while (event_process(&e) != STATUS_CODE_OK) { }
+  while (event_process(&e) != STATUS_CODE_OK) {
+  }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
   bool processed = fsm_process_event(CAN_FSM, &e);
   TEST_ASSERT_TRUE(processed);
 
   // Handle RX of ACK
-  while (event_process(&e) != STATUS_CODE_OK) { }
+  while (event_process(&e) != STATUS_CODE_OK) {
+  }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
   processed = fsm_process_event(CAN_FSM, &e);
   TEST_ASSERT_TRUE(processed);
@@ -221,10 +228,10 @@ void test_can_ack_status(void) {
 void test_can_default(void) {
   volatile CANMessage rx_msg = { 0 };
   CANMessage msg = {
-    .msg_id = 0x1,
-    .type = CAN_MSG_TYPE_DATA,
-    .data = 0x1,
-    .dlc = 1
+    .msg_id = 0x1,              //
+    .type = CAN_MSG_TYPE_DATA,  //
+    .data = 0x1,                //
+    .dlc = 1,                   //
   };
 
   can_register_rx_default_handler(prv_rx_callback, &rx_msg);
@@ -234,7 +241,8 @@ void test_can_default(void) {
 
   Event e = { 0 };
   // Handle message RX
-  while (event_process(&e) != STATUS_CODE_OK) { }
+  while (event_process(&e) != STATUS_CODE_OK) {
+  }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
   bool processed = fsm_process_event(CAN_FSM, &e);
   TEST_ASSERT_TRUE(processed);

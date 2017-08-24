@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "critical_section.h"
 #include "pqueue.h"
 #include "status.h"
-#include "critical_section.h"
 
 void pqueue_init(PQueue *queue, PQueueNode *nodes, size_t num_nodes) {
   memset(queue, 0, sizeof(*queue));

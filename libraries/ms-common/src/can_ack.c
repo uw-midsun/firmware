@@ -30,8 +30,8 @@ StatusCode can_ack_add_request(CANAckRequests *requests, CANMessageID msg_id,
   pending_ack->num_remaining = ack_request->num_expected;
   pending_ack->callback = ack_request->callback;
   pending_ack->context = ack_request->context;
-  StatusCode ret = soft_timer_start_millis(CAN_ACK_TIMEOUT_MS, prv_timeout_cb,
-                                           requests, &pending_ack->timer);
+  StatusCode ret =
+      soft_timer_start_millis(CAN_ACK_TIMEOUT_MS, prv_timeout_cb, requests, &pending_ack->timer);
 
   if (ret != STATUS_CODE_OK) {
     objpool_free_node(&requests->pool, pending_ack);
@@ -44,8 +44,7 @@ StatusCode can_ack_add_request(CANAckRequests *requests, CANMessageID msg_id,
 }
 
 StatusCode can_ack_handle_msg(CANAckRequests *requests, const CANMessage *msg) {
-  return prv_update_req(requests, msg->msg_id, SOFT_TIMER_INVALID_TIMER,
-                        msg->data, msg->source_id);
+  return prv_update_req(requests, msg->msg_id, SOFT_TIMER_INVALID_TIMER, msg->data, msg->source_id);
 }
 
 static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
@@ -63,11 +62,12 @@ static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
   // * The timer ID matches given an invalid message ID
   // * Both message and timer match given valid values for both
   for (index = 0; index < requests->num_requests; index++) {
-    const CANAckPendingReq *req = requests->active_requests[index];
+    CANAckPendingReq *req = requests->active_requests[index];
     if (((req->msg_id == msg_id && timer_id == SOFT_TIMER_INVALID_TIMER) ||
          (req->timer == timer_id && msg_id == CAN_MSG_INVALID_ID) ||
          (req->msg_id == msg_id && req->timer == timer_id)) &&
-        (device == CAN_MSG_INVALID_DEVICE || (req->response_bitset & (1 << device)) == 0)) {
+        (device == CAN_MSG_INVALID_DEVICE ||
+         (req->response_bitset & ((uint32_t)1 << device)) == 0)) {
       found_request = req;
       break;
     }
@@ -79,7 +79,7 @@ static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
 
   // We use a bitset to keep track of which devices we've received an ACK for this message from
   found_request->num_remaining--;
-  found_request->response_bitset |= (1 << device);
+  found_request->response_bitset |= ((uint32_t)1 << device);
 
   if (found_request->callback != NULL) {
     StatusCode ret = found_request->callback(found_request->msg_id, device, status,
@@ -110,6 +110,6 @@ static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
 static void prv_timeout_cb(SoftTimerID timer_id, void *context) {
   CANAckRequests *requests = context;
 
-  prv_update_req(requests, CAN_MSG_INVALID_ID, timer_id,
-                 CAN_ACK_STATUS_TIMEOUT, CAN_MSG_INVALID_DEVICE);
+  prv_update_req(requests, CAN_MSG_INVALID_ID, timer_id, CAN_ACK_STATUS_TIMEOUT,
+                 CAN_MSG_INVALID_DEVICE);
 }

@@ -1,25 +1,31 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "adc.h"
-#include "interrupt.h"
-#include "log.h"
 #include "critical_section.h"
 #include "gpio.h"
+#include "interrupt.h"
+#include "log.h"
 
-void test_callback(ADCChannel adc_channel, void *context) {
+void test_callback(ADCChannel adc_channel, void* context) {
   uint16_t* adc_reading = (uint16_t*)context;
   adc_read_converted(adc_channel, adc_reading);
 }
 
 int main() {
-  GPIOAddress address[] = {
-    { GPIO_PORT_A, 0 }, { GPIO_PORT_A, 1 }, { GPIO_PORT_A, 2 }, { GPIO_PORT_A, 3 },
-    { GPIO_PORT_A, 4 }, { GPIO_PORT_A, 5 }, { GPIO_PORT_A, 6 }, { GPIO_PORT_A, 7 },
-    { GPIO_PORT_B, 0 }, { GPIO_PORT_A, 1 }, { GPIO_PORT_B, 0 }, { GPIO_PORT_B, 1 },
-    { GPIO_PORT_C, 2 }, { GPIO_PORT_C, 3 }, { GPIO_PORT_C, 4 }, { GPIO_PORT_C, 5 }
-  };
+  GPIOAddress address[] = { { GPIO_PORT_A, 0 }, { GPIO_PORT_A, 1 }, { GPIO_PORT_A, 2 },
+                            { GPIO_PORT_A, 3 }, { GPIO_PORT_A, 4 }, { GPIO_PORT_A, 5 },
+                            { GPIO_PORT_A, 6 }, { GPIO_PORT_A, 7 }, { GPIO_PORT_B, 0 },
+                            { GPIO_PORT_A, 1 }, { GPIO_PORT_B, 0 }, { GPIO_PORT_B, 1 },
+                            { GPIO_PORT_C, 2 }, { GPIO_PORT_C, 3 }, { GPIO_PORT_C, 4 },
+                            { GPIO_PORT_C, 5 } };
 
-  GPIOSettings settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_ANALOG };
+  GPIOSettings settings = {
+    GPIO_DIR_IN,        //
+    GPIO_STATE_LOW,     //
+    GPIO_RES_NONE,      //
+    GPIO_ALTFN_ANALOG,  //
+  };
 
   gpio_init();
   interrupt_init();
@@ -54,7 +60,6 @@ int main() {
       printf(" %d ", adc_readings[i]);
     }
     for (int i = ADC_CHANNEL_TEMP; i < NUM_ADC_CHANNEL; i++) {
-      adc_readings[i];
       printf(" %d ", adc_readings[i]);
     }
     printf("}\n");

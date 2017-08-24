@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "interrupt.h"
+#include "interrupt_def.h"
 #include "status.h"
 
 typedef void (*x86_interrupt_handler)(uint8_t interrupt_id);
@@ -16,7 +16,7 @@ void x86_interrupt_init(void);
 StatusCode x86_interrupt_register_handler(x86_interrupt_handler handler, uint8_t* handler_id);
 
 // Registers a callback to a handler assigning it a new id from the global interrupt id pool.
-StatusCode x86_interrupt_register_interrupt(uint8_t handler_id, InterruptSettings* settings,
+StatusCode x86_interrupt_register_interrupt(uint8_t handler_id, const InterruptSettings* settings,
                                             uint8_t* interrupt_id);
 
 // Triggers a software interrupt by interrupt_id.

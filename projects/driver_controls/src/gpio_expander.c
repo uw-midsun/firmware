@@ -2,8 +2,8 @@
 
 #include <stdbool.h>
 
-#include "i2c.h"
 #include "gpio_it.h"
+#include "i2c.h"
 #include "mcp23008.h"
 
 typedef struct GPIOExpanderInterrupt {
@@ -24,7 +24,7 @@ static StatusCode prv_pin_is_valid(GPIOExpanderPin pin) {
   return STATUS_CODE_OK;
 }
 
-static void prv_interrupt_handler(GPIOAddress *address, void *context) {
+static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
   uint8_t intf = 0, intcap = 0;
 
   // Read the contents of the interrupt flag and interrupt capture registers
@@ -37,10 +37,8 @@ static void prv_interrupt_handler(GPIOAddress *address, void *context) {
     current_pin = __builtin_ffs(intf) - 1;
 
     if (s_interrupts[current_pin].callback != NULL) {
-      s_interrupts[current_pin].callback(
-        current_pin,
-        (intcap >> current_pin) & 1,
-        s_interrupts[current_pin].context);
+      s_interrupts[current_pin].callback(current_pin, (intcap >> current_pin) & 1,
+                                         s_interrupts[current_pin].context);
     }
 
     intf &= ~(1 << current_pin);
@@ -65,12 +63,12 @@ StatusCode gpio_expander_init(GPIOAddress address, I2CPort i2c_port) {
   s_i2c_port = i2c_port;
 
   // Configure the pin to receive interrupts from the MCP23008
-  GPIOSettings gpio_settings = { .direction = GPIO_DIR_IN, .alt_function = GPIO_ALTFN_NONE };
+  GPIOSettings gpio_settings = {.direction = GPIO_DIR_IN, .alt_function = GPIO_ALTFN_NONE };
   InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_NORMAL };
 
   gpio_init_pin(&address, &gpio_settings);
-  gpio_it_register_interrupt(&address, &it_settings, INTERRUPT_EDGE_FALLING,
-                              prv_interrupt_handler, NULL);
+  gpio_it_register_interrupt(&address, &it_settings, INTERRUPT_EDGE_FALLING, prv_interrupt_handler,
+                             NULL);
 
   // Initialize the interrupt callbacks to NULL
   for (uint8_t i = 0; i < NUM_GPIO_EXPANDER_PINS; i++) {
@@ -133,7 +131,7 @@ StatusCode gpio_expander_set_state(GPIOExpanderPin pin, GPIOState new_state) {
 }
 
 StatusCode gpio_expander_register_callback(GPIOExpanderPin pin, GPIOExpanderCallback callback,
-                                            void *context) {
+                                           void *context) {
   StatusCode valid = prv_pin_is_valid(pin);
   status_ok_or_return(valid);
 

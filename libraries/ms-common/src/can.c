@@ -86,11 +86,9 @@ StatusCode can_add_filter(CANMessageID msg_id) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: Invalid message ID");
   }
 
-  CANId can_id = {
-    .msg_id = msg_id
-  }, mask = {
-    .msg_id = UINT16_MAX
-  };
+  CANId can_id = {.msg_id = msg_id };
+  CANId mask = { 0 };
+  mask.msg_id = ~mask.msg_id;
 
   return can_hw_add_filter(can_id.raw, mask.raw);
 }
