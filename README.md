@@ -4,7 +4,6 @@
 
 This repository contains all the latest firmware for the [University of Waterloo](https://uwaterloo.ca/)'s [Midnight Sun Solar Rayce Car](http://www.uwmidsun.com/) team.
 
-
 ## Building and Testing
 
 ```bash
@@ -15,23 +14,57 @@ make build_all PLATFORM=stm32f0xx
 make test_all PLATFORM=x86
 ```
 
-We use the GNU ARM Embedded toolchain to build all our firmware.
+### Common Commands
 
-To build a project, run ``make PROJECT=$PROJECT PLATFORM=$PLATFORM``, where ``$PROJECT`` is a valid project name, and ``$PLATFORM`` is a supported platform.
+We use [GNU Make](https://www.gnu.org/software/make/manual/) for our build system. See [Managing Projects with GNU Make, 3.Xth Edition](http://wanderinghorse.net/computing/make/book/ManagingProjectsWithGNUMake-3.1.3.pdf) for a fantastic supplement to the manual.
 
-**Note**: If not specified, ``$PLATFORM`` is set to ``stm32f0xx`` by default.
+Our commands are documented in the top level of the root [Makefile](https://github.com/uw-midsun/firmware/blob/master/Makefile). Note that commands such as `test` and `gdb` will automatically build the project if any changes have been made. You do not need to explicitly build projects except for [continuous integration](#continuous-integration).
 
-To program the STM microcontrollers, run ``make program``.
+#### Creating a new project or library
 
-To debug code, run ``make gdb``.
+```bash
+make new PROJECT=new_project_name
+make new LIBRARY=new_library_name
+```
 
-Note that we support CMSIS-DAP probes by default. To program using an ST-Link v2, run ``make [program|gdb] PROBE=stlink-v2``.
+#### Building and flashing a project (STM32 only)
 
-To test a project, run ``make test PROJECT=$PROJECT``, where ``$PROJECT`` is a valid project name.
+```bash
+# Defaults to CMSIS-DAP
+make program PROJECT=test_project
+# Use ST-LINK/V2 (discovery board)
+make program PROJECT=plutus PROBE=stlink-v2
+```
 
-To test a library, run ``make test LIBRARY=$LIBRARY``, where ``$LIBRARY`` is a valid library name.
+#### Running a test
 
-To test against code standards, run ``make lint``.
+```bash
+# Defaults to PLATFORM=stm32f0xx
+make test PROJECT=plutus
+make test LIBRARY=ms-common
+make test TEST=soft_timer LIBRARY=ms-common
+
+# x86
+make test PROJECT=plutus PLATFORM=x86
+```
+
+#### Debugging a project
+
+```bash
+# Defaults to PLATFORM=stm32f0xx
+make gdb PROJECT=test_project
+make gdb TEST=soft_timer LIBRARY=ms-common
+
+# x86
+make gdb PROJECT=test_project PLATFORM=x86
+```
+
+#### Formatting and linting
+
+```bash
+make format
+make lint
+```
 
 More information on building and testing can be found in our [Makefile](Makefile) and our [platform build rules](platform).
 
@@ -86,18 +119,20 @@ More information can be found by reading our [.travis.yml](.travis.yml) file.
 
 ## Dependencies
 
-* GNU ARM Embedded toolchain
-* GNU Make 4.0 or above
-* [Unity&mdash;Throw the Switch](http://www.throwtheswitch.org/unity/): our C unit testing framework
-* [ms-common](https://github.com/uw-midsun/ms-common): our Hardware Abstraction Layer, and other shared libraries
+- GNU ARM Embedded toolchain
+- GNU Make 4.0 or above
+- [Unity&mdash;Throw the Switch](http://www.throwtheswitch.org/unity/): our C unit testing framework
+- [ms-common](https://github.com/uw-midsun/ms-common): our Hardware Abstraction Layer, and other shared libraries
 
-### Optional Dependencies:
+### Optional Dependencies
 
-* [Clang/LLVM toolchain](http://releases.llvm.org/download.html)
-* [Bear (Build EAR)](https://github.com/rizsotto/Bear)
+- [Clang/LLVM toolchain](http://releases.llvm.org/download.html)
+- [Bear (Build EAR)](https://github.com/rizsotto/Bear)
 
 ## Contributions
+
 Before submitting an issue or a pull request to the project, please take a moment to review our code style guide first.
 
 ## License
+
 The firmware is made available under the [MIT License](https://opensource.org/licenses/MIT).
