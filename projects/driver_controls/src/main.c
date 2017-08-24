@@ -66,7 +66,10 @@ int main() {
 
   for (;;) {
     if (status_ok(event_process(&e))) {
+      // Process the event with the input FSMs
       event_arbiter_process_event(&e);
+      // Process the event with the CAN FSM
+      fsm_process_event(&fsm_group.can, &e);
     }
   }
 }

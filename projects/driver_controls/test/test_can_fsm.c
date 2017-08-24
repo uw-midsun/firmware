@@ -97,7 +97,7 @@ void test_can_fsm_power() {
   TEST_ASSERT_EQUAL(POWER_FSM_STATE_ON, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 
   prv_toggle_power(false);
   event_process(&e);
@@ -106,7 +106,7 @@ void test_can_fsm_power() {
   TEST_ASSERT_EQUAL(POWER_FSM_STATE_OFF, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 }
 
 void test_can_fsm_mechanical_brake() {
@@ -120,7 +120,7 @@ void test_can_fsm_mechanical_brake() {
   TEST_ASSERT_EQUAL(MECHANICAL_BRAKE_FSM_STATE_ENGAGED, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 
   // Test that releasing the brake generates the correct event
   prv_toggle_mech_brake(false);
@@ -130,7 +130,7 @@ void test_can_fsm_mechanical_brake() {
   TEST_ASSERT_EQUAL(MECHANICAL_BRAKE_FSM_STATE_DISENGAGED, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 }
 
 void test_can_fsm_hazard_light() {
@@ -149,7 +149,7 @@ void test_can_fsm_hazard_light() {
   TEST_ASSERT_EQUAL(HAZARD_LIGHT_FSM_STATE_ON, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 
   // Test that the transition to the OFF state generates the correct event
   e.id = INPUT_EVENT_HAZARD_LIGHT;
@@ -160,7 +160,7 @@ void test_can_fsm_hazard_light() {
   TEST_ASSERT_EQUAL(HAZARD_LIGHT_FSM_STATE_OFF, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 }
 
 void test_can_fsm_turn_signal() {
@@ -179,7 +179,7 @@ void test_can_fsm_turn_signal() {
   TEST_ASSERT_EQUAL(TURN_SIGNAL_FSM_STATE_LEFT_SIGNAL, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 
   // Test that a right turn signal generates the correct event
   e.id = INPUT_EVENT_TURN_SIGNAL_RIGHT;
@@ -190,7 +190,7 @@ void test_can_fsm_turn_signal() {
   TEST_ASSERT_EQUAL(TURN_SIGNAL_FSM_STATE_RIGHT_SIGNAL, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 
   // Test that turning the signals off generates the correct event
   e.id = INPUT_EVENT_TURN_SIGNAL_NONE;
@@ -201,7 +201,7 @@ void test_can_fsm_turn_signal() {
   TEST_ASSERT_EQUAL(TURN_SIGNAL_FSM_STATE_NO_SIGNAL, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 }
 
 void test_can_fsm_direction() {
@@ -223,7 +223,7 @@ void test_can_fsm_direction() {
   TEST_ASSERT_EQUAL(DIRECTION_FSM_STATE_FORWARD, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 
   // Test that a reverse shift generates the correct event
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
@@ -234,7 +234,7 @@ void test_can_fsm_direction() {
   TEST_ASSERT_EQUAL(DIRECTION_FSM_STATE_REVERSE, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 
   // Test that a neutral shift generates the correct event
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
@@ -245,7 +245,7 @@ void test_can_fsm_direction() {
   TEST_ASSERT_EQUAL(DIRECTION_FSM_STATE_NEUTRAL, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 }
 
 void test_can_fsm_pedal() {
@@ -274,7 +274,7 @@ void test_can_fsm_pedal() {
   TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_COAST, (e.data >> 12));
   TEST_ASSERT_EQUAL(0xdef, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 
   // Test that pressing the gas generates the correct event
   e = (Event){ .id = INPUT_EVENT_PEDAL_PRESSED, .data = 0xdef };
@@ -285,7 +285,7 @@ void test_can_fsm_pedal() {
   TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_DRIVING, (e.data >> 12));
   TEST_ASSERT_EQUAL(0xdef, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 
   // Test that cruise control generates the correct event
   e = (Event){ .id = INPUT_EVENT_CRUISE_CONTROL, .data = 0xdef };
@@ -296,7 +296,7 @@ void test_can_fsm_pedal() {
   TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_CRUISE_CONTROL, (e.data >> 12));
   TEST_ASSERT_EQUAL(0xdef, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 
   // Exit cruise control
   e = (Event){ .id = INPUT_EVENT_CRUISE_CONTROL, .data = 0xdef };\
@@ -312,7 +312,7 @@ void test_can_fsm_pedal() {
   TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_BRAKE, (e.data >> 12));
   TEST_ASSERT_EQUAL(0xdef, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 }
 
 void test_can_fsm_horn() {
@@ -330,7 +330,7 @@ void test_can_fsm_horn() {
   TEST_ASSERT_EQUAL(HORN_FSM_STATE_ON, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 
   // Test that releasing the horn generates the correct event
   e.id = INPUT_EVENT_HORN;
@@ -341,7 +341,7 @@ void test_can_fsm_horn() {
   TEST_ASSERT_EQUAL(HORN_FSM_STATE_OFF, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 }
 
 void test_can_fsm_push_to_talk() {
@@ -359,7 +359,7 @@ void test_can_fsm_push_to_talk() {
   TEST_ASSERT_EQUAL(PUSH_TO_TALK_FSM_STATE_ACTIVE, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 
   // Test that releasing the horn generates the correct event
   e.id = INPUT_EVENT_PUSH_TO_TALK;
@@ -370,5 +370,5 @@ void test_can_fsm_push_to_talk() {
   TEST_ASSERT_EQUAL(PUSH_TO_TALK_FSM_STATE_INACTIVE, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 }
