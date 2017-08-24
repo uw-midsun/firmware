@@ -1,4 +1,5 @@
 #include "horn_fsm.h"
+#include "can_fsm.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
@@ -28,7 +29,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     horn_state = HORN_FSM_STATE_OFF;
   }
 
-  input_event_raise_can(INPUT_EVENT_CAN_ID_HORN, horn_state, e->data);
+  can_fsm_transmit(CAN_DEVICE_ID_HORN, horn_state, e->data);
 }
 
 StatusCode horn_fsm_init(FSM *fsm) {

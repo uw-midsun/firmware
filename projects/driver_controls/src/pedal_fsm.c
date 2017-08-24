@@ -5,6 +5,7 @@
 // state
 
 #include "pedal_fsm.h"
+#include "can_fsm.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
 #include "input_event.h"
@@ -77,7 +78,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     pedal_state = PEDAL_FSM_STATE_CRUISE_CONTROL;
   }
 
-  input_event_raise_can(INPUT_EVENT_CAN_ID_PEDAL, pedal_state, e->data);
+  can_fsm_transmit(CAN_DEVICE_ID_PEDAL, pedal_state, e->data);
 }
 
 StatusCode pedal_fsm_init(FSM *fsm) {

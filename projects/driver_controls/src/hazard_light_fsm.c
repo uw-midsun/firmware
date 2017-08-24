@@ -1,4 +1,5 @@
 #include "hazard_light_fsm.h"
+#include "can_fsm.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
@@ -29,7 +30,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     hazard_light_state = HAZARD_LIGHT_FSM_STATE_OFF;
   }
 
-  input_event_raise_can(INPUT_EVENT_CAN_ID_HAZARD_LIGHT, hazard_light_state, e->data);
+  can_fsm_transmit(CAN_DEVICE_ID_HAZARD_LIGHT, hazard_light_state, e->data);
 }
 
 StatusCode hazard_light_fsm_init(FSM *fsm) {

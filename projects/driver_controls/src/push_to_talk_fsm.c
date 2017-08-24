@@ -1,4 +1,5 @@
 #include "push_to_talk_fsm.h"
+#include "can_fsm.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
@@ -29,7 +30,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     push_to_talk_state = PUSH_TO_TALK_FSM_STATE_INACTIVE;
   }
 
-  input_event_raise_can(INPUT_EVENT_CAN_ID_PUSH_TO_TALK, push_to_talk_state, e->data);
+  can_fsm_transmit(CAN_DEVICE_ID_PUSH_TO_TALK, push_to_talk_state, e->data);
 }
 
 StatusCode push_to_talk_fsm_init(FSM *fsm) {

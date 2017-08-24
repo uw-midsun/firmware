@@ -1,4 +1,5 @@
 #include "power_fsm.h"
+#include "can_fsm.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
@@ -26,8 +27,6 @@ static bool prv_check_off(const Event *e) {
     case INPUT_EVENT_POWER:
     case INPUT_EVENT_MECHANICAL_BRAKE_RELEASED:
     case INPUT_EVENT_MECHANICAL_BRAKE_PRESSED:
-    case INPUT_EVENT_CAN_ID_POWER:
-    case INPUT_EVENT_CAN_ID_MECHANICAL_BRAKE:
       return true;
     default:
       return false;
@@ -40,14 +39,14 @@ static void prv_state_off(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_off;
 
-  input_event_raise_can(INPUT_EVENT_CAN_ID_POWER, POWER_FSM_STATE_OFF, e->data);
+  can_fsm_transmit(CAN_DEVICE_ID_POWER, POWER_FSM_STATE_OFF, e->data);
 }
 
 static void prv_state_on(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = NULL;
 
-  input_event_raise_can(INPUT_EVENT_CAN_ID_POWER, POWER_FSM_STATE_ON, e->data);
+  can_fsm_transmit(CAN_DEVICE_ID_POWER, POWER_FSM_STATE_ON, e->data);
 }
 
 StatusCode power_fsm_init(FSM *fsm) {

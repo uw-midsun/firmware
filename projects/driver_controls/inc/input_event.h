@@ -1,6 +1,6 @@
 #pragma once
 
-// Define common typedefs for the various FSMs to use.
+// Common typedefs a functions for the various FSMs to use.
 
 #include "event_queue.h"
 
@@ -24,16 +24,8 @@ typedef enum {
   INPUT_EVENT_MECHANICAL_BRAKE_RELEASED,
   INPUT_EVENT_HORN,
   INPUT_EVENT_PUSH_TO_TALK,
-  INPUT_EVENT_CAN_ID_POWER,  // Event IDs for CAN output events
-  INPUT_EVENT_CAN_ID_PEDAL,
-  INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR,
-  INPUT_EVENT_CAN_ID_TURN_SIGNAL,
-  INPUT_EVENT_CAN_ID_HAZARD_LIGHT,
-  INPUT_EVENT_CAN_ID_MECHANICAL_BRAKE,
-  INPUT_EVENT_CAN_ID_HORN,
-  INPUT_EVENT_CAN_ID_PUSH_TO_TALK,
   NUM_INPUT_EVENT
 } InputEvent;
 
-// Raise an event to broadcast device information over CAN
+// Clip and prepare event data to be broacasted over CAN
 StatusCode input_event_raise_can(InputEvent device_id, uint8_t device_state, uint16_t device_data);

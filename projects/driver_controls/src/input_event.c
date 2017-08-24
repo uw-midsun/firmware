@@ -5,8 +5,8 @@ StatusCode input_event_raise_can(InputEvent device_id, uint8_t device_state, uin
   union EventData {
     uint16_t raw;
     struct {
-      uint16_t data:12;
-      uint8_t state:4;
+      uint16_t data : 12;
+      uint8_t state : 4;
     } components;
   } data;
 

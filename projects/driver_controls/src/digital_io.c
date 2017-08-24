@@ -49,7 +49,7 @@ static uint16_t prv_get_event(DigitalIOData *data, GPIOState state) {
 }
 
 static void prv_input_callback(const GPIOAddress *address, void *context) {
-  DigitalIOData *data = (DigitalIOData*)context;
+  DigitalIOData *data = (DigitalIOData *)context;
 
   GPIOState state = { 0 };
   gpio_get_value(address, &state);
@@ -60,12 +60,12 @@ static void prv_input_callback(const GPIOAddress *address, void *context) {
 // Configure driver devices with their individual settings
 void digital_io_init(void) {
   // Initialize the static array with device information
-  s_input_data[DRIVER_IO_POWER_SWITCH_PIN] = (DigitalIOData){
+  s_input_data[DRIVER_IO_POWER_SWITCH_PIN] = (DigitalIOData) {
     .id = DIGITAL_IO_DEVICE_POWER_SWITCH,
     .event = INPUT_EVENT_POWER
   };
 
-  s_input_data[DRIVER_IO_DIR_SELECT_PIN_FORWARD] = (DigitalIOData){
+  s_input_data[DRIVER_IO_DIR_SELECT_PIN_FORWARD] = (DigitalIOData) {
     .id = DIGITAL_IO_DEVICE_DIRECTION_SELECTOR,
     .event = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE
   };
@@ -117,20 +117,20 @@ void digital_io_init(void) {
 
   // Array to store configuration settings for each pin
   DigitalIOSettings digital_inputs[] = {
-    { .address = DRIVER_IO_POWER_SWITCH, .edge = INTERRUPT_EDGE_RISING },
-    { .address = DRIVER_IO_DIR_SELECT_FORWARD, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = DRIVER_IO_DIR_SELECT_REVERSE, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = DRIVER_IO_CRUISE_CONTROL_PORT, .edge = INTERRUPT_EDGE_RISING },
-    { .address = DRIVER_IO_CRUISE_CONTROL_INC, .edge = INTERRUPT_EDGE_RISING },
-    { .address = DRIVER_IO_CRUISE_CONTROL_DEC, .edge = INTERRUPT_EDGE_RISING },
-    { .address = DRIVER_IO_TURN_SIGNAL_RIGHT, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = DRIVER_IO_TURN_SIGNAL_LEFT, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = DRIVER_IO_HAZARD_LIGHT, .edge = INTERRUPT_EDGE_RISING },
-    { .address = DRIVER_IO_HORN, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = DRIVER_IO_PUSH_TO_TALK, .edge = INTERRUPT_EDGE_RISING_FALLING }
+    {.address = DRIVER_IO_POWER_SWITCH, .edge = INTERRUPT_EDGE_RISING },
+    {.address = DRIVER_IO_DIR_SELECT_FORWARD, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    {.address = DRIVER_IO_DIR_SELECT_REVERSE, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    {.address = DRIVER_IO_CRUISE_CONTROL_PORT, .edge = INTERRUPT_EDGE_RISING },
+    {.address = DRIVER_IO_CRUISE_CONTROL_INC, .edge = INTERRUPT_EDGE_RISING },
+    {.address = DRIVER_IO_CRUISE_CONTROL_DEC, .edge = INTERRUPT_EDGE_RISING },
+    {.address = DRIVER_IO_TURN_SIGNAL_RIGHT, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    {.address = DRIVER_IO_TURN_SIGNAL_LEFT, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    {.address = DRIVER_IO_HAZARD_LIGHT, .edge = INTERRUPT_EDGE_RISING },
+    {.address = DRIVER_IO_HORN, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    {.address = DRIVER_IO_PUSH_TO_TALK, .edge = INTERRUPT_EDGE_RISING_FALLING }
   };
 
-  GPIOSettings gpio_settings = { .direction = GPIO_DIR_IN, .state = GPIO_STATE_LOW };
+  GPIOSettings gpio_settings = {.direction = GPIO_DIR_IN, .state = GPIO_STATE_LOW };
   InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_LOW };
 
   for (uint8_t i = 0; i < SIZEOF_ARRAY(digital_inputs); i++) {
