@@ -57,19 +57,6 @@ static void prv_input_callback(const GPIOAddress *address, void *context) {
   event_raise(prv_get_event(data, state), 0);
 }
 
-/*
-static void prv_init_pin(DigitalIOSettings *settings, GPIOSettings *gpio_settings) {
-  InterruptSettings it_settings = {
-    INTERRUPT_TYPE_INTERRUPT,  //
-    INTERRUPT_PRIORITY_LOW,    //
-  };
-
-  gpio_init_pin(&settings->address, gpio_settings);
-  gpio_it_register_interrupt(&settings->address, &it_settings, settings->edge,
-                             prv_input_callback, settings->data);
-}
-*/
-
 // Configure driver devices with their individual settings
 void digital_io_init(void) {
   // Initialize the static array with device information
