@@ -26,6 +26,3 @@ typedef enum {
   INPUT_EVENT_PUSH_TO_TALK,
   NUM_INPUT_EVENT
 } InputEvent;
-
-// Clip and prepare event data to be broacasted over CAN
-StatusCode input_event_raise_can(InputEvent device_id, uint8_t device_state, uint16_t device_data);

@@ -18,5 +18,5 @@ typedef enum {
 // Initialize the FSM for CAN
 StatusCode can_fsm_init(FSM *fsm);
 
-// Clip and event data to be broacasted over CAN
+// Clip and prepare event data to be broacasted over CAN
 StatusCode can_fsm_transmit(CANDeviceID device_id, uint8_t device_state, uint16_t device_data);
