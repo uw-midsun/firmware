@@ -36,7 +36,7 @@ static bool powered = false;
 static bool mech_brake = false;
 
 static void prv_toggle_power(bool new_state) {
-  Event e;
+  Event e = { .data = 0 };
   if (new_state != powered) {
     e.id = INPUT_EVENT_POWER;
     event_arbiter_process_event(&e);
@@ -45,7 +45,7 @@ static void prv_toggle_power(bool new_state) {
 }
 
 static void prv_toggle_mech_brake(bool new_state) {
-  Event e = {.data = 0 };
+  Event e = { .data = 0 };
 
   e.id = (new_state == true) ? INPUT_EVENT_MECHANICAL_BRAKE_PRESSED
                              : INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;

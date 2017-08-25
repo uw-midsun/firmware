@@ -6,19 +6,19 @@
 FSM_DECLARE_STATE(state_can_transmit);
 
 FSM_STATE_TRANSITION(state_can_transmit) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_CAN_ID_POWER, state_can_transmit);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CAN_ID_PEDAL, state_can_transmit);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, state_can_transmit);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CAN_ID_TURN_SIGNAL, state_can_transmit);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CAN_ID_HAZARD_LIGHT, state_can_transmit);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CAN_ID_MECHANICAL_BRAKE, state_can_transmit);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CAN_ID_HORN, state_can_transmit);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CAN_ID_PUSH_TO_TALK, state_can_transmit);
+  FSM_ADD_TRANSITION(CAN_DEVICE_ID_POWER, state_can_transmit);
+  FSM_ADD_TRANSITION(CAN_DEVICE_ID_PEDAL, state_can_transmit);
+  FSM_ADD_TRANSITION(CAN_DEVICE_ID_DIRECTION_SELECTOR, state_can_transmit);
+  FSM_ADD_TRANSITION(CAN_DEVICE_ID_TURN_SIGNAL, state_can_transmit);
+  FSM_ADD_TRANSITION(CAN_DEVICE_ID_HAZARD_LIGHT, state_can_transmit);
+  FSM_ADD_TRANSITION(CAN_DEVICE_ID_MECHANICAL_BRAKE, state_can_transmit);
+  FSM_ADD_TRANSITION(CAN_DEVICE_ID_HORN, state_can_transmit);
+  FSM_ADD_TRANSITION(CAN_DEVICE_ID_PUSH_TO_TALK, state_can_transmit);
 }
 
 static void prv_transmit_data(FSM *fsm, const Event *e, void *context) {
   printf("Device = %d, State = %d, Data = %d\n",
-          e->id - 18,
+          e->id - NUM_INPUT_EVENT,
           e->data >> 12,
           e->data & 0xFFF);
 }
