@@ -2,6 +2,7 @@
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
+#include "can_fsm.h"
 
 // Direction selector FSM state definitions
 
@@ -57,24 +58,21 @@ static void prv_state_neutral(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_neutral;
 
-  input_event_raise_can(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, DIRECTION_FSM_STATE_NEUTRAL,
-                        e->data);
+  input_event_raise_can(CAN_DEVICE_ID_DIRECTION_SELECTOR, DIRECTION_FSM_STATE_NEUTRAL, e->data);
 }
 
 static void prv_state_forward(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_forward;
 
-  input_event_raise_can(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, DIRECTION_FSM_STATE_FORWARD,
-                        e->data);
+  input_event_raise_can(CAN_DEVICE_ID_DIRECTION_SELECTOR, DIRECTION_FSM_STATE_FORWARD, e->data);
 }
 
 static void prv_state_reverse(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_reverse;
 
-  input_event_raise_can(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, DIRECTION_FSM_STATE_REVERSE,
-                        e->data);
+  input_event_raise_can(CAN_DEVICE_ID_DIRECTION_SELECTOR, DIRECTION_FSM_STATE_REVERSE, e->data);
 }
 
 StatusCode direction_fsm_init(FSM *fsm) {

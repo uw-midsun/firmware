@@ -93,7 +93,7 @@ void test_can_fsm_power() {
 
   prv_toggle_power(true);
   event_process(&e);
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_POWER, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_POWER, e.id);
   TEST_ASSERT_EQUAL(POWER_FSM_STATE_ON, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
@@ -102,7 +102,7 @@ void test_can_fsm_power() {
   prv_toggle_power(false);
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_POWER, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_POWER, e.id);
   TEST_ASSERT_EQUAL(POWER_FSM_STATE_OFF, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
@@ -116,7 +116,7 @@ void test_can_fsm_mechanical_brake() {
   prv_toggle_mech_brake(true);
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_MECHANICAL_BRAKE, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_MECHANICAL_BRAKE, e.id);
   TEST_ASSERT_EQUAL(MECHANICAL_BRAKE_FSM_STATE_ENGAGED, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
@@ -126,7 +126,7 @@ void test_can_fsm_mechanical_brake() {
   prv_toggle_mech_brake(false);
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_MECHANICAL_BRAKE, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_MECHANICAL_BRAKE, e.id);
   TEST_ASSERT_EQUAL(MECHANICAL_BRAKE_FSM_STATE_DISENGAGED, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
@@ -145,7 +145,7 @@ void test_can_fsm_hazard_light() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_HAZARD_LIGHT, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_HAZARD_LIGHT, e.id);
   TEST_ASSERT_EQUAL(HAZARD_LIGHT_FSM_STATE_ON, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
@@ -156,7 +156,7 @@ void test_can_fsm_hazard_light() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_HAZARD_LIGHT, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_HAZARD_LIGHT, e.id);
   TEST_ASSERT_EQUAL(HAZARD_LIGHT_FSM_STATE_OFF, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
@@ -175,7 +175,7 @@ void test_can_fsm_turn_signal() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_TURN_SIGNAL, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_TURN_SIGNAL, e.id);
   TEST_ASSERT_EQUAL(TURN_SIGNAL_FSM_STATE_LEFT_SIGNAL, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
@@ -186,7 +186,7 @@ void test_can_fsm_turn_signal() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_TURN_SIGNAL, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_TURN_SIGNAL, e.id);
   TEST_ASSERT_EQUAL(TURN_SIGNAL_FSM_STATE_RIGHT_SIGNAL, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
@@ -197,7 +197,7 @@ void test_can_fsm_turn_signal() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_TURN_SIGNAL, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_TURN_SIGNAL, e.id);
   TEST_ASSERT_EQUAL(TURN_SIGNAL_FSM_STATE_NO_SIGNAL, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
@@ -219,7 +219,7 @@ void test_can_fsm_direction() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_DIRECTION_SELECTOR, e.id);
   TEST_ASSERT_EQUAL(DIRECTION_FSM_STATE_FORWARD, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
@@ -230,7 +230,7 @@ void test_can_fsm_direction() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_DIRECTION_SELECTOR, e.id);
   TEST_ASSERT_EQUAL(DIRECTION_FSM_STATE_REVERSE, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
@@ -241,7 +241,7 @@ void test_can_fsm_direction() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_DIRECTION_SELECTOR, e.id);
   TEST_ASSERT_EQUAL(DIRECTION_FSM_STATE_NEUTRAL, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
@@ -270,7 +270,7 @@ void test_can_fsm_pedal() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_PEDAL, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_PEDAL, e.id);
   TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_COAST, (e.data >> 12));
   TEST_ASSERT_EQUAL(0xdef, (e.data & 0xFFF));
 
@@ -281,7 +281,7 @@ void test_can_fsm_pedal() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_PEDAL, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_PEDAL, e.id);
   TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_DRIVING, (e.data >> 12));
   TEST_ASSERT_EQUAL(0xdef, (e.data & 0xFFF));
 
@@ -292,7 +292,7 @@ void test_can_fsm_pedal() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_PEDAL, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_PEDAL, e.id);
   TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_CRUISE_CONTROL, (e.data >> 12));
   TEST_ASSERT_EQUAL(0xdef, (e.data & 0xFFF));
 
@@ -308,7 +308,7 @@ void test_can_fsm_pedal() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_PEDAL, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_PEDAL, e.id);
   TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_BRAKE, (e.data >> 12));
   TEST_ASSERT_EQUAL(0xdef, (e.data & 0xFFF));
 
@@ -326,7 +326,7 @@ void test_can_fsm_horn() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_HORN, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_HORN, e.id);
   TEST_ASSERT_EQUAL(HORN_FSM_STATE_ON, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
@@ -337,7 +337,7 @@ void test_can_fsm_horn() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_HORN, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_HORN, e.id);
   TEST_ASSERT_EQUAL(HORN_FSM_STATE_OFF, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
@@ -355,7 +355,7 @@ void test_can_fsm_push_to_talk() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_PUSH_TO_TALK, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_PUSH_TO_TALK, e.id);
   TEST_ASSERT_EQUAL(PUSH_TO_TALK_FSM_STATE_ACTIVE, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
@@ -366,7 +366,7 @@ void test_can_fsm_push_to_talk() {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_ID_PUSH_TO_TALK, e.id);
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_PUSH_TO_TALK, e.id);
   TEST_ASSERT_EQUAL(PUSH_TO_TALK_FSM_STATE_INACTIVE, (e.data >> 12));
   TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
 
