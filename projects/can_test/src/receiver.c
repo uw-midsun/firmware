@@ -1,4 +1,5 @@
 #include "receiver.h"
+#include <inttypes.h>
 #include "can.h"
 #include "log.h"
 
@@ -20,7 +21,7 @@ static StatusCode prv_handle_can_rx(const CANMessage *msg, void *context, CANAck
 }
 
 static void prv_periodic_rx_cb(SoftTimerID timer_id, void *context) {
-  printf("RX'd %d, %d skips (%d)\n", s_counter, s_skips, s_prev_val);
+  printf("RX'd %" PRIu32 ", %" PRIu32 " skips (%" PRIu32 ")\n", s_counter, s_skips, s_prev_val);
   s_counter = 0;
   s_skips = 0;
 

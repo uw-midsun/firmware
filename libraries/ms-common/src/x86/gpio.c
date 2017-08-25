@@ -51,11 +51,7 @@ StatusCode gpio_init_pin(const GPIOAddress *address, const GPIOSettings *setting
   return STATUS_CODE_OK;
 }
 
-<<<<<<< HEAD
-StatusCode gpio_set_state(GPIOAddress *address, GPIOState state) {
-=======
-StatusCode gpio_set_pin_state(const GPIOAddress *address, GPIOState state) {
->>>>>>> master
+StatusCode gpio_set_state(const GPIOAddress *address, GPIOState state) {
   if (!prv_is_address_valid(address) || !prv_is_state_valid(&state)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }

@@ -58,7 +58,9 @@ void setup_test(void) {
     .rx = { GPIO_PORT_A, 11 },
     .loopback = true,
   };
-  can_init(&can_settings, &s_can_storage, &s_rx_handlers, TEST_CAN_NUM_RX_HANDLERS);
+
+  // No idea why this cast is needed.
+  can_init(&can_settings, &s_can_storage, (CANRxHandler *)&s_rx_handlers, TEST_CAN_NUM_RX_HANDLERS);
 }
 
 void teardown_test(void) {}

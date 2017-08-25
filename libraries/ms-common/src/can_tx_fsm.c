@@ -2,8 +2,8 @@
 
 // CAN TX FSM: Only attempts to transmit one message at a time - waits for each message
 // to be successfully transmitted before sending the next one.
-FSM_DECLARE_STATE(can_tx_fsm_idle);
-FSM_DECLARE_STATE(can_tx_fsm_active);
+// FSM_DECLARE_STATE(can_tx_fsm_idle);
+// FSM_DECLARE_STATE(can_tx_fsm_active);
 
 // Event sources:
 // We register TX ready with CAN HW - this is used to move into the idle state

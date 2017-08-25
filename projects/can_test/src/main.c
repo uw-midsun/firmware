@@ -4,6 +4,7 @@
 #include "can.h"
 #include "gpio.h"
 #include "interrupt.h"
+#include "log.h"
 #include "receiver.h"
 #include "sender.h"
 #include "soft_timer.h"

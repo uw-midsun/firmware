@@ -1,4 +1,5 @@
 #include "sender.h"
+#include <inttypes.h>
 #include "can.h"
 #include "log.h"
 #include "soft_timer.h"
@@ -25,7 +26,7 @@ static void prv_periodic_tx_cb(SoftTimerID timer_id, void *context) {
   uint32_t diff = s_sender.msg.data_u32[0] - s_sender.last_success;
   s_sender.last_success = s_sender.msg.data_u32[0];
 
-  printf("TX'd %d (%d)\n", diff, s_sender.last_success);
+  printf("TX'd %" PRIu32 " (%" PRIu32 ")\n", diff, s_sender.last_success);
 
   soft_timer_start_seconds(1, prv_periodic_tx_cb, NULL, NULL);
 }

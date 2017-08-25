@@ -52,7 +52,7 @@ static void prv_input_callback(const GPIOAddress *address, void *context) {
   DigitalIOData *data = context;
 
   GPIOState state = { 0 };
-  gpio_get_value(address, &state);
+  gpio_get_state(address, &state);
   event_raise(prv_get_event(data, state), 0);
 }
 
