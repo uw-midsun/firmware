@@ -45,9 +45,8 @@ static void prv_input_callback(ADCChannel adc_channel, void *context) {
       }
       break;
     case ANALOG_IO_DEVICE_MECHANICAL_BRAKE:
-      event_id = (analog_data > ANALOG_IO_BRAKE_THRESHOLD) ?
-              INPUT_EVENT_MECHANICAL_BRAKE_PRESSED :
-              INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
+      event_id = (analog_data > ANALOG_IO_BRAKE_THRESHOLD) ? INPUT_EVENT_MECHANICAL_BRAKE_PRESSED
+                                                           : INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
       break;
 
     default:
@@ -66,8 +65,8 @@ void analog_io_init() {
   ADCChannel adc_channel = NUM_ADC_CHANNEL;
 
   InputConfig analog_inputs[] = {
-    { .address = DRIVER_IO_GAS_PEDAL, .device = ANALOG_IO_DEVICE_GAS_PEDAL },
-    { .address = DRIVER_IO_MECHANICAL_BRAKE, .device = ANALOG_IO_DEVICE_MECHANICAL_BRAKE }
+    {.address = DRIVER_IO_GAS_PEDAL, .device = ANALOG_IO_DEVICE_GAS_PEDAL },
+    {.address = DRIVER_IO_MECHANICAL_BRAKE, .device = ANALOG_IO_DEVICE_MECHANICAL_BRAKE }
   };
 
   GPIOSettings settings = {

@@ -59,6 +59,7 @@ void setup_test() {
   hazard_light_fsm_init(&s_fsm_group.hazard_light);
   mechanical_brake_fsm_init(&s_fsm_group.mechanical_brake);
   mechanical_brake_fsm_init(&s_fsm_group.horn);
+  can_fsm_init(&s_fsm_group.can);
 
   can_fsm_init(&s_fsm_group.can);
 

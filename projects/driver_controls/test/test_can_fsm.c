@@ -1,5 +1,8 @@
 // Test that the CAN events are generated and processed with the same event IDs and data bits
 
+// Since there isn't a way to view CAN event data directly, the printf statements must be observed
+// to see that they are behaving correctly
+
 #include "event_arbiter.h"
 #include "event_queue.h"
 #include "input_event.h"
@@ -89,9 +92,8 @@ void teardown_test(void) {
 
 // Test that the power fsm correctly generates CAN events
 void test_can_fsm_power() {
-  Event e = { 0 };
-
   prv_toggle_power(true);
+
   event_process(&e);
   TEST_ASSERT_EQUAL(CAN_DEVICE_ID_POWER, e.id);
   TEST_ASSERT_EQUAL(POWER_FSM_STATE_ON, (e.data >> 12));
@@ -110,8 +112,6 @@ void test_can_fsm_power() {
 }
 
 void test_can_fsm_mechanical_brake() {
-  Event e = { 0 };
-
   // Test that pressing the brake state generates the correct event
   prv_toggle_mech_brake(true);
   event_process(&e);
@@ -138,7 +138,6 @@ void test_can_fsm_hazard_light() {
 
   // Turn on the power and clean up the event queue
   prv_toggle_power(true);
-  event_process(&e);
 
   // Test that the transition to the ON state generates the correct event
   e.id = INPUT_EVENT_HAZARD_LIGHT;
@@ -168,7 +167,6 @@ void test_can_fsm_turn_signal() {
 
   // Turn on the power and clean up the event queue
   prv_toggle_power(true);
-  event_process(&e);
 
   // Test that a left turn signal generates the correct event
   e.id = INPUT_EVENT_TURN_SIGNAL_LEFT;
@@ -249,7 +247,7 @@ void test_can_fsm_direction() {
 }
 
 void test_can_fsm_pedal() {
-  Event e = { .data = 0 };
+  Event e = {.data = 0 };
 
   // Setup for the pedals to be used
   prv_toggle_power(true);
@@ -266,7 +264,7 @@ void test_can_fsm_pedal() {
   event_process(&e);
 
   // Test that coasting generates the correct event
-  e = (Event){ .id = INPUT_EVENT_PEDAL_COAST, .data = 0xdef };
+  e = (Event){.id = INPUT_EVENT_PEDAL_COAST, .data = 0xdef };
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
@@ -277,7 +275,7 @@ void test_can_fsm_pedal() {
   TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 
   // Test that pressing the gas generates the correct event
-  e = (Event){ .id = INPUT_EVENT_PEDAL_PRESSED, .data = 0xdef };
+  e = (Event){.id = INPUT_EVENT_PEDAL_PRESSED, .data = 0xdef };
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
@@ -288,7 +286,7 @@ void test_can_fsm_pedal() {
   TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 
   // Test that cruise control generates the correct event
-  e = (Event){ .id = INPUT_EVENT_CRUISE_CONTROL, .data = 0xdef };
+  e = (Event){.id = INPUT_EVENT_CRUISE_CONTROL, .data = 0xdef };
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 
@@ -299,12 +297,11 @@ void test_can_fsm_pedal() {
   TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
 
   // Exit cruise control
-  e = (Event){ .id = INPUT_EVENT_CRUISE_CONTROL, .data = 0xdef };\
+  e = (Event){.id = INPUT_EVENT_CRUISE_CONTROL, .data = 0xdef };
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  event_process(&e);
 
   // Test that regen brakes generate the correct event
-  e = (Event){ .id = INPUT_EVENT_PEDAL_BRAKE, .data = 0xdef };
+  e = (Event){.id = INPUT_EVENT_PEDAL_BRAKE, .data = 0xdef };
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
   event_process(&e);
 

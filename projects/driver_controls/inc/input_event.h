@@ -1,6 +1,6 @@
 #pragma once
 
-// Define common typedefs for the various FSMs to use.
+// Common typedefs a functions for the various FSMs to use.
 
 #include "event_queue.h"
 
@@ -26,6 +26,3 @@ typedef enum {
   INPUT_EVENT_PUSH_TO_TALK,
   NUM_INPUT_EVENT
 } InputEvent;
-
-// Raise an event to broadcast device information over CAN
-StatusCode input_event_raise_can(InputEvent device_id, uint8_t device_state, uint16_t device_data);

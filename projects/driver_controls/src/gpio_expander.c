@@ -67,8 +67,8 @@ StatusCode gpio_expander_init(GPIOAddress address, I2CPort i2c_port) {
   InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_NORMAL };
 
   gpio_init_pin(&address, &gpio_settings);
-  gpio_it_register_interrupt(&address, &it_settings, INTERRUPT_EDGE_FALLING,
-                             prv_interrupt_handler, NULL);
+  gpio_it_register_interrupt(&address, &it_settings, INTERRUPT_EDGE_FALLING, prv_interrupt_handler,
+                             NULL);
 
   // Initialize the interrupt callbacks to NULL
   for (uint8_t i = 0; i < NUM_GPIO_EXPANDER_PINS; i++) {

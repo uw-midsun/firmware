@@ -4,8 +4,8 @@
 #include <stdint.h>
 
 #include "gpio.h"
-#include "spi.h"
 #include "log.h"
+#include "spi.h"
 
 #define GYRO_ID 0xD4
 
