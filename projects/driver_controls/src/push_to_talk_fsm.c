@@ -1,5 +1,4 @@
 #include "push_to_talk_fsm.h"
-#include "can_fsm.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"

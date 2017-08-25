@@ -92,6 +92,8 @@ void teardown_test(void) {
 
 // Test that the power fsm correctly generates CAN events
 void test_can_fsm_power() {
+  Event e = { 0 };
+
   prv_toggle_power(true);
 
   event_process(&e);
@@ -112,6 +114,8 @@ void test_can_fsm_power() {
 }
 
 void test_can_fsm_mechanical_brake() {
+  Event e = { 0 };
+
   // Test that pressing the brake state generates the correct event
   prv_toggle_mech_brake(true);
   event_process(&e);
@@ -138,6 +142,7 @@ void test_can_fsm_hazard_light() {
 
   // Turn on the power and clean up the event queue
   prv_toggle_power(true);
+  event_process(&e);
 
   // Test that the transition to the ON state generates the correct event
   e.id = INPUT_EVENT_HAZARD_LIGHT;
@@ -167,6 +172,7 @@ void test_can_fsm_turn_signal() {
 
   // Turn on the power and clean up the event queue
   prv_toggle_power(true);
+  event_process(&e);
 
   // Test that a left turn signal generates the correct event
   e.id = INPUT_EVENT_TURN_SIGNAL_LEFT;
