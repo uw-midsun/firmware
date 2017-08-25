@@ -1,7 +1,7 @@
 #include "can_fsm.h"
-#include "can_rx.h"
-#include "can_hw.h"
 #include "can.h"
+#include "can_hw.h"
+#include "can_rx.h"
 
 FSM_DECLARE_STATE(can_rx_fsm_handle);
 FSM_DECLARE_STATE(can_tx_fsm_handle);
@@ -32,7 +32,7 @@ static StatusCode prv_handle_data_msg(CANStorage *can_storage, const CANMessage 
       .msg_id = rx_msg->msg_id,
       .type = CAN_MSG_TYPE_ACK,
       .dlc = sizeof(ack_status),
-      .data = ack_status
+      .data = ack_status,
     };
 
     ret = can_transmit(&ack, NULL);
@@ -94,9 +94,9 @@ static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
   }
 
   CANId msg_id = {
-    .source_id = can_storage->device_id,
-    .type = tx_msg.type,
-    .msg_id = tx_msg.msg_id
+    .source_id = can_storage->device_id,  //
+    .type = tx_msg.type,                  //
+    .msg_id = tx_msg.msg_id,              //
   };
 
   // TODO: Semes to be some sort of deadlock if the bus is flooded - why does this not turn off the

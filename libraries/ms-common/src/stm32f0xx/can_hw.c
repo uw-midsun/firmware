@@ -1,8 +1,8 @@
 #include "can_hw.h"
 #include <string.h>
-#include "stm32f0xx.h"
 #include "interrupt.h"
 #include "log.h"
+#include "stm32f0xx.h"
 
 #define CAN_HW_BASE CAN
 #define CAN_HW_NUM_FILTER_BANKS 14
@@ -19,11 +19,11 @@ typedef struct CANHwEventHandler {
 } CANHwEventHandler;
 
 // Generated settings using http://www.bittiming.can-wiki.info/
-static CANHwTiming s_timing[NUM_CAN_HW_BITRATES] = { // For 48MHz clock
-  [CAN_HW_BITRATE_125KBPS] = { .prescaler = 24, .bs1 = 13, .bs2 = 2 },
-  [CAN_HW_BITRATE_250KBPS] = { .prescaler = 12, .bs1 = 13, .bs2 = 2 },
-  [CAN_HW_BITRATE_500KBPS] = { .prescaler = 6, .bs1 = 13, .bs2 = 2 },
-  [CAN_HW_BITRATE_1000KBPS] = { .prescaler = 3, .bs1 = 13, .bs2 = 2 }
+static CANHwTiming s_timing[NUM_CAN_HW_BITRATES] = {  // For 48MHz clock
+      [CAN_HW_BITRATE_125KBPS] = {.prescaler = 24, .bs1 = 13, .bs2 = 2 },
+      [CAN_HW_BITRATE_250KBPS] = {.prescaler = 12, .bs1 = 13, .bs2 = 2 },
+      [CAN_HW_BITRATE_500KBPS] = {.prescaler = 6, .bs1 = 13, .bs2 = 2 },
+      [CAN_HW_BITRATE_1000KBPS] = {.prescaler = 3, .bs1 = 13, .bs2 = 2 }
 };
 static CANHwEventHandler s_handlers[NUM_CAN_HW_EVENTS];
 static uint8_t s_num_filters;
@@ -33,8 +33,8 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
   s_num_filters = 0;
 
   GPIOSettings gpio_settings = {
-    .alt_function = GPIO_ALTFN_4,
-    .direction = GPIO_DIR_OUT
+    .alt_function = GPIO_ALTFN_4,  //
+    .direction = GPIO_DIR_OUT,     //
   };
   gpio_init_pin(&settings->tx, &gpio_settings);
   gpio_settings.direction = GPIO_DIR_IN;
@@ -75,9 +75,9 @@ StatusCode can_hw_register_callback(CANHwEvent event, CANHwEventHandlerCb callba
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  s_handlers[event] = (CANHwEventHandler) {
-    .callback = callback,
-    .context = context
+  s_handlers[event] = (CANHwEventHandler){
+    .callback = callback,  //
+    .context = context,    //
   };
 
   return STATUS_CODE_OK;
@@ -99,7 +99,7 @@ StatusCode can_hw_add_filter(uint16_t mask, uint16_t filter) {
     .CAN_FilterMaskIdHigh = mask << 5,
     .CAN_FilterMaskIdLow = 0x0000,
     .CAN_FilterFIFOAssignment = (s_num_filters % 2),
-    .CAN_FilterActivation = ENABLE
+    .CAN_FilterActivation = ENABLE,
   };
   CAN_FilterInit(&filter_cfg);
 
@@ -129,7 +129,7 @@ StatusCode can_hw_transmit(uint16_t id, const uint8_t *data, size_t len) {
 
   uint8_t tx_mailbox = CAN_Transmit(CAN_HW_BASE, &tx_msg);
   if (tx_mailbox == CAN_TxStatus_NoMailBox) {
-      return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN HW TX failed");
+    return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN HW TX failed");
   }
 
   return STATUS_CODE_OK;
@@ -162,11 +162,11 @@ bool can_hw_receive(uint16_t *id, uint64_t *data, size_t *len) {
 
 void CEC_CAN_IRQHandler(void) {
   bool run_cb[NUM_CAN_HW_EVENTS] = {
-    [CAN_HW_EVENT_TX_READY] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_TME) == SET,
-    [CAN_HW_EVENT_MSG_RX] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_FMP0) == SET ||
-                            CAN_GetITStatus(CAN_HW_BASE, CAN_IT_FMP1) == SET,
-    [CAN_HW_EVENT_BUS_ERROR] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_BOF) == SET ||
-                               CAN_GetITStatus(CAN_HW_BASE, CAN_IT_ERR) == SET
+        [CAN_HW_EVENT_TX_READY] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_TME) == SET,
+        [CAN_HW_EVENT_MSG_RX] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_FMP0) == SET ||
+                                CAN_GetITStatus(CAN_HW_BASE, CAN_IT_FMP1) == SET,
+        [CAN_HW_EVENT_BUS_ERROR] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_BOF) == SET ||
+                                   CAN_GetITStatus(CAN_HW_BASE, CAN_IT_ERR) == SET,
   };
 
   for (int event = 0; event < NUM_CAN_HW_EVENTS; event++) {

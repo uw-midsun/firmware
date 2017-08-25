@@ -1,8 +1,8 @@
 #pragma once
 // CAN TX/RX event handlers
 // This is an internal module and should not be used.
-#include "fsm.h"
 #include "can.h"
+#include "fsm.h"
 
 // The idea is that the CAN RX ISR pushes received message into a queue and raises an RX event.
 // In the FSM, when we encounter an RX event, we pop the messages in the RX queue

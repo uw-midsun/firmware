@@ -1,19 +1,19 @@
 // CAN driver bus flooding test
 // Attempts to flood the CAN bus - would like to ensure that the main thread doesn't starve
 // and figure out how quickly we can realistically send messages
-#include "gpio.h"
-#include "soft_timer.h"
-#include "interrupt.h"
 #include "can.h"
-#include "sender.h"
+#include "gpio.h"
+#include "interrupt.h"
 #include "receiver.h"
+#include "sender.h"
+#include "soft_timer.h"
 
 #define CAN_TEST_NUM_RX_HANDLERS 5
 
 typedef enum {
   CAN_TEST_EVENT_TX = 0,
   CAN_TEST_EVENT_RX,
-  CAN_TEST_EVENT_FAULT
+  CAN_TEST_EVENT_FAULT,
 } CANTestEvent;
 
 static GPIOAddress s_led = { GPIO_PORT_B, 3 };
@@ -29,10 +29,7 @@ static bool prv_is_sender(void) {
   GPIOAddress pin_out = { GPIO_PORT_A, 0 };
   GPIOAddress pin_in = { GPIO_PORT_A, 1 };
 
-  GPIOSettings gpio_settings = {
-    .direction = GPIO_DIR_OUT,
-    .state = GPIO_STATE_LOW
-  };
+  GPIOSettings gpio_settings = {.direction = GPIO_DIR_OUT, .state = GPIO_STATE_LOW };
   gpio_init_pin(&pin_out, &gpio_settings);
 
   gpio_settings.direction = GPIO_DIR_IN;
@@ -51,10 +48,7 @@ int main(void) {
   soft_timer_init();
   event_queue_init();
 
-  GPIOSettings gpio_settings = {
-    .direction = GPIO_DIR_OUT,
-    .state = GPIO_STATE_LOW
-  };
+  GPIOSettings gpio_settings = {.direction = GPIO_DIR_OUT, .state = GPIO_STATE_LOW };
   gpio_init_pin(&s_led, &gpio_settings);
   prv_blink_led(0, NULL);
 
@@ -63,7 +57,9 @@ int main(void) {
 
   CANSettings can_settings = {
     .device_id = 0x4 + is_sender,
-    .bitrate = CAN_HW_BITRATE_250KBPS, // TODO: figure out A) why the optimization level needed to be changed B) why bus speed does not seem to change the actual throughput
+    .bitrate = CAN_HW_BITRATE_250KBPS,  // TODO: figure out A) why the optimization level needed to
+                                        // be changed B) why bus speed does not seem to change the
+                                        // actual throughput
     .rx_event = CAN_TEST_EVENT_RX,
     .tx_event = CAN_TEST_EVENT_TX,
     .fault_event = CAN_TEST_EVENT_FAULT,

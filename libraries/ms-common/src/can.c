@@ -15,10 +15,10 @@
 //              after the timeout. If it's still down, we raise an event.
 #include "can.h"
 #include <string.h>
-#include "soft_timer.h"
-#include "can_hw.h"
 #include "can_fsm.h"
+#include "can_hw.h"
 #include "log.h"
+#include "soft_timer.h"
 
 #define CAN_BUS_OFF_RECOVERY_TIME_MS 500
 
@@ -43,8 +43,8 @@ void prv_bus_error_handler(void *context);
 
 static CANStorage *s_can_storage;
 
-StatusCode can_init(const CANSettings *settings, CANStorage *storage,
-                    CANRxHandler *rx_handlers, size_t num_rx_handlers) {
+StatusCode can_init(const CANSettings *settings, CANStorage *storage, CANRxHandler *rx_handlers,
+                    size_t num_rx_handlers) {
   if (settings->device_id >= CAN_MSG_MAX_DEVICES) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: Invalid device ID");
   }
@@ -62,7 +62,7 @@ StatusCode can_init(const CANSettings *settings, CANStorage *storage,
     .bitrate = settings->bitrate,
     .loopback = settings->loopback,
     .tx = settings->tx,
-    .rx = settings->rx
+    .rx = settings->rx,
   };
   can_hw_init(&can_hw_settings);
 
@@ -203,6 +203,6 @@ void prv_bus_error_handler(void *context) {
 
   printf("Bus error\n");
 
-  soft_timer_start_millis(CAN_BUS_OFF_RECOVERY_TIME_MS, prv_bus_error_timeout_handler,
-                          can_storage, NULL);
+  soft_timer_start_millis(CAN_BUS_OFF_RECOVERY_TIME_MS, prv_bus_error_timeout_handler, can_storage,
+                          NULL);
 }

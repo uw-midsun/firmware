@@ -7,10 +7,10 @@
 #include <stdint.h>
 #include "can_ack.h"
 #include "can_fifo.h"
+#include "can_hw.h"  // TODO figure out way of not needing this?
 #include "can_rx.h"
-#include "gpio.h"
 #include "fsm.h"
-#include "can_hw.h" // TODO figure out way of not needing this?
+#include "gpio.h"
 
 #define CAN_FSM can_get_fsm()
 
@@ -38,8 +38,8 @@ typedef struct CANStorage {
 } CANStorage;
 
 // Initializes the specified CAN configuration given pointers to persistant storage.
-StatusCode can_init(const CANSettings *settings, CANStorage *storage,
-                    CANRxHandler *rx_handlers, size_t num_rx_handlers);
+StatusCode can_init(const CANSettings *settings, CANStorage *storage, CANRxHandler *rx_handlers,
+                    size_t num_rx_handlers);
 
 StatusCode can_add_filter(CANMessageID msg_id);
 

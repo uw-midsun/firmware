@@ -1,7 +1,7 @@
 #include "sender.h"
-#include "soft_timer.h"
 #include "can.h"
 #include "log.h"
+#include "soft_timer.h"
 
 typedef struct {
   uint32_t timeout_us;

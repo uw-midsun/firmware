@@ -56,7 +56,7 @@ void setup_test(void) {
     .fault_event = TEST_CAN_EVENT_FAULT,
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },
-    .loopback = true
+    .loopback = true,
   };
   can_init(&can_settings, &s_can_storage, &s_rx_handlers, TEST_CAN_NUM_RX_HANDLERS);
 }
