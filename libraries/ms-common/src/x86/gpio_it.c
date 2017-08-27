@@ -16,10 +16,10 @@ typedef struct GPIOITInterrupt {
 } GPIOITInterrupt;
 
 static uint8_t s_gpio_it_handler_id;
-static GPIOITInterrupt s_gpio_it_interrupts[GPIO_MCU_NUM_PINS_PER_PORT];
+static GPIOITInterrupt s_gpio_it_interrupts[GPIO_PINS_PER_PORT];
 
 static void prv_gpio_it_handler(uint8_t interrupt_id) {
-  for (int i = 0; i < GPIO_MCU_NUM_PINS_PER_PORT; i++) {
+  for (int i = 0; i < GPIO_PINS_PER_PORT; i++) {
     if (s_gpio_it_interrupts[i].interrupt_id == interrupt_id &&
         s_gpio_it_interrupts[i].callback != NULL) {
       s_gpio_it_interrupts[i].callback(&s_gpio_it_interrupts[i].address,
@@ -32,7 +32,7 @@ void gpio_it_init(void) {
   x86_interrupt_register_handler(prv_gpio_it_handler, &s_gpio_it_handler_id);
 
   GPIOITInterrupt empty_cfg = { 0 };
-  for (uint16_t i = 0; i < GPIO_MCU_NUM_PINS_PER_PORT; i++) {
+  for (uint16_t i = 0; i < GPIO_PINS_PER_PORT; i++) {
     s_gpio_it_interrupts[i] = empty_cfg;
   }
 }
@@ -40,7 +40,7 @@ void gpio_it_init(void) {
 StatusCode gpio_it_register_interrupt(const GPIOAddress *address, const InterruptSettings *settings,
                                       InterruptEdge edge, gpio_it_callback callback,
                                       void *context) {
-  if (address->port >= GPIO_MCU_NUM_PORTS || address->pin >= GPIO_MCU_NUM_PINS_PER_PORT) {
+  if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   } else if (s_gpio_it_interrupts[address->pin].callback) {
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "Pin already in use.");
@@ -59,7 +59,7 @@ StatusCode gpio_it_register_interrupt(const GPIOAddress *address, const Interrup
 }
 
 StatusCode gpio_it_trigger_interrupt(const GPIOAddress *address) {
-  if (address->port >= GPIO_MCU_NUM_PORTS || address->pin >= GPIO_MCU_NUM_PINS_PER_PORT) {
+  if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 

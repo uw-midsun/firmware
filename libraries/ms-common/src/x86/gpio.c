@@ -5,12 +5,12 @@
 
 #include "status.h"
 
-static GPIOSettings s_pin_settings[GPIO_MCU_TOTAL_PINS];
-static uint8_t s_gpio_pin_input_value[GPIO_MCU_TOTAL_PINS];
+static GPIOSettings s_pin_settings[GPIO_TOTAL_PINS];
+static uint8_t s_gpio_pin_input_value[GPIO_TOTAL_PINS];
 
 // Determines if an GPIOAddress is valid based on the defined number of ports and pins.
 static bool prv_is_address_valid(const GPIOAddress *address) {
-  return !(address->port >= GPIO_MCU_NUM_PORTS || address->pin >= GPIO_MCU_NUM_PINS_PER_PORT);
+  return !(address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT);
 }
 
 // Determines if a GPIOState is valid based on the enums.
@@ -25,7 +25,7 @@ static bool prv_are_settings_valid(const GPIOSettings *settings) {
 }
 
 static uint32_t prv_get_index(const GPIOAddress *address) {
-  return address->port * (uint32_t)GPIO_MCU_NUM_PORTS + address->pin;
+  return address->port * (uint32_t)NUM_GPIO_PORTS + address->pin;
 }
 
 StatusCode gpio_init(void) {
@@ -35,7 +35,7 @@ StatusCode gpio_init(void) {
     .resistor = GPIO_RES_NONE,
     .alt_function = GPIO_ALTFN_NONE,
   };
-  for (uint32_t i = 0; i < GPIO_MCU_TOTAL_PINS; i++) {
+  for (uint32_t i = 0; i < GPIO_TOTAL_PINS; i++) {
     s_pin_settings[i] = default_settings;
     s_gpio_pin_input_value[i] = 0;
   }

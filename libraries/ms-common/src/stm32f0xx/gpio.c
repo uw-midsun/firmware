@@ -15,7 +15,7 @@ static uint32_t s_gpio_rcc_ahb_timer_map[] = { RCC_AHBPeriph_GPIOA, RCC_AHBPerip
 
 // Determines if an GPIOAddress is valid based on the defined number of ports and pins.
 static bool prv_is_address_valid(const GPIOAddress *address) {
-  return !(address->port >= GPIO_MCU_NUM_PORTS || address->pin >= GPIO_MCU_NUM_PINS_PER_PORT);
+  return !(address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT);
 }
 
 // TODO(ELEC-20): Consider moving these two functions to the header as they will be used more or
