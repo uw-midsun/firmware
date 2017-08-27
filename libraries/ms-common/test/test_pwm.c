@@ -12,12 +12,13 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#define PWM_TIMER PWM_TIMER_14
+#define TEST_PWM_TIMER PWM_TIMER_14
+#define TEST_PWM_ADDR \
+  { GPIO_PORT_A, 7 }
+
 #define PERIOD_MS 100
 #define DUTY_CYCLE 50
 #define EXPECTED_EDGES 3
-#define PWM_TEST_ADDR \
-  { GPIO_PORT_A, 7 }
 
 static volatile uint16_t s_counter = 0;
 
@@ -36,21 +37,21 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_pwm_guards(void) {
-  TEST_ASSERT_EQUAL(STATUS_CODE_UNINITIALIZED, pwm_set_pulse(PWM_TIMER, DUTY_CYCLE));
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, pwm_init(PWM_TIMER, 0));
-  TEST_ASSERT_OK(pwm_init(PWM_TIMER, PERIOD_MS));
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, pwm_set_dc(PWM_TIMER, 101));
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, pwm_set_pulse(PWM_TIMER, PERIOD_MS + 1));
+  TEST_ASSERT_EQUAL(STATUS_CODE_UNINITIALIZED, pwm_set_pulse(TEST_PWM_TIMER, DUTY_CYCLE));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, pwm_init(TEST_PWM_TIMER, 0));
+  TEST_ASSERT_OK(pwm_init(TEST_PWM_TIMER, PERIOD_MS));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, pwm_set_dc(TEST_PWM_TIMER, 101));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, pwm_set_pulse(TEST_PWM_TIMER, PERIOD_MS + 1));
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, pwm_init(NUM_PWM_TIMERS, PERIOD_MS));
 }
 
 void test_pwm_output(void) {
-  TEST_ASSERT_OK(pwm_init(PWM_TIMER, PERIOD_MS));
-  TEST_ASSERT_EQUAL(PERIOD_MS, pwm_get_period(PWM_TIMER));
-  TEST_ASSERT_OK(pwm_set_pulse(PWM_TIMER, PERIOD_MS - 1));
-  TEST_ASSERT_OK(pwm_set_dc(PWM_TIMER, DUTY_CYCLE));
+  TEST_ASSERT_OK(pwm_init(TEST_PWM_TIMER, PERIOD_MS));
+  TEST_ASSERT_EQUAL(PERIOD_MS, pwm_get_period(TEST_PWM_TIMER));
+  TEST_ASSERT_OK(pwm_set_pulse(TEST_PWM_TIMER, PERIOD_MS - 1));
+  TEST_ASSERT_OK(pwm_set_dc(TEST_PWM_TIMER, DUTY_CYCLE));
 
-  const GPIOAddress addr = PWM_TEST_ADDR;
+  const GPIOAddress addr = TEST_PWM_ADDR;
   const GPIOSettings settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,
