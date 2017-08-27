@@ -22,7 +22,7 @@ typedef struct ADCStatus {
   bool continuous;
 } ADCStatus;
 
-static ADCInterrupt s_adc_interrupts[NUM_ADC_CHANNEL];
+static ADCInterrupt s_adc_interrupts[NUM_ADC_CHANNELS];
 static ADCStatus s_adc_status;
 
 // Formula obtained from section 13.9 of the reference manual. Returns reading in kelvin
@@ -43,12 +43,12 @@ static uint16_t prv_get_vdda(uint16_t reading) {
 }
 
 static StatusCode prv_channel_valid(ADCChannel adc_channel) {
-  if (adc_channel >= NUM_ADC_CHANNEL) {
-    return STATUS_CODE_INVALID_ARGS;
+  if (adc_channel >= NUM_ADC_CHANNELS) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
   if (!(ADC1->CHSELR & ((uint32_t)1 << adc_channel))) {
-    return STATUS_CODE_EMPTY;
+    return status_code(STATUS_CODE_EMPTY);
   }
 
   return STATUS_CODE_OK;
@@ -91,7 +91,7 @@ void adc_init(ADCMode adc_mode) {
   ADC_ITConfig(ADC1, ADC_IER_EOCIE, true);
   ADC_ITConfig(ADC1, ADC_IER_EOSEQIE, true);
 
-  // Initialize static varables
+  // Initialize static variables
   s_adc_status.continuous = adc_mode;
   s_adc_status.sequence = 0;
 
@@ -104,8 +104,8 @@ void adc_init(ADCMode adc_mode) {
 }
 
 StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
-  if (adc_channel >= NUM_ADC_CHANNEL) {
-    return STATUS_CODE_INVALID_ARGS;
+  if (adc_channel >= NUM_ADC_CHANNELS) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
   if (new_state) {
@@ -162,7 +162,7 @@ StatusCode adc_get_channel(GPIOAddress address, ADCChannel *adc_channel) {
   }
 
   if (*adc_channel > ADC_CHANNEL_15) {
-    return STATUS_CODE_INVALID_ARGS;
+    return status_code(STATUS_CODE_INVALID_ARGS);
   }
   return STATUS_CODE_OK;
 }

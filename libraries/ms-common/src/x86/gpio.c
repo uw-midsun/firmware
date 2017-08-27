@@ -15,13 +15,13 @@ static bool prv_is_address_valid(const GPIOAddress *address) {
 
 // Determines if a GPIOState is valid based on the enums.
 static bool prv_is_state_valid(const GPIOState *state) {
-  return *state < NUM_GPIO_STATE;
+  return *state < NUM_GPIO_STATES;
 }
 
 // Determines if a GPIOSettings is valid based on the enums.
 static bool prv_are_settings_valid(const GPIOSettings *settings) {
-  return !(settings->direction >= NUM_GPIO_DIR || settings->state >= NUM_GPIO_STATE ||
-           settings->resistor >= NUM_GPIO_RES || settings->alt_function >= NUM_GPIO_ALTFN);
+  return !(settings->direction >= NUM_GPIO_DIRS || settings->state >= NUM_GPIO_STATES ||
+           settings->resistor >= NUM_GPIO_RESES || settings->alt_function >= NUM_GPIO_ALTFNS);
 }
 
 static uint32_t prv_get_index(const GPIOAddress *address) {

@@ -75,7 +75,7 @@ void test_gpio_init_pin_invalid_address(void) {
 void test_gpio_init_pin_invalid_settings(void) {
   // Bad settings for a pin.
   GPIOSettings settings = {
-    .direction = NUM_GPIO_DIR,
+    .direction = NUM_GPIO_DIRS,
     .state = GPIO_STATE_LOW,
     .resistor = GPIO_RES_PULLUP,
     .alt_function = GPIO_ALTFN_NONE,
@@ -88,13 +88,13 @@ void test_gpio_init_pin_invalid_settings(void) {
   };
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_init_pin(&address, &settings));
   settings.direction = GPIO_DIR_IN;
-  settings.state = NUM_GPIO_STATE;
+  settings.state = NUM_GPIO_STATES;
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_init_pin(&address, &settings));
   settings.state = GPIO_STATE_LOW;
-  settings.resistor = NUM_GPIO_RES;
+  settings.resistor = NUM_GPIO_RESES;
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_init_pin(&address, &settings));
   settings.resistor = GPIO_RES_NONE;
-  settings.alt_function = NUM_GPIO_ALTFN;
+  settings.alt_function = NUM_GPIO_ALTFNS;
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_init_pin(&address, &settings));
 }
 
@@ -179,7 +179,7 @@ void test_gpio_set_pin_state_invalid_state(void) {
     .port = VALID_PORT,  //
     .pin = VALID_PIN     //
   };
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_pin_state(&address, NUM_GPIO_STATE));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_pin_state(&address, NUM_GPIO_STATES));
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_pin_state(&address, -1));
 }
 
