@@ -28,7 +28,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     hazard_light_state = HAZARD_LIGHT_FSM_STATE_ON;
   }
 
-  event_arbiter_can_output(CAN_DEVICE_ID_HAZARD_LIGHT, hazard_light_state, e->data);
+  event_arbiter_can_output(CAN_OUTPUT_DEVICE_ID_HAZARD_LIGHT, hazard_light_state, e->data);
 }
 
 StatusCode hazard_light_fsm_init(FSM *fsm) {
