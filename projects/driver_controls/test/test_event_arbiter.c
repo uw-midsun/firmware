@@ -1,5 +1,3 @@
-// TODO: Add test for can
-
 #include "event_arbiter.h"
 #include "log.h"
 #include "status.h"

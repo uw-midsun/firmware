@@ -42,10 +42,10 @@ int main() {
   interrupt_init();
   gpio_it_init();
 
-  //adc_init(ADC_MODE_CONTINUOUS);
+  adc_init(ADC_MODE_CONTINUOUS);
 
   digital_io_init();
-  //analog_io_init();
+  analog_io_init();
 
   event_queue_init();
 

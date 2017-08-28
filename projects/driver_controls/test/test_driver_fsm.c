@@ -114,8 +114,6 @@ void test_driver_fsm_power_off() {
 
   e.id = INPUT_EVENT_PEDAL_PRESSED;
   TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
-  printf("b\n");
-
 }
 
 // Check that the car does not move when the mechanical brake is pressed
