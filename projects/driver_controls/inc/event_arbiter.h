@@ -19,7 +19,7 @@ typedef bool (*EventArbiterCheck)(const Event *e);
 typedef void (*EventArbiterCANOutput)(uint8_t device_id, uint8_t device_state, uint16_t data);
 
 // Initializes the event arbiter to the default state with a given output function
-StatusCode event_arbiter_init(EventArbiterCANOutput output);
+StatusCode event_arbiter_init(EventArbiterOutput output);
 
 // Registers an FSM and sets the context pointer to point to the given event check function
 // NULL pointers are treated as no-ops that return true

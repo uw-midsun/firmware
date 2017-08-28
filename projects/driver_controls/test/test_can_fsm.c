@@ -1,4 +1,4 @@
-// Test that the CAN events are generated and processed with the same event IDs and data bits
+// Test that the CAN output routines are properly generated once the correct events occur
 
 // Since there isn't a way to view CAN event data directly, the printf statements must be observed
 // to see that they are behaving correctly
@@ -52,13 +52,6 @@ static void prv_output(uint8_t device_id, uint8_t device_state, uint16_t device_
 
   s_can_event.id = device_id;
   s_can_event.data = data.raw;
-
-  /*
-  printf("Device = %d, State = %d, Data = %d\n",
-          device_id,
-          data.components.state,
-          data.components.data);
-  */
 }
 
 static void prv_toggle_power(bool new_state) {
