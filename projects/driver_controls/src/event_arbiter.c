@@ -6,7 +6,7 @@
 
 static FSM *s_driver_fsms[EVENT_ARBITER_MAX_FSMS];
 static EventArbiterCheck s_event_checks[EVENT_ARBITER_MAX_FSMS];
-static EventArbiterCANOutput s_output;
+static EventArbiterOutput s_output;
 
 static uint8_t s_num_active_fsms = 0;
 
@@ -19,7 +19,7 @@ static bool prv_event_permitted(Event *e) {
   return true;
 }
 
-StatusCode event_arbiter_init(EventArbiterCANOutput output) {
+StatusCode event_arbiter_init(EventArbiterOutput output) {
   s_output = output;
 
   for (uint8_t i = 0; i < EVENT_ARBITER_MAX_FSMS; i++) {
@@ -53,7 +53,7 @@ bool event_arbiter_process_event(Event *e) {
   return transitioned;
 }
 
-StatusCode event_arbiter_can_output(uint8_t device_id, uint8_t device_state, uint16_t data) {
+StatusCode event_arbiter_output(uint8_t device_id, uint8_t device_state, uint16_t data) {
   if (s_output != NULL) {
     s_output(device_id, device_state, data);
   }

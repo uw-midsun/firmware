@@ -16,7 +16,7 @@
 // Typedef for the FSM arbitration functions
 typedef bool (*EventArbiterCheck)(const Event *e);
 
-typedef void (*EventArbiterCANOutput)(uint8_t device_id, uint8_t device_state, uint16_t data);
+typedef void (*EventArbiterOutput)(uint8_t device_id, uint8_t device_state, uint16_t data);
 
 // Initializes the event arbiter to the default state with a given output function
 StatusCode event_arbiter_init(EventArbiterOutput output);
@@ -28,4 +28,4 @@ EventArbiterCheck *event_arbiter_add_fsm(FSM *fsm, EventArbiterCheck default_che
 // Process an event if allowed in the current state
 bool event_arbiter_process_event(Event *e);
 
-StatusCode event_arbiter_can_output(uint8_t device_id, uint8_t device_state, uint16_t data);
+StatusCode event_arbiter_output(uint8_t device_id, uint8_t device_state, uint16_t data);
