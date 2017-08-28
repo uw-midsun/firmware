@@ -39,7 +39,7 @@ static FSM s_fsm_b;
 static uint8_t s_output_runs;
 
 // Event arbiter test output function
-static void prv_output(uint8_t device_id, uint8_t device_state, uint16_t device_data) {
+static void prv_output(FSM *fsm, EventArbiterOutputData data) {
   s_output_runs++;
 }
 
@@ -51,16 +51,19 @@ static void prv_state_c(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_state_c;
 
-  event_arbiter_output(0, 0, 0);
+  EventArbiterOutputData data = { 0 };
+
+  event_arbiter_output(fsm, data);
 }
 
 static void prv_state_d(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = NULL;
 
-  event_arbiter_output(0, 0, 0);
-}
+  EventArbiterOutputData data = { 0 };
 
+  event_arbiter_output(fsm, data);
+}
 
 void setup_test(void) {
   s_output_runs = 0;
