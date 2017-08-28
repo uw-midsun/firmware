@@ -12,7 +12,6 @@ static StatusCode prv_handle_can_rx(const CANMessage *msg, void *context, CANAck
 
   if (msg->data_u32[0] != s_prev_val + 1) {
     s_skips++;
-    // printf("RX error (expected %d, got %d)\n", s_prev_val + 1, msg->data_u32[0]);
   }
 
   s_prev_val = msg->data_u32[0];
@@ -25,7 +24,7 @@ static void prv_periodic_rx_cb(SoftTimerID timer_id, void *context) {
   s_counter = 0;
   s_skips = 0;
 
-  soft_timer_start_seconds(5, prv_periodic_rx_cb, NULL, NULL);
+  soft_timer_start_seconds(1, prv_periodic_rx_cb, NULL, NULL);
 }
 
 void receiver_init(void) {

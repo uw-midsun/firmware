@@ -46,11 +46,6 @@ static void prv_handle_rx(FSM *fsm, const Event *e, void *context) {
   CANStorage *can_storage = context;
   CANMessage rx_msg = { 0 };
 
-  // Only process the number of messages that we popped in the corresponding event
-
-  uint16_t messages = e->data;
-
-  // printf("RX handling %d\n", e->data);
   StatusCode result = can_fifo_pop(&can_storage->rx_fifo, &rx_msg);
   if (result != STATUS_CODE_OK) {
     // We had a mismatch between number of events and number of messages, so return silently
@@ -78,14 +73,11 @@ static void prv_handle_rx(FSM *fsm, const Event *e, void *context) {
   }
 }
 
-// TODO: flesh out design
-// now assuming that TX is always 1-to-1
-// basically want to be able to rate-limit tx attempts - delay processing until TX happens
+// We assume that TX events are always 1-to-1.
+// We expect the TX complete interrupt to raise any discarded events.
 static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
   CANStorage *can_storage = context;
   CANMessage tx_msg = { 0 };
-
-  // printf("E: TX (%d) - %d queued\n", e->data, can_fifo_size(&can_storage->tx_fifo));
 
   StatusCode result = can_fifo_peek(&can_storage->tx_fifo, &tx_msg);
   if (result != STATUS_CODE_OK) {
@@ -99,15 +91,10 @@ static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
     .msg_id = tx_msg.msg_id,              //
   };
 
-  // TODO: Semes to be some sort of deadlock if the bus is flooded - why does this not turn off the
-  // bus?
   // If added to mailbox, pop message from the TX queue
   StatusCode ret = can_hw_transmit(msg_id.raw, tx_msg.data_u8, tx_msg.dlc);
   if (ret == STATUS_CODE_OK) {
     can_fifo_pop(&can_storage->tx_fifo, NULL);
-    // printf("pop %d\n", tx_msg.data_u32[0]);
-  } else if (can_hw_bus_status() != CAN_HW_BUS_STATUS_OK) {
-    // printf("bus error??? %d\n", can_hw_bus_status());
   }
 }
 

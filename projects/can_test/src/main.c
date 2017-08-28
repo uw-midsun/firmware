@@ -55,13 +55,11 @@ int main(void) {
   prv_blink_led(0, NULL);
 
   bool is_sender = prv_is_sender();
-  printf("Is sender: %d\n", is_sender);
+  LOG_DEBUG("Is sender: %d\n", is_sender);
 
   CANSettings can_settings = {
     .device_id = 0x4 + is_sender,
-    .bitrate = CAN_HW_BITRATE_250KBPS,  // TODO: figure out A) why the optimization level needed to
-                                        // be changed B) why bus speed does not seem to change the
-                                        // actual throughput
+    .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = CAN_TEST_EVENT_RX,
     .tx_event = CAN_TEST_EVENT_TX,
     .fault_event = CAN_TEST_EVENT_FAULT,

@@ -57,8 +57,6 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
   CAN_ITConfig(CAN_HW_BASE, CAN_IT_TME, ENABLE);
   CAN_ITConfig(CAN_HW_BASE, CAN_IT_FMP0, ENABLE);
   CAN_ITConfig(CAN_HW_BASE, CAN_IT_FMP1, ENABLE);
-  CAN_ITConfig(CAN_HW_BASE, CAN_IT_BOF, ENABLE);
-  // TODO: what is going on and why is my interrupt not firing
   CAN_ITConfig(CAN_HW_BASE, CAN_IT_ERR, ENABLE);
   stm32f0xx_interrupt_nvic_enable(CEC_CAN_IRQn, INTERRUPT_PRIORITY_HIGH);
 
@@ -149,7 +147,6 @@ bool can_hw_receive(uint16_t *id, uint64_t *data, size_t *len) {
     return false;
   }
 
-  // printf("fifo %d - %d\n", fifo, CAN_MessagePending(CAN_HW_BASE, CAN_FIFO0));
   CanRxMsg rx_msg = { 0 };
   CAN_Receive(CAN_HW_BASE, fifo, &rx_msg);
 
@@ -165,8 +162,7 @@ void CEC_CAN_IRQHandler(void) {
         [CAN_HW_EVENT_TX_READY] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_TME) == SET,
         [CAN_HW_EVENT_MSG_RX] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_FMP0) == SET ||
                                 CAN_GetITStatus(CAN_HW_BASE, CAN_IT_FMP1) == SET,
-        [CAN_HW_EVENT_BUS_ERROR] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_BOF) == SET ||
-                                   CAN_GetITStatus(CAN_HW_BASE, CAN_IT_ERR) == SET,
+        [CAN_HW_EVENT_BUS_ERROR] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_ERR) == SET,
   };
 
   for (int event = 0; event < NUM_CAN_HW_EVENTS; event++) {
@@ -178,6 +174,5 @@ void CEC_CAN_IRQHandler(void) {
   }
 
   CAN_ClearITPendingBit(CAN_HW_BASE, CAN_IT_ERR);
-  CAN_ClearITPendingBit(CAN_HW_BASE, CAN_IT_BOF);
   CAN_ClearITPendingBit(CAN_HW_BASE, CAN_IT_TME);
 }

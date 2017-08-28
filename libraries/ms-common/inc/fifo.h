@@ -25,7 +25,6 @@ typedef struct {
 #define fifo_push(fifo, source) fifo_push_impl((fifo), (source), sizeof(*(source)))
 
 // Peek at the first element on the FIFO.
-// TODO: Add test for peek
 #define fifo_peek(fifo, dest) fifo_peek_impl((fifo), (dest), sizeof(*(dest)))
 
 // Pop a single element off of the FIFO.

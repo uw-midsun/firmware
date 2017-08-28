@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include "can_ack.h"
 #include "can_fifo.h"
-#include "can_hw.h"  // TODO figure out way of not needing this?
+#include "can_hw.h"
 #include "can_rx.h"
 #include "fsm.h"
 #include "gpio.h"

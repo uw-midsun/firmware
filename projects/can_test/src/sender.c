@@ -13,7 +13,6 @@ typedef struct {
 static volatile SenderStorage s_sender = { 0 };
 
 static void prv_tx_cb(SoftTimerID timer_id, void *context) {
-  // printf("TX %d\n", s_sender.msg.data_u32[0]);
   StatusCode ret = can_transmit(&s_sender.msg, NULL);
   if (status_ok(ret)) {
     s_sender.msg.data_u32[0]++;

@@ -1,12 +1,8 @@
 // Basically, this module glues all the components of CAN together.
 //
 // It hooks into the CAN HW callbacks:
-// TODO: update this
-// - TX ready: When a transmit is requested, it will first try to immediately send the message.
-//             If that fails, then the message is pushed into a queue. When the TX ready callback
-//             runs, it tries to send any messages in that queue. This callback should run before
-//             code that tries to send messages can run, so we should be okay. Just in case our
-//             CAN queue isn't actually interrupt-safe, be warned that a race condition could occur.
+// - TX ready: Used to re-raise potentially discarded TX events. We assume that if there are
+//             elements in the TX FIFO, we have a backlog that has resulted in discarded events.
 // - Message RX: When the message RX callback runs, we just push the message into a queue and
 //               raise an event. When that event is processed in the main loop
 //               (can_fsm_process_event), we find the associated callback and run it.
@@ -26,7 +22,7 @@
 StatusCode prv_transmit(const CANMessage *msg);
 
 // Handler for CAN HW TX ready events
-// Attempts to transmit any messages in the TX queue
+// Re-raises potentially discarded TX events
 void prv_tx_handler(void *context);
 
 // Handler for CAN HW messaged RX events
@@ -56,7 +52,12 @@ StatusCode can_init(const CANSettings *settings, CANStorage *storage, CANRxHandl
   storage->device_id = settings->device_id;
 
   s_can_storage = storage;
-  LOG_DEBUG("Setting s_can_storage to %p\n", s_can_storage);
+
+  can_fsm_init(&s_can_storage->fsm, s_can_storage);
+  can_fifo_init(&s_can_storage->tx_fifo);
+  can_fifo_init(&s_can_storage->rx_fifo);
+  can_ack_init(&s_can_storage->ack_requests);
+  can_rx_init(&s_can_storage->rx_handlers, rx_handlers, num_rx_handlers);
 
   CANHwSettings can_hw_settings = {
     .bitrate = settings->bitrate,
@@ -65,12 +66,6 @@ StatusCode can_init(const CANSettings *settings, CANStorage *storage, CANRxHandl
     .rx = settings->rx,
   };
   can_hw_init(&can_hw_settings);
-
-  can_fsm_init(&s_can_storage->fsm, s_can_storage);
-  can_fifo_init(&s_can_storage->tx_fifo);
-  can_fifo_init(&s_can_storage->rx_fifo);
-  can_ack_init(&s_can_storage->ack_requests);
-  can_rx_init(&s_can_storage->rx_handlers, rx_handlers, num_rx_handlers);
 
   can_hw_register_callback(CAN_HW_EVENT_TX_READY, prv_tx_handler, s_can_storage);
   can_hw_register_callback(CAN_HW_EVENT_MSG_RX, prv_rx_handler, s_can_storage);
@@ -129,10 +124,6 @@ StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request)
   // We raise an event just to ensure that the CAN TX is postponed until the main event loop.
   event_raise(s_can_storage->tx_event, 1);
 
-  if (msg->data_u32[0] == 0 && msg->type == CAN_MSG_TYPE_DATA) {
-    // printf("> tx %d msg %d\n", msg->data_u32[0], msg->msg_id);
-  }
-
   return can_fifo_push(&s_can_storage->tx_fifo, msg);
 }
 
@@ -148,60 +139,48 @@ void prv_tx_handler(void *context) {
   CANStorage *can_storage = context;
   CANMessage tx_msg;
 
-  // If we failed to TX some messages, raise a TX event to trigger a transmit attempt.
+  // If we failed to TX some messages or aren't transmitting fast enough, those events
+  // were discarded. Raise a TX event to trigger a transmit attempt.
   // We only raise one event since TX ready interrupts are 1-to-1.
-  // TODO: this will cause a lot of CAN TX events to happen
   if (can_fifo_size(&can_storage->tx_fifo) > 0) {
-    // Notify of the ability to TX
-    // TODO: Replace data value with something meaningful
     event_raise(can_storage->tx_event, 0);
   }
 }
 
-// TODO: Flesh this out
-// Now assumes that the ISR will be fired once for each message and we should only process one at a
-// time
+// The RX ISR will fire once for each received message
+// Each event will result in one message's processing.
 void prv_rx_handler(void *context) {
   CANStorage *can_storage = context;
   CANId rx_id = { 0 };
   CANMessage rx_msg = { 0 };
   size_t counter = 0;
 
-  can_hw_receive(&rx_id.raw, &rx_msg.data, &rx_msg.dlc);
-  CAN_MSG_SET_RAW_ID(&rx_msg, rx_id.raw);
-  if (rx_msg.data_u32[0] == 0 && rx_msg.type == CAN_MSG_TYPE_DATA) {
-    // printf("%d\n", rx_id.raw);
-    // printf("> rx %d msg %d\n", rx_msg.data_u32[0], rx_msg.msg_id);
-  }
+  while (can_hw_receive(&rx_id.raw, &rx_msg.data, &rx_msg.dlc)) {
+    CAN_MSG_SET_RAW_ID(&rx_msg, rx_id.raw);
 
-  StatusCode result = can_fifo_push(&can_storage->rx_fifo, &rx_msg);
-  // TODO: add error handling for FSMs
-  if (result != STATUS_CODE_OK) {
-    // printf("error pushing msg to rx queue\n");
-    return;
-  }
+    StatusCode result = can_fifo_push(&can_storage->rx_fifo, &rx_msg);
+    // TODO(ELEC-251): add error handling for FSMs
+    if (result != STATUS_CODE_OK) {
+      return;
+    }
 
-  // printf("raising rx event\n");
-  event_raise(can_storage->rx_event, 1);
+    event_raise(can_storage->rx_event, 1);
+  }
 }
 
 void prv_bus_error_timeout_handler(SoftTimerID timer_id, void *context) {
   CANStorage *can_storage = context;
 
-  printf("bus error timeout\n");
-
+  // Note that bus errors have never been tested.
   CANHwBusStatus status = can_hw_bus_status();
 
   if (status == CAN_HW_BUS_STATUS_OFF) {
-    printf("raising fault event\n");
     event_raise(can_storage->fault_event, 0);
   }
 }
 
 void prv_bus_error_handler(void *context) {
   CANStorage *can_storage = context;
-
-  printf("Bus error\n");
 
   soft_timer_start_millis(CAN_BUS_OFF_RECOVERY_TIME_MS, prv_bus_error_timeout_handler, can_storage,
                           NULL);
