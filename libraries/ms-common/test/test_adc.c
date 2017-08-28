@@ -62,7 +62,7 @@ void teardown_test(void) {}
 
 void test_set_channel(void) {
   // Check that channels can only be set with the correct channel arguments
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, adc_set_channel(NUM_ADC_CHANNEL, true));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, adc_set_channel(NUM_ADC_CHANNELS, true));
 
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_set_channel(ADC_CHANNEL_0, true));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_set_channel(ADC_CHANNEL_1, true));
@@ -76,7 +76,7 @@ void test_set_channel(void) {
 void test_set_callback(void) {
   // Check that callbacks can only be registered with the correct channel arguments
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
-                    adc_register_callback(NUM_ADC_CHANNEL, prv_callback, NULL));
+                    adc_register_callback(NUM_ADC_CHANNELS, prv_callback, NULL));
 
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL));
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, adc_register_callback(ADC_CHANNEL_1, prv_callback, NULL));
@@ -114,7 +114,7 @@ void test_single() {
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_read_raw(ADC_CHANNEL_1, &reading));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_read_raw(ADC_CHANNEL_2, &reading));
 
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, adc_read_raw(NUM_ADC_CHANNEL, &reading));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, adc_read_raw(NUM_ADC_CHANNELS, &reading));
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, adc_read_raw(ADC_CHANNEL_3, &reading));
 
   while (!s_callback_ran) {

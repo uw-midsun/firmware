@@ -46,9 +46,9 @@ void test_status_create_valid(void) {
 
 // Verifies the behavior when a code greater than NUM_STATUS_CODE is entered.
 void test_status_create_invalid_code(void) {
-  StatusCode statuscode = status_code(NUM_STATUS_CODE + 1);
+  StatusCode statuscode = status_code(NUM_STATUS_CODES + 1);
   Status status = status_get();
-  TEST_ASSERT_EQUAL(NUM_STATUS_CODE + 1, status.code);
+  TEST_ASSERT_EQUAL(NUM_STATUS_CODES + 1, status.code);
   TEST_ASSERT_EQUAL_STRING("test_status_create_invalid_code", status.caller);
   TEST_ASSERT_EQUAL_STRING("", status.message);
 }
