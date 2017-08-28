@@ -13,31 +13,14 @@ static uint32_t s_gpio_rcc_ahb_timer_map[] = { RCC_AHBPeriph_GPIOA, RCC_AHBPerip
                                                RCC_AHBPeriph_GPIOC, RCC_AHBPeriph_GPIOD,
                                                RCC_AHBPeriph_GPIOE, RCC_AHBPeriph_GPIOF };
 
-// Determines if an GPIOAddress is valid based on the defined number of ports and pins.
-static bool prv_is_address_valid(const GPIOAddress *address) {
-  return !(address->port >= GPIO_MCU_NUM_PORTS || address->pin >= GPIO_MCU_NUM_PINS_PER_PORT);
-}
-
-// TODO(ELEC-20): Consider moving these two functions to the header as they will be used more or
-// less universally between the implementations.
-
-// Determines if a GPIOState is valid based on the enums.
-static bool prv_is_state_valid(const GPIOState *state) {
-  return *state < NUM_GPIO_STATE;
-}
-
-// Determines if a GPIOSettings is valid based on the enums.
-static bool prv_are_settings_valid(const GPIOSettings *settings) {
-  return !(settings->direction >= NUM_GPIO_DIR || settings->state >= NUM_GPIO_STATE ||
-           settings->resistor >= NUM_GPIO_RES || settings->alt_function >= NUM_GPIO_ALTFN);
-}
-
 StatusCode gpio_init(void) {
   return STATUS_CODE_OK;
 }
 
 StatusCode gpio_init_pin(const GPIOAddress *address, const GPIOSettings *settings) {
-  if (!prv_is_address_valid(address) || !prv_are_settings_valid(settings)) {
+  if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT ||
+      settings->direction >= NUM_GPIO_DIRS || settings->state >= NUM_GPIO_STATES ||
+      settings->resistor >= NUM_GPIO_RESES || settings->alt_function >= NUM_GPIO_ALTFNS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
@@ -50,17 +33,28 @@ StatusCode gpio_init_pin(const GPIOAddress *address, const GPIOSettings *setting
   if (settings->alt_function == GPIO_ALTFN_ANALOG) {
     init_struct.GPIO_Mode = GPIO_Mode_AN;
   } else if (settings->alt_function == GPIO_ALTFN_NONE) {
-    init_struct.GPIO_Mode = (GPIOMode_TypeDef)(settings->direction != GPIO_DIR_IN);
+    if (settings->direction == GPIO_DIR_IN) {
+      init_struct.GPIO_Mode = GPIO_Mode_IN;
+    } else {
+      init_struct.GPIO_Mode = GPIO_Mode_OUT;
+    }
   } else {
     init_struct.GPIO_Mode = GPIO_Mode_AF;
   }
   init_struct.GPIO_PuPd = (GPIOPuPd_TypeDef)settings->resistor;
   init_struct.GPIO_Pin = pin;
 
+  // Support open drain vs pullup-pulldown
+  if (settings->direction == GPIO_DIR_OUT_OD) {
+    init_struct.GPIO_OType = GPIO_OType_OD;
+  } else {
+    init_struct.GPIO_OType = GPIO_OType_PP;
+  }
+
   // These are default values which are not intended to be changed.
-  init_struct.GPIO_Speed = GPIO_Speed_Level_3;
-  // TODO(ELEC-227): Clean up open-drain support
-  init_struct.GPIO_OType = (settings->direction == GPIO_DIR_OUT_OD) ? GPIO_OType_OD : GPIO_OType_PP;
+  init_struct.GPIO_Speed =
+      GPIO_Speed_Level_3;  // Use fastest speed because the slew rate is quite slow.
+
   if (init_struct.GPIO_Mode == GPIO_Mode_AF) {
     // Subtract 1 due to the offset of the enum from the ALTFN_NONE entry
     GPIO_PinAFConfig(s_gpio_port_map[address->port], address->pin, settings->alt_function - 1);
@@ -75,7 +69,8 @@ StatusCode gpio_init_pin(const GPIOAddress *address, const GPIOSettings *setting
 }
 
 StatusCode gpio_set_pin_state(const GPIOAddress *address, GPIOState state) {
-  if (!prv_is_address_valid(address) || !prv_is_state_valid(&state)) {
+  if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT ||
+      state >= NUM_GPIO_STATES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
@@ -84,7 +79,7 @@ StatusCode gpio_set_pin_state(const GPIOAddress *address, GPIOState state) {
 }
 
 StatusCode gpio_toggle_state(const GPIOAddress *address) {
-  if (!prv_is_address_valid(address)) {
+  if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
@@ -99,7 +94,7 @@ StatusCode gpio_toggle_state(const GPIOAddress *address) {
 }
 
 StatusCode gpio_get_value(const GPIOAddress *address, GPIOState *input_state) {
-  if (!prv_is_address_valid(address)) {
+  if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 

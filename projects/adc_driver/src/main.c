@@ -34,7 +34,7 @@ int main() {
     gpio_init_pin(&address[i], &settings);
   }
 
-  uint16_t adc_readings[NUM_ADC_CHANNEL];
+  uint16_t adc_readings[NUM_ADC_CHANNELS];
   memset(adc_readings, 0, sizeof(adc_readings));
 
   adc_init(ADC_MODE_SINGLE);
@@ -59,7 +59,7 @@ int main() {
     for (int i = ADC_CHANNEL_0; i < ADC_CHANNEL_TEMP; i++) {
       printf(" %d ", adc_readings[i]);
     }
-    for (int i = ADC_CHANNEL_TEMP; i < NUM_ADC_CHANNEL; i++) {
+    for (int i = ADC_CHANNEL_TEMP; i < NUM_ADC_CHANNELS; i++) {
       printf(" %d ", adc_readings[i]);
     }
     printf("}\n");

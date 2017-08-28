@@ -2,36 +2,21 @@
 
 #include <stdint.h>
 
+#include "pwm_mcu.h"
 #include "status.h"
 
-static uint16_t s_period_ms = 0;
-
-StatusCode pwm_init(uint16_t period_ms) {
-  if (period_ms == 0) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "Period must be greater than 0");
-  }
-
-  s_period_ms = period_ms;
-
-  return STATUS_CODE_OK;
+StatusCode pwm_init(PWMTimer timer, uint16_t period_ms) {
+  return status_code(STATUS_CODE_UNIMPLEMENTED);
 }
 
-uint16_t pwm_get_period(void) {
-  return s_period_ms;
+uint16_t pwm_get_period(PWMTimer timer) {
+  return status_code(STATUS_CODE_UNIMPLEMENTED);
 }
 
-StatusCode pwm_set_pulse(uint16_t pulse_width_ms) {
-  if (s_period_ms == 0) {
-    return status_msg(STATUS_CODE_UNINITIALIZED, "Pwm must be initialized.");
-  } else if (pulse_width_ms > s_period_ms) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "Pulse width must be leq period.");
-  }
-  return STATUS_CODE_OK;
+StatusCode pwm_set_pulse(PWMTimer timer, uint16_t pulse_width_ms) {
+  return status_code(STATUS_CODE_UNIMPLEMENTED);
 }
 
-StatusCode pwm_set_dc(uint16_t dc) {
-  if (dc > 100) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "Duty Cycle must be leq 100%.");
-  }
-  return STATUS_CODE_OK;
+StatusCode pwm_set_dc(PWMTimer timer, uint16_t dc) {
+  return status_code(STATUS_CODE_UNIMPLEMENTED);
 }
