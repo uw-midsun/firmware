@@ -76,7 +76,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     pedal_state = PEDAL_FSM_STATE_CRUISE_CONTROL;
   }
 
-  event_arbiter_can_output(CAN_OUTPUT_DEVICE_ID_PEDAL, pedal_state, e->data);
+  event_arbiter_output(CAN_OUTPUT_DEVICE_ID_PEDAL, pedal_state, e->data);
 }
 
 StatusCode pedal_fsm_init(FSM *fsm) {

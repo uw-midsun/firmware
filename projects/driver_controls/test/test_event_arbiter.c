@@ -4,7 +4,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-// Event arbiter test FSMs 
+// Event arbiter test FSMs
 typedef enum {
   TEST_EVENT_ARBITER_EVENT_A,
   TEST_EVENT_ARBITER_EVENT_B,
@@ -107,7 +107,7 @@ void test_event_arbiter_output(void) {
   Event e;
   event_arbiter_init(prv_output);
 
-  // Add FSM to the event 
+  // Add FSM to the event
   s_fsm_b.context = event_arbiter_add_fsm(&s_fsm_b, NULL);
 
   e.id = TEST_EVENT_ARBITER_EVENT_D;
