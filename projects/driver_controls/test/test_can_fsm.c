@@ -20,7 +20,7 @@
 #include "push_to_talk_fsm.h"
 #include "turn_signal_fsm.h"
 
-#include "can_fsm.h"
+#include "can_output.h"
 
 typedef struct FSMGroup {
   FSM power;
@@ -31,19 +31,42 @@ typedef struct FSMGroup {
   FSM mechanical_brake;
   FSM horn;
   FSM push_to_talk;
-  FSM can;
 } FSMGroup;
 
 static FSMGroup s_fsm_group;
-static bool powered = false;
-static bool mech_brake = false;
+static bool s_powered = false;
+static bool s_mech_brake = false;
+static Event s_can_event;
+
+static void prv_output(uint8_t device_id, uint8_t device_state, uint16_t device_data) {
+  union EventData {
+    uint16_t raw;
+    struct {
+      uint16_t data:12;
+      uint8_t state:4;
+    } components;
+  } data;
+
+  data.components.data = device_data;
+  data.components.state = device_state;
+
+  s_can_event.id = device_id;
+  s_can_event.data = data.raw;
+
+  /*
+  printf("Device = %d, State = %d, Data = %d\n",
+          device_id,
+          data.components.state,
+          data.components.data);
+  */
+}
 
 static void prv_toggle_power(bool new_state) {
   Event e = { .data = 0 };
-  if (new_state != powered) {
+  if (new_state != s_powered) {
     e.id = INPUT_EVENT_POWER;
     event_arbiter_process_event(&e);
-    powered = new_state;
+    s_powered = new_state;
   }
 }
 
@@ -54,11 +77,11 @@ static void prv_toggle_mech_brake(bool new_state) {
                              : INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
 
   event_arbiter_process_event(&e);
-  mech_brake = new_state;
+  s_mech_brake = new_state;
 }
 
 void setup_test(void) {
-  event_arbiter_init();
+  event_arbiter_init(prv_output);
 
   power_fsm_init(&s_fsm_group.power);
   pedal_fsm_init(&s_fsm_group.pedal);
@@ -68,10 +91,9 @@ void setup_test(void) {
   mechanical_brake_fsm_init(&s_fsm_group.mechanical_brake);
   horn_fsm_init(&s_fsm_group.horn);
   push_to_talk_fsm_init(&s_fsm_group.push_to_talk);
-  can_fsm_init(&s_fsm_group.can);
 
-  powered = false;
-  mech_brake = false;
+  s_powered = false;
+  s_mech_brake = false;
 
   event_queue_init();
 }
@@ -92,49 +114,33 @@ void teardown_test(void) {
 
 // Test that the power fsm correctly generates CAN events
 void test_can_fsm_power() {
-  Event e = { 0 };
-
   prv_toggle_power(true);
 
-  event_process(&e);
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_POWER, e.id);
-  TEST_ASSERT_EQUAL(POWER_FSM_STATE_ON, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_POWER, s_can_event.id);
+  TEST_ASSERT_EQUAL(POWER_FSM_STATE_ON, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0, (s_can_event.data & 0xFFF));
 
   prv_toggle_power(false);
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_POWER, e.id);
-  TEST_ASSERT_EQUAL(POWER_FSM_STATE_OFF, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_POWER, s_can_event.id);
+  TEST_ASSERT_EQUAL(POWER_FSM_STATE_OFF, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0, (s_can_event.data & 0xFFF));
 }
 
 void test_can_fsm_mechanical_brake() {
-  Event e = { 0 };
-
   // Test that pressing the brake state generates the correct event
   prv_toggle_mech_brake(true);
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_MECHANICAL_BRAKE, e.id);
-  TEST_ASSERT_EQUAL(MECHANICAL_BRAKE_FSM_STATE_ENGAGED, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_MECHANICAL_BRAKE, s_can_event.id);
+  TEST_ASSERT_EQUAL(MECHANICAL_BRAKE_FSM_STATE_ENGAGED, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0, (s_can_event.data & 0xFFF));
 
   // Test that releasing the brake generates the correct event
   prv_toggle_mech_brake(false);
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_MECHANICAL_BRAKE, e.id);
-  TEST_ASSERT_EQUAL(MECHANICAL_BRAKE_FSM_STATE_DISENGAGED, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_MECHANICAL_BRAKE, s_can_event.id);
+  TEST_ASSERT_EQUAL(MECHANICAL_BRAKE_FSM_STATE_DISENGAGED, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0, (s_can_event.data & 0xFFF));
 }
 
 void test_can_fsm_hazard_light() {
@@ -142,29 +148,22 @@ void test_can_fsm_hazard_light() {
 
   // Turn on the power and clean up the event queue
   prv_toggle_power(true);
-  event_process(&e);
 
   // Test that the transition to the ON state generates the correct event
   e.id = INPUT_EVENT_HAZARD_LIGHT;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_HAZARD_LIGHT, e.id);
-  TEST_ASSERT_EQUAL(HAZARD_LIGHT_FSM_STATE_ON, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_HAZARD_LIGHT, s_can_event.id);
+  TEST_ASSERT_EQUAL(HAZARD_LIGHT_FSM_STATE_ON, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0, (s_can_event.data & 0xFFF));
 
   // Test that the transition to the OFF state generates the correct event
   e.id = INPUT_EVENT_HAZARD_LIGHT;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_HAZARD_LIGHT, e.id);
-  TEST_ASSERT_EQUAL(HAZARD_LIGHT_FSM_STATE_OFF, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_HAZARD_LIGHT, s_can_event.id);
+  TEST_ASSERT_EQUAL(HAZARD_LIGHT_FSM_STATE_OFF, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0, (s_can_event.data & 0xFFF));
 }
 
 void test_can_fsm_turn_signal() {
@@ -172,40 +171,30 @@ void test_can_fsm_turn_signal() {
 
   // Turn on the power and clean up the event queue
   prv_toggle_power(true);
-  event_process(&e);
 
   // Test that a left turn signal generates the correct event
   e.id = INPUT_EVENT_TURN_SIGNAL_LEFT;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_TURN_SIGNAL, e.id);
-  TEST_ASSERT_EQUAL(TURN_SIGNAL_FSM_STATE_LEFT_SIGNAL, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_TURN_SIGNAL, s_can_event.id);
+  TEST_ASSERT_EQUAL(TURN_SIGNAL_FSM_STATE_LEFT_SIGNAL, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0, (s_can_event.data & 0xFFF));
 
   // Test that a right turn signal generates the correct event
   e.id = INPUT_EVENT_TURN_SIGNAL_RIGHT;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_TURN_SIGNAL, e.id);
-  TEST_ASSERT_EQUAL(TURN_SIGNAL_FSM_STATE_RIGHT_SIGNAL, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_TURN_SIGNAL, s_can_event.id);
+  TEST_ASSERT_EQUAL(TURN_SIGNAL_FSM_STATE_RIGHT_SIGNAL, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0, (s_can_event.data & 0xFFF));
 
   // Test that turning the signals off generates the correct event
   e.id = INPUT_EVENT_TURN_SIGNAL_NONE;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_TURN_SIGNAL, e.id);
-  TEST_ASSERT_EQUAL(TURN_SIGNAL_FSM_STATE_NO_SIGNAL, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_TURN_SIGNAL, s_can_event.id);
+  TEST_ASSERT_EQUAL(TURN_SIGNAL_FSM_STATE_NO_SIGNAL, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0, (s_can_event.data & 0xFFF));
 }
 
 void test_can_fsm_direction() {
@@ -213,43 +202,32 @@ void test_can_fsm_direction() {
 
   // Setup for the direction selector to be used
   prv_toggle_power(true);
-  event_process(&e);
 
   prv_toggle_mech_brake(true);
-  event_process(&e);
 
   // Test that a forward shift generates the correct event
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_DIRECTION_SELECTOR, e.id);
-  TEST_ASSERT_EQUAL(DIRECTION_FSM_STATE_FORWARD, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_DIRECTION_SELECTOR, s_can_event.id);
+  TEST_ASSERT_EQUAL(DIRECTION_FSM_STATE_FORWARD, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0, (s_can_event.data & 0xFFF));
 
   // Test that a reverse shift generates the correct event
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_DIRECTION_SELECTOR, e.id);
-  TEST_ASSERT_EQUAL(DIRECTION_FSM_STATE_REVERSE, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_DIRECTION_SELECTOR, s_can_event.id);
+  TEST_ASSERT_EQUAL(DIRECTION_FSM_STATE_REVERSE, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0, (s_can_event.data & 0xFFF));
 
   // Test that a neutral shift generates the correct event
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_DIRECTION_SELECTOR, e.id);
-  TEST_ASSERT_EQUAL(DIRECTION_FSM_STATE_NEUTRAL, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_DIRECTION_SELECTOR, s_can_event.id);
+  TEST_ASSERT_EQUAL(DIRECTION_FSM_STATE_NEUTRAL, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0, (s_can_event.data & 0xFFF));
 }
 
 void test_can_fsm_pedal() {
@@ -257,50 +235,37 @@ void test_can_fsm_pedal() {
 
   // Setup for the pedals to be used
   prv_toggle_power(true);
-  event_process(&e);
 
   prv_toggle_mech_brake(true);
-  event_process(&e);
 
   e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  event_process(&e);
 
   prv_toggle_mech_brake(false);
-  event_process(&e);
 
   // Test that coasting generates the correct event
   e = (Event){.id = INPUT_EVENT_PEDAL_COAST, .data = 0xdef };
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_PEDAL, e.id);
-  TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_COAST, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0xdef, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_PEDAL, s_can_event.id);
+  TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_COAST, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0xdef, (s_can_event.data & 0xFFF));
 
   // Test that pressing the gas generates the correct event
   e = (Event){.id = INPUT_EVENT_PEDAL_PRESSED, .data = 0xdef };
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_PEDAL, e.id);
-  TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_DRIVING, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0xdef, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_PEDAL, s_can_event.id);
+  TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_DRIVING, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0xdef, (s_can_event.data & 0xFFF));
 
   // Test that cruise control generates the correct event
   e = (Event){.id = INPUT_EVENT_CRUISE_CONTROL, .data = 0xdef };
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_PEDAL, e.id);
-  TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_CRUISE_CONTROL, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0xdef, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_PEDAL, s_can_event.id);
+  TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_CRUISE_CONTROL, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0xdef, (s_can_event.data & 0xFFF));
 
   // Exit cruise control
   e = (Event){.id = INPUT_EVENT_CRUISE_CONTROL, .data = 0xdef };
@@ -309,69 +274,52 @@ void test_can_fsm_pedal() {
   // Test that regen brakes generate the correct event
   e = (Event){.id = INPUT_EVENT_PEDAL_BRAKE, .data = 0xdef };
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_PEDAL, e.id);
-  TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_BRAKE, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0xdef, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_PEDAL, s_can_event.id);
+  TEST_ASSERT_EQUAL(PEDAL_FSM_STATE_BRAKE, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0xdef, (s_can_event.data & 0xFFF));
 }
 
 void test_can_fsm_horn() {
   Event e = { 0 };
 
   prv_toggle_power(true);
-  event_process(&e);
 
   // Test that pressing the horn generates the correct event
   e.id = INPUT_EVENT_HORN;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_HORN, e.id);
-  TEST_ASSERT_EQUAL(HORN_FSM_STATE_ON, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_HORN, s_can_event.id);
+  TEST_ASSERT_EQUAL(HORN_FSM_STATE_ON, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0, (s_can_event.data & 0xFFF));
 
   // Test that releasing the horn generates the correct event
   e.id = INPUT_EVENT_HORN;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_HORN, e.id);
-  TEST_ASSERT_EQUAL(HORN_FSM_STATE_OFF, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_HORN, s_can_event.id);
+  TEST_ASSERT_EQUAL(HORN_FSM_STATE_OFF, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0, (s_can_event.data & 0xFFF));
 }
 
 void test_can_fsm_push_to_talk() {
   Event e = { 0 };
 
   prv_toggle_power(true);
-  event_process(&e);
 
   // Test that pressing the horn generates the correct event
   e.id = INPUT_EVENT_PUSH_TO_TALK;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_PUSH_TO_TALK, e.id);
-  TEST_ASSERT_EQUAL(PUSH_TO_TALK_FSM_STATE_ACTIVE, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_PUSH_TO_TALK, s_can_event.id);
+  TEST_ASSERT_EQUAL(PUSH_TO_TALK_FSM_STATE_ACTIVE, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0, (s_can_event.data & 0xFFF));
 
   // Test that releasing the horn generates the correct event
   e.id = INPUT_EVENT_PUSH_TO_TALK;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
-  event_process(&e);
 
-  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_PUSH_TO_TALK, e.id);
-  TEST_ASSERT_EQUAL(PUSH_TO_TALK_FSM_STATE_INACTIVE, (e.data >> 12));
-  TEST_ASSERT_EQUAL(0, (e.data & 0xFFF));
-
-  TEST_ASSERT_TRUE(fsm_process_event(&s_fsm_group.can, &e));
+  TEST_ASSERT_EQUAL(CAN_DEVICE_ID_PUSH_TO_TALK, s_can_event.id);
+  TEST_ASSERT_EQUAL(PUSH_TO_TALK_FSM_STATE_INACTIVE, (s_can_event.data >> 12));
+  TEST_ASSERT_EQUAL(0, (s_can_event.data & 0xFFF));
 }
