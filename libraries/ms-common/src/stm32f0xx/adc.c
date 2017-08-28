@@ -42,18 +42,6 @@ static uint16_t prv_get_vdda(uint16_t reading) {
   return reading;
 }
 
-static StatusCode prv_channel_valid(ADCChannel adc_channel) {
-  if (adc_channel >= NUM_ADC_CHANNELS) {
-    return status_code(STATUS_CODE_INVALID_ARGS);
-  }
-
-  if (!(ADC1->CHSELR & ((uint32_t)1 << adc_channel))) {
-    return status_code(STATUS_CODE_EMPTY);
-  }
-
-  return STATUS_CODE_OK;
-}
-
 void adc_init(ADCMode adc_mode) {
   ADC_DeInit(ADC1);
 
@@ -168,9 +156,12 @@ StatusCode adc_get_channel(GPIOAddress address, ADCChannel *adc_channel) {
 }
 
 StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, void *context) {
-  // Returns invalid if the given address is not connected to an ADC channel
-  StatusCode valid = prv_channel_valid(adc_channel);
-  status_ok_or_return(valid);
+  if (adc_channel >= NUM_ADC_CHANNELS) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+  if (!(ADC1->CHSELR & ((uint32_t)1 << adc_channel))) {
+    return status_code(STATUS_CODE_EMPTY);
+  }
 
   s_adc_interrupts[adc_channel].callback = callback;
   s_adc_interrupts[adc_channel].context = context;
@@ -179,8 +170,12 @@ StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, v
 }
 
 StatusCode adc_read_raw(ADCChannel adc_channel, uint16_t *reading) {
-  StatusCode valid = prv_channel_valid(adc_channel);
-  status_ok_or_return(valid);
+  if (adc_channel >= NUM_ADC_CHANNELS) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+  if (!(ADC1->CHSELR & ((uint32_t)1 << adc_channel))) {
+    return status_code(STATUS_CODE_EMPTY);
+  }
 
   if (!s_adc_status.continuous) {
     ADC_StartOfConversion(ADC1);
@@ -194,8 +189,12 @@ StatusCode adc_read_raw(ADCChannel adc_channel, uint16_t *reading) {
 }
 
 StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading) {
-  StatusCode valid = prv_channel_valid(adc_channel);
-  status_ok_or_return(valid);
+  if (adc_channel >= NUM_ADC_CHANNELS) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+  if (!(ADC1->CHSELR & ((uint32_t)1 << adc_channel))) {
+    return status_code(STATUS_CODE_EMPTY);
+  }
 
   uint16_t adc_reading;
   adc_read_raw(adc_channel, &adc_reading);
