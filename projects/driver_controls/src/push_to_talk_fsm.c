@@ -28,7 +28,13 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     push_to_talk_state = PUSH_TO_TALK_FSM_STATE_ACTIVE;
   }
 
-  event_arbiter_output(CAN_OUTPUT_DEVICE_ID_PUSH_TO_TALK, push_to_talk_state, e->data);
+  EventArbiterOutputData data = {
+    .id = CAN_OUTPUT_DEVICE_PUSH_TO_TALK,
+    .state = push_to_talk_state,
+    .data = e->data
+  };
+
+  event_arbiter_output(fsm, data);
 }
 
 StatusCode push_to_talk_fsm_init(FSM *fsm) {

@@ -58,24 +58,39 @@ static void prv_state_neutral(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_neutral;
 
-  event_arbiter_output(CAN_OUTPUT_DEVICE_ID_DIRECTION_SELECTOR,
-                           DIRECTION_FSM_STATE_NEUTRAL, e->data);
+  EventArbiterOutputData data = {
+    .id = CAN_OUTPUT_DEVICE_DIRECTION_SELECTOR,
+    .state = DIRECTION_FSM_STATE_NEUTRAL,
+    .data = e->data
+  };
+
+  event_arbiter_output(fsm, data);
 }
 
 static void prv_state_forward(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_forward;
 
-  event_arbiter_output(CAN_OUTPUT_DEVICE_ID_DIRECTION_SELECTOR,
-                           DIRECTION_FSM_STATE_FORWARD, e->data);
+  EventArbiterOutputData data = {
+    .id = CAN_OUTPUT_DEVICE_DIRECTION_SELECTOR,
+    .state = DIRECTION_FSM_STATE_FORWARD,
+    .data = e->data
+  };
+
+  event_arbiter_output(fsm, data);
 }
 
 static void prv_state_reverse(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_reverse;
 
-  event_arbiter_output(CAN_OUTPUT_DEVICE_ID_DIRECTION_SELECTOR,
-                           DIRECTION_FSM_STATE_REVERSE, e->data);
+  EventArbiterOutputData data = {
+    .id = CAN_OUTPUT_DEVICE_DIRECTION_SELECTOR,
+    .state = DIRECTION_FSM_STATE_REVERSE,
+    .data = e->data
+  };
+
+  event_arbiter_output(fsm, data);
 }
 
 StatusCode direction_fsm_init(FSM *fsm) {

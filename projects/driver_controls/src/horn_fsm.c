@@ -27,7 +27,13 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     horn_state = HORN_FSM_STATE_ON;
   }
 
-  event_arbiter_output(CAN_OUTPUT_DEVICE_ID_HORN, horn_state, e->data);
+  EventArbiterOutputData data = {
+    .id = CAN_OUTPUT_DEVICE_HORN,
+    .state = horn_state,
+    .data = e->data
+  };
+
+  event_arbiter_output(fsm, data);
 }
 
 StatusCode horn_fsm_init(FSM *fsm) {

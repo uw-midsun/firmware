@@ -42,7 +42,13 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     turn_signal_state = TURN_SIGNAL_FSM_STATE_RIGHT_SIGNAL;
   }
 
-  event_arbiter_output(CAN_OUTPUT_DEVICE_ID_TURN_SIGNAL, turn_signal_state, e->data);
+  EventArbiterOutputData data = {
+    .id = CAN_OUTPUT_DEVICE_TURN_SIGNAL,
+    .state = turn_signal_state,
+    .data = e->data
+  };
+
+  event_arbiter_output(fsm, data);
 }
 
 StatusCode turn_signal_fsm_init(FSM *fsm) {
