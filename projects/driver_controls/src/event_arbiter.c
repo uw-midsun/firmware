@@ -1,11 +1,12 @@
 #include <stdio.h>
 
 #include "event_arbiter.h"
-#include "input_event.h"
+#include "can_fsm.h"
 #include "log.h"
 
 static FSM *s_driver_fsms[EVENT_ARBITER_MAX_FSMS];
 static EventArbiterCheck s_event_checks[EVENT_ARBITER_MAX_FSMS];
+static EventArbiterCANOutput s_output;
 
 static uint8_t s_num_active_fsms = 0;
 
@@ -18,7 +19,9 @@ static bool prv_event_permitted(Event *e) {
   return true;
 }
 
-StatusCode event_arbiter_init() {
+StatusCode event_arbiter_init(EventArbiterCANOutput output) {
+  s_output = output;
+
   for (uint8_t i = 0; i < EVENT_ARBITER_MAX_FSMS; i++) {
     s_driver_fsms[i] = NULL;
     s_event_checks[i] = NULL;
@@ -48,4 +51,10 @@ bool event_arbiter_process_event(Event *e) {
     }
   }
   return transitioned;
+}
+
+StatusCode event_arbiter_can_output(uint8_t device_id, uint8_t device_state, uint16_t data) {
+  s_output(device_id, device_state, data);
+
+  return STATUS_CODE_OK;
 }

@@ -7,7 +7,7 @@
 
 #include "analog_io.h"
 #include "digital_io.h"
-
+#include "input_event.h"
 #include "event_arbiter.h"
 
 #include "can_fsm.h"
@@ -30,7 +30,6 @@ typedef struct FSMGroup {
   FSM mechanical_brake;
   FSM horn;
   FSM push_to_talk;
-  FSM can;
 } FSMGroup;
 
 int main() {
@@ -43,15 +42,15 @@ int main() {
   interrupt_init();
   gpio_it_init();
 
-  adc_init(ADC_MODE_CONTINUOUS);
+  //adc_init(ADC_MODE_CONTINUOUS);
 
   digital_io_init();
-  analog_io_init();
+  //analog_io_init();
 
   event_queue_init();
 
   // Initialize FSMs
-  event_arbiter_init();
+  event_arbiter_init(can_fsm_transmit);
 
   power_fsm_init(&fsm_group.power);
   pedal_fsm_init(&fsm_group.pedal);
@@ -61,8 +60,6 @@ int main() {
   mechanical_brake_fsm_init(&fsm_group.mechanical_brake);
   horn_fsm_init(&fsm_group.horn);
   push_to_talk_fsm_init(&fsm_group.push_to_talk);
-
-  can_fsm_init(&fsm_group.can);
 
   for (;;) {
     if (status_ok(event_process(&e))) {

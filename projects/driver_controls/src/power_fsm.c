@@ -39,14 +39,14 @@ static void prv_state_off(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_off;
 
-  input_event_raise_can(CAN_DEVICE_ID_POWER, POWER_FSM_STATE_OFF, e->data);
+  event_arbiter_can_output(CAN_DEVICE_ID_POWER, POWER_FSM_STATE_OFF, e->data);
 }
 
 static void prv_state_on(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = NULL;
 
-  input_event_raise_can(CAN_DEVICE_ID_POWER, POWER_FSM_STATE_ON, e->data);
+  event_arbiter_can_output(CAN_DEVICE_ID_POWER, POWER_FSM_STATE_ON, e->data);
 }
 
 StatusCode power_fsm_init(FSM *fsm) {
