@@ -22,12 +22,10 @@ FSM_STATE_TRANSITION(state_inactive) {
 // Push-to-Talk output function
 
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  PushToTalkFSMState push_to_talk_state = 0;
+  PushToTalkFSMState push_to_talk_state = PUSH_TO_TALK_FSM_STATE_INACTIVE;
 
   if (fsm->current_state == &state_active) {
     push_to_talk_state = PUSH_TO_TALK_FSM_STATE_ACTIVE;
-  } else if (fsm->current_state == &state_inactive) {
-    push_to_talk_state = PUSH_TO_TALK_FSM_STATE_INACTIVE;
   }
 
   input_event_raise_can(CAN_DEVICE_ID_PUSH_TO_TALK, push_to_talk_state, e->data);

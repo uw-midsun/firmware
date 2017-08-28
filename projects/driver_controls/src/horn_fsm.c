@@ -21,12 +21,10 @@ FSM_STATE_TRANSITION(state_horn_on) {
 
 // Horn FSM output function
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  HornFSMState horn_state = 0;
+  HornFSMState horn_state = HORN_FSM_STATE_OFF;
 
   if (fsm->current_state == &state_horn_on) {
     horn_state = HORN_FSM_STATE_ON;
-  } else if (fsm->current_state == &state_horn_off) {
-    horn_state = HORN_FSM_STATE_OFF;
   }
 
   input_event_raise_can(CAN_DEVICE_ID_HORN, horn_state, e->data);

@@ -32,13 +32,11 @@ FSM_STATE_TRANSITION(state_right_signal) {
 // Turn signal FSM output function
 
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  TurnSignalFSMState turn_signal_state = 0;
+  TurnSignalFSMState turn_signal_state = TURN_SIGNAL_FSM_STATE_NO_SIGNAL;
 
   State *current_state = fsm->current_state;
 
-  if (current_state == &state_no_signal) {
-    turn_signal_state = TURN_SIGNAL_FSM_STATE_NO_SIGNAL;
-  } else if (current_state == &state_left_signal) {
+  if (current_state == &state_left_signal) {
     turn_signal_state = TURN_SIGNAL_FSM_STATE_LEFT_SIGNAL;
   } else if (current_state == &state_right_signal) {
     turn_signal_state = TURN_SIGNAL_FSM_STATE_RIGHT_SIGNAL;

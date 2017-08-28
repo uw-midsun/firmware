@@ -64,13 +64,11 @@ FSM_STATE_TRANSITION(state_cruise_control) {
 
 // Pedal FSM output functions
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  PedalFSMState pedal_state = 0;
+  PedalFSMState pedal_state = PEDAL_FSM_STATE_BRAKE;
 
   State *current_state = fsm->current_state;
 
-  if (current_state == &state_brake) {
-    pedal_state = PEDAL_FSM_STATE_BRAKE;
-  } else if (current_state == &state_coast) {
+  if (current_state == &state_coast) {
     pedal_state = PEDAL_FSM_STATE_COAST;
   } else if (current_state == &state_driving) {
     pedal_state = PEDAL_FSM_STATE_DRIVING;
