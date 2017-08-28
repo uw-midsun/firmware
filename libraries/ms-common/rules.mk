@@ -8,5 +8,5 @@
 $(T)_DEPS := $(PLATFORM_LIB) libcore
 
 ifeq (x86,$(PLATFORM))
-$(T)_EXCLUDE_TESTS := can can_hw adc
+$(T)_EXCLUDE_TESTS := can can_hw adc pwm
 endif
