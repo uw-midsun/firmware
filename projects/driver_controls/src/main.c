@@ -10,7 +10,7 @@
 #include "input_event.h"
 #include "event_arbiter.h"
 
-#include "can_fsm.h"
+#include "can_output.h"
 #include "direction_fsm.h"
 #include "hazard_light_fsm.h"
 #include "horn_fsm.h"
@@ -50,7 +50,7 @@ int main() {
   event_queue_init();
 
   // Initialize FSMs
-  event_arbiter_init(can_fsm_transmit);
+  event_arbiter_init(can_output_transmit);
 
   power_fsm_init(&fsm_group.power);
   pedal_fsm_init(&fsm_group.pedal);
