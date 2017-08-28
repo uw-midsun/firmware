@@ -36,12 +36,12 @@ typedef struct DigitalIOSettings {
 static DigitalIOData s_input_data[DRIVER_IO_NUM_ADDRESSES];
 
 // Genarate the event based on the identity of the triggering device
-static uint16_t prv_get_event(DigitalIOData *data, GPIOState state) {
-  uint16_t event_id = data->event;
+static uint16_t prv_get_event(DigitalIOData data, GPIOState state) {
+  uint16_t event_id = data.event;
 
-  if (data->id == DIGITAL_IO_DEVICE_DIRECTION_SELECTOR && state == GPIO_STATE_HIGH) {
+  if (data.id == DIGITAL_IO_DEVICE_DIRECTION_SELECTOR && state == GPIO_STATE_HIGH) {
     event_id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
-  } else if (data->id == DIGITAL_IO_DEVICE_TURN_SIGNAL && state == GPIO_STATE_LOW) {
+  } else if (data.id == DIGITAL_IO_DEVICE_TURN_SIGNAL && state == GPIO_STATE_HIGH) {
     event_id = INPUT_EVENT_TURN_SIGNAL_NONE;
   }
 
@@ -54,18 +54,18 @@ static void prv_input_callback(const GPIOAddress *address, void *context) {
   GPIOState state = { 0 };
   gpio_get_value(address, &state);
 
-  event_raise(prv_get_event(data, state), 0);
+  event_raise(prv_get_event(*data, state), 0);
 }
 
 // Configure driver devices with their individual settings
 void digital_io_init(void) {
   // Initialize the static array with device information
-  s_input_data[DRIVER_IO_POWER_SWITCH_PIN] = (DigitalIOData) {
+  s_input_data[DRIVER_IO_POWER_SWITCH_PIN] = (DigitalIOData){
     .id = DIGITAL_IO_DEVICE_POWER_SWITCH,
     .event = INPUT_EVENT_POWER
   };
 
-  s_input_data[DRIVER_IO_DIR_SELECT_PIN_FORWARD] = (DigitalIOData) {
+  s_input_data[DRIVER_IO_DIR_SELECT_PIN_FORWARD] = (DigitalIOData){
     .id = DIGITAL_IO_DEVICE_DIRECTION_SELECTOR,
     .event = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE
   };

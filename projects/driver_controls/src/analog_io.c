@@ -29,7 +29,7 @@ typedef enum {
 static AnalogIODevice s_analog_devices[ANALOG_IO_DEVICES];
 
 static void prv_input_callback(ADCChannel adc_channel, void *context) {
-  InputEvent event_id = 0;
+  InputEvent event_id = NUM_INPUT_EVENT;
   uint16_t analog_data = 0;
 
   adc_read_raw(adc_channel, &analog_data);
