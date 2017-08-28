@@ -173,7 +173,7 @@ void test_gpio_set_state_invalid_state(void) {
   TEST_ASSERT_OK(gpio_init());
   // A port that should be valid on all configurations.
   GPIOAddress address = {.port = VALID_PORT, .pin = VALID_PIN };
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_state(&address, NUM_GPIO_STATE));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_state(&address, NUM_GPIO_STATES));
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_state(&address, -1));
 }
 
