@@ -115,12 +115,7 @@ void test_gpio_init_pin_valid_output(void) {
   };
   TEST_ASSERT_OK(gpio_init());
   TEST_ASSERT_OK(gpio_init_pin(&address, &settings));
-  GPIOState state;
-  TEST_ASSERT_OK(gpio_get_state(&address, &state));
-  // Check low (assuming nothing is being input on the pin!)
-  TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
-  settings.direction = GPIO_DIR_OUT;
-  TEST_ASSERT_OK(gpio_init_pin(&address, &settings));
+  GPIOState state = GPIO_STATE_LOW;
   // Check high
   TEST_ASSERT_OK(gpio_get_state(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
