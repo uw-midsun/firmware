@@ -2,7 +2,7 @@
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
-#include "can_fsm.h"
+#include "can_output.h"
 
 // Direction selector FSM state definitions
 
