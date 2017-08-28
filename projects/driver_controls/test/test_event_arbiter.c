@@ -1,3 +1,5 @@
+// TODO: Add test for can
+
 #include "event_arbiter.h"
 #include "log.h"
 #include "status.h"
@@ -56,7 +58,7 @@ void setup_test() {
   fsm_init(&s_fsm_a, "test_fsm_a", &state_a, NULL);
   fsm_init(&s_fsm_b, "test_fsm_b", &state_c, prv_check_state_c);
 
-  event_arbiter_init();
+  event_arbiter_init(NULL);
 }
 
 void teardown_test() {}

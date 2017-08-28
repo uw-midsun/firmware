@@ -13,7 +13,6 @@
 #include "pedal_fsm.h"
 #include "power_fsm.h"
 #include "turn_signal_fsm.h"
-#include "can_fsm.h"
 
 typedef struct FSMGroup {
   FSM power;
@@ -23,7 +22,6 @@ typedef struct FSMGroup {
   FSM hazard_light;
   FSM mechanical_brake;
   FSM horn;
-  FSM can;
 } FSMGroup;
 
 static FSMGroup s_fsm_group;
@@ -50,7 +48,7 @@ static void prv_toggle_mech_brake(bool new_state) {
 }
 
 void setup_test() {
-  event_arbiter_init();
+  event_arbiter_init(NULL);
 
   power_fsm_init(&s_fsm_group.power);
   pedal_fsm_init(&s_fsm_group.pedal);
@@ -59,9 +57,6 @@ void setup_test() {
   hazard_light_fsm_init(&s_fsm_group.hazard_light);
   mechanical_brake_fsm_init(&s_fsm_group.mechanical_brake);
   mechanical_brake_fsm_init(&s_fsm_group.horn);
-  can_fsm_init(&s_fsm_group.can);
-
-  can_fsm_init(&s_fsm_group.can);
 
   powered = false;
   mech_brake = false;
@@ -119,6 +114,8 @@ void test_driver_fsm_power_off() {
 
   e.id = INPUT_EVENT_PEDAL_PRESSED;
   TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
+  printf("b\n");
+
 }
 
 // Check that the car does not move when the mechanical brake is pressed

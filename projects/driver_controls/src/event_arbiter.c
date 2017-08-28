@@ -54,7 +54,8 @@ bool event_arbiter_process_event(Event *e) {
 }
 
 StatusCode event_arbiter_can_output(uint8_t device_id, uint8_t device_state, uint16_t data) {
-  s_output(device_id, device_state, data);
-
+  if (s_output != NULL) {
+    s_output(device_id, device_state, data);
+  }
   return STATUS_CODE_OK;
 }
