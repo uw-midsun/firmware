@@ -31,8 +31,8 @@ static void prv_periodic_tx_cb(SoftTimerID timer_id, void *context) {
   soft_timer_start_seconds(1, prv_periodic_tx_cb, NULL, NULL);
 }
 
-void sender_init(void) {
-  s_sender.msg.msg_id = 15;
+void sender_init(uint16_t msg_id) {
+  s_sender.msg.msg_id = msg_id;
   s_sender.msg.dlc = 8;
   s_sender.timeout_us = 100;
   soft_timer_start(s_sender.timeout_us, prv_tx_cb, NULL, NULL);

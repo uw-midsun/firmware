@@ -10,10 +10,11 @@
 #include "soft_timer.h"
 
 #define CAN_TEST_NUM_RX_HANDLERS 5
+#define CAN_TEST_BUS_ACTIVE true
 
 typedef enum {
-  CAN_TEST_EVENT_TX = 0,
-  CAN_TEST_EVENT_RX,
+  CAN_TEST_EVENT_RX = 0,
+  CAN_TEST_EVENT_TX,
   CAN_TEST_EVENT_FAULT,
 } CANTestEvent;
 
@@ -69,9 +70,12 @@ int main(void) {
   };
   can_init(&can_settings, &s_can_storage, s_rx_handlers, CAN_TEST_NUM_RX_HANDLERS);
 
-  if (is_sender) {
-    sender_init();
-  } else {
+  if (is_sender || CAN_TEST_BUS_ACTIVE) {
+    uint16_t msg_id = 15 + !is_sender;
+    sender_init(msg_id);
+  }
+
+  if (!is_sender) {
     receiver_init();
   }
 
