@@ -16,14 +16,14 @@ typedef enum {
   GPIO_DIR_IN = 0,
   GPIO_DIR_OUT,
   GPIO_DIR_OUT_OD,  // Output open-drain
-  NUM_GPIO_DIR,
+  NUM_GPIO_DIRS,
 } GPIODir;
 
 // For setting the output value of the pin
 typedef enum {
   GPIO_STATE_LOW = 0,
   GPIO_STATE_HIGH,
-  NUM_GPIO_STATE,
+  NUM_GPIO_STATES,
 } GPIOState;
 
 // For setting the internal pull-up/pull-down resistor
@@ -31,7 +31,7 @@ typedef enum {
   GPIO_RES_NONE = 0,
   GPIO_RES_PULLUP,
   GPIO_RES_PULLDOWN,
-  NUM_GPIO_RES,
+  NUM_GPIO_RESES,
 } GPIORes;
 
 // For setting the alternate function on the pin. The specific meaning of each depends on the
@@ -48,7 +48,7 @@ typedef enum {
   GPIO_ALTFN_6,
   GPIO_ALTFN_7,
   GPIO_ALTFN_ANALOG,
-  NUM_GPIO_ALTFN,
+  NUM_GPIO_ALTFNS,
 } GPIOAltFn;
 
 // GPIO settings for setting the value of a pin

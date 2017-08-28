@@ -14,6 +14,7 @@ typedef uint8_t I2CAddress;
 typedef enum {
   I2C_SPEED_STANDARD = 0,  // 100kHz
   I2C_SPEED_FAST,          // 400 kHz
+  NUM_I2C_SPEEDS,
 } I2CSpeed;
 
 typedef struct {

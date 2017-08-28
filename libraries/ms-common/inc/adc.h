@@ -10,6 +10,7 @@
 typedef enum {
   ADC_MODE_SINGLE = 0,
   ADC_MODE_CONTINUOUS,
+  NUM_ADC_MODES,
 } ADCMode;
 
 typedef enum {
@@ -32,7 +33,7 @@ typedef enum {
   ADC_CHANNEL_TEMP,
   ADC_CHANNEL_REF,
   ADC_CHANNEL_BAT,
-  NUM_ADC_CHANNEL
+  NUM_ADC_CHANNELS,
 } ADCChannel;
 
 typedef void (*ADCCallback)(ADCChannel adc_channel, void *context);
