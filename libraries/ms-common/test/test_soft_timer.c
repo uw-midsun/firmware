@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include "critical_section.h"
+#include "hal_test_helpers.h"
 #include "interrupt.h"
 #include "log.h"
 #include "test_helpers.h"
