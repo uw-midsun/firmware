@@ -15,7 +15,7 @@ typedef enum {
   CAN_OUTPUT_MESSAGE_MECHANICAL_BRAKE,
   CAN_OUTPUT_MESSAGE_HORN,
   CAN_OUTPUT_MESSAGE_PUSH_TO_TALK,
-  NUM_CAN_OUTPUT_DEVICES
+  NUM_CAN_OUTPUT_MESSAGES
 } CANOutputMessageID;
 
 // Output function to prepare message to broadcast over CAN
