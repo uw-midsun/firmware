@@ -9,3 +9,8 @@ $(T)_DEPS := libcore
 
 # Specifies library specific build flags
 $(T)_CFLAGS += -ffreestanding
+
+ifeq (x86,$(PLATFORM))
+# Force the include of x86_cmd to allow its constructor to be linked
+$(GDB_TARGET): $($(T)_OBJ_ROOT)/x86_cmd.o
+endif

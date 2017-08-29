@@ -12,7 +12,7 @@ int main(void) {
   event_raise(60, 3);
 
   Event e;
-  while (event_process(&e)) {
+  while (event_process(&e) == STATUS_CODE_OK) {
     printf("id: %d data: %d\n", e.id, e.data);
   }
 
