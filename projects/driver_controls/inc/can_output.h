@@ -5,7 +5,7 @@
 #include "status.h"
 #include "event_arbiter.h"
 
-// Device ID definitions
+// Message ID definitions for the input devices
 typedef enum {
   CAN_OUTPUT_MESSAGE_POWER = 0,
   CAN_OUTPUT_MESSAGE_PEDAL,
