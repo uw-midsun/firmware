@@ -53,9 +53,9 @@ bool event_arbiter_process_event(Event *e) {
   return transitioned;
 }
 
-StatusCode event_arbiter_output(FSM *fsm, EventArbiterOutputData data) {
+StatusCode event_arbiter_output(EventArbiterOutputData data) {
   if (s_output != NULL) {
-    s_output(fsm, data);
+    s_output(data);
   }
   return STATUS_CODE_OK;
 }

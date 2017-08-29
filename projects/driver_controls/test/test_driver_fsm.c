@@ -28,14 +28,6 @@ static FSMGroup s_fsm_group;
 static bool powered = false;
 static bool mech_brake = false;
 
-// Print the FSM transitions. Invalid actions that don't cause transitions are not printed
-static void prv_output(FSM *fsm, EventArbiterOutputData data) {
-  LOG_DEBUG("%-20s - [%s -> %s]\n",
-             fsm->name,
-             fsm->last_state->name,
-             fsm->current_state->name);
-}
-
 static void prv_toggle_power(bool new_state) {
   Event e;
   if (new_state != powered) {
@@ -56,7 +48,7 @@ static void prv_toggle_mech_brake(bool new_state) {
 }
 
 void setup_test() {
-  event_arbiter_init(prv_output);
+  event_arbiter_init(NULL);
 
   power_fsm_init(&s_fsm_group.power);
   pedal_fsm_init(&s_fsm_group.pedal);

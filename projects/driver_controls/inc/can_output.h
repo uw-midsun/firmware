@@ -19,4 +19,4 @@ typedef enum {
 } CANOutputMessageID;
 
 // Output function to clip and prepare data to be broacasted over CAN
-void can_output_transmit(FSM *fsm, EventArbiterOutputData data);
+void can_output_transmit(EventArbiterOutputData data);

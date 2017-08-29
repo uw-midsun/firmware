@@ -64,7 +64,7 @@ static void prv_state_neutral(FSM *fsm, const Event *e, void *context) {
     .data = e->data
   };
 
-  event_arbiter_output(fsm, data);
+  event_arbiter_output(data);
 }
 
 static void prv_state_forward(FSM *fsm, const Event *e, void *context) {
@@ -77,7 +77,7 @@ static void prv_state_forward(FSM *fsm, const Event *e, void *context) {
     .data = e->data
   };
 
-  event_arbiter_output(fsm, data);
+  event_arbiter_output(data);
 }
 
 static void prv_state_reverse(FSM *fsm, const Event *e, void *context) {
@@ -90,7 +90,7 @@ static void prv_state_reverse(FSM *fsm, const Event *e, void *context) {
     .data = e->data
   };
 
-  event_arbiter_output(fsm, data);
+  event_arbiter_output(data);
 }
 
 StatusCode direction_fsm_init(FSM *fsm) {

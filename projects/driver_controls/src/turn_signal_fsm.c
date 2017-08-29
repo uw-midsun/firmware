@@ -48,7 +48,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     .data = e->data
   };
 
-  event_arbiter_output(fsm, data);
+  event_arbiter_output(data);
 }
 
 StatusCode turn_signal_fsm_init(FSM *fsm) {

@@ -61,7 +61,7 @@ static void prv_state_mechanical_brake_engaged(FSM *fsm, const Event *e, void *c
     .data = e->data
   };
 
-  event_arbiter_output(fsm, data);
+  event_arbiter_output(data);
 }
 
 static void prv_state_mechanical_brake_disengaged(FSM *fsm, const Event *e, void *context) {
@@ -74,7 +74,7 @@ static void prv_state_mechanical_brake_disengaged(FSM *fsm, const Event *e, void
     .data = e->data
   };
 
-  event_arbiter_output(fsm, data);
+  event_arbiter_output(data);
 }
 
 StatusCode mechanical_brake_fsm_init(FSM *fsm) {

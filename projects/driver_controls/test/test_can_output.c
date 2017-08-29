@@ -36,13 +36,12 @@ static bool s_mech_brake = false;
 
 static EventArbiterOutputData s_can_output;
 
-static void prv_output(FSM *fsm, EventArbiterOutputData data) {
+static void prv_output(EventArbiterOutputData data) {
   s_can_output.id = data.id;
   s_can_output.state = data.state;
   s_can_output.data = data.data;
 
-  LOG_DEBUG("%-20s = { .id = %x, .state = %x, .data = %x }\n",
-          fsm->name,
+  LOG_DEBUG("[ .id = %x, .state = %x, .data = %x ]\n",
           s_can_output.id,
           s_can_output.state,
           s_can_output.data);

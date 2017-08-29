@@ -3,7 +3,7 @@
 #include "input_event.h"
 #include "log.h"
 
-void can_output_transmit(FSM *fsm, EventArbiterOutputData data) {
+void can_output_transmit(EventArbiterOutputData data) {
   LOG_DEBUG("Device = %d, State = %d, Data = %d\n",
              data.id,
              data.state,

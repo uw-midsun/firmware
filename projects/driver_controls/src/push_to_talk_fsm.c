@@ -34,7 +34,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     .data = e->data
   };
 
-  event_arbiter_output(fsm, data);
+  event_arbiter_output(data);
 }
 
 StatusCode push_to_talk_fsm_init(FSM *fsm) {

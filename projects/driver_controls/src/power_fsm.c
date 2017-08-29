@@ -45,7 +45,7 @@ static void prv_state_off(FSM *fsm, const Event *e, void *context) {
     .data = e->data
   };
 
-  event_arbiter_output(fsm, data);
+  event_arbiter_output(data);
 }
 
 static void prv_state_on(FSM *fsm, const Event *e, void *context) {
@@ -58,7 +58,7 @@ static void prv_state_on(FSM *fsm, const Event *e, void *context) {
     .data = e->data
   };
 
-  event_arbiter_output(fsm, data);
+  event_arbiter_output(data);
 }
 
 StatusCode power_fsm_init(FSM *fsm) {
