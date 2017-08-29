@@ -25,12 +25,10 @@ static int prv_setup_socket(void) {
   bool opt = true;
   setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, (void *)&opt, sizeof(opt));
 
-  struct sockaddr_in addr = {
-    .sin_family = AF_INET,
-    .sin_addr.s_addr = INADDR_ANY,
-    .sin_port = htons(X86_TCP_PORT),
-    .sin_zero = { 0 }
-  };
+  struct sockaddr_in addr = {.sin_family = AF_INET,
+                             .sin_addr.s_addr = INADDR_ANY,
+                             .sin_port = htons(X86_TCP_PORT),
+                             .sin_zero = { 0 } };
   if (bind(server_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
     printf("Failed to bind socket\n");
     return -1;
@@ -48,8 +46,7 @@ static void *prv_serve_thread(void *arg) {
   X86TcpParser parser = arg;
   int server_fd = prv_setup_socket();
   int client_fds[X86_TCP_MAX_CLIENTS] = { 0 };
-  char buf[X86_TCP_BUF_LEN + 1] = { 0 }; // Extra for null terminator
-
+  char buf[X86_TCP_BUF_LEN + 1] = { 0 };  // Extra for null terminator
 
   while (true) {
     fd_set readfds = { 0 };
