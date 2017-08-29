@@ -77,7 +77,7 @@ StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *r
   if (spi >= NUM_SPI_PORTS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid SPI port.");
   }
-  gpio_set_pin_state(&s_port[spi].cs, GPIO_STATE_LOW);
+  gpio_set_state(&s_port[spi].cs, GPIO_STATE_LOW);
 
   for (size_t i = 0; i < tx_len; i++) {
     while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_TXE) == RESET) {
@@ -99,7 +99,7 @@ StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *r
     rx_data[i] = SPI_ReceiveData8(s_port[spi].base);
   }
 
-  gpio_set_pin_state(&s_port[spi].cs, GPIO_STATE_HIGH);
+  gpio_set_state(&s_port[spi].cs, GPIO_STATE_HIGH);
 
   return STATUS_CODE_OK;
 }

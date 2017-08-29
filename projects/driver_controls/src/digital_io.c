@@ -52,7 +52,19 @@ static void prv_input_callback(const GPIOAddress *address, void *context) {
   DigitalIOData *data = (DigitalIOData *)context;
 
   GPIOState state = { 0 };
+<<<<<<< HEAD
   gpio_get_value(address, &state);
+=======
+  gpio_get_state(address, &state);
+  event_raise(prv_get_event(data, state), 0);
+}
+
+static void prv_init_pin(DigitalIOSettings *settings, GPIOSettings *gpio_settings) {
+  InterruptSettings it_settings = {
+    INTERRUPT_TYPE_INTERRUPT,  //
+    INTERRUPT_PRIORITY_LOW,    //
+  };
+>>>>>>> master
 
   event_raise(prv_get_event(*data, state), 0);
 }
