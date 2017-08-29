@@ -16,5 +16,7 @@ int main(void) {
     printf("id: %d data: %d\n", e.id, e.data);
   }
 
+  while (1) {}
+
   return 0;
 }
