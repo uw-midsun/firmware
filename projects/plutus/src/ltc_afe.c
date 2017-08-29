@@ -19,9 +19,9 @@ static uint8_t s_voltage_reg[NUM_LTC_AFE_VOLTAGE_REGISTER] = { LTC_AFE_REGISTER_
                                                                LTC_AFE_REGISTER_CELL_VOLTAGE_D };
 
 static void prv_wakeup_idle(const LtcAfeSettings *afe) {
-  gpio_set_pin_state(&afe->cs, GPIO_STATE_LOW);
+  gpio_set_state(&afe->cs, GPIO_STATE_LOW);
   delay_us(2);
-  gpio_set_pin_state(&afe->cs, GPIO_STATE_HIGH);
+  gpio_set_state(&afe->cs, GPIO_STATE_HIGH);
 }
 
 static StatusCode prv_build_cmd(uint16_t command, uint8_t *cmd, size_t len) {

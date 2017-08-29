@@ -26,7 +26,7 @@ else
   override PROJECT := $(filter $(VALID_PROJECTS),$(PROJECT))
   override LIBRARY := $(filter $(VALID_LIBRARIES),$(LIBRARY))
 
-  ifeq (,$(PLATFORM)$(LIBRARY))
+  ifeq (,$(PROJECT)$(LIBRARY))
     $(error Invalid project or library. Expected PROJECT=[$(VALID_PROJECTS)] or LIBRARY=[$(VALID_LIBRARIES)])
   endif
 endif

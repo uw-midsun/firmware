@@ -115,18 +115,18 @@ void test_gpio_init_pin_valid_output(void) {
   };
   TEST_ASSERT_OK(gpio_init());
   TEST_ASSERT_OK(gpio_init_pin(&address, &settings));
-  GPIOState state;
+  GPIOState state = GPIO_STATE_LOW;
   // Check high
-  TEST_ASSERT_OK(gpio_get_value(&address, &state));
+  TEST_ASSERT_OK(gpio_get_state(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
 }
 
 // TODO(ELEC-32): Figure out how to verify: PUPDR, ALTFN.
 
-// gpio_set_pin_state
+// gpio_set_state
 
 // Test that a valid state change will work.
-void test_gpio_set_pin_state_valid(void) {
+void test_gpio_set_state_valid(void) {
   // Default output settings for a pin.
   GPIOSettings settings = {
     .direction = GPIO_DIR_OUT,
@@ -143,44 +143,38 @@ void test_gpio_set_pin_state_valid(void) {
   TEST_ASSERT_OK(gpio_init_pin(&address, &settings));
   GPIOState state;
   // ON to OFF
-  TEST_ASSERT_OK(gpio_get_value(&address, &state));
+  TEST_ASSERT_OK(gpio_get_state(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
-  TEST_ASSERT_OK(gpio_set_pin_state(&address, GPIO_STATE_LOW));
+  TEST_ASSERT_OK(gpio_set_state(&address, GPIO_STATE_LOW));
   delay();
-  TEST_ASSERT_OK(gpio_get_value(&address, &state));
+  TEST_ASSERT_OK(gpio_get_state(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
   // OFF to ON
-  TEST_ASSERT_OK(gpio_set_pin_state(&address, GPIO_STATE_HIGH));
+  TEST_ASSERT_OK(gpio_set_state(&address, GPIO_STATE_HIGH));
   delay();
-  TEST_ASSERT_OK(gpio_get_value(&address, &state));
+  TEST_ASSERT_OK(gpio_get_state(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
 }
 
 // Test that an invalid address is caught.
-void test_gpio_set_pin_state_invalid_address(void) {
+void test_gpio_set_state_invalid_address(void) {
   TEST_ASSERT_OK(gpio_init());
   // A port that should be invalid on all configurations.
-  GPIOAddress address = {
-    .port = INVALID_PORT,  //
-    .pin = VALID_PIN       //
-  };
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_pin_state(&address, GPIO_STATE_LOW));
+  GPIOAddress address = {.port = INVALID_PORT, .pin = VALID_PIN };
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_state(&address, GPIO_STATE_LOW));
   address.pin = INVALID_PIN;
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_pin_state(&address, GPIO_STATE_LOW));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_state(&address, GPIO_STATE_LOW));
   address.port = VALID_PORT;
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_pin_state(&address, GPIO_STATE_LOW));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_state(&address, GPIO_STATE_LOW));
 }
 
 // Test that an invalid state is caught.
-void test_gpio_set_pin_state_invalid_state(void) {
+void test_gpio_set_state_invalid_state(void) {
   TEST_ASSERT_OK(gpio_init());
   // A port that should be valid on all configurations.
-  GPIOAddress address = {
-    .port = VALID_PORT,  //
-    .pin = VALID_PIN     //
-  };
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_pin_state(&address, NUM_GPIO_STATES));
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_pin_state(&address, -1));
+  GPIOAddress address = {.port = VALID_PORT, .pin = VALID_PIN };
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_state(&address, NUM_GPIO_STATES));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_state(&address, -1));
 }
 
 // gpio_toggle_state
@@ -203,16 +197,16 @@ void test_gpio_toggle_state_valid(void) {
   TEST_ASSERT_OK(gpio_init_pin(&address, &settings));
   GPIOState state;
   // OFF to ON
-  TEST_ASSERT_OK(gpio_get_value(&address, &state));
+  TEST_ASSERT_OK(gpio_get_state(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
   TEST_ASSERT_OK(gpio_toggle_state(&address));
   delay();
-  TEST_ASSERT_OK(gpio_get_value(&address, &state));
+  TEST_ASSERT_OK(gpio_get_state(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
   // ON to OFF
   TEST_ASSERT_OK(gpio_toggle_state(&address));
   delay();
-  TEST_ASSERT_OK(gpio_get_value(&address, &state));
+  TEST_ASSERT_OK(gpio_get_state(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
 }
 
@@ -231,11 +225,11 @@ void test_gpio_toggle_state_invalid_address(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_toggle_state(&address));
 }
 
-// gpio_get_value
+// gpio_get_state
 
 // Test that a valid get value will work. This doubles as a test to verify that the state setting on
 // gpio_init_pin works.
-void test_gpio_get_value_valid(void) {
+void test_gpio_get_state_valid(void) {
   // Default output settings for a pin.
   GPIOSettings settings = {
     .direction = GPIO_DIR_OUT,
@@ -252,17 +246,17 @@ void test_gpio_get_value_valid(void) {
   TEST_ASSERT_OK(gpio_init_pin(&address, &settings));
   GPIOState state;
   // Get Low
-  TEST_ASSERT_OK(gpio_get_value(&address, &state));
+  TEST_ASSERT_OK(gpio_get_state(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
   settings.state = GPIO_STATE_HIGH;
   // Get High
   TEST_ASSERT_OK(gpio_init_pin(&address, &settings));
-  TEST_ASSERT_OK(gpio_get_value(&address, &state));
+  TEST_ASSERT_OK(gpio_get_state(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
 }
 
 // Test that an invalid address is caught.
-void test_gpio_get_value_invalid_address(void) {
+void test_gpio_get_state_invalid_address(void) {
   TEST_ASSERT_OK(gpio_init());
   // A port that should be invalid on all configurations.
   GPIOAddress address = {
@@ -270,9 +264,9 @@ void test_gpio_get_value_invalid_address(void) {
     .pin = VALID_PIN       //
   };
   GPIOState state;
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_get_value(&address, &state));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_get_state(&address, &state));
   address.pin = INVALID_PIN;
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_get_value(&address, &state));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_get_state(&address, &state));
   address.port = VALID_PORT;
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_get_value(&address, &state));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_get_state(&address, &state));
 }

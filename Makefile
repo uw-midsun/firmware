@@ -142,11 +142,14 @@ format:
 	@echo "Excluding libraries: $(IGNORE_CLEANUP_LIBS)"
 	@$(FIND) | xargs -r clang-format -i
 
-# Builds the project (if exists) and all its tests
+# Builds the project or library
 ifneq (,$(PROJECT))
 build: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+else
+build: $(STATIC_LIB_DIR)/lib$(LIBRARY).a
 endif
 
+# Assumes that all libraries are used and will be built along with the projects
 build_all: $(VALID_PROJECTS:%=$(BIN_DIR)/%$(PLATFORM_EXT))
 
 $(DIRS):
