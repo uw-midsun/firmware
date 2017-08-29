@@ -56,7 +56,7 @@ static void prv_state_mechanical_brake_engaged(FSM *fsm, const Event *e, void *c
   *event_check = prv_check_mechanical_brake_engaged;
 
   EventArbiterOutputData data = {
-    .id = CAN_OUTPUT_DEVICE_MECHANICAL_BRAKE,
+    .id = CAN_OUTPUT_MESSAGE_MECHANICAL_BRAKE,
     .state = MECHANICAL_BRAKE_FSM_STATE_ENGAGED,
     .data = e->data
   };
@@ -69,7 +69,7 @@ static void prv_state_mechanical_brake_disengaged(FSM *fsm, const Event *e, void
   *event_check = prv_check_mechanical_brake_disengaged;
 
   EventArbiterOutputData data = {
-    .id = CAN_OUTPUT_DEVICE_MECHANICAL_BRAKE,
+    .id = CAN_OUTPUT_MESSAGE_MECHANICAL_BRAKE,
     .state = MECHANICAL_BRAKE_FSM_STATE_DISENGAGED,
     .data = e->data
   };

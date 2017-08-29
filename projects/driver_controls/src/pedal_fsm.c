@@ -77,7 +77,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   }
 
   EventArbiterOutputData data = {
-    .id = CAN_OUTPUT_DEVICE_PEDAL,
+    .id = CAN_OUTPUT_MESSAGE_PEDAL,
     .state = pedal_state,
     .data = e->data
   };

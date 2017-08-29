@@ -43,7 +43,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   }
 
   EventArbiterOutputData data = {
-    .id = CAN_OUTPUT_DEVICE_TURN_SIGNAL,
+    .id = CAN_OUTPUT_MESSAGE_TURN_SIGNAL,
     .state = turn_signal_state,
     .data = e->data
   };
