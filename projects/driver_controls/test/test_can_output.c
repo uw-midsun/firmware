@@ -39,6 +39,11 @@ static bool s_mech_brake = false;
 static Event s_can_event;
 
 static void prv_output(FSM *fsm, EventArbiterOutputData data) {
+  LOG_DEBUG("%-20s [%s -> %s]\n",
+             fsm->name,
+             fsm->current_state->name,
+             fsm->last_state->name);
+
   union EventData {
     uint16_t raw;
     struct {
