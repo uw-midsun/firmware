@@ -76,6 +76,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     pedal_state = PEDAL_FSM_STATE_CRUISE_CONTROL;
   }
 
+  // Output pedal level and angle data
   EventArbiterOutputData data = {
     .id = CAN_OUTPUT_MESSAGE_PEDAL,
     .state = pedal_state,

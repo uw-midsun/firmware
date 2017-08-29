@@ -42,7 +42,7 @@ static void prv_state_off(FSM *fsm, const Event *e, void *context) {
   EventArbiterOutputData data = {
     .id = CAN_OUTPUT_MESSAGE_POWER,
     .state = POWER_FSM_STATE_OFF,
-    .data = e->data
+    .data = 0
   };
 
   event_arbiter_output(data);
@@ -55,7 +55,7 @@ static void prv_state_on(FSM *fsm, const Event *e, void *context) {
   EventArbiterOutputData data = {
     .id = CAN_OUTPUT_MESSAGE_POWER,
     .state = POWER_FSM_STATE_ON,
-    .data = e->data
+    .data = 0
   };
 
   event_arbiter_output(data);

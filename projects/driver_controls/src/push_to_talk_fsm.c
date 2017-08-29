@@ -31,7 +31,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterOutputData data = {
     .id = CAN_OUTPUT_MESSAGE_PUSH_TO_TALK,
     .state = push_to_talk_state,
-    .data = e->data
+    .data = 0
   };
 
   event_arbiter_output(data);

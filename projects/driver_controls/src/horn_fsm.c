@@ -30,7 +30,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterOutputData data = {
     .id = CAN_OUTPUT_MESSAGE_HORN,
     .state = horn_state,
-    .data = e->data
+    .data = 0
   };
 
   event_arbiter_output(data);

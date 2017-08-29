@@ -18,5 +18,5 @@ typedef enum {
   NUM_CAN_OUTPUT_DEVICES
 } CANOutputMessageID;
 
-// Output function to clip and prepare data to be broacasted over CAN
+// Output function to prepare message to broadcast over CAN
 void can_output_transmit(EventArbiterOutputData data);
