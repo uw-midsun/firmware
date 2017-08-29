@@ -28,6 +28,14 @@ static FSMGroup s_fsm_group;
 static bool powered = false;
 static bool mech_brake = false;
 
+// Print the FSM transitions. Invalid actions that don't cause transitions are not printed
+static void prv_output(FSM *fsm, EventArbiterOutputData data) {
+  LOG_DEBUG("%-20s - [%s -> %s]\n",
+             fsm->name,
+             fsm->last_state->name,
+             fsm->current_state->name);
+}
+
 static void prv_toggle_power(bool new_state) {
   Event e;
   if (new_state != powered) {
@@ -48,7 +56,7 @@ static void prv_toggle_mech_brake(bool new_state) {
 }
 
 void setup_test() {
-  event_arbiter_init(NULL);
+  event_arbiter_init(prv_output);
 
   power_fsm_init(&s_fsm_group.power);
   pedal_fsm_init(&s_fsm_group.pedal);
@@ -56,7 +64,7 @@ void setup_test() {
   turn_signal_fsm_init(&s_fsm_group.turn_signal);
   hazard_light_fsm_init(&s_fsm_group.hazard_light);
   mechanical_brake_fsm_init(&s_fsm_group.mechanical_brake);
-  mechanical_brake_fsm_init(&s_fsm_group.horn);
+  horn_fsm_init(&s_fsm_group.horn);
 
   powered = false;
   mech_brake = false;
@@ -64,23 +72,7 @@ void setup_test() {
   event_queue_init();
 }
 
-void teardown_test(void) {
-  Event e;
-
-  e.id = INPUT_EVENT_PEDAL_BRAKE;
-  event_arbiter_process_event(&e);
-
-  prv_toggle_mech_brake(true);
-
-  e.id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
-  event_arbiter_process_event(&e);
-
-  prv_toggle_mech_brake(false);
-
-  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_disengaged", s_fsm_group.mechanical_brake.current_state->name);
-}
+void teardown_test(void) { }
 
 void test_driver_fsm_setup() {
   TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
