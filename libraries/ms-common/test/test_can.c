@@ -11,6 +11,7 @@
 
 typedef enum {
   TEST_CAN_EVENT_RX = 10,
+  TEST_CAN_EVENT_TX,
   TEST_CAN_EVENT_FAULT,
 } TestCanEvent;
 
@@ -44,6 +45,16 @@ static StatusCode prv_ack_callback_status(CANMessageID msg_id, uint16_t device, 
   return STATUS_CODE_OK;
 }
 
+static void prv_clock_tx(void) {
+  Event e = { 0 };
+  StatusCode ret = event_process(&e);
+  TEST_ASSERT_OK(ret);
+  TEST_ASSERT_EQUAL(TEST_CAN_EVENT_TX, e.id);
+
+  bool processed = fsm_process_event(CAN_FSM, &e);
+  TEST_ASSERT_TRUE(processed);
+}
+
 void setup_test(void) {
   event_queue_init();
   interrupt_init();
@@ -53,6 +64,7 @@ void setup_test(void) {
     .device_id = TEST_CAN_DEVICE_ID,
     .bitrate = CAN_HW_BITRATE_125KBPS,
     .rx_event = TEST_CAN_EVENT_RX,
+    .tx_event = TEST_CAN_EVENT_TX,
     .fault_event = TEST_CAN_EVENT_FAULT,
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },
@@ -78,15 +90,16 @@ void test_can_basic(void) {
     .dlc = 1,                   //
   };
 
+  // Begin CAN transmit request
   StatusCode ret = can_transmit(&msg, NULL);
   TEST_ASSERT_OK(ret);
+  prv_clock_tx();
 
   Event e = { 0 };
+  // Wait for RX
   while (event_process(&e) != STATUS_CODE_OK) {
   }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
-  TEST_ASSERT_EQUAL(1, e.data);
-
   bool processed = fsm_process_event(CAN_FSM, &e);
   TEST_ASSERT_TRUE(processed);
 
@@ -110,9 +123,12 @@ void test_can_filter(void) {
 
   StatusCode ret = can_transmit(&msg, NULL);
   TEST_ASSERT_OK(ret);
+  prv_clock_tx();
+
   msg.msg_id = 0x2;
   ret = can_transmit(&msg, NULL);
   TEST_ASSERT_OK(ret);
+  prv_clock_tx();
 
   Event e = { 0 };
   while (event_process(&e) != STATUS_CODE_OK) {
@@ -145,6 +161,7 @@ void test_can_ack(void) {
 
   StatusCode ret = can_transmit(&msg, &ack_req);
   TEST_ASSERT_OK(ret);
+  prv_clock_tx();
 
   Event e = { 0 };
   // Handle RX of message and attempt transmit of ACK
@@ -153,6 +170,7 @@ void test_can_ack(void) {
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
   bool processed = fsm_process_event(CAN_FSM, &e);
   TEST_ASSERT_TRUE(processed);
+  prv_clock_tx();
 
   // Handle RX of ACK
   while (event_process(&e) != STATUS_CODE_OK) {
@@ -208,6 +226,7 @@ void test_can_ack_status(void) {
 
   StatusCode ret = can_transmit(&msg, &ack_req);
   TEST_ASSERT_OK(ret);
+  prv_clock_tx();
 
   Event e = { 0 };
   // Handle RX of message and attempt transmit of ACK
@@ -216,6 +235,7 @@ void test_can_ack_status(void) {
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
   bool processed = fsm_process_event(CAN_FSM, &e);
   TEST_ASSERT_TRUE(processed);
+  prv_clock_tx();
 
   // Handle RX of ACK
   while (event_process(&e) != STATUS_CODE_OK) {
@@ -240,6 +260,7 @@ void test_can_default(void) {
 
   StatusCode ret = can_transmit(&msg, NULL);
   TEST_ASSERT_OK(ret);
+  prv_clock_tx();
 
   Event e = { 0 };
   // Handle message RX
