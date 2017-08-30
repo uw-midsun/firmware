@@ -51,6 +51,10 @@ int main(void) {
   translate_init(TELEMETRY_UART_PORT);
 
   while (true) {
+    Event e = { 0 };
+    while (status_ok(event_process(&e))) {
+      bool success = fsm_process_event(CAN_FSM, &e);
+    }
     wait();
   }
 
