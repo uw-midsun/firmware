@@ -3,12 +3,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#define TRANSLATE_BUFFER_LEN 64
-
 static StatusCode prv_can_rx(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   // Note that this currently responds to ACKs
   UARTPort uart = (UARTPort)context;
-  char buffer[TRANSLATE_BUFFER_LEN] = { 0 };
+  uint8_t buffer[] = "RX[\0\0\0\0\0\0\0\0\0\0]\n";
 
   CANId id = {
     .source_id = msg->source_id,  //
@@ -16,21 +14,19 @@ static StatusCode prv_can_rx(const CANMessage *msg, void *context, CANAckStatus 
     .type = msg->type,            //
   };
 
-  size_t buffer_tx_len =
-      (size_t)snprintf(buffer, TRANSLATE_BUFFER_LEN, "RX[%" PRIu16 " %" PRIu32 " %" PRIu32 "]\n",
-                       id.raw, msg->data_u32[1], msg->data_u32[0]);
-  uart_tx(uart, (uint8_t *)buffer, buffer_tx_len);
+  memcpy(&buffer[3], &id.raw, sizeof(id.raw));
+  memcpy(&buffer[5], &msg->data, sizeof(msg->data));
+
+  uart_tx(uart, buffer, sizeof(buffer) - 1);
 
   return STATUS_CODE_OK;
 }
 
 void prv_uart_rx(const uint8_t *rx_arr, size_t len, void *context) {
   CANMessage msg = {.type = CAN_MSG_TYPE_DATA };
-  int success = sscanf((const char *)rx_arr, "TX[%" PRIu16 " %" PRIu32 " %" PRIu32 "]", &msg.msg_id,
-                       &msg.data_u32[1], &msg.data_u32[0]);
-  if (success == 3) {
-    printf("TX: msg_id: %" PRIu16 " data 0x%" PRIx32 "%" PRIx32 "\n", msg.msg_id, msg.data_u32[1],
-           msg.data_u32[0]);
+  if (len == 14 && rx_arr[0] == 'T' && rx_arr[1] == 'X' && rx_arr[2] == '[' && rx_arr[13] == ']') {
+    memcpy(&msg.msg_id, &rx_arr[3], sizeof(msg.msg_id));
+    memcpy(&msg.data, &rx_arr[5], sizeof(msg.data));
     can_transmit(&msg, NULL);
   }
 }
