@@ -44,7 +44,11 @@ static void prv_rx_push(UARTPort uart);
 
 static void prv_handle_irq(UARTPort uart);
 
-StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage) {
+StatusCode uart_init(UARTPort uart, const UARTSettings *settings, UARTStorage *storage) {
+  if (uart >= NUM_UART_PORTS) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+
   s_port[uart].rcc_cmd(s_port[uart].periph, ENABLE);
 
   s_port[uart].storage = storage;
@@ -79,7 +83,22 @@ StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage
   return STATUS_CODE_OK;
 }
 
-StatusCode uart_tx(UARTPort uart, uint8_t *tx_data, size_t len) {
+StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *context) {
+  if (uart >= NUM_UART_PORTS) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+
+  s_port[uart].storage->rx_handler = rx_handler;
+  s_port[uart].storage->context = context;
+
+  return STATUS_CODE_OK;
+}
+
+StatusCode uart_tx(UARTPort uart, const uint8_t *tx_data, size_t len) {
+  if (uart >= NUM_UART_PORTS) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+
   status_ok_or_return(fifo_push_arr(&s_port[uart].storage->tx_fifo, tx_data, len));
 
   if (USART_GetFlagStatus(s_port[uart].base, USART_FLAG_TXE) == SET) {

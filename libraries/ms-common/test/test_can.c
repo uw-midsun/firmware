@@ -59,8 +59,8 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  // No idea why this cast is needed.
-  can_init(&can_settings, &s_can_storage, (CANRxHandler *)&s_rx_handlers, TEST_CAN_NUM_RX_HANDLERS);
+  // TODO fix CAN test
+  can_init(&can_settings, &s_can_storage, s_rx_handlers, TEST_CAN_NUM_RX_HANDLERS);
 }
 
 void teardown_test(void) {}
