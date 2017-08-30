@@ -6,7 +6,7 @@
 #define TRANSLATE_BUFFER_LEN 64
 
 static StatusCode prv_can_rx(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
-  // TODO: Never respond to ACK?
+  // Note that this currently responds to ACKs
   UARTPort uart = (UARTPort)context;
   char buffer[TRANSLATE_BUFFER_LEN] = { 0 };
 
@@ -17,7 +17,7 @@ static StatusCode prv_can_rx(const CANMessage *msg, void *context, CANAckStatus 
   };
 
   size_t buffer_tx_len =
-      (size_t)snprintf(buffer, TRANSLATE_BUFFER_LEN, "RX[%" PRIu16 " %" PRIu32 " %" PRIu32 "]",
+      (size_t)snprintf(buffer, TRANSLATE_BUFFER_LEN, "RX[%" PRIu16 " %" PRIu32 " %" PRIu32 "]\n",
                        id.raw, msg->data_u32[1], msg->data_u32[0]);
   uart_tx(uart, (uint8_t *)buffer, buffer_tx_len);
 

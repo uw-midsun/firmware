@@ -1,19 +1,19 @@
 // CAN <-> UART
-#include "translate.h"
 #include "can.h"
-#include "uart.h"
+#include "event_queue.h"
 #include "gpio.h"
 #include "interrupt.h"
-#include "event_queue.h"
 #include "soft_timer.h"
+#include "translate.h"
+#include "uart.h"
 #include "wait.h"
 
 #define TELEMETRY_CAN_DEVICE_ID (CAN_MSG_MAX_DEVICES - 1)
-// TODO switch UART port
+// UART port should be updated to XBee
 #define TELEMETRY_UART_PORT UART_PORT_1
 
 static CANStorage s_can_storage = { 0 };
-static CANRxHandler s_rx_handlers[1] = { 0 }; // Only need one RX handler
+static CANRxHandler s_rx_handlers[1] = { 0 };  // Only need one RX handler
 static UARTStorage s_uart_storage = { 0 };
 
 typedef enum {
@@ -30,10 +30,10 @@ int main(void) {
   soft_timer_init();
 
   UARTSettings uart_settings = {
-    .baudrate = 115200,
-    .tx = { GPIO_PORT_A, 9 },
-    .rx = { GPIO_PORT_A, 10 },
-    .alt_fn = GPIO_ALTFN_1
+    .baudrate = 115200,         //
+    .tx = { GPIO_PORT_A, 9 },   //
+    .rx = { GPIO_PORT_A, 10 },  //
+    .alt_fn = GPIO_ALTFN_1,     //
   };
   uart_init(TELEMETRY_UART_PORT, &uart_settings, &s_uart_storage);
 

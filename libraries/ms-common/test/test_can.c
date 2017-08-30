@@ -71,7 +71,6 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  // TODO fix CAN test
   can_init(&can_settings, &s_can_storage, s_rx_handlers, TEST_CAN_NUM_RX_HANDLERS);
 }
 
