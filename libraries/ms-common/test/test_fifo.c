@@ -26,6 +26,10 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_fifo_basic(void) {
+  uint16_t temp = 0;
+  TEST_ASSERT_NOT_OK(fifo_peek(&s_fifo, &temp));
+  TEST_ASSERT_NOT_OK(fifo_pop(&s_fifo, NULL));
+
   // Fill buffer
   for (uint16_t i = TEST_FIFO_OFFSET; i < TEST_FIFO_BUFFER_LEN + TEST_FIFO_OFFSET; i++) {
     TEST_ASSERT_OK(fifo_push(&s_fifo, &i));
@@ -33,10 +37,15 @@ void test_fifo_basic(void) {
   TEST_ASSERT_EQUAL(TEST_FIFO_BUFFER_LEN, fifo_size(&s_fifo));
 
   // Attempt to push into full FIFO
-  uint16_t temp = 0;
   TEST_ASSERT_EQUAL(STATUS_CODE_RESOURCE_EXHAUSTED, fifo_push(&s_fifo, &temp));
 
+  // Peek at element
+  TEST_ASSERT_OK(fifo_peek(&s_fifo, &temp));
+  TEST_ASSERT_EQUAL(TEST_FIFO_OFFSET, temp);
+  TEST_ASSERT_EQUAL(TEST_FIFO_BUFFER_LEN, fifo_size(&s_fifo));
+
   // Pop first element from FIFO
+  temp = 0;
   TEST_ASSERT_OK(fifo_pop(&s_fifo, &temp));
   TEST_ASSERT_EQUAL(TEST_FIFO_OFFSET, temp);
   TEST_ASSERT_EQUAL(TEST_FIFO_BUFFER_LEN - 1, fifo_size(&s_fifo));

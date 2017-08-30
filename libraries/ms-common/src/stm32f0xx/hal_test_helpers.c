@@ -1,3 +1,5 @@
+#include "hal_test_helpers.h"
+
 #include <stdint.h>
 
 #include "stm32f0xx_tim.h"

@@ -60,7 +60,7 @@ void analog_io_init() {
     AnalogIODevice device;
   } InputConfig;
 
-  ADCChannel adc_channel = NUM_ADC_CHANNEL;
+  ADCChannel adc_channel = NUM_ADC_CHANNELS;
 
   InputConfig analog_inputs[] = {
     {.address = DRIVER_IO_GAS_PEDAL, .device = ANALOG_IO_DEVICE_GAS_PEDAL },
