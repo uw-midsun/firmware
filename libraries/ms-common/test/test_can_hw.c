@@ -19,7 +19,7 @@ static void prv_wait_rx(size_t wait_for) {
   size_t expected = s_msg_rx + wait_for;
   uint32_t timeout = 1000000;  // Arbitrary timeout
 
-  while (s_msg_rx != expected && (timeout--)) {
+  while (s_msg_rx != expected) {
   }
 }
 

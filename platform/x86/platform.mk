@@ -39,20 +39,25 @@ endif
 
 CFLAGS := $(CSFLAGS) -Wall -Wextra -Werror -std=gnu11 -Wno-discarded-qualifiers \
           -Wno-unused-variable -Wno-unused-parameter -Wsign-conversion -Wpointer-arith \
-          -ffunction-sections -fdata-sections \
+          -ffunction-sections -fdata-sections -pthread \
           $(ARCH_CFLAGS) $(addprefix -D,$(CDEFINES))
 
 # Linker flags
 LDFLAGS := -lrt
 
 # Platform targets
-.PHONY: run gdb
+.PHONY: run gdb socketcan
 
 run: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 	@$<
 
 gdb: $(GDB_TARGET)
 	@$(GDB) $<
+
+socketcan:
+	@modprobe vcan
+	@sudo ip link add dev vcan0 type vcan
+	@sudo ip link set up vcan0
 
 define session_wrapper
 $1
