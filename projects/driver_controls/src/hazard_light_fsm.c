@@ -29,7 +29,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   }
 
   EventArbiterOutputData data = {
-    .id = CAN_OUTPUT_MESSAGE_HAZARD_LIGHT,
+    .id = CAN_OUTPUT_MESSAGE_LIGHTS,
     .state = hazard_light_state,
     .data = 0
   };
