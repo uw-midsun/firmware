@@ -47,4 +47,5 @@ before_script:
   - export PATH=/usr/local/bin/:$PATH
 
 script:
+  - make socketcan
   - make $TARGET
