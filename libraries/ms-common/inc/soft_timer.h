@@ -11,7 +11,7 @@
 
 typedef uint16_t SoftTimerID;
 
-typedef void (*SoftTimerCallback)(SoftTimerID timer_id, void *context);
+typedef void (*SoftTimerCallback)(SoftTimerID timer_id, void* context);
 
 // Initializes a set of software timers. Clock speed should be in MHz. Subsequent calls will do
 // nothing. The clock speed is that of the external PLL crystal.

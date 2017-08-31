@@ -1,20 +1,18 @@
 #include "can_hw.h"
-#include <pthread.h>
+#include <fcntl.h>
 #include <linux/can.h>
 #include <linux/can/raw.h>
-#include <string.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <poll.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
 #include <net/if.h>
-#include "log.h"
+#include <poll.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "fifo.h"
-
-#include <sys/syscall.h>
+#include "log.h"
 
 #define CAN_HW_DEV_INTERFACE "vcan0"
 #define CAN_HW_MAX_FILTERS 14
@@ -41,16 +39,14 @@ static pthread_t s_tx_pthread_id;
 static pthread_mutex_t s_tx_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t s_tx_cond = PTHREAD_COND_INITIALIZER;
 
-static CANHwSocketData s_socket_data = {
-  .can_fd = -1
-};
+static CANHwSocketData s_socket_data = {.can_fd = -1 };
 
 static uint32_t prv_get_delay(CANHwBitrate bitrate) {
   uint32_t delay_us[NUM_CAN_HW_BITRATES] = {
-    1000, // 125 kbps
-    500, // 250 kbps
-    250, // 500 kbps
-    125, // 1 mbps
+    1000,  // 125 kbps
+    500,   // 250 kbps
+    250,   // 500 kbps
+    125,   // 1 mbps
   };
 
   return delay_us[bitrate];
@@ -66,7 +62,8 @@ static void *prv_rx_thread(void *arg) {
 
     if (s_socket_data.handlers[CAN_HW_EVENT_MSG_RX].callback != NULL) {
       printf("Running handler for %d\n", s_socket_data.rx_frame.can_id);
-      s_socket_data.handlers[CAN_HW_EVENT_MSG_RX].callback(s_socket_data.handlers[CAN_HW_EVENT_TX_READY].context);
+      s_socket_data.handlers[CAN_HW_EVENT_MSG_RX].callback(
+          s_socket_data.handlers[CAN_HW_EVENT_TX_READY].context);
     }
 
     // Limit how often we can receive messages to simulate bus speed
@@ -98,7 +95,8 @@ static void *prv_tx_thread(void *arg) {
 
     printf(">> wrote data %d\n", frame.can_id);
     if (s_socket_data.handlers[CAN_HW_EVENT_TX_READY].callback != NULL) {
-      s_socket_data.handlers[CAN_HW_EVENT_TX_READY].callback(s_socket_data.handlers[CAN_HW_EVENT_TX_READY].context);
+      s_socket_data.handlers[CAN_HW_EVENT_TX_READY].callback(
+          s_socket_data.handlers[CAN_HW_EVENT_TX_READY].context);
     }
   }
 
@@ -108,7 +106,7 @@ static void *prv_tx_thread(void *arg) {
 StatusCode can_hw_init(const CANHwSettings *settings) {
   if (s_socket_data.can_fd != -1) {
     // Reinit everything
-    // TODO do this cleanly with signals or something
+    // This should eventually be done properly with signals
     pthread_cancel(s_rx_pthread_id);
     pthread_cancel(s_tx_pthread_id);
     close(s_socket_data.can_fd);
@@ -133,12 +131,11 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
   setsockopt(s_socket_data.can_fd, SOL_CAN_RAW, CAN_RAW_RECV_OWN_MSGS, &loopback, sizeof(loopback));
 
   struct ifreq ifr = { 0 };
-  strcpy(ifr.ifr_name, CAN_HW_DEV_INTERFACE);
+  snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", CAN_HW_DEV_INTERFACE);
   ioctl(s_socket_data.can_fd, SIOCGIFINDEX, &ifr);
 
   struct sockaddr_can addr = {
-    .can_family = AF_CAN,
-    .can_ifindex = ifr.ifr_ifindex,
+    .can_family = AF_CAN, .can_ifindex = ifr.ifr_ifindex,
   };
   bind(s_socket_data.can_fd, (struct sockaddr *)&addr, sizeof(addr));
 
@@ -182,10 +179,7 @@ CANHwBusStatus can_hw_bus_status(void) {
 }
 
 StatusCode can_hw_transmit(uint16_t id, const uint8_t *data, size_t len) {
-  struct can_frame frame = {
-    .can_id = id & CAN_SFF_MASK,
-    .can_dlc = len
-  };
+  struct can_frame frame = {.can_id = id & CAN_SFF_MASK, .can_dlc = len };
   memcpy(&frame.data, data, len);
 
   pthread_mutex_lock(&s_tx_mutex);
