@@ -10,7 +10,7 @@
 
 #define TELEMETRY_CAN_DEVICE_ID (CAN_MSG_MAX_DEVICES - 1)
 // UART port should be updated to XBee
-#define TELEMETRY_UART_PORT UART_PORT_1
+#define TELEMETRY_UART_PORT 0
 
 static CANStorage s_can_storage = { 0 };
 static CANRxHandler s_rx_handlers[1] = { 0 };  // Only need one RX handler
