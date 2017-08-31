@@ -53,15 +53,10 @@ static uint32_t prv_get_delay(CANHwBitrate bitrate) {
 }
 
 static void *prv_rx_thread(void *arg) {
-  printf("can rx thread\n");
-
   while (true) {
-    printf("waiting for frame\n");
     int bytes = read(s_socket_data.can_fd, &s_socket_data.rx_frame, sizeof(s_socket_data.rx_frame));
-    printf("> frame rx %d\n", s_socket_data.rx_frame.can_id);
 
     if (s_socket_data.handlers[CAN_HW_EVENT_MSG_RX].callback != NULL) {
-      printf("Running handler for %d\n", s_socket_data.rx_frame.can_id);
       s_socket_data.handlers[CAN_HW_EVENT_MSG_RX].callback(
           s_socket_data.handlers[CAN_HW_EVENT_TX_READY].context);
     }
@@ -75,11 +70,8 @@ static void *prv_rx_thread(void *arg) {
 
 static void *prv_tx_thread(void *arg) {
   struct can_frame frame = { 0 };
-  printf("can tx thread\n");
 
   while (true) {
-    printf("waiting for cond var\n");
-
     pthread_mutex_lock(&s_tx_mutex);
     while (fifo_size(&s_socket_data.tx_fifo) == 0) {
       pthread_cond_wait(&s_tx_cond, &s_tx_mutex);
@@ -93,7 +85,6 @@ static void *prv_tx_thread(void *arg) {
     // Delay to simulate bus speed
     usleep(s_socket_data.delay_us);
 
-    printf(">> wrote data %d\n", frame.can_id);
     if (s_socket_data.handlers[CAN_HW_EVENT_TX_READY].callback != NULL) {
       s_socket_data.handlers[CAN_HW_EVENT_TX_READY].callback(
           s_socket_data.handlers[CAN_HW_EVENT_TX_READY].context);
@@ -125,7 +116,7 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
     return status_code(STATUS_CODE_INTERNAL_ERROR);
   }
 
-  printf("init can hw %s\n", CAN_HW_DEV_INTERFACE);
+  LOG_DEBUG("CAN HW initialized on %s\n", CAN_HW_DEV_INTERFACE);
   // Loopback - expects to receive its own messages
   int loopback = settings->loopback;
   setsockopt(s_socket_data.can_fd, SOL_CAN_RAW, CAN_RAW_RECV_OWN_MSGS, &loopback, sizeof(loopback));
@@ -192,8 +183,6 @@ StatusCode can_hw_transmit(uint16_t id, const uint8_t *data, size_t len) {
 
   pthread_cond_signal(&s_tx_cond);
   pthread_mutex_unlock(&s_tx_mutex);
-
-  printf("TX'd %d\n", id);
 
   return STATUS_CODE_OK;
 }
