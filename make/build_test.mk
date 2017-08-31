@@ -73,7 +73,6 @@ endif
 $(T)_EXCLUDED_TESTS := $(EXCLUDED_TESTS:%=$($(T)_TEST_BIN_DIR)/test_%_runner)
 test_$(T): $(filter-out $($(T)_EXCLUDED_TESTS),$($(T)_TESTS))
 	@echo "Running test suite - $(@:test_%=%)"
-	@echo "$^"
 	@$(call session_wrapper,$(foreach test,$^,$(call test_run,$(test)) &&) true)
 
 test_all: test_$(T)
