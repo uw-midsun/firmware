@@ -15,6 +15,7 @@ $(T)_TEST_DEPS := unity $(T)
 $(T)_TEST_SRC := $(wildcard $($(T)_TEST_ROOT)/test_*.c)
 
 # Exclude any tests explicitly mentioned - this allows tests to be disabled per platform.
+$(T)_EXCLUDE_TESTS += $(EXCLUDED_TESTS)
 $(T)_EXCLUDED_TESTS := $(foreach test,$($(T)_EXCLUDE_TESTS),$($(T)_TEST_ROOT)/test_$(test).c)
 $(T)_TEST_SRC := $(filter-out $($(T)_EXCLUDED_TESTS),$($(T)_TEST_SRC))
 
@@ -69,9 +70,7 @@ test: $($(T)_TEST_BIN_DIR)/test_$(TEST)_runner$(PLATFORM_EXT)
 endif
 endif
 
-# Run each test
-$(T)_EXCLUDED_TESTS := $(EXCLUDED_TESTS:%=$($(T)_TEST_BIN_DIR)/test_%_runner)
-test_$(T): $(filter-out $($(T)_EXCLUDED_TESTS),$($(T)_TESTS))
+test_$(T): $($(T)_TESTS)
 	@echo "Running test suite - $(@:test_%=%)"
 	@$(call session_wrapper,$(foreach test,$^,$(call test_run,$(test)) &&) true)
 

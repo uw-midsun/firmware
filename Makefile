@@ -35,7 +35,7 @@ PLATFORMS_DIR := platform
 LIB_DIR := libraries
 MAKE_DIR := make
 
-PLATFORM := stm32f0xx
+PLATFORM ?= stm32f0xx
 
 # Include argument filters
 include $(MAKE_DIR)/filter.mk
