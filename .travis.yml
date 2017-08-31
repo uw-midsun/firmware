@@ -26,7 +26,7 @@ env:
   # Travis does not support SocketCAN
   - TARGET=build_all PLATFORM=x86
   - TARGET=build_all PLATFORM=stm32f0xx
-  - TARGET=test_all PLATFORM=x86 EXCLUDED_TESTS=can can_hw
+  - TARGET=test_all PLATFORM=x86 EXCLUDED_TESTS="can can_hw"
   - TARGET=lint
 
 before_script:
