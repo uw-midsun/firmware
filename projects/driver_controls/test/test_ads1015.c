@@ -1,5 +1,9 @@
 #include <stdbool.h>
 
+#include "gpio.h"
+#include "interrupt.h"
+#include "gpio_it.h"
+
 #include "unity.h"
 #include "log.h"
 #include "test_helpers.h"
@@ -52,7 +56,7 @@ void test_ads1015_read(void) {
     TEST_ASSERT_TRUE(0 <= reading && reading < 0x7FF);
 
     ads1015_read_raw(ADS1015_CHANNEL_0, &reading);
-    TEST_ASSERT_TRUE(0 <= reading && reading < ADS1015_REFERENCE_VOLTAGE);
+    TEST_ASSERT_TRUE(0 <= reading && reading < ADS1015_REFERENCE_VOLTAGE_4096);
   }
 }
 

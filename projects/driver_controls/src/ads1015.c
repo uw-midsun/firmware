@@ -7,7 +7,7 @@
 #include "gpio_it.h"
 #include "ads1015_bitmasks.h"
 
-// Union definition to help process registers data 
+// Union definition to help process registers data
 typedef struct ADS1015Register {
   uint8_t data[2];
 } ADS1015Register;
@@ -50,11 +50,11 @@ static StatusCode prv_write(I2CPort i2c_port, uint8_t reg, uint8_t *data, size_t
   return STATUS_CODE_OK;
 }
 
-static void prv_interrupt_handler(GPIOAddress *address, void *context) {
+static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
   ADS1015Register reg;
 
   // Obtain ADC readings
-  status_ok_or_return(prv_read(s_i2c_port, ADS1015_CONVERSION_REGISTER, reg.data, 2));
+  prv_read(s_i2c_port, ADS1015_CONVERSION_REGISTER, reg.data, 2);
   s_interrupts[s_current_channel].reading = (reg.data[0] << 4) | (reg.data[1] >> 4);
 
   if (s_interrupts[s_current_channel].callback != NULL) {
@@ -66,14 +66,12 @@ static void prv_interrupt_handler(GPIOAddress *address, void *context) {
   s_current_channel = (s_current_channel + 1) % NUM_ADS1015_CHANNELS;
 
   // Obtain the current value for the config register
-  status_ok_or_return(prv_read(s_i2c_port, ADS1015_CONFIG_REGISTER, reg.data, 2));
+  prv_read(s_i2c_port, ADS1015_CONFIG_REGISTER, reg.data, 2);
 
   // Set bits 12-14 based on the current channel
   reg.data[0] = ADS1015_CONFIG_MUX(reg.data[0], s_current_channel);
 
-  status_ok_or_return(prv_write(s_i2c_port, ADS1015_CONFIG_REGISTER, reg.data, 3));
-
-  return STATUS_CODE_OK;
+  prv_write(s_i2c_port, ADS1015_CONFIG_REGISTER, reg.data, 3);
 }
 
 StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress ready_pin) {
@@ -100,7 +98,7 @@ StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress ready_pin) {
   reg.data[0] = ADS1015_FULL_SCALE_4096(reg.data[0]);
   reg.data[0] = ADS1015_CONFIG_MUX(reg.data[0], ADS1015_CHANNEL_0);
   reg.data[1] = ADS1015_CONFIG_COMP_QUE_FOUR(reg.data[1]);
-  
+
   status_ok_or_return(prv_write(s_i2c_port, ADS1015_CONFIG_REGISTER, reg.data, 3));
 
   // Conversion ready must be initialized by setting the MSB of the HI_THRESH and LO_THRESH to 1
@@ -120,7 +118,8 @@ StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress ready_pin) {
   return STATUS_CODE_OK;
 }
 
-StatusCode ads1015_register_callback(ADS1015Channel channel, ADS1015Callback callback, void *context) {
+StatusCode ads1015_register_callback(ADS1015Channel channel,
+                                     ADS1015Callback callback, void *context) {
   status_ok_or_return(prv_channel_valid(channel));
 
   s_interrupts[channel].callback = callback;

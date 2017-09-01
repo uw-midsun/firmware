@@ -21,10 +21,10 @@ StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress ready_pin);
 
 // Register a callback function to be called when the specified channel completes a conversion
 StatusCode ads1015_register_callback(ADS1015Channel channel,
-                                      ADS1015Callback callback, void *context);
+                                     ADS1015Callback callback, void *context);
 
 // Return the stored raw 12-bit value read by the specified channel
 StatusCode ads1015_read_raw(ADS1015Channel channel, int16_t *reading);
 
-// Converts stored data and returns reading in millivolts 
+// Converts stored data and returns reading in millivolts
 StatusCode ads1015_read_converted(ADS1015Channel channel, int16_t *reading);
