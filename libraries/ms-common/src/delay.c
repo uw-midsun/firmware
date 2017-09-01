@@ -7,13 +7,13 @@
 #include "wait.h"
 
 static void prv_delay_it(SoftTimerID timer_id, void *context) {
-  bool *block = context;
+  volatile bool *block = context;
   *block = false;
 }
 
 void delay_us(uint32_t t) {
   volatile bool block = true;
-  soft_timer_start(t, prv_delay_it, &block, NULL);
+  soft_timer_start(t, prv_delay_it, (void *)&block, NULL);
   while (block) {
     wait();
   }

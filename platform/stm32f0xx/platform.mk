@@ -13,7 +13,7 @@ PLATFORM_LIB := stm32f0xx
 PLATFORM_EXT := .elf
 
 # Architecture dependent variables
-ARCH_CLAGS := -mlittle-endian -mcpu=cortex-m0 -march=armv6-m -mthumb
+ARCH_CFLAGS := -mlittle-endian -mcpu=cortex-m0 -march=armv6-m -mthumb
 
 # Linker script location
 LDSCRIPT_DIR := $(PLATFORM_DIR)/ldscripts
@@ -23,13 +23,14 @@ SCRIPT_DIR := $(PLATFORM_DIR)/scripts
 
 # Build flags for the device
 CDEFINES := USE_STDPERIPH_DRIVER STM32F072
-CFLAGS := -Wall -Werror -g3 -Os -std=c99 -Wno-unused-variable -pedantic \
-          -ffunction-sections -fdata-sections -fno-builtin -flto \
-          --specs=nosys.specs --specs=nano.specs \
-          $(ARCH_CLAGS) $(addprefix -D,$(CDEFINES))
+CFLAGS := -Wall -Wextra -Werror -g3 -Os -std=c11 -Wno-discarded-qualifiers \
+					-Wno-unused-variable -Wno-unused-parameter -Wsign-conversion -Wpointer-arith \
+					-ffunction-sections -fdata-sections -fno-builtin -flto \
+					$(ARCH_CFLAGS) $(addprefix -D,$(CDEFINES))
 
 # Linker flags
-LDFLAGS := -L$(LDSCRIPT_DIR) -Tstm32f0.ld -fuse-linker-plugin
+LDFLAGS := -L$(LDSCRIPT_DIR) -Tstm32f0.ld -fuse-linker-plugin \
+           --specs=nosys.specs --specs=nano.specs
 
 # Device openocd config file
 # Use PROBE=stlink-v2 for discovery boards

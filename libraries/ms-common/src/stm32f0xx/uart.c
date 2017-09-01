@@ -6,44 +6,37 @@
 // a newline or the buffer is full. Once that occurs, we pop the data into another buffer
 // and call the registered RX handler.
 #include "uart.h"
+#include <string.h>
 #include "stm32f0xx.h"
 
 // basic idea: tx is stored in a buffer, interrupt-driven
 // rx is buffered, once a newline is hit or the buffer is full, call rx_handler
 
 typedef struct {
-  const void (*rcc_cmd)(uint32_t periph, FunctionalState state);
-  const uint32_t periph;
-  const uint32_t irq;
-  const USART_TypeDef *base;
+  void (*rcc_cmd)(uint32_t periph, FunctionalState state);
+  uint32_t periph;
+  uint32_t irq;
+  USART_TypeDef *base;
   UARTStorage *storage;
 } UARTPortData;
 
 static UARTPortData s_port[] = {
-  {
-    .rcc_cmd = RCC_APB2PeriphClockCmd,
-    .periph = RCC_APB2Periph_USART1,
-    .irq = USART1_IRQn,
-    .base = USART1
-  },
-  {
-    .rcc_cmd = RCC_APB1PeriphClockCmd,
-    .periph = RCC_APB1Periph_USART2,
-    .irq = USART2_IRQn,
-    .base = USART2
-  },
-  {
-    .rcc_cmd = RCC_APB1PeriphClockCmd,
-    .periph = RCC_APB1Periph_USART3,
-    .irq = USART3_4_IRQn,
-    .base = USART3
-  },
-  {
-    .rcc_cmd = RCC_APB1PeriphClockCmd,
-    .periph = RCC_APB1Periph_USART4,
-    .irq = USART3_4_IRQn,
-    .base = USART4
-  }
+      [UART_PORT_1] = {.rcc_cmd = RCC_APB2PeriphClockCmd,
+                       .periph = RCC_APB2Periph_USART1,
+                       .irq = USART1_IRQn,
+                       .base = USART1 },
+      [UART_PORT_2] = {.rcc_cmd = RCC_APB1PeriphClockCmd,
+                       .periph = RCC_APB1Periph_USART2,
+                       .irq = USART2_IRQn,
+                       .base = USART2 },
+      [UART_PORT_3] = {.rcc_cmd = RCC_APB1PeriphClockCmd,
+                       .periph = RCC_APB1Periph_USART3,
+                       .irq = USART3_4_IRQn,
+                       .base = USART3 },
+      [UART_PORT_4] = {.rcc_cmd = RCC_APB1PeriphClockCmd,
+                       .periph = RCC_APB1Periph_USART4,
+                       .irq = USART3_4_IRQn,
+                       .base = USART4 },
 };
 
 static void prv_tx_pop(UARTPort uart);
@@ -63,8 +56,8 @@ StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage
   fifo_init(&s_port[uart].storage->rx_fifo, s_port[uart].storage->rx_buf);
 
   GPIOSettings gpio_settings = {
-    .alt_function = settings->alt_fn,
-    .resistor = GPIO_RES_PULLUP
+    .alt_function = settings->alt_fn,  //
+    .resistor = GPIO_RES_PULLUP,       //
   };
 
   gpio_init_pin(&settings->tx, &gpio_settings);
@@ -82,6 +75,8 @@ StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage
   stm32f0xx_interrupt_nvic_enable(s_port[uart].irq, INTERRUPT_PRIORITY_NORMAL);
 
   USART_Cmd(s_port[uart].base, ENABLE);
+
+  return STATUS_CODE_OK;
 }
 
 StatusCode uart_tx(UARTPort uart, uint8_t *tx_data, size_t len) {

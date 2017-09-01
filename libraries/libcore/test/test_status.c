@@ -6,9 +6,9 @@
 #include "misc.h"
 #include "unity.h"
 
-void setup_test(void) { }
+void setup_test(void) {}
 
-void teardown_test(void) { }
+void teardown_test(void) {}
 
 static StatusCode prv_with_msg() {
   return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "my-message");
@@ -46,9 +46,9 @@ void test_status_create_valid(void) {
 
 // Verifies the behavior when a code greater than NUM_STATUS_CODE is entered.
 void test_status_create_invalid_code(void) {
-  StatusCode statuscode = status_code(NUM_STATUS_CODE + 1);
+  StatusCode statuscode = status_code(NUM_STATUS_CODES + 1);
   Status status = status_get();
-  TEST_ASSERT_EQUAL(NUM_STATUS_CODE + 1, status.code);
+  TEST_ASSERT_EQUAL(NUM_STATUS_CODES + 1, status.code);
   TEST_ASSERT_EQUAL_STRING("test_status_create_invalid_code", status.caller);
   TEST_ASSERT_EQUAL_STRING("", status.message);
 }
@@ -79,7 +79,7 @@ void test_status_clear(void) {
 
 static bool s_foo = false;
 
-static void prv_test_callback(Status* status) {
+static void prv_test_callback(const Status *status) {
   s_foo = true;
   printf("CODE:%d:%s:%s: %s\n", status->code, status->source, status->caller, status->message);
 }

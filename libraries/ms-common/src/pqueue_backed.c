@@ -1,4 +1,5 @@
 #include "pqueue_backed.h"
+#include <string.h>
 
 static void prv_init_node(void *node, void *context) {
   PQueueBacked *queue = context;
@@ -19,7 +20,7 @@ StatusCode pqueue_backed_init_impl(PQueueBacked *queue, PQueueNode *nodes, void 
   return STATUS_CODE_OK;
 }
 
-StatusCode pqueue_backed_push(PQueueBacked *queue, void *elem, uint16_t prio) {
+StatusCode pqueue_backed_push(PQueueBacked *queue, const void *elem, uint16_t prio) {
   if (elem == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }

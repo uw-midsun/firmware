@@ -43,8 +43,8 @@ $(STATIC_LIB_DIR)/lib$(T).a: $($(T)_OBJ) $(call dep_to_lib,$($(T)_DEPS)) | $(STA
 # Application target
 $(BIN_DIR)/$(T)$(PLATFORM_EXT): $($(T)_OBJ) $(call dep_to_lib,$($(T)_DEPS)) | $(T) $(BIN_DIR)
 	@echo "Building $(notdir $@) for $(PLATFORM)"
-	@$(CC) $(CFLAGS) -Wl,-Map=$(BIN_DIR)/$(notdir $(@:%$(PLATFORM_EXT)=%.map)) $^ -o $@ -L$(STATIC_LIB_DIR) \
-		$(addprefix -l,$($(firstword $|)_DEPS)) \
+	@$(CC) $($(firstword $|)_CFLAGS) -Wl,-Map=$(BIN_DIR)/$(notdir $(@:%$(PLATFORM_EXT)=%.map)) $^ -o $@ \
+		-L$(STATIC_LIB_DIR) $(addprefix -l,$($(firstword $|)_DEPS)) \
 		$(LDFLAGS) $(addprefix -I,$($(firstword $|)_INC_DIRS))
 	@$(OBJDUMP) -St $@ >$(basename $@).lst
 	@$(SIZE) $@
@@ -52,11 +52,11 @@ $(BIN_DIR)/$(T)$(PLATFORM_EXT): $($(T)_OBJ) $(call dep_to_lib,$($(T)_DEPS)) | $(
 # Object target - use first order-only dependency to expand the library name for subshells
 $($(T)_OBJ_ROOT)/%.o: $($(T)_SRC_ROOT)/%.c | $(T) $(dir $($(T)_OBJ))
 	@echo "$(firstword $|): $(notdir $<) -> $(notdir $@)"
-	@$(CC) -MD -MP -w -c -o $@ $< $($(firstword $|)_CFLAGS) $(addprefix -I,$($(firstword $|)_INC_DIRS))
+	@$(CC) -MD -MP -c -o $@ $< $($(firstword $|)_CFLAGS) $(addprefix -I,$($(firstword $|)_INC_DIRS))
 
 $($(T)_OBJ_ROOT)/%.o: $($(T)_SRC_ROOT)/%.s | $(T) $(dir $($(T)_OBJ))
 	@echo "$(firstword $|): $(notdir $<) -> $(notdir $@)"
-	@$(CC) -MD -MP -w -c -o $@ $< $($(firstword $|)_CFLAGS) $(addprefix -I,$($(firstword $|)_INC_DIRS))
+	@$(CC) -MD -MP -c -o $@ $< $($(firstword $|)_CFLAGS) $(addprefix -I,$($(firstword $|)_INC_DIRS))
 
 .PHONY: $(T) $(TARGET_TYPE)
 

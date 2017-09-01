@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "interrupt_def.h"
@@ -89,10 +90,10 @@ StatusCode x86_interrupt_register_handler(x86_interrupt_handler handler, uint8_t
   return STATUS_CODE_OK;
 }
 
-StatusCode x86_interrupt_register_interrupt(uint8_t handler_id, InterruptSettings *settings,
+StatusCode x86_interrupt_register_interrupt(uint8_t handler_id, const InterruptSettings *settings,
                                             uint8_t *interrupt_id) {
   if (handler_id >= s_x86_interrupt_next_handler_id ||
-      settings->priority >= NUM_INTERRUPT_PRIORITY || settings->type >= NUM_INTERRUPT_TYPE) {
+      settings->priority >= NUM_INTERRUPT_PRIORITIES || settings->type >= NUM_INTERRUPT_TYPES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   } else if (s_x86_interrupt_next_interrupt_id >= NUM_X86_INTERRUPT_INTERRUPTS) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
@@ -117,7 +118,7 @@ StatusCode x86_interrupt_trigger(uint8_t interrupt_id) {
   // callback it is going to run.
   siginfo_t value_store;
   value_store.si_value.sival_int = interrupt_id;
-  sigqueue(s_main_thread_id, SIGRTMIN + s_x86_interrupt_interrupts_map[interrupt_id].priority,
+  sigqueue(s_main_thread_id, SIGRTMIN + (int)s_x86_interrupt_interrupts_map[interrupt_id].priority,
            value_store.si_value);
 
   return STATUS_CODE_OK;
