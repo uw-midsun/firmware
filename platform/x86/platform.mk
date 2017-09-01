@@ -51,18 +51,17 @@ endif
 LDFLAGS := -lrt
 
 # Platform targets
-.PHONY: run gdb socketcan
+.PHONY: run gdb
 
-run: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+run: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT) socketcan
 	@$<
 
-gdb: $(GDB_TARGET)
+gdb: $(GDB_TARGET) socketcan
 	@$(GDB) $<
 
-socketcan:
-	@modprobe vcan
-	@sudo ip link add dev vcan0 type vcan
-	@sudo ip link set up vcan0
+test_all: socketcan
+
+test: socketcan
 
 define session_wrapper
 $1
