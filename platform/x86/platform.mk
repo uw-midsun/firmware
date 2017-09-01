@@ -25,9 +25,9 @@ ARCH_CFLAGS :=
 LDSCRIPT := $(PLATFORM_DIR)/ldscripts
 
 # Build flags for the device
-CDEFINES :=
+CDEFINES := _GNU_SOURCE
 
-ifeq (gcc, $(COMPILER))
+ifeq (gcc,$(COMPILER))
   CSFLAGS := -g -Os
 else ifeq (asan, $(COPTIONS))
   CSFLAGS := -O1 -g -fsanitize=address -fno-omit-frame-pointer
@@ -39,8 +39,13 @@ endif
 
 CFLAGS := $(CSFLAGS) -Wall -Wextra -Werror -std=gnu11 -Wno-discarded-qualifiers \
           -Wno-unused-variable -Wno-unused-parameter -Wsign-conversion -Wpointer-arith \
-          -ffunction-sections -fdata-sections \
+          -ffunction-sections -fdata-sections -pthread \
           $(ARCH_CFLAGS) $(addprefix -D,$(CDEFINES))
+
+ifeq (clang,$(COMPILER))
+  CFLAGS := $(filter-out -Wno-discarded-qualifiers,$(CFLAGS)) -Wno-missing-field-initializers \
+            -Wno-incompatible-pointer-types-discards-qualifiers -Wno-missing-braces
+endif
 
 # Linker flags
 LDFLAGS := -lrt
@@ -48,11 +53,15 @@ LDFLAGS := -lrt
 # Platform targets
 .PHONY: run gdb
 
-run: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+run: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT) socketcan
 	@$<
 
-gdb: $(GDB_TARGET)
+gdb: $(GDB_TARGET) socketcan
 	@$(GDB) $<
+
+test_all: socketcan
+
+test: socketcan
 
 define session_wrapper
 $1
