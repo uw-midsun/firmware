@@ -72,13 +72,7 @@ static void prv_interrupt_handler(GPIOAddress *address, void *context) {
   reg.data[0] = ADS1015_CONFIG_MUX(reg.data[0], s_current_channel);
 
   status_ok_or_return(prv_write(s_i2c_port, ADS1015_CONFIG_REGISTER, reg.data, 3));
-/*
-  printf("[ %d\t%d\t%d\t%d ]\n",
-          s_interrupts[ADS1015_CHANNEL_0].reading,
-          s_interrupts[ADS1015_CHANNEL_1].reading,
-          s_interrupts[ADS1015_CHANNEL_2].reading,
-          s_interrupts[ADS1015_CHANNEL_3].reading);
-*/
+
   return STATUS_CODE_OK;
 }
 
