@@ -15,28 +15,23 @@
 // ADS1015 Bitmasks (According to their positions in their data byte)
 #define ADS1015_CONFIG_MODE_CONT(byte)          (byte & 0xFE)
 
-#define ADS1015_CONFIG_MUX_AIN0(byte)           ((byte & 0x8F) | 0x40)
-#define ADS1015_CONFIG_MUX_AIN1(byte)           ((byte & 0x8F) | 0x50)
-#define ADS1015_CONFIG_MUX_AIN2(byte)           ((byte & 0x8F) | 0x60)
-#define ADS1015_CONFIG_MUX_AIN3(byte)           ((byte & 0x8F) | 0x70)
+#define ADS1015_CONFIG_MUX(byte, channel)       ((byte & 0x8F) | ((0x4 | channel) << 4))
 
 // Number of successive conversions required before asserting ALERT/RDY
 #define ADS1015_CONFIG_COMP_QUE_ONE(byte)       ((byte & 0xFC) | 0x0)
 #define ADS1015_CONFIG_COMP_QUE_TWO(byte)       ((byte & 0xFC) | 0x1)
 #define ADS1015_CONFIG_COMP_QUE_FOUR(byte)      ((byte & 0xFC) | 0x2)
 
-#define ADS1015_CONFIG_DR_128_SPS(byte)         (byte & 0x1F)
-
 #define ADS1015_HI_THRESH_RDY                   0x80
 #define ADS1015_LO_THRESH_RDY                   0x00
 
 // ADS1015 Full scale voltages
 #define ADS1015_FULL_SCALE_6144(byte)           (byte & 0xF1) | 0x0
-#define ADS1015_FULL_SCALE_4096(byte)           (byte & 0xF1) | 0x1
-#define ADS1015_FULL_SCALE_2048(byte)           (byte & 0xF1) | 0x2
-#define ADS1015_FULL_SCALE_1024(byte)           (byte & 0xF1) | 0x3
-#define ADS1015_FULL_SCALE_512(byte)            (byte & 0xF1) | 0x4
-#define ADS1015_FULL_SCALE_256(byte)            (byte & 0xF1) | 0x5
+#define ADS1015_FULL_SCALE_4096(byte)           (byte & 0xF1) | 0x2
+#define ADS1015_FULL_SCALE_2048(byte)           (byte & 0xF1) | 0x4
+#define ADS1015_FULL_SCALE_1024(byte)           (byte & 0xF1) | 0x6
+#define ADS1015_FULL_SCALE_512(byte)            (byte & 0xF1) | 0x8
+#define ADS1015_FULL_SCALE_256(byte)            (byte & 0xF1) | 0xA
 
 // ADS1015 voltage conversion constants
 #define ADS1015_REFERENCE_VOLTAGE_6144          6144
