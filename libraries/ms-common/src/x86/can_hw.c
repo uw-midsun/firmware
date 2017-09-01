@@ -42,7 +42,7 @@ static pthread_cond_t s_tx_cond = PTHREAD_COND_INITIALIZER;
 static CANHwSocketData s_socket_data = {.can_fd = -1 };
 
 static uint32_t prv_get_delay(CANHwBitrate bitrate) {
-  uint32_t delay_us[NUM_CAN_HW_BITRATES] = {
+  const uint32_t delay_us[NUM_CAN_HW_BITRATES] = {
     1000,  // 125 kbps
     500,   // 250 kbps
     250,   // 500 kbps
@@ -97,7 +97,7 @@ static void *prv_tx_thread(void *arg) {
 StatusCode can_hw_init(const CANHwSettings *settings) {
   if (s_socket_data.can_fd != -1) {
     // Reinit everything
-    // This should eventually be done properly with signals
+    // TODO(ELEC-277): This should eventually be done properly with signals
     pthread_cancel(s_rx_pthread_id);
     pthread_cancel(s_tx_pthread_id);
     close(s_socket_data.can_fd);
@@ -112,23 +112,34 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
 
   s_socket_data.can_fd = socket(PF_CAN, SOCK_RAW, CAN_RAW);
   if (s_socket_data.can_fd == -1) {
-    LOG_CRITICAL("CAN HW: Failed to open socketcan socket\n");
-    return status_code(STATUS_CODE_INTERNAL_ERROR);
+    LOG_CRITICAL("CAN HW: Failed to open SocketCAN socket\n");
+    return status_msg(STATUS_CODE_INTERNAL_ERROR, "CAN HW: Failed to open socket");
   }
 
-  LOG_DEBUG("CAN HW initialized on %s\n", CAN_HW_DEV_INTERFACE);
   // Loopback - expects to receive its own messages
   int loopback = settings->loopback;
-  setsockopt(s_socket_data.can_fd, SOL_CAN_RAW, CAN_RAW_RECV_OWN_MSGS, &loopback, sizeof(loopback));
+  if (setsockopt(s_socket_data.can_fd, SOL_CAN_RAW, CAN_RAW_RECV_OWN_MSGS, &loopback,
+                 sizeof(loopback)) < 0) {
+    LOG_CRITICAL("CAN HW: Failed to set loopback mode on socket\n");
+    return status_msg(STATUS_CODE_INTERNAL_ERROR, "CAN HW: Failed to set loopback mode on socket");
+  }
 
   struct ifreq ifr = { 0 };
   snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "%s", CAN_HW_DEV_INTERFACE);
-  ioctl(s_socket_data.can_fd, SIOCGIFINDEX, &ifr);
+  if (ioctl(s_socket_data.can_fd, SIOCGIFINDEX, &ifr) < 0) {
+    LOG_CRITICAL("CAN HW: Device %s not found\n", CAN_HW_DEV_INTERFACE);
+    return status_msg(STATUS_CODE_INTERNAL_ERROR, "CAN HW: Device not found");
+  }
 
   struct sockaddr_can addr = {
     .can_family = AF_CAN, .can_ifindex = ifr.ifr_ifindex,
   };
-  bind(s_socket_data.can_fd, (struct sockaddr *)&addr, sizeof(addr));
+  if (bind(s_socket_data.can_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+    LOG_CRITICAL("CAN HW: Failed to bind socket\n");
+    return status_msg(STATUS_CODE_INTERNAL_ERROR, "CAN HW: Failed to bind socket");
+  }
+
+  LOG_DEBUG("CAN HW initialized on %s\n", CAN_HW_DEV_INTERFACE);
 
   pthread_create(&s_rx_pthread_id, NULL, prv_rx_thread, NULL);
   pthread_create(&s_tx_pthread_id, NULL, prv_tx_thread, NULL);

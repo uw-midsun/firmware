@@ -31,8 +31,10 @@ void setup_test(void) {
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },
   };
-  can_hw_init(&can_settings);
-  can_hw_register_callback(CAN_HW_EVENT_MSG_RX, prv_handle_rx, NULL);
+  StatusCode ret = can_hw_init(&can_settings);
+  TEST_ASSERT_OK(ret);
+  ret = can_hw_register_callback(CAN_HW_EVENT_MSG_RX, prv_handle_rx, NULL);
+  TEST_ASSERT_OK(ret);
   s_msg_rx = 0;
   s_rx_id = 0;
   s_rx_data = 0;
