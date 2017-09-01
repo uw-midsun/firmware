@@ -7,11 +7,22 @@
 // Power FSM state definitions
 
 FSM_DECLARE_STATE(state_off);
+FSM_DECLARE_STATE(state_off_brake);
+FSM_DECLARE_STATE(state_charging);
 FSM_DECLARE_STATE(state_on);
 
 // Power FSM transition table definitions
 
 FSM_STATE_TRANSITION(state_off) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_charging);
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_off_brake);
+}
+
+FSM_STATE_TRANSITION(state_off_brake) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_on);
+}
+
+FSM_STATE_TRANSITION(state_charging) {
   FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_on);
 }
 
@@ -39,9 +50,20 @@ static void prv_state_off(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_off;
 
+  PowerFSMState power_state = POWER_FSM_STATE_OFF;
+
+  State *current_state = fsm->current_state;
+
+  if (current_state == &state_off_brake) {
+    // No CAN message gets sent
+    return;
+  } else if (current_state == &state_charging) {
+    power_state = POWER_FSM_STATE_CHARGED;
+  }
+
   EventArbiterOutputData data = {
     .id = CAN_OUTPUT_MESSAGE_POWER,
-    .state = POWER_FSM_STATE_OFF,
+    .state = power_state,
     .data = 0
   };
 
@@ -63,6 +85,8 @@ static void prv_state_on(FSM *fsm, const Event *e, void *context) {
 
 StatusCode power_fsm_init(FSM *fsm) {
   fsm_state_init(state_off, prv_state_off);
+  fsm_state_init(state_off_brake, prv_state_off);
+  fsm_state_init(state_charging, prv_state_off);
   fsm_state_init(state_on, prv_state_on);
 
   void *context = event_arbiter_add_fsm(fsm, prv_check_off);

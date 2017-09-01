@@ -31,7 +31,6 @@ typedef struct FSMGroup {
 } FSMGroup;
 
 static FSMGroup s_fsm_group;
-static bool s_powered = false;
 static bool s_mech_brake = false;
 
 static EventArbiterOutputData s_can_output;
@@ -47,13 +46,11 @@ static void prv_output(EventArbiterOutputData data) {
           s_can_output.data);
 }
 
-static void prv_toggle_power(bool new_state) {
+static void prv_toggle_power(void) {
   Event e = { .data = 0 };
-  if (new_state != s_powered) {
-    e.id = INPUT_EVENT_POWER;
-    event_arbiter_process_event(&e);
-    s_powered = new_state;
-  }
+
+  e.id = INPUT_EVENT_POWER;
+  event_arbiter_process_event(&e);
 }
 
 static void prv_toggle_mech_brake(bool new_state) {
@@ -78,7 +75,6 @@ void setup_test(void) {
   horn_fsm_init(&s_fsm_group.horn);
   push_to_talk_fsm_init(&s_fsm_group.push_to_talk);
 
-  s_powered = false;
   s_mech_brake = false;
 
   event_queue_init();
@@ -88,16 +84,33 @@ void teardown_test(void) { }
 
 // Test that the power fsm correctly generates CAN events
 void test_can_output_power(void) {
-  prv_toggle_power(true);
+  TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
 
+  prv_toggle_power();
+
+  TEST_ASSERT_EQUAL_STRING("state_charging", s_fsm_group.power.current_state->name);
+  TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_POWER, s_can_output.id);
+  TEST_ASSERT_EQUAL(POWER_FSM_STATE_CHARGED, s_can_output.state);
+  TEST_ASSERT_EQUAL(0, s_can_output.data);
+
+  prv_toggle_power();
+
+  TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
   TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_POWER, s_can_output.id);
   TEST_ASSERT_EQUAL(POWER_FSM_STATE_ON, s_can_output.state);
   TEST_ASSERT_EQUAL(0, s_can_output.data);
 
-  prv_toggle_power(false);
+  prv_toggle_power();
 
   TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_POWER, s_can_output.id);
   TEST_ASSERT_EQUAL(POWER_FSM_STATE_OFF, s_can_output.state);
+  TEST_ASSERT_EQUAL(0, s_can_output.data);
+
+  prv_toggle_mech_brake(true);
+  prv_toggle_power();
+
+  TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_POWER, s_can_output.id);
+  TEST_ASSERT_EQUAL(POWER_FSM_STATE_ON, s_can_output.state);
   TEST_ASSERT_EQUAL(0, s_can_output.data);
 }
 
@@ -121,10 +134,12 @@ void test_can_output_hazard_light(void) {
   Event e = { 0 };
 
   // Turn on the power and clean up the event queue
-  prv_toggle_power(true);
+  prv_toggle_mech_brake(true);
+  prv_toggle_power();
 
   // Test that the transition to the ON state generates the correct event
   e.id = INPUT_EVENT_HAZARD_LIGHT;
+
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_LIGHTS, s_can_output.id);
@@ -144,7 +159,8 @@ void test_can_output_turn_signal(void) {
   Event e = { 0 };
 
   // Turn on the power and clean up the event queue
-  prv_toggle_power(true);
+  prv_toggle_mech_brake(true);
+  prv_toggle_power();
 
   // Test that a left turn signal generates the correct event
   e.id = INPUT_EVENT_TURN_SIGNAL_LEFT;
@@ -175,7 +191,8 @@ void test_can_output_direction(void) {
   Event e = { 0 };
 
   // Setup for the direction selector to be used
-  prv_toggle_power(true);
+  prv_toggle_mech_brake(true);
+  prv_toggle_power();
 
   prv_toggle_mech_brake(true);
 
@@ -208,7 +225,8 @@ void test_can_output_pedal(void) {
   Event e = {.data = 0 };
 
   // Setup for the pedals to be used
-  prv_toggle_power(true);
+  prv_toggle_mech_brake(true);
+  prv_toggle_power();
 
   prv_toggle_mech_brake(true);
 
@@ -257,7 +275,8 @@ void test_can_output_pedal(void) {
 void test_can_output_horn(void) {
   Event e = { 0 };
 
-  prv_toggle_power(true);
+  prv_toggle_mech_brake(true);
+  prv_toggle_power();
 
   // Test that pressing the horn generates the correct event
   e.id = INPUT_EVENT_HORN;
@@ -279,7 +298,8 @@ void test_can_output_horn(void) {
 void test_can_output_push_to_talk(void) {
   Event e = { 0 };
 
-  prv_toggle_power(true);
+  prv_toggle_mech_brake(true);
+  prv_toggle_power();
 
   // Test that pressing the horn generates the correct event
   e.id = INPUT_EVENT_PUSH_TO_TALK;
