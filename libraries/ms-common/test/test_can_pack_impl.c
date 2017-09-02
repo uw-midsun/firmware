@@ -54,11 +54,11 @@ void test_can_pack_impl_u16(void) {
 }
 
 void test_can_pack_impl_u32(void) {
-  TEST_CAN_PACK_IMPL_FRAMEWORK(can_pack_impl_u32(&msg, TEST_CAN_PACK_SOURCE_ID, TEST_CAN_PACK_TYPE,
+  TEST_CAN_PACK_IMPL_FRAMEWORK(can_pack_impl_u32(&msg, TEST_CAN_PACK_SOURCE_ID, TEST_CAN_PACK_ID,
                                                  data.data_u32[0], data.data_u32[1]));
 }
 
 void test_can_pack_impl_u64(void) {
   TEST_CAN_PACK_IMPL_FRAMEWORK(
-      can_pack_impl_u64(&msg, TEST_CAN_PACK_SOURCE_ID, TEST_CAN_PACK_TYPE, data.data_u64));
+      can_pack_impl_u64(&msg, TEST_CAN_PACK_SOURCE_ID, TEST_CAN_PACK_ID, data.data_u64));
 }
