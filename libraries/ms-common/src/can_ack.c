@@ -19,15 +19,18 @@ StatusCode can_ack_init(CANAckRequests *requests) {
 
 StatusCode can_ack_add_request(CANAckRequests *requests, CANMessageID msg_id,
                                const CANAckRequest *ack_request) {
-  CANAckPendingReq *pending_ack = objpool_get_node(&requests->pool);
+  if (ack_request == NULL || ack_request->expected_bitset == 0) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
 
+  CANAckPendingReq *pending_ack = objpool_get_node(&requests->pool);
   if (pending_ack == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
   memset(pending_ack, 0, sizeof(*pending_ack));
   pending_ack->msg_id = msg_id;
-  pending_ack->num_remaining = ack_request->num_expected;
+  pending_ack->expected_bitset = ack_request->expected_bitset;
   pending_ack->callback = ack_request->callback;
   pending_ack->context = ack_request->context;
   StatusCode ret =
@@ -67,7 +70,8 @@ static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
          (req->timer == timer_id && msg_id == CAN_MSG_INVALID_ID) ||
          (req->msg_id == msg_id && req->timer == timer_id)) &&
         (device == CAN_MSG_INVALID_DEVICE ||
-         (req->response_bitset & ((uint32_t)1 << device)) == 0)) {
+         ((req->response_bitset & ((uint32_t)1 << device)) == 0 &&
+          (req->expected_bitset & ((uint32_t)1 << device)) != 0))) {
       found_request = req;
       break;
     }
@@ -78,18 +82,27 @@ static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
   }
 
   // We use a bitset to keep track of which devices we've received an ACK for this message from
-  found_request->num_remaining--;
-  found_request->response_bitset |= ((uint32_t)1 << device);
+  if (device != CAN_MSG_INVALID_DEVICE) {
+    found_request->response_bitset |= ((uint32_t)1 << device);
+  }
 
   if (found_request->callback != NULL) {
-    StatusCode ret = found_request->callback(found_request->msg_id, device, status,
-                                             found_request->num_remaining, found_request->context);
-    if (ret != STATUS_CODE_OK) {
-      found_request->num_remaining++;
+    // Since we always check if a device was expected, we don't need to actually mask it
+    uint16_t num_remaining =
+        __builtin_popcount(found_request->response_bitset ^ found_request->expected_bitset);
+    StatusCode ret = found_request->callback(found_request->msg_id, device, status, num_remaining,
+                                             found_request->context);
+    // If we ran into an error and the return code was not ok,
+    // we want to pretend the ACK has not been received
+    if (ret != STATUS_CODE_OK && device != CAN_MSG_INVALID_DEVICE) {
+      found_request->response_bitset &= ~((uint32_t)1 << device);
     }
   }
 
-  if (found_request->num_remaining == 0 || status == CAN_ACK_STATUS_TIMEOUT) {
+  // The response bitset should only ever be set by devices in the expected bitset, so we don't
+  // need to mask the value here.
+  if (found_request->response_bitset == found_request->expected_bitset ||
+      status == CAN_ACK_STATUS_TIMEOUT) {
     soft_timer_cancel(found_request->timer);
     StatusCode ret = objpool_free_node(&requests->pool, found_request);
     status_ok_or_return(ret);

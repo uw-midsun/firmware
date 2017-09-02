@@ -156,7 +156,7 @@ void test_can_ack(void) {
   CANAckRequest ack_req = {
     .callback = prv_ack_callback,  //
     .context = &device_acked,      //
-    .num_expected = 1,             //
+    .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_CAN_DEVICE_ID),             //
   };
 
   StatusCode ret = can_transmit(&msg, &ack_req);
@@ -194,7 +194,7 @@ void test_can_ack_expire(void) {
   CANAckRequest ack_req = {
     .callback = prv_ack_callback_status,  //
     .context = &ack_status,               //
-    .num_expected = 4,                    //
+    .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_CAN_DEVICE_ID),                    //
   };
 
   StatusCode ret = can_transmit(&msg, &ack_req);
@@ -219,7 +219,7 @@ void test_can_ack_status(void) {
   CANAckRequest ack_req = {
     .callback = prv_ack_callback_status,  //
     .context = &ack_status,               //
-    .num_expected = 1,                    //
+    .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_CAN_DEVICE_ID),                    //
   };
 
   can_register_rx_handler(TEST_CAN_UNKNOWN_MSG_ID, prv_rx_callback, &rx_msg);
