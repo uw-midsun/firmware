@@ -17,6 +17,7 @@ addons:
     packages:
       - gcc-6
       - g++-6
+      - python3
 
 env:
   # add target platforms to build matrix
