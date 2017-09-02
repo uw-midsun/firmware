@@ -1,6 +1,7 @@
 #include "can_unpack_impl.h"
 
 #include <stdint.h>
+#include <string.h>
 
 #include "can_msg.h"
 #include "misc.h"
@@ -20,6 +21,12 @@ void test_can_unpack_impl_u8(void) {
   TEST_ASSERT_EQUAL_UINT8_ARRAY(s_msg.data_u8, f, SIZEOF_ARRAY(s_msg.data_u8));
   can_unpack_impl_u8(&s_msg, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                      NULL);  // Ensure it doesn't segfault.
+
+  memset(&f, 0, sizeof(f));
+  can_unpack_impl_u8(&s_msg, &f[0], &f[1], &f[2], NULL, NULL, NULL, NULL, NULL);
+  TEST_ASSERT_EQUAL_UINT8(s_msg.data_u8[0], f[0]);
+  TEST_ASSERT_EQUAL_UINT8(s_msg.data_u8[1], f[1]);
+  TEST_ASSERT_EQUAL_UINT8(s_msg.data_u8[2], f[2]);
 }
 
 void test_can_unpack_impl_u16(void) {
@@ -27,6 +34,12 @@ void test_can_unpack_impl_u16(void) {
   can_unpack_impl_u16(&s_msg, &f[0], &f[1], &f[2], &f[3]);
   TEST_ASSERT_EQUAL_UINT16_ARRAY(s_msg.data_u16, f, SIZEOF_ARRAY(s_msg.data_u16));
   can_unpack_impl_u16(&s_msg, NULL, NULL, NULL, NULL);  // Ensure it doesn't segfault.
+
+  memset(&f, 0, sizeof(f));
+  can_unpack_impl_u16(&s_msg, &f[0], &f[1], &f[2], NULL);
+  TEST_ASSERT_EQUAL_UINT8(s_msg.data_u16[0], f[0]);
+  TEST_ASSERT_EQUAL_UINT8(s_msg.data_u16[1], f[1]);
+  TEST_ASSERT_EQUAL_UINT8(s_msg.data_u16[2], f[2]);
 }
 
 void test_can_unpack_impl_u32(void) {
@@ -34,6 +47,10 @@ void test_can_unpack_impl_u32(void) {
   can_unpack_impl_u32(&s_msg, &f[0], &f[1]);
   TEST_ASSERT_EQUAL_UINT32_ARRAY(s_msg.data_u32, f, SIZEOF_ARRAY(s_msg.data_u32));
   can_unpack_impl_u32(&s_msg, NULL, NULL);  // Ensure it doesn't segfault.
+
+  memset(&f, 0, sizeof(f));
+  can_unpack_impl_u32(&s_msg, &f[0], NULL);
+  TEST_ASSERT_EQUAL_UINT8(s_msg.data_u16[0], f[0]);
 }
 
 void test_can_unpack_impl_u64(void) {
