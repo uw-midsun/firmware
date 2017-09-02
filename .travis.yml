@@ -46,7 +46,7 @@ before_script:
   # add Make to path
   - export PATH=/usr/local/bin/:$PATH
 
-  - pip install pylint
+  - sudo pip install pylint
 
 script:
   - make $TARGET
