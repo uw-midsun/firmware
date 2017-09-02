@@ -9,7 +9,6 @@ typedef enum {
   TEST_CAN_ACK_DEVICE_A = 0,
   TEST_CAN_ACK_DEVICE_B,
   TEST_CAN_ACK_DEVICE_C,
-  TEST_CAN_ACK_DEVICE_INVALID,
   TEST_CAN_ACK_DEVICE_UNRECOGNIZED
 } TestCanAckDevice;
 
@@ -32,7 +31,7 @@ static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckS
   data->status = status;
   data->num_remaining = num_remaining;
 
-  if (device == TEST_CAN_ACK_DEVICE_INVALID) {
+  if (status == CAN_ACK_STATUS_UNKNOWN) {
     LOG_DEBUG("Returning unknown code\n");
     return status_code(STATUS_CODE_UNKNOWN);
   }
@@ -63,8 +62,7 @@ void test_can_ack_handle_devices(void) {
   ack_request.expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_CAN_ACK_DEVICE_A);
   can_ack_add_request(&s_ack_requests, 0x4, &ack_request);
   ack_request.expected_bitset =
-      CAN_ACK_EXPECTED_DEVICES(TEST_CAN_ACK_DEVICE_A, TEST_CAN_ACK_DEVICE_B, TEST_CAN_ACK_DEVICE_C,
-                               TEST_CAN_ACK_DEVICE_INVALID);
+      CAN_ACK_EXPECTED_DEVICES(TEST_CAN_ACK_DEVICE_A, TEST_CAN_ACK_DEVICE_B, TEST_CAN_ACK_DEVICE_C);
   can_ack_add_request(&s_ack_requests, 0x2, &ack_request);
   can_ack_add_request(&s_ack_requests, 0x6, &ack_request);
   ack_request.expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_CAN_ACK_DEVICE_A);
@@ -76,7 +74,7 @@ void test_can_ack_handle_devices(void) {
 
   // Expect to update the 1st 0x2 ACK request
   TEST_ASSERT_EQUAL(can_msg.msg_id, data.msg_id);
-  TEST_ASSERT_EQUAL(3, data.num_remaining);
+  TEST_ASSERT_EQUAL(2, data.num_remaining);
 
   LOG_DEBUG("Handling duplicate ACK\n");
   ret = can_ack_handle_msg(&s_ack_requests, &can_msg);
@@ -98,17 +96,19 @@ void test_can_ack_handle_devices(void) {
   TEST_ASSERT_OK(ret);
 
   TEST_ASSERT_EQUAL(can_msg.msg_id, data.msg_id);
-  TEST_ASSERT_EQUAL(2, data.num_remaining);
+  TEST_ASSERT_EQUAL(1, data.num_remaining);
 
   // Send invalid device ACK - should be able to send another ACK
-  can_msg.source_id = TEST_CAN_ACK_DEVICE_INVALID;
+  can_msg.source_id = TEST_CAN_ACK_DEVICE_C;
+  can_msg.data = CAN_ACK_STATUS_UNKNOWN;
   LOG_DEBUG("Handling ACK from invalid device\n");
   ret = can_ack_handle_msg(&s_ack_requests, &can_msg);
   TEST_ASSERT_OK(ret);
-  TEST_ASSERT_EQUAL(1, data.num_remaining);
+  TEST_ASSERT_EQUAL(0, data.num_remaining);
 
   // Unrecognized device ACK - should just be ignored
   can_msg.source_id = TEST_CAN_ACK_DEVICE_UNRECOGNIZED;
+  can_msg.data = 0;
   LOG_DEBUG("Handling ACK from unrecognized device\n");
   ret = can_ack_handle_msg(&s_ack_requests, &can_msg);
   TEST_ASSERT_NOT_OK(ret);
@@ -119,10 +119,10 @@ void test_can_ack_handle_devices(void) {
   ret = can_ack_handle_msg(&s_ack_requests, &can_msg);
   TEST_ASSERT_OK(ret);
 
-  TEST_ASSERT_EQUAL(1, data.num_remaining);
+  TEST_ASSERT_EQUAL(0, data.num_remaining);
 
-  // 1 ACK requests should be removed
-  TEST_ASSERT_EQUAL(3, s_ack_requests.num_requests);
+  // 2 ACK requests should be removed
+  TEST_ASSERT_EQUAL(2, s_ack_requests.num_requests);
 }
 
 void test_can_ack_expiry(void) {
