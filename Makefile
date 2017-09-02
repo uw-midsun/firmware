@@ -35,7 +35,7 @@ PLATFORMS_DIR := platform
 LIB_DIR := libraries
 MAKE_DIR := make
 
-PLATFORM := stm32f0xx
+PLATFORM ?= stm32f0xx
 
 # Include argument filters
 include $(MAKE_DIR)/filter.mk
@@ -164,7 +164,7 @@ $(BIN_DIR)/%.bin: $(BIN_DIR)/%$(PLATFORM_EXT)
 
 # clean and remake rules, use reallyclean to clean everything
 
-.PHONY: clean reallyclean remake new
+.PHONY: clean reallyclean remake new socketcan
 
 new:
 	@python3 $(MAKE_DIR)/new_target.py $(NEW_TYPE) $(PROJECT)$(LIBRARY)
@@ -177,3 +177,11 @@ reallyclean: clean
 	@rm -rf $(BUILD_DIR)
 
 remake: clean all
+
+socketcan:
+	@sudo modprobe can
+	@sudo modprobe can_raw
+	@sudo modprobe vcan
+	@sudo ip link add dev vcan0 type vcan || true
+	@sudo ip link set up vcan0 || true
+	@ip link show vcan0

@@ -53,11 +53,11 @@ StatusCode can_init(const CANSettings *settings, CANStorage *storage, CANRxHandl
 
   s_can_storage = storage;
 
-  can_fsm_init(&s_can_storage->fsm, s_can_storage);
-  can_fifo_init(&s_can_storage->tx_fifo);
-  can_fifo_init(&s_can_storage->rx_fifo);
-  can_ack_init(&s_can_storage->ack_requests);
-  can_rx_init(&s_can_storage->rx_handlers, rx_handlers, num_rx_handlers);
+  status_ok_or_return(can_fsm_init(&s_can_storage->fsm, s_can_storage));
+  status_ok_or_return(can_fifo_init(&s_can_storage->tx_fifo));
+  status_ok_or_return(can_fifo_init(&s_can_storage->rx_fifo));
+  status_ok_or_return(can_ack_init(&s_can_storage->ack_requests));
+  status_ok_or_return(can_rx_init(&s_can_storage->rx_handlers, rx_handlers, num_rx_handlers));
 
   CANHwSettings can_hw_settings = {
     .bitrate = settings->bitrate,
@@ -65,7 +65,7 @@ StatusCode can_init(const CANSettings *settings, CANStorage *storage, CANRxHandl
     .tx = settings->tx,
     .rx = settings->rx,
   };
-  can_hw_init(&can_hw_settings);
+  status_ok_or_return(can_hw_init(&can_hw_settings));
 
   can_hw_register_callback(CAN_HW_EVENT_TX_READY, prv_tx_handler, s_can_storage);
   can_hw_register_callback(CAN_HW_EVENT_MSG_RX, prv_rx_handler, s_can_storage);
