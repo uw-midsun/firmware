@@ -47,7 +47,9 @@ before_script:
   # add Make to path
   - export PATH=/usr/local/bin/:$PATH
 
-  - sudo pip install pylint
+  # Install pylint for python3
+  - sudo apt-get -y install python3-pip
+  - sudo pip3 install pylint
   - pylint --version
 
 script:
