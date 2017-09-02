@@ -17,6 +17,8 @@
 #define CAN_HW_DEV_INTERFACE "vcan0"
 #define CAN_HW_MAX_FILTERS 14
 #define CAN_HW_TX_FIFO_LEN 8
+// Check for thread exit once every 10ms
+#define CAN_HW_THREAD_EXIT_PERIOD_US 10000
 
 typedef struct CANHwEventHandler {
   CANHwEventHandlerCb callback;
@@ -39,6 +41,8 @@ static pthread_t s_tx_pthread_id;
 static pthread_mutex_t s_tx_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t s_tx_cond = PTHREAD_COND_INITIALIZER;
 
+static pthread_mutex_t s_should_exit = PTHREAD_MUTEX_INITIALIZER;
+
 static CANHwSocketData s_socket_data = {.can_fd = -1 };
 
 static uint32_t prv_get_delay(CANHwBitrate bitrate) {
@@ -53,28 +57,54 @@ static uint32_t prv_get_delay(CANHwBitrate bitrate) {
 }
 
 static void *prv_rx_thread(void *arg) {
-  while (true) {
-    int bytes = read(s_socket_data.can_fd, &s_socket_data.rx_frame, sizeof(s_socket_data.rx_frame));
+  LOG_DEBUG("CAN HW RX thread started\n");
 
-    if (s_socket_data.handlers[CAN_HW_EVENT_MSG_RX].callback != NULL) {
-      s_socket_data.handlers[CAN_HW_EVENT_MSG_RX].callback(
-          s_socket_data.handlers[CAN_HW_EVENT_TX_READY].context);
+  struct timeval timeout = {.tv_usec = CAN_HW_THREAD_EXIT_PERIOD_US };
+
+  // Mutex is locked when the thread should exit
+  while (pthread_mutex_trylock(&s_should_exit) == 0) {
+    pthread_mutex_unlock(&s_should_exit);
+
+    // Select timeout is used to poll every now and then
+    fd_set input_fds;
+    FD_ZERO(&input_fds);
+    FD_SET(s_socket_data.can_fd, &input_fds);
+
+    select(s_socket_data.can_fd + 1, &input_fds, NULL, NULL, &timeout);
+
+    if (FD_ISSET(s_socket_data.can_fd, &input_fds)) {
+      int bytes =
+          read(s_socket_data.can_fd, &s_socket_data.rx_frame, sizeof(s_socket_data.rx_frame));
+
+      if (s_socket_data.handlers[CAN_HW_EVENT_MSG_RX].callback != NULL) {
+        s_socket_data.handlers[CAN_HW_EVENT_MSG_RX].callback(
+            s_socket_data.handlers[CAN_HW_EVENT_TX_READY].context);
+      }
+
+      // Limit how often we can receive messages to simulate bus speed
+      usleep(s_socket_data.delay_us);
     }
-
-    // Limit how often we can receive messages to simulate bus speed
-    usleep(s_socket_data.delay_us);
   }
 
   return NULL;
 }
 
 static void *prv_tx_thread(void *arg) {
+  LOG_DEBUG("CAN HW TX thread started\n");
   struct can_frame frame = { 0 };
 
-  while (true) {
+  // Mutex is locked when the thread should exit
+  while (pthread_mutex_trylock(&s_should_exit) == 0) {
+    pthread_mutex_unlock(&s_should_exit);
+
     pthread_mutex_lock(&s_tx_mutex);
     while (fifo_size(&s_socket_data.tx_fifo) == 0) {
       pthread_cond_wait(&s_tx_cond, &s_tx_mutex);
+
+      if (pthread_mutex_trylock(&s_should_exit) != 0) {
+        break;
+      }
+      pthread_mutex_lock(&s_should_exit);
     }
 
     fifo_pop(&s_socket_data.tx_fifo, &frame);
@@ -96,13 +126,22 @@ static void *prv_tx_thread(void *arg) {
 
 StatusCode can_hw_init(const CANHwSettings *settings) {
   if (s_socket_data.can_fd != -1) {
-    // Reinit everything
-    // TODO(ELEC-277): This should eventually be done properly with signals
-    pthread_cancel(s_rx_pthread_id);
-    pthread_cancel(s_tx_pthread_id);
+    // Request threads to exit
     close(s_socket_data.can_fd);
+
+    pthread_mutex_lock(&s_should_exit);
+
+    // Signal condition variable in case TX thread is waiting
+    pthread_mutex_lock(&s_tx_mutex);
+    pthread_cond_signal(&s_tx_cond);
+    pthread_mutex_unlock(&s_tx_mutex);
+
+    pthread_join(s_tx_pthread_id, NULL);
+    pthread_join(s_rx_pthread_id, NULL);
+    pthread_mutex_unlock(&s_should_exit);
   }
 
+  pthread_mutex_init(&s_should_exit, NULL);
   pthread_mutex_init(&s_tx_mutex, NULL);
   pthread_cond_init(&s_tx_cond, NULL);
 
@@ -130,6 +169,9 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
     LOG_CRITICAL("CAN HW: Device %s not found\n", CAN_HW_DEV_INTERFACE);
     return status_msg(STATUS_CODE_INTERNAL_ERROR, "CAN HW: Device not found");
   }
+
+  // Set non-blocking
+  fcntl(s_socket_data.can_fd, F_SETFL, O_NONBLOCK);
 
   struct sockaddr_can addr = {
     .can_family = AF_CAN, .can_ifindex = ifr.ifr_ifindex,
@@ -170,8 +212,10 @@ StatusCode can_hw_add_filter(uint16_t mask, uint16_t filter) {
   s_socket_data.filters[s_socket_data.num_filters].can_mask = mask & CAN_SFF_MASK;
   s_socket_data.num_filters++;
 
-  setsockopt(s_socket_data.can_fd, SOL_CAN_RAW, CAN_RAW_FILTER, s_socket_data.filters,
-             sizeof(s_socket_data.filters[0]) * s_socket_data.num_filters);
+  if (setsockopt(s_socket_data.can_fd, SOL_CAN_RAW, CAN_RAW_FILTER, s_socket_data.filters,
+                 sizeof(s_socket_data.filters[0]) * s_socket_data.num_filters) < 0) {
+    return status_msg(STATUS_CODE_INTERNAL_ERROR, "CAN HW: Failed to set raw filters");
+  }
 
   return STATUS_CODE_OK;
 }
@@ -201,6 +245,7 @@ StatusCode can_hw_transmit(uint16_t id, const uint8_t *data, size_t len) {
 // Must be called within the RX handler, returns whether a message was processed
 bool can_hw_receive(uint16_t *id, uint64_t *data, size_t *len) {
   if (s_socket_data.rx_frame.can_id == 0) {
+    // Assumes that we'll never transmit something with a CAN ID of all 0s
     return false;
   }
 
