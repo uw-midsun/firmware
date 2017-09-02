@@ -17,7 +17,7 @@ typedef enum {
   NUM_I2C_SPEEDS,
 } I2CSpeed;
 
-typedef struct {
+typedef struct I2CSettings {
   I2CSpeed speed;
   GPIOAddress sda;
   GPIOAddress scl;

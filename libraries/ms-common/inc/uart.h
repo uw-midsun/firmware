@@ -23,7 +23,7 @@ typedef struct {
   volatile uint8_t rx_buf[UART_MAX_BUFFER_LEN];
 } UARTStorage;
 
-typedef struct {
+typedef struct UARTSettings {
   uint32_t baudrate;
   UARTRxHandler rx_handler;
   void *context;
