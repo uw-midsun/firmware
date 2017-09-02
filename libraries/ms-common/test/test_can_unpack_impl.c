@@ -23,9 +23,9 @@ void test_can_unpack_impl_u8(void) {
                      NULL);  // Ensure it doesn't segfault.
 
   memset(&f, 0, sizeof(f));
-  can_unpack_impl_u8(&s_msg, &f[0], &f[1], &f[2], NULL, NULL, NULL, NULL, NULL);
+  can_unpack_impl_u8(&s_msg, &f[0], NULL, &f[2], NULL, NULL, &f[5], NULL, NULL);
   TEST_ASSERT_EQUAL_UINT8(s_msg.data_u8[0], f[0]);
-  TEST_ASSERT_EQUAL_UINT8(s_msg.data_u8[1], f[1]);
+  TEST_ASSERT_EQUAL_UINT8(s_msg.data_u8[5], f[5]);
   TEST_ASSERT_EQUAL_UINT8(s_msg.data_u8[2], f[2]);
 }
 
@@ -36,9 +36,8 @@ void test_can_unpack_impl_u16(void) {
   can_unpack_impl_u16(&s_msg, NULL, NULL, NULL, NULL);  // Ensure it doesn't segfault.
 
   memset(&f, 0, sizeof(f));
-  can_unpack_impl_u16(&s_msg, &f[0], &f[1], &f[2], NULL);
+  can_unpack_impl_u16(&s_msg, &f[0], NULL, &f[2], NULL);
   TEST_ASSERT_EQUAL_UINT8(s_msg.data_u16[0], f[0]);
-  TEST_ASSERT_EQUAL_UINT8(s_msg.data_u16[1], f[1]);
   TEST_ASSERT_EQUAL_UINT8(s_msg.data_u16[2], f[2]);
 }
 
