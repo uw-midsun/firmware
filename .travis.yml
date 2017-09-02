@@ -47,6 +47,7 @@ before_script:
   - export PATH=/usr/local/bin/:$PATH
 
   - sudo pip install pylint
+  - pylint --version
 
 script:
   - make $TARGET
