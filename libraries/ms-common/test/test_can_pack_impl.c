@@ -41,25 +41,24 @@ void setup_test(void) {}
 void teardown_test(void) {}
 
 void test_can_pack_impl_u8(void) {
-  TEST_CAN_PACK_IMPL_FRAMEWORK(
-      can_pack_impl_u8(&msg, TEST_CAN_PACK_SOURCE_ID, TEST_CAN_PACK_ID, TEST_CAN_PACK_TYPE,
-                       data.data_u8[0], data.data_u8[1], data.data_u8[2], data.data_u8[3],
-                       data.data_u8[4], data.data_u8[5], data.data_u8[6], data.data_u8[7]));
+  TEST_CAN_PACK_IMPL_FRAMEWORK(can_pack_impl_u8(&msg, TEST_CAN_PACK_SOURCE_ID, TEST_CAN_PACK_ID,
+                                                data.data_u8[0], data.data_u8[1], data.data_u8[2],
+                                                data.data_u8[3], data.data_u8[4], data.data_u8[5],
+                                                data.data_u8[6], data.data_u8[7]));
 }
 
 void test_can_pack_impl_u16(void) {
-  TEST_CAN_PACK_IMPL_FRAMEWORK(
-      can_pack_impl_u16(&msg, TEST_CAN_PACK_SOURCE_ID, TEST_CAN_PACK_ID, TEST_CAN_PACK_TYPE,
-                        data.data_u16[0], data.data_u16[1], data.data_u16[2], data.data_u16[3]));
+  TEST_CAN_PACK_IMPL_FRAMEWORK(can_pack_impl_u16(&msg, TEST_CAN_PACK_SOURCE_ID, TEST_CAN_PACK_ID,
+                                                 data.data_u16[0], data.data_u16[1],
+                                                 data.data_u16[2], data.data_u16[3]));
 }
 
 void test_can_pack_impl_u32(void) {
-  TEST_CAN_PACK_IMPL_FRAMEWORK(can_pack_impl_u32(&msg, TEST_CAN_PACK_SOURCE_ID, TEST_CAN_PACK_ID,
-                                                 TEST_CAN_PACK_TYPE, data.data_u32[0],
-                                                 data.data_u32[1]));
+  TEST_CAN_PACK_IMPL_FRAMEWORK(can_pack_impl_u32(&msg, TEST_CAN_PACK_SOURCE_ID, TEST_CAN_PACK_TYPE,
+                                                 data.data_u32[0], data.data_u32[1]));
 }
 
 void test_can_pack_impl_u64(void) {
-  TEST_CAN_PACK_IMPL_FRAMEWORK(can_pack_impl_u64(&msg, TEST_CAN_PACK_SOURCE_ID, TEST_CAN_PACK_ID,
-                                                 TEST_CAN_PACK_TYPE, data.data_u64));
+  TEST_CAN_PACK_IMPL_FRAMEWORK(
+      can_pack_impl_u64(&msg, TEST_CAN_PACK_SOURCE_ID, TEST_CAN_PACK_TYPE, data.data_u64));
 }
