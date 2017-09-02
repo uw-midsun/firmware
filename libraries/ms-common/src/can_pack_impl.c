@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "can_msg.h"
+#include "status.h"
 
 StatusCode can_pack_impl_u8(CANMessage *msg, uint16_t source_id, CANMessageID id, size_t num_bytes,
                             uint8_t f1, uint8_t f2, uint8_t f3, uint8_t f4, uint8_t f5, uint8_t f6,
