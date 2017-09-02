@@ -135,6 +135,7 @@ FIND := find $(PROJ_DIR) $(LIB_DIR) \
 # Lints libraries and projects, excludes IGNORE_CLEANUP_LIBS
 lint:
 	@$(FIND) | xargs -r python2 lint.py
+	@find $(MAKE_DIR) $(PROJ_DIR) -iname "*.py" -print | xargs -r pylint
 
 # Formats libraries and projects, excludes IGNORE_CLEANUP_LIBS
 format:
