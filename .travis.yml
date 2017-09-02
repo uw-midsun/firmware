@@ -17,6 +17,7 @@ addons:
     packages:
       - gcc-6
       - g++-6
+      - python3
 
 env:
   # add target platforms to build matrix
@@ -45,6 +46,11 @@ before_script:
 
   # add Make to path
   - export PATH=/usr/local/bin/:$PATH
+
+  # Install pylint for python3
+  - sudo apt-get -y install python3-pip
+  - sudo pip3 install pylint
+  - pylint --version
 
 script:
   - make $TARGET
