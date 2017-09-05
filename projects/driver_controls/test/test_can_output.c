@@ -136,7 +136,7 @@ void test_can_output_hazard_light(void) {
 
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
-  TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_LIGHTS, s_can_output.id);
+  TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_HAZARD_LIGHT, s_can_output.id);
   TEST_ASSERT_EQUAL(HAZARD_LIGHT_FSM_STATE_ON, s_can_output.state);
   TEST_ASSERT_EQUAL(0, s_can_output.data);
 
@@ -144,7 +144,7 @@ void test_can_output_hazard_light(void) {
   e.id = INPUT_EVENT_HAZARD_LIGHT;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
-  TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_LIGHTS, s_can_output.id);
+  TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_HAZARD_LIGHT, s_can_output.id);
   TEST_ASSERT_EQUAL(HAZARD_LIGHT_FSM_STATE_OFF, s_can_output.state);
   TEST_ASSERT_EQUAL(0, s_can_output.data);
 }
@@ -160,7 +160,7 @@ void test_can_output_turn_signal(void) {
   e.id = INPUT_EVENT_TURN_SIGNAL_LEFT;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
-  TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_LIGHTS, s_can_output.id);
+  TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_TURN_SIGNAL, s_can_output.id);
   TEST_ASSERT_EQUAL(TURN_SIGNAL_FSM_STATE_LEFT_SIGNAL, s_can_output.state);
   TEST_ASSERT_EQUAL(0, s_can_output.data);
 
@@ -168,7 +168,7 @@ void test_can_output_turn_signal(void) {
   e.id = INPUT_EVENT_TURN_SIGNAL_RIGHT;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
-  TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_LIGHTS, s_can_output.id);
+  TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_TURN_SIGNAL, s_can_output.id);
   TEST_ASSERT_EQUAL(TURN_SIGNAL_FSM_STATE_RIGHT_SIGNAL, s_can_output.state);
   TEST_ASSERT_EQUAL(0, s_can_output.data);
 
@@ -176,7 +176,7 @@ void test_can_output_turn_signal(void) {
   e.id = INPUT_EVENT_TURN_SIGNAL_NONE;
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
-  TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_LIGHTS, s_can_output.id);
+  TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_TURN_SIGNAL, s_can_output.id);
   TEST_ASSERT_EQUAL(TURN_SIGNAL_FSM_STATE_NO_SIGNAL, s_can_output.state);
   TEST_ASSERT_EQUAL(0, s_can_output.data);
 }
