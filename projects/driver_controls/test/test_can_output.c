@@ -90,9 +90,10 @@ void test_can_output_power(void) {
 
   TEST_ASSERT_EQUAL_STRING("state_charging", s_fsm_group.power.current_state->name);
   TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_POWER, s_can_output.id);
-  TEST_ASSERT_EQUAL(POWER_FSM_STATE_CHARGED, s_can_output.state);
+  TEST_ASSERT_EQUAL(POWER_FSM_STATE_CHARGING, s_can_output.state);
   TEST_ASSERT_EQUAL(0, s_can_output.data);
 
+  prv_toggle_mech_brake(true);
   prv_toggle_power();
 
   TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
@@ -104,13 +105,6 @@ void test_can_output_power(void) {
 
   TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_POWER, s_can_output.id);
   TEST_ASSERT_EQUAL(POWER_FSM_STATE_OFF, s_can_output.state);
-  TEST_ASSERT_EQUAL(0, s_can_output.data);
-
-  prv_toggle_mech_brake(true);
-  prv_toggle_power();
-
-  TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_POWER, s_can_output.id);
-  TEST_ASSERT_EQUAL(POWER_FSM_STATE_ON, s_can_output.state);
   TEST_ASSERT_EQUAL(0, s_can_output.data);
 }
 

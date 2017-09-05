@@ -95,6 +95,38 @@ void test_driver_fsm_power_off() {
   TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
 }
 
+// Check that the power FSM behaves properly regardign charge
+void test_driver_fsm_power_charge() {
+  Event e;
+
+  // Power the car on and off normally
+  prv_toggle_mech_brake(true);
+  TEST_ASSERT_EQUAL_STRING("state_off_brake", s_fsm_group.power.current_state->name);
+
+  prv_toggle_power();
+  TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
+
+  prv_toggle_power();
+  TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
+
+  // Start charging the car and ensure that the car is not able to move
+  prv_toggle_power();
+  TEST_ASSERT_EQUAL_STRING("state_charging", s_fsm_group.power.current_state->name);
+
+  prv_toggle_mech_brake(true);
+
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
+  TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
+  e.id = INPUT_EVENT_PEDAL_PRESSED;
+  TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
+
+  // Turn off the car
+  prv_toggle_mech_brake(false);
+  prv_toggle_power();
+  TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
+}
+
+
 // Check that the car does not move when the mechanical brake is pressed
 void test_driver_fsm_mechanical_brake() {
   Event e;
