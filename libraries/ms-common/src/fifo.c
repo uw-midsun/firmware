@@ -17,7 +17,11 @@ StatusCode fifo_init_impl(Fifo *fifo, void *buffer, size_t elem_size, size_t num
 }
 
 size_t fifo_size(Fifo *fifo) {
-  return fifo->num_elems;
+  bool disabled = critical_section_start();
+  size_t fifo_size = fifo->num_elems;
+  critical_section_end(disabled);
+
+  return fifo_size;
 }
 
 StatusCode fifo_push_impl(Fifo *fifo, void *source_elem, size_t elem_size) {
