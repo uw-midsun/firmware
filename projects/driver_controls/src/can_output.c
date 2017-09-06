@@ -3,6 +3,8 @@
 #include "input_event.h"
 #include "log.h"
 
+// CAN device ids as defined in confluence
+// https://uwmidsun.atlassian.net/wiki/spaces/ELEC/pages/50003973/CAN+Message+Definitions
 #define CAN_OUTPUT_ID_POWER_STATE         5
 #define CAN_OUTPUT_ID_MOTOR_THROTTLE      18
 #define CAN_OUTPUT_ID_MOTOR_CRUISE        19

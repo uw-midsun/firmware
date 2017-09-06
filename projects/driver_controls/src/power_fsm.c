@@ -61,6 +61,7 @@ static void prv_state_off(FSM *fsm, const Event *e, void *context) {
   PowerFSMState power_state;
   State *current_state = fsm->current_state;
 
+  // If a transition has happened between the FSMs main states, a CAN message will be sent out.
   if (current_state == &state_off) {
     power_state = POWER_FSM_STATE_OFF;
   } else if (current_state == &state_charging) {
