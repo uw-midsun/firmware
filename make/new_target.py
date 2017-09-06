@@ -58,7 +58,7 @@ def new_target(target_type, name):
     deps = 'ms-common' if target_type == 'project' else ''
 
     with open(os.path.join(proj_path, 'rules.mk'), 'w') as rules_file:
-        rules_file.write(textwrap.dedent(RULES_TEMPLATE).substitute({'deps': deps}))
+        rules_file.write(textwrap.dedent(RULES_TEMPLATE.substitute({'deps': deps})))
 
     print('Created new {0} {1}'.format(target_type, name))
 
