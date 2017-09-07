@@ -1,3 +1,11 @@
+// The driver uses the mechanical brake to control the powered state of the car.
+
+// The car initializes in the off state:
+//    - Pressing the power button without holding down the brake will cause the car
+//      to transition from the off to the charging state, and vice versa
+//    - Pressing the power button while the mechanical brake is held down will cause the car
+//      to transition between the off and the on state.
+
 #include "power_fsm.h"
 #include "event_arbiter.h"
 #include "input_event.h"
