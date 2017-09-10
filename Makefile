@@ -143,6 +143,10 @@ format:
 	@echo "Excluding libraries: $(IGNORE_CLEANUP_LIBS)"
 	@$(FIND) | xargs -r clang-format -i
 
+# Tests that all files have been run through the format target mainly for CI usage
+test_format: format
+	@! git diff --name-only --diff-filter=ACMRT | xargs -n1 clang-format -style=file -output-replacements-xml | grep '<replacements' >/dev/null
+
 # Builds the project or library
 ifneq (,$(PROJECT))
 build: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
