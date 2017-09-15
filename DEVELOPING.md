@@ -9,6 +9,8 @@ You will want to download and install the following:
 * [VirtualBox Extension Pack](https://www.virtualbox.org/wiki/Downloads): select the version that matches your version of VirtualBox
 * [git](https://git-scm.com/downloads)
 
+**Note**: You may also need go into your BIOS to ensure that VT-x/AMD-v (also known as *Intel(R) Virtualization Technology*) settings are enabled.
+
 ## Installation
 
 The idea is that [Vagrant](https://www.vagrantup.com) uses [VirtualBox](https://www.virtualbox.org) to provision a Virtual Machine for our pre-configured image, [box](https://github.com/uw-midsun/box). This Virtual Machine contains a fully integrated development environment, including everything you'll need to develop software for our team.
