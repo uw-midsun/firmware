@@ -13,11 +13,19 @@
 #define ADS1015_HI_THRESH_REGISTER              0x03
 
 // ADS1015 Bitmasks (According to their positions in their data byte)
+#define ADS1015_CONFIG_OS(byte)                 (byte & 0x7F)
 #define ADS1015_CONFIG_MODE_CONT(byte)          (byte & 0xFE)
 
 #define ADS1015_CONFIG_MUX(byte, channel)       ((byte & 0x8F) | ((0x4 | channel) << 4))
 
-// Number of successive conversions required before asserting ALERT/RDY
+#define ADS1015_CONFIG_DR_128_SPS(byte)         (byte & 0x1F)
+#define ADS1015_CONFIG_DR_250_SPS(byte)         (byte & 0x1F) | 0x20
+#define ADS1015_CONFIG_DR_490_SPS(byte)         (byte & 0x1F) | 0x40
+#define ADS1015_CONFIG_DR_920_SPS(byte)         (byte & 0x1F) | 0x60
+#define ADS1015_CONFIG_DR_1600_SPS(byte)        (byte & 0x1F) | 0x80
+#define ADS1015_CONFIG_DR_2400_SPS(byte)        (byte & 0x1F) | 0xA0
+#define ADS1015_CONFIG_DR_3300_SPS(byte)        (byte & 0x1F) | 0xC0
+
 #define ADS1015_CONFIG_COMP_QUE_ONE(byte)       ((byte & 0xFC) | 0x0)
 #define ADS1015_CONFIG_COMP_QUE_TWO(byte)       ((byte & 0xFC) | 0x1)
 #define ADS1015_CONFIG_COMP_QUE_FOUR(byte)      ((byte & 0xFC) | 0x2)

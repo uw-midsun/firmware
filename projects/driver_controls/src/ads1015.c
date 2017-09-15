@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "i2c.h"
+#include "delay.h"
 #include "gpio_it.h"
 #include "ads1015_bitmasks.h"
 
@@ -12,14 +13,14 @@ typedef struct ADS1015Register {
   uint8_t data[2];
 } ADS1015Register;
 
-// The ADS1015 holds its data in two's complement, so int16_t will be used to hold the raw readings
+// Since the ADS1015 stores data in two's complement, an int16_t will be used to hold
+// the raw readings
 typedef struct ADS1015Interrupt {
   ADS1015Callback callback;
   void *context;
   int16_t reading;
 } ADS1015Interrupt;
 
-static GPIOAddress s_address;
 static I2CPort s_i2c_port;
 static ADS1015Channel s_current_channel;
 
@@ -55,6 +56,7 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
 
   // Obtain ADC readings
   prv_read(s_i2c_port, ADS1015_CONVERSION_REGISTER, reg.data, 2);
+
   s_interrupts[s_current_channel].reading = (reg.data[0] << 4) | (reg.data[1] >> 4);
 
   if (s_interrupts[s_current_channel].callback != NULL) {
@@ -70,12 +72,12 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
 
   // Set bits 12-14 based on the current channel
   reg.data[0] = ADS1015_CONFIG_MUX(reg.data[0], s_current_channel);
-
   prv_write(s_i2c_port, ADS1015_CONFIG_REGISTER, reg.data, 3);
 }
 
 StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress ready_pin) {
   s_i2c_port = i2c_port;
+  s_current_channel = ADS1015_CHANNEL_0;
 
   // Configure the given GPIO address as a conversion ready pin
   GPIOSettings gpio_settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_PULLUP, GPIO_ALTFN_NONE };
@@ -96,8 +98,9 @@ StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress ready_pin) {
 
   reg.data[0] = ADS1015_CONFIG_MODE_CONT(reg.data[0]);
   reg.data[0] = ADS1015_FULL_SCALE_4096(reg.data[0]);
-  reg.data[0] = ADS1015_CONFIG_MUX(reg.data[0], ADS1015_CHANNEL_0);
-  reg.data[1] = ADS1015_CONFIG_COMP_QUE_FOUR(reg.data[1]);
+  reg.data[0] = ADS1015_CONFIG_MUX(reg.data[0], s_current_channel);
+  reg.data[1] = ADS1015_CONFIG_COMP_QUE_ONE(reg.data[1]);
+  reg.data[1] = ADS1015_CONFIG_DR_128_SPS(reg.data[1]);
 
   status_ok_or_return(prv_write(s_i2c_port, ADS1015_CONFIG_REGISTER, reg.data, 3));
 
