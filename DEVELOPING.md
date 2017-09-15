@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-You will want to download and install the following.
+You will want to download and install the following:
 
 * [Vagrant](https://www.vagrantup.com/downloads.html)
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
@@ -11,7 +11,7 @@ You will want to download and install the following.
 
 ## Installation
 
-The idea is that [Vagrant](https://www.vagrantup.com) uses [VirtualBox](https://www.virtualbox.org) to provision a virtual machine for our pre-configured image, [box](https://github.com/uw-midsun/box). This Virtual Machine contains a fully integrated development environment, including everything you'll need to develop software for our team.
+The idea is that [Vagrant](https://www.vagrantup.com) uses [VirtualBox](https://www.virtualbox.org) to provision a Virtual Machine for our pre-configured image, [box](https://github.com/uw-midsun/box). This Virtual Machine contains a fully integrated development environment, including everything you'll need to develop software for our team.
 
 ```bash
 # Clone the repo
