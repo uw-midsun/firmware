@@ -6,7 +6,7 @@ You will want to download and install the following:
 
 * [Vagrant](https://www.vagrantup.com/downloads.html)
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
-* [VirtualBox Extension Pack](https://www.virtualbox.org/wiki/Downloads)
+* [VirtualBox Extension Pack](https://www.virtualbox.org/wiki/Downloads): select the version that matches your version of VirtualBox
 * [git](https://git-scm.com/downloads)
 
 ## Installation
