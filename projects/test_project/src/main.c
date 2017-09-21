@@ -21,10 +21,10 @@ int main(void) {
   };
 
   const GPIOAddress leds[] = {
-    { GPIO_PORT_B, 5 },   //
-    { GPIO_PORT_B, 4 },   //
-    { GPIO_PORT_B, 3 },   //
-    { GPIO_PORT_A, 15 },  //
+    { .port = GPIO_PORT_B, .pin = 5 },   //
+    { .port = GPIO_PORT_B, .pin = 4 },   //
+    { .port = GPIO_PORT_B, .pin = 3 },   //
+    { .port = GPIO_PORT_A, .pin = 15 },  //
   };
   for (size_t i = 0; i < SIZEOF_ARRAY(leds); i++) {
     gpio_init_pin(&leds[i], &led_settings);
