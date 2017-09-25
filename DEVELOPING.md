@@ -4,7 +4,7 @@
 
 You will want to download and install the following:
 
-* [Vagrant](https://www.vagrantup.com/downloads.html)
+* [Vagrant](https://www.vagrantup.com/downloads.html): The installer should prompt you to add `vagrant` to your system path so that it is available in terminals. If it is not found, please try logging out and logging back in
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 * [VirtualBox Extension Pack](https://www.virtualbox.org/wiki/Downloads): select the version that matches your version of VirtualBox
 * [git](https://git-scm.com/downloads)
