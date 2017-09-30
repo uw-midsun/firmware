@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#include "event_arbiter.h"
 #include "can_output.h"
+#include "event_arbiter.h"
 #include "log.h"
 
 static FSM *s_driver_fsms[EVENT_ARBITER_MAX_FSMS];

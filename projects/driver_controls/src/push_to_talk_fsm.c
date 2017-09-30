@@ -1,8 +1,8 @@
 #include "push_to_talk_fsm.h"
+#include "can_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
-#include "can_output.h"
 
 // Push-to-Talk FSM state definitions
 
@@ -29,9 +29,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   }
 
   EventArbiterOutputData data = {
-    .id = CAN_OUTPUT_MESSAGE_PUSH_TO_TALK,
-    .state = push_to_talk_state,
-    .data = 0
+    .id = CAN_OUTPUT_MESSAGE_PUSH_TO_TALK, .state = push_to_talk_state, .data = 0
   };
 
   event_arbiter_output(data);

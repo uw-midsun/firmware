@@ -1,8 +1,8 @@
 #include "turn_signal_fsm.h"
+#include "can_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
-#include "can_output.h"
 
 // Turn signal FSM state definitions
 
@@ -43,9 +43,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   }
 
   EventArbiterOutputData data = {
-    .id = CAN_OUTPUT_MESSAGE_TURN_SIGNAL,
-    .state = turn_signal_state,
-    .data = 0
+    .id = CAN_OUTPUT_MESSAGE_TURN_SIGNAL, .state = turn_signal_state, .data = 0
   };
 
   event_arbiter_output(data);

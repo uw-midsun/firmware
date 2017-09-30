@@ -40,21 +40,19 @@ static void prv_output(EventArbiterOutputData data) {
   s_can_output.state = data.state;
   s_can_output.data = data.data;
 
-  LOG_DEBUG("[ .id = %x, .state = %x, .data = %x ]\n",
-          s_can_output.id,
-          s_can_output.state,
-          s_can_output.data);
+  LOG_DEBUG("[ .id = %x, .state = %x, .data = %x ]\n", s_can_output.id, s_can_output.state,
+            s_can_output.data);
 }
 
 static void prv_toggle_power(void) {
-  Event e = { .data = 0 };
+  Event e = {.data = 0 };
 
   e.id = INPUT_EVENT_POWER;
   event_arbiter_process_event(&e);
 }
 
 static void prv_toggle_mech_brake(bool new_state) {
-  Event e = { .data = 0 };
+  Event e = {.data = 0 };
 
   e.id = (new_state == true) ? INPUT_EVENT_MECHANICAL_BRAKE_PRESSED
                              : INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
@@ -80,7 +78,7 @@ void setup_test(void) {
   event_queue_init();
 }
 
-void teardown_test(void) { }
+void teardown_test(void) {}
 
 // Test that the power fsm correctly generates CAN events
 void test_can_output_power(void) {

@@ -7,10 +7,10 @@
 //      to transition between the off and the on state.
 
 #include "power_fsm.h"
+#include "can_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
-#include "can_output.h"
 
 // Power FSM state definitions
 
@@ -82,11 +82,7 @@ static void prv_state_off(FSM *fsm, const Event *e, void *context) {
     return;
   }
 
-  EventArbiterOutputData data = {
-    .id = CAN_OUTPUT_MESSAGE_POWER,
-    .state = power_state,
-    .data = 0
-  };
+  EventArbiterOutputData data = {.id = CAN_OUTPUT_MESSAGE_POWER, .state = power_state, .data = 0 };
 
   event_arbiter_output(data);
 }
@@ -96,9 +92,7 @@ static void prv_state_on(FSM *fsm, const Event *e, void *context) {
   *event_check = NULL;
 
   EventArbiterOutputData data = {
-    .id = CAN_OUTPUT_MESSAGE_POWER,
-    .state = POWER_FSM_STATE_ON,
-    .data = 0
+    .id = CAN_OUTPUT_MESSAGE_POWER, .state = POWER_FSM_STATE_ON, .data = 0
   };
 
   event_arbiter_output(data);

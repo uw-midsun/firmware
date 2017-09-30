@@ -7,8 +7,8 @@
 
 #include "analog_io.h"
 #include "digital_io.h"
-#include "input_event.h"
 #include "event_arbiter.h"
+#include "input_event.h"
 
 #include "can_output.h"
 #include "direction_fsm.h"
@@ -35,7 +35,6 @@ typedef struct FSMGroup {
 int main() {
   FSMGroup fsm_group;
   Event e;
-  uint16_t reading;
 
   // Initialize the various driver control devices
   gpio_init();

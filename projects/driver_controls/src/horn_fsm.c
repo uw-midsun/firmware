@@ -1,8 +1,8 @@
 #include "horn_fsm.h"
+#include "can_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
-#include "can_output.h"
 
 // Horn FSM state definitions
 
@@ -27,11 +27,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     horn_state = HORN_FSM_STATE_ON;
   }
 
-  EventArbiterOutputData data = {
-    .id = CAN_OUTPUT_MESSAGE_HORN,
-    .state = horn_state,
-    .data = 0
-  };
+  EventArbiterOutputData data = {.id = CAN_OUTPUT_MESSAGE_HORN, .state = horn_state, .data = 0 };
 
   event_arbiter_output(data);
 }

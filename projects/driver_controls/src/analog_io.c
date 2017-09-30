@@ -69,11 +69,6 @@ void analog_io_init() {
     {.address = DRIVER_IO_MECHANICAL_BRAKE, .device = ANALOG_IO_DEVICE_MECHANICAL_BRAKE }
   };
 
-  GPIOSettings settings = {
-    .direction = GPIO_DIR_IN,  //
-    .state = GPIO_STATE_LOW,   //
-  };
-
   for (uint8_t i = 0; i < SIZEOF_ARRAY(analog_inputs); i++) {
     adc_get_channel(analog_inputs[i].address, &adc_channel);
     adc_set_channel(adc_channel, true);

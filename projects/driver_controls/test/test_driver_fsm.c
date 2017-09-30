@@ -29,7 +29,7 @@ static bool powered = false;
 static bool mech_brake = false;
 
 static void prv_toggle_power(void) {
-  Event e = { .data = 0 };
+  Event e = {.data = 0 };
 
   e.id = INPUT_EVENT_POWER;
   event_arbiter_process_event(&e);
@@ -62,7 +62,7 @@ void setup_test() {
   event_queue_init();
 }
 
-void teardown_test(void) { }
+void teardown_test(void) {}
 
 void test_driver_fsm_setup() {
   TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
@@ -125,7 +125,6 @@ void test_driver_fsm_power_charge() {
   prv_toggle_power();
   TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
 }
-
 
 // Check that the car does not move when the mechanical brake is pressed
 void test_driver_fsm_mechanical_brake() {

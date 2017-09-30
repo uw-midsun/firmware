@@ -5,11 +5,11 @@
 // state
 
 #include "pedal_fsm.h"
+#include "can_output.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
 #include "input_event.h"
 #include "log.h"
-#include "can_output.h"
 
 // Pedal FSM state definitions
 
@@ -78,9 +78,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
 
   // Output pedal level and angle data
   EventArbiterOutputData data = {
-    .id = CAN_OUTPUT_MESSAGE_PEDAL,
-    .state = pedal_state,
-    .data = e->data
+    .id = CAN_OUTPUT_MESSAGE_PEDAL, .state = pedal_state, .data = e->data
   };
 
   event_arbiter_output(data);
