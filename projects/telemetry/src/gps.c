@@ -22,10 +22,8 @@ static UARTSettings s_read_from_chip = {
 static void s_nmea_read(const uint8_t *rx_arr, size_t len, void *context){
   
 }
-static StatusCode uart_init(UARTPort uart, s_read_from_chip, UARTStorage *storage){
-  return STATUS_CODE_UNIMPLEMENTED;
-}
 StatusCode evm_gps_init(void) {
   return STATUS_CODE_UNIMPLEMENTED;
+  // uart_init(UARTPort uart, s_read_from_chip, UARTStorage *storage)
 }
 // uart_tx(UARTPort uart, uint8_t *tx_data, size_t len);
