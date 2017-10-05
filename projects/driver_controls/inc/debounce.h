@@ -5,4 +5,4 @@
 #include "gpio.h"
 #include "status.h"
 
-StatusCode debounce(GPIOAddress address);
+GPIOState debounce(GPIOAddress address, GPIOState* );
