@@ -5,7 +5,7 @@
 
 // This is the address used to send messages to the gps chip
 static GPIOAddress s_tx_address = {
-  .port = 5;//
+  .port = GPIO_PORT_A;//
   .pin = 1;//Todo: update numbers
 };
 
@@ -13,7 +13,7 @@ static const UARTPort port = UART_PORT_1;
 
 // This is the address used to recieve messages to the gps chip
 static GPIOAddress s_rx_address = {
-  .port = 4;//
+  .port = GPIO_PORT_A;//
   .pin = 1;//Todo: update numbers
 };
 
