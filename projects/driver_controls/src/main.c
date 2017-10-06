@@ -41,10 +41,10 @@ int main() {
   interrupt_init();
   gpio_it_init();
 
-  adc_init(ADC_MODE_CONTINUOUS);
+  // Initialize GPIO Expander
+  gpio_expander_init(DRIVER_IO_GPIO_EXPANDER_INTERRUPT, I2C_PORT_1);
 
   digital_io_init();
-  analog_io_init();
 
   event_queue_init();
 
