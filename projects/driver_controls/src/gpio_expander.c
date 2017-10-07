@@ -1,6 +1,7 @@
 #include "gpio_expander.h"
 
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "gpio_it.h"
 #include "i2c.h"
@@ -25,11 +26,17 @@ static StatusCode prv_pin_is_valid(GPIOExpanderPin pin) {
 }
 
 static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
+  printf("a\n");
   uint8_t intf = 0, intcap = 0;
 
   // Read the contents of the interrupt flag and interrupt capture registers
   i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_INTF, &intf, 1);
   i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_INTCAP, &intcap, 1);
+
+  // Disable interrupts until ISR has completed
+  uint8_t gpinten = 0, disable = 0;
+  i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPINTEN, &gpinten, 1);
+  i2c_write_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPINTEN, &disable, 1);
 
   // Identify all pins with a pending interrupt and execute their callbacks
   GPIOExpanderPin current_pin;
@@ -43,6 +50,10 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
 
     intf &= ~(1 << current_pin);
   }
+  printf("b\n");
+
+  // Restore interrupt settings for each pin
+  i2c_write_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPINTEN, &gpinten, 1);
 }
 
 // Set a specific bit in a given register
@@ -74,6 +85,10 @@ StatusCode gpio_expander_init(GPIOAddress address, I2CPort i2c_port) {
   for (uint8_t i = 0; i < NUM_GPIO_EXPANDER_PINS; i++) {
     s_interrupts[i].callback = NULL;
   }
+
+  uint8_t gpio;
+  i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPIO, &gpio, 1);
+  printf("MCP23008_GPIO = %#x\n", gpio);
 
   return STATUS_CODE_OK;
 }
