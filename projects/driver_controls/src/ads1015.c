@@ -3,10 +3,10 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "i2c.h"
+#include "ads1015_bitmasks.h"
 #include "delay.h"
 #include "gpio_it.h"
-#include "ads1015_bitmasks.h"
+#include "i2c.h"
 
 // Union definition to help process registers data
 typedef struct ADS1015Register {
@@ -61,7 +61,7 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
 
   if (s_interrupts[s_current_channel].callback != NULL) {
     s_interrupts[s_current_channel].callback(s_current_channel,
-                                              s_interrupts[s_current_channel].context);
+                                             s_interrupts[s_current_channel].context);
   }
 
   // Update so that the ADC reads from the next channel
@@ -84,8 +84,8 @@ StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress ready_pin) {
   InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_NORMAL };
 
   gpio_init_pin(&ready_pin, &gpio_settings);
-  gpio_it_register_interrupt(&ready_pin, &it_settings, INTERRUPT_EDGE_FALLING,
-                              prv_interrupt_handler, NULL);
+  gpio_it_register_interrupt(&ready_pin, &it_settings, INTERRUPT_EDGE_RISING, prv_interrupt_handler,
+                             NULL);
 
   // Reset the internal registers to their default values
   uint8_t reset = ADS1015_RESET_BYTE;
@@ -121,8 +121,8 @@ StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress ready_pin) {
   return STATUS_CODE_OK;
 }
 
-StatusCode ads1015_register_callback(ADS1015Channel channel,
-                                     ADS1015Callback callback, void *context) {
+StatusCode ads1015_register_callback(ADS1015Channel channel, ADS1015Callback callback,
+                                     void *context) {
   status_ok_or_return(prv_channel_valid(channel));
 
   s_interrupts[channel].callback = callback;
@@ -151,7 +151,7 @@ StatusCode ads1015_read_converted(ADS1015Channel channel, int16_t *reading) {
     return ret;
   }
 
-  *reading = (raw_reading * ADS1015_REFERENCE_VOLTAGE_4096)/2047;
+  *reading = (raw_reading * ADS1015_REFERENCE_VOLTAGE_4096) / 2047;
 
   return ret;
 }
