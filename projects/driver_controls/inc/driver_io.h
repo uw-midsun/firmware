@@ -20,7 +20,7 @@
 #define DRIVER_IO_PEDAL_SENSOR_SDA          { GPIO_PORT_B, 11 }
 
 // Steering Wheel GPIO Expander
-#define DRIVER_IO_GPIO_EXPANDER_INTERRUPT   { GPIO_PORT_B, 1 }
+#define DRIVER_IO_GPIO_EXPANDER_INTERRUPT   { GPIO_PORT_A, 0 }
 #define DRIVER_IO_GPIO_SCL                  { GPIO_PORT_B, 8 }
 #define DRIVER_IO_GPIO_SDA                  { GPIO_PORT_B, 9 }
 

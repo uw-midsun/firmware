@@ -1,7 +1,6 @@
 #include "gpio_expander.h"
 
 #include <stdbool.h>
-#include <stdio.h>
 
 #include "gpio_it.h"
 #include "i2c.h"
@@ -86,7 +85,6 @@ StatusCode gpio_expander_init(GPIOAddress address, I2CPort i2c_port) {
 
   uint8_t gpio;
   i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPIO, &gpio, 1);
-  printf("MCP23008_GPIO = %#x\n", gpio);
 
   return STATUS_CODE_OK;
 }

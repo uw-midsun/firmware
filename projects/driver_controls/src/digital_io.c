@@ -5,6 +5,7 @@
 #include "driver_io.h"
 #include "gpio_it.h"
 #include "input_event.h"
+#include "gpio_expander.h"
 
 // Digital device identifiers
 typedef enum {
@@ -76,8 +77,11 @@ static void prv_steering_wheel_callback(GPIOExpanderPin pin, GPIOState state, vo
       event_id = INPUT_EVENT_BMS_FAULT;
     case DRIVER_IO_HORN_PIN:
       event_id = INPUT_EVENT_HORN;
+    default:
+      break;
   }
-  //event_raise(prv_get_event(*data, state), 0);
+
+  event_raise(event_id, 0);
 }
 
 // Configure driver devices with their individual settings
@@ -98,7 +102,7 @@ void digital_io_init(void) {
         .event = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE
       };
 
-  s_center_console_data[DRIVER_IO_HEADLIGHT] = (DigitalIOData){
+  s_center_console_data[DRIVER_IO_HEADLIGHT_PIN] = (DigitalIOData){
         .id = DIGITAL_IO_DEVICE_HEADLIGHT,
         .event = INPUT_EVENT_HEADLIGHT
       };
@@ -119,7 +123,6 @@ void digital_io_init(void) {
       };
 
   // Define array to store configuration settings for each pin
-  // TODO: Modify edge triggers for active low
   struct {
     GPIOAddress address;
     InterruptEdge edge;
@@ -129,7 +132,6 @@ void digital_io_init(void) {
     { .address = DRIVER_IO_DIR_SELECT_REVERSE, .edge = INTERRUPT_EDGE_RISING_FALLING },
     { .address = DRIVER_IO_HEADLIGHT, .edge = INTERRUPT_EDGE_RISING_FALLING },
     { .address = DRIVER_IO_HAZARD_LIGHT, .edge = INTERRUPT_EDGE_RISING },
-    { .address = DRIVER_IO_TURN_SIGNAL_RIGHT, .edge = INTERRUPT_EDGE_RISING_FALLING },
     { .address = DRIVER_IO_BRAKING_REGEN_INC, .edge = INTERRUPT_EDGE_RISING },
     { .address = DRIVER_IO_BRAKING_REGEN_DEC, .edge = INTERRUPT_EDGE_RISING }
   };
@@ -143,12 +145,13 @@ void digital_io_init(void) {
 
     gpio_init_pin(&digital_inputs[i].address, &gpio_settings);
     gpio_it_register_interrupt(&digital_inputs[i].address, &it_settings, digital_inputs[i].edge,
-                               prv_input_callback, &s_input_data[pin]);
+                               prv_input_callback, &s_center_console_data[pin]);
   }
 
   // Initialize GPIO Expander inputs
   for (uint8_t i = 0; i < NUM_GPIO_EXPANDER_PINS; i++) {
-    gpio_expander_init_pin(i, &settings);
-    gpio_expander_register_callback(i, GPIOExpanderCallback callback, NULL);
+    printf("Pin %d\n", i);
+    gpio_expander_init_pin(i, &gpio_settings);
+    gpio_expander_register_callback(i, prv_steering_wheel_callback, NULL);
   }
 }
