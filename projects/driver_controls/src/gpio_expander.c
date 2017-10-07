@@ -26,7 +26,6 @@ static StatusCode prv_pin_is_valid(GPIOExpanderPin pin) {
 }
 
 static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
-  printf("a\n");
   uint8_t intf = 0, intcap = 0;
 
   // Read the contents of the interrupt flag and interrupt capture registers
@@ -50,7 +49,6 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
 
     intf &= ~(1 << current_pin);
   }
-  printf("b\n");
 
   // Restore interrupt settings for each pin
   i2c_write_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPINTEN, &gpinten, 1);
