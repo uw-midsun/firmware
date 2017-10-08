@@ -36,7 +36,9 @@ typedef struct {
 // Assumes standard 8 N 1
 // Registers a handler to be called when a newline is encountered or the buffer is full.
 // Storage should be persistent through the program.
-StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage);
+StatusCode uart_init(UARTPort uart, const UARTSettings *settings, UARTStorage *storage);
+
+StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *context);
 
 // Non-blocking TX
-StatusCode uart_tx(UARTPort uart, uint8_t *tx_data, size_t len);
+StatusCode uart_tx(UARTPort uart, const uint8_t *tx_data, size_t len);
