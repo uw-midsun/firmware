@@ -6,7 +6,8 @@
 #include "uart_mcu.h"
 #include "misc.h"
 
-static const UARTPort port = UART_PORT_2;
+// Removed so it will build on x86 for testing purposes
+static const UARTPort port; // = UART_PORT_2;
 
 // Prototype parser
 // Should change the "result field later"
@@ -78,22 +79,22 @@ void s_nmea_read(const uint8_t *rx_arr, size_t len, void *context) {
     // Splits individual message components into a 2D array
     for(uint32_t i = 7; i < len; i++){
       if(rx_arr[i] == ','){b++; continue;}
-      temp_buf[b][i] = rx_arr[i];
+      temp_buf[b][i] = (char) rx_arr[i];
     }
     
     // Parses NMEA message
     sscanf(temp_buf[0], "%2d%2d%2d%3d", (int *) &result.time.hh, (int *) &result.time.mm, (int *) &result.time.ss, (int *) &result.time.sss);
     sscanf(temp_buf[1], "%2d%2d%4d", (int *) &result.latitude.degrees, (int *) &result.latitude.minutes, (int *) &result.latitude.fraction);
-    result.north_south = temp_buf[2][0];
+    result.north_south = (uint8_t) temp_buf[2][0];
     sscanf(temp_buf[3], "%2d%2d%4d", (int *) &result.longtitude.degrees, (int *) &result.longtitude.minutes, (int *) &result.longtitude.fraction);
-    result.east_west = temp_buf[4][0];
+    result.east_west = (uint8_t) temp_buf[4][0];
     sscanf(temp_buf[5], "%d", (int *) &result.position_fix);
     sscanf(temp_buf[6], "%d", (int *) &result.satellites_used);
     sscanf(temp_buf[7], "%f", &result.hdop);
     sscanf(temp_buf[8], "%f", &result.msl_altitude);
-    result.units_1 = temp_buf[9][0];
+    result.units_1 = (uint8_t) temp_buf[9][0];
     sscanf(temp_buf[10], "%f", &result.geoid_seperation);
-    result.units_2 = temp_buf[11][0];
+    result.units_2 = (uint8_t) temp_buf[11][0];
     sscanf(temp_buf[12], "%d", (int *) &result.adc);
     sscanf(temp_buf[13], "%d", (int *) &result.drs);
   }
@@ -113,9 +114,11 @@ static UARTStorage s_storage = { 0 };
 
 StatusCode evm_gps_init(void) {
   // Makes sure that status codes are handled
+  
   status_ok_or_return(uart_init(port, &s_settings, &s_storage));
   
   uint8_t data[2] = { 42, 24 };
+  
   status_ok_or_return(uart_tx(port, data, SIZEOF_ARRAY(data)));
   return STATUS_CODE_OK;
 }
