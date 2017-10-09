@@ -7,7 +7,10 @@
 #include "misc.h"
 
 static const UARTPort port = UART_PORT_2;
-static void s_nmea_read(const uint8_t *rx_arr, size_t len, void *context) {
+
+// Prototype parser
+// Should change the "result field later"
+void s_nmea_read(const uint8_t *rx_arr, size_t len, void *context) {
   printf("recieved data with len %zu\n", len);
   for (uint8_t i = 0; i < len; i++) {
     printf("byte %d: %d\n", i, rx_arr[i]);
@@ -23,7 +26,7 @@ static void s_nmea_read(const uint8_t *rx_arr, size_t len, void *context) {
   }
   // Array index 3 should be 0
   uint8_t message_id [4] = {0};
-  for(int i = 3; i < 6; i++){
+  for(uint32_t i = 3; i < 6; i++){
     if(rx_arr[i] == ','){
      break; 
     }
@@ -46,8 +49,54 @@ static void s_nmea_read(const uint8_t *rx_arr, size_t len, void *context) {
     result.message_id = RMC;
   }else if(strcmp((char *)message_id, "VTG") == 0){
     result.message_id = VTG;
+  }else{
+    printf("Unknown message type: %c%c%c", message_id[0], message_id[1], message_id[2]);
+    return;
   }
-  // Parse message_id here
+  
+  // Do checksum right here
+  uint32_t checksum = 0;
+  for(uint32_t i = 1; i < len; i++){
+    if(rx_arr[i] == '*'){
+      break;
+    }
+    checksum ^= rx_arr[i];
+  }
+  // Get the checksum of the message
+  char* junk = "";
+  uint32_t realcheck = 0;
+  sscanf((char *) rx_arr, "%s*%d", junk, (int *) &realcheck);
+  if(realcheck != checksum){
+    printf("Checksums do not match, recieved: %d, calculated: %d", (int) realcheck, (int) checksum);
+  }
+  // Parse message_id below
+  if(result.message_id == GGA){
+    // Example message: $GPGGA,053740.000,2503.6319,N,12136.0099,E,1,08,1.1,63.8,M,15.2,M,,0000*64
+    char temp_buf[GGA][10] = {{0}};
+    uint32_t b = 0;
+    
+    // Splits individual message components into a 2D array
+    for(uint32_t i = 7; i < len; i++){
+      if(rx_arr[i] == ','){b++; continue;}
+      temp_buf[b][i] = rx_arr[i];
+    }
+    
+    // Parses NMEA message
+    sscanf(temp_buf[0], "%2d%2d%2d%3d", (int *) &result.time.hh, (int *) &result.time.mm, (int *) &result.time.ss, (int *) &result.time.sss);
+    sscanf(temp_buf[1], "%2d%2d%4d", (int *) &result.latitude.degrees, (int *) &result.latitude.minutes, (int *) &result.latitude.fraction);
+    result.north_south = temp_buf[2][0];
+    sscanf(temp_buf[3], "%2d%2d%4d", (int *) &result.longtitude.degrees, (int *) &result.longtitude.minutes, (int *) &result.longtitude.fraction);
+    result.east_west = temp_buf[4][0];
+    sscanf(temp_buf[5], "%d", (int *) &result.position_fix);
+    sscanf(temp_buf[6], "%d", (int *) &result.satellites_used);
+    sscanf(temp_buf[7], "%f", &result.hdop);
+    sscanf(temp_buf[8], "%f", &result.msl_altitude);
+    result.units_1 = temp_buf[9][0];
+    sscanf(temp_buf[10], "%f", &result.geoid_seperation);
+    result.units_2 = temp_buf[11][0];
+    sscanf(temp_buf[12], "%d", (int *) &result.adc);
+    sscanf(temp_buf[13], "%d", (int *) &result.drs);
+  }
 }
 
 // FIXME: move this to main.c and pass it in as a arg to evm_gps_init
