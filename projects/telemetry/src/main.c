@@ -37,8 +37,6 @@ int main(void) {
 
   gpio_init_pin(&pins[0], &settings_tx);
   gpio_init_pin(&pins[1], &settings_rx);
-  
-  char test[] = "$GPGGA,053740.000,2503.6319,N,12136.0099,E,1,08,1.1,63.8,M,15.2,M,,0000*64";
-  s_nmea_read((uint8_t *) test, sizeof(test)/sizeof(test[0]), test);
+
   return 0;
 }
