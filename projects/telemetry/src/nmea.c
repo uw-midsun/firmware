@@ -1,8 +1,7 @@
 #include "nmea.h"
 #include <string.h>
 #include <stdint.h>
-#define LOG_DEBUG printf
-#define LOG_WARN printf
+#include "log.h"
 NMEAResult parse_nmea_sentence(const uint8_t *rx_arr, size_t len){
   LOG_DEBUG("NMEA Parser recieved data with len %zu\n", len);
   NMEAResult r = {{0}};
@@ -68,22 +67,23 @@ NMEAResult parse_nmea_sentence(const uint8_t *rx_arr, size_t len){
     LOG_WARN("Checksums do not match, received: %d, calculated: %d", (int) realcheck, (int) checksum);
   }
   // Parse message_id below
+  
+  char temp_buf[GGA][10] = {{0}};
+  int32_t b1 = 0;// This is on purpose, so it does not underflow.
+  uint32_t b = 0;// It will still works if b1 underflows (because it will immediately overflow), but why risk it?
+
+  // Splits individual message components into a 2D array
+  for(uint32_t i = 7; i < len; b1++, i++){
+    if(rx_arr[i] == ','){
+      b++;
+      b1=-1;
+      continue;
+    }
+    temp_buf[b][b1] = (char) rx_arr[i];
+  }
   if(m_id == GGA){
     // Example message: $GPGGA,053740.000,2503.6319,N,12136.0099,E,1,08,1.1,63.8,M,15.2,M,,0000*64
-    char temp_buf[GGA][10] = {{0}};
-
-    int32_t b1 = 0;// This is on purpose, so it does not underflow.
-    uint32_t b = 0;// It will still works if b1 underflows (because it will immediately overflow), but why risk it?
-
-    // Splits individual message components into a 2D array
-    for(uint32_t i = 7; i < len; b1++, i++){
-      if(rx_arr[i] == ','){
-        b++;
-        b1=-1;
-        continue;
-      }
-      temp_buf[b][b1] = (char) rx_arr[i];
-    }
+    
 
     // Parses NMEA message
     sscanf(temp_buf[0], "%2d%2d%2d%3d", (int *) &r.gga.time.hh, (int *) &r.gga.time.mm, (int *) &r.gga.time.ss, (int *) &r.gga.time.sss);
