@@ -26,7 +26,6 @@ static StatusCode prv_pin_is_valid(GPIOExpanderPin pin) {
 }
 
 static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
-  printf("interrupt triggered\n");
   // Disable interrupts until ISR has completed
   uint8_t gpinten = 0, disable = 0, intf = 0, intcap = 0;
 
@@ -37,7 +36,7 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
   i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPINTEN, &gpinten, 1);
   i2c_write_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPINTEN, &disable, 1);
 
-  // Obtain the port values captured at the time of the interrupt
+  // Obtain the port values captured at the time of the interrupts
   i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_INTCAP, &intcap, 1);
 
   // Identify all pins with a pending interrupt and execute their callbacks
@@ -45,7 +44,6 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
   while (intf != 0) {
     current_pin = __builtin_ffs(intf) - 1;
 
-    printf("Callback = %d\n", (s_interrupts[current_pin].callback != NULL));
     if (s_interrupts[current_pin].callback != NULL) {
       s_interrupts[current_pin].callback(current_pin, (intcap >> current_pin) & 1,
                                          s_interrupts[current_pin].context);
