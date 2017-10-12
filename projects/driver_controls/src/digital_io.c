@@ -58,25 +58,34 @@ static void prv_input_callback(const GPIOAddress *address, void *context) {
 
 static void prv_steering_wheel_callback(GPIOExpanderPin pin, GPIOState state, void *context) {
   InputEvent event_id = 0;
+  printf("Pin %d Event\n", pin);
 
   // Turn into lookup table
   switch (pin) {
     case DRIVER_IO_RIGHT_TURN_SIGNAL_PIN:
       event_id = INPUT_EVENT_TURN_SIGNAL_RIGHT;
+      break;
     case DRIVER_IO_LEFT_TURN_SIGNAL_PIN:
       event_id = INPUT_EVENT_TURN_SIGNAL_LEFT;
+      break;
     case DRIVER_IO_CRUISE_CONTROL_PIN:
       event_id = INPUT_EVENT_CRUISE_CONTROL;
+      break;
     case DRIVER_IO_CRUISE_CONTROL_INC_PIN:
       event_id = INPUT_EVENT_CRUISE_CONTROL_INC;
+      break;
     case DRIVER_IO_CRUISE_CONTROL_DEC_PIN:
       event_id = INPUT_EVENT_CRUISE_CONTROL_DEC;
+      break;
     case DRIVER_IO_PUSH_TO_TALK_PIN:
       event_id = INPUT_EVENT_PUSH_TO_TALK;
+      break;
     case DRIVER_IO_BMS_FAULT_PIN:
       event_id = INPUT_EVENT_BMS_FAULT;
+      break;
     case DRIVER_IO_HORN_PIN:
       event_id = INPUT_EVENT_HORN;
+      break;
     default:
       break;
   }
@@ -148,7 +157,7 @@ void digital_io_init(void) {
                                prv_input_callback, &s_center_console_data[pin]);
   }
 
-  // Initialize GPIO Expander inputs
+  // Initialize Steering Wheel inputs
   for (uint8_t i = 0; i < NUM_GPIO_EXPANDER_PINS; i++) {
     printf("Pin %d\n", i);
     gpio_expander_init_pin(i, &gpio_settings);

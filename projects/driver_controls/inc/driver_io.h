@@ -1,7 +1,11 @@
 #pragma once
 
+// Configuration header for driver controls
+
+#include "i2c.h"
+
 #define DRIVER_IO_GET_PIN(address) ((GPIOAddress)address.pin)
-#define DRIVER_IO_NUM_ADDRESSES 12
+#define DRIVER_IO_NUM_ADDRESSES 16
 
 // Digital address definitions
 
@@ -18,11 +22,13 @@
 #define DRIVER_IO_ADC_INTERRUPT             { GPIO_PORT_B, 2 }
 #define DRIVER_IO_PEDAL_SENSOR_SCL          { GPIO_PORT_B, 10 }
 #define DRIVER_IO_PEDAL_SENSOR_SDA          { GPIO_PORT_B, 11 }
+#define DRIVER_IO_ADC_I2C_PORT              I2C_PORT_2
 
 // Steering Wheel GPIO Expander
 #define DRIVER_IO_GPIO_EXPANDER_INTERRUPT   { GPIO_PORT_A, 0 }
 #define DRIVER_IO_GPIO_SCL                  { GPIO_PORT_B, 8 }
 #define DRIVER_IO_GPIO_SDA                  { GPIO_PORT_B, 9 }
+#define DRIVER_IO_GPIO_EXPANDER_I2C_PORT    I2C_PORT_1
 
 // Analog address definitions
 #define DRIVER_IO_GAS_PEDAL                 { GPIO_PORT_A, 0 }
