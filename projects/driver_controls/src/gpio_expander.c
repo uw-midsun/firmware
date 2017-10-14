@@ -1,11 +1,16 @@
 #include "gpio_expander.h"
 
 #include <stdbool.h>
-#include <stdio.h>
 
 #include "gpio_it.h"
 #include "i2c.h"
 #include "mcp23008.h"
+#include "soft_timer.h"
+#include "delay.h"
+
+// Bouncing from the inputs can be mistaken as interrupts by the device. After each interrupt,
+// the GPIO expander will be delayed for a brief period to prevent this
+#define GPIO_EXPANDER_DELAY_MS  50
 
 typedef struct GPIOExpanderInterrupt {
   GPIOExpanderCallback callback;
@@ -25,11 +30,13 @@ static StatusCode prv_pin_is_valid(GPIOExpanderPin pin) {
   return STATUS_CODE_OK;
 }
 
+static void prv_debounce_delay(SoftTimerID timer_id, void *context) { }
+
 static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
   // Disable interrupts until ISR has completed
   uint8_t gpinten = 0, disable = 0, intf = 0, intcap = 0;
 
-  // Read the interrupt flag register to determine the pins with a pending interrupt 
+  // Read the interrupt flag register to determine the pins with a pending interrupt
   i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_INTF, &intf, 1);
 
   // Temporarily disable interrupts on the expander
@@ -51,6 +58,11 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
 
     intf &= ~(1 << current_pin);
   }
+
+  // Delay for about 20 ms to prevent extra interrupts due to bouncing
+  SoftTimerID timer_id = 0;
+  soft_timer_start_millis(GPIO_EXPANDER_DELAY_MS, prv_debounce_delay, NULL, &timer_id);
+  while (soft_timer_remaining_time(timer_id)) { }
 
   // Restore interrupt settings with the saved gpinten value
   i2c_write_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPINTEN, &gpinten, 1);
