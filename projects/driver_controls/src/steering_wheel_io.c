@@ -92,7 +92,6 @@ void steering_wheel_io_init(void) {
         .event = INPUT_EVENT_HORN,
         .edge = INTERRUPT_EDGE_RISING_FALLING
       };
-  
 
   GPIOSettings gpio_settings = {.direction = GPIO_DIR_IN, .state = GPIO_STATE_LOW };
   InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_LOW };
