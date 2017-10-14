@@ -58,7 +58,6 @@ static void prv_input_callback(const GPIOAddress *address, void *context) {
 
 static void prv_steering_wheel_callback(GPIOExpanderPin pin, GPIOState state, void *context) {
   InputEvent event_id = 0;
-  printf("Pin %d Event\n", pin);
 
   // Turn into lookup table
   switch (pin) {
@@ -135,7 +134,7 @@ void digital_io_init(void) {
   struct {
     GPIOAddress address;
     InterruptEdge edge;
-  } digital_inputs[] = {
+  } console_inputs[] = {
     { .address = DRIVER_IO_POWER_SWITCH, .edge = INTERRUPT_EDGE_RISING },
     { .address = DRIVER_IO_DIR_SELECT_FORWARD, .edge = INTERRUPT_EDGE_RISING_FALLING },
     { .address = DRIVER_IO_DIR_SELECT_REVERSE, .edge = INTERRUPT_EDGE_RISING_FALLING },
@@ -149,17 +148,16 @@ void digital_io_init(void) {
   InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_LOW };
 
   // Initialize Center Console Inputs
-  for (uint8_t i = 0; i < SIZEOF_ARRAY(digital_inputs); i++) {
-    uint8_t pin = digital_inputs[i].address.pin;
+  for (uint8_t i = 0; i < SIZEOF_ARRAY(console_inputs); i++) {
+    uint8_t pin = console_inputs[i].address.pin;
 
-    gpio_init_pin(&digital_inputs[i].address, &gpio_settings);
-    gpio_it_register_interrupt(&digital_inputs[i].address, &it_settings, digital_inputs[i].edge,
+    gpio_init_pin(&console_inputs[i].address, &gpio_settings);
+    gpio_it_register_interrupt(&console_inputs[i].address, &it_settings, console_inputs[i].edge,
                                prv_input_callback, &s_center_console_data[pin]);
   }
 
   // Initialize Steering Wheel inputs
   for (uint8_t i = 0; i < NUM_GPIO_EXPANDER_PINS; i++) {
-    printf("Pin %d\n", i);
     gpio_expander_init_pin(i, &gpio_settings);
     gpio_expander_register_callback(i, prv_steering_wheel_callback, NULL);
   }
