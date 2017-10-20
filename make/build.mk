@@ -67,6 +67,8 @@ $(T): $($(T)_DEPS) | $(TARGET_TYPE)
 	$(eval $(@)_DEPS += $(foreach dep,$^,$($(dep)_DEPS)))
 	$(eval $(@)_INC_DIRS += $(LIB_INC_DIRS))
 	@echo "Processing $(firstword $|) $@"
+	@echo "Running prebuild hook"
+	@python $($(@)_DIR)/prebuild_hook.py || true
 
 $(TARGET_TYPE):
 
