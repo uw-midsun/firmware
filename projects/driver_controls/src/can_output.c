@@ -21,6 +21,7 @@ static uint8_t s_can_output_lookup[NUM_CAN_OUTPUT_MESSAGES] =
      [CAN_OUTPUT_MESSAGE_HORN] = CAN_OUTPUT_ID_HORN };
 
 void can_output_transmit(EventArbiterOutputData data) {
+  // TODO(ELEC-262): Integrate CAN transmit functions
   LOG_DEBUG("Device = %d, State = %d, Data = %d\n", s_can_output_lookup[data.id], data.state,
             data.data);
 }
