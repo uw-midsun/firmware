@@ -19,6 +19,7 @@ static UARTStorage s_storage = { 0 };
 
 StatusCode evm_gps_init(UARTSettings* uart_settings) {
   // Makes sure that status codes are handled
+  uart_settings->rx_handler = s_nmea_read;
   status_ok_or_return(uart_init(port, uart_settings, &s_storage));
   
   uint8_t data[2] = { 42, 24 };

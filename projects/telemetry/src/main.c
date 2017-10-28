@@ -17,7 +17,6 @@ static const GPIOAddress pins[] = {
 
 static UARTSettings s_settings = {
   .baudrate = 9600,
-  .rx_handler = s_nmea_read,
 
   .tx = { .port = GPIO_PORT_A , .pin = 2 },
   .rx = { .port = GPIO_PORT_A , .pin = 3 },
