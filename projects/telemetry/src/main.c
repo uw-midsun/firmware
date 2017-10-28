@@ -1,5 +1,3 @@
-// Example program for STM32F072 Controller board or Discovery Board.
-// Blinks the LEDs sequentially.
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -9,7 +7,6 @@
 #include "interrupt.h"   // For enabling interrupts.
 #include "gps.h"
 
-// Controller board LEDs
 static const GPIOAddress pins[] = {
   {.port = GPIO_PORT_A, .pin = 2 },   //
   {.port = GPIO_PORT_A, .pin = 3 },   //
@@ -22,6 +19,10 @@ static UARTSettings s_settings = {
   .rx = { .port = GPIO_PORT_A , .pin = 3 },
   .alt_fn = GPIO_ALTFN_1,
 };
+
+void gps_handler(NMEAResult result) {
+    return;
+}
 
 int main(void) {
   // Enable various peripherals
@@ -37,7 +38,7 @@ int main(void) {
   };
 
   GPIOSettings settings_rx = {
-    .direction = GPIO_DIR_IN,        // The pin needs to output.
+    .direction = GPIO_DIR_IN,        // The pin needs to input.
     .state = GPIO_STATE_HIGH,         // Start in the "on" state.
     .alt_function = GPIO_ALTFN_1,  // No connections to peripherals.
     .resistor = GPIO_RES_NONE,        // No need of a resistor to modify floating logic levels.
@@ -45,7 +46,7 @@ int main(void) {
 
   gpio_init_pin(&pins[0], &settings_tx);
   gpio_init_pin(&pins[1], &settings_rx);
-  evm_gps_init(&s_settings);
+  evm_gps_init(&s_settings, gps_handler);
 
   return 0;
 }
