@@ -68,7 +68,7 @@ $(T): $($(T)_DEPS) | $(TARGET_TYPE)
 	$(eval $(@)_INC_DIRS += $(LIB_INC_DIRS))
 	@echo "Processing $(firstword $|) $@"
 	@echo "Running prebuild hook"
-	@python $($(@)_DIR)/prebuild_hook.py || true
+	@python make/prebuild_hook.py --folder=$($(@)_DIR) || true
 
 $(TARGET_TYPE):
 
