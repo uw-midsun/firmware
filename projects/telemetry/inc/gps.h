@@ -7,4 +7,4 @@
 
 // This enum contains the list of supported NMEA sentences that are supported by our GPS chip
 
-StatusCode evm_gps_init(void);
+StatusCode evm_gps_init(UARTSettings* settings);

@@ -15,6 +15,15 @@ static const GPIOAddress pins[] = {
   {.port = GPIO_PORT_A, .pin = 3 },   //
 };
 
+static UARTSettings s_settings = {
+  .baudrate = 9600,
+  .rx_handler = s_nmea_read,
+
+  .tx = { .port = GPIO_PORT_A , .pin = 2 },
+  .rx = { .port = GPIO_PORT_A , .pin = 3 },
+  .alt_fn = GPIO_ALTFN_1,
+};
+
 int main(void) {
   // Enable various peripherals
   interrupt_init();
@@ -37,6 +46,7 @@ int main(void) {
 
   gpio_init_pin(&pins[0], &settings_tx);
   gpio_init_pin(&pins[1], &settings_rx);
+  evm_gps_init(&s_settings);
 
   return 0;
 }
