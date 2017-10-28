@@ -84,8 +84,6 @@ int main() {
   horn_fsm_init(&fsm_group.horn);
   push_to_talk_fsm_init(&fsm_group.push_to_talk);
 
-  GPIOState state;
-
   for (;;) {
     if (status_ok(event_process(&e))) {
       // Process the event with the input FSMs
