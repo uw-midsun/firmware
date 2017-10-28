@@ -28,13 +28,11 @@ static FSMGroup s_fsm_group;
 static bool powered = false;
 static bool mech_brake = false;
 
-static void prv_toggle_power(bool new_state) {
-  Event e;
-  if (new_state != powered) {
-    e.id = INPUT_EVENT_POWER;
-    event_arbiter_process_event(&e);
-    powered = new_state;
-  }
+static void prv_toggle_power(void) {
+  Event e = {.data = 0 };
+
+  e.id = INPUT_EVENT_POWER;
+  event_arbiter_process_event(&e);
 }
 
 static void prv_toggle_mech_brake(bool new_state) {
@@ -48,7 +46,7 @@ static void prv_toggle_mech_brake(bool new_state) {
 }
 
 void setup_test() {
-  event_arbiter_init();
+  event_arbiter_init(NULL);
 
   power_fsm_init(&s_fsm_group.power);
   pedal_fsm_init(&s_fsm_group.pedal);
@@ -56,7 +54,7 @@ void setup_test() {
   turn_signal_fsm_init(&s_fsm_group.turn_signal);
   hazard_light_fsm_init(&s_fsm_group.hazard_light);
   mechanical_brake_fsm_init(&s_fsm_group.mechanical_brake);
-  mechanical_brake_fsm_init(&s_fsm_group.horn);
+  horn_fsm_init(&s_fsm_group.horn);
 
   powered = false;
   mech_brake = false;
@@ -64,23 +62,7 @@ void setup_test() {
   event_queue_init();
 }
 
-void teardown_test(void) {
-  Event e;
-
-  e.id = INPUT_EVENT_PEDAL_BRAKE;
-  event_arbiter_process_event(&e);
-
-  prv_toggle_mech_brake(true);
-
-  e.id = INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL;
-  event_arbiter_process_event(&e);
-
-  prv_toggle_mech_brake(false);
-
-  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_disengaged", s_fsm_group.mechanical_brake.current_state->name);
-}
+void teardown_test(void) {}
 
 void test_driver_fsm_setup() {
   TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
@@ -94,9 +76,6 @@ void test_driver_fsm_setup() {
 // Check that nothing can happen while the car is powered off
 void test_driver_fsm_power_off() {
   Event e;
-
-  prv_toggle_power(false);
-  TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
 
   // Shift to forward gear and move the car
   prv_toggle_mech_brake(true);
@@ -116,11 +95,44 @@ void test_driver_fsm_power_off() {
   TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
 }
 
+// Check that the power FSM behaves properly regardign charge
+void test_driver_fsm_power_charge() {
+  Event e;
+
+  // Power the car on and off normally
+  prv_toggle_mech_brake(true);
+  TEST_ASSERT_EQUAL_STRING("state_off_brake", s_fsm_group.power.current_state->name);
+
+  prv_toggle_power();
+  TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
+
+  prv_toggle_power();
+  TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
+
+  // Start charging the car and ensure that the car is not able to move
+  prv_toggle_power();
+  TEST_ASSERT_EQUAL_STRING("state_charging", s_fsm_group.power.current_state->name);
+
+  prv_toggle_mech_brake(true);
+
+  e.id = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE;
+  TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
+  e.id = INPUT_EVENT_PEDAL_PRESSED;
+  TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
+
+  // Turn off the car
+  prv_toggle_mech_brake(false);
+  prv_toggle_power();
+  TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
+}
+
 // Check that the car does not move when the mechanical brake is pressed
 void test_driver_fsm_mechanical_brake() {
   Event e;
 
-  prv_toggle_power(true);
+  prv_toggle_mech_brake(true);
+  prv_toggle_power();
+
   TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
 
   // Shift to forward gear and move the car
@@ -148,7 +160,8 @@ void test_driver_fsm_mechanical_brake() {
 void test_driver_fsm_move_car() {
   Event e;
 
-  prv_toggle_power(true);
+  prv_toggle_mech_brake(true);
+  prv_toggle_power();
   TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
 
   // Shift to forward gear and move the car
@@ -184,7 +197,8 @@ void test_driver_fsm_move_car() {
 void test_driver_fsm_cruise_control() {
   Event e;
 
-  prv_toggle_power(true);
+  prv_toggle_mech_brake(true);
+  prv_toggle_power();
   TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
 
   // Change gear to forward
