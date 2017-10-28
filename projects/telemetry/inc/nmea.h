@@ -1,5 +1,7 @@
 #pragma once
 #include <stdio.h>
+#include <stdint.h>
+#include "uart_mcu.h"
 typedef enum {
   GGA = 15, // These are the number of data fields in each message type, excluding the message id
   GLL = 8,
