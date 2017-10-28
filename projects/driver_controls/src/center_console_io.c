@@ -23,6 +23,11 @@ typedef struct CenterConsoleIOData {
   InputEvent event;
 } CenterConsoleIOData;
 
+typedef struct CenterConsoleIOSettings {
+    GPIOAddress address;
+    InterruptEdge edge;
+} CenterConsoleIOSettings;
+
 // Index the objects using their respective pins
 static CenterConsoleIOData s_center_console_data[DRIVER_IO_NUM_ADDRESSES];
 
@@ -81,10 +86,7 @@ void center_console_io_init(void) {
       };
 
   // Define array to store configuration settings for each pin
-  struct {
-    GPIOAddress address;
-    InterruptEdge edge;
-  } console_inputs[] = {
+  CenterConsoleIOSettings console_inputs[] = {
     { .address = DRIVER_IO_POWER_SWITCH, .edge = INTERRUPT_EDGE_RISING },
     { .address = DRIVER_IO_DIR_SELECT_FORWARD, .edge = INTERRUPT_EDGE_RISING_FALLING },
     { .address = DRIVER_IO_DIR_SELECT_REVERSE, .edge = INTERRUPT_EDGE_RISING_FALLING },
