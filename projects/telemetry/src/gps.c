@@ -24,7 +24,7 @@ StatusCode evm_gps_init(UARTSettings* uart_settings, GPSHandler handler) {
   uart_settings->rx_handler = s_nmea_read;
   // Makes sure that status codes are handled
   status_ok_or_return(uart_init(port, uart_settings, &s_storage));
-  
+
   uint8_t data[2] = { 42, 24 };
 
   status_ok_or_return(uart_tx(port, data, SIZEOF_ARRAY(data)));
