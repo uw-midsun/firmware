@@ -31,7 +31,7 @@ static bool prv_is_sender(void) {
   GPIOAddress pin_out = { GPIO_PORT_A, 0 };
   GPIOAddress pin_in = { GPIO_PORT_A, 1 };
 
-  GPIOSettings gpio_settings = {.direction = GPIO_DIR_OUT, .state = GPIO_STATE_LOW };
+  GPIOSettings gpio_settings = { .direction = GPIO_DIR_OUT, .state = GPIO_STATE_LOW };
   gpio_init_pin(&pin_out, &gpio_settings);
 
   gpio_settings.direction = GPIO_DIR_IN;
@@ -50,7 +50,7 @@ int main(void) {
   soft_timer_init();
   event_queue_init();
 
-  GPIOSettings gpio_settings = {.direction = GPIO_DIR_OUT, .state = GPIO_STATE_LOW };
+  GPIOSettings gpio_settings = { .direction = GPIO_DIR_OUT, .state = GPIO_STATE_LOW };
   gpio_init_pin(&s_led, &gpio_settings);
   prv_blink_led(0, NULL);
 
