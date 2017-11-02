@@ -11,6 +11,7 @@ endif
 # Defines default variables and targets
 $(T)_DIR := $($(TARGET_TYPE)_DIR)/$(T)
 
+$(T)_PREBUILD_CMD := 
 $(T)_SRC_ROOT := $($(T)_DIR)/src
 $(T)_OBJ_ROOT := $(OBJ_CACHE)/$(T)
 $(T)_INC_DIRS := $($(T)_DIR)/inc $($(T)_DIR)/inc/$(PLATFORM)
@@ -67,8 +68,7 @@ $(T): $($(T)_DEPS) | $(TARGET_TYPE)
 	$(eval $(@)_DEPS += $(foreach dep,$^,$($(dep)_DEPS)))
 	$(eval $(@)_INC_DIRS += $(LIB_INC_DIRS))
 	@echo "Processing $(firstword $|) $@"
-	@echo "Running prebuild hook"
-	@python make/prebuild_hook.py -folder=$($(@)_DIR) || true
+	@$($(@)_PREBUILD_CMD)
 
 $(TARGET_TYPE):
 

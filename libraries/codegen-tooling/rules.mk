@@ -5,5 +5,7 @@
 # $(T)_INC_DIRS: $(T)_DIR/inc{/$(PLATFORM)}
 # $(T)_SRC: $(T)_DIR/src{/$(PLATFORM)}/*.{c,s}
 
+$(T)_PREBUILD_CMD := python make/git_fetch.py -folder=libraries/codegen-tooling -user=uw-midsun -repo=codegen-tooling -tag=latest -file=codegen-tooling-out.zip
+
 $(T)_DEPS := ms-common
 
