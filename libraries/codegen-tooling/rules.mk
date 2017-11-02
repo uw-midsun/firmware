@@ -5,10 +5,5 @@
 # $(T)_INC_DIRS: $(T)_DIR/inc{/$(PLATFORM)}
 # $(T)_SRC: $(T)_DIR/src{/$(PLATFORM)}/*.{c,s}
 
-# Redefine the include root folder
-$(T)_INC_DIRS := $($(T)_DIR)/out
-
 $(T)_DEPS := ms-common
 
-# Specifies library specific build flags
-$(T)_CFLAGS += -ffreestanding

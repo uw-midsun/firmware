@@ -5,6 +5,7 @@ the build system to pick up.
 """
 #! /usr/bin/env python
 
+import argparse
 import subprocess
 import os
 import re
@@ -12,14 +13,25 @@ import zipfile
 import shutil
 import socket
 
+from collections import namedtuple
+
 # Fetch the latest release from the official GitHub API
-TAG = 'latest'
-URL = 'https://api.github.com/repos/uw-midsun/codegen-tooling/releases/'
-# This file name may need to be updated
-FILE = 'codegen-tooling-out.zip'
+
+GitRepo = namedtuple('GitRepo', ['user', 'repo', 'file', 'tag'])
+
+LIBRARIES = {
+    'libraries/codegen-tooling':
+    GitRepo(
+        user='uw-midsun',
+        repo='codegen-tooling',
+        file='codegen-tooling-out.zip',
+        tag='latest')
+}
+
+URL = 'https://api.github.com/repos/{}/{}/releases/'
 
 # Hash the file to prevent reinstalling the same file.
-HASH_FILE = 'hash.txt'
+VERSION_FILE = 'version.txt'
 
 # For validating there is an internet connection
 REMOTE_SERVER = "www.google.com"
@@ -178,20 +190,35 @@ def clean_folder(directory):
 
 def main():
     """Main function"""
+    parser = argparse.ArgumentParser(
+        description='Execute a prebuild library update.')
+    parser.add_argument(
+        '-folder', type=str, help='the folder in which to run the hook')
+
+    args = parser.parse_args()
+    print(args.folder)
+    if args.folder not in LIBRARIES:
+        return
+    print('hello')
+
+    repo = LIBRARIES[args.folder]
+    url = URL.format(repo.user, repo.repo)
+
     if not connected():
         print('No internet connection, skipping hook, will use local copy.')
         return
-    os.chdir(os.path.dirname(__file__))
+
+    os.chdir(os.path.join(os.getcwd(), args.folder))
     try:
-        fetch_release(URL, TAG, FILE)
-        if check_hash(FILE, HASH_FILE):
-            clean_up(FILE)
+        fetch_release(url, repo.tag, repo.file)
+        if check_hash(repo.file, VERSION_FILE):
+            clean_up(repo.file)
             return
-        if not unpack(FILE):
+        if not unpack(repo.file):
             raise IOError('Failed to unpack file.')
-        clean_up(FILE)
+        clean_up(repo.file)
     except Exception as err:
-        print('Failed to fetch release {}{}: {}'.format(URL, TAG, err))
+        print('Failed to fetch release {}{}: {}'.format(url, repo.tag, err))
 
 
 if __name__ == '__main__':
