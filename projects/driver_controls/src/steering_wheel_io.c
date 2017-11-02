@@ -50,6 +50,7 @@ static void prv_steering_wheel_callback(GPIOExpanderPin pin, GPIOState state, vo
   }
 
   event_raise(event_id, 0);
+  printf("Pin %d\n", pin);
   return;
 }
 

@@ -30,10 +30,7 @@ static StatusCode prv_pin_is_valid(GPIOExpanderPin pin) {
   return STATUS_CODE_OK;
 }
 
-static void prv_debounce_delay(SoftTimerID timer_id, void *context) {
-  uint8_t *gpinten = context;
-  i2c_write_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPINTEN, gpinten, 1);
-}
+static void prv_debounce_delay(SoftTimerID timer_id, void *context) { }
 
 static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
   // Disable interrupts until ISR has completed
@@ -65,6 +62,9 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
   // Delay for about 20 ms to prevent extra interrupts due to bouncing
   SoftTimerID timer_id = 0;
   soft_timer_start_millis(GPIO_EXPANDER_DELAY_MS, prv_debounce_delay, NULL, &timer_id);
+  while (soft_timer_remaining_time(timer_id)) { }
+
+  i2c_write_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPINTEN, &gpinten, 1);
 }
 
 // Set a specific bit in a given register
