@@ -63,7 +63,7 @@ StatusCode gpio_expander_init(GPIOAddress address, I2CPort i2c_port) {
   s_i2c_port = i2c_port;
 
   // Configure the pin to receive interrupts from the MCP23008
-  GPIOSettings gpio_settings = {.direction = GPIO_DIR_IN, .alt_function = GPIO_ALTFN_NONE };
+  GPIOSettings gpio_settings = { .direction = GPIO_DIR_IN, .alt_function = GPIO_ALTFN_NONE };
   InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_NORMAL };
 
   gpio_init_pin(&address, &gpio_settings);
