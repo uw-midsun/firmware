@@ -20,10 +20,10 @@ typedef struct CANHwEventHandler {
 
 // Generated settings using http://www.bittiming.can-wiki.info/
 static CANHwTiming s_timing[NUM_CAN_HW_BITRATES] = {  // For 48MHz clock
-      [CAN_HW_BITRATE_125KBPS] = {.prescaler = 24, .bs1 = 13, .bs2 = 2 },
-      [CAN_HW_BITRATE_250KBPS] = {.prescaler = 12, .bs1 = 13, .bs2 = 2 },
-      [CAN_HW_BITRATE_500KBPS] = {.prescaler = 6, .bs1 = 13, .bs2 = 2 },
-      [CAN_HW_BITRATE_1000KBPS] = {.prescaler = 3, .bs1 = 13, .bs2 = 2 }
+  [CAN_HW_BITRATE_125KBPS] = { .prescaler = 24, .bs1 = 13, .bs2 = 2 },
+  [CAN_HW_BITRATE_250KBPS] = { .prescaler = 12, .bs1 = 13, .bs2 = 2 },
+  [CAN_HW_BITRATE_500KBPS] = { .prescaler = 6, .bs1 = 13, .bs2 = 2 },
+  [CAN_HW_BITRATE_1000KBPS] = { .prescaler = 3, .bs1 = 13, .bs2 = 2 }
 };
 static CANHwEventHandler s_handlers[NUM_CAN_HW_EVENTS];
 static uint8_t s_num_filters;
@@ -159,10 +159,10 @@ bool can_hw_receive(uint16_t *id, uint64_t *data, size_t *len) {
 
 void CEC_CAN_IRQHandler(void) {
   bool run_cb[NUM_CAN_HW_EVENTS] = {
-        [CAN_HW_EVENT_TX_READY] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_TME) == SET,
-        [CAN_HW_EVENT_MSG_RX] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_FMP0) == SET ||
-                                CAN_GetITStatus(CAN_HW_BASE, CAN_IT_FMP1) == SET,
-        [CAN_HW_EVENT_BUS_ERROR] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_ERR) == SET,
+    [CAN_HW_EVENT_TX_READY] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_TME) == SET,
+    [CAN_HW_EVENT_MSG_RX] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_FMP0) == SET ||
+                            CAN_GetITStatus(CAN_HW_BASE, CAN_IT_FMP1) == SET,
+    [CAN_HW_EVENT_BUS_ERROR] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_ERR) == SET,
   };
 
   for (int event = 0; event < NUM_CAN_HW_EVENTS; event++) {

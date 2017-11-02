@@ -11,12 +11,8 @@ typedef struct {
 } SPIPortData;
 
 static SPIPortData s_port[NUM_SPI_PORTS] = {
-      [SPI_PORT_1] = {.rcc_cmd = RCC_APB2PeriphClockCmd,
-                      .periph = RCC_APB2Periph_SPI1,
-                      .base = SPI1 },
-      [SPI_PORT_2] = {.rcc_cmd = RCC_APB1PeriphClockCmd,
-                      .periph = RCC_APB1Periph_SPI2,
-                      .base = SPI2 },
+  [SPI_PORT_1] = { .rcc_cmd = RCC_APB2PeriphClockCmd, .periph = RCC_APB2Periph_SPI1, .base = SPI1 },
+  [SPI_PORT_2] = { .rcc_cmd = RCC_APB1PeriphClockCmd, .periph = RCC_APB1Periph_SPI2, .base = SPI2 },
 };
 
 StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
