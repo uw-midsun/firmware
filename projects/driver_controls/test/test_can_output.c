@@ -45,14 +45,14 @@ static void prv_output(EventArbiterOutputData data) {
 }
 
 static void prv_toggle_power(void) {
-  Event e = {.data = 0 };
+  Event e = { .data = 0 };
 
   e.id = INPUT_EVENT_POWER;
   event_arbiter_process_event(&e);
 }
 
 static void prv_toggle_mech_brake(bool new_state) {
-  Event e = {.data = 0 };
+  Event e = { .data = 0 };
 
   e.id = (new_state == true) ? INPUT_EVENT_MECHANICAL_BRAKE_PRESSED
                              : INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
@@ -214,7 +214,7 @@ void test_can_output_direction(void) {
 }
 
 void test_can_output_pedal(void) {
-  Event e = {.data = 0 };
+  Event e = { .data = 0 };
 
   // Setup for the pedals to be used
   prv_toggle_mech_brake(true);
@@ -228,7 +228,7 @@ void test_can_output_pedal(void) {
   prv_toggle_mech_brake(false);
 
   // Test that coasting generates the correct event
-  e = (Event){.id = INPUT_EVENT_PEDAL_COAST, .data = 0xabcd };
+  e = (Event){ .id = INPUT_EVENT_PEDAL_COAST, .data = 0xabcd };
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_PEDAL, s_can_output.id);
@@ -236,7 +236,7 @@ void test_can_output_pedal(void) {
   TEST_ASSERT_EQUAL(0xabcd, s_can_output.data);
 
   // Test that pressing the gas generates the correct event
-  e = (Event){.id = INPUT_EVENT_PEDAL_PRESSED, .data = 0xabcd };
+  e = (Event){ .id = INPUT_EVENT_PEDAL_PRESSED, .data = 0xabcd };
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_PEDAL, s_can_output.id);
@@ -244,7 +244,7 @@ void test_can_output_pedal(void) {
   TEST_ASSERT_EQUAL(0xabcd, s_can_output.data);
 
   // Test that cruise control generates the correct event
-  e = (Event){.id = INPUT_EVENT_CRUISE_CONTROL, .data = 0xabcd };
+  e = (Event){ .id = INPUT_EVENT_CRUISE_CONTROL, .data = 0xabcd };
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_PEDAL, s_can_output.id);
@@ -252,11 +252,11 @@ void test_can_output_pedal(void) {
   TEST_ASSERT_EQUAL(0xabcd, s_can_output.data);
 
   // Exit cruise control
-  e = (Event){.id = INPUT_EVENT_CRUISE_CONTROL, .data = 0xabcd };
+  e = (Event){ .id = INPUT_EVENT_CRUISE_CONTROL, .data = 0xabcd };
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   // Test that regen brakes generate the correct event
-  e = (Event){.id = INPUT_EVENT_PEDAL_BRAKE, .data = 0xabcd };
+  e = (Event){ .id = INPUT_EVENT_PEDAL_BRAKE, .data = 0xabcd };
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_PEDAL, s_can_output.id);
