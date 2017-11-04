@@ -155,11 +155,12 @@ def unpack(filename):
     return True
 
 
-def clean_folder(directory):
+def clean_folder(directory, ignore=['tmp.c']):
     """Cleans up a folder by removing all files in it.
 
     Arg:
-        directory: file_path of the directory to delete
+        directory: file path of the directory to delete
+        ignore: files to ignore
 
     Returns:
         Boolean value indicating success or failure
@@ -168,10 +169,11 @@ def clean_folder(directory):
         return False
 
     for file_path in os.listdir(directory):
-        if os.path.isfile(file_path):
-            os.unlink(file_path)
-        elif os.path.isdir(file_path):
-            shutil.rmtree(file_path)
+        if os.path.basename(file_path) not in ignore:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
 
     return True
 
