@@ -20,7 +20,7 @@ static UARTSettings s_settings = {
   .alt_fn = GPIO_ALTFN_1,
 };
 
-void gps_handler(NMEAResult result) {
+void gga_handler(GGASentence result) {
     return;
 }
 
@@ -46,7 +46,8 @@ int main(void) {
 
   gpio_init_pin(&pins[0], &settings_tx);
   gpio_init_pin(&pins[1], &settings_rx);
-  evm_gps_init(&s_settings, gps_handler);
+  evm_gps_init(&s_settings);
+  add_gga_handler(gga_handler);
 
   return 0;
 }
