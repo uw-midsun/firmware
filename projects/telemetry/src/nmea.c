@@ -4,7 +4,7 @@
 #include "log.h"
 NMEAResult parse_nmea_sentence(const uint8_t *rx_arr, size_t len) {
   LOG_DEBUG("NMEA Parser recieved data with len %zu\n", len);
-  NMEAResult r = {{0}};
+  NMEAResult r = {0};
 
   // m_id will keep track of which sentence type we are currently operating on
   NMEAMessageID m_id = 0;
@@ -51,6 +51,7 @@ NMEAResult parse_nmea_sentence(const uint8_t *rx_arr, size_t len) {
   }
 
   r.gga.message_id = m_id;
+  r.message_type = m_id;
 
   // Do checksum right here
   uint8_t checksum = 0;

@@ -53,9 +53,12 @@ typedef struct {
 // the code that is calling the parser
 // also doesn't know which sentence it is passing, because it is not parsing it yet.
 typedef struct {
-  GGASentence gga;
-  // GLLSentence gll; For instance, if the parse function was returning a gga sentence, then the
-  //  gll field would be null
+  union{
+    GGASentence gga;
+    // GLLSentence gll; For instance, if the parse function was returning a gga sentence, then the
+    // gll field would be null
+  };
+  NMEAMessageID message_type;
 }NMEAResult;
 
 // Main parsing function
