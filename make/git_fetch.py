@@ -12,8 +12,6 @@ import zipfile
 import shutil
 import socket
 
-from collections import namedtuple
-
 # Fetch the latest release from the official GitHub API
 URL = 'https://api.github.com/repos/{}/{}/releases/'
 
@@ -34,7 +32,7 @@ def connected():
         host = socket.gethostbyname(REMOTE_SERVER)
         _ = socket.create_connection((host, 80), 2)
         return True
-    except Exception:
+    except socket.error:
         pass
     return False
 
@@ -50,14 +48,16 @@ def fetch_release(url, tag, output_file):
     Returns:
         The return code object of the subprocess used to fetch the file.
     """
-    ret_code = subprocess.run(
+    popen = subprocess.Popen(
         [
             'curl -s {}{} | grep "{}" | cut -d : -f 2,3 |tr -d \\" | wget -qi -'.
             format(url, tag, output_file)
         ],
         shell=True,
+        stderr=subprocess.PIPE,
         stdout=subprocess.PIPE)
-    return ret_code
+    _, err = popen.communicate()
+    return err
 
 
 def check_hash(filename, hash_file):
@@ -65,24 +65,25 @@ def check_hash(filename, hash_file):
 
     Args:
         filename: string containing the name of the downloaded file
-        hash_file: string contrianing the name of the hash recording file
+        hash_file: string containing the name of the hash recording file
 
     Returns:
         A boolean value True if the hashes match of False if they don't
     """
-    ret_code = subprocess.run(
+    popen = subprocess.Popen(
         ['sha256sum {}'.format(filename)], shell=True, stdout=subprocess.PIPE)
+    stdout, _ = popen.communicate()
     if hash_file in os.listdir(os.getcwd()):
         with open(hash_file, 'r+') as hashfp:
-            if hashfp.readline() == ret_code.stdout.decode('utf-8'):
+            if hashfp.readline() == stdout.decode('utf-8'):
                 return True
             else:
                 hashfp.truncate(0)
-                hashfp.write(ret_code.stdout.decode('utf-8'))
+                hashfp.write(stdout.decode('utf-8'))
                 hashfp.flush()
     else:
         with open(hash_file, 'w+') as hashfp:
-            hashfp.write(ret_code.stdout.decode('utf-8'))
+            hashfp.write(stdout.decode('utf-8'))
             hashfp.flush()
     return False
 
@@ -206,7 +207,7 @@ def main():
         if not unpack(args.file):
             raise IOError('Failed to unpack file.')
         clean_up(args.file)
-    except Exception as err:
+    except Exception as err:  # pylint: disable=W0703
         print('Failed to fetch release {}{}: {}'.format(url, args.tag, err))
 
 
