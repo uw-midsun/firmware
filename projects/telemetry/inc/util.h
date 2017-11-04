@@ -1,3 +1,4 @@
 #include <stdint.h>
 
-uint8_t compute_checksum(char* message);
+// Computes the checksum for the given message.
+char* compute_checksum(char* message);
