@@ -48,6 +48,15 @@ before_script:
   # add Make to path
   - export PATH=/usr/local/bin/:$PATH
 
+  # clang
+  - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
+  - echo "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-5.0 main" | sudo tee -a /etc/apt/sources.list
+  - sudo apt-get -qq update
+  - sudo apt-get install -y clang-5.0 clang-format-5.0
+  - sudo update-alternatives --install /usr/local/bin/clang-format clang-format `which clang-format-5.0` 10
+  - sudo update-alternatives --install /usr/local/bin/clang clang `which clang-5.0` 10
+  - clang-format --version
+
   # Install pylint for python3
   - sudo apt-get -y install python3-pip
   - sudo pip3 install pylint
