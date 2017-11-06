@@ -9,8 +9,6 @@
 #include "soft_timer.h"
 #include "delay.h"
 
-#include <stdio.h>
-
 // Bouncing from the inputs can be mistaken as interrupts by the device. After each interrupt,
 // the GPIO expander will be delayed for a brief period to prevent this
 #define GPIO_EXPANDER_DELAY_MS  50
@@ -85,7 +83,7 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
 
   // Temporarily disable interrupts on the expander
   i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPINTEN, &gpinten, 1);
-  gpinten &= !(intf);
+  gpinten &= ~(intf);
   i2c_write_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPINTEN, &gpinten, 1);
 
   // Mask the interrupts of all offending pins. Then start a delay to check the value it holds
