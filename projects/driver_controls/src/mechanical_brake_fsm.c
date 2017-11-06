@@ -1,4 +1,5 @@
 #include "mechanical_brake_fsm.h"
+#include "can_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
@@ -54,24 +55,24 @@ static void prv_state_mechanical_brake_engaged(FSM *fsm, const Event *e, void *c
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_mechanical_brake_engaged;
 
-  InputEventData data;
+  // Output brake state and angle data
+  EventArbiterOutputData data = { .id = CAN_OUTPUT_MESSAGE_MECHANICAL_BRAKE,
+                                  .state = MECHANICAL_BRAKE_FSM_STATE_ENGAGED,
+                                  .data = e->data };
 
-  data.components.data = e->data;
-  data.components.state = MECHANICAL_BRAKE_FSM_STATE_ENGAGED;
-
-  event_raise(INPUT_EVENT_CAN_ID_MECHANICAL_BRAKE, data.raw);
+  event_arbiter_output(data);
 }
 
 static void prv_state_mechanical_brake_disengaged(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_mechanical_brake_disengaged;
 
-  InputEventData data;
+  // Output brake state and angle data
+  EventArbiterOutputData data = { .id = CAN_OUTPUT_MESSAGE_MECHANICAL_BRAKE,
+                                  .state = MECHANICAL_BRAKE_FSM_STATE_DISENGAGED,
+                                  .data = e->data };
 
-  data.components.data = e->data;
-  data.components.state = MECHANICAL_BRAKE_FSM_STATE_DISENGAGED;
-
-  event_raise(INPUT_EVENT_CAN_ID_MECHANICAL_BRAKE, data.raw);
+  event_arbiter_output(data);
 }
 
 StatusCode mechanical_brake_fsm_init(FSM *fsm) {

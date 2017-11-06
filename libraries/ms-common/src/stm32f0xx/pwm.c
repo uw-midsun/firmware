@@ -8,21 +8,21 @@
 #include "stm32f0xx_tim.h"
 
 static uint16_t s_period_ms[NUM_PWM_TIMERS] = {
-      [PWM_TIMER_1] = 0,   //
-      [PWM_TIMER_3] = 0,   //
-      [PWM_TIMER_14] = 0,  //
-      [PWM_TIMER_15] = 0,  //
-      [PWM_TIMER_16] = 0,  //
-      [PWM_TIMER_17] = 0,  //
+  [PWM_TIMER_1] = 0,   //
+  [PWM_TIMER_3] = 0,   //
+  [PWM_TIMER_14] = 0,  //
+  [PWM_TIMER_15] = 0,  //
+  [PWM_TIMER_16] = 0,  //
+  [PWM_TIMER_17] = 0,  //
 };
 
 static TIM_TypeDef *s_timer_def[NUM_PWM_TIMERS] = {
-      [PWM_TIMER_1] = TIM1,    //
-      [PWM_TIMER_3] = TIM3,    //
-      [PWM_TIMER_14] = TIM14,  //
-      [PWM_TIMER_15] = TIM15,  //
-      [PWM_TIMER_16] = TIM16,  //
-      [PWM_TIMER_17] = TIM17,  //
+  [PWM_TIMER_1] = TIM1,    //
+  [PWM_TIMER_3] = TIM3,    //
+  [PWM_TIMER_14] = TIM14,  //
+  [PWM_TIMER_15] = TIM15,  //
+  [PWM_TIMER_16] = TIM16,  //
+  [PWM_TIMER_17] = TIM17,  //
 };
 
 static void prv_enable_periph_clock(PWMTimer timer) {

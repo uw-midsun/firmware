@@ -1,4 +1,13 @@
+// The driver uses the mechanical brake to control the powered state of the car.
+
+// The car initializes in the off state:
+//    - Pressing the power button without holding down the brake will cause the car
+//      to transition from the off to the charging state, and vice versa
+//    - Pressing the power button while the mechanical brake is held down will cause the car
+//      to transition between the off and the on state.
+
 #include "power_fsm.h"
+#include "can_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
@@ -6,12 +15,31 @@
 // Power FSM state definitions
 
 FSM_DECLARE_STATE(state_off);
+FSM_DECLARE_STATE(state_off_brake);
+FSM_DECLARE_STATE(state_charging);
+FSM_DECLARE_STATE(state_charging_brake);
 FSM_DECLARE_STATE(state_on);
 
 // Power FSM transition table definitions
 
 FSM_STATE_TRANSITION(state_off) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_charging);
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_off_brake);
+}
+
+FSM_STATE_TRANSITION(state_off_brake) {
   FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_on);
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_off);
+}
+
+FSM_STATE_TRANSITION(state_charging) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_off);
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_charging_brake);
+}
+
+FSM_STATE_TRANSITION(state_charging_brake) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_on);
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_charging);
 }
 
 FSM_STATE_TRANSITION(state_on) {
@@ -26,8 +54,6 @@ static bool prv_check_off(const Event *e) {
     case INPUT_EVENT_POWER:
     case INPUT_EVENT_MECHANICAL_BRAKE_RELEASED:
     case INPUT_EVENT_MECHANICAL_BRAKE_PRESSED:
-    case INPUT_EVENT_CAN_ID_POWER:
-    case INPUT_EVENT_CAN_ID_MECHANICAL_BRAKE:
       return true;
     default:
       return false;
@@ -40,28 +66,43 @@ static void prv_state_off(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_off;
 
-  InputEventData data;
+  PowerFSMState power_state;
+  State *current_state = fsm->current_state;
 
-  data.components.data = e->data;
-  data.components.state = POWER_FSM_STATE_OFF;
+  // If a transition has happened between the FSMs main states, a CAN message will be sent out.
+  if (current_state == &state_off) {
+    power_state = POWER_FSM_STATE_OFF;
+  } else if (current_state == &state_charging) {
+    power_state = POWER_FSM_STATE_CHARGING;
+  } else if (current_state == &state_on) {
+    power_state = POWER_FSM_STATE_ON;
+  } else {
+    // state_off_brake and state_charging_brake are simply substates of state_off and
+    // state_charging respectively. No CAN message gets sent out
+    return;
+  }
 
-  event_raise(INPUT_EVENT_CAN_ID_POWER, data.raw);
+  EventArbiterOutputData data = { .id = CAN_OUTPUT_MESSAGE_POWER, .state = power_state, .data = 0 };
+
+  event_arbiter_output(data);
 }
 
 static void prv_state_on(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = NULL;
 
-  InputEventData data;
+  EventArbiterOutputData data = {
+    .id = CAN_OUTPUT_MESSAGE_POWER, .state = POWER_FSM_STATE_ON, .data = 0
+  };
 
-  data.components.data = e->data;
-  data.components.state = POWER_FSM_STATE_ON;
-
-  event_raise(INPUT_EVENT_CAN_ID_POWER, data.raw);
+  event_arbiter_output(data);
 }
 
 StatusCode power_fsm_init(FSM *fsm) {
   fsm_state_init(state_off, prv_state_off);
+  fsm_state_init(state_off_brake, prv_state_off);
+  fsm_state_init(state_charging, prv_state_off);
+  fsm_state_init(state_charging_brake, prv_state_off);
   fsm_state_init(state_on, prv_state_on);
 
   void *context = event_arbiter_add_fsm(fsm, prv_check_off);

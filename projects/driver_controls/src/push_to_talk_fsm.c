@@ -1,4 +1,5 @@
 #include "push_to_talk_fsm.h"
+#include "can_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
@@ -21,16 +22,17 @@ FSM_STATE_TRANSITION(state_inactive) {
 // Push-to-Talk output function
 
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  InputEventData data;
-  data.components.data = e->data;
+  PushToTalkFSMState push_to_talk_state = PUSH_TO_TALK_FSM_STATE_INACTIVE;
 
   if (fsm->current_state == &state_active) {
-    data.components.state = PUSH_TO_TALK_FSM_STATE_ACTIVE;
-  } else if (fsm->current_state == &state_inactive) {
-    data.components.state = PUSH_TO_TALK_FSM_STATE_INACTIVE;
+    push_to_talk_state = PUSH_TO_TALK_FSM_STATE_ACTIVE;
   }
 
-  event_raise(INPUT_EVENT_CAN_ID_PUSH_TO_TALK, data.raw);
+  EventArbiterOutputData data = {
+    .id = CAN_OUTPUT_MESSAGE_PUSH_TO_TALK, .state = push_to_talk_state, .data = 0
+  };
+
+  event_arbiter_output(data);
 }
 
 StatusCode push_to_talk_fsm_init(FSM *fsm) {

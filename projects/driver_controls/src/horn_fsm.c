@@ -1,4 +1,5 @@
 #include "horn_fsm.h"
+#include "can_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
@@ -20,16 +21,15 @@ FSM_STATE_TRANSITION(state_horn_on) {
 
 // Horn FSM output function
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  InputEventData data;
-  data.components.data = e->data;
+  HornFSMState horn_state = HORN_FSM_STATE_OFF;
 
   if (fsm->current_state == &state_horn_on) {
-    data.components.state = HORN_FSM_STATE_ON;
-  } else if (fsm->current_state == &state_horn_off) {
-    data.components.state = HORN_FSM_STATE_OFF;
+    horn_state = HORN_FSM_STATE_ON;
   }
 
-  event_raise(INPUT_EVENT_CAN_ID_HORN, data.raw);
+  EventArbiterOutputData data = { .id = CAN_OUTPUT_MESSAGE_HORN, .state = horn_state, .data = 0 };
+
+  event_arbiter_output(data);
 }
 
 StatusCode horn_fsm_init(FSM *fsm) {

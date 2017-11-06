@@ -1,6 +1,6 @@
 #pragma once
 
-// Define common typedefs for the various FSMs to use.
+// Common typedefs a functions for the various FSMs to use.
 
 #include "event_queue.h"
 
@@ -24,23 +24,5 @@ typedef enum {
   INPUT_EVENT_MECHANICAL_BRAKE_RELEASED,
   INPUT_EVENT_HORN,
   INPUT_EVENT_PUSH_TO_TALK,
-  INPUT_EVENT_CAN_ID_POWER,  // Event IDs for CAN output events
-  INPUT_EVENT_CAN_ID_PEDAL,
-  INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR,
-  INPUT_EVENT_CAN_ID_TURN_SIGNAL,
-  INPUT_EVENT_CAN_ID_HAZARD_LIGHT,
-  INPUT_EVENT_CAN_ID_MECHANICAL_BRAKE,
-  INPUT_EVENT_CAN_ID_HORN,
-  INPUT_EVENT_CAN_ID_PUSH_TO_TALK,
-  NUM_INPUT_EVENT
+  NUM_INPUT_EVENTS
 } InputEvent;
-
-// 4 bits of the data field are used for holding the device state, while the last
-// 12 bits are used for holding the event data.
-typedef union InputEventData {
-  uint16_t raw;
-  struct {
-    uint16_t data : 12;
-    uint16_t state : 4;
-  } components;
-} InputEventData;

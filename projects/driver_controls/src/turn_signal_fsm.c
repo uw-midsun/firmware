@@ -1,4 +1,5 @@
 #include "turn_signal_fsm.h"
+#include "can_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
@@ -31,22 +32,21 @@ FSM_STATE_TRANSITION(state_right_signal) {
 // Turn signal FSM output function
 
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  InputEventData data = { 0 };
-
-  // woah this was very wrong
-  data.components.data = e->data;
+  TurnSignalFSMState turn_signal_state = TURN_SIGNAL_FSM_STATE_NO_SIGNAL;
 
   State *current_state = fsm->current_state;
 
-  if (current_state == &state_no_signal) {
-    data.components.state = TURN_SIGNAL_FSM_STATE_NO_SIGNAL;
-  } else if (current_state == &state_left_signal) {
-    data.components.state = TURN_SIGNAL_FSM_STATE_LEFT_SIGNAL;
+  if (current_state == &state_left_signal) {
+    turn_signal_state = TURN_SIGNAL_FSM_STATE_LEFT_SIGNAL;
   } else if (current_state == &state_right_signal) {
-    data.components.state = TURN_SIGNAL_FSM_STATE_RIGHT_SIGNAL;
+    turn_signal_state = TURN_SIGNAL_FSM_STATE_RIGHT_SIGNAL;
   }
 
-  event_raise(INPUT_EVENT_CAN_ID_TURN_SIGNAL, data.raw);
+  EventArbiterOutputData data = {
+    .id = CAN_OUTPUT_MESSAGE_TURN_SIGNAL, .state = turn_signal_state, .data = 0
+  };
+
+  event_arbiter_output(data);
 }
 
 StatusCode turn_signal_fsm_init(FSM *fsm) {

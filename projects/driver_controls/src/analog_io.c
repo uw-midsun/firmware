@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdio.h>
 
 #include "adc.h"
 #include "analog_io.h"
@@ -28,30 +29,31 @@ typedef enum {
 static AnalogIODevice s_analog_devices[ANALOG_IO_DEVICES];
 
 static void prv_input_callback(ADCChannel adc_channel, void *context) {
-  Event e = { 0 };
+  InputEvent event_id = NUM_INPUT_EVENTS;
+  uint16_t analog_data = 0;
 
-  adc_read_raw(adc_channel, &e.data);
+  adc_read_raw(adc_channel, &analog_data);
 
   switch (s_analog_devices[adc_channel]) {
     case ANALOG_IO_DEVICE_GAS_PEDAL:
-      if (e.data < ANALOG_IO_COAST_THRESHOLD) {
-        e.id = INPUT_EVENT_PEDAL_BRAKE;
-      } else if (e.data > ANALOG_IO_DRIVE_THRESHOLD) {
-        e.id = INPUT_EVENT_PEDAL_PRESSED;
+      if (analog_data < ANALOG_IO_COAST_THRESHOLD) {
+        event_id = INPUT_EVENT_PEDAL_BRAKE;
+      } else if (analog_data > ANALOG_IO_DRIVE_THRESHOLD) {
+        event_id = INPUT_EVENT_PEDAL_PRESSED;
       } else {
-        e.id = INPUT_EVENT_PEDAL_COAST;
+        event_id = INPUT_EVENT_PEDAL_COAST;
       }
       break;
     case ANALOG_IO_DEVICE_MECHANICAL_BRAKE:
-      e.id = (e.data > ANALOG_IO_BRAKE_THRESHOLD) ? INPUT_EVENT_MECHANICAL_BRAKE_PRESSED
-                                                  : INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
+      event_id = (analog_data > ANALOG_IO_BRAKE_THRESHOLD) ? INPUT_EVENT_MECHANICAL_BRAKE_PRESSED
+                                                           : INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
       break;
 
     default:
       break;
   }
 
-  event_raise(e.id, e.data);
+  event_raise(event_id, analog_data);
 }
 
 void analog_io_init() {
@@ -63,13 +65,8 @@ void analog_io_init() {
   ADCChannel adc_channel = NUM_ADC_CHANNELS;
 
   InputConfig analog_inputs[] = {
-    {.address = DRIVER_IO_GAS_PEDAL, .device = ANALOG_IO_DEVICE_GAS_PEDAL },
-    {.address = DRIVER_IO_MECHANICAL_BRAKE, .device = ANALOG_IO_DEVICE_MECHANICAL_BRAKE }
-  };
-
-  GPIOSettings settings = {
-    .direction = GPIO_DIR_IN,  //
-    .state = GPIO_STATE_LOW,   //
+    { .address = DRIVER_IO_GAS_PEDAL, .device = ANALOG_IO_DEVICE_GAS_PEDAL },
+    { .address = DRIVER_IO_MECHANICAL_BRAKE, .device = ANALOG_IO_DEVICE_MECHANICAL_BRAKE }
   };
 
   for (uint8_t i = 0; i < SIZEOF_ARRAY(analog_inputs); i++) {

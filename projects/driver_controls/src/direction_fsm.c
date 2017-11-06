@@ -1,4 +1,5 @@
 #include "direction_fsm.h"
+#include "can_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
@@ -57,36 +58,33 @@ static void prv_state_neutral(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_neutral;
 
-  InputEventData data;
+  EventArbiterOutputData data = { .id = CAN_OUTPUT_MESSAGE_DIRECTION_SELECTOR,
+                                  .state = DIRECTION_FSM_STATE_NEUTRAL,
+                                  .data = e->data };
 
-  data.components.data = e->data;
-  data.components.state = DIRECTION_FSM_STATE_NEUTRAL;
-
-  event_raise(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, data.raw);
+  event_arbiter_output(data);
 }
 
 static void prv_state_forward(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_forward;
 
-  InputEventData data;
+  EventArbiterOutputData data = { .id = CAN_OUTPUT_MESSAGE_DIRECTION_SELECTOR,
+                                  .state = DIRECTION_FSM_STATE_FORWARD,
+                                  .data = e->data };
 
-  data.components.data = e->data;
-  data.components.state = DIRECTION_FSM_STATE_FORWARD;
-
-  event_raise(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, data.raw);
+  event_arbiter_output(data);
 }
 
 static void prv_state_reverse(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_reverse;
 
-  InputEventData data;
+  EventArbiterOutputData data = { .id = CAN_OUTPUT_MESSAGE_DIRECTION_SELECTOR,
+                                  .state = DIRECTION_FSM_STATE_REVERSE,
+                                  .data = e->data };
 
-  data.components.data = e->data;
-  data.components.state = DIRECTION_FSM_STATE_REVERSE;
-
-  event_raise(INPUT_EVENT_CAN_ID_DIRECTION_SELECTOR, data.raw);
+  event_arbiter_output(data);
 }
 
 StatusCode direction_fsm_init(FSM *fsm) {
