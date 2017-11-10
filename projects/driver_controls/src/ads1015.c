@@ -1,5 +1,4 @@
-#include "ads1015.h"
-
+#include <ads1015.h>
 #include <stdbool.h>
 #include <stdio.h>
 
