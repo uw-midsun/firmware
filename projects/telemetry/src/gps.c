@@ -14,6 +14,8 @@
 static const UARTPort port = UART_PORT_2;
 static GPSHandler gps_handler[GPS_HANDLER_ARRAY_LENGTH] = { 0 };
 static GGAHandler gga_handler[GPS_HANDLER_ARRAY_LENGTH] = { 0 };
+static uint32_t init = 0;
+static UARTStorage s_storage = { 0 };
 
 static void s_nmea_read(const uint8_t *rx_arr, size_t len, void *context) {
   if (init == 0) return;
@@ -29,8 +31,6 @@ static void s_nmea_read(const uint8_t *rx_arr, size_t len, void *context) {
     }
   }
 }
-
-static uint32_t init = 0;
 
 int32_t add_gps_handler(GPSHandler handler) {
   for (uint32_t i = 0; i < GPS_HANDLER_ARRAY_LENGTH; i++) {
@@ -66,11 +66,10 @@ void remove_gga_handler(uint32_t index) {
   gga_handler[index] = NULL;
 }
 
-static UARTStorage s_storage = { 0 };
-
 StatusCode evm_gps_init(UARTSettings *uart_settings) {
-  memset(&gps_handler, 0, sizeof(gps_handler));
-  memset(&gga_handler, 0, sizeof(gga_handler));
+  memset(&gps_handler, 0, SIZEOF_ARRAY(gps_handler));
+  memset(&gga_handler, 0, SIZEOF_ARRAY(gga_handler));
+  memset(&s_storage, 0, sizeof(s_storage));
 
   uart_settings->rx_handler = s_nmea_read;
   // Makes sure that status codes are handled
