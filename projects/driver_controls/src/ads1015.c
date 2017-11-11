@@ -98,8 +98,6 @@ StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress ready_pin) {
   reg.data[1] = ADS1015_CONFIG_COMP_QUE_ONE(reg.data[1]);
   reg.data[1] = ADS1015_CONFIG_DR_1600_SPS(reg.data[1]);
 
-  //printf("ADS1015_CONFIG_REGISTER = 0x%x%x\n", reg.data[0], reg.data[1]);
-
   status_ok_or_return(prv_write(s_i2c_port, ADS1015_CONFIG_REGISTER, reg.data, 3));
 
   // Conversion ready must be initialized by setting the MSB of the HI_THRESH and LO_THRESH to 1
@@ -119,7 +117,8 @@ StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress ready_pin) {
   return STATUS_CODE_OK;
 }
 
-StatusCode ads1015_register_callback(ADS1015Channel channel, ADS1015Callback callback, void *context) {
+StatusCode ads1015_register_callback(ADS1015Channel channel, ADS1015Callback callback,
+                                     void *context) {
   status_ok_or_return(prv_channel_valid(channel));
 
   s_interrupts[channel].callback = callback;

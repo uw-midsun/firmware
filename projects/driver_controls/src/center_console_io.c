@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#include "debounce.h"
 #include "center_console_io.h"
 #include "driver_io.h"
 #include "gpio_it.h"
@@ -36,6 +37,7 @@ static void prv_center_console_callback(const GPIOAddress *address, void *contex
 
   GPIOState state = { 0 };
   gpio_get_state(address, &state);
+  debounce(*address);
 
   // Check the devices with multiple pins to ensure the correct event
   uint16_t event_id = data->event;
