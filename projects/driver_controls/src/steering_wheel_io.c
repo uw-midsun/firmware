@@ -35,10 +35,8 @@ static void prv_steering_wheel_callback(GPIOExpanderPin pin, GPIOState state, vo
 
   // Since the GPIO Expander causes an interrupt on both rising and falling edge, interrupts on
   // the incorrect edge must be ignored
-  bool rising_edge_fail = (data->edge == INTERRUPT_EDGE_RISING) && (state != GPIO_STATE_HIGH);
-  bool falling_edge_fail = (data->edge == INTERRUPT_EDGE_FALLING) && (state != GPIO_STATE_LOW);
-
-  if (rising_edge_fail || falling_edge_fail) {
+  if ( ((data->edge == INTERRUPT_EDGE_RISING) && (state != GPIO_STATE_HIGH)) ||
+       ((data->edge == INTERRUPT_EDGE_FALLING) && (state != GPIO_STATE_LOW))) {
     return;
   }
 
@@ -50,52 +48,51 @@ static void prv_steering_wheel_callback(GPIOExpanderPin pin, GPIOState state, vo
   }
 
   event_raise(event_id, 0);
-  printf("Pin %d\n", pin);
   return;
 }
 
 // Configure gpio_expander pins
 void steering_wheel_io_init(void) {
   // Define array to store configuration settings for each pin
-  s_steering_input_data[DRIVER_IO_RIGHT_TURN_SIGNAL_PIN] = (SteeringWheelIOData){
+  s_steering_input_data[DRIVER_IO_RIGHT_TURN_SIGNAL_PIN] = (SteeringWheelIOData) {
         .id = STEERING_WHEEL_IO_TURN_SIGNAL,
         .event = INPUT_EVENT_TURN_SIGNAL_RIGHT,
         .edge = INTERRUPT_EDGE_RISING_FALLING
       };
-  s_steering_input_data[DRIVER_IO_LEFT_TURN_SIGNAL_PIN] = (SteeringWheelIOData){
+  s_steering_input_data[DRIVER_IO_LEFT_TURN_SIGNAL_PIN] = (SteeringWheelIOData) {
         .id = STEERING_WHEEL_IO_TURN_SIGNAL,
         .event = INPUT_EVENT_TURN_SIGNAL_LEFT,
         .edge = INTERRUPT_EDGE_RISING_FALLING
       };
-  s_steering_input_data[DRIVER_IO_CRUISE_CONTROL_PIN] = (SteeringWheelIOData){
+  s_steering_input_data[DRIVER_IO_CRUISE_CONTROL_PIN] = (SteeringWheelIOData) {
         .id = STEERING_WHEEL_IO_CRUISE_CONTROL,
         .event = INPUT_EVENT_CRUISE_CONTROL,
         .edge = INTERRUPT_EDGE_RISING
       };
-  s_steering_input_data[DRIVER_IO_CRUISE_CONTROL_INC_PIN] = (SteeringWheelIOData){
+  s_steering_input_data[DRIVER_IO_CRUISE_CONTROL_INC_PIN] = (SteeringWheelIOData) {
         .id = STEERING_WHEEL_IO_CRUISE_CONTROL_INC,
         .event = INPUT_EVENT_CRUISE_CONTROL_INC,
         .edge = INTERRUPT_EDGE_RISING
       };
-  s_steering_input_data[DRIVER_IO_CRUISE_CONTROL_DEC_PIN] = (SteeringWheelIOData){
+  s_steering_input_data[DRIVER_IO_CRUISE_CONTROL_DEC_PIN] = (SteeringWheelIOData) {
         .id = STEERING_WHEEL_IO_CRUISE_CONTROL_DEC,
         .event = INPUT_EVENT_CRUISE_CONTROL_DEC,
         .edge = INTERRUPT_EDGE_RISING
       };
-  s_steering_input_data[DRIVER_IO_PUSH_TO_TALK_PIN] = (SteeringWheelIOData){
+  s_steering_input_data[DRIVER_IO_PUSH_TO_TALK_PIN] = (SteeringWheelIOData) {
         .id = STEERING_WHEEL_IO_PUSH_TO_TALK,
         .event = INPUT_EVENT_PUSH_TO_TALK,
         .edge = INTERRUPT_EDGE_RISING_FALLING
       };
 
-  s_steering_input_data[DRIVER_IO_HORN_PIN] = (SteeringWheelIOData){
+  s_steering_input_data[DRIVER_IO_HORN_PIN] = (SteeringWheelIOData) {
         .id = STEERING_WHEEL_IO_HORN,
         .event = INPUT_EVENT_HORN,
         .edge = INTERRUPT_EDGE_RISING_FALLING
       };
 
-  GPIOSettings gpio_settings = {.direction = GPIO_DIR_IN, .state = GPIO_STATE_LOW };
-  InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_LOW };
+  const GPIOSettings gpio_settings = {.direction = GPIO_DIR_IN, .state = GPIO_STATE_LOW };
+  const InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_LOW };
 
   // Initialize Steering Wheel inputs
   for (uint8_t i = 0; i < NUM_GPIO_EXPANDER_PINS; i++) {

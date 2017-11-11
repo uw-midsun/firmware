@@ -54,7 +54,7 @@ int main() {
   gpio_it_init();
   soft_timer_init();
 
-  I2CSettings i2c_settings = {
+  const I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,
     .sda = { GPIO_PORT_B, 9 },
     .scl = { GPIO_PORT_B, 8 }

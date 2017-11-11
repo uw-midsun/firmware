@@ -49,7 +49,7 @@ static void prv_set_bit(uint8_t reg, GPIOExpanderPin pin, bool bit) {
 
 static void prv_debounce_delay(SoftTimerID timer_id, void *context) {
   GPIOExpanderInterrupt *interrupt = (GPIOExpanderInterrupt*)context;
-  GPIOState state;
+  GPIOState state = GPIO_STATE_LOW;
 
   gpio_expander_get_state(interrupt->pin, &state);
 
