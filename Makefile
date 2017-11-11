@@ -141,7 +141,7 @@ lint:
 format:
 	@echo "Formatting *.[ch] in $(PROJ_DIR), $(LIB_DIR)"
 	@echo "Excluding libraries: $(IGNORE_CLEANUP_LIBS)"
-	@$(FIND) | xargs -r clang-format -i
+	@$(FIND) | xargs -r clang-format -i -style=file
 
 # Tests that all files have been run through the format target mainly for CI usage
 test_format: format 

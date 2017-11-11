@@ -12,7 +12,7 @@ static const GPIOAddress pins[] = {
   { .port = GPIO_PORT_A, .pin = 3 },  //
 };
 
-static UARTSettings s_settings = {
+static const UARTSettings s_settings = {
   .baudrate = 9600,
 
   .tx = { .port = GPIO_PORT_A, .pin = 2 },
@@ -30,7 +30,7 @@ int main(void) {
   soft_timer_init();
   gpio_init();
 
-  GPIOSettings settings_tx = {
+  const GPIOSettings settings_tx = {
     .direction = GPIO_DIR_OUT,     // The pin needs to output.
     .state = GPIO_STATE_HIGH,      // Start in the "on" state.
     .alt_function = GPIO_ALTFN_1,  // No connections to peripherals.
@@ -38,7 +38,7 @@ int main(void) {
                                    // logic levels.
   };
 
-  GPIOSettings settings_rx = {
+  const GPIOSettings settings_rx = {
     .direction = GPIO_DIR_IN,      // The pin needs to input.
     .state = GPIO_STATE_HIGH,      // Start in the "on" state.
     .alt_function = GPIO_ALTFN_1,  // No connections to peripherals.
