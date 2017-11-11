@@ -9,7 +9,7 @@
 #include "uart_mcu.h"
 
 // How many handlers can we possibly need?
-#define GPS_HANDLER_ARRAY_LENGTH 100
+#define GPS_HANDLER_ARRAY_LENGTH 5
 
 static const UARTPort port = UART_PORT_2;
 static GPSHandler gps_handler[GPS_HANDLER_ARRAY_LENGTH] = { 0 };
