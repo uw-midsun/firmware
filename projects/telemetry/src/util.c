@@ -3,7 +3,7 @@
 
 static char s_hex[] = "0123456789ABCDEF";
 
-char* int_to_hex(uint8_t checksum) {
+static char* prv_int_to_hex(uint8_t checksum) {
   // we know that it'll be a 2 digit hex number since the checksum is 8-bit
   static char return_value[3] = { 0 };
   return_value[0] = s_hex[checksum / 16];
@@ -18,5 +18,5 @@ char* compute_checksum(char* message) {
   for (uint8_t i = 1; message[i] != '*' && i < message_len; i++) {
     sum ^= message[i];
   }
-  return int_to_hex(sum);
+  return prv_int_to_hex(sum);
 }
