@@ -56,29 +56,29 @@ static void prv_steering_wheel_callback(GPIOExpanderPin pin, GPIOState state, vo
 void steering_wheel_io_init(void) {
   // Define array to store configuration settings for each pin
   s_steering_input_data[DRIVER_IO_RIGHT_TURN_SIGNAL_PIN] =
-      (SteeringWheelIOData){ .id = STEERING_WHEEL_IO_TURN_SIGNAL,
-                             .event = INPUT_EVENT_TURN_SIGNAL_RIGHT,
-                             .edge = INTERRUPT_EDGE_RISING_FALLING };
+      ((SteeringWheelIOData){ .id = STEERING_WHEEL_IO_TURN_SIGNAL,
+                              .event = INPUT_EVENT_TURN_SIGNAL_RIGHT,
+                              .edge = INTERRUPT_EDGE_RISING_FALLING });
   s_steering_input_data[DRIVER_IO_LEFT_TURN_SIGNAL_PIN] =
-      (SteeringWheelIOData){ .id = STEERING_WHEEL_IO_TURN_SIGNAL,
-                             .event = INPUT_EVENT_TURN_SIGNAL_LEFT,
-                             .edge = INTERRUPT_EDGE_RISING_FALLING };
+      ((SteeringWheelIOData){ .id = STEERING_WHEEL_IO_TURN_SIGNAL,
+                              .event = INPUT_EVENT_TURN_SIGNAL_LEFT,
+                              .edge = INTERRUPT_EDGE_RISING_FALLING });
   s_steering_input_data[DRIVER_IO_CRUISE_CONTROL_PIN] =
-      (SteeringWheelIOData){ .id = STEERING_WHEEL_IO_CRUISE_CONTROL,
-                             .event = INPUT_EVENT_CRUISE_CONTROL,
-                             .edge = INTERRUPT_EDGE_RISING };
+      ((SteeringWheelIOData){ .id = STEERING_WHEEL_IO_CRUISE_CONTROL,
+                              .event = INPUT_EVENT_CRUISE_CONTROL,
+                              .edge = INTERRUPT_EDGE_RISING });
   s_steering_input_data[DRIVER_IO_CRUISE_CONTROL_INC_PIN] =
-      (SteeringWheelIOData){ .id = STEERING_WHEEL_IO_CRUISE_CONTROL_INC,
-                             .event = INPUT_EVENT_CRUISE_CONTROL_INC,
-                             .edge = INTERRUPT_EDGE_RISING };
+      ((SteeringWheelIOData){ .id = STEERING_WHEEL_IO_CRUISE_CONTROL_INC,
+                              .event = INPUT_EVENT_CRUISE_CONTROL_INC,
+                              .edge = INTERRUPT_EDGE_RISING });
   s_steering_input_data[DRIVER_IO_CRUISE_CONTROL_DEC_PIN] =
-      (SteeringWheelIOData){ .id = STEERING_WHEEL_IO_CRUISE_CONTROL_DEC,
-                             .event = INPUT_EVENT_CRUISE_CONTROL_DEC,
-                             .edge = INTERRUPT_EDGE_RISING };
+      ((SteeringWheelIOData){ .id = STEERING_WHEEL_IO_CRUISE_CONTROL_DEC,
+                              .event = INPUT_EVENT_CRUISE_CONTROL_DEC,
+                              .edge = INTERRUPT_EDGE_RISING });
   s_steering_input_data[DRIVER_IO_PUSH_TO_TALK_PIN] =
-      (SteeringWheelIOData){ .id = STEERING_WHEEL_IO_PUSH_TO_TALK,
-                             .event = INPUT_EVENT_PUSH_TO_TALK,
-                             .edge = INTERRUPT_EDGE_RISING_FALLING };
+      ((SteeringWheelIOData){ .id = STEERING_WHEEL_IO_PUSH_TO_TALK,
+                              .event = INPUT_EVENT_PUSH_TO_TALK,
+                              .edge = INTERRUPT_EDGE_RISING_FALLING });
 
   s_steering_input_data[DRIVER_IO_HORN_PIN] = (SteeringWheelIOData){
     .id = STEERING_WHEEL_IO_HORN, .event = INPUT_EVENT_HORN, .edge = INTERRUPT_EDGE_RISING_FALLING
