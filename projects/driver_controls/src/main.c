@@ -12,9 +12,9 @@
 #include "gpio_expander.h"
 
 // Board initializations
-#include "driver_io.h"
 #include "analog_io.h"
 #include "center_console_io.h"
+#include "driver_io.h"
 #include "steering_wheel_io.h"
 
 // Finite State Machines
@@ -28,8 +28,8 @@
 #include "turn_signal_fsm.h"
 
 // Other headers
-#include "event_arbiter.h"
 #include "can_output.h"
+#include "event_arbiter.h"
 #include "input_event.h"
 
 // Struct of FSMs to be used in the program
@@ -55,9 +55,7 @@ int main() {
   soft_timer_init();
 
   const I2CSettings i2c_settings = {
-    .speed = I2C_SPEED_FAST,
-    .sda = { GPIO_PORT_B, 9 },
-    .scl = { GPIO_PORT_B, 8 }
+    .speed = I2C_SPEED_FAST, .sda = { GPIO_PORT_B, 9 }, .scl = { GPIO_PORT_B, 8 }
   };
 
   i2c_init(DRIVER_IO_GPIO_EXPANDER_I2C_PORT, &i2c_settings);

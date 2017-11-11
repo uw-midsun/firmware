@@ -2,12 +2,14 @@
 #include "delay.h"
 #include "tlv493d.h"
 
-// Registers need to be read out and stored so that configuration registers aren't
+// Registers need to be read out and stored so that configuration registers
+// aren't
 // accidentally overwritten on write
 static uint8_t s_read_reg[NUM_TLV493D_READ_REGISTERS];
 static uint8_t s_write_reg[NUM_TLV493D_WRITE_REGISTERS];
 
-// Returns reading in microteslas. Conversion method described in chapter 3.1 of the datasheet
+// Returns reading in microteslas. Conversion method described in chapter 3.1 of
+// the datasheet
 static int16_t prv_flux_conversion(uint8_t msb, uint8_t lsb) {
   int16_t data = (msb << 4) | (lsb & 0xF);
 

@@ -2,16 +2,17 @@
 
 #include <stdbool.h>
 
+#include "delay.h"
 #include "driver_io.h"
 #include "gpio_it.h"
 #include "i2c.h"
 #include "mcp23008.h"
 #include "soft_timer.h"
-#include "delay.h"
 
-// Bouncing from the inputs can be mistaken as interrupts by the device. After each interrupt,
+// Bouncing from the inputs can be mistaken as interrupts by the device. After
+// each interrupt,
 // the GPIO expander will be delayed for a brief period to prevent this
-#define GPIO_EXPANDER_DELAY_MS  50
+#define GPIO_EXPANDER_DELAY_MS 50
 
 typedef struct GPIOExpanderInterrupt {
   GPIOExpanderCallback callback;
@@ -48,12 +49,13 @@ static void prv_set_bit(uint8_t reg, GPIOExpanderPin pin, bool bit) {
 }
 
 static void prv_debounce_delay(SoftTimerID timer_id, void *context) {
-  GPIOExpanderInterrupt *interrupt = (GPIOExpanderInterrupt*)context;
+  GPIOExpanderInterrupt *interrupt = (GPIOExpanderInterrupt *)context;
   GPIOState state = GPIO_STATE_LOW;
 
   gpio_expander_get_state(interrupt->pin, &state);
 
-  // If the value after delaying is not equal to the original value, then disregard the input
+  // If the value after delaying is not equal to the original value, then
+  // disregard the input
   if (state != interrupt->state) {
     prv_set_bit(MCP23008_GPINTEN, interrupt->pin, 1);
     return;
@@ -75,7 +77,8 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
   uint8_t intcap = 0;
   uint8_t gpinten = 0;
 
-  // Read the interrupt flag register to determine the pins with a pending interrupt
+  // Read the interrupt flag register to determine the pins with a pending
+  // interrupt
   i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_INTF, &intf, 1);
 
   // Obtain the port values captured at the time of the interrupts
@@ -86,14 +89,15 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
   gpinten &= ~(intf);
   i2c_write_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPINTEN, &gpinten, 1);
 
-  // Mask the interrupts of all offending pins. Then start a delay to check the value it holds
+  // Mask the interrupts of all offending pins. Then start a delay to check the
+  // value it holds
   GPIOExpanderPin current_pin;
   while (intf != 0) {
     current_pin = __builtin_ffs(intf) - 1;
 
     s_interrupts[current_pin].state = (intcap >> current_pin) & 1;
-    soft_timer_start_millis(GPIO_EXPANDER_DELAY_MS, prv_debounce_delay,
-                            &s_interrupts[current_pin], &s_interrupts[current_pin].timer);
+    soft_timer_start_millis(GPIO_EXPANDER_DELAY_MS, prv_debounce_delay, &s_interrupts[current_pin],
+                            &s_interrupts[current_pin].timer);
 
     intf &= ~(1 << current_pin);
   }

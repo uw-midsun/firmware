@@ -2,8 +2,10 @@
 // CAN HW Interface
 // Requires GPIO and interrupts to be initialized.
 //
-// Used to initiate CAN TX and RX directly through the MCU, without any preprocessing or queues.
-// Note that none of our systems currently support more than one CAN interface natively.
+// Used to initiate CAN TX and RX directly through the MCU, without any
+// preprocessing or queues.
+// Note that none of our systems currently support more than one CAN interface
+// natively.
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>

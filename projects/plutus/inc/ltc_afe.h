@@ -54,12 +54,14 @@ typedef struct LtcAfeSettings {
 StatusCode ltc_afe_init(const LtcAfeSettings *afe);
 
 // read all voltages
-// result is an array of size LTC6804_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
+// result is an array of size LTC6804_CELLS_PER_DEVICE *
+// LTC_AFE_DEVICES_IN_CHAIN
 // len should be SIZEOF_ARRAY(result)
 StatusCode ltc_afe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result, size_t len);
 
 // read all auxiliary registers
-// result should be an array of size LTC6804_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
+// result should be an array of size LTC6804_CELLS_PER_DEVICE *
+// LTC_AFE_DEVICES_IN_CHAIN
 // len should be SIZEOF_ARRAY(result)
 StatusCode ltc_afe_read_all_aux(const LtcAfeSettings *afe, uint16_t *result, size_t len);
 

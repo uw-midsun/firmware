@@ -1,7 +1,8 @@
 #pragma once
 // Global event queue
 //
-// Uses a minimum priority queue to prioritize events of lower ID. Only one global instance exists.
+// Uses a minimum priority queue to prioritize events of lower ID. Only one
+// global instance exists.
 #include <stdint.h>
 
 #include "objpool.h"

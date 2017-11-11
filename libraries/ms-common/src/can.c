@@ -1,13 +1,19 @@
 // Basically, this module glues all the components of CAN together.
 //
 // It hooks into the CAN HW callbacks:
-// - TX ready: Used to re-raise potentially discarded TX events. We assume that if there are
-//             elements in the TX FIFO, we have a backlog that has resulted in discarded events.
-// - Message RX: When the message RX callback runs, we just push the message into a queue and
+// - TX ready: Used to re-raise potentially discarded TX events. We assume that
+// if there are
+//             elements in the TX FIFO, we have a backlog that has resulted in
+//             discarded events.
+// - Message RX: When the message RX callback runs, we just push the message
+// into a queue and
 //               raise an event. When that event is processed in the main loop
-//               (can_fsm_process_event), we find the associated callback and run it.
-//               In the case of an ACK, we update the associated pending ACK request.
-// - Bus error: In case of a bus error, we set a timer and wait to see if the bus has recovered
+//               (can_fsm_process_event), we find the associated callback and
+//               run it.
+//               In the case of an ACK, we update the associated pending ACK
+//               request.
+// - Bus error: In case of a bus error, we set a timer and wait to see if the
+// bus has recovered
 //              after the timeout. If it's still down, we raise an event.
 #include "can.h"
 #include <string.h>
@@ -18,7 +24,8 @@
 
 #define CAN_BUS_OFF_RECOVERY_TIME_MS 500
 
-// Attempts to transmit the specified message using the HW TX, overwriting the source device.
+// Attempts to transmit the specified message using the HW TX, overwriting the
+// source device.
 StatusCode prv_transmit(const CANMessage *msg);
 
 // Handler for CAN HW TX ready events
@@ -26,7 +33,8 @@ StatusCode prv_transmit(const CANMessage *msg);
 void prv_tx_handler(void *context);
 
 // Handler for CAN HW messaged RX events
-// Dumps received messages to the RX queue and raises an event for the messages to be processed.
+// Dumps received messages to the RX queue and raises an event for the messages
+// to be processed.
 void prv_rx_handler(void *context);
 
 // Bus error timer callback
@@ -120,8 +128,10 @@ StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request)
     status_ok_or_return(ret);
   }
 
-  // Basically, the idea is that all the TX and RX should be happening in the main event loop.
-  // We raise an event just to ensure that the CAN TX is postponed until the main event loop.
+  // Basically, the idea is that all the TX and RX should be happening in the
+  // main event loop.
+  // We raise an event just to ensure that the CAN TX is postponed until the
+  // main event loop.
   event_raise(s_can_storage->tx_event, 1);
 
   return can_fifo_push(&s_can_storage->tx_fifo, msg);
@@ -139,7 +149,8 @@ void prv_tx_handler(void *context) {
   CANStorage *can_storage = context;
   CANMessage tx_msg;
 
-  // If we failed to TX some messages or aren't transmitting fast enough, those events
+  // If we failed to TX some messages or aren't transmitting fast enough, those
+  // events
   // were discarded. Raise a TX event to trigger a transmit attempt.
   // We only raise one event since TX ready interrupts are 1-to-1.
   if (can_fifo_size(&can_storage->tx_fifo) > 0) {
