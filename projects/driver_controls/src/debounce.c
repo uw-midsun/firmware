@@ -42,7 +42,8 @@ GPIOState debounce(GPIOAddress address) {
 
   soft_timer_start(CHECK_INTERVAL_MSEC, prv_debounce, &address, &timer_id);
 
-  while (!s_debounced) {  }
+  while (!s_debounced) {
+  }
 
   return s_debounced_state;
 }

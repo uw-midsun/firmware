@@ -8,7 +8,9 @@
 #include "i2c.h"
 
 // Union definition to help process registers data
-typedef struct ADS1015Register { uint8_t data[2]; } ADS1015Register;
+typedef struct ADS1015Register {
+  uint8_t data[2];
+} ADS1015Register;
 
 // Since the ADS1015 stores data in two's complement, an int16_t will be used to hold
 // the raw readings

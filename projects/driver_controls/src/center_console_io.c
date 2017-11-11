@@ -1,12 +1,12 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include "debounce.h"
 #include "center_console_io.h"
+#include "debounce.h"
 #include "driver_io.h"
+#include "gpio_expander.h"
 #include "gpio_it.h"
 #include "input_event.h"
-#include "gpio_expander.h"
 
 // Digital device identifiers
 typedef enum {
@@ -25,8 +25,8 @@ typedef struct CenterConsoleIOData {
 } CenterConsoleIOData;
 
 typedef struct CenterConsoleIOSettings {
-    GPIOAddress address;
-    InterruptEdge edge;
+  GPIOAddress address;
+  InterruptEdge edge;
 } CenterConsoleIOSettings;
 
 // Index the objects using their respective pins
@@ -52,40 +52,33 @@ static void prv_center_console_callback(const GPIOAddress *address, void *contex
 // Configure driver devices with their individual settings
 void center_console_io_init(void) {
   // Initialize the static array with device information
-  s_center_console_data[DRIVER_IO_POWER_SWITCH_PIN] = (CenterConsoleIOData){
-        .id = CENTER_CONSOLE_IO_DEVICE_POWER_SWITCH,
-        .event = INPUT_EVENT_POWER
-      };
+  s_center_console_data[DRIVER_IO_POWER_SWITCH_PIN] =
+      (CenterConsoleIOData){ .id = CENTER_CONSOLE_IO_DEVICE_POWER_SWITCH,
+                             .event = INPUT_EVENT_POWER };
 
-  s_center_console_data[DRIVER_IO_DIR_SELECT_PIN_FORWARD] = (CenterConsoleIOData){
-        .id = CENTER_CONSOLE_IO_DEVICE_DIRECTION_SELECTOR,
-        .event = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE
-      };
+  s_center_console_data[DRIVER_IO_DIR_SELECT_PIN_FORWARD] =
+      (CenterConsoleIOData){ .id = CENTER_CONSOLE_IO_DEVICE_DIRECTION_SELECTOR,
+                             .event = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE };
 
-  s_center_console_data[DRIVER_IO_DIR_SELECT_PIN_REVERSE] = (CenterConsoleIOData){
-        .id = CENTER_CONSOLE_IO_DEVICE_DIRECTION_SELECTOR,
-        .event = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE
-      };
+  s_center_console_data[DRIVER_IO_DIR_SELECT_PIN_REVERSE] =
+      (CenterConsoleIOData){ .id = CENTER_CONSOLE_IO_DEVICE_DIRECTION_SELECTOR,
+                             .event = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE };
 
-  s_center_console_data[DRIVER_IO_HEADLIGHT_PIN] = (CenterConsoleIOData){
-        .id = CENTER_CONSOLE_IO_DEVICE_HEADLIGHT,
-        .event = INPUT_EVENT_HEADLIGHT
-      };
+  s_center_console_data[DRIVER_IO_HEADLIGHT_PIN] =
+      (CenterConsoleIOData){ .id = CENTER_CONSOLE_IO_DEVICE_HEADLIGHT,
+                             .event = INPUT_EVENT_HEADLIGHT };
 
-  s_center_console_data[DRIVER_IO_HAZARD_LIGHT_PIN] = (CenterConsoleIOData){
-        .id = CENTER_CONSOLE_IO_DEVICE_HAZARD_LIGHT,
-        .event = INPUT_EVENT_HAZARD_LIGHT
-      };
+  s_center_console_data[DRIVER_IO_HAZARD_LIGHT_PIN] =
+      (CenterConsoleIOData){ .id = CENTER_CONSOLE_IO_DEVICE_HAZARD_LIGHT,
+                             .event = INPUT_EVENT_HAZARD_LIGHT };
 
-  s_center_console_data[DRIVER_IO_BRAKING_REGEN_INC_PIN] = (CenterConsoleIOData){
-        .id = CENTER_CONSOLE_IO_DEVICE_BRAKING_REGEN_INC,
-        .event = INPUT_EVENT_BRAKING_REGEN_INC
-      };
+  s_center_console_data[DRIVER_IO_BRAKING_REGEN_INC_PIN] =
+      (CenterConsoleIOData){ .id = CENTER_CONSOLE_IO_DEVICE_BRAKING_REGEN_INC,
+                             .event = INPUT_EVENT_BRAKING_REGEN_INC };
 
-  s_center_console_data[DRIVER_IO_BRAKING_REGEN_DEC_PIN] = (CenterConsoleIOData){
-        .id = CENTER_CONSOLE_IO_DEVICE_BRAKING_REGEN_DEC,
-        .event = INPUT_EVENT_BRAKING_REGEN_DEC
-      };
+  s_center_console_data[DRIVER_IO_BRAKING_REGEN_DEC_PIN] =
+      (CenterConsoleIOData){ .id = CENTER_CONSOLE_IO_DEVICE_BRAKING_REGEN_DEC,
+                             .event = INPUT_EVENT_BRAKING_REGEN_DEC };
 
   // Define array to store configuration settings for each pin
   CenterConsoleIOSettings console_inputs[] = {
@@ -98,7 +91,7 @@ void center_console_io_init(void) {
     { .address = DRIVER_IO_BRAKING_REGEN_DEC, .edge = INTERRUPT_EDGE_RISING }
   };
 
-  GPIOSettings gpio_settings = {.direction = GPIO_DIR_IN, .state = GPIO_STATE_LOW };
+  GPIOSettings gpio_settings = { .direction = GPIO_DIR_IN, .state = GPIO_STATE_LOW };
   InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_LOW };
 
   // Initialize Center Console Inputs

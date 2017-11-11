@@ -2,16 +2,16 @@
 
 #include <stdbool.h>
 
+#include "delay.h"
 #include "driver_io.h"
 #include "gpio_it.h"
 #include "i2c.h"
 #include "mcp23008.h"
 #include "soft_timer.h"
-#include "delay.h"
 
 // Bouncing from the inputs can be mistaken as interrupts by the device. After each interrupt,
 // the GPIO expander will be delayed for a brief period to prevent this
-#define GPIO_EXPANDER_DELAY_MS  50
+#define GPIO_EXPANDER_DELAY_MS 50
 
 typedef struct GPIOExpanderInterrupt {
   GPIOExpanderCallback callback;
@@ -48,7 +48,7 @@ static void prv_set_bit(uint8_t reg, GPIOExpanderPin pin, bool bit) {
 }
 
 static void prv_debounce_delay(SoftTimerID timer_id, void *context) {
-  GPIOExpanderInterrupt *interrupt = (GPIOExpanderInterrupt*)context;
+  GPIOExpanderInterrupt *interrupt = (GPIOExpanderInterrupt *)context;
   GPIOState state;
 
   gpio_expander_get_state(interrupt->pin, &state);
@@ -92,8 +92,8 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
     current_pin = __builtin_ffs(intf) - 1;
 
     s_interrupts[current_pin].state = (intcap >> current_pin) & 1;
-    soft_timer_start_millis(GPIO_EXPANDER_DELAY_MS, prv_debounce_delay,
-                            &s_interrupts[current_pin], &s_interrupts[current_pin].timer);
+    soft_timer_start_millis(GPIO_EXPANDER_DELAY_MS, prv_debounce_delay, &s_interrupts[current_pin],
+                            &s_interrupts[current_pin].timer);
 
     intf &= ~(1 << current_pin);
   }
