@@ -1,4 +1,5 @@
 #pragma once
+
 // Blocking debouncer for steering wheel interrupts
 // GPIO and soft timers must be initialized
 
