@@ -29,14 +29,14 @@ typedef struct {
 } I2CPortData;
 
 static I2CPortData s_port[NUM_I2C_PORTS] = {
-      [I2C_PORT_1] = {.periph = RCC_APB1Periph_I2C1, .base = I2C1 },
-      [I2C_PORT_2] = {.periph = RCC_APB1Periph_I2C2, .base = I2C2 },
+  [I2C_PORT_1] = { .periph = RCC_APB1Periph_I2C1, .base = I2C1 },
+  [I2C_PORT_2] = { .periph = RCC_APB1Periph_I2C2, .base = I2C2 },
 };
 
 // Generated using the I2C timing configuration tool (STSW-STM32126)
 static const uint32_t s_i2c_timing[] = {
-      [I2C_SPEED_STANDARD] = 0x10805E89,  // 100 kHz
-      [I2C_SPEED_FAST] = 0x00901850,      // 400 kHz
+  [I2C_SPEED_STANDARD] = 0x10805E89,  // 100 kHz
+  [I2C_SPEED_FAST] = 0x00901850,      // 400 kHz
 };
 
 static StatusCode prv_transfer(I2CPort port, uint8_t addr, bool read, uint8_t *data, size_t len,

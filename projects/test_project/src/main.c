@@ -35,7 +35,8 @@ int main(void) {
   gyro_cmd(true, false, 0x0F, &whoami);
 
   GPIOSettings led_settings = {
-    .direction = GPIO_DIR_OUT, .state = GPIO_STATE_HIGH,
+    .direction = GPIO_DIR_OUT,
+    .state = GPIO_STATE_HIGH,
   };
 
   GPIOAddress leds[] = { { GPIO_PORT_C, 6 }, { GPIO_PORT_C, 7 } };

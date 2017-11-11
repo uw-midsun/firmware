@@ -43,7 +43,7 @@ static pthread_cond_t s_tx_cond = PTHREAD_COND_INITIALIZER;
 
 static pthread_mutex_t s_should_exit = PTHREAD_MUTEX_INITIALIZER;
 
-static CANHwSocketData s_socket_data = {.can_fd = -1 };
+static CANHwSocketData s_socket_data = { .can_fd = -1 };
 
 static uint32_t prv_get_delay(CANHwBitrate bitrate) {
   const uint32_t delay_us[NUM_CAN_HW_BITRATES] = {
@@ -59,7 +59,7 @@ static uint32_t prv_get_delay(CANHwBitrate bitrate) {
 static void *prv_rx_thread(void *arg) {
   LOG_DEBUG("CAN HW RX thread started\n");
 
-  struct timeval timeout = {.tv_usec = CAN_HW_THREAD_EXIT_PERIOD_US };
+  struct timeval timeout = { .tv_usec = CAN_HW_THREAD_EXIT_PERIOD_US };
 
   // Mutex is locked when the thread should exit
   while (pthread_mutex_trylock(&s_should_exit) == 0) {
@@ -174,7 +174,8 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
   fcntl(s_socket_data.can_fd, F_SETFL, O_NONBLOCK);
 
   struct sockaddr_can addr = {
-    .can_family = AF_CAN, .can_ifindex = ifr.ifr_ifindex,
+    .can_family = AF_CAN,
+    .can_ifindex = ifr.ifr_ifindex,
   };
   if (bind(s_socket_data.can_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
     LOG_CRITICAL("CAN HW: Failed to bind socket\n");
@@ -225,7 +226,7 @@ CANHwBusStatus can_hw_bus_status(void) {
 }
 
 StatusCode can_hw_transmit(uint16_t id, const uint8_t *data, size_t len) {
-  struct can_frame frame = {.can_id = id & CAN_SFF_MASK, .can_dlc = len };
+  struct can_frame frame = { .can_id = id & CAN_SFF_MASK, .can_dlc = len };
   memcpy(&frame.data, data, len);
 
   pthread_mutex_lock(&s_tx_mutex);

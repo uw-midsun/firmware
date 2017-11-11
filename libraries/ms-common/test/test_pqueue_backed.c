@@ -5,7 +5,9 @@
 
 #define TEST_PQUEUE_BACKED_SIZE 10
 
-typedef struct TestObject { uint16_t data; } TestObject;
+typedef struct TestObject {
+  uint16_t data;
+} TestObject;
 
 static PQueueBacked s_queue;
 static PQueueNode s_nodes[TEST_PQUEUE_BACKED_SIZE + 1];
@@ -21,7 +23,7 @@ void test_pqueue_backed_run(void) {
   uint16_t prios[] = { 50, 10, 20, 2, 17, 5, 4000, 0, 3, 240 };
 
   for (size_t i = 0; i < SIZEOF_ARRAY(prios); i++) {
-    StatusCode result = pqueue_backed_push(&s_queue, &(TestObject){.data = prios[i] }, prios[i]);
+    StatusCode result = pqueue_backed_push(&s_queue, &(TestObject){ .data = prios[i] }, prios[i]);
     TEST_ASSERT_EQUAL(STATUS_CODE_OK, result);
   }
 
