@@ -32,38 +32,46 @@ static void s_nmea_read(const uint8_t *rx_arr, size_t len, void *context) {
   }
 }
 
-int32_t add_gps_handler(GPSHandler handler) {
-  for (uint32_t i = 0; i < GPS_HANDLER_ARRAY_LENGTH; i++) {
+StatusCode add_gps_handler(GPSHandler handler, size_t *index) {
+  for (uint16_t i = 0; i < GPS_HANDLER_ARRAY_LENGTH; i++) {
     if (gps_handler[i] == NULL) {
       gps_handler[i] = handler;
       // This cast won't be an issue, there's no way "i" will be big enought to
       // cause an overflow
-      return (int32_t)i;
+      if (index) {
+        *index = i;
+      }
+      return STATUS_CODE_OK;
     }
   }
-  return -1;
+  return STATUS_CODE_UNKNOWN;
 }
 
-int32_t add_gga_handler(GGAHandler handler) {
-  for (uint32_t i = 0; i < GPS_HANDLER_ARRAY_LENGTH; i++) {
+StatusCode add_gga_handler(GGAHandler handler, size_t *index) {
+  for (uint16_t i = 0; i < GPS_HANDLER_ARRAY_LENGTH; i++) {
     if (gga_handler[i] == NULL) {
       gga_handler[i] = handler;
       // This cast won't be an issue, there's no way "i" will be big enought to
       // cause an overflow
-      return (int32_t)i;
+      if (index) {
+        *index = i;
+      }
+      return STATUS_CODE_OK;
     }
   }
-  return -1;
+  return STATUS_CODE_UNKNOWN;
 }
 
-void remove_gps_handler(uint32_t index) {
-  if (index >= GPS_HANDLER_ARRAY_LENGTH) return;
+StatusCode remove_gps_handler(size_t index) {
+  if (index >= GPS_HANDLER_ARRAY_LENGTH) return STATUS_CODE_UNKNOWN;
   gps_handler[index] = NULL;
+  return STATUS_CODE_OK;
 }
 
-void remove_gga_handler(uint32_t index) {
-  if (index >= GPS_HANDLER_ARRAY_LENGTH) return;
+StatusCode remove_gga_handler(size_t index) {
+  if (index >= GPS_HANDLER_ARRAY_LENGTH) return STATUS_CODE_UNKNOWN;
   gga_handler[index] = NULL;
+  return STATUS_CODE_OK;
 }
 
 StatusCode evm_gps_init(UARTSettings *uart_settings) {

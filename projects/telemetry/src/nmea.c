@@ -1,28 +1,28 @@
 #include "nmea.h"
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 #include "log.h"
-NMEAResult parse_nmea_sentence(const uint8_t *rx_arr, size_t len) {
-  LOG_DEBUG("NMEA Parser recieved data with len %zu\n", len);
-  NMEAResult r = { 0 };
+#include "status.h"
+#include "util.h"
 
-  // m_id will keep track of which sentence type we are currently operating on
-  NMEAMessageID m_id = 0;
-  for (uint8_t i = 0; i < len; i++) {
-    LOG_DEBUG("%c", rx_arr[i]);
+// Just a function to losely validate if a sentence is valid
+StatusCode is_valid_nmea(const uint8_t *to_check, size_t len) {
+  if (len < 1 && to_check[0] != '$') {
+    LOG_DEBUG("First character of a NMEA sentence should be a $, it is a %c\n", to_check[0]);
+    return STATUS_CODE_UNKNOWN;
   }
+  if (len < 3 && (to_check[1] != 'G' || to_check[2] != 'P')) {
+    LOG_DEBUG("NMEA sentence should begin with GP. They are %c%c\n", to_check[1], to_check[2]);
+    return STATUS_CODE_UNKNOWN;
+  }
+  return STATUS_CODE_OK;
+}
 
-  // Should use context somewhere here to make sure the message is for us
-
-  if (len < 1 && rx_arr[0] != '$') {
-    LOG_WARN("First character of a NMEA sentence should be a $, it is a %c", rx_arr[0]);
-  }
-  if (len < 3 && (rx_arr[1] != 'G' || rx_arr[2] != 'P')) {
-    LOG_WARN("NMEA sentence should begin with GP. They are %c%c", rx_arr[1], rx_arr[2]);
-  }
-  // Array index 3 should be 0
+StatusCode get_nmea_sentence_type(const uint8_t *rx_arr, NMEAMessageID *result) {
+  // Array index 3 should be 0, so that it is a null terminated string
   uint8_t message_id[4] = { 0 };
-  for (uint32_t i = 3; i < 6; i++) {
+  for (uint16_t i = 3; i < 6; i++) {
     if (rx_arr[i] == ',') {
       break;
     }
@@ -34,19 +34,45 @@ NMEAResult parse_nmea_sentence(const uint8_t *rx_arr, size_t len) {
 
   // Parsing which type of NMEA message this is
   if (strcmp((char *)message_id, "GGA") == 0) {
-    m_id = GGA;
+    *result = GGA;
+    return STATUS_CODE_OK;
   } else if (strcmp((char *)message_id, "GLL") == 0) {
-    m_id = GLL;
+    *result = GLL;
+    return STATUS_CODE_OK;
   } else if (strcmp((char *)message_id, "GSA") == 0) {
-    m_id = GSA;
+    *result = GSA;
+    return STATUS_CODE_OK;
   } else if (strcmp((char *)message_id, "GSV") == 0) {
-    m_id = GSV;
+    *result = GSV;
+    return STATUS_CODE_OK;
   } else if (strcmp((char *)message_id, "RMC") == 0) {
-    m_id = RMC;
+    *result = RMC;
+    return STATUS_CODE_OK;
   } else if (strcmp((char *)message_id, "VTG") == 0) {
-    m_id = VTG;
+    *result = VTG;
+    return STATUS_CODE_OK;
   } else {
     LOG_WARN("Unknown message type: %c%c%c", message_id[0], message_id[1], message_id[2]);
+    result = NULL;
+    return STATUS_CODE_INVALID_ARGS;
+  }
+}
+
+NMEAResult parse_nmea_sentence(const uint8_t *rx_arr, size_t len) {
+  LOG_DEBUG("NMEA Parser recieved data with len %zu\n", len);
+  NMEAResult r = { 0 };
+  LOG_DEBUG("%s\n", (char *)rx_arr);
+
+  // Should use context somewhere here to make sure the message is for us
+
+  if (!status_ok(is_valid_nmea(rx_arr, len))) {
+    return r;  // Not sure how to deal with an invalid NMEA message being passed in.
+  }
+
+  // m_id will keep track of which sentence type we are currently operating on
+  NMEAMessageID m_id = 0;
+
+  if (!status_ok(get_nmea_sentence_type(rx_arr, &m_id))) {
     return r;
   }
 
@@ -54,28 +80,18 @@ NMEAResult parse_nmea_sentence(const uint8_t *rx_arr, size_t len) {
   r.message_type = m_id;
 
   // Do checksum right here
-  uint8_t checksum = 0;
-  for (uint32_t i = 1; i < len; i++) {
-    if (rx_arr[i] == '*') {
-      break;
-    }
-    checksum ^= rx_arr[i];
-  }
-  uint32_t realcheck = 0;
-
-  sscanf((char *)rx_arr, "%*[^*]*%2x", (unsigned int *)&realcheck);
-  if (realcheck != checksum) {
-    LOG_WARN("Checksums do not match, received: %d, calculated: %d", (int)realcheck, (int)checksum);
+  if (compare_checksum((char *)rx_arr)) {
+    LOG_WARN("Checksums do not match\n");
   }
   // Parse message_id below
 
-  char temp_buf[GGA][10] = { { 0 } };
-  int32_t b1 = 0;  // This is on purpose, so it does not underflow.
-  uint32_t b = 0;  // It will still works if b1 underflows (because it will
+  char temp_buf[NMEAMessageNumFields[GGA]][10];
+  int16_t b1 = 0;  // This is on purpose, so it does not underflow.
+  uint16_t b = 0;  // It will still works if b1 underflows (because it will
                    // immediately overflow)?
 
   // Splits individual message components into a 2D array
-  for (uint32_t i = 7; i < len; b1++, i++) {
+  for (uint16_t i = 7; i < len; b1++, i++) {
     if (rx_arr[i] == ',') {
       b++;
       b1 = -1;

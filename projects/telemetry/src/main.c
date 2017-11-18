@@ -49,7 +49,8 @@ int main(void) {
   gpio_init_pin(&pins[0], &settings_tx);
   gpio_init_pin(&pins[1], &settings_rx);
   evm_gps_init(&s_settings);
-  add_gga_handler(gga_handler);
+  size_t index;
+  add_gga_handler(gga_handler, &index);
 
   return 0;
 }

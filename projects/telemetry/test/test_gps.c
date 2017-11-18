@@ -1,9 +1,11 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "interrupt.h"
+#include "log.h"
 #include "nmea.h"
 #include "test_helpers.h"
 #include "unity.h"
+#include "util.h"
 
 void setup_test(void) {}
 void teardown_test(void) {}
@@ -14,5 +16,6 @@ void test_gps_nmea_gga(void) {
       "M,15.2,M,,0000*64";
   NMEAResult r = parse_nmea_sentence(input, sizeof(input) / sizeof(input[0]));
   // Just chose a random thing to test. Not extensive yet
+  LOG_DEBUG("r.gga.north_south: %s\n", (char *)&r.gga.north_south);
   TEST_ASSERT_TRUE(r.gga.north_south == (uint8_t)'N');
 }

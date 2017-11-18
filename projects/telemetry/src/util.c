@@ -1,4 +1,5 @@
 #include "util.h"
+#include <stdbool.h>
 #include <string.h>
 
 static char s_hex[] = "0123456789ABCDEF";
@@ -19,4 +20,10 @@ char* compute_checksum(char* message) {
     sum ^= message[i];
   }
   return int_to_hex(sum);
+}
+
+bool compare_checksum(char* message) {
+  char* computed = compute_checksum(message);
+  char* received = message + strlen(message) - 2;
+  return strcmp(computed, received) == 0;
 }

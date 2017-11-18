@@ -3,15 +3,17 @@
 #include <stdio.h>
 #include "uart_mcu.h"
 typedef enum {
-  GGA = 15,  // These are the number of data fields in each message type,
-             // excluding the message id
-  GLL = 8,
-  GSA = 10,
-  GSV = 12,
-  RMC = 13,
-  VTG = 10,
-  NUM_MESSAGE_IDS = 6,
+  GGA = 0,  // These are the number of data fields in each message type,
+            // excluding the message id
+  GLL,
+  GSA,
+  GSV,
+  RMC,
+  VTG,
+  NUM_MESSAGE_IDS
 } NMEAMessageID;
+
+static const int NMEAMessageNumFields[] = { 15, 8, 10, 12, 13, 10 };
 
 typedef struct {
   uint32_t hh;   // Hours
