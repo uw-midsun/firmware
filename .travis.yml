@@ -27,28 +27,28 @@ addons:
 
 before_script:
   # create directory that will be on the PATH
-  - mkdir -p $HOME/bin
-  - export PATH=$HOME/bin/:$PATH
+  - mkdir -p $HOME/.local/bin
+  - export PATH=$HOME/.local/bin/:$PATH
 
   # install GCC ARM from GNU ARM Embedded Toolchain PPA and GCC 6
   - sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa -y
   - sudo apt-get -qq update
   - sudo apt-get -y install gcc-arm-embedded
-  - ln -sf `which gcc-6` $HOME/bin/gcc
+  - ln -sf `which gcc-6` $HOME/.local/bin/gcc
 
   # build GNU Make 4.1 from source
   - wget http://ftp.gnu.org/gnu/make/make-4.1.tar.gz
   - tar xvf make-4.1.tar.gz
   - cd make-4.1
-  - ./configure --prefix=$HOME
+  - ./configure --prefix=$HOME/.local
   - make
   - make install
   - cd ..
   - rm -rf make-4.1
 
   # clang
-  - ln -sf `which clang-5.0` $HOME/bin/clang
-  - ln -sf `which clang-format-5.0` $HOME/bin/clang-format
+  - ln -sf `which clang-5.0` $HOME/.local/bin/clang
+  - ln -sf `which clang-format-5.0` $HOME/.local/bin/clang-format
   - clang-format --version
 
   # Install pylint for python3
