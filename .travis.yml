@@ -1,5 +1,9 @@
-sudo: false
-dist: "trusty"
+# Use full virtualisation to allow adding kernel modules
+sudo: true
+
+# Use trusty
+#   https://docs.travis-ci.com/user/trusty-ci-environment/
+dist: trusty
 
 notifications:
   email: false
