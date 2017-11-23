@@ -1,3 +1,4 @@
+sudo: false
 dist: "trusty"
 
 notifications:
@@ -31,15 +32,24 @@ addons:
 before_script:
   # create directory that will be on the PATH
   - mkdir -p $HOME/.local/bin
-  - export PATH=$HOME/.local/bin/:$PATH
+  - export PATH=$HOME/.local/bin:$PATH
 
-  # install GCC ARM from GNU ARM Embedded Toolchain PPA and GCC 6
-  - sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa -y
-  - sudo apt-get -qq update
-  - sudo apt-get -y install gcc-arm-embedded
+  - mkdir -p $HOME/source
+
+  # install GCC ARM from GNU ARM Embedded Toolchain
+  - export GCC_DIR=$HOME/gcc-arm-none-eabi-6-2017-q1-update
+  - export GCC_ARCHIVE=$HOME/source/gcc-arm-none-eabi-6-2017-q1-update-linux.tar.bz2
+  - export GCC_URL=https://developer.arm.com/-/media/Files/downloads/gnu-rm/6_1-2017q1/gcc-arm-none-eabi-6-2017-q1-update-linux.tar.bz2?product=GNU%20ARM%20Embedded%20Toolchain,64-bit,,Linux,6-2017-q1-update
+  - if [ ! -e $GCC_DIR/bin/arm-none-eabi-gcc ]; then
+      wget $GCC_URL -O $GCC_ARCHIVE;
+      tar xfj $GCC_ARCHIVE -C $HOME;
+    fi
+  - export PATH=$PATH:$GCC_DIR/bin
+
   - ln -sf `which gcc-6` $HOME/.local/bin/gcc
 
   # build GNU Make 4.1 from source
+  # TODO: cache this block as well
   - wget http://ftp.gnu.org/gnu/make/make-4.1.tar.gz
   - tar xvf make-4.1.tar.gz
   - cd make-4.1
@@ -48,15 +58,26 @@ before_script:
   - make install
   - cd ..
   - rm -rf make-4.1
-  - make --version
 
   # clang
   - ln -sf `which clang-5.0` $HOME/.local/bin/clang
   - ln -sf `which clang-format-5.0` $HOME/.local/bin/clang-format
-  - clang-format --version
 
   # Install pylint for python3
   - pip3 install --user pylint
+
+  - hash -r
+  # print versions of everything
+  - arm-none-eabi-gcc --version
+  - arm-none-eabi-objcopy --version
+  - arm-none-eabi-objdump --version
+  - arm-none-eabi-size --version
+  - arm-none-eabi-gcc-ar --version
+  - arm-none-eabi-gdb --version
+  - gcc --version
+  - make --version
+  - clang --version
+  - clang-format --version
   - pylint --version
 
 script:
