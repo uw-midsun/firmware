@@ -74,7 +74,9 @@ before_script:
   # Install pylint for python3
   - pip3 install --user pylint
 
+  # force ${PATH} to update
   - hash -r
+
   # print versions of everything
   - arm-none-eabi-gcc --version
   - arm-none-eabi-objcopy --version
