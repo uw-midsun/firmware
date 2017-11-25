@@ -22,6 +22,8 @@ typedef enum {
 typedef struct CenterConsoleIOData {
   CenterConsoleIODevice id;
   InputEvent event;
+  GPIOAddress address;
+  InterruptEdge edge;
 } CenterConsoleIOData;
 
 typedef struct CenterConsoleIOSettings {
@@ -30,7 +32,52 @@ typedef struct CenterConsoleIOSettings {
 } CenterConsoleIOSettings;
 
 // Index the objects using their respective pins
-const static CenterConsoleIOData s_center_console_data[DRIVER_IO_NUM_ADDRESSES];
+static const CenterConsoleIOData s_center_console_data[DRIVER_IO_NUM_ADDRESSES] = {
+  [DRIVER_IO_POWER_SWITCH_PIN] = ((CenterConsoleIOData){
+      .id = CENTER_CONSOLE_IO_DEVICE_POWER_SWITCH,
+      .event = INPUT_EVENT_POWER,
+    }),
+
+  [DRIVER_IO_DIR_SELECT_PIN_FORWARD] = ((CenterConsoleIOData){
+        .id = CENTER_CONSOLE_IO_DEVICE_DIRECTION_SELECTOR,
+        .event = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE,
+      }),
+
+  [DRIVER_IO_DIR_SELECT_PIN_REVERSE] = ((CenterConsoleIOData){
+        .id = CENTER_CONSOLE_IO_DEVICE_DIRECTION_SELECTOR,
+        .event = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE,
+      }),
+
+  [DRIVER_IO_HEADLIGHT_PIN] = ((CenterConsoleIOData){
+      .id = CENTER_CONSOLE_IO_DEVICE_HEADLIGHT,
+      .event = INPUT_EVENT_HEADLIGHT,
+    }),
+
+  [DRIVER_IO_HAZARD_LIGHT_PIN] = ((CenterConsoleIOData){
+      .id = CENTER_CONSOLE_IO_DEVICE_HAZARD_LIGHT,
+      .event = INPUT_EVENT_HAZARD_LIGHT,
+    }),
+
+  [DRIVER_IO_BRAKING_REGEN_INC_PIN] = ((CenterConsoleIOData){
+      .id = CENTER_CONSOLE_IO_DEVICE_BRAKING_REGEN_INC,
+      .event = INPUT_EVENT_BRAKING_REGEN_INC,
+    }),
+
+  [DRIVER_IO_BRAKING_REGEN_DEC_PIN] = ((CenterConsoleIOData){
+      .id = CENTER_CONSOLE_IO_DEVICE_BRAKING_REGEN_DEC,
+      .event = INPUT_EVENT_BRAKING_REGEN_DEC
+    }),
+};
+
+static const CenterConsoleIOSettings console_inputs[] = {
+    { .address = DRIVER_IO_POWER_SWITCH, .edge = INTERRUPT_EDGE_RISING },
+    { .address = DRIVER_IO_DIR_SELECT_FORWARD, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = DRIVER_IO_DIR_SELECT_REVERSE, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = DRIVER_IO_HEADLIGHT, .edge = INTERRUPT_EDGE_RISING_FALLING },
+    { .address = DRIVER_IO_HAZARD_LIGHT, .edge = INTERRUPT_EDGE_RISING },
+    { .address = DRIVER_IO_BRAKING_REGEN_INC, .edge = INTERRUPT_EDGE_RISING },
+    { .address = DRIVER_IO_BRAKING_REGEN_DEC, .edge = INTERRUPT_EDGE_RISING }
+};
 
 static void prv_center_console_callback(const GPIOAddress *address, void *context) {
   CenterConsoleIOData *data = (CenterConsoleIOData *)context;
@@ -51,41 +98,6 @@ static void prv_center_console_callback(const GPIOAddress *address, void *contex
 
 // Configure driver devices with their individual settings
 void center_console_io_init(void) {
-  // Initialize the static array with device information
-  s_center_console_data[DRIVER_IO_POWER_SWITCH_PIN] = ((CenterConsoleIOData){
-      .id = CENTER_CONSOLE_IO_DEVICE_POWER_SWITCH, .event = INPUT_EVENT_POWER });
-
-  s_center_console_data[DRIVER_IO_DIR_SELECT_PIN_FORWARD] =
-      ((CenterConsoleIOData){ .id = CENTER_CONSOLE_IO_DEVICE_DIRECTION_SELECTOR,
-                              .event = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE });
-
-  s_center_console_data[DRIVER_IO_DIR_SELECT_PIN_REVERSE] =
-      ((CenterConsoleIOData){ .id = CENTER_CONSOLE_IO_DEVICE_DIRECTION_SELECTOR,
-                              .event = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE });
-
-  s_center_console_data[DRIVER_IO_HEADLIGHT_PIN] = ((CenterConsoleIOData){
-      .id = CENTER_CONSOLE_IO_DEVICE_HEADLIGHT, .event = INPUT_EVENT_HEADLIGHT });
-
-  s_center_console_data[DRIVER_IO_HAZARD_LIGHT_PIN] = ((CenterConsoleIOData){
-      .id = CENTER_CONSOLE_IO_DEVICE_HAZARD_LIGHT, .event = INPUT_EVENT_HAZARD_LIGHT });
-
-  s_center_console_data[DRIVER_IO_BRAKING_REGEN_INC_PIN] = ((CenterConsoleIOData){
-      .id = CENTER_CONSOLE_IO_DEVICE_BRAKING_REGEN_INC, .event = INPUT_EVENT_BRAKING_REGEN_INC });
-
-  s_center_console_data[DRIVER_IO_BRAKING_REGEN_DEC_PIN] = ((CenterConsoleIOData){
-      .id = CENTER_CONSOLE_IO_DEVICE_BRAKING_REGEN_DEC, .event = INPUT_EVENT_BRAKING_REGEN_DEC });
-
-  // Define array to store configuration settings for each pin
-  CenterConsoleIOSettings console_inputs[] = {
-    { .address = DRIVER_IO_POWER_SWITCH, .edge = INTERRUPT_EDGE_RISING },
-    { .address = DRIVER_IO_DIR_SELECT_FORWARD, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = DRIVER_IO_DIR_SELECT_REVERSE, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = DRIVER_IO_HEADLIGHT, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = DRIVER_IO_HAZARD_LIGHT, .edge = INTERRUPT_EDGE_RISING },
-    { .address = DRIVER_IO_BRAKING_REGEN_INC, .edge = INTERRUPT_EDGE_RISING },
-    { .address = DRIVER_IO_BRAKING_REGEN_DEC, .edge = INTERRUPT_EDGE_RISING }
-  };
-
   const GPIOSettings gpio_settings = { .direction = GPIO_DIR_IN, .state = GPIO_STATE_LOW };
   const InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_LOW };
 

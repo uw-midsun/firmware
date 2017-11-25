@@ -5,7 +5,7 @@
 #include "event_queue.h"
 
 // ID definitions for the driver input events.
-// TODO: Ordered by priority due to event queue being priority queue
+// Ordered by priority due to event queue being priority queue
 typedef enum {
   // Critical messages have the highest priority
   INPUT_EVENT_POWER = 0,
@@ -30,7 +30,7 @@ typedef enum {
   INPUT_EVENT_BRAKING_REGEN_DEC,
 
   // Interrupts from analog inputs happen continuously, meaning that multiple events will
-  // be put on the queue. They must have lower priority, or the other inputs can be starved 
+  // be put on the queue. They must have lower priority, or the other inputs can be starved
   INPUT_EVENT_PEDAL_BRAKE,
   INPUT_EVENT_PEDAL_COAST,
   INPUT_EVENT_PEDAL_PRESSED,
