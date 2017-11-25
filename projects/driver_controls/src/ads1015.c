@@ -27,14 +27,6 @@ static ADS1015Channel s_current_channel;
 
 static ADS1015Interrupt s_interrupts[NUM_ADS1015_CHANNELS];
 
-static StatusCode prv_channel_valid(ADS1015Channel channel) {
-  if (channel >= NUM_ADS1015_CHANNELS) {
-    return status_code(STATUS_CODE_INVALID_ARGS);
-  }
-
-  return STATUS_CODE_OK;
-}
-
 // Initiates a read as outlined in section 8.5.3 of the datasheet
 static StatusCode prv_read(I2CPort i2c_port, uint8_t reg, uint8_t *data) {
   // We must make a write to the address pointer register to specify the register to be read
@@ -87,7 +79,8 @@ StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress ready_pin) {
   s_current_channel = ADS1015_CHANNEL_0;
 
   // Configure the given GPIO address as a conversion ready pin
-  const GPIOSettings gpio_settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_PULLUP, GPIO_ALTFN_NONE };
+  const GPIOSettings gpio_settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_PULLUP,
+                                       GPIO_ALTFN_NONE };
   const InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_NORMAL };
 
   gpio_init_pin(&ready_pin, &gpio_settings);
@@ -130,7 +123,9 @@ StatusCode ads1015_init(I2CPort i2c_port, GPIOAddress ready_pin) {
 
 StatusCode ads1015_register_callback(ADS1015Channel channel, ADS1015Callback callback,
                                      void *context) {
-  status_ok_or_return(prv_channel_valid(channel));
+  if (channel >= NUM_ADS1015_CHANNELS) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
 
   s_interrupts[channel].callback = callback;
   s_interrupts[channel].context = context;
@@ -139,9 +134,7 @@ StatusCode ads1015_register_callback(ADS1015Channel channel, ADS1015Callback cal
 }
 
 StatusCode ads1015_read_raw(ADS1015Channel channel, int16_t *reading) {
-  status_ok_or_return(prv_channel_valid(channel));
-
-  if (reading == NULL) {
+  if (reading == NULL || channel >= NUM_ADS1015_CHANNELS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
