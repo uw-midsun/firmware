@@ -36,47 +36,45 @@ static const CenterConsoleIOData s_center_console_data[DRIVER_IO_NUM_ADDRESSES] 
   [DRIVER_IO_POWER_SWITCH_PIN] = ((CenterConsoleIOData){
       .id = CENTER_CONSOLE_IO_DEVICE_POWER_SWITCH,
       .event = INPUT_EVENT_POWER,
-    }),
+  }),
 
   [DRIVER_IO_DIR_SELECT_PIN_FORWARD] = ((CenterConsoleIOData){
-        .id = CENTER_CONSOLE_IO_DEVICE_DIRECTION_SELECTOR,
-        .event = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE,
-      }),
+      .id = CENTER_CONSOLE_IO_DEVICE_DIRECTION_SELECTOR,
+      .event = INPUT_EVENT_DIRECTION_SELECTOR_DRIVE,
+  }),
 
   [DRIVER_IO_DIR_SELECT_PIN_REVERSE] = ((CenterConsoleIOData){
-        .id = CENTER_CONSOLE_IO_DEVICE_DIRECTION_SELECTOR,
-        .event = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE,
-      }),
+      .id = CENTER_CONSOLE_IO_DEVICE_DIRECTION_SELECTOR,
+      .event = INPUT_EVENT_DIRECTION_SELECTOR_REVERSE,
+  }),
 
   [DRIVER_IO_HEADLIGHT_PIN] = ((CenterConsoleIOData){
       .id = CENTER_CONSOLE_IO_DEVICE_HEADLIGHT,
       .event = INPUT_EVENT_HEADLIGHT,
-    }),
+  }),
 
   [DRIVER_IO_HAZARD_LIGHT_PIN] = ((CenterConsoleIOData){
       .id = CENTER_CONSOLE_IO_DEVICE_HAZARD_LIGHT,
       .event = INPUT_EVENT_HAZARD_LIGHT,
-    }),
+  }),
 
   [DRIVER_IO_BRAKING_REGEN_INC_PIN] = ((CenterConsoleIOData){
       .id = CENTER_CONSOLE_IO_DEVICE_BRAKING_REGEN_INC,
       .event = INPUT_EVENT_BRAKING_REGEN_INC,
-    }),
+  }),
 
   [DRIVER_IO_BRAKING_REGEN_DEC_PIN] = ((CenterConsoleIOData){
-      .id = CENTER_CONSOLE_IO_DEVICE_BRAKING_REGEN_DEC,
-      .event = INPUT_EVENT_BRAKING_REGEN_DEC
-    }),
+      .id = CENTER_CONSOLE_IO_DEVICE_BRAKING_REGEN_DEC, .event = INPUT_EVENT_BRAKING_REGEN_DEC }),
 };
 
 static const CenterConsoleIOSettings console_inputs[] = {
-    { .address = DRIVER_IO_POWER_SWITCH, .edge = INTERRUPT_EDGE_RISING },
-    { .address = DRIVER_IO_DIR_SELECT_FORWARD, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = DRIVER_IO_DIR_SELECT_REVERSE, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = DRIVER_IO_HEADLIGHT, .edge = INTERRUPT_EDGE_RISING_FALLING },
-    { .address = DRIVER_IO_HAZARD_LIGHT, .edge = INTERRUPT_EDGE_RISING },
-    { .address = DRIVER_IO_BRAKING_REGEN_INC, .edge = INTERRUPT_EDGE_RISING },
-    { .address = DRIVER_IO_BRAKING_REGEN_DEC, .edge = INTERRUPT_EDGE_RISING }
+  { .address = DRIVER_IO_POWER_SWITCH, .edge = INTERRUPT_EDGE_RISING },
+  { .address = DRIVER_IO_DIR_SELECT_FORWARD, .edge = INTERRUPT_EDGE_RISING_FALLING },
+  { .address = DRIVER_IO_DIR_SELECT_REVERSE, .edge = INTERRUPT_EDGE_RISING_FALLING },
+  { .address = DRIVER_IO_HEADLIGHT, .edge = INTERRUPT_EDGE_RISING_FALLING },
+  { .address = DRIVER_IO_HAZARD_LIGHT, .edge = INTERRUPT_EDGE_RISING },
+  { .address = DRIVER_IO_BRAKING_REGEN_INC, .edge = INTERRUPT_EDGE_RISING },
+  { .address = DRIVER_IO_BRAKING_REGEN_DEC, .edge = INTERRUPT_EDGE_RISING }
 };
 
 static void prv_center_console_callback(const GPIOAddress *address, void *context) {
