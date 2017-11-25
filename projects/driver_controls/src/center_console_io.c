@@ -30,7 +30,7 @@ typedef struct CenterConsoleIOSettings {
 } CenterConsoleIOSettings;
 
 // Index the objects using their respective pins
-static CenterConsoleIOData s_center_console_data[DRIVER_IO_NUM_ADDRESSES];
+const static CenterConsoleIOData s_center_console_data[DRIVER_IO_NUM_ADDRESSES];
 
 static void prv_center_console_callback(const GPIOAddress *address, void *context) {
   CenterConsoleIOData *data = (CenterConsoleIOData *)context;
@@ -86,8 +86,8 @@ void center_console_io_init(void) {
     { .address = DRIVER_IO_BRAKING_REGEN_DEC, .edge = INTERRUPT_EDGE_RISING }
   };
 
-  GPIOSettings gpio_settings = { .direction = GPIO_DIR_IN, .state = GPIO_STATE_LOW };
-  InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_LOW };
+  const GPIOSettings gpio_settings = { .direction = GPIO_DIR_IN, .state = GPIO_STATE_LOW };
+  const InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_LOW };
 
   // Initialize Center Console Inputs
   for (uint8_t i = 0; i < SIZEOF_ARRAY(console_inputs); i++) {

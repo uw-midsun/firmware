@@ -1,5 +1,4 @@
 #include <stddef.h>
-#include <stdio.h>
 
 #include "driver_io.h"
 #include "gpio_expander.h"
@@ -26,7 +25,7 @@ typedef struct SteeringWheelIOData {
   InterruptEdge edge;
 } SteeringWheelIOData;
 
-static SteeringWheelIOData s_steering_input_data[NUM_GPIO_EXPANDER_PINS];
+const static SteeringWheelIOData s_steering_input_data[NUM_GPIO_EXPANDER_PINS];
 
 static void prv_steering_wheel_callback(GPIOExpanderPin pin, GPIOState state, void *context) {
   SteeringWheelIOData *data = (SteeringWheelIOData *)context;
@@ -50,7 +49,6 @@ static void prv_steering_wheel_callback(GPIOExpanderPin pin, GPIOState state, vo
   }
 
   event_raise(event_id, 0);
-  printf("Pin %d\n", pin);
   return;
 }
 
@@ -86,8 +84,8 @@ void steering_wheel_io_init(void) {
     .id = STEERING_WHEEL_IO_HORN, .event = INPUT_EVENT_HORN, .edge = INTERRUPT_EDGE_RISING_FALLING
   };
 
-  GPIOSettings gpio_settings = { .direction = GPIO_DIR_IN, .state = GPIO_STATE_LOW };
-  InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_LOW };
+  const GPIOSettings gpio_settings = { .direction = GPIO_DIR_IN, .state = GPIO_STATE_LOW };
+  const InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_LOW };
 
   // Initialize Steering Wheel inputs
   for (uint8_t i = 0; i < NUM_GPIO_EXPANDER_PINS; i++) {
