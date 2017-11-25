@@ -16,6 +16,9 @@
 // Initializes the PWM for a set timer with a period in milliseconds.
 StatusCode pwm_init(PWMTimer timer, uint16_t period_ms);
 
+// Initializes the timer for PWM input.
+StatusCode pwm_input_init(PWMTimer timer);
+
 // Gets the current period of a specified PWM timer.
 uint16_t pwm_get_period(PWMTimer timer);
 

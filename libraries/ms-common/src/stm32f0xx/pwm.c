@@ -79,6 +79,14 @@ StatusCode pwm_init(PWMTimer timer, uint16_t period_ms) {
   return STATUS_CODE_OK;
 }
 
+StatusCode pwm_input_init(PWMTimer timer) {
+  if (timer == PWM_TIMER_14 || timer == PWM_TIMER_16 || timer == PWM_TIMER_17) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Timer doesn't support pwm input.");
+  } else if (timer >= NUM_PWM_TIMERS) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid timer id");
+  }
+}
+
 uint16_t pwm_get_period(PWMTimer timer) {
   if (timer >= NUM_PWM_TIMERS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid timer id");
