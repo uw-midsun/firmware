@@ -6,13 +6,17 @@
 #include "status.h"
 #include "util.h"
 
-// Just a function to losely validate if a sentence is valid
+// Just a function to loosely validate if a sentence is valid
 StatusCode is_valid_nmea(const uint8_t *to_check, size_t len) {
-  if (len < 1 && to_check[0] != '$') {
+  if (len < 3) {
+    LOG_DEBUG("The length is too short to contain useful information!\n");
+    return STATUS_CODE_UNKNOWN;
+  }
+  if (to_check[0] != '$') {
     LOG_DEBUG("First character of a NMEA sentence should be a $, it is a %c\n", to_check[0]);
     return STATUS_CODE_UNKNOWN;
   }
-  if (len < 3 && (to_check[1] != 'G' || to_check[2] != 'P')) {
+  if (to_check[1] != 'G' || to_check[2] != 'P') {
     LOG_DEBUG("NMEA sentence should begin with GP. They are %c%c\n", to_check[1], to_check[2]);
     return STATUS_CODE_UNKNOWN;
   }
@@ -59,7 +63,7 @@ StatusCode get_nmea_sentence_type(const uint8_t *rx_arr, NMEAMessageID *result) 
 }
 
 NMEAResult parse_nmea_sentence(const uint8_t *rx_arr, size_t len) {
-  LOG_DEBUG("NMEA Parser recieved data with len %zu\n", len);
+  LOG_DEBUG("NMEA Parser received data with len %zu\n", len);
   NMEAResult r = { 0 };
   LOG_DEBUG("%s\n", (char *)rx_arr);
 

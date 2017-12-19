@@ -11,7 +11,17 @@
 typedef void (*GPSHandler)(const NMEAResult);
 typedef void (*GGAHandler)(const GGASentence);
 
-StatusCode evm_gps_init(UARTSettings *settings);
+typedef struct {
+  UARTSettings *uart_settings;
+  GPIOSettings *settings_tx;
+  GPIOSettings *settings_rx;
+  GPIOSettings *settings_power;
+  GPIOAddress *pin_rx;
+  GPIOAddress *pin_tx;
+  GPIOAddress *pin_power;
+} EvmSettings;
+
+StatusCode evm_gps_init(EvmSettings *settings);
 
 // These methods will add the handler to the handler array, and returns the
 // index so that it can

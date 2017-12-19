@@ -7,9 +7,11 @@
 #include "interrupt.h"   // For enabling interrupts.
 #include "soft_timer.h"  // Software timers for scheduling future events.
 
+// As far as I can tell we just made up the values below
 static const GPIOAddress pins[] = {
   { .port = GPIO_PORT_A, .pin = 2 },  //
   { .port = GPIO_PORT_A, .pin = 3 },  //
+  { .port = GPIO_PORT_A, .pin = 4 },  //
 };
 
 static const UARTSettings s_settings = {
@@ -46,11 +48,23 @@ int main(void) {
                                    // logic levels.
   };
 
-  gpio_init_pin(&pins[0], &settings_tx);
-  gpio_init_pin(&pins[1], &settings_rx);
-  evm_gps_init(&s_settings);
-  size_t index;
-  add_gga_handler(gga_handler, &index);
+  const GPIOSettings settings_power = {
+    .direction = GPIO_DIR_OUT,     // The pin needs to iout.
+    .state = GPIO_STATE_HIGH,      // Start in the "on" state.
+    .alt_function = GPIO_ALTFN_1,  // No connections to peripherals.
+    .resistor = GPIO_RES_NONE,     // No need of a resistor to modify floating
+                                   // logic levels.
+  };
+
+  EvmSettings settings = { .settings_tx = &settings_tx,
+                           .settings_rx = &settings_rx,
+                           .settings_power = &settings_power,
+                           .pin_tx = &pins[0],
+                           .pin_rx = &pins[1],
+                           .pin_power = &pins[2],
+                           .uart_settings = &s_settings };
+  evm_gps_init(&settings);
+  add_gga_handler(gga_handler, NULL);
 
   return 0;
 }
