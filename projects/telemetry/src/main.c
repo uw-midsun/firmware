@@ -26,6 +26,9 @@ void gga_handler(GGASentence result) {
   return;
 }
 
+// For GPS
+static const UARTPort port = UART_PORT_2;
+
 int main(void) {
   // Enable various peripherals
   interrupt_init();
@@ -62,7 +65,8 @@ int main(void) {
                            .pin_tx = &pins[0],
                            .pin_rx = &pins[1],
                            .pin_power = &pins[2],
-                           .uart_settings = &s_settings };
+                           .uart_settings = &s_settings,
+                           .port = &port };
   evm_gps_init(&settings);
   add_gga_handler(gga_handler, NULL);
 

@@ -13,7 +13,6 @@
 // How many handlers can we possibly need?
 #define GPS_HANDLER_ARRAY_LENGTH 5
 
-static const UARTPort port = UART_PORT_2;
 static GPSHandler gps_handler[GPS_HANDLER_ARRAY_LENGTH] = { 0 };
 static GGAHandler gga_handler[GPS_HANDLER_ARRAY_LENGTH] = { 0 };
 static UARTStorage s_storage = { 0 };
@@ -112,7 +111,7 @@ StatusCode evm_gps_init(EvmSettings *settings) {
 
   settings->uart_settings->rx_handler = s_nmea_read;
   // Makes sure that status codes are handled
-  status_ok_or_return(uart_init(port, settings->uart_settings, &s_storage));
+  status_ok_or_return(uart_init(*(settings->port), settings->uart_settings, &s_storage));
 
   // These should already be initialized, but we do so anyway, to make sure
   interrupt_init();

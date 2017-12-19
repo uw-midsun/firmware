@@ -12,6 +12,7 @@ typedef void (*GPSHandler)(const NMEAResult);
 typedef void (*GGAHandler)(const GGASentence);
 
 typedef struct {
+  UARTPort *port;
   UARTSettings *uart_settings;
   GPIOSettings *settings_tx;
   GPIOSettings *settings_rx;
