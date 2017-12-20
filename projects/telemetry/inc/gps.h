@@ -11,15 +11,20 @@
 typedef void (*GPSHandler)(const NMEAResult);
 typedef void (*GGAHandler)(const GGASentence);
 
+// This struct basically contains all the info about pins etc.
+// Check this document on page 4:
+// https://www.linxtechnologies.com/wp/wp-content/uploads/evm-gps-f4.pdf
 typedef struct {
   UARTPort *port;
-  UARTSettings *uart_settings;
-  GPIOSettings *settings_tx;
-  GPIOSettings *settings_rx;
-  GPIOSettings *settings_power;
-  GPIOAddress *pin_rx;
+  UARTSettings *uart_settings;    // The uart settings to be used
+  GPIOSettings *settings_tx;      // Pin configurations
+  GPIOSettings *settings_rx;      // Transmitting and receiving pins
+  GPIOSettings *settings_power;   // Pin which provides power
+  GPIOSettings *settings_on_off;  // Pin to power up the device
+  GPIOAddress *pin_rx;            // Pin addresses
   GPIOAddress *pin_tx;
   GPIOAddress *pin_power;
+  GPIOAddress *pin_on_off;
 } EvmSettings;
 
 StatusCode evm_gps_init(EvmSettings *settings);

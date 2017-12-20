@@ -12,6 +12,7 @@ static const GPIOAddress pins[] = {
   { .port = GPIO_PORT_A, .pin = 2 },  //
   { .port = GPIO_PORT_A, .pin = 3 },  //
   { .port = GPIO_PORT_A, .pin = 4 },  //
+  { .port = GPIO_PORT_A, .pin = 5 },  //
 };
 
 static const UARTSettings s_settings = {
@@ -35,6 +36,7 @@ int main(void) {
   soft_timer_init();
   gpio_init();
 
+  // These structs below are placeholders, please update values as needed
   const GPIOSettings settings_tx = {
     .direction = GPIO_DIR_OUT,     // The pin needs to output.
     .state = GPIO_STATE_HIGH,      // Start in the "on" state.
@@ -52,7 +54,15 @@ int main(void) {
   };
 
   const GPIOSettings settings_power = {
-    .direction = GPIO_DIR_OUT,     // The pin needs to iout.
+    .direction = GPIO_DIR_OUT,     // The pin needs to output.
+    .state = GPIO_STATE_HIGH,      // Start in the "on" state.
+    .alt_function = GPIO_ALTFN_1,  // No connections to peripherals.
+    .resistor = GPIO_RES_NONE,     // No need of a resistor to modify floating
+                                   // logic levels.
+  };
+
+  const GPIOSettings settings_on_off = {
+    .direction = GPIO_DIR_OUT,     // The pin needs to output.
     .state = GPIO_STATE_HIGH,      // Start in the "on" state.
     .alt_function = GPIO_ALTFN_1,  // No connections to peripherals.
     .resistor = GPIO_RES_NONE,     // No need of a resistor to modify floating
@@ -62,9 +72,11 @@ int main(void) {
   EvmSettings settings = { .settings_tx = &settings_tx,
                            .settings_rx = &settings_rx,
                            .settings_power = &settings_power,
+                           .settings_on_off = &settings_on_off,
                            .pin_tx = &pins[0],
                            .pin_rx = &pins[1],
                            .pin_power = &pins[2],
+                           .pin_on_off = &pins[3],
                            .uart_settings = &s_settings,
                            .port = &port };
   evm_gps_init(&settings);

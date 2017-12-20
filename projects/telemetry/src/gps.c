@@ -73,9 +73,23 @@ StatusCode remove_gga_handler(size_t index) {
   return STATUS_CODE_OK;
 }
 
-// This callback should start the initialization sequence
-void pull_ON_OFF(SoftTimerID timer_id, void *context) {}
+void stop_ON_OFF(SoftTimerID timer_id, void *context) {
+  EvmSettings *settings = context;
+  gpio_toggle_state(settings->pin_on_off);
+  // Here we should wait for one second
+  // During this period of time we should hear something from the GPS chip
+  // If not, start again from pull_ON_OFF
+}
 
+// This callback should start the initialization sequence
+void pull_ON_OFF(SoftTimerID timer_id, void *context) {
+  EvmSettings *settings = context;
+  gpio_toggle_state(settings->pin_on_off);
+  soft_timer_start_millis(100, stop_ON_OFF, settings, NULL);
+}
+
+// Initialization of this chip is described on page 10 of:
+// https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
 StatusCode evm_gps_init(EvmSettings *settings) {
   memset(&gps_handler, 0, SIZEOF_ARRAY(gps_handler));
   memset(&gga_handler, 0, SIZEOF_ARRAY(gga_handler));
@@ -99,6 +113,10 @@ StatusCode evm_gps_init(EvmSettings *settings) {
     return status_msg(STATUS_CODE_INVALID_ARGS,
                       "The 'settings->settings_power' argument is null\n");
   }
+  if (!settings->settings_power) {
+    return status_msg(STATUS_CODE_INVALID_ARGS,
+                      "The 'settings->settings_on_off' argument is null\n");
+  }
   if (!settings->pin_rx) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "The 'settings->pin_rx' argument is null\n");
   }
@@ -107,6 +125,9 @@ StatusCode evm_gps_init(EvmSettings *settings) {
   }
   if (!settings->pin_power) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "The 'settings->pin_power' argument is null\n");
+  }
+  if (!settings->pin_on_off) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "The 'settings->pin_on_off' argument is null\n");
   }
 
   settings->uart_settings->rx_handler = s_nmea_read;
@@ -120,9 +141,11 @@ StatusCode evm_gps_init(EvmSettings *settings) {
 
   gpio_init_pin(settings->pin_tx, settings->settings_tx);
   gpio_init_pin(settings->pin_rx, settings->settings_rx);
+  gpio_init_pin(settings->pin_power, settings->settings_power);
+  gpio_init_pin(settings->pin_on_off, settings->settings_on_off);
 
   // From the documentation: Power needs to be on for one second before continuing
   gpio_toggle_state(settings->pin_power);
-  soft_timer_start_seconds(1, pull_ON_OFF, NULL, NULL);
+  soft_timer_start_seconds(1, pull_ON_OFF, settings, NULL);
   return STATUS_CODE_OK;
 }
