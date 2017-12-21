@@ -81,9 +81,17 @@ void stop_ON_OFF(SoftTimerID timer_id, void *context) {
   // If not, start again from pull_ON_OFF
 }
 
+// This is useful as a method for callbacks
+void evm_toggle_chip_power(SoftTimerID timer_id, void *context) {
+  EvmSettings *settings = context;
+  gpio_toggle_state(settings->pin_power);
+}
+
 // This callback should start the initialization sequence
 void pull_ON_OFF(SoftTimerID timer_id, void *context) {
   EvmSettings *settings = context;
+
+  // Can't really return a StatusCode here. Might need a messy work around / leave it?
   gpio_toggle_state(settings->pin_on_off);
   soft_timer_start_millis(100, stop_ON_OFF, settings, NULL);
 }
@@ -137,15 +145,29 @@ StatusCode evm_gps_init(EvmSettings *settings) {
   // These should already be initialized, but we do so anyway, to make sure
   interrupt_init();
   soft_timer_init();
-  gpio_init();
+  status_ok_or_return(gpio_init());
 
-  gpio_init_pin(settings->pin_tx, settings->settings_tx);
-  gpio_init_pin(settings->pin_rx, settings->settings_rx);
-  gpio_init_pin(settings->pin_power, settings->settings_power);
-  gpio_init_pin(settings->pin_on_off, settings->settings_on_off);
+  status_ok_or_return(gpio_init_pin(settings->pin_tx, settings->settings_tx));
+  status_ok_or_return(gpio_init_pin(settings->pin_rx, settings->settings_rx));
+  status_ok_or_return(gpio_init_pin(settings->pin_power, settings->settings_power));
+  status_ok_or_return(gpio_init_pin(settings->pin_on_off, settings->settings_on_off));
 
   // From the documentation: Power needs to be on for one second before continuing
-  gpio_toggle_state(settings->pin_power);
-  soft_timer_start_seconds(1, pull_ON_OFF, settings, NULL);
+  evm_toggle_chip_power(0, settings);
+  status_ok_or_return(soft_timer_start_seconds(1, pull_ON_OFF, settings, NULL));
+  return STATUS_CODE_OK;
+}
+
+// Implementing shut down here:
+// From page 25 of:
+// https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
+StatusCode evm_gps_clean_up(EvmSettings *settings) {
+  // This string is taken from the pdf mentioned above. The \r\n may not be necessary depending on
+  // if the uart library adds it automatically or not.
+  // The char array below should read $PSRF117,16*0B\r\n
+  uint8_t message[] = { '$', 'P', 'S', 'R', 'F', '1', '1',  '7',
+                        ',', '1', '6', '*', '0', 'B', '\r', '\n' };
+  status_ok_or_return(uart_tx(*(settings->port), message, sizeof(message) / sizeof(message[0])));
+  status_ok_or_return(soft_timer_start_seconds(1, evm_toggle_chip_power, settings, NULL));
   return STATUS_CODE_OK;
 }
