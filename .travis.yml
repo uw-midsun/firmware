@@ -1,3 +1,10 @@
+# Use full virtualisation to allow adding kernel modules
+sudo: true
+
+# Use trusty
+#   https://docs.travis-ci.com/user/trusty-ci-environment/
+dist: trusty
+
 notifications:
   email: false
 
@@ -14,53 +21,79 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+      - llvm-toolchain-trusty-5.0
     packages:
+      # ubuntu-toolchain-r-test
       - gcc-6
       - g++-6
+      # llvm-toolchain-trusty-5.0
+      - clang-5.0
+      - clang-format-5.0
+      # trusty repos
       - python3
+      - python3-pip
+      - libc6-i386
 
-env:
-  # add target platforms to build matrix
-  # lint is a target so we don't need to lint multiple times
-  - TARGET='build_all PLATFORM=x86'
-  - TARGET='build_all PLATFORM=stm32f0xx'
-  - TARGET='test_all PLATFORM=x86'
-  - TARGET=lint
-  - TARGET=test_format
+cache:
+  directories:
+    - ${HOME}/gcc-arm-none-eabi-6-2017-q2-update
 
 before_script:
-  # install GCC ARM from GNU ARM Embedded Toolchain PPA and GCC 6
-  - sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa -y
-  - sudo apt-get -qq update
-  - sudo apt-get -y install gcc-arm-embedded
-  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 90
+  # create directory that will be on the PATH
+  - mkdir -p ${HOME}/.local/bin
+  - export PATH=${HOME}/.local/bin:${PATH}
+
+  - mkdir -p ${HOME}/source
+
+  # install GCC ARM from GNU ARM Embedded Toolchain
+  - export GCC_DIR=${HOME}/gcc-arm-none-eabi-6-2017-q2-update
+  - export GCC_ARCHIVE=${HOME}/source/gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2
+  - export GCC_URL=https://developer.arm.com/-/media/Files/downloads/gnu-rm/6-2017q2/gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2?revision=2cc92fb5-3e0e-402d-9197-bdfc8224d8a5?product=GNU%20Arm%20Embedded%20Toolchain,64-bit,,Linux,6-2017-q2-update
+  - if [ ! -e ${GCC_DIR}/bin/arm-none-eabi-gcc ]; then
+      wget $GCC_URL -O $GCC_ARCHIVE;
+      tar xfj $GCC_ARCHIVE -C ${HOME};
+    fi
+  - export PATH=${PATH}:${GCC_DIR}/bin
+
+  - ln -sf `which gcc-6` ${HOME}/.local/bin/gcc
 
   # build GNU Make 4.1 from source
+  # TODO: cache this block as well
   - wget http://ftp.gnu.org/gnu/make/make-4.1.tar.gz
   - tar xvf make-4.1.tar.gz
   - cd make-4.1
-  - ./configure
+  - ./configure --prefix=${HOME}/.local
   - make
-  - sudo make install
+  - make install
   - cd ..
   - rm -rf make-4.1
 
-  # add Make to path
-  - export PATH=/usr/local/bin/:$PATH
-
   # clang
-  - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
-  - echo "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-5.0 main" | sudo tee -a /etc/apt/sources.list
-  - sudo apt-get -qq update
-  - sudo apt-get install -y clang-5.0 clang-format-5.0
-  - sudo update-alternatives --install /usr/local/bin/clang-format clang-format `which clang-format-5.0` 10
-  - sudo update-alternatives --install /usr/local/bin/clang clang `which clang-5.0` 10
-  - clang-format --version
+  - ln -sf `which clang-5.0` ${HOME}/.local/bin/clang
+  - ln -sf `which clang-format-5.0` ${HOME}/.local/bin/clang-format
 
   # Install pylint for python3
-  - sudo apt-get -y install python3-pip
-  - sudo pip3 install pylint
+  - pip3 install --user pylint
+
+  # force ${PATH} to update
+  - hash -r
+
+  # print versions of everything
+  - arm-none-eabi-gcc --version
+  - arm-none-eabi-objcopy --version
+  - arm-none-eabi-objdump --version
+  - arm-none-eabi-size --version
+  - arm-none-eabi-gcc-ar --version
+  - arm-none-eabi-gdb --version
+  - gcc --version
+  - make --version
+  - clang --version
+  - clang-format --version
   - pylint --version
 
 script:
-  - make $TARGET
+  - make build_all PLATFORM=x86
+  - make build_all PLATFORM=stm32f0xx
+  - make test_all PLATFORM=x86
+  - make lint
+  - make test_format
