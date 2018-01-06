@@ -43,6 +43,7 @@ static PowerPathCfg s_ppc = { .enable_pin = { .port = 0, .pin = 0 },
                               .shutdown_pin = { .port = 0, .pin = 1 },
                               .aux_bat =
                                   {
+                                      .id = POWER_PATH_SOURCE_ID_AUX_BAT,
                                       .uv_ov_pin = { .port = 0, .pin = 2 },
                                       .voltage_pin = { .port = 0, .pin = 3 },
                                       .current_pin = { .port = 0, .pin = 4 },
@@ -58,6 +59,7 @@ static PowerPathCfg s_ppc = { .enable_pin = { .port = 0, .pin = 0 },
                                       .monitoring_active = false,
                                   },
                               .dcdc = {
+                                  .id = POWER_PATH_SOURCE_ID_DCDC,
                                   .uv_ov_pin = { .port = 0, .pin = 5 },
                                   .voltage_pin = { .port = 0, .pin = 6 },
                                   .current_pin = { .port = 0, .pin = 7 },

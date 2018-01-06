@@ -27,6 +27,7 @@ typedef struct PowerPathVCReadings {
 
 // For storing the Power Path Source (eg AUX Battery vs DCDCs).
 typedef struct PowerPathSource {
+  const PowerPathSourceID id;
   const GPIOAddress uv_ov_pin;
   const GPIOAddress voltage_pin;
   const GPIOAddress current_pin;
