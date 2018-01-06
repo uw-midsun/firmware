@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <stdio.h>
+#include "status.h"
 #include "uart_mcu.h"
 typedef enum {
   GGA = 0,  // These are the number of data fields in each message type,
@@ -70,5 +71,7 @@ typedef struct {
   NMEAMessageID message_type;
 } NMEAResult;
 
-// Main parsing function
-NMEAResult parse_nmea_sentence(const uint8_t *nmea_input, size_t len);
+// Parsing function for gga sentence
+GGASentence parse_nmea_gga_sentence(const uint8_t *nmea_input, size_t len);
+StatusCode is_valid_nmea(const uint8_t *to_check, size_t len);
+StatusCode get_nmea_sentence_type(const uint8_t *rx_arr, NMEAMessageID *result);

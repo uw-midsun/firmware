@@ -62,9 +62,9 @@ StatusCode get_nmea_sentence_type(const uint8_t *rx_arr, NMEAMessageID *result) 
   }
 }
 
-NMEAResult parse_nmea_sentence(const uint8_t *rx_arr, size_t len) {
+GGASentence parse_nmea_gga_sentence(const uint8_t *rx_arr, size_t len) {
   LOG_DEBUG("NMEA Parser received data with len %zu\n", len);
-  NMEAResult r = { 0 };
+  GGASentence r = { 0 };
   LOG_DEBUG("%s\n", (char *)rx_arr);
 
   // Should use context somewhere here to make sure the message is for us
@@ -80,8 +80,7 @@ NMEAResult parse_nmea_sentence(const uint8_t *rx_arr, size_t len) {
     return r;
   }
 
-  r.gga.message_id = m_id;
-  r.message_type = m_id;
+  r.message_id = m_id;
 
   // Do checksum right here
   if (compare_checksum((char *)rx_arr)) {
@@ -108,28 +107,28 @@ NMEAResult parse_nmea_sentence(const uint8_t *rx_arr, size_t len) {
     // $GPGGA,053740.000,2503.6319,N,12136.0099,E,1,08,1.1,63.8,M,15.2,M,,0000*64
 
     // Parses NMEA message
-    sscanf(temp_buf[0], "%2d%2d%2d%3d", (int *)&r.gga.time.hh, (int *)&r.gga.time.mm,
-           (int *)&r.gga.time.ss, (int *)&r.gga.time.sss);
+    sscanf(temp_buf[0], "%2d%2d%2d%3d", (int *)&r.time.hh, (int *)&r.time.mm, (int *)&r.time.ss,
+           (int *)&r.time.sss);
 
-    sscanf(temp_buf[1], "%2d%2d%4d", (int *)&r.gga.latitude.degrees, (int *)&r.gga.latitude.minutes,
-           (int *)&r.gga.latitude.fraction);
+    sscanf(temp_buf[1], "%2d%2d%4d", (int *)&r.latitude.degrees, (int *)&r.latitude.minutes,
+           (int *)&r.latitude.fraction);
 
-    r.gga.north_south = (uint8_t)temp_buf[2][0];
+    r.north_south = (uint8_t)temp_buf[2][0];
 
-    sscanf(temp_buf[3], "%2d%2d%4d", (int *)&r.gga.longtitude.degrees,
-           (int *)&r.gga.longtitude.minutes, (int *)&r.gga.longtitude.fraction);
+    sscanf(temp_buf[3], "%2d%2d%4d", (int *)&r.longtitude.degrees, (int *)&r.longtitude.minutes,
+           (int *)&r.longtitude.fraction);
 
-    r.gga.east_west = (uint8_t)temp_buf[4][0];
-    sscanf(temp_buf[5], "%d", (int *)&r.gga.position_fix);
-    sscanf(temp_buf[6], "%d", (int *)&r.gga.satellites_used);
-    sscanf(temp_buf[7], "%f", &r.gga.hdop);
-    sscanf(temp_buf[8], "%f", &r.gga.msl_altitude);
-    r.gga.units_1 = (uint8_t)temp_buf[9][0];
-    sscanf(temp_buf[10], "%f", &r.gga.geoid_seperation);
-    r.gga.units_2 = (uint8_t)temp_buf[11][0];
-    sscanf(temp_buf[12], "%d", (int *)&r.gga.adc);
-    sscanf(temp_buf[13], "%d", (int *)&r.gga.drs);
-    sscanf(temp_buf[13], "%*[^*]*%2x", (int *)&r.gga.checksum);
+    r.east_west = (uint8_t)temp_buf[4][0];
+    sscanf(temp_buf[5], "%d", (int *)&r.position_fix);
+    sscanf(temp_buf[6], "%d", (int *)&r.satellites_used);
+    sscanf(temp_buf[7], "%f", &r.hdop);
+    sscanf(temp_buf[8], "%f", &r.msl_altitude);
+    r.units_1 = (uint8_t)temp_buf[9][0];
+    sscanf(temp_buf[10], "%f", &r.geoid_seperation);
+    r.units_2 = (uint8_t)temp_buf[11][0];
+    sscanf(temp_buf[12], "%d", (int *)&r.adc);
+    sscanf(temp_buf[13], "%d", (int *)&r.drs);
+    sscanf(temp_buf[13], "%*[^*]*%2x", (int *)&r.checksum);
   }
   return r;
 }
