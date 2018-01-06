@@ -11,8 +11,12 @@ typedef struct {
 } SPIPortData;
 
 static SPIPortData s_port[NUM_SPI_PORTS] = {
-  [SPI_PORT_1] = { .rcc_cmd = RCC_APB2PeriphClockCmd, .periph = RCC_APB2Periph_SPI1, .base = SPI1 },
-  [SPI_PORT_2] = { .rcc_cmd = RCC_APB1PeriphClockCmd, .periph = RCC_APB1Periph_SPI2, .base = SPI2 },
+        [SPI_PORT_1] = {.rcc_cmd = RCC_APB2PeriphClockCmd,
+                        .periph = RCC_APB2Periph_SPI1,
+                        .base = SPI1},
+        [SPI_PORT_2] = {.rcc_cmd = RCC_APB1PeriphClockCmd,
+                        .periph = RCC_APB1Periph_SPI2,
+                        .base = SPI2},
 };
 
 StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
@@ -24,7 +28,8 @@ StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
   RCC_ClocksTypeDef clocks;
   RCC_GetClocksFreq(&clocks);
 
-  size_t index = (size_t)__builtin_ffsl((int32_t)(clocks.PCLK_Frequency / settings->baudrate));
+  size_t index = (size_t)__builtin_ffsl(
+      (int32_t)(clocks.PCLK_Frequency / settings->baudrate));
   if (index <= 2) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid baudrate");
   }
@@ -33,9 +38,9 @@ StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
   s_port[spi].cs = settings->cs;
 
   GPIOSettings gpio_settings = {
-    .alt_function = GPIO_ALTFN_0,  //
-    .direction = GPIO_DIR_IN,      //
-    .state = GPIO_STATE_HIGH,      //
+      .alt_function = GPIO_ALTFN_0, //
+      .direction = GPIO_DIR_IN,     //
+      .state = GPIO_STATE_HIGH,     //
   };
 
   gpio_init_pin(&settings->miso, &gpio_settings);
@@ -48,15 +53,15 @@ StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
   gpio_init_pin(&settings->cs, &gpio_settings);
 
   SPI_InitTypeDef init = {
-    .SPI_Direction = SPI_Direction_2Lines_FullDuplex,
-    .SPI_Mode = SPI_Mode_Master,
-    .SPI_DataSize = SPI_DataSize_8b,
-    .SPI_CPHA = (settings->mode & 0x01) ? SPI_CPHA_2Edge : SPI_CPHA_1Edge,
-    .SPI_CPOL = (settings->mode & 0x02) ? SPI_CPOL_High : SPI_CPOL_Low,
-    .SPI_NSS = SPI_NSS_Soft,
-    .SPI_BaudRatePrescaler = (index - 2) << 3,
-    .SPI_FirstBit = SPI_FirstBit_MSB,
-    .SPI_CRCPolynomial = 7,
+      .SPI_Direction = SPI_Direction_2Lines_FullDuplex,
+      .SPI_Mode = SPI_Mode_Master,
+      .SPI_DataSize = SPI_DataSize_8b,
+      .SPI_CPHA = (settings->mode & 0x01) ? SPI_CPHA_2Edge : SPI_CPHA_1Edge,
+      .SPI_CPOL = (settings->mode & 0x02) ? SPI_CPOL_High : SPI_CPOL_Low,
+      .SPI_NSS = SPI_NSS_Soft,
+      .SPI_BaudRatePrescaler = (index - 2) << 3,
+      .SPI_FirstBit = SPI_FirstBit_MSB,
+      .SPI_CRCPolynomial = 7,
   };
   SPI_Init(s_port[spi].base, &init);
 
@@ -68,8 +73,8 @@ StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
   return STATUS_CODE_OK;
 }
 
-StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *rx_data,
-                        size_t rx_len) {
+StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len,
+                        uint8_t *rx_data, size_t rx_len) {
   if (spi >= NUM_SPI_PORTS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid SPI port.");
   }
@@ -80,7 +85,8 @@ StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *r
     }
     SPI_SendData8(s_port[spi].base, tx_data[i]);
 
-    while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_RXNE) == RESET) {
+    while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_RXNE) ==
+           RESET) {
     }
     SPI_ReceiveData8(s_port[spi].base);
   }
@@ -90,7 +96,8 @@ StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *r
     }
     SPI_SendData8(s_port[spi].base, 0x00);
 
-    while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_RXNE) == RESET) {
+    while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_RXNE) ==
+           RESET) {
     }
     rx_data[i] = SPI_ReceiveData8(s_port[spi].base);
   }

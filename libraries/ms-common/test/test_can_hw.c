@@ -26,10 +26,10 @@ void setup_test(void) {
   interrupt_init();
 
   CANHwSettings can_settings = {
-    .bitrate = CAN_HW_BITRATE_125KBPS,
-    .loopback = true,
-    .tx = { GPIO_PORT_A, 12 },
-    .rx = { GPIO_PORT_A, 11 },
+      .bitrate = CAN_HW_BITRATE_125KBPS,
+      .loopback = true,
+      .tx = {GPIO_PORT_A, 12},
+      .rx = {GPIO_PORT_A, 11},
   };
   StatusCode ret = can_hw_init(&can_settings);
   TEST_ASSERT_OK(ret);

@@ -2,7 +2,8 @@
 // Status Library for more verbose error handling
 //
 // Usage:
-// Use this library in any function where an error could occur. A verbose error will improve
+// Use this library in any function where an error could occur. A verbose error
+// will improve
 // debug-ability and allow for logging and attempts at recovery.
 //
 // If an error has occurred in a function that returns a StatusCode then:
@@ -22,11 +23,13 @@
 // }
 // // Continue execution
 //
-// If you need to see the error beyond just the StatusCode in the event multiple callers could have
+// If you need to see the error beyond just the StatusCode in the event multiple
+// callers could have
 // caused it or for debugging:
 // Status status = status_get();
 //
-// If it is necessary to forward the error down the stack then there are three options:
+// If it is necessary to forward the error down the stack then there are three
+// options:
 // status_ok_or_return(some_func_that_returns_status());
 // OR
 // StatusCode status = some_func_that_returns_status();
@@ -39,7 +42,8 @@
 
 #include "misc.h"
 
-// StatusCodes for various errors, keep these generic. Never assume their order is fixed so refer to
+// StatusCodes for various errors, keep these generic. Never assume their order
+// is fixed so refer to
 // them by name only.
 typedef enum {
   STATUS_CODE_OK = 0,
@@ -65,10 +69,11 @@ typedef struct Status {
 
 typedef void (*status_callback)(const Status *status);
 
-// Updates a status struct containing an error code and optionally a message. This should only be
+// Updates a status struct containing an error code and optionally a message.
+// This should only be
 // called via the macros.
-StatusCode status_impl_update(StatusCode code, const char *source, const char *caller,
-                              const char *message);
+StatusCode status_impl_update(StatusCode code, const char *source,
+                              const char *caller, const char *message);
 
 // Get a copy of the global status so it can be used safely.
 Status status_get(void);
@@ -77,13 +82,16 @@ Status status_get(void);
 void status_register_callback(status_callback callback);
 
 // Macros for convenience.
-#define status_code(code) \
-  status_impl_update((code), (__FILE__ ":" STRINGIFY(__LINE__)), (__FUNCTION__), "")
-#define status_msg(code, message) \
-  status_impl_update((code), (__FILE__ ":" STRINGIFY(__LINE__)), (__FUNCTION__), (message))
+#define status_code(code)                                                      \
+  status_impl_update((code), (__FILE__ ":" STRINGIFY(__LINE__)),               \
+                     (__FUNCTION__), "")
+#define status_msg(code, message)                                              \
+  status_impl_update((code), (__FILE__ ":" STRINGIFY(__LINE__)),               \
+                     (__FUNCTION__), (message))
 #define status_ok(code) (STATUS_CODE_OK == (code))
 #define status_clear() status_msg(STATUS_CODE_OK, "Clear")
 
 // Use to forward failures or continue on success.
-#define status_ok_or_return(code) \
-  if (code) return (code)
+#define status_ok_or_return(code)                                              \
+  if (code)                                                                    \
+  return (code)

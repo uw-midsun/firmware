@@ -16,7 +16,7 @@ void slave_send_lin_message(SlaveMessages slave_request_id, uint8_t *arr,
 // An application of *slave_callback
 static int prv_process_message(SlaveMessages slave_response_id, uint8_t *data, size_t data_length,
                                void *context) {
- // Extract data
+  // Extract data
   uint8_t slave_board_id = data[0]; // uint8_t instead of uint16_t because there are not many ids
   uint16_t voltage = data[1] << 8 | data[2];
   uint16_t current = data[3] << 8 | data[3];

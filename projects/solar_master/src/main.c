@@ -11,7 +11,6 @@
 #define NUM_SLAVES 6
 
 int main(void) {
-
   // Initialize callback functions for each valid slave response
   for (SlaveMessages slave_num_response = slave_0_response;
   slave_num_response < NUM_SLAVE_MESSAGES; slave_num_response++) {

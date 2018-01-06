@@ -14,6 +14,4 @@ bool fsm_process_event(FSM *fsm, const Event *e) {
   return transitioned;
 }
 
-bool fsm_guard_true(FSM *fsm, const Event *e, void *context) {
-  return true;
-}
+bool fsm_guard_true(FSM *fsm, const Event *e, void *context) { return true; }

@@ -45,7 +45,8 @@ void test_soft_timer_basic(void) {
 }
 
 void test_soft_timer_preempt(void) {
-  // Begin medium, longer, short, then long - should finish short, medium, long, longer
+  // Begin medium, longer, short, then long - should finish short, medium, long,
+  // longer
   // Tests ordering: new, append to back, insert into front, insert into middle
   volatile SoftTimerID cb_id_short = SOFT_TIMER_INVALID_TIMER;
   volatile SoftTimerID cb_id_medium = SOFT_TIMER_INVALID_TIMER;
@@ -61,11 +62,13 @@ void test_soft_timer_preempt(void) {
 
   StatusCode ret;
 
-  ret = soft_timer_start_millis(1, prv_timeout_cb, (void *)&cb_id_medium, &id_medium);
+  ret = soft_timer_start_millis(1, prv_timeout_cb, (void *)&cb_id_medium,
+                                &id_medium);
   TEST_ASSERT_OK(ret);
   TEST_ASSERT_NOT_EQUAL(SOFT_TIMER_INVALID_TIMER, id_medium);
 
-  ret = soft_timer_start_seconds(1, prv_timeout_cb, (void *)&cb_id_longer, &id_longer);
+  ret = soft_timer_start_seconds(1, prv_timeout_cb, (void *)&cb_id_longer,
+                                 &id_longer);
   TEST_ASSERT_OK(ret);
   TEST_ASSERT_NOT_EQUAL(SOFT_TIMER_INVALID_TIMER, id_longer);
 
@@ -73,7 +76,8 @@ void test_soft_timer_preempt(void) {
   TEST_ASSERT_OK(ret);
   TEST_ASSERT_NOT_EQUAL(SOFT_TIMER_INVALID_TIMER, id_short);
 
-  ret = soft_timer_start_millis(500, prv_timeout_cb, (void *)&cb_id_long, &id_long);
+  ret = soft_timer_start_millis(500, prv_timeout_cb, (void *)&cb_id_long,
+                                &id_long);
   TEST_ASSERT_OK(ret);
   TEST_ASSERT_NOT_EQUAL(SOFT_TIMER_INVALID_TIMER, id_long);
 
@@ -118,7 +122,8 @@ void test_soft_timer_cancelled_timer(void) {
   TEST_ASSERT_FALSE(soft_timer_inuse());
 
   StatusCode ret;
-  ret = soft_timer_start_millis(1, prv_timeout_cb, (void *)&cb_id_long, &id_long);
+  ret =
+      soft_timer_start_millis(1, prv_timeout_cb, (void *)&cb_id_long, &id_long);
   TEST_ASSERT_OK(ret);
   TEST_ASSERT_NOT_EQUAL(SOFT_TIMER_INVALID_TIMER, id_long);
 
@@ -164,15 +169,16 @@ void test_soft_timer_remaining(void) {
 }
 
 void test_soft_timer_exhausted(void) {
-  volatile SoftTimerID cb_ids[SOFT_TIMER_MAX_TIMERS] = { 0 };
+  volatile SoftTimerID cb_ids[SOFT_TIMER_MAX_TIMERS] = {0};
   volatile SoftTimerID cb_id_single = SOFT_TIMER_INVALID_TIMER;
-  SoftTimerID ids[SOFT_TIMER_MAX_TIMERS] = { 0 };
+  SoftTimerID ids[SOFT_TIMER_MAX_TIMERS] = {0};
   SoftTimerID id_single = SOFT_TIMER_INVALID_TIMER;
 
   StatusCode ret;
   for (int i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {
     cb_ids[i] = SOFT_TIMER_INVALID_TIMER;
-    ret = soft_timer_start_millis(10, prv_timeout_cb, (void *)&cb_ids[i], &ids[i]);
+    ret = soft_timer_start_millis(10, prv_timeout_cb, (void *)&cb_ids[i],
+                                  &ids[i]);
     TEST_ASSERT_OK(ret);
   }
 
@@ -182,7 +188,8 @@ void test_soft_timer_exhausted(void) {
   // Cancel arbitrary timer
   soft_timer_cancel(ids[3]);
 
-  ret = soft_timer_start_millis(1, prv_timeout_cb, (void *)&cb_id_single, &id_single);
+  ret = soft_timer_start_millis(1, prv_timeout_cb, (void *)&cb_id_single,
+                                &id_single);
   TEST_ASSERT_OK(ret);
 
   while (cb_id_single == SOFT_TIMER_INVALID_TIMER) {

@@ -5,18 +5,18 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-static GPIOAddress address[] = { {
-                                     GPIO_PORT_A,  //
-                                     0,            //
-                                 },
-                                 {
-                                     GPIO_PORT_A,  //
-                                     1,            //
-                                 },
-                                 {
-                                     GPIO_PORT_A,  //
-                                     2,            //
-                                 } };
+static GPIOAddress address[] = {{
+                                    GPIO_PORT_A, //
+                                    0,           //
+                                },
+                                {
+                                    GPIO_PORT_A, //
+                                    1,           //
+                                },
+                                {
+                                    GPIO_PORT_A, //
+                                    2,           //
+                                }};
 
 static volatile uint8_t s_callback_runs = 0;
 static volatile bool s_callback_ran = false;
@@ -42,10 +42,10 @@ void prv_adc_check_range(ADCChannel adc_channel) {
 
 void setup_test() {
   GPIOSettings settings = {
-    GPIO_DIR_IN,        //
-    GPIO_STATE_LOW,     //
-    GPIO_RES_NONE,      //
-    GPIO_ALTFN_ANALOG,  //
+      GPIO_DIR_IN,       //
+      GPIO_STATE_LOW,    //
+      GPIO_RES_NONE,     //
+      GPIO_ALTFN_ANALOG, //
   };
 
   gpio_init();
@@ -62,7 +62,8 @@ void teardown_test(void) {}
 
 void test_set_channel(void) {
   // Check that channels can only be set with the correct channel arguments
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, adc_set_channel(NUM_ADC_CHANNELS, true));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
+                    adc_set_channel(NUM_ADC_CHANNELS, true));
 
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_set_channel(ADC_CHANNEL_0, true));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_set_channel(ADC_CHANNEL_1, true));
@@ -74,21 +75,29 @@ void test_set_channel(void) {
 }
 
 void test_set_callback(void) {
-  // Check that callbacks can only be registered with the correct channel arguments
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
-                    adc_register_callback(NUM_ADC_CHANNELS, prv_callback, NULL));
+  // Check that callbacks can only be registered with the correct channel
+  // arguments
+  TEST_ASSERT_EQUAL(
+      STATUS_CODE_INVALID_ARGS,
+      adc_register_callback(NUM_ADC_CHANNELS, prv_callback, NULL));
 
-  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL));
-  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, adc_register_callback(ADC_CHANNEL_1, prv_callback, NULL));
-  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, adc_register_callback(ADC_CHANNEL_2, prv_callback, NULL));
+  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY,
+                    adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL));
+  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY,
+                    adc_register_callback(ADC_CHANNEL_1, prv_callback, NULL));
+  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY,
+                    adc_register_callback(ADC_CHANNEL_2, prv_callback, NULL));
 
   adc_set_channel(ADC_CHANNEL_0, true);
   adc_set_channel(ADC_CHANNEL_1, true);
   adc_set_channel(ADC_CHANNEL_2, true);
 
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL));
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_register_callback(ADC_CHANNEL_1, prv_callback, NULL));
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_register_callback(ADC_CHANNEL_2, prv_callback, NULL));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK,
+                    adc_register_callback(ADC_CHANNEL_0, prv_callback, NULL));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK,
+                    adc_register_callback(ADC_CHANNEL_1, prv_callback, NULL));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK,
+                    adc_register_callback(ADC_CHANNEL_2, prv_callback, NULL));
 }
 
 void test_single() {
@@ -114,7 +123,8 @@ void test_single() {
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_read_raw(ADC_CHANNEL_1, &reading));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_read_raw(ADC_CHANNEL_2, &reading));
 
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, adc_read_raw(NUM_ADC_CHANNELS, &reading));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
+                    adc_read_raw(NUM_ADC_CHANNELS, &reading));
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, adc_read_raw(ADC_CHANNEL_3, &reading));
 
   while (!s_callback_ran) {
@@ -149,7 +159,8 @@ void test_continuous() {
 }
 
 void test_read_single() {
-  // Check that both the raw readings and converted readings are within the expected range
+  // Check that both the raw readings and converted readings are within the
+  // expected range
   adc_init(ADC_MODE_SINGLE);
 
   adc_set_channel(ADC_CHANNEL_0, true);
@@ -159,7 +170,8 @@ void test_read_single() {
 }
 
 void test_read_continuous() {
-  // Check that both the raw readings and converted readings are within the expected range
+  // Check that both the raw readings and converted readings are within the
+  // expected range
   adc_init(ADC_MODE_CONTINUOUS);
 
   adc_set_channel(ADC_CHANNEL_0, true);
@@ -171,15 +183,15 @@ void test_read_continuous() {
 void test_adc_get_channel() {
   ADCChannel adc_channel;
   GPIOAddress address[] = {
-    {
-        .port = GPIO_PORT_A,
-    },
-    {
-        .port = GPIO_PORT_B,
-    },
-    {
-        .port = GPIO_PORT_C,
-    },
+      {
+          .port = GPIO_PORT_A,
+      },
+      {
+          .port = GPIO_PORT_B,
+      },
+      {
+          .port = GPIO_PORT_C,
+      },
   };
 
   address[0].pin = 0;
