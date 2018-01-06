@@ -37,7 +37,8 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
     current_pin = __builtin_ffs(intf) - 1;
 
     if (s_interrupts[current_pin].callback != NULL) {
-      s_interrupts[current_pin].callback(current_pin, (intcap >> current_pin) & 1,
+      s_interrupts[current_pin].callback(current_pin,
+                                         (intcap >> current_pin) & 1,
                                          s_interrupts[current_pin].context);
     }
 
@@ -63,12 +64,14 @@ StatusCode gpio_expander_init(GPIOAddress address, I2CPort i2c_port) {
   s_i2c_port = i2c_port;
 
   // Configure the pin to receive interrupts from the MCP23008
-  GPIOSettings gpio_settings = { .direction = GPIO_DIR_IN, .alt_function = GPIO_ALTFN_NONE };
-  InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_NORMAL };
+  GPIOSettings gpio_settings = {.direction = GPIO_DIR_IN,
+                                .alt_function = GPIO_ALTFN_NONE};
+  InterruptSettings it_settings = {INTERRUPT_TYPE_INTERRUPT,
+                                   INTERRUPT_PRIORITY_NORMAL};
 
   gpio_init_pin(&address, &gpio_settings);
-  gpio_it_register_interrupt(&address, &it_settings, INTERRUPT_EDGE_FALLING, prv_interrupt_handler,
-                             NULL);
+  gpio_it_register_interrupt(&address, &it_settings, INTERRUPT_EDGE_FALLING,
+                             prv_interrupt_handler, NULL);
 
   // Initialize the interrupt callbacks to NULL
   for (uint8_t i = 0; i < NUM_GPIO_EXPANDER_PINS; i++) {
@@ -105,7 +108,8 @@ StatusCode gpio_expander_get_state(GPIOExpanderPin pin, GPIOState *state) {
 
   // Update our GPIO register value and read the pin state
   uint8_t data;
-  status_ok_or_return(i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPIO, &data, 1));
+  status_ok_or_return(
+      i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPIO, &data, 1));
 
   *state = (data >> pin) & 1;
 
@@ -118,7 +122,8 @@ StatusCode gpio_expander_set_state(GPIOExpanderPin pin, GPIOState new_state) {
 
   // Return if the pin is configured as an input
   uint8_t io_dir;
-  status_ok_or_return(i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_IODIR, &io_dir, 1));
+  status_ok_or_return(
+      i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_IODIR, &io_dir, 1));
 
   if ((io_dir >> pin) & 1) {
     return status_code(STATUS_CODE_INVALID_ARGS);
@@ -130,7 +135,8 @@ StatusCode gpio_expander_set_state(GPIOExpanderPin pin, GPIOState new_state) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_expander_register_callback(GPIOExpanderPin pin, GPIOExpanderCallback callback,
+StatusCode gpio_expander_register_callback(GPIOExpanderPin pin,
+                                           GPIOExpanderCallback callback,
                                            void *context) {
   StatusCode valid = prv_pin_is_valid(pin);
   status_ok_or_return(valid);

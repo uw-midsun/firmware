@@ -31,7 +31,8 @@ StatusCode event_arbiter_init(EventArbiterOutput output) {
   return STATUS_CODE_OK;
 }
 
-EventArbiterCheck *event_arbiter_add_fsm(FSM *fsm, EventArbiterCheck default_checker) {
+EventArbiterCheck *event_arbiter_add_fsm(FSM *fsm,
+                                         EventArbiterCheck default_checker) {
   if (s_num_active_fsms == EVENT_ARBITER_MAX_FSMS) {
     return NULL;
   }

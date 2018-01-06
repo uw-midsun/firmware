@@ -4,11 +4,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "delay.h"       // For real-time delays
-#include "gpio.h"        // General Purpose I/O control.
-#include "interrupt.h"   // For enabling interrupts.
-#include "misc.h"        // Various helper functions/macros.
-#include "soft_timer.h"  // Software timers for scheduling future events.
+#include "delay.h"      // For real-time delays
+#include "gpio.h"       // General Purpose I/O control.
+#include "interrupt.h"  // For enabling interrupts.
+#include "misc.h"       // Various helper functions/macros.
+#include "soft_timer.h" // Software timers for scheduling future events.
 
 // Depending on which board you are working with you will need to (un)comment
 // the relevant block of GPIO pins. Generally these would be in a configuration
@@ -17,10 +17,10 @@
 
 // Controller board LEDs
 static const GPIOAddress leds[] = {
-  { .port = GPIO_PORT_B, .pin = 5 },   //
-  { .port = GPIO_PORT_B, .pin = 4 },   //
-  { .port = GPIO_PORT_B, .pin = 3 },   //
-  { .port = GPIO_PORT_A, .pin = 15 },  //
+    {.port = GPIO_PORT_B, .pin = 5},  //
+    {.port = GPIO_PORT_B, .pin = 4},  //
+    {.port = GPIO_PORT_B, .pin = 3},  //
+    {.port = GPIO_PORT_A, .pin = 15}, //
 };
 // Discovery board LEDs
 // static const GPIOAddress leds[] = {
@@ -37,10 +37,11 @@ int main(void) {
   gpio_init();
 
   GPIOSettings led_settings = {
-    .direction = GPIO_DIR_OUT,        // The pin needs to output.
-    .state = GPIO_STATE_HIGH,         // Start in the "on" state.
-    .alt_function = GPIO_ALTFN_NONE,  // No connections to peripherals.
-    .resistor = GPIO_RES_NONE,        // No need of a resistor to modify floating logic levels.
+      .direction = GPIO_DIR_OUT,       // The pin needs to output.
+      .state = GPIO_STATE_HIGH,        // Start in the "on" state.
+      .alt_function = GPIO_ALTFN_NONE, // No connections to peripherals.
+      .resistor = GPIO_RES_NONE, // No need of a resistor to modify floating
+                                 // logic levels.
   };
 
   // Init all of the LED pins
@@ -48,7 +49,8 @@ int main(void) {
     gpio_init_pin(&leds[i], &led_settings);
   }
 
-  // Keep toggling the state of the pins from on to off with a 50 ms delay between.
+  // Keep toggling the state of the pins from on to off with a 50 ms delay
+  // between.
   while (true) {
     for (size_t i = 0; i < SIZEOF_ARRAY(leds); i++) {
       gpio_toggle_state(&leds[i]);

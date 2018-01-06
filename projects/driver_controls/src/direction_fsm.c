@@ -32,23 +32,25 @@ FSM_STATE_TRANSITION(state_reverse) {
 static bool prv_check_neutral(const Event *e) {
   // The car must not be able to move while in the neutral state
   switch (e->id) {
-    case INPUT_EVENT_PEDAL_COAST:
-    case INPUT_EVENT_PEDAL_PRESSED:
-    case INPUT_EVENT_CRUISE_CONTROL:
-      return false;
-    default:
-      return true;
+  case INPUT_EVENT_PEDAL_COAST:
+  case INPUT_EVENT_PEDAL_PRESSED:
+  case INPUT_EVENT_CRUISE_CONTROL:
+    return false;
+  default:
+    return true;
   }
 }
 
 static bool prv_check_forward(const Event *e) {
-  // Powering off while the car is moving can be dangerous. As a result, powering off is
+  // Powering off while the car is moving can be dangerous. As a result,
+  // powering off is
   // forbidden while in forward gear
   return (e->id != INPUT_EVENT_POWER);
 }
 
 static bool prv_check_reverse(const Event *e) {
-  // Same as forward, except that cruise control is forbidden in reverse for obvious reasons
+  // Same as forward, except that cruise control is forbidden in reverse for
+  // obvious reasons
   return !(e->id == INPUT_EVENT_POWER || e->id == INPUT_EVENT_CRUISE_CONTROL);
 }
 
@@ -58,9 +60,9 @@ static void prv_state_neutral(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_neutral;
 
-  EventArbiterOutputData data = { .id = CAN_OUTPUT_MESSAGE_DIRECTION_SELECTOR,
-                                  .state = DIRECTION_FSM_STATE_NEUTRAL,
-                                  .data = e->data };
+  EventArbiterOutputData data = {.id = CAN_OUTPUT_MESSAGE_DIRECTION_SELECTOR,
+                                 .state = DIRECTION_FSM_STATE_NEUTRAL,
+                                 .data = e->data};
 
   event_arbiter_output(data);
 }
@@ -69,9 +71,9 @@ static void prv_state_forward(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_forward;
 
-  EventArbiterOutputData data = { .id = CAN_OUTPUT_MESSAGE_DIRECTION_SELECTOR,
-                                  .state = DIRECTION_FSM_STATE_FORWARD,
-                                  .data = e->data };
+  EventArbiterOutputData data = {.id = CAN_OUTPUT_MESSAGE_DIRECTION_SELECTOR,
+                                 .state = DIRECTION_FSM_STATE_FORWARD,
+                                 .data = e->data};
 
   event_arbiter_output(data);
 }
@@ -80,9 +82,9 @@ static void prv_state_reverse(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_reverse;
 
-  EventArbiterOutputData data = { .id = CAN_OUTPUT_MESSAGE_DIRECTION_SELECTOR,
-                                  .state = DIRECTION_FSM_STATE_REVERSE,
-                                  .data = e->data };
+  EventArbiterOutputData data = {.id = CAN_OUTPUT_MESSAGE_DIRECTION_SELECTOR,
+                                 .state = DIRECTION_FSM_STATE_REVERSE,
+                                 .data = e->data};
 
   event_arbiter_output(data);
 }

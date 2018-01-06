@@ -1,4 +1,5 @@
-// Test that the CAN output routines are properly generated once the correct events occur
+// Test that the CAN output routines are properly generated once the correct
+// events occur
 
 #include "event_arbiter.h"
 #include "event_queue.h"
@@ -40,19 +41,19 @@ static void prv_output(EventArbiterOutputData data) {
   s_can_output.state = data.state;
   s_can_output.data = data.data;
 
-  LOG_DEBUG("[ .id = %x, .state = %x, .data = %x ]\n", s_can_output.id, s_can_output.state,
-            s_can_output.data);
+  LOG_DEBUG("[ .id = %x, .state = %x, .data = %x ]\n", s_can_output.id,
+            s_can_output.state, s_can_output.data);
 }
 
 static void prv_toggle_power(void) {
-  Event e = { .data = 0 };
+  Event e = {.data = 0};
 
   e.id = INPUT_EVENT_POWER;
   event_arbiter_process_event(&e);
 }
 
 static void prv_toggle_mech_brake(bool new_state) {
-  Event e = { .data = 0 };
+  Event e = {.data = 0};
 
   e.id = (new_state == true) ? INPUT_EVENT_MECHANICAL_BRAKE_PRESSED
                              : INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
@@ -86,7 +87,8 @@ void test_can_output_power(void) {
 
   prv_toggle_power();
 
-  TEST_ASSERT_EQUAL_STRING("state_charging", s_fsm_group.power.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_charging",
+                           s_fsm_group.power.current_state->name);
   TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_POWER, s_can_output.id);
   TEST_ASSERT_EQUAL(POWER_FSM_STATE_CHARGING, s_can_output.state);
   TEST_ASSERT_EQUAL(0, s_can_output.data);
@@ -123,7 +125,7 @@ void test_can_output_mechanical_brake(void) {
 }
 
 void test_can_output_hazard_light(void) {
-  Event e = { 0 };
+  Event e = {0};
 
   // Turn on the power and clean up the event queue
   prv_toggle_mech_brake(true);
@@ -148,7 +150,7 @@ void test_can_output_hazard_light(void) {
 }
 
 void test_can_output_turn_signal(void) {
-  Event e = { 0 };
+  Event e = {0};
 
   // Turn on the power and clean up the event queue
   prv_toggle_mech_brake(true);
@@ -180,7 +182,7 @@ void test_can_output_turn_signal(void) {
 }
 
 void test_can_output_direction(void) {
-  Event e = { 0 };
+  Event e = {0};
 
   // Setup for the direction selector to be used
   prv_toggle_mech_brake(true);
@@ -214,7 +216,7 @@ void test_can_output_direction(void) {
 }
 
 void test_can_output_pedal(void) {
-  Event e = { .data = 0 };
+  Event e = {.data = 0};
 
   // Setup for the pedals to be used
   prv_toggle_mech_brake(true);
@@ -228,7 +230,7 @@ void test_can_output_pedal(void) {
   prv_toggle_mech_brake(false);
 
   // Test that coasting generates the correct event
-  e = (Event){ .id = INPUT_EVENT_PEDAL_COAST, .data = 0xabcd };
+  e = (Event){.id = INPUT_EVENT_PEDAL_COAST, .data = 0xabcd};
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_PEDAL, s_can_output.id);
@@ -236,7 +238,7 @@ void test_can_output_pedal(void) {
   TEST_ASSERT_EQUAL(0xabcd, s_can_output.data);
 
   // Test that pressing the gas generates the correct event
-  e = (Event){ .id = INPUT_EVENT_PEDAL_PRESSED, .data = 0xabcd };
+  e = (Event){.id = INPUT_EVENT_PEDAL_PRESSED, .data = 0xabcd};
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_PEDAL, s_can_output.id);
@@ -244,7 +246,7 @@ void test_can_output_pedal(void) {
   TEST_ASSERT_EQUAL(0xabcd, s_can_output.data);
 
   // Test that cruise control generates the correct event
-  e = (Event){ .id = INPUT_EVENT_CRUISE_CONTROL, .data = 0xabcd };
+  e = (Event){.id = INPUT_EVENT_CRUISE_CONTROL, .data = 0xabcd};
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_PEDAL, s_can_output.id);
@@ -252,11 +254,11 @@ void test_can_output_pedal(void) {
   TEST_ASSERT_EQUAL(0xabcd, s_can_output.data);
 
   // Exit cruise control
-  e = (Event){ .id = INPUT_EVENT_CRUISE_CONTROL, .data = 0xabcd };
+  e = (Event){.id = INPUT_EVENT_CRUISE_CONTROL, .data = 0xabcd};
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   // Test that regen brakes generate the correct event
-  e = (Event){ .id = INPUT_EVENT_PEDAL_BRAKE, .data = 0xabcd };
+  e = (Event){.id = INPUT_EVENT_PEDAL_BRAKE, .data = 0xabcd};
   TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
 
   TEST_ASSERT_EQUAL(CAN_OUTPUT_MESSAGE_PEDAL, s_can_output.id);
@@ -265,7 +267,7 @@ void test_can_output_pedal(void) {
 }
 
 void test_can_output_horn(void) {
-  Event e = { 0 };
+  Event e = {0};
 
   prv_toggle_mech_brake(true);
   prv_toggle_power();
@@ -288,7 +290,7 @@ void test_can_output_horn(void) {
 }
 
 void test_can_output_push_to_talk(void) {
-  Event e = { 0 };
+  Event e = {0};
 
   prv_toggle_mech_brake(true);
   prv_toggle_power();

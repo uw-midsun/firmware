@@ -1,8 +1,8 @@
 #include "sender.h"
-#include <inttypes.h>
 #include "can.h"
 #include "log.h"
 #include "soft_timer.h"
+#include <inttypes.h>
 
 typedef struct {
   uint32_t timeout_us;
@@ -10,7 +10,7 @@ typedef struct {
   CANMessage msg;
 } SenderStorage;
 
-static volatile SenderStorage s_sender = { 0 };
+static volatile SenderStorage s_sender = {0};
 
 static void prv_tx_cb(SoftTimerID timer_id, void *context) {
   StatusCode ret = can_transmit(&s_sender.msg, NULL);

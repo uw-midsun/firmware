@@ -1,5 +1,6 @@
 // CAN driver bus flooding test
-// Attempts to flood the CAN bus - would like to ensure that the main thread doesn't starve
+// Attempts to flood the CAN bus - would like to ensure that the main thread
+// doesn't starve
 // and figure out how quickly we can realistically send messages
 #include "can.h"
 #include "gpio.h"
@@ -18,7 +19,7 @@ typedef enum {
   CAN_TEST_EVENT_FAULT,
 } CANTestEvent;
 
-static GPIOAddress s_led = { GPIO_PORT_B, 3 };
+static GPIOAddress s_led = {GPIO_PORT_B, 3};
 static CANStorage s_can_storage;
 static CANRxHandler s_rx_handlers[CAN_TEST_NUM_RX_HANDLERS];
 
@@ -28,10 +29,11 @@ static void prv_blink_led(SoftTimerID timer_id, void *context) {
 }
 
 static bool prv_is_sender(void) {
-  GPIOAddress pin_out = { GPIO_PORT_A, 0 };
-  GPIOAddress pin_in = { GPIO_PORT_A, 1 };
+  GPIOAddress pin_out = {GPIO_PORT_A, 0};
+  GPIOAddress pin_in = {GPIO_PORT_A, 1};
 
-  GPIOSettings gpio_settings = { .direction = GPIO_DIR_OUT, .state = GPIO_STATE_LOW };
+  GPIOSettings gpio_settings = {.direction = GPIO_DIR_OUT,
+                                .state = GPIO_STATE_LOW};
   gpio_init_pin(&pin_out, &gpio_settings);
 
   gpio_settings.direction = GPIO_DIR_IN;
@@ -50,7 +52,8 @@ int main(void) {
   soft_timer_init();
   event_queue_init();
 
-  GPIOSettings gpio_settings = { .direction = GPIO_DIR_OUT, .state = GPIO_STATE_LOW };
+  GPIOSettings gpio_settings = {.direction = GPIO_DIR_OUT,
+                                .state = GPIO_STATE_LOW};
   gpio_init_pin(&s_led, &gpio_settings);
   prv_blink_led(0, NULL);
 
@@ -58,15 +61,16 @@ int main(void) {
   LOG_DEBUG("Is sender: %d\n", is_sender);
 
   CANSettings can_settings = {
-    .device_id = 0x4 + is_sender,
-    .bitrate = CAN_HW_BITRATE_500KBPS,
-    .rx_event = CAN_TEST_EVENT_RX,
-    .tx_event = CAN_TEST_EVENT_TX,
-    .fault_event = CAN_TEST_EVENT_FAULT,
-    .tx = { GPIO_PORT_A, 12 },
-    .rx = { GPIO_PORT_A, 11 },
+      .device_id = 0x4 + is_sender,
+      .bitrate = CAN_HW_BITRATE_500KBPS,
+      .rx_event = CAN_TEST_EVENT_RX,
+      .tx_event = CAN_TEST_EVENT_TX,
+      .fault_event = CAN_TEST_EVENT_FAULT,
+      .tx = {GPIO_PORT_A, 12},
+      .rx = {GPIO_PORT_A, 11},
   };
-  can_init(&can_settings, &s_can_storage, s_rx_handlers, CAN_TEST_NUM_RX_HANDLERS);
+  can_init(&can_settings, &s_can_storage, s_rx_handlers,
+           CAN_TEST_NUM_RX_HANDLERS);
 
   if (is_sender || CAN_TEST_BUS_ACTIVE) {
     uint16_t msg_id = 15 + !is_sender;
@@ -78,7 +82,7 @@ int main(void) {
   }
 
   while (true) {
-    Event e = { 0 };
+    Event e = {0};
     while (status_ok(event_process(&e))) {
       bool success = fsm_process_event(CAN_FSM, &e);
     }

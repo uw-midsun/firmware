@@ -20,7 +20,8 @@ typedef enum {
   NUM_GPIO_EXPANDER_PINS
 } GPIOExpanderPin;
 
-typedef void (*GPIOExpanderCallback)(GPIOExpanderPin pin, GPIOState state, void *context);
+typedef void (*GPIOExpanderCallback)(GPIOExpanderPin pin, GPIOState state,
+                                     void *context);
 
 // Initialize the expander with an address to connect to its INT pin
 StatusCode gpio_expander_init(GPIOAddress address, I2CPort i2c_port);
@@ -28,12 +29,14 @@ StatusCode gpio_expander_init(GPIOAddress address, I2CPort i2c_port);
 // Initialize one of the expander pins.
 StatusCode gpio_expander_init_pin(GPIOExpanderPin pin, GPIOSettings *settings);
 
-// Returns the set output value or the current input value based on the pin configuration
+// Returns the set output value or the current input value based on the pin
+// configuration
 StatusCode gpio_expander_get_state(GPIOExpanderPin pin, GPIOState *state);
 
 // Set the state of an output pin
 StatusCode gpio_expander_set_state(GPIOExpanderPin pin, GPIOState new_state);
 
 // Register a callback for a specific pin
-StatusCode gpio_expander_register_callback(GPIOExpanderPin pin, GPIOExpanderCallback callback,
+StatusCode gpio_expander_register_callback(GPIOExpanderPin pin,
+                                           GPIOExpanderCallback callback,
                                            void *context);

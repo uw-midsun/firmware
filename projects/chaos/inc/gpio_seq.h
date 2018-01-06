@@ -10,8 +10,10 @@
 
 // Initializes the list of pins provided.
 StatusCode gpio_seq_init_pins(const GPIOAddress *addrs, size_t num_addrs,
-                              const GPIOSettings *settings, uint32_t delay_time_us);
-
-// Sets the state of the pins provided. Must be initialized first or unexpected behavior may ensue.
-StatusCode gpio_seq_set_state(const GPIOAddress *addrs, size_t num_addrs, GPIOState state,
+                              const GPIOSettings *settings,
                               uint32_t delay_time_us);
+
+// Sets the state of the pins provided. Must be initialized first or unexpected
+// behavior may ensue.
+StatusCode gpio_seq_set_state(const GPIOAddress *addrs, size_t num_addrs,
+                              GPIOState state, uint32_t delay_time_us);

@@ -15,4 +15,5 @@ typedef struct MagneticSensorReading {
 StatusCode magnetic_sensor_init(I2CPort i2c_port);
 
 // Read converted magnetic sensor values
-StatusCode magnetic_sensor_read_data(I2CPort i2c_port, MagneticSensorReading *reading);
+StatusCode magnetic_sensor_read_data(I2CPort i2c_port,
+                                     MagneticSensorReading *reading);

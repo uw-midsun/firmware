@@ -39,9 +39,7 @@ static FSM s_fsm_b;
 static uint8_t s_output_runs;
 
 // Event arbiter test output function
-static void prv_output(EventArbiterOutputData data) {
-  s_output_runs++;
-}
+static void prv_output(EventArbiterOutputData data) { s_output_runs++; }
 
 static bool prv_check_state_c(const Event *e) {
   return (e->id != TEST_EVENT_ARBITER_EVENT_B);
@@ -51,7 +49,7 @@ static void prv_state_c(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = prv_check_state_c;
 
-  EventArbiterOutputData data = { 0 };
+  EventArbiterOutputData data = {0};
 
   event_arbiter_output(data);
 }
@@ -60,7 +58,7 @@ static void prv_state_d(FSM *fsm, const Event *e, void *context) {
   EventArbiterCheck *event_check = fsm->context;
   *event_check = NULL;
 
-  EventArbiterOutputData data = { 0 };
+  EventArbiterOutputData data = {0};
 
   event_arbiter_output(data);
 }
