@@ -74,7 +74,8 @@ void test_set_channel(void) {
 }
 
 void test_set_callback(void) {
-  // Check that callbacks can only be registered with the correct channel arguments
+  // Check that callbacks can only be registered with the correct channel
+  // arguments
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     adc_register_callback(NUM_ADC_CHANNELS, prv_callback, NULL));
 
@@ -149,7 +150,8 @@ void test_continuous() {
 }
 
 void test_read_single() {
-  // Check that both the raw readings and converted readings are within the expected range
+  // Check that both the raw readings and converted readings are within the
+  // expected range
   adc_init(ADC_MODE_SINGLE);
 
   adc_set_channel(ADC_CHANNEL_0, true);
@@ -159,7 +161,8 @@ void test_read_single() {
 }
 
 void test_read_continuous() {
-  // Check that both the raw readings and converted readings are within the expected range
+  // Check that both the raw readings and converted readings are within the
+  // expected range
   adc_init(ADC_MODE_CONTINUOUS);
 
   adc_set_channel(ADC_CHANNEL_0, true);

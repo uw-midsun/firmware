@@ -15,8 +15,10 @@ bool critical_section_start(void) {
   pthread_mutex_lock(&s_mutex);
   if (!s_interrupts_disabled) {
     s_interrupts_disabled = true;
-    // Set a block mask for this process on the signals we are using as interrupts. Don't block all
-    // signals so SIGTERM and SIGINT can still kill the process if it hangs or needs to be stopped.
+    // Set a block mask for this process on the signals we are using as
+    // interrupts. Don't block all
+    // signals so SIGTERM and SIGINT can still kill the process if it hangs or
+    // needs to be stopped.
     sigset_t block_mask;
     sigemptyset(&block_mask);
     sigaddset(&block_mask, SIGRTMIN + INTERRUPT_PRIORITY_HIGH);
@@ -32,7 +34,8 @@ bool critical_section_start(void) {
 
 void critical_section_end(bool disabled_in_scope) {
   if (s_interrupts_disabled && disabled_in_scope) {
-    // Clear the block mask for this process to allow signals to be processed. (They will queue when
+    // Clear the block mask for this process to allow signals to be processed.
+    // (They will queue when
     // disabled).
     sigset_t block_mask;
     sigemptyset(&block_mask);

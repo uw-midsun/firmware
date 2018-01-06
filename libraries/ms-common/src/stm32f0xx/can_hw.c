@@ -60,7 +60,8 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
   CAN_ITConfig(CAN_HW_BASE, CAN_IT_ERR, ENABLE);
   stm32f0xx_interrupt_nvic_enable(CEC_CAN_IRQn, INTERRUPT_PRIORITY_HIGH);
 
-  // Allow all messages by default, but reset the filter count so it's overwritten on the first
+  // Allow all messages by default, but reset the filter count so it's
+  // overwritten on the first
   // filter
   can_hw_add_filter(0, 0);
   s_num_filters = 0;
@@ -86,7 +87,8 @@ StatusCode can_hw_add_filter(uint16_t mask, uint16_t filter) {
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN HW: Ran out of filter banks.");
   }
 
-  // We currently use 32-bit filters. We could use 16-bit filters instead since we're only using
+  // We currently use 32-bit filters. We could use 16-bit filters instead since
+  // we're only using
   // standard 11-bit IDs.
   CAN_FilterInitTypeDef filter_cfg = {
     .CAN_FilterNumber = s_num_filters,

@@ -1,4 +1,5 @@
-// Test program for STM32F072RB discovery boards - attempts to connect to the onboard MEMS
+// Test program for STM32F072RB discovery boards - attempts to connect to the
+// onboard MEMS
 // gyroscope over SPI. Blinks the blue LED on success or the red LED on fail.
 #include <stdbool.h>
 #include <stdint.h>

@@ -1,4 +1,5 @@
-// Test that the CAN output routines are properly generated once the correct events occur
+// Test that the CAN output routines are properly generated once the correct
+// events occur
 
 #include "event_arbiter.h"
 #include "event_queue.h"

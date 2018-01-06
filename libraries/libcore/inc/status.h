@@ -2,7 +2,8 @@
 // Status Library for more verbose error handling
 //
 // Usage:
-// Use this library in any function where an error could occur. A verbose error will improve
+// Use this library in any function where an error could occur. A verbose error
+// will improve
 // debug-ability and allow for logging and attempts at recovery.
 //
 // If an error has occurred in a function that returns a StatusCode then:
@@ -22,11 +23,13 @@
 // }
 // // Continue execution
 //
-// If you need to see the error beyond just the StatusCode in the event multiple callers could have
+// If you need to see the error beyond just the StatusCode in the event multiple
+// callers could have
 // caused it or for debugging:
 // Status status = status_get();
 //
-// If it is necessary to forward the error down the stack then there are three options:
+// If it is necessary to forward the error down the stack then there are three
+// options:
 // status_ok_or_return(some_func_that_returns_status());
 // OR
 // StatusCode status = some_func_that_returns_status();
@@ -39,7 +42,8 @@
 
 #include "misc.h"
 
-// StatusCodes for various errors, keep these generic. Never assume their order is fixed so refer to
+// StatusCodes for various errors, keep these generic. Never assume their order
+// is fixed so refer to
 // them by name only.
 typedef enum {
   STATUS_CODE_OK = 0,
@@ -65,7 +69,8 @@ typedef struct Status {
 
 typedef void (*status_callback)(const Status *status);
 
-// Updates a status struct containing an error code and optionally a message. This should only be
+// Updates a status struct containing an error code and optionally a message.
+// This should only be
 // called via the macros.
 StatusCode status_impl_update(StatusCode code, const char *source, const char *caller,
                               const char *message);
