@@ -134,12 +134,13 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
     pthread_mutex_unlock(&s_keep_alive);
 
     // Signal condition variable in case TX thread is waiting
+    pthread_join(s_rx_pthread_id, NULL);
+
     pthread_mutex_lock(&s_tx_mutex);
-    pthread_cond_signal(&s_tx_cond);
     pthread_mutex_unlock(&s_tx_mutex);
+    pthread_cond_signal(&s_tx_cond);
 
     pthread_join(s_tx_pthread_id, NULL);
-    pthread_join(s_rx_pthread_id, NULL);
   }
 
   pthread_mutex_init(&s_keep_alive, NULL);
