@@ -14,7 +14,7 @@ void test_gps_nmea_gga(void) {
   const uint8_t input[] =
       "$GPGGA,053740.000,2503.6319,N,12136.0099,E,1,08,1.1,63.8,"
       "M,15.2,M,,0000*64";
-  evm_gps_gga_sentence r = evm_gps_parse_nmea_gga_sentence(input, sizeof(input) / sizeof(input[0]));
+  evm_gps_gga_sentence r = evm_gps_parse_nmea_gga_sentence(input, SIZEOF_ARRAY(input));
   // Just chose a random thing to test. Not extensive yet
   LOG_DEBUG("r.north_south: %s\n", (char *)&r.north_south);
   TEST_ASSERT_TRUE(r.time.hh == 5);
