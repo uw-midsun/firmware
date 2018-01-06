@@ -70,15 +70,15 @@ int main(void) {
   };
 
   evm_gps_settings settings = { .settings_tx = &settings_tx,
-                           .settings_rx = &settings_rx,
-                           .settings_power = &settings_power,
-                           .settings_on_off = &settings_on_off,
-                           .pin_tx = &pins[0],
-                           .pin_rx = &pins[1],
-                           .pin_power = &pins[2],
-                           .pin_on_off = &pins[3],
-                           .uart_settings = &s_settings,
-                           .port = &s_port };
+                                .settings_rx = &settings_rx,
+                                .settings_power = &settings_power,
+                                .settings_on_off = &settings_on_off,
+                                .pin_tx = &pins[0],
+                                .pin_rx = &pins[1],
+                                .pin_power = &pins[2],
+                                .pin_on_off = &pins[3],
+                                .uart_settings = &s_settings,
+                                .port = &s_port };
   evm_gps_init(&settings);
   evm_gps_add_gga_handler(gga_handler, NULL);
 

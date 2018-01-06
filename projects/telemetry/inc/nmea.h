@@ -8,7 +8,7 @@
 
 typedef enum {
   EVM_GPS_GGA = 0,  // These are the number of data fields in each message type,
-            // excluding the message id
+                    // excluding the message id
   EVM_GPS_GLL,
   EVM_GPS_GSA,
   EVM_GPS_GSV,
@@ -37,10 +37,10 @@ typedef struct {
 typedef struct {
   uint32_t position_fix;  // 0 = invalid, (1,2,6) = valid, all else is undefined
   uint32_t satellites_used;
-  uint32_t adc;  // Age of diff. corr. in seconds
-  uint32_t drs;  // Diff. Ref. Station. Not sure what it is yet
-  uint32_t hdop_1;         // Horizontal dilution of precision, characteristic
-  uint32_t hdop_2;         // Horizontal dilution of precision, mantissa
+  uint32_t adc;                 // Age of diff. corr. in seconds
+  uint32_t drs;                 // Diff. Ref. Station. Not sure what it is yet
+  uint32_t hdop_1;              // Horizontal dilution of precision, characteristic
+  uint32_t hdop_2;              // Horizontal dilution of precision, mantissa
   uint32_t msl_altitude_1;      // In meters, characteristic
   uint32_t msl_altitude_2;      // In meters, mantissa
   uint32_t geoid_seperation_1;  // In meters, characteristic
@@ -48,11 +48,11 @@ typedef struct {
   evm_gps_coord latitude;
   evm_gps_coord longtitude;
   evm_gps_utc_time time;
-  uint8_t east_west;       // East or West. E for East, W for West, treat as char
-  uint8_t north_south;     // North or South. N for North, S for South, treat as char
-  uint8_t units_msl_altitude;         // Indicated units of above, should be M for meters.
-  uint8_t units_geoid_seperation;         // Indicates units of above, should be M for meters.
-  uint8_t checksum[3];     // Should be * followed by two integers
+  uint8_t east_west;               // East or West. E for East, W for West, treat as char
+  uint8_t north_south;             // North or South. N for North, S for South, treat as char
+  uint8_t units_msl_altitude;      // Indicated units of above, should be M for meters.
+  uint8_t units_geoid_seperation;  // Indicates units of above, should be M for meters.
+  uint8_t checksum[3];             // Should be * followed by two integers
   EVM_GPS_NMEA_MESSAGE_ID message_id;
 } evm_gps_gga_sentence;
 
