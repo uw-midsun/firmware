@@ -41,7 +41,8 @@ static pthread_t s_tx_pthread_id;
 static pthread_mutex_t s_tx_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t s_tx_cond = PTHREAD_COND_INITIALIZER;
 
-static pthread_mutex_t s_should_exit = PTHREAD_MUTEX_INITIALIZER;
+// Locked if the TX/RX threads should be alive, unlocked on exit
+static pthread_mutex_t s_keep_alive = PTHREAD_MUTEX_INITIALIZER;
 
 static CANHwSocketData s_socket_data = { .can_fd = -1 };
 
@@ -61,10 +62,8 @@ static void *prv_rx_thread(void *arg) {
 
   struct timeval timeout = { .tv_usec = CAN_HW_THREAD_EXIT_PERIOD_US };
 
-  // Mutex is locked when the thread should exit
-  while (pthread_mutex_trylock(&s_should_exit) == 0) {
-    pthread_mutex_unlock(&s_should_exit);
-
+  // Mutex is unlocked when the thread should exit
+  while (pthread_mutex_trylock(&s_keep_alive) != 0) {
     // Select timeout is used to poll every now and then
     fd_set input_fds;
     FD_ZERO(&input_fds);
@@ -86,6 +85,8 @@ static void *prv_rx_thread(void *arg) {
     }
   }
 
+  pthread_mutex_unlock(&s_keep_alive);
+
   return NULL;
 }
 
@@ -93,18 +94,17 @@ static void *prv_tx_thread(void *arg) {
   LOG_DEBUG("CAN HW TX thread started\n");
   struct can_frame frame = { 0 };
 
-  // Mutex is locked when the thread should exit
-  while (pthread_mutex_trylock(&s_should_exit) == 0) {
-    pthread_mutex_unlock(&s_should_exit);
-
+  // Mutex is unlocked when the thread should exit
+  while (pthread_mutex_trylock(&s_keep_alive) != 0) {
     pthread_mutex_lock(&s_tx_mutex);
     while (fifo_size(&s_socket_data.tx_fifo) == 0) {
       pthread_cond_wait(&s_tx_cond, &s_tx_mutex);
 
-      if (pthread_mutex_trylock(&s_should_exit) != 0) {
+      if (pthread_mutex_trylock(&s_keep_alive) == 0) {
+        // Mutex was unlocked and we were able to lock it
+        pthread_mutex_unlock(&s_keep_alive);
         break;
       }
-      pthread_mutex_lock(&s_should_exit);
     }
 
     fifo_pop(&s_socket_data.tx_fifo, &frame);
@@ -121,6 +121,8 @@ static void *prv_tx_thread(void *arg) {
     }
   }
 
+  pthread_mutex_unlock(&s_keep_alive);
+
   return NULL;
 }
 
@@ -129,21 +131,23 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
     // Request threads to exit
     close(s_socket_data.can_fd);
 
-    pthread_mutex_lock(&s_should_exit);
+    pthread_mutex_unlock(&s_keep_alive);
 
     // Signal condition variable in case TX thread is waiting
+    pthread_join(s_rx_pthread_id, NULL);
+
     pthread_mutex_lock(&s_tx_mutex);
-    pthread_cond_signal(&s_tx_cond);
     pthread_mutex_unlock(&s_tx_mutex);
+    pthread_cond_signal(&s_tx_cond);
 
     pthread_join(s_tx_pthread_id, NULL);
-    pthread_join(s_rx_pthread_id, NULL);
-    pthread_mutex_unlock(&s_should_exit);
   }
 
-  pthread_mutex_init(&s_should_exit, NULL);
+  pthread_mutex_init(&s_keep_alive, NULL);
   pthread_mutex_init(&s_tx_mutex, NULL);
   pthread_cond_init(&s_tx_cond, NULL);
+
+  pthread_mutex_lock(&s_keep_alive);
 
   memset(&s_socket_data, 0, sizeof(s_socket_data));
   s_socket_data.delay_us = prv_get_delay(settings->bitrate);
