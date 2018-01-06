@@ -5,7 +5,7 @@
 #include "status.h"
 #include "uart.h"
 
-typedef void (*GGAHandler)(const GGASentence);
+typedef void (*evm_gps_gga_handler)(const evm_gps_gga_sentence);
 
 // This struct basically contains all the info about pins etc.
 // Check this document on page 4:
@@ -21,14 +21,14 @@ typedef struct {
   GPIOAddress *pin_tx;
   GPIOAddress *pin_power;
   GPIOAddress *pin_on_off;
-} EvmSettings;
+} evm_gps_settings;
 
-StatusCode evm_gps_init(EvmSettings *settings);
+StatusCode evm_gps_init(evm_gps_settings *settings);
 
 // These methods will add the handler to the handler array, and returns the
 // index so that it can
 // be removed. If the array is full, then it returns -1.
 
 // The reason for different handlers is so that it is easier to use the driver.
-StatusCode add_gga_handler(GGAHandler handler, size_t *index);
-StatusCode remove_gga_handler(size_t index);
+StatusCode evm_gps_add_gga_handler(evm_gps_gga_handler handler, size_t *index);
+StatusCode evm_gps_remove_gga_handler(size_t index);

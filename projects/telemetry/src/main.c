@@ -23,12 +23,12 @@ static const UARTSettings s_settings = {
   .alt_fn = GPIO_ALTFN_1,
 };
 
-void gga_handler(GGASentence result) {
+void gga_handler(evm_gps_gga_sentence result) {
   return;
 }
 
 // For GPS
-static const UARTPort port = UART_PORT_2;
+static const UARTPort s_port = UART_PORT_2;
 
 int main(void) {
   // Enable various peripherals
@@ -69,7 +69,7 @@ int main(void) {
                                    // logic levels.
   };
 
-  EvmSettings settings = { .settings_tx = &settings_tx,
+  evm_gps_settings settings = { .settings_tx = &settings_tx,
                            .settings_rx = &settings_rx,
                            .settings_power = &settings_power,
                            .settings_on_off = &settings_on_off,
@@ -78,9 +78,9 @@ int main(void) {
                            .pin_power = &pins[2],
                            .pin_on_off = &pins[3],
                            .uart_settings = &s_settings,
-                           .port = &port };
+                           .port = &s_port };
   evm_gps_init(&settings);
-  add_gga_handler(gga_handler, NULL);
+  evm_gps_add_gga_handler(gga_handler, NULL);
 
   return 0;
 }

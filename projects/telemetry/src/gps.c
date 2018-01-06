@@ -15,34 +15,35 @@
 // How many handlers can we possibly need?
 #define GPS_HANDLER_ARRAY_LENGTH 5
 
-static GGAHandler gga_handler[GPS_HANDLER_ARRAY_LENGTH] = { 0 };
+static evm_gps_gga_handler s_gga_handler[GPS_HANDLER_ARRAY_LENGTH] = { 0 };
 static UARTStorage s_storage = { 0 };
 
 // This is so that initializing multiple times does not cause bugs.
 // To clean up you must call evm_gps_clean_up(EvmSettings *settings)
-static bool initialized = false;
+static bool s_initialized = false;
 
 static void s_nmea_read(const uint8_t *rx_arr, size_t len, void *context) {
-  if (!status_ok(is_valid_nmea(rx_arr, len))) {
+  if (!status_ok(evm_gps_is_valid_nmea(rx_arr, len))) {
     LOG_DEBUG("Invalid nmea message");
     return;
   }
-  NMEAMessageID message_id;
-  get_nmea_sentence_type(rx_arr, &message_id);
-  if (message_id == GGA) {
-    GGASentence r = parse_nmea_gga_sentence(rx_arr, len);
+
+  EVM_GPS_NMEA_MESSAGE_ID message_id;
+  evm_gps_get_nmea_sentence_type(rx_arr, &message_id);
+  if (message_id == EVM_GPS_GGA) {
+    evm_gps_gga_sentence r = evm_gps_parse_nmea_gga_sentence(rx_arr, len);
     for (uint32_t i = 0; i < GPS_HANDLER_ARRAY_LENGTH; i++) {
-      if (gga_handler[i] != NULL) {
-        (*gga_handler[i])(r);
+      if (s_gga_handler[i] != NULL) {
+        (*s_gga_handler[i])(r);
       }
     }
   }
 }
 
-StatusCode add_gga_handler(GGAHandler handler, size_t *index) {
+StatusCode evm_gps_add_gga_handler(evm_gps_gga_handler handler, size_t *index) {
   for (uint16_t i = 0; i < GPS_HANDLER_ARRAY_LENGTH; i++) {
-    if (gga_handler[i] == NULL) {
-      gga_handler[i] = handler;
+    if (s_gga_handler[i] == NULL) {
+      s_gga_handler[i] = handler;
       // This cast won't be an issue, there's no way "i" will be big enought to
       // cause an overflow
       if (index) {
@@ -54,14 +55,14 @@ StatusCode add_gga_handler(GGAHandler handler, size_t *index) {
   return STATUS_CODE_UNKNOWN;
 }
 
-StatusCode remove_gga_handler(size_t index) {
+StatusCode evm_gps_remove_gga_handler(size_t index) {
   if (index >= GPS_HANDLER_ARRAY_LENGTH) return STATUS_CODE_UNKNOWN;
-  gga_handler[index] = NULL;
+  s_gga_handler[index] = NULL;
   return STATUS_CODE_OK;
 }
 
-void stop_ON_OFF(SoftTimerID timer_id, void *context) {
-  EvmSettings *settings = context;
+void prv_stop_ON_OFF(SoftTimerID timer_id, void *context) {
+  evm_gps_settings *settings = context;
   gpio_toggle_state(settings->pin_on_off);
   // Here we should wait for one second
   // During this period of time we should hear something from the GPS chip
@@ -69,21 +70,21 @@ void stop_ON_OFF(SoftTimerID timer_id, void *context) {
 }
 
 // This is useful as a method for callbacks
-void evm_toggle_chip_power(SoftTimerID timer_id, void *context) {
-  EvmSettings *settings = context;
+void prv_toggle_chip_power(SoftTimerID timer_id, void *context) {
+  evm_gps_settings *settings = context;
   gpio_toggle_state(settings->pin_power);
 }
 
 // This callback should start the initialization sequence
-void pull_ON_OFF(SoftTimerID timer_id, void *context) {
-  EvmSettings *settings = context;
+void prv_pull_ON_OFF(SoftTimerID timer_id, void *context) {
+  evm_gps_settings *settings = context;
 
   // Can't really return a StatusCode here. Might need a messy work around / leave it?
   gpio_toggle_state(settings->pin_on_off);
-  soft_timer_start_millis(100, stop_ON_OFF, settings, NULL);
+  soft_timer_start_millis(100, prv_stop_ON_OFF, settings, NULL);
 }
 
-StatusCode evm_gps_validate_settings(EvmSettings *settings) {
+StatusCode evm_gps_validate_settings(evm_gps_settings *settings) {
   // Making sure all settings as passed in
   // Maybe this should be made into its own method?
   if (!settings) {
@@ -123,8 +124,8 @@ StatusCode evm_gps_validate_settings(EvmSettings *settings) {
 
 // Initialization of this chip is described on page 10 of:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
-StatusCode evm_gps_init(EvmSettings *settings) {
-  if (initialized) return STATUS_CODE_OK;
+StatusCode evm_gps_init(evm_gps_settings *settings) {
+  if (s_initialized) return STATUS_CODE_OK;
 
   status_ok_or_return(evm_gps_validate_settings(settings));
 
@@ -143,27 +144,27 @@ StatusCode evm_gps_init(EvmSettings *settings) {
   status_ok_or_return(gpio_init_pin(settings->pin_on_off, settings->settings_on_off));
 
   // From the documentation: Power needs to be on for one second before continuing
-  evm_toggle_chip_power(0, settings);
-  status_ok_or_return(soft_timer_start_seconds(1, pull_ON_OFF, settings, NULL));
-  initialized = true;
+  prv_toggle_chip_power(0, settings);
+  status_ok_or_return(soft_timer_start_seconds(1, prv_pull_ON_OFF, settings, NULL));
+  s_initialized = true;
   return STATUS_CODE_OK;
 }
 
 // Implementing shut down here:
 // From page 25 of:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
-StatusCode evm_gps_clean_up(EvmSettings *settings) {
+StatusCode evm_gps_clean_up(evm_gps_settings *settings) {
   // This string is taken from the pdf mentioned above. The \r\n may not be necessary depending on
   // if the uart library adds it automatically or not.
   // The char array below should read $PSRF117,16*0B\r\n
   uint8_t message[] = { '$', 'P', 'S', 'R', 'F', '1', '1',  '7',
                         ',', '1', '6', '*', '0', 'B', '\r', '\n' };
   status_ok_or_return(uart_tx(*(settings->port), message, sizeof(message) / sizeof(message[0])));
-  status_ok_or_return(soft_timer_start_seconds(1, evm_toggle_chip_power, settings, NULL));
+  status_ok_or_return(soft_timer_start_seconds(1, prv_toggle_chip_power, settings, NULL));
 
-  memset(&gga_handler, 0, SIZEOF_ARRAY(gga_handler));
+  memset(&s_gga_handler, 0, SIZEOF_ARRAY(s_gga_handler));
   memset(&s_storage, 0, sizeof(s_storage));
 
-  initialized = false;
+  s_initialized = false;
   return STATUS_CODE_OK;
 }
