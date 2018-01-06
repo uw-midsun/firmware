@@ -5,10 +5,6 @@
 #include "status.h"
 #include "uart.h"
 
-// This enum contains the list of supported NMEA sentences that are supported by
-// our GPS chip
-
-typedef void (*GPSHandler)(const NMEAResult);
 typedef void (*GGAHandler)(const GGASentence);
 
 // This struct basically contains all the info about pins etc.
