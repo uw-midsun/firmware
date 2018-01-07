@@ -11,12 +11,12 @@
 #include "status.h"
 
 // Conversion callbacks for ADCs.
-typedef uint16_t (*power_path_conversion_callback)(uint16_t value);
+typedef uint16_t (*PowerPathConversionCallback)(uint16_t value);
 
 typedef enum {
   POWER_PATH_SOURCE_ID_DCDC = 0,
   POWER_PATH_SOURCE_ID_AUX_BAT,
-  NUM_POWER_PATH_SOURCE_ID,
+  NUM_POWER_PATH_SOURCE_IDS,
 } PowerPathSourceID;
 
 // For storing voltage and current values.
@@ -32,8 +32,8 @@ typedef struct PowerPathSource {
   const GPIOAddress voltage_pin;
   const GPIOAddress current_pin;
   volatile PowerPathVCReadings readings;
-  power_path_conversion_callback current_convert;
-  power_path_conversion_callback voltage_convert;
+  PowerPathConversionCallback current_convert;
+  PowerPathConversionCallback voltage_convert;
   uint32_t period_us;
   SoftTimerID timer_id;
   bool monitoring_active;
