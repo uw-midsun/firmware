@@ -62,7 +62,7 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
 
   // Allow all messages by default, but reset the filter count so it's overwritten on the first
   // filter
-  can_hw_add_filter(0, 0);
+  can_hw_add_filter(0, 0, false);
   s_num_filters = 0;
 
   return STATUS_CODE_OK;
@@ -81,24 +81,31 @@ StatusCode can_hw_register_callback(CANHwEvent event, CANHwEventHandlerCb callba
   return STATUS_CODE_OK;
 }
 
-StatusCode can_hw_add_filter(uint16_t mask, uint16_t filter) {
+StatusCode can_hw_add_filter(uint32_t mask, uint32_t filter, bool extended) {
   if (s_num_filters >= CAN_HW_NUM_FILTER_BANKS) {
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN HW: Ran out of filter banks.");
   }
 
-  // We currently use 32-bit filters. We could use 16-bit filters instead since we're only using
-  // standard 11-bit IDs.
+  // 32-bit Filter - Identifer Mask
+  // STID[10:3] | STID[2:0] EXID[17:13] | EXID[12:5] | EXID[4:0] [IDE] [RTR] 0
+  size_t offset = extended ? 3 : 21;
+  // We always set the IDE bit for the mask so we distinguish between standard and extended
+  // TODO: remove magic values?
+  uint32_t mask_val = (mask << offset) | (1 << 2);
+  uint32_t filter_val = (filter << offset) | ((uint32_t)extended << 2);
+
   CAN_FilterInitTypeDef filter_cfg = {
     .CAN_FilterNumber = s_num_filters,
     .CAN_FilterMode = CAN_FilterMode_IdMask,
     .CAN_FilterScale = CAN_FilterScale_32bit,
-    .CAN_FilterIdHigh = filter << 5,
-    .CAN_FilterIdLow = 0x0000,
-    .CAN_FilterMaskIdHigh = mask << 5,
-    .CAN_FilterMaskIdLow = 0x0000,
+    .CAN_FilterIdHigh = filter_val >> 16,
+    .CAN_FilterIdLow = filter_val,
+    .CAN_FilterMaskIdHigh = mask_val >> 16,
+    .CAN_FilterMaskIdLow = mask_val,
     .CAN_FilterFIFOAssignment = (s_num_filters % 2),
     .CAN_FilterActivation = ENABLE,
   };
+
   CAN_FilterInit(&filter_cfg);
 
   s_num_filters++;
@@ -116,10 +123,12 @@ CANHwBusStatus can_hw_bus_status(void) {
   return CAN_HW_BUS_STATUS_OK;
 }
 
-StatusCode can_hw_transmit(uint16_t id, const uint8_t *data, size_t len) {
+StatusCode can_hw_transmit(uint32_t id, bool extended, const uint8_t *data, size_t len) {
+  // We can set both since the used ID is determined by tx_msg.IDE
   CanTxMsg tx_msg = {
     .StdId = id,        //
-    .IDE = CAN_ID_STD,  //
+    .ExtId = id, //
+    .IDE = extended ? CAN_Id_Standard : CAN_Id_Extended,  //
     .DLC = len,         //
   };
 
@@ -133,7 +142,7 @@ StatusCode can_hw_transmit(uint16_t id, const uint8_t *data, size_t len) {
   return STATUS_CODE_OK;
 }
 
-bool can_hw_receive(uint16_t *id, uint64_t *data, size_t *len) {
+bool can_hw_receive(uint32_t *id, bool *extended, uint64_t *data, size_t *len) {
   // 0: No messages available
   // 1: FIFO0 has received a message
   // 2: FIFO1 has received a message
@@ -150,7 +159,8 @@ bool can_hw_receive(uint16_t *id, uint64_t *data, size_t *len) {
   CanRxMsg rx_msg = { 0 };
   CAN_Receive(CAN_HW_BASE, fifo, &rx_msg);
 
-  *id = rx_msg.StdId;
+  *extended = (rx_msg.IDE == CAN_Id_Extended);
+  *id = *extended ? rx_msg.ExtId : rx_msg.StdId;
   *len = rx_msg.DLC;
   memcpy(data, rx_msg.Data, sizeof(*rx_msg.Data) * rx_msg.DLC);
 
