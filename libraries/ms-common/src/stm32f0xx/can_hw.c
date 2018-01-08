@@ -126,10 +126,10 @@ CANHwBusStatus can_hw_bus_status(void) {
 StatusCode can_hw_transmit(uint32_t id, bool extended, const uint8_t *data, size_t len) {
   // We can set both since the used ID is determined by tx_msg.IDE
   CanTxMsg tx_msg = {
-    .StdId = id,        //
-    .ExtId = id, //
+    .StdId = id,                                          //
+    .ExtId = id,                                          //
     .IDE = extended ? CAN_Id_Standard : CAN_Id_Extended,  //
-    .DLC = len,         //
+    .DLC = len,                                           //
   };
 
   memcpy(tx_msg.Data, data, len);
