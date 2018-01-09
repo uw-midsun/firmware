@@ -39,12 +39,12 @@ static void prv_adc_read(SoftTimerID timer_id, void *context) {
   // Read and convert the current values.
   adc_get_channel(pps->current_pin, &chan);
   adc_read_raw(chan, &value);
-  pps->readings.current = pps->current_convert(value);
+  pps->readings.current = pps->current_convert_fn(value);
 
   // Read and convert the voltage values.
   adc_get_channel(pps->voltage_pin, &chan);
   adc_read_raw(chan, &value);
-  pps->readings.voltage = pps->voltage_convert(value);
+  pps->readings.voltage = pps->voltage_convert_fn(value);
 
   // Start the next timer.
   soft_timer_start(pps->period_us, prv_adc_read, pps, &pps->timer_id);
@@ -83,19 +83,6 @@ StatusCode power_path_init(PowerPathCfg *pp) {
   status_ok_or_return(gpio_init_pin(&pp->aux_bat.current_pin, &settings));
   status_ok_or_return(gpio_init_pin(&pp->dcdc.voltage_pin, &settings));
   return gpio_init_pin(&pp->dcdc.current_pin, &settings);
-}
-
-StatusCode power_path_enable(const PowerPathCfg *pp) {
-  status_ok_or_return(gpio_set_state(&pp->shutdown_pin, GPIO_STATE_HIGH));
-  return gpio_set_state(&pp->enable_pin, GPIO_STATE_HIGH);
-}
-
-StatusCode power_path_disable(PowerPathCfg *pp) {
-  // Stop interrupts from firing first to avoid false readings after shutdown.
-  status_ok_or_return(power_path_source_monitor_disable(&pp->aux_bat));
-  status_ok_or_return(power_path_source_monitor_disable(&pp->dcdc));
-  status_ok_or_return(gpio_set_state(&pp->shutdown_pin, GPIO_STATE_LOW));
-  return gpio_set_state(&pp->enable_pin, GPIO_STATE_LOW);
 }
 
 StatusCode power_path_source_monitor_enable(PowerPathSource *source, uint32_t period_us) {

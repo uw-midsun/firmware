@@ -46,8 +46,8 @@ static PowerPathCfg s_ppc = { .enable_pin = { .port = 0, .pin = 0 },
                                            .voltage_pin = { .port = 0, .pin = 3 },
                                            .current_pin = { .port = 0, .pin = 4 },
                                            .readings = { .voltage = 0, .current = 0 },
-                                           .current_convert = prv_aux_current_convert,
-                                           .voltage_convert = prv_aux_voltage_convert,
+                                           .current_convert_fn = prv_aux_current_convert,
+                                           .voltage_convert_fn = prv_aux_voltage_convert,
                                            .period_us = 0,
                                            .timer_id = SOFT_TIMER_INVALID_TIMER,
                                            .monitoring_active = false },
@@ -56,8 +56,8 @@ static PowerPathCfg s_ppc = { .enable_pin = { .port = 0, .pin = 0 },
                                         .voltage_pin = { .port = 0, .pin = 6 },
                                         .current_pin = { .port = 0, .pin = 7 },
                                         .readings = { .voltage = 0, .current = 0 },
-                                        .current_convert = prv_dcdc_current_convert,
-                                        .voltage_convert = prv_dcdc_voltage_convert,
+                                        .current_convert_fn = prv_dcdc_current_convert,
+                                        .voltage_convert_fn = prv_dcdc_voltage_convert,
                                         .period_us = 0,
                                         .timer_id = SOFT_TIMER_INVALID_TIMER,
                                         .monitoring_active = false } };
@@ -75,8 +75,6 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_power_path_uv_ov(void) {
-  TEST_ASSERT_OK(power_path_enable(&s_ppc));
-
   TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.aux_bat, TEST_POWER_PATH_ADC_PERIOD_US));
   TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.dcdc, TEST_POWER_PATH_ADC_PERIOD_US));
 
@@ -93,12 +91,11 @@ void test_power_path_uv_ov(void) {
   TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_UV_OV, e.id);
   TEST_ASSERT_EQUAL(POWER_PATH_SOURCE_ID_DCDC, e.data);
 
-  TEST_ASSERT_OK(power_path_disable(&s_ppc));
+  TEST_ASSERT_OK(power_path_source_monitor_disable(&s_ppc.aux_bat));
+  TEST_ASSERT_OK(power_path_source_monitor_disable(&s_ppc.dcdc));
 }
 
 void test_power_path_adcs(void) {
-  TEST_ASSERT_OK(power_path_enable(&s_ppc));
-
   TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.aux_bat, TEST_POWER_PATH_ADC_PERIOD_US));
   TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.dcdc, TEST_POWER_PATH_ADC_PERIOD_US));
 
@@ -117,6 +114,4 @@ void test_power_path_adcs(void) {
 
   TEST_ASSERT_EQUAL(STATUS_CODE_UNINITIALIZED, power_path_read_source(&s_ppc.aux_bat, &readings));
   TEST_ASSERT_EQUAL(STATUS_CODE_UNINITIALIZED, power_path_read_source(&s_ppc.dcdc, &readings));
-
-  TEST_ASSERT_OK(power_path_disable(&s_ppc));
 }
