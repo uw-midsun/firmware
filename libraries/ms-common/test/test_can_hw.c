@@ -106,7 +106,7 @@ void test_can_hw_extended(void) {
 }
 
 void test_can_hw_extended_filter(void) {
-  can_hw_add_filter(0x1234567, 0x12345678, true);
+  can_hw_add_filter(0x1234567, 0x1234567, true);
 
   StatusCode ret = can_hw_transmit(0x1234547, true, 0, 0);
   TEST_ASSERT_OK(ret);
