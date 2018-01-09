@@ -90,7 +90,6 @@ StatusCode can_hw_add_filter(uint32_t mask, uint32_t filter, bool extended) {
   // STID[10:3] | STID[2:0] EXID[17:13] | EXID[12:5] | EXID[4:0] [IDE] [RTR] 0
   size_t offset = extended ? 3 : 21;
   // We always set the IDE bit for the mask so we distinguish between standard and extended
-  // TODO: remove magic values?
   uint32_t mask_val = (mask << offset) | (1 << 2);
   uint32_t filter_val = (filter << offset) | ((uint32_t)extended << 2);
 
