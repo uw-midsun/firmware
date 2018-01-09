@@ -108,10 +108,16 @@ void test_can_hw_extended(void) {
 void test_can_hw_extended_filter(void) {
   can_hw_add_filter(0x1234567, 0x1234567, true);
 
+  // No match extended - fail
   StatusCode ret = can_hw_transmit(0x1234547, true, 0, 0);
   TEST_ASSERT_OK(ret);
 
-  ret = can_hw_transmit(0x12, false, 0, 0);
+  // No match standard - fail
+  ret = can_hw_transmit(0x123, false, 0, 0);
+  TEST_ASSERT_OK(ret);
+
+  // Partial invalid - fail
+  ret = can_hw_transmit(0x0004567, true, 0, 0);
   TEST_ASSERT_OK(ret);
 
   ret = can_hw_transmit(0x1234567, true, 0, 0);

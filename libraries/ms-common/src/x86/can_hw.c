@@ -213,8 +213,10 @@ StatusCode can_hw_add_filter(uint32_t mask, uint32_t filter, bool extended) {
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN HW: Ran out of filters.");
   }
 
-  s_socket_data.filters[s_socket_data.num_filters].can_id = filter & CAN_SFF_MASK;
-  s_socket_data.filters[s_socket_data.num_filters].can_mask = mask & CAN_SFF_MASK;
+  uint32_t reg_mask = extended ? CAN_EFF_MASK : CAN_SFF_MASK;
+  uint32_t ide = extended ? CAN_EFF_FLAG : 0;
+  s_socket_data.filters[s_socket_data.num_filters].can_id = (filter & reg_mask) | ide;
+  s_socket_data.filters[s_socket_data.num_filters].can_mask = (mask & reg_mask) | CAN_EFF_FLAG;
   s_socket_data.num_filters++;
 
   if (setsockopt(s_socket_data.can_fd, SOL_CAN_RAW, CAN_RAW_FILTER, s_socket_data.filters,
