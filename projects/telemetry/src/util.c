@@ -1,4 +1,5 @@
 #include "util.h"
+#include <stdbool.h>
 #include <string.h>
 
 static char s_hex[] = "0123456789ABCDEF";
@@ -12,11 +13,17 @@ static char* prv_int_to_hex(uint8_t checksum) {
   return return_value;
 }
 
-char* compute_checksum(char* message) {
+char* evm_gps_compute_checksum(char* message) {
   uint8_t sum = 0;
   uint8_t message_len = strlen(message);
   for (uint8_t i = 1; message[i] != '*' && i < message_len; i++) {
     sum ^= message[i];
   }
   return prv_int_to_hex(sum);
+}
+
+bool evm_gps_compare_checksum(char* message) {
+  char* computed = evm_gps_compute_checksum(message);
+  char* received = message + strlen(message) - 2;
+  return strcmp(computed, received) == 0;
 }
