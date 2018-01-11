@@ -2,13 +2,15 @@
 // CAN HW Interface
 // Requires GPIO and interrupts to be initialized.
 //
-// Used to initiate CAN TX and RX directly through the MCU, without any preprocessing or queues.
-// Note that none of our systems currently support more than one CAN interface natively.
+// Used to initiate CAN TX and RX directly through the MCU, without any
+// preprocessing or queues.
+// Note that none of our systems currently support more than one CAN interface
+// natively.
+#include "gpio.h"
+#include "status.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "gpio.h"
-#include "status.h"
 
 // Used to process HW events within the CAN ISR, ideally as short as possible.
 typedef void (*CANHwEventHandlerCb)(void *context);
@@ -45,7 +47,9 @@ typedef struct CANHwSettings {
 StatusCode can_hw_init(const CANHwSettings *settings);
 
 // Registers a callback for the given event
-StatusCode can_hw_register_callback(CANHwEvent event, CANHwEventHandlerCb callback, void *context);
+StatusCode can_hw_register_callback(CANHwEvent event,
+                                    CANHwEventHandlerCb callback,
+                                    void *context);
 
 StatusCode can_hw_add_filter(uint16_t mask, uint16_t filter);
 

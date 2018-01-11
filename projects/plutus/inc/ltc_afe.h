@@ -6,13 +6,13 @@
 // - GPIO1 is used as a thermistor input
 // requires GPIO, Interrupts and Soft Timers to be initialized
 
+#include "gpio.h"
+#include "spi.h"
+#include "status.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "gpio.h"
-#include "spi.h"
-#include "status.h"
 
 #define LTC6804_CELLS_PER_DEVICE 12
 
@@ -54,14 +54,19 @@ typedef struct LtcAfeSettings {
 StatusCode ltc_afe_init(const LtcAfeSettings *afe);
 
 // read all voltages
-// result is an array of size LTC6804_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
+// result is an array of size LTC6804_CELLS_PER_DEVICE *
+// LTC_AFE_DEVICES_IN_CHAIN
 // len should be SIZEOF_ARRAY(result)
-StatusCode ltc_afe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result, size_t len);
+StatusCode ltc_afe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result,
+                                    size_t len);
 
 // read all auxiliary registers
-// result should be an array of size LTC6804_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
+// result should be an array of size LTC6804_CELLS_PER_DEVICE *
+// LTC_AFE_DEVICES_IN_CHAIN
 // len should be SIZEOF_ARRAY(result)
-StatusCode ltc_afe_read_all_aux(const LtcAfeSettings *afe, uint16_t *result, size_t len);
+StatusCode ltc_afe_read_all_aux(const LtcAfeSettings *afe, uint16_t *result,
+                                size_t len);
 
 // mark cells for discharging (takes effect after config is re-written)
-StatusCode ltc_afe_toggle_discharge_cells(const LtcAfeSettings *afe, uint16_t cell, bool discharge);
+StatusCode ltc_afe_toggle_discharge_cells(const LtcAfeSettings *afe,
+                                          uint16_t cell, bool discharge);

@@ -1,24 +1,31 @@
 // Basically, this module glues all the components of CAN together.
 //
 // It hooks into the CAN HW callbacks:
-// - TX ready: Used to re-raise potentially discarded TX events. We assume that if there are
-//             elements in the TX FIFO, we have a backlog that has resulted in discarded events.
-// - Message RX: When the message RX callback runs, we just push the message into a queue and
+// - TX ready: Used to re-raise potentially discarded TX events. We assume that
+// if there are
+//             elements in the TX FIFO, we have a backlog that has resulted in
+//             discarded events.
+// - Message RX: When the message RX callback runs, we just push the message
+// into a queue and
 //               raise an event. When that event is processed in the main loop
-//               (can_fsm_process_event), we find the associated callback and run it.
-//               In the case of an ACK, we update the associated pending ACK request.
-// - Bus error: In case of a bus error, we set a timer and wait to see if the bus has recovered
+//               (can_fsm_process_event), we find the associated callback and
+//               run it.
+//               In the case of an ACK, we update the associated pending ACK
+//               request.
+// - Bus error: In case of a bus error, we set a timer and wait to see if the
+// bus has recovered
 //              after the timeout. If it's still down, we raise an event.
 #include "can.h"
-#include <string.h>
 #include "can_fsm.h"
 #include "can_hw.h"
 #include "log.h"
 #include "soft_timer.h"
+#include <string.h>
 
 #define CAN_BUS_OFF_RECOVERY_TIME_MS 500
 
-// Attempts to transmit the specified message using the HW TX, overwriting the source device.
+// Attempts to transmit the specified message using the HW TX, overwriting the
+// source device.
 StatusCode prv_transmit(const CANMessage *msg);
 
 // Handler for CAN HW TX ready events
@@ -26,7 +33,8 @@ StatusCode prv_transmit(const CANMessage *msg);
 void prv_tx_handler(void *context);
 
 // Handler for CAN HW messaged RX events
-// Dumps received messages to the RX queue and raises an event for the messages to be processed.
+// Dumps received messages to the RX queue and raises an event for the messages
+// to be processed.
 void prv_rx_handler(void *context);
 
 // Bus error timer callback
@@ -39,8 +47,8 @@ void prv_bus_error_handler(void *context);
 
 static CANStorage *s_can_storage;
 
-StatusCode can_init(const CANSettings *settings, CANStorage *storage, CANRxHandler *rx_handlers,
-                    size_t num_rx_handlers) {
+StatusCode can_init(const CANSettings *settings, CANStorage *storage,
+                    CANRxHandler *rx_handlers, size_t num_rx_handlers) {
   if (settings->device_id >= CAN_MSG_MAX_DEVICES) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: Invalid device ID");
   }
@@ -57,19 +65,22 @@ StatusCode can_init(const CANSettings *settings, CANStorage *storage, CANRxHandl
   status_ok_or_return(can_fifo_init(&s_can_storage->tx_fifo));
   status_ok_or_return(can_fifo_init(&s_can_storage->rx_fifo));
   status_ok_or_return(can_ack_init(&s_can_storage->ack_requests));
-  status_ok_or_return(can_rx_init(&s_can_storage->rx_handlers, rx_handlers, num_rx_handlers));
+  status_ok_or_return(
+      can_rx_init(&s_can_storage->rx_handlers, rx_handlers, num_rx_handlers));
 
   CANHwSettings can_hw_settings = {
-    .bitrate = settings->bitrate,
-    .loopback = settings->loopback,
-    .tx = settings->tx,
-    .rx = settings->rx,
+      .bitrate = settings->bitrate,
+      .loopback = settings->loopback,
+      .tx = settings->tx,
+      .rx = settings->rx,
   };
   status_ok_or_return(can_hw_init(&can_hw_settings));
 
-  can_hw_register_callback(CAN_HW_EVENT_TX_READY, prv_tx_handler, s_can_storage);
+  can_hw_register_callback(CAN_HW_EVENT_TX_READY, prv_tx_handler,
+                           s_can_storage);
   can_hw_register_callback(CAN_HW_EVENT_MSG_RX, prv_rx_handler, s_can_storage);
-  can_hw_register_callback(CAN_HW_EVENT_BUS_ERROR, prv_bus_error_handler, s_can_storage);
+  can_hw_register_callback(CAN_HW_EVENT_BUS_ERROR, prv_bus_error_handler,
+                           s_can_storage);
 
   return STATUS_CODE_OK;
 }
@@ -81,30 +92,35 @@ StatusCode can_add_filter(CANMessageID msg_id) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: Invalid message ID");
   }
 
-  CANId can_id = { .msg_id = msg_id };
-  CANId mask = { 0 };
+  CANId can_id = {.msg_id = msg_id};
+  CANId mask = {0};
   mask.msg_id = ~mask.msg_id;
 
   return can_hw_add_filter(can_id.raw, mask.raw);
 }
 
-StatusCode can_register_rx_default_handler(CANRxHandlerCb handler, void *context) {
+StatusCode can_register_rx_default_handler(CANRxHandlerCb handler,
+                                           void *context) {
   if (s_can_storage == NULL) {
     return status_code(STATUS_CODE_UNINITIALIZED);
   }
 
-  return can_rx_register_default_handler(&s_can_storage->rx_handlers, handler, context);
+  return can_rx_register_default_handler(&s_can_storage->rx_handlers, handler,
+                                         context);
 }
 
-StatusCode can_register_rx_handler(CANMessageID msg_id, CANRxHandlerCb handler, void *context) {
+StatusCode can_register_rx_handler(CANMessageID msg_id, CANRxHandlerCb handler,
+                                   void *context) {
   if (s_can_storage == NULL) {
     return status_code(STATUS_CODE_UNINITIALIZED);
   }
 
-  return can_rx_register_handler(&s_can_storage->rx_handlers, msg_id, handler, context);
+  return can_rx_register_handler(&s_can_storage->rx_handlers, msg_id, handler,
+                                 context);
 }
 
-StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request) {
+StatusCode can_transmit(const CANMessage *msg,
+                        const CANAckRequest *ack_request) {
   if (s_can_storage == NULL) {
     return status_code(STATUS_CODE_UNINITIALIZED);
   } else if (msg->msg_id >= CAN_MSG_MAX_IDS) {
@@ -113,15 +129,19 @@ StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request)
 
   if (ack_request != NULL) {
     if (!CAN_MSG_IS_CRITICAL(msg)) {
-      return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: ACK requested for non-critical message");
+      return status_msg(STATUS_CODE_INVALID_ARGS,
+                        "CAN: ACK requested for non-critical message");
     }
 
-    StatusCode ret = can_ack_add_request(&s_can_storage->ack_requests, msg->msg_id, ack_request);
+    StatusCode ret = can_ack_add_request(&s_can_storage->ack_requests,
+                                         msg->msg_id, ack_request);
     status_ok_or_return(ret);
   }
 
-  // Basically, the idea is that all the TX and RX should be happening in the main event loop.
-  // We raise an event just to ensure that the CAN TX is postponed until the main event loop.
+  // Basically, the idea is that all the TX and RX should be happening in the
+  // main event loop.
+  // We raise an event just to ensure that the CAN TX is postponed until the
+  // main event loop.
   event_raise(s_can_storage->tx_event, 1);
 
   return can_fifo_push(&s_can_storage->tx_fifo, msg);
@@ -139,7 +159,8 @@ void prv_tx_handler(void *context) {
   CANStorage *can_storage = context;
   CANMessage tx_msg;
 
-  // If we failed to TX some messages or aren't transmitting fast enough, those events
+  // If we failed to TX some messages or aren't transmitting fast enough, those
+  // events
   // were discarded. Raise a TX event to trigger a transmit attempt.
   // We only raise one event since TX ready interrupts are 1-to-1.
   if (can_fifo_size(&can_storage->tx_fifo) > 0) {
@@ -151,8 +172,8 @@ void prv_tx_handler(void *context) {
 // Each event will result in one message's processing.
 void prv_rx_handler(void *context) {
   CANStorage *can_storage = context;
-  CANId rx_id = { 0 };
-  CANMessage rx_msg = { 0 };
+  CANId rx_id = {0};
+  CANMessage rx_msg = {0};
   size_t counter = 0;
 
   while (can_hw_receive(&rx_id.raw, &rx_msg.data, &rx_msg.dlc)) {
@@ -182,6 +203,6 @@ void prv_bus_error_timeout_handler(SoftTimerID timer_id, void *context) {
 void prv_bus_error_handler(void *context) {
   CANStorage *can_storage = context;
 
-  soft_timer_start_millis(CAN_BUS_OFF_RECOVERY_TIME_MS, prv_bus_error_timeout_handler, can_storage,
-                          NULL);
+  soft_timer_start_millis(CAN_BUS_OFF_RECOVERY_TIME_MS,
+                          prv_bus_error_timeout_handler, can_storage, NULL);
 }

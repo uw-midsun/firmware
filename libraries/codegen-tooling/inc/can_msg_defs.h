@@ -52,7 +52,9 @@ typedef enum {
   NUM_CAN_MESSAGES = 27
 } CanMessage;
 
-#define CAN_MSG_IS_CRITICAL(msg_ptr)                                                               \
-  ((msg_ptr)->msg_id == CAN_MESSAGE_BPS_FAULT || (msg_ptr)->msg_id == CAN_MESSAGE_BATTERY_RELAY || \
-   (msg_ptr)->msg_id == CAN_MESSAGE_MAIN_RELAY || (msg_ptr)->msg_id == CAN_MESSAGE_SOLAR_RELAY ||  \
+#define CAN_MSG_IS_CRITICAL(msg_ptr)                                           \
+  ((msg_ptr)->msg_id == CAN_MESSAGE_BPS_FAULT ||                               \
+   (msg_ptr)->msg_id == CAN_MESSAGE_BATTERY_RELAY ||                           \
+   (msg_ptr)->msg_id == CAN_MESSAGE_MAIN_RELAY ||                              \
+   (msg_ptr)->msg_id == CAN_MESSAGE_SOLAR_RELAY ||                             \
    (msg_ptr)->msg_id == CAN_MESSAGE_POWER_STATE || false)

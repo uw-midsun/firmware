@@ -1,9 +1,9 @@
 #pragma once
 
 // Module for broadcasting CAN messages
-#include <stdint.h>
 #include "event_arbiter.h"
 #include "status.h"
+#include <stdint.h>
 
 // Message ID definitions for the input devices
 typedef enum {

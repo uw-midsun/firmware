@@ -3,14 +3,14 @@
 // Requires GPIO, soft timers, event queue, and interrupts to be initialized.
 //
 // Application code should only use functions in this header.
-#include <stdbool.h>
-#include <stdint.h>
 #include "can_ack.h"
 #include "can_fifo.h"
 #include "can_hw.h"
 #include "can_rx.h"
 #include "fsm.h"
 #include "gpio.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 #define CAN_FSM can_get_fsm()
 
@@ -37,18 +37,23 @@ typedef struct CANStorage {
   uint16_t device_id;
 } CANStorage;
 
-// Initializes the specified CAN configuration given pointers to persistant storage.
-StatusCode can_init(const CANSettings *settings, CANStorage *storage, CANRxHandler *rx_handlers,
-                    size_t num_rx_handlers);
+// Initializes the specified CAN configuration given pointers to persistant
+// storage.
+StatusCode can_init(const CANSettings *settings, CANStorage *storage,
+                    CANRxHandler *rx_handlers, size_t num_rx_handlers);
 
 StatusCode can_add_filter(CANMessageID msg_id);
 
-StatusCode can_register_rx_default_handler(CANRxHandlerCb handler, void *context);
+StatusCode can_register_rx_default_handler(CANRxHandlerCb handler,
+                                           void *context);
 
-StatusCode can_register_rx_handler(CANMessageID msg_id, CANRxHandlerCb handler, void *context);
+StatusCode can_register_rx_handler(CANMessageID msg_id, CANRxHandlerCb handler,
+                                   void *context);
 
 // Attempts to transmit the CAN message as soon as possible.
-StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request);
+StatusCode can_transmit(const CANMessage *msg,
+                        const CANAckRequest *ack_request);
 
-// Returns the FSM responsible for handling CAN messages. Use with fsm_process_event.
+// Returns the FSM responsible for handling CAN messages. Use with
+// fsm_process_event.
 FSM *can_get_fsm(void);

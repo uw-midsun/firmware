@@ -7,24 +7,23 @@
 #include "interrupt.h"
 #include "log.h"
 
-void test_callback(ADCChannel adc_channel, void* context) {
-  uint16_t* adc_reading = (uint16_t*)context;
+void test_callback(ADCChannel adc_channel, void *context) {
+  uint16_t *adc_reading = (uint16_t *)context;
   adc_read_converted(adc_channel, adc_reading);
 }
 
 int main() {
-  GPIOAddress address[] = { { GPIO_PORT_A, 0 }, { GPIO_PORT_A, 1 }, { GPIO_PORT_A, 2 },
-                            { GPIO_PORT_A, 3 }, { GPIO_PORT_A, 4 }, { GPIO_PORT_A, 5 },
-                            { GPIO_PORT_A, 6 }, { GPIO_PORT_A, 7 }, { GPIO_PORT_B, 0 },
-                            { GPIO_PORT_A, 1 }, { GPIO_PORT_B, 0 }, { GPIO_PORT_B, 1 },
-                            { GPIO_PORT_C, 2 }, { GPIO_PORT_C, 3 }, { GPIO_PORT_C, 4 },
-                            { GPIO_PORT_C, 5 } };
+  GPIOAddress address[] = {
+      {GPIO_PORT_A, 0}, {GPIO_PORT_A, 1}, {GPIO_PORT_A, 2}, {GPIO_PORT_A, 3},
+      {GPIO_PORT_A, 4}, {GPIO_PORT_A, 5}, {GPIO_PORT_A, 6}, {GPIO_PORT_A, 7},
+      {GPIO_PORT_B, 0}, {GPIO_PORT_A, 1}, {GPIO_PORT_B, 0}, {GPIO_PORT_B, 1},
+      {GPIO_PORT_C, 2}, {GPIO_PORT_C, 3}, {GPIO_PORT_C, 4}, {GPIO_PORT_C, 5}};
 
   GPIOSettings settings = {
-    GPIO_DIR_IN,        //
-    GPIO_STATE_LOW,     //
-    GPIO_RES_NONE,      //
-    GPIO_ALTFN_ANALOG,  //
+      GPIO_DIR_IN,       //
+      GPIO_STATE_LOW,    //
+      GPIO_RES_NONE,     //
+      GPIO_ALTFN_ANALOG, //
   };
 
   gpio_init();
@@ -47,9 +46,12 @@ int main() {
   adc_set_channel(ADC_CHANNEL_TEMP, true);
   adc_set_channel(ADC_CHANNEL_BAT, true);
 
-  adc_register_callback(ADC_CHANNEL_TEMP, test_callback, &adc_readings[ADC_CHANNEL_TEMP]);
-  adc_register_callback(ADC_CHANNEL_REF, test_callback, &adc_readings[ADC_CHANNEL_REF]);
-  adc_register_callback(ADC_CHANNEL_BAT, test_callback, &adc_readings[ADC_CHANNEL_BAT]);
+  adc_register_callback(ADC_CHANNEL_TEMP, test_callback,
+                        &adc_readings[ADC_CHANNEL_TEMP]);
+  adc_register_callback(ADC_CHANNEL_REF, test_callback,
+                        &adc_readings[ADC_CHANNEL_REF]);
+  adc_register_callback(ADC_CHANNEL_BAT, test_callback,
+                        &adc_readings[ADC_CHANNEL_BAT]);
 
   uint16_t reading;
 

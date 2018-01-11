@@ -28,9 +28,9 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     hazard_light_state = HAZARD_LIGHT_FSM_STATE_ON;
   }
 
-  EventArbiterOutputData data = {
-    .id = CAN_OUTPUT_MESSAGE_HAZARD_LIGHT, .state = hazard_light_state, .data = 0
-  };
+  EventArbiterOutputData data = {.id = CAN_OUTPUT_MESSAGE_HAZARD_LIGHT,
+                                 .state = hazard_light_state,
+                                 .data = 0};
 
   event_arbiter_output(data);
 }

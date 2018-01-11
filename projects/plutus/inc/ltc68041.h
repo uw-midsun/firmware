@@ -1,6 +1,6 @@
 #pragma once
-#include <assert.h>
 #include "plutus_config.h"
+#include <assert.h>
 
 // used internally by the LTC AFE driver
 
@@ -55,10 +55,10 @@ typedef struct {
   uint8_t swtrd : 1;
   uint8_t refon : 1;
 
-  uint8_t gpio : 5;  // GPIO pin control
+  uint8_t gpio : 5; // GPIO pin control
 
-  uint32_t undervoltage : 12;  // Undervoltage Comparison Voltage
-  uint32_t overvoltage : 12;   // Overvoltage Comparison Voltage
+  uint32_t undervoltage : 12; // Undervoltage Comparison Voltage
+  uint32_t overvoltage : 12;  // Overvoltage Comparison Voltage
 
   uint8_t discharge_c1 : 1;
   uint8_t discharge_c2 : 1;
@@ -75,7 +75,8 @@ typedef struct {
 
   uint8_t discharge_timeout : 4;
 } _PACKED LtcAfeConfigRegisterData;
-static_assert(sizeof(LtcAfeConfigRegisterData) == 6, "LtcAfeConfigRegisterData must be 6 bytes");
+static_assert(sizeof(LtcAfeConfigRegisterData) == 6,
+              "LtcAfeConfigRegisterData must be 6 bytes");
 
 // CFGR packet
 typedef struct {
@@ -91,7 +92,8 @@ typedef struct {
   // devices are ordered with the last slave first
   LtcAfeWriteDeviceConfigPacket devices[PLUTUS_AFE_DEVICES_IN_CHAIN];
 } _PACKED LtcAfeWriteConfigPacket;
-static_assert(sizeof(LtcAfeWriteConfigPacket) == 4 + 8 * PLUTUS_AFE_DEVICES_IN_CHAIN,
+static_assert(sizeof(LtcAfeWriteConfigPacket) ==
+                  4 + 8 * PLUTUS_AFE_DEVICES_IN_CHAIN,
               "LtcAfeWriteConfigPacket is not expected size");
 
 typedef union {
@@ -99,7 +101,8 @@ typedef union {
 
   uint8_t values[6];
 } LtcAfeRegisterGroup;
-static_assert(sizeof(LtcAfeRegisterGroup) == 6, "LtcAfeRegisterGroup must be 6 bytes");
+static_assert(sizeof(LtcAfeRegisterGroup) == 6,
+              "LtcAfeRegisterGroup must be 6 bytes");
 
 typedef struct {
   LtcAfeRegisterGroup reg;
@@ -147,21 +150,29 @@ static_assert(sizeof(LTCAFEAuxRegisterGroupPacket) == 8,
 
 #define LTC6804_ADAX_RESERVED (1 << 10) | (1 << 6) | (1 << 5)
 
-#define LTC6804_CLRCELL_RESERVED (1 << 0) | (1 << 4) | (1 << 8) | (1 << 9) | (1 << 10)
+#define LTC6804_CLRCELL_RESERVED                                               \
+  (1 << 0) | (1 << 4) | (1 << 8) | (1 << 9) | (1 << 10)
 
-#define LTC6804_CLRAUX_RESERVED (1 << 1) | (1 << 4) | (1 << 8) | (1 << 9) | (1 << 10)
+#define LTC6804_CLRAUX_RESERVED                                                \
+  (1 << 1) | (1 << 4) | (1 << 8) | (1 << 9) | (1 << 10)
 
-#define LTC6804_CLRSTAT_RESERVED (1 << 0) | (1 << 1) | (1 << 4) | (1 << 8) | (1 << 9) | (1 << 10)
+#define LTC6804_CLRSTAT_RESERVED                                               \
+  (1 << 0) | (1 << 1) | (1 << 4) | (1 << 8) | (1 << 9) | (1 << 10)
 
-#define LTC6804_PLADC_RESERVED (1 << 2) | (1 << 4) | (1 << 8) | (1 << 9) | (1 << 10)
+#define LTC6804_PLADC_RESERVED                                                 \
+  (1 << 2) | (1 << 4) | (1 << 8) | (1 << 9) | (1 << 10)
 
-#define LTC6804_DIAGNC_RESERVED (1 << 0) | (1 << 2) | (1 << 4) | (1 << 8) | (1 << 9) | (1 << 10)
+#define LTC6804_DIAGNC_RESERVED                                                \
+  (1 << 0) | (1 << 2) | (1 << 4) | (1 << 8) | (1 << 9) | (1 << 10)
 
-#define LTC6804_WRCOMM_RESERVED (1 << 0) | (1 << 5) | (1 << 8) | (1 << 9) | (1 << 10)
+#define LTC6804_WRCOMM_RESERVED                                                \
+  (1 << 0) | (1 << 5) | (1 << 8) | (1 << 9) | (1 << 10)
 
-#define LTC6804_RDCOMM_RESERVED (1 << 1) | (1 << 5) | (1 << 8) | (1 << 9) | (1 << 10)
+#define LTC6804_RDCOMM_RESERVED                                                \
+  (1 << 1) | (1 << 5) | (1 << 8) | (1 << 9) | (1 << 10)
 
-#define LTC6804_STCOMM_RESERVED (1 << 0) | (1 << 1) | (1 << 5) | (1 << 8) | (1 << 9) | (1 << 10)
+#define LTC6804_STCOMM_RESERVED                                                \
+  (1 << 0) | (1 << 1) | (1 << 5) | (1 << 8) | (1 << 9) | (1 << 10)
 
 // command bits
 // see Table 35 (p. 50)

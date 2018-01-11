@@ -29,14 +29,14 @@ static bool powered = false;
 static bool mech_brake = false;
 
 static void prv_toggle_power(void) {
-  Event e = { .data = 0 };
+  Event e = {.data = 0};
 
   e.id = INPUT_EVENT_POWER;
   event_arbiter_process_event(&e);
 }
 
 static void prv_toggle_mech_brake(bool new_state) {
-  Event e = { .data = 0 };
+  Event e = {.data = 0};
 
   e.id = (new_state == true) ? INPUT_EVENT_MECHANICAL_BRAKE_PRESSED
                              : INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
@@ -66,11 +66,16 @@ void teardown_test(void) {}
 
 void test_driver_fsm_setup() {
   TEST_ASSERT_EQUAL_STRING("state_off", s_fsm_group.power.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_brake", s_fsm_group.pedal.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_neutral", s_fsm_group.direction.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_no_signal", s_fsm_group.turn_signal.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_hazard_off", s_fsm_group.hazard_light.current_state->name);
-  TEST_ASSERT_EQUAL_STRING("state_disengaged", s_fsm_group.mechanical_brake.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_brake",
+                           s_fsm_group.pedal.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_neutral",
+                           s_fsm_group.direction.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_no_signal",
+                           s_fsm_group.turn_signal.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_hazard_off",
+                           s_fsm_group.hazard_light.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_disengaged",
+                           s_fsm_group.mechanical_brake.current_state->name);
 }
 
 // Check that nothing can happen while the car is powered off
@@ -101,7 +106,8 @@ void test_driver_fsm_power_charge() {
 
   // Power the car on and off normally
   prv_toggle_mech_brake(true);
-  TEST_ASSERT_EQUAL_STRING("state_off_brake", s_fsm_group.power.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_off_brake",
+                           s_fsm_group.power.current_state->name);
 
   prv_toggle_power();
   TEST_ASSERT_EQUAL_STRING("state_on", s_fsm_group.power.current_state->name);
@@ -111,7 +117,8 @@ void test_driver_fsm_power_charge() {
 
   // Start charging the car and ensure that the car is not able to move
   prv_toggle_power();
-  TEST_ASSERT_EQUAL_STRING("state_charging", s_fsm_group.power.current_state->name);
+  TEST_ASSERT_EQUAL_STRING("state_charging",
+                           s_fsm_group.power.current_state->name);
 
   prv_toggle_mech_brake(true);
 

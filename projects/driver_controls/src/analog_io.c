@@ -35,22 +35,23 @@ static void prv_input_callback(ADCChannel adc_channel, void *context) {
   adc_read_raw(adc_channel, &analog_data);
 
   switch (s_analog_devices[adc_channel]) {
-    case ANALOG_IO_DEVICE_GAS_PEDAL:
-      if (analog_data < ANALOG_IO_COAST_THRESHOLD) {
-        event_id = INPUT_EVENT_PEDAL_BRAKE;
-      } else if (analog_data > ANALOG_IO_DRIVE_THRESHOLD) {
-        event_id = INPUT_EVENT_PEDAL_PRESSED;
-      } else {
-        event_id = INPUT_EVENT_PEDAL_COAST;
-      }
-      break;
-    case ANALOG_IO_DEVICE_MECHANICAL_BRAKE:
-      event_id = (analog_data > ANALOG_IO_BRAKE_THRESHOLD) ? INPUT_EVENT_MECHANICAL_BRAKE_PRESSED
-                                                           : INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
-      break;
+  case ANALOG_IO_DEVICE_GAS_PEDAL:
+    if (analog_data < ANALOG_IO_COAST_THRESHOLD) {
+      event_id = INPUT_EVENT_PEDAL_BRAKE;
+    } else if (analog_data > ANALOG_IO_DRIVE_THRESHOLD) {
+      event_id = INPUT_EVENT_PEDAL_PRESSED;
+    } else {
+      event_id = INPUT_EVENT_PEDAL_COAST;
+    }
+    break;
+  case ANALOG_IO_DEVICE_MECHANICAL_BRAKE:
+    event_id = (analog_data > ANALOG_IO_BRAKE_THRESHOLD)
+                   ? INPUT_EVENT_MECHANICAL_BRAKE_PRESSED
+                   : INPUT_EVENT_MECHANICAL_BRAKE_RELEASED;
+    break;
 
-    default:
-      break;
+  default:
+    break;
   }
 
   event_raise(event_id, analog_data);
@@ -65,9 +66,9 @@ void analog_io_init() {
   ADCChannel adc_channel = NUM_ADC_CHANNELS;
 
   InputConfig analog_inputs[] = {
-    { .address = DRIVER_IO_GAS_PEDAL, .device = ANALOG_IO_DEVICE_GAS_PEDAL },
-    { .address = DRIVER_IO_MECHANICAL_BRAKE, .device = ANALOG_IO_DEVICE_MECHANICAL_BRAKE }
-  };
+      {.address = DRIVER_IO_GAS_PEDAL, .device = ANALOG_IO_DEVICE_GAS_PEDAL},
+      {.address = DRIVER_IO_MECHANICAL_BRAKE,
+       .device = ANALOG_IO_DEVICE_MECHANICAL_BRAKE}};
 
   for (uint8_t i = 0; i < SIZEOF_ARRAY(analog_inputs); i++) {
     adc_get_channel(analog_inputs[i].address, &adc_channel);

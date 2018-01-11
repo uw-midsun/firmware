@@ -7,9 +7,7 @@ static StatusCode prv_raise_event(uint16_t i) {
   return event_raise(i, i * 100);
 }
 
-void setup_test(void) {
-  event_queue_init();
-}
+void setup_test(void) { event_queue_init(); }
 
 void teardown_test(void) {}
 
@@ -23,7 +21,7 @@ void test_event_queue_raise(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_RESOURCE_EXHAUSTED, prv_raise_event(0));
 
   Event e;
-  uint16_t i = 1;  // Start at 1 since the insertion of 0 should've failed
+  uint16_t i = 1; // Start at 1 since the insertion of 0 should've failed
   while (status_ok(event_process(&e))) {
     TEST_ASSERT_EQUAL(i, e.id);
     TEST_ASSERT_EQUAL(i * 100, e.data);

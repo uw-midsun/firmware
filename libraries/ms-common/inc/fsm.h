@@ -1,10 +1,12 @@
 #pragma once
 // FSM Interface
 //
-// For every event that is processed (i.e. results in a transition), the new state's
+// For every event that is processed (i.e. results in a transition), the new
+// state's
 // output function is called.
 //
-// The FSM keeps track of both current and last states for debug purposes. It would be trivial to
+// The FSM keeps track of both current and last states for debug purposes. It
+// would be trivial to
 // additionally track the last processed event.
 //
 // Usage: Note that FSMs should be declared in the source file, not the header.
@@ -24,7 +26,8 @@
 //   FSM_ADD_TRANSITION(1, state_b);
 // }
 //
-// Use fsm_state_init to set a state's output function (called whenever transitioned to).
+// Use fsm_state_init to set a state's output function (called whenever
+// transitioned to).
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -39,7 +42,7 @@
 // Adds an entry to the state transition table.
 #define FSM_ADD_TRANSITION(event_id, state) _FSM_ADD_TRANSITION(event_id, state)
 // Adds an entry with a conditional boolean guard to the state transition table.
-#define FSM_ADD_GUARDED_TRANSITION(event_id, guard, state) \
+#define FSM_ADD_GUARDED_TRANSITION(event_id, guard, state)                     \
   _FSM_ADD_GUARDED_TRANSITION(event_id, guard, state)
 
 // Initializes an FSM state with an output function.
@@ -47,8 +50,10 @@
 
 struct FSM;
 typedef void (*StateOutput)(struct FSM *fsm, const Event *e, void *context);
-typedef void (*StateTransition)(struct FSM *fsm, const Event *e, bool *transitioned);
-typedef bool (*StateTransitionGuard)(const struct FSM *fsm, const Event *e, void *context);
+typedef void (*StateTransition)(struct FSM *fsm, const Event *e,
+                                bool *transitioned);
+typedef bool (*StateTransitionGuard)(const struct FSM *fsm, const Event *e,
+                                     void *context);
 
 typedef struct State {
   const char *name;

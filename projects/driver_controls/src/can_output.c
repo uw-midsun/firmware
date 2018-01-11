@@ -12,17 +12,16 @@
 #define CAN_OUTPUT_ID_LIGHTS 24
 #define CAN_OUTPUT_ID_HORN 25
 
-static uint8_t s_can_output_lookup[NUM_CAN_OUTPUT_MESSAGES] = {
-  [CAN_OUTPUT_MESSAGE_POWER] = CAN_OUTPUT_ID_POWER_STATE,
-  [CAN_OUTPUT_MESSAGE_PEDAL] = CAN_OUTPUT_ID_MOTOR_THROTTLE,
-  [CAN_OUTPUT_MESSAGE_DIRECTION_SELECTOR] = CAN_OUTPUT_ID_MOTOR_DIR_SELECT,
-  [CAN_OUTPUT_MESSAGE_TURN_SIGNAL] = CAN_OUTPUT_ID_LIGHTS,
-  [CAN_OUTPUT_MESSAGE_HAZARD_LIGHT] = CAN_OUTPUT_ID_LIGHTS,
-  [CAN_OUTPUT_MESSAGE_HORN] = CAN_OUTPUT_ID_HORN
-};
+static uint8_t s_can_output_lookup[NUM_CAN_OUTPUT_MESSAGES] =
+    {[CAN_OUTPUT_MESSAGE_POWER] = CAN_OUTPUT_ID_POWER_STATE,
+     [CAN_OUTPUT_MESSAGE_PEDAL] = CAN_OUTPUT_ID_MOTOR_THROTTLE,
+     [CAN_OUTPUT_MESSAGE_DIRECTION_SELECTOR] = CAN_OUTPUT_ID_MOTOR_DIR_SELECT,
+     [CAN_OUTPUT_MESSAGE_TURN_SIGNAL] = CAN_OUTPUT_ID_LIGHTS,
+     [CAN_OUTPUT_MESSAGE_HAZARD_LIGHT] = CAN_OUTPUT_ID_LIGHTS,
+     [CAN_OUTPUT_MESSAGE_HORN] = CAN_OUTPUT_ID_HORN};
 
 void can_output_transmit(EventArbiterOutputData data) {
   // TODO(ELEC-262): Integrate CAN transmit functions
-  LOG_DEBUG("Device = %d, State = %d, Data = %d\n", s_can_output_lookup[data.id], data.state,
-            data.data);
+  LOG_DEBUG("Device = %d, State = %d, Data = %d\n",
+            s_can_output_lookup[data.id], data.state, data.data);
 }

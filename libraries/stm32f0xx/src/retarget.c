@@ -12,11 +12,12 @@ static void prv_init_gpio(void) {
                    RETARGET_CFG_UART_GPIO_ALTFN);
 
   GPIO_InitTypeDef gpio_init = {
-    .GPIO_Pin = (1 << RETARGET_CFG_UART_GPIO_TX) | (1 << RETARGET_CFG_UART_GPIO_RX),
-    .GPIO_Mode = GPIO_Mode_AF,
-    .GPIO_Speed = GPIO_Speed_10MHz,
-    .GPIO_OType = GPIO_OType_PP,
-    .GPIO_PuPd = GPIO_PuPd_UP,
+      .GPIO_Pin =
+          (1 << RETARGET_CFG_UART_GPIO_TX) | (1 << RETARGET_CFG_UART_GPIO_RX),
+      .GPIO_Mode = GPIO_Mode_AF,
+      .GPIO_Speed = GPIO_Speed_10MHz,
+      .GPIO_OType = GPIO_OType_PP,
+      .GPIO_PuPd = GPIO_PuPd_UP,
   };
 
   GPIO_Init(RETARGET_CFG_UART_GPIO_PORT, &gpio_init);

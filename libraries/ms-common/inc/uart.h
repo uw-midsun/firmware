@@ -3,11 +3,11 @@
 // Requires GPIO and interrupts to be initialized.
 
 // Uses internal FIFOs to buffer RX and TX.
-#include <stdint.h>
 #include "fifo.h"
 #include "gpio.h"
 #include "status.h"
 #include "uart_mcu.h"
+#include <stdint.h>
 
 #define UART_MAX_BUFFER_LEN 256
 
@@ -34,9 +34,11 @@ typedef struct {
 } UARTSettings;
 
 // Assumes standard 8 N 1
-// Registers a handler to be called when a newline is encountered or the buffer is full.
+// Registers a handler to be called when a newline is encountered or the buffer
+// is full.
 // Storage should be persistent through the program.
-StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage);
+StatusCode uart_init(UARTPort uart, UARTSettings *settings,
+                     UARTStorage *storage);
 
 // Non-blocking TX
 StatusCode uart_tx(UARTPort uart, uint8_t *tx_data, size_t len);

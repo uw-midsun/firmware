@@ -1,8 +1,8 @@
 #include "can_hw.h"
-#include <string.h>
 #include "interrupt.h"
 #include "log.h"
 #include "stm32f0xx.h"
+#include <string.h>
 
 #define CAN_HW_BASE CAN
 #define CAN_HW_NUM_FILTER_BANKS 14
@@ -19,12 +19,11 @@ typedef struct CANHwEventHandler {
 } CANHwEventHandler;
 
 // Generated settings using http://www.bittiming.can-wiki.info/
-static CANHwTiming s_timing[NUM_CAN_HW_BITRATES] = {  // For 48MHz clock
-  [CAN_HW_BITRATE_125KBPS] = { .prescaler = 24, .bs1 = 13, .bs2 = 2 },
-  [CAN_HW_BITRATE_250KBPS] = { .prescaler = 12, .bs1 = 13, .bs2 = 2 },
-  [CAN_HW_BITRATE_500KBPS] = { .prescaler = 6, .bs1 = 13, .bs2 = 2 },
-  [CAN_HW_BITRATE_1000KBPS] = { .prescaler = 3, .bs1 = 13, .bs2 = 2 }
-};
+static CANHwTiming s_timing[NUM_CAN_HW_BITRATES] = { // For 48MHz clock
+        [CAN_HW_BITRATE_125KBPS] = {.prescaler = 24, .bs1 = 13, .bs2 = 2},
+        [CAN_HW_BITRATE_250KBPS] = {.prescaler = 12, .bs1 = 13, .bs2 = 2},
+        [CAN_HW_BITRATE_500KBPS] = {.prescaler = 6, .bs1 = 13, .bs2 = 2},
+        [CAN_HW_BITRATE_1000KBPS] = {.prescaler = 3, .bs1 = 13, .bs2 = 2}};
 static CANHwEventHandler s_handlers[NUM_CAN_HW_EVENTS];
 static uint8_t s_num_filters;
 
@@ -33,8 +32,8 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
   s_num_filters = 0;
 
   GPIOSettings gpio_settings = {
-    .alt_function = GPIO_ALTFN_4,  //
-    .direction = GPIO_DIR_OUT,     //
+      .alt_function = GPIO_ALTFN_4, //
+      .direction = GPIO_DIR_OUT,    //
   };
   gpio_init_pin(&settings->tx, &gpio_settings);
   gpio_settings.direction = GPIO_DIR_IN;
@@ -47,7 +46,8 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
   CAN_InitTypeDef can_cfg;
   CAN_StructInit(&can_cfg);
 
-  can_cfg.CAN_Mode = settings->loopback ? CAN_Mode_Silent_LoopBack : CAN_Mode_Normal;
+  can_cfg.CAN_Mode =
+      settings->loopback ? CAN_Mode_Silent_LoopBack : CAN_Mode_Normal;
   can_cfg.CAN_SJW = CAN_SJW_1tq;
   can_cfg.CAN_BS1 = s_timing[settings->bitrate].bs1;
   can_cfg.CAN_BS2 = s_timing[settings->bitrate].bs2;
@@ -60,7 +60,8 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
   CAN_ITConfig(CAN_HW_BASE, CAN_IT_ERR, ENABLE);
   stm32f0xx_interrupt_nvic_enable(CEC_CAN_IRQn, INTERRUPT_PRIORITY_HIGH);
 
-  // Allow all messages by default, but reset the filter count so it's overwritten on the first
+  // Allow all messages by default, but reset the filter count so it's
+  // overwritten on the first
   // filter
   can_hw_add_filter(0, 0);
   s_num_filters = 0;
@@ -68,14 +69,16 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
   return STATUS_CODE_OK;
 }
 
-StatusCode can_hw_register_callback(CANHwEvent event, CANHwEventHandlerCb callback, void *context) {
+StatusCode can_hw_register_callback(CANHwEvent event,
+                                    CANHwEventHandlerCb callback,
+                                    void *context) {
   if (event >= NUM_CAN_HW_EVENTS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
   s_handlers[event] = (CANHwEventHandler){
-    .callback = callback,  //
-    .context = context,    //
+      .callback = callback, //
+      .context = context,   //
   };
 
   return STATUS_CODE_OK;
@@ -83,21 +86,23 @@ StatusCode can_hw_register_callback(CANHwEvent event, CANHwEventHandlerCb callba
 
 StatusCode can_hw_add_filter(uint16_t mask, uint16_t filter) {
   if (s_num_filters >= CAN_HW_NUM_FILTER_BANKS) {
-    return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN HW: Ran out of filter banks.");
+    return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED,
+                      "CAN HW: Ran out of filter banks.");
   }
 
-  // We currently use 32-bit filters. We could use 16-bit filters instead since we're only using
+  // We currently use 32-bit filters. We could use 16-bit filters instead since
+  // we're only using
   // standard 11-bit IDs.
   CAN_FilterInitTypeDef filter_cfg = {
-    .CAN_FilterNumber = s_num_filters,
-    .CAN_FilterMode = CAN_FilterMode_IdMask,
-    .CAN_FilterScale = CAN_FilterScale_32bit,
-    .CAN_FilterIdHigh = filter << 5,
-    .CAN_FilterIdLow = 0x0000,
-    .CAN_FilterMaskIdHigh = mask << 5,
-    .CAN_FilterMaskIdLow = 0x0000,
-    .CAN_FilterFIFOAssignment = (s_num_filters % 2),
-    .CAN_FilterActivation = ENABLE,
+      .CAN_FilterNumber = s_num_filters,
+      .CAN_FilterMode = CAN_FilterMode_IdMask,
+      .CAN_FilterScale = CAN_FilterScale_32bit,
+      .CAN_FilterIdHigh = filter << 5,
+      .CAN_FilterIdLow = 0x0000,
+      .CAN_FilterMaskIdHigh = mask << 5,
+      .CAN_FilterMaskIdLow = 0x0000,
+      .CAN_FilterFIFOAssignment = (s_num_filters % 2),
+      .CAN_FilterActivation = ENABLE,
   };
   CAN_FilterInit(&filter_cfg);
 
@@ -118,9 +123,9 @@ CANHwBusStatus can_hw_bus_status(void) {
 
 StatusCode can_hw_transmit(uint16_t id, const uint8_t *data, size_t len) {
   CanTxMsg tx_msg = {
-    .StdId = id,        //
-    .IDE = CAN_ID_STD,  //
-    .DLC = len,         //
+      .StdId = id,       //
+      .IDE = CAN_ID_STD, //
+      .DLC = len,        //
   };
 
   memcpy(tx_msg.Data, data, len);
@@ -147,7 +152,7 @@ bool can_hw_receive(uint16_t *id, uint64_t *data, size_t *len) {
     return false;
   }
 
-  CanRxMsg rx_msg = { 0 };
+  CanRxMsg rx_msg = {0};
   CAN_Receive(CAN_HW_BASE, fifo, &rx_msg);
 
   *id = rx_msg.StdId;
@@ -159,10 +164,13 @@ bool can_hw_receive(uint16_t *id, uint64_t *data, size_t *len) {
 
 void CEC_CAN_IRQHandler(void) {
   bool run_cb[NUM_CAN_HW_EVENTS] = {
-    [CAN_HW_EVENT_TX_READY] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_TME) == SET,
-    [CAN_HW_EVENT_MSG_RX] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_FMP0) == SET ||
-                            CAN_GetITStatus(CAN_HW_BASE, CAN_IT_FMP1) == SET,
-    [CAN_HW_EVENT_BUS_ERROR] = CAN_GetITStatus(CAN_HW_BASE, CAN_IT_ERR) == SET,
+          [CAN_HW_EVENT_TX_READY] =
+              CAN_GetITStatus(CAN_HW_BASE, CAN_IT_TME) == SET,
+          [CAN_HW_EVENT_MSG_RX] =
+              CAN_GetITStatus(CAN_HW_BASE, CAN_IT_FMP0) == SET ||
+              CAN_GetITStatus(CAN_HW_BASE, CAN_IT_FMP1) == SET,
+          [CAN_HW_EVENT_BUS_ERROR] =
+              CAN_GetITStatus(CAN_HW_BASE, CAN_IT_ERR) == SET,
   };
 
   for (int event = 0; event < NUM_CAN_HW_EVENTS; event++) {
