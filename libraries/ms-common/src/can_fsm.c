@@ -92,7 +92,7 @@ static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
   };
 
   // If added to mailbox, pop message from the TX queue
-  StatusCode ret = can_hw_transmit(msg_id.raw, tx_msg.data_u8, tx_msg.dlc);
+  StatusCode ret = can_hw_transmit(msg_id.raw, false, tx_msg.data_u8, tx_msg.dlc);
   if (ret == STATUS_CODE_OK) {
     can_fifo_pop(&can_storage->tx_fifo, NULL);
   }
