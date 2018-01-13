@@ -32,3 +32,4 @@ StatusCode evm_gps_init(evm_gps_settings *settings);
 // The reason for different handlers is so that it is easier to use the driver.
 StatusCode evm_gps_add_gga_handler(evm_gps_gga_handler handler, size_t *index);
 StatusCode evm_gps_remove_gga_handler(size_t index);
+void disable_message_type(EVM_GPS_NMEA_MESSAGE_ID type, char *out);

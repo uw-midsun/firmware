@@ -9,6 +9,7 @@
 #include "misc.h"
 #include "nmea.h"
 #include "soft_timer.h"  // Software timers for scheduling future events.
+#include "util.h"
 #include "status.h"
 #include "uart_mcu.h"
 
@@ -167,4 +168,13 @@ StatusCode evm_gps_clean_up(evm_gps_settings *settings) {
 
   s_initialized = false;
   return STATUS_CODE_OK;
+}
+
+// out must a pointer to at least 24 chars
+void disable_message_type(EVM_GPS_NMEA_MESSAGE_ID type, char *out) {
+    char *format = "$PSRF103,0%d,00,00,01*";
+    snprintf(out, 24, format, type);
+    char checksum[3];
+    evm_gps_compute_checksum(out, checksum);
+    strncat(out, checksum, 2);
 }

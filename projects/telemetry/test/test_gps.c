@@ -54,3 +54,9 @@ void test_gps_nmea_gga(void) {
 
   TEST_ASSERT_TRUE(evm_gps_compare_checksum((char *)input));
 }
+
+void test_disable(void) {
+  char message[24];
+  disable_message_type(5, message);
+  TEST_ASSERT_EQUAL_STRING("$PSRF103,05,00,00,01*21", message);
+}
