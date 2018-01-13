@@ -10,4 +10,4 @@ void evm_gps_compute_checksum(char *message, char *out);
 // computes the checksum for the message, and compares that against
 // the checksum in the message
 // returns false if the message does not have a checksum at the end
-bool evm_gps_compare_checksum(char* message);
+bool evm_gps_compare_checksum(char *message);
