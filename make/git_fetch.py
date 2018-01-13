@@ -77,14 +77,9 @@ def check_hash(filename, hash_file):
         with open(hash_file, 'r+') as hashfp:
             if hashfp.readline() == stdout.decode('utf-8'):
                 return True
-            else:
-                hashfp.truncate(0)
-                hashfp.write(stdout.decode('utf-8'))
-                hashfp.flush()
-    else:
-        with open(hash_file, 'w+') as hashfp:
-            hashfp.write(stdout.decode('utf-8'))
-            hashfp.flush()
+    with open(hash_file, 'w+') as hashfp:
+        hashfp.write(stdout.decode('utf-8'))
+        hashfp.flush()
     return False
 
 
