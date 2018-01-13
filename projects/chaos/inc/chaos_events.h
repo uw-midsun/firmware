@@ -5,9 +5,12 @@ typedef enum {
   NUM_CHAOS_EVENTS_CRITICAL = 0,
 } ChaosEventCritical;
 
-// CAN messages in the event queue
+// CAN related messages in the event queue
 typedef enum {
-  CHAOS_EVENT_CAN_UV_OV = NUM_CHAOS_EVENTS_CRITICAL + 1,
+  CHAOS_EVENT_CAN_TRANSMIT_ERROR = NUM_CHAOS_EVENTS_CRITICAL + 1,
+  CHAOS_EVENT_CAN_FAULT,
+  CHAOS_EVENT_CAN_RX,
+  CHAOS_EVENT_CAN_TX,
   NUM_CHAOS_EVENTS_CAN,
 } ChaosEventCAN;
 

@@ -4,17 +4,24 @@
 #include <stdint.h>
 
 #include "adc.h"
+#include "can.h"
+#include "can_msg_defs.h"
+#include "can_unpack.h"
 #include "chaos_events.h"
 #include "delay.h"
 #include "event_queue.h"
+#include "fsm.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "interrupt.h"
 #include "log.h"
+#include "misc.h"
 #include "soft_timer.h"
 #include "status.h"
 #include "test_helpers.h"
 #include "unity.h"
+
+#define TEST_POWER_PATH_NUM_RX_HANDLERS 1
 
 #define TEST_POWER_PATH_ADC_PERIOD_US 1000
 
@@ -37,6 +44,23 @@ static uint16_t prv_dcdc_current_convert(uint16_t value) {
 
 static uint16_t prv_dcdc_voltage_convert(uint16_t value) {
   return TEST_POWER_PATH_DCDC_VOLTAGE_VAL;
+}
+
+static volatile uint8_t s_dcdc_ov = UINT8_MAX;
+static volatile uint8_t s_dcdc_uv = UINT8_MAX;
+static volatile uint8_t s_aux_ov = UINT8_MAX;
+static volatile uint8_t s_aux_uv = UINT8_MAX;
+
+static StatusCode prv_handle_uvov(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+  LOG_DEBUG("Handled\n");
+  CAN_UNPACK_OVUV_DCDC_AUX(msg, &s_dcdc_ov, &s_dcdc_uv, &s_aux_ov, &s_aux_uv);
+  return STATUS_CODE_OK;
+}
+
+static StatusCode prv_handle_default(const CANMessage *msg, void *context,
+                                     CANAckStatus *ack_reply) {
+  LOG_DEBUG("Default Handled\n");
+  return STATUS_CODE_OK;
 }
 
 static PowerPathCfg s_ppc = { .enable_pin = { .port = 0, .pin = 0 },
@@ -62,34 +86,71 @@ static PowerPathCfg s_ppc = { .enable_pin = { .port = 0, .pin = 0 },
                                         .timer_id = SOFT_TIMER_INVALID_TIMER,
                                         .monitoring_active = false } };
 
+static CANStorage s_can_storage;
+static CANRxHandler s_rx_handlers[TEST_POWER_PATH_NUM_RX_HANDLERS];
+
 void setup_test(void) {
   event_queue_init();
-  gpio_init();
   interrupt_init();
-  gpio_it_init();
   soft_timer_init();
+  gpio_init();
+  gpio_it_init();
   adc_init(ADC_MODE_SINGLE);
+
+  CANSettings can_settings = {
+    .device_id = CAN_DEVICE_CHAOS,
+    .bitrate = CAN_HW_BITRATE_125KBPS,
+    .rx_event = CHAOS_EVENT_CAN_RX,
+    .tx_event = CHAOS_EVENT_CAN_TX,
+    .fault_event = CHAOS_EVENT_CAN_FAULT,
+    .tx = { GPIO_PORT_A, 12 },
+    .rx = { GPIO_PORT_A, 11 },
+    .loopback = true,
+  };
+
+  TEST_ASSERT_OK(
+      can_init(&can_settings, &s_can_storage, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers)));
   TEST_ASSERT_OK(power_path_init(&s_ppc));
 }
 
 void teardown_test(void) {}
 
 void test_power_path_uv_ov(void) {
+  volatile CANMessage rx_msg = { 0 };
+  can_register_rx_handler(CAN_MESSAGE_OVUV_DCDC_AUX, prv_handle_uvov, &rx_msg);
+  can_register_rx_default_handler(prv_handle_default, &rx_msg);
+
   TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.aux_bat, TEST_POWER_PATH_ADC_PERIOD_US));
   TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.dcdc, TEST_POWER_PATH_ADC_PERIOD_US));
 
+  delay_us(TEST_POWER_PATH_ADC_PERIOD_US + TEST_POWER_PATH_ADC_PERIOD_US / 10);
+
   gpio_it_trigger_interrupt(&s_ppc.aux_bat.uv_ov_pin);
-  Event e = { 0, 0 };
+
+  Event e = { 0 };
   while (event_process(&e) != STATUS_CODE_OK) {
   }
-  TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_UV_OV, e.id);
-  TEST_ASSERT_EQUAL(POWER_PATH_SOURCE_ID_AUX_BAT, e.data);
+  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e))
+  LOG_DEBUG("Event %d\n", e.id);
+  LOG_DEBUG("Data %d\n", e.data);
+
+  TEST_ASSERT_EQUAL(true, s_dcdc_uv);
+  TEST_ASSERT_EQUAL(false, s_dcdc_ov);
+  TEST_ASSERT_EQUAL(false, s_aux_uv);
+  TEST_ASSERT_EQUAL(false, s_aux_ov);
 
   gpio_it_trigger_interrupt(&s_ppc.dcdc.uv_ov_pin);
+
   while (event_process(&e) != STATUS_CODE_OK) {
   }
-  TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_UV_OV, e.id);
-  TEST_ASSERT_EQUAL(POWER_PATH_SOURCE_ID_DCDC, e.data);
+  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e))
+  LOG_DEBUG("Event %d\n", e.id);
+  LOG_DEBUG("Data %d\n", e.data);
+
+  TEST_ASSERT_EQUAL(false, s_dcdc_uv);
+  TEST_ASSERT_EQUAL(false, s_dcdc_ov);
+  TEST_ASSERT_EQUAL(true, s_aux_uv);
+  TEST_ASSERT_EQUAL(false, s_aux_ov);
 
   TEST_ASSERT_OK(power_path_source_monitor_disable(&s_ppc.aux_bat));
   TEST_ASSERT_OK(power_path_source_monitor_disable(&s_ppc.dcdc));
