@@ -17,7 +17,6 @@ void test_gps_nmea_gga(void) {
       "M,15.2,M,,0000*64";
   evm_gps_gga_sentence r = evm_gps_parse_nmea_gga_sentence(input, SIZEOF_ARRAY(input));
   // Just chose a random thing to test. Not extensive yet
-  LOG_DEBUG("r.north_south: %s\n", (char *)&r.north_south);
   TEST_ASSERT_TRUE(r.time.hh == 5);
   TEST_ASSERT_TRUE(r.time.mm == 37);
   TEST_ASSERT_TRUE(r.time.ss == 40);
