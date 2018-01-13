@@ -23,7 +23,7 @@ void evm_gps_compute_checksum(char *message, char *out) {
 
 bool evm_gps_compare_checksum(char *message) {
   char *received = message + strlen(message) - 2;
-  if (*(received - 1) == '*') {
+  if (*(received - 1) != '*') {
     // return false if there's no checksum in the message
     return false;
   }
