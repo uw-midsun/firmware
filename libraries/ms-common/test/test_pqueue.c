@@ -40,7 +40,8 @@ void test_pqueue_out_of_space(void) {
     }
   }
 
-  // If we attempt to continue popping data after clearing the queue, expect NULL.
+  // If we attempt to continue popping data after clearing the queue, expect
+  // NULL.
   for (size_t i = 0; i < TEST_PQUEUE_SIZE + 5; i++) {
     TEST_ASSERT_EQUAL(((i + 1) < TEST_PQUEUE_SIZE) ? (void *)i : NULL, pqueue_pop(&gv_queue));
   }

@@ -1,5 +1,6 @@
 // Implements a min-heap.
-// Modified from http://cs.smu.ca/~pawan/teach/csc342/98-99-2/book/chapter9/minheap.h
+// Modified from
+// http://cs.smu.ca/~pawan/teach/csc342/98-99-2/book/chapter9/minheap.h
 #include <stdlib.h>
 #include <string.h>
 

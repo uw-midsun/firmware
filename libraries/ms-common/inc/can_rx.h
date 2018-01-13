@@ -1,12 +1,14 @@
 #pragma once
 // CAN RX handlers
-// Provides an interface for registering and finding callbacks based on CAN message IDs.
+// Provides an interface for registering and finding callbacks based on CAN
+// message IDs.
 #include <stdint.h>
 #include "can_ack.h"
 #include "can_msg.h"
 #include "status.h"
 
-// Process the received CAN message. Storage to an ACK reply is valid only if the message
+// Process the received CAN message. Storage to an ACK reply is valid only if
+// the message
 // is considered critical. If valid, the ack reply is OK by default.
 typedef StatusCode (*CANRxHandlerCb)(const CANMessage *msg, void *context, CANAckStatus *ack_reply);
 

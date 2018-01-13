@@ -60,7 +60,8 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
   CAN_ITConfig(CAN_HW_BASE, CAN_IT_ERR, ENABLE);
   stm32f0xx_interrupt_nvic_enable(CEC_CAN_IRQn, INTERRUPT_PRIORITY_HIGH);
 
-  // Allow all messages by default, but reset the filter count so it's overwritten on the first
+  // Allow all messages by default, but reset the filter count so it's
+  // overwritten on the first
   // filter
   can_hw_add_filter(0, 0, false);
   s_num_filters = 0;
@@ -86,13 +87,13 @@ StatusCode can_hw_add_filter(uint32_t mask, uint32_t filter, bool extended) {
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN HW: Ran out of filter banks.");
   }
 
+
   // 32-bit Filter - Identifer Mask
   // STID[10:3] | STID[2:0] EXID[17:13] | EXID[12:5] | EXID[4:0] [IDE] [RTR] 0
   size_t offset = extended ? 3 : 21;
   // We always set the IDE bit for the mask so we distinguish between standard and extended
   uint32_t mask_val = (mask << offset) | (1 << 2);
   uint32_t filter_val = (filter << offset) | ((uint32_t)extended << 2);
-
   CAN_FilterInitTypeDef filter_cfg = {
     .CAN_FilterNumber = s_num_filters,
     .CAN_FilterMode = CAN_FilterMode_IdMask,

@@ -45,7 +45,8 @@ void test_soft_timer_basic(void) {
 }
 
 void test_soft_timer_preempt(void) {
-  // Begin medium, longer, short, then long - should finish short, medium, long, longer
+  // Begin medium, longer, short, then long - should finish short, medium, long,
+  // longer
   // Tests ordering: new, append to back, insert into front, insert into middle
   volatile SoftTimerID cb_id_short = SOFT_TIMER_INVALID_TIMER;
   volatile SoftTimerID cb_id_medium = SOFT_TIMER_INVALID_TIMER;

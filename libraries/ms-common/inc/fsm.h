@@ -1,10 +1,12 @@
 #pragma once
 // FSM Interface
 //
-// For every event that is processed (i.e. results in a transition), the new state's
+// For every event that is processed (i.e. results in a transition), the new
+// state's
 // output function is called.
 //
-// The FSM keeps track of both current and last states for debug purposes. It would be trivial to
+// The FSM keeps track of both current and last states for debug purposes. It
+// would be trivial to
 // additionally track the last processed event.
 //
 // Usage: Note that FSMs should be declared in the source file, not the header.
@@ -24,7 +26,8 @@
 //   FSM_ADD_TRANSITION(1, state_b);
 // }
 //
-// Use fsm_state_init to set a state's output function (called whenever transitioned to).
+// Use fsm_state_init to set a state's output function (called whenever
+// transitioned to).
 
 #include <stdbool.h>
 #include <stdint.h>

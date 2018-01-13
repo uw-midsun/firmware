@@ -1,5 +1,9 @@
 #pragma once
 
 typedef enum {
-  NUM_UART_PORTS = 0,
+  UART_PORT_1 = 0,
+  UART_PORT_2,
+  UART_PORT_3,
+  UART_PORT_4,
+  NUM_UART_PORTS,
 } UARTPort;

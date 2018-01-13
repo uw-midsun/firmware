@@ -62,7 +62,8 @@ void test_crc15_calculate_wrcomm(void) {
 void test_crc15_calculate_wrcomm_i2c_slave_result() {
   // datasheet p.56
   uint8_t data[] = { 0x6A, 0x08, 0x00, 0x18, 0x0A, 0xA9 };
-  TEST_ASSERT_EQUAL(0x6DFB, crc15_calculate(data, sizeof(data) / sizeof(data[0])));
+  TEST_ASSERT_EQUAL(0x6DFB, crc15_calculate(data, sizeof(data) /
+sizeof(data[0])));
 }
 */
 
