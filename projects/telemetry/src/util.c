@@ -4,26 +4,27 @@
 
 static char s_hex[] = "0123456789ABCDEF";
 
-static char* prv_int_to_hex(uint8_t checksum) {
+// out must be a pointer to at least 3 chars
+void prv_int_to_hex(uint8_t checksum, char* out) {
   // we know that it'll be a 2 digit hex number since the checksum is 8-bit
-  static char return_value[3] = { 0 };
-  return_value[0] = s_hex[checksum / 16];
-  return_value[1] = s_hex[checksum % 16];
-  return_value[2] = '\0';
-  return return_value;
+  out[0] = s_hex[checksum / 16];
+  out[1] = s_hex[checksum % 16];
+  out[2] = '\0';
 }
 
-char* evm_gps_compute_checksum(char* message) {
+// out must be a pointer to at least 3 chars
+void evm_gps_compute_checksum(char *message, char *out) {
   uint8_t sum = 0;
   uint8_t message_len = strlen(message);
   for (uint8_t i = 1; message[i] != '*' && i < message_len; i++) {
     sum ^= message[i];
   }
-  return prv_int_to_hex(sum);
+  prv_int_to_hex(sum, out);
 }
 
 bool evm_gps_compare_checksum(char* message) {
-  char* computed = evm_gps_compute_checksum(message);
+  char computed[3];
+  evm_gps_compute_checksum(message, computed);
   char* received = message + strlen(message) - 2;
   return strcmp(computed, received) == 0;
 }

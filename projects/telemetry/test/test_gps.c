@@ -6,6 +6,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 #include "util.h"
+#include "gps.h"
 
 void setup_test(void) {}
 void teardown_test(void) {}
