@@ -6,6 +6,7 @@
 #include "gps.h"
 #include "interrupt.h"   // For enabling interrupts.
 #include "soft_timer.h"  // Software timers for scheduling future events.
+#include "uart.h"
 
 // As far as I can tell we just made up the values below
 static const GPIOAddress pins[] = {
@@ -28,7 +29,7 @@ void gga_handler(evm_gps_gga_sentence result) {
 }
 
 // For GPS
-static const UARTPort s_port = UART_PORT_2;
+static const UARTPort s_port; // = UART_PORT_2;
 
 int main(void) {
   // Enable various peripherals
