@@ -29,7 +29,7 @@ void gga_handler(evm_gps_gga_sentence result) {
 }
 
 // For GPS
-static const UARTPort s_port; // = UART_PORT_2;
+static const UARTPort s_port;  // = UART_PORT_2;
 
 int main(void) {
   // Enable various peripherals
