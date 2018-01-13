@@ -24,6 +24,7 @@ typedef struct {
 } evm_gps_settings;
 
 StatusCode evm_gps_init(evm_gps_settings *settings);
+StatusCode evm_gps_clean_up(evm_gps_settings *settings);
 
 // These methods will add the handler to the handler array, and returns the
 // index so that it can
