@@ -5,12 +5,13 @@
 #include "unity.h"
 
 static volatile size_t s_msg_rx;
-static volatile uint16_t s_rx_id;
+static volatile uint32_t s_rx_id;
+static volatile bool s_extended;
 static volatile uint64_t s_rx_data;
 static volatile size_t s_rx_len;
 
 static void prv_handle_rx(void *context) {
-  while (can_hw_receive(&s_rx_id, &s_rx_data, &s_rx_len)) {
+  while (can_hw_receive(&s_rx_id, &s_extended, &s_rx_data, &s_rx_len)) {
     s_msg_rx++;
   }
 }
@@ -37,6 +38,7 @@ void setup_test(void) {
   TEST_ASSERT_OK(ret);
   s_msg_rx = 0;
   s_rx_id = 0;
+  s_extended = false;
   s_rx_data = 0;
   s_rx_len = 0;
   LOG_DEBUG("CAN initialized\n");
@@ -45,38 +47,85 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_can_hw_loop(void) {
-  uint16_t tx_id = 0x01;
+  uint32_t tx_id = 0x01;
   uint64_t tx_data = 0x1122334455667788;
   size_t tx_len = 8;
 
-  StatusCode ret = can_hw_transmit(tx_id, (uint8_t *)&tx_data, tx_len);
+  StatusCode ret = can_hw_transmit(tx_id, false, (uint8_t *)&tx_data, tx_len);
   TEST_ASSERT_OK(ret);
 
   prv_wait_rx(1);
 
   TEST_ASSERT_EQUAL(tx_id, s_rx_id);
+  TEST_ASSERT_EQUAL(false, s_extended);
   TEST_ASSERT_EQUAL(tx_data, s_rx_data);
   TEST_ASSERT_EQUAL(tx_len, s_rx_len);
 }
 
 void test_can_hw_filter(void) {
   // Mask 0b11, require 0b01
-  can_hw_add_filter(0x03, 0x01);
+  can_hw_add_filter(0x03, 0x01, false);
 
   // 0b0011 - fail
-  StatusCode ret = can_hw_transmit(0x3, 0, 0);
+  StatusCode ret = can_hw_transmit(0x3, false, 0, 0);
   TEST_ASSERT_OK(ret);
 
   // 0b0101 - pass
-  ret = can_hw_transmit(0x5, 0, 0);
+  ret = can_hw_transmit(0x5, false, 0, 0);
   TEST_ASSERT_OK(ret);
 
   // 0b00111001 - pass
-  ret = can_hw_transmit(0x39, 0, 0);
+  ret = can_hw_transmit(0x39, false, 0, 0);
+  TEST_ASSERT_OK(ret);
+
+  // extended ID with std ID 0b1 - fail
+  ret = can_hw_transmit(0x40000, true, 0, 0);
   TEST_ASSERT_OK(ret);
 
   prv_wait_rx(2);
 
   TEST_ASSERT_EQUAL(2, s_msg_rx);
+  TEST_ASSERT_EQUAL(false, s_extended);
   TEST_ASSERT_EQUAL(0x39, s_rx_id);
+}
+
+void test_can_hw_extended(void) {
+  uint32_t tx_id = 0x15555555;
+  uint64_t tx_data = 0x1122334455667788;
+  size_t tx_len = 8;
+
+  StatusCode ret = can_hw_transmit(tx_id, true, (uint8_t *)&tx_data, tx_len);
+  TEST_ASSERT_OK(ret);
+
+  prv_wait_rx(1);
+
+  TEST_ASSERT_EQUAL(tx_id, s_rx_id);
+  TEST_ASSERT_EQUAL(true, s_extended);
+  TEST_ASSERT_EQUAL(tx_data, s_rx_data);
+  TEST_ASSERT_EQUAL(tx_len, s_rx_len);
+}
+
+void test_can_hw_extended_filter(void) {
+  can_hw_add_filter(0x1234567, 0x1234567, true);
+
+  // No match extended - fail
+  StatusCode ret = can_hw_transmit(0x1234547, true, 0, 0);
+  TEST_ASSERT_OK(ret);
+
+  // No match standard - fail
+  ret = can_hw_transmit(0x123, false, 0, 0);
+  TEST_ASSERT_OK(ret);
+
+  // Partial invalid - fail
+  ret = can_hw_transmit(0x0004567, true, 0, 0);
+  TEST_ASSERT_OK(ret);
+
+  ret = can_hw_transmit(0x1234567, true, 0, 0);
+  TEST_ASSERT_OK(ret);
+
+  prv_wait_rx(1);
+
+  TEST_ASSERT_EQUAL(1, s_msg_rx);
+  TEST_ASSERT_EQUAL(true, s_extended);
+  TEST_ASSERT_EQUAL(0x1234567, s_rx_id);
 }

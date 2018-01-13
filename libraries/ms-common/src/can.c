@@ -93,7 +93,7 @@ StatusCode can_add_filter(CANMessageID msg_id) {
   CANId mask = { 0 };
   mask.msg_id = ~mask.msg_id;
 
-  return can_hw_add_filter(can_id.raw, mask.raw);
+  return can_hw_add_filter(can_id.raw, mask.raw, false);
 }
 
 StatusCode can_register_rx_default_handler(CANRxHandlerCb handler, void *context) {
@@ -162,12 +162,17 @@ void prv_tx_handler(void *context) {
 // Each event will result in one message's processing.
 void prv_rx_handler(void *context) {
   CANStorage *can_storage = context;
-  CANId rx_id = { 0 };
+  uint32_t rx_id = 0;
   CANMessage rx_msg = { 0 };
   size_t counter = 0;
 
-  while (can_hw_receive(&rx_id.raw, &rx_msg.data, &rx_msg.dlc)) {
-    CAN_MSG_SET_RAW_ID(&rx_msg, rx_id.raw);
+  bool extended = false;
+  while (can_hw_receive(&rx_id, &extended, &rx_msg.data, &rx_msg.dlc)) {
+    if (extended) {
+      // We don't handle extended messages in the network layer
+      continue;
+    }
+    CAN_MSG_SET_RAW_ID(&rx_msg, rx_id);
 
     StatusCode result = can_fifo_push(&can_storage->rx_fifo, &rx_msg);
     // TODO(ELEC-251): add error handling for FSMs

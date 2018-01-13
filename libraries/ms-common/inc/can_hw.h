@@ -49,11 +49,11 @@ StatusCode can_hw_init(const CANHwSettings *settings);
 // Registers a callback for the given event
 StatusCode can_hw_register_callback(CANHwEvent event, CANHwEventHandlerCb callback, void *context);
 
-StatusCode can_hw_add_filter(uint16_t mask, uint16_t filter);
+StatusCode can_hw_add_filter(uint32_t mask, uint32_t filter, bool extended);
 
 CANHwBusStatus can_hw_bus_status(void);
 
-StatusCode can_hw_transmit(uint16_t id, const uint8_t *data, size_t len);
+StatusCode can_hw_transmit(uint32_t id, bool extended, const uint8_t *data, size_t len);
 
 // Must be called within the RX handler, returns whether a message was processed
-bool can_hw_receive(uint16_t *id, uint64_t *data, size_t *len);
+bool can_hw_receive(uint32_t *id, bool *extended, uint64_t *data, size_t *len);

@@ -133,9 +133,9 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
 
     pthread_mutex_unlock(&s_keep_alive);
 
-    // Signal condition variable in case TX thread is waiting
     pthread_join(s_rx_pthread_id, NULL);
 
+    // Signal condition variable in case TX thread is waiting
     pthread_mutex_lock(&s_tx_mutex);
     pthread_mutex_unlock(&s_tx_mutex);
     pthread_cond_signal(&s_tx_cond);
@@ -208,13 +208,15 @@ StatusCode can_hw_register_callback(CANHwEvent event, CANHwEventHandlerCb callba
   return STATUS_CODE_OK;
 }
 
-StatusCode can_hw_add_filter(uint16_t mask, uint16_t filter) {
+StatusCode can_hw_add_filter(uint32_t mask, uint32_t filter, bool extended) {
   if (s_socket_data.num_filters >= CAN_HW_MAX_FILTERS) {
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN HW: Ran out of filters.");
   }
 
-  s_socket_data.filters[s_socket_data.num_filters].can_id = filter & CAN_SFF_MASK;
-  s_socket_data.filters[s_socket_data.num_filters].can_mask = mask & CAN_SFF_MASK;
+  uint32_t reg_mask = extended ? CAN_EFF_MASK : CAN_SFF_MASK;
+  uint32_t ide = extended ? CAN_EFF_FLAG : 0;
+  s_socket_data.filters[s_socket_data.num_filters].can_id = (filter & reg_mask) | ide;
+  s_socket_data.filters[s_socket_data.num_filters].can_mask = (mask & reg_mask) | CAN_EFF_FLAG;
   s_socket_data.num_filters++;
 
   if (setsockopt(s_socket_data.can_fd, SOL_CAN_RAW, CAN_RAW_FILTER, s_socket_data.filters,
@@ -229,8 +231,10 @@ CANHwBusStatus can_hw_bus_status(void) {
   return CAN_HW_BUS_STATUS_OK;
 }
 
-StatusCode can_hw_transmit(uint16_t id, const uint8_t *data, size_t len) {
-  struct can_frame frame = { .can_id = id & CAN_SFF_MASK, .can_dlc = len };
+StatusCode can_hw_transmit(uint32_t id, bool extended, const uint8_t *data, size_t len) {
+  uint32_t mask = extended ? CAN_EFF_MASK : CAN_SFF_MASK;
+  uint32_t extended_bit = extended ? CAN_EFF_FLAG : 0;
+  struct can_frame frame = { .can_id = (id & mask) | extended_bit, .can_dlc = len };
   memcpy(&frame.data, data, len);
 
   pthread_mutex_lock(&s_tx_mutex);
@@ -248,13 +252,15 @@ StatusCode can_hw_transmit(uint16_t id, const uint8_t *data, size_t len) {
 }
 
 // Must be called within the RX handler, returns whether a message was processed
-bool can_hw_receive(uint16_t *id, uint64_t *data, size_t *len) {
+bool can_hw_receive(uint32_t *id, bool *extended, uint64_t *data, size_t *len) {
   if (s_socket_data.rx_frame.can_id == 0) {
     // Assumes that we'll never transmit something with a CAN ID of all 0s
     return false;
   }
 
-  *id = s_socket_data.rx_frame.can_id & CAN_SFF_MASK;
+  *extended = !!(s_socket_data.rx_frame.can_id & CAN_EFF_FLAG);
+  uint32_t mask = *extended ? CAN_EFF_MASK : CAN_SFF_MASK;
+  *id = s_socket_data.rx_frame.can_id & mask;
   memcpy(data, s_socket_data.rx_frame.data, sizeof(*data));
   *len = s_socket_data.rx_frame.can_dlc;
 
