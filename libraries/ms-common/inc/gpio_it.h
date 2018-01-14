@@ -12,7 +12,8 @@ typedef void (*gpio_it_callback)(const GPIOAddress *address, void *context);
 // Initializes the interrupt handler for GPIO.
 void gpio_it_init(void);
 
-// Registers a new callback on a given port pin combination with the desired settings.
+// Registers a new callback on a given port pin combination with the desired
+// settings.
 StatusCode gpio_it_register_interrupt(const GPIOAddress *address, const InterruptSettings *settings,
                                       InterruptEdge edge, gpio_it_callback callback, void *context);
 

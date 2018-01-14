@@ -37,7 +37,8 @@ typedef struct CANStorage {
   uint16_t device_id;
 } CANStorage;
 
-// Initializes the specified CAN configuration given pointers to persistant storage.
+// Initializes the specified CAN configuration given pointers to persistant
+// storage.
 StatusCode can_init(const CANSettings *settings, CANStorage *storage, CANRxHandler *rx_handlers,
                     size_t num_rx_handlers);
 
@@ -50,5 +51,6 @@ StatusCode can_register_rx_handler(CANMessageID msg_id, CANRxHandlerCb handler, 
 // Attempts to transmit the CAN message as soon as possible.
 StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request);
 
-// Returns the FSM responsible for handling CAN messages. Use with fsm_process_event.
+// Returns the FSM responsible for handling CAN messages. Use with
+// fsm_process_event.
 FSM *can_get_fsm(void);

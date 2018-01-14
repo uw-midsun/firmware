@@ -31,9 +31,11 @@ StatusCode i2c_read(I2CPort i2c, I2CAddress addr, uint8_t *rx_data, size_t rx_le
 // START | ADDR READ ACK | DATA ACK | ... | STOP
 StatusCode i2c_write(I2CPort i2c, I2CAddress addr, uint8_t *tx_data, size_t tx_len);
 
-// START | ADDR WRITE ACK | REG ACK | START | ADDR READ ACK | DATA ACK | ... | STOP
+// START | ADDR WRITE ACK | REG ACK | START | ADDR READ ACK | DATA ACK | ... |
+// STOP
 StatusCode i2c_read_reg(I2CPort i2c, I2CAddress addr, uint8_t reg, uint8_t *rx_data, size_t rx_len);
 
-// START | ADDR WRITE ACK | REG ACK | START | ADDR WRITE ACK | DATA ACK | ... | STOP
+// START | ADDR WRITE ACK | REG ACK | START | ADDR WRITE ACK | DATA ACK | ... |
+// STOP
 StatusCode i2c_write_reg(I2CPort i2c, I2CAddress addr, uint8_t reg, uint8_t *tx_data,
                          size_t tx_len);

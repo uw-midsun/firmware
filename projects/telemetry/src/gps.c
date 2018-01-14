@@ -23,7 +23,9 @@ static UARTStorage s_storage = { 0 };
 static bool s_initialized = false;
 
 static void s_nmea_read(const uint8_t *rx_arr, size_t len, void *context) {
+
   LOG_DEBUG("Read NMEA message");
+
   if (!status_ok(evm_gps_is_valid_nmea(rx_arr, len))) {
     LOG_DEBUG("Invalid nmea message");
     return;
@@ -31,13 +33,10 @@ static void s_nmea_read(const uint8_t *rx_arr, size_t len, void *context) {
 
   EVM_GPS_NMEA_MESSAGE_ID message_id;
   evm_gps_get_nmea_sentence_type(rx_arr, &message_id);
-  LOG_DEBUG("Read NMEA message");
-  for(uint16_t i = 0; i < len; i++){
-    LOG_DEBUG("%c", rx_arr[i]);
-  }
+
   if (message_id == EVM_GPS_GGA) {
     evm_gps_gga_sentence r = evm_gps_parse_nmea_gga_sentence(rx_arr, len);
-    for (uint16_t i = 0; i < GPS_HANDLER_ARRAY_LENGTH; i++) {
+    for (uint32_t i = 0; i < GPS_HANDLER_ARRAY_LENGTH; i++) {
       if (s_gga_handler[i] != NULL) {
         (*s_gga_handler[i])(r);
       }
@@ -77,14 +76,18 @@ void prv_stop_ON_OFF(SoftTimerID timer_id, void *context) {
 // This is useful as a method for callbacks
 void prv_toggle_chip_power(SoftTimerID timer_id, void *context) {
   evm_gps_settings *settings = context;
+
   LOG_DEBUG("Starting powerup\n");
+
   gpio_toggle_state(settings->pin_power);
 }
 
 // This callback should start the initialization sequence
 void prv_pull_ON_OFF(SoftTimerID timer_id, void *context) {
   evm_gps_settings *settings = context;
+
   LOG_DEBUG("Starting powerup 2\n");
+
   // Can't really return a StatusCode here. Might need a messy work around / leave it?
   gpio_toggle_state(settings->pin_on_off);
   soft_timer_start_millis(100, prv_stop_ON_OFF, settings, NULL);
@@ -135,6 +138,7 @@ StatusCode evm_gps_init(evm_gps_settings *settings) {
   if (s_initialized) return STATUS_CODE_OK;
 
   status_ok_or_return(evm_gps_validate_settings(settings));
+
 
   settings->uart_settings->rx_handler = &s_nmea_read;
   // Makes sure that status codes are handled
