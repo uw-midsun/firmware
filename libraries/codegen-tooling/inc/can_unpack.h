@@ -1,6 +1,6 @@
 #pragma once
 
-#include "can_msg_def.h"
+#include "can_msg_defs.h"
 #include "can_unpack_impl.h"
 
 #define CAN_UNPACK_BPS_FAULT(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
