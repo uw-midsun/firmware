@@ -83,7 +83,7 @@ evm_gps_gga_sentence evm_gps_parse_nmea_gga_sentence(const uint8_t *rx_arr, size
   r.message_id = m_id;
 
   // Do checksum right here
-  if (evm_gps_compare_checksum((char *)rx_arr)) {
+  if (!evm_gps_compare_checksum((char *)rx_arr)) {
     LOG_WARN("Checksums do not match\n");
   }
   // Parse message_id below

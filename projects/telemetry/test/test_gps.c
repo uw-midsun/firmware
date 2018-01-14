@@ -6,6 +6,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 #include "util.h"
+#include "gps.h"
 
 void setup_test(void) {}
 void teardown_test(void) {}
@@ -16,7 +17,6 @@ void test_gps_nmea_gga(void) {
       "M,15.2,M,,0000*64";
   evm_gps_gga_sentence r = evm_gps_parse_nmea_gga_sentence(input, SIZEOF_ARRAY(input));
   // Just chose a random thing to test. Not extensive yet
-  LOG_DEBUG("r.north_south: %s\n", (char *)&r.north_south);
   TEST_ASSERT_TRUE(r.time.hh == 5);
   TEST_ASSERT_TRUE(r.time.mm == 37);
   TEST_ASSERT_TRUE(r.time.ss == 40);
@@ -52,4 +52,10 @@ void test_gps_nmea_gga(void) {
   TEST_ASSERT_TRUE(r.units_geoid_seperation == (uint8_t)'M');
 
   TEST_ASSERT_TRUE(evm_gps_compare_checksum((char *)input));
+}
+
+void test_disable(void) {
+  char message[24];
+  disable_message_type(5, message);
+  TEST_ASSERT_EQUAL_STRING("$PSRF103,05,00,00,01*21", message);
 }
