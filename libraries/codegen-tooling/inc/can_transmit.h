@@ -4,7 +4,8 @@
 
 #include "can.h"
 #include "can_ack.h"
-#include "can_msg_def.h"
+#include "can_msg_defs.h"
+#include "can_pack.h"
 
 #define CAN_TRANSMIT_BPS_FAULT(ack_ptr)                \
   ({                                                   \
