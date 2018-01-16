@@ -1,8 +1,8 @@
 #include "can_hw.h"
-#include "interrupt.h"
-#include "soft_timer.h"
 #include "delay.h"
+#include "interrupt.h"
 #include "log.h"
+#include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
 
