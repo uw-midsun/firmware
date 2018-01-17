@@ -95,6 +95,8 @@ void test_can_hw_filter(void) {
   ret = can_hw_transmit(0x40000, true, 0, 0);
   TEST_ASSERT_OK(ret);
 
+  delay_ms(10);
+
   TEST_ASSERT_EQUAL(2, s_msg_rx);
   TEST_ASSERT_EQUAL(false, s_extended);
   TEST_ASSERT_EQUAL(0x39, s_rx_id);
@@ -141,7 +143,7 @@ void test_can_hw_extended_filter(void) {
   ret = can_hw_transmit(0x1234567, true, 0, 0);
   TEST_ASSERT_OK(ret);
 
-  prv_wait_rx(1);
+  delay_ms(10);
 
   TEST_ASSERT_EQUAL(1, s_msg_rx);
   TEST_ASSERT_EQUAL(true, s_extended);
