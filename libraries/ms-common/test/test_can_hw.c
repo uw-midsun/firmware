@@ -1,3 +1,4 @@
+#include <inttypes.h>
 #include "can_hw.h"
 #include "delay.h"
 #include "interrupt.h"
@@ -14,7 +15,7 @@ static volatile size_t s_rx_len;
 
 static void prv_handle_rx(void *context) {
   while (can_hw_receive(&s_rx_id, &s_extended, &s_rx_data, &s_rx_len)) {
-    LOG_DEBUG("RX msg %lx (extended %d) %d bytes\n", s_rx_id, s_extended, s_rx_len);
+    LOG_DEBUG("RX msg 0x%" PRIu32 " (extended %d) %zu bytes\n", s_rx_id, s_extended, s_rx_len);
     s_msg_rx++;
   }
 }
