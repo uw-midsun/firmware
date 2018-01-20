@@ -18,11 +18,11 @@
 typedef struct CanUartPacket {
   union {
     struct {
-      uint32_t marker:24;
-      uint32_t extended:1;
-      uint32_t rtr:1;
-      uint32_t reserved:2;
-      uint32_t dlc:4;
+      uint32_t marker : 24;
+      uint32_t extended : 1;
+      uint32_t rtr : 1;
+      uint32_t reserved : 2;
+      uint32_t dlc : 4;
     };
     uint32_t raw;
   } header;
@@ -43,8 +43,8 @@ static void prv_rx_uart(const uint8_t *rx_arr, size_t len, void *context) {
   if (packet.header.marker == CAN_UART_RX_MARKER) {
     // RX'd CAN message - alert system
     if (can_uart->rx_cb != NULL) {
-      can_uart->rx_cb(can_uart, packet.id, packet.header.extended, &packet.data,
-                      packet.header.dlc, can_uart->context);
+      can_uart->rx_cb(can_uart, packet.id, packet.header.extended, &packet.data, packet.header.dlc,
+                      can_uart->context);
     }
   } else if (packet.header.marker == CAN_UART_TX_MARKER) {
     // TX request - attempt to transmit message
@@ -61,11 +61,7 @@ static void prv_handle_can_rx(void *context) {
   size_t dlc;
   while (can_hw_receive(&id, &extended, &data, &dlc)) {
     CanUartPacket packet = {
-      .header = {
-        .marker = CAN_UART_RX_MARKER,
-        .extended = extended,
-        .dlc = dlc
-      },
+      .header = { .marker = CAN_UART_RX_MARKER, .extended = extended, .dlc = dlc },
       .id = id,
       .data = data
     };
@@ -87,11 +83,7 @@ StatusCode can_uart_hook_can_hw(CanUart *can_uart) {
 StatusCode can_uart_req_tx(const CanUart *can_uart, uint32_t id, bool extended,
                            const uint64_t *data, size_t dlc) {
   CanUartPacket packet = {
-    .header = {
-      .marker = CAN_UART_TX_MARKER,
-      .extended = extended,
-      .dlc = dlc
-    },
+    .header = { .marker = CAN_UART_TX_MARKER, .extended = extended, .dlc = dlc },
     .id = id,
     .data = *data
   };

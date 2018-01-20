@@ -1,7 +1,7 @@
 #pragma once
-#include "uart.h"
 #include "can_hw.h"
 #include "status.h"
+#include "uart.h"
 
 // Generic CAN HW <-> UART protocol
 // Requires CAN HW, UART to be initialized
