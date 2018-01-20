@@ -24,7 +24,7 @@ StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
   RCC_ClocksTypeDef clocks;
   RCC_GetClocksFreq(&clocks);
 
-  size_t index = (size_t)__builtin_ffsl((int32_t)(clocks.PCLK_Frequency / settings->baudrate));
+  size_t index = 32 - (size_t)__builtin_clz(clocks.PCLK_Frequency / settings->baudrate);
   if (index <= 2) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid baudrate");
   }
