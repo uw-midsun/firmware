@@ -38,5 +38,8 @@ typedef struct {
 // Storage should be persistent through the program.
 StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage);
 
+// Overrides any currently set handler
+StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *context);
+
 // Non-blocking TX
 StatusCode uart_tx(UARTPort uart, uint8_t *tx_data, size_t len);
