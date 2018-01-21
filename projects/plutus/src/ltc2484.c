@@ -1,10 +1,10 @@
-#include "ltc2484.h"
-#include <stdint.h>
-#include "delay.h"
-#include "log.h"
-
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
+
+#include "delay.h"
+#include "log.h"
+#include "ltc2484.h"
 
 uint8_t s_filter_modes[NUM_LTC_2484_FILTER_MODES] = {
   LTC2484_REJECTION_50HZ_60HZ,
