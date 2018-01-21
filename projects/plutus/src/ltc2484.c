@@ -3,7 +3,6 @@
 #include <stdint.h>
 
 #include "delay.h"
-#include "log.h"
 #include "ltc2484.h"
 
 uint8_t s_filter_modes[NUM_LTC_2484_FILTER_MODES] = {
