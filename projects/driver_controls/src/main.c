@@ -1,16 +1,24 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "adc.h"
+// STM peripherals
+#include "ads1015.h"
+#include "gpio.h"
 #include "gpio_it.h"
+#include "i2c.h"
 #include "interrupt.h"
+#include "soft_timer.h"
 
+// External Slaves
+#include "gpio_expander.h"
+
+// Board initializations
 #include "analog_io.h"
-#include "digital_io.h"
-#include "event_arbiter.h"
-#include "input_event.h"
+#include "center_console_io.h"
+#include "driver_io.h"
+#include "steering_wheel_io.h"
 
-#include "can_output.h"
+// Finite State Machines
 #include "direction_fsm.h"
 #include "hazard_light_fsm.h"
 #include "horn_fsm.h"
@@ -19,6 +27,11 @@
 #include "power_fsm.h"
 #include "push_to_talk_fsm.h"
 #include "turn_signal_fsm.h"
+
+// Other headers
+#include "can_output.h"
+#include "event_arbiter.h"
+#include "input_event.h"
 
 // Struct of FSMs to be used in the program
 typedef struct FSMGroup {
@@ -36,15 +49,13 @@ int main() {
   FSMGroup fsm_group;
   Event e;
 
-  // Initialize the various driver control devices
   gpio_init();
   interrupt_init();
   gpio_it_init();
+  soft_timer_init();
 
-  adc_init(ADC_MODE_CONTINUOUS);
-
-  digital_io_init();
-  analog_io_init();
+  // Initialize digital IO boards
+  center_console_io_init();
 
   event_queue_init();
 
