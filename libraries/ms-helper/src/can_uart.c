@@ -1,6 +1,6 @@
 #include "can_uart.h"
-#include "log.h"
 #include <string.h>
+#include "log.h"
 
 // CTX
 #define CAN_UART_TX_MARKER 0x585443
@@ -16,18 +16,18 @@
 // 26-27 | reserved
 // 28:31 | dlc
 
-#define CAN_UART_BUILD_HEADER(marker, extended, rtr, dlc) \
-  (((uint32_t)(marker) & 0xFFFFFF) | \
-   ((uint32_t)(extended) & 0x1) << 24 | \
-   ((uint32_t)(rtr) & 0x1) << 25 | \
-   ((uint32_t)(dlc) & 0xF) << 28)
+#define CAN_UART_BUILD_HEADER(marker, extended, rtr, dlc)             \
+  (((uint32_t)(marker)&0xFFFFFF) | ((uint32_t)(extended)&0x1) << 24 | \
+   ((uint32_t)(rtr)&0x1) << 25 | ((uint32_t)(dlc)&0xF) << 28)
 #define CAN_UART_EXTRACT_HEADER(header, marker, extended, rtr, dlc) \
-  ({ uint32_t _header = header; \
-     *(marker) = _header & 0xFFFFFF; \
-     *(extended) = (_header >> 25) & 0x1; \
-     *(rtr) = (_header >> 25) & 0x1; \
-     *(dlc) = (_header >> 28) & 0xF; \
-     true; })
+  ({                                                                \
+    uint32_t _header = header;                                      \
+    *(marker) = _header & 0xFFFFFF;                                 \
+    *(extended) = (_header >> 25) & 0x1;                            \
+    *(rtr) = (_header >> 25) & 0x1;                                 \
+    *(dlc) = (_header >> 28) & 0xF;                                 \
+    true;                                                           \
+  })
 
 typedef struct CanUartPacket {
   uint32_t header;
@@ -53,8 +53,7 @@ static void prv_rx_uart(const uint8_t *rx_arr, size_t len, void *context) {
   if (marker == CAN_UART_RX_MARKER) {
     // RX'd CAN message - alert system
     if (can_uart->rx_cb != NULL) {
-      can_uart->rx_cb(can_uart, packet.id, extended, &packet.data, dlc,
-                      can_uart->context);
+      can_uart->rx_cb(can_uart, packet.id, extended, &packet.data, dlc, can_uart->context);
     }
   } else if (marker == CAN_UART_TX_MARKER) {
     // TX request - attempt to transmit message
@@ -70,11 +69,10 @@ static void prv_handle_can_rx(void *context) {
   uint64_t data;
   size_t dlc;
   while (can_hw_receive(&id, &extended, &data, &dlc)) {
-    CanUartPacket packet = {
-      .header = CAN_UART_BUILD_HEADER(CAN_UART_RX_MARKER, extended, false, dlc),
-      .id = id,
-      .data = data
-    };
+    CanUartPacket packet = { .header =
+                                 CAN_UART_BUILD_HEADER(CAN_UART_RX_MARKER, extended, false, dlc),
+                             .id = id,
+                             .data = data };
     uint8_t newline = '\n';
 
     StatusCode ret = uart_tx(can_uart->uart, (uint8_t *)&packet, sizeof(packet));
@@ -94,11 +92,10 @@ StatusCode can_uart_hook_can_hw(CanUart *can_uart) {
 
 StatusCode can_uart_req_tx(const CanUart *can_uart, uint32_t id, bool extended,
                            const uint64_t *data, size_t dlc) {
-  CanUartPacket packet = {
-    .header = CAN_UART_BUILD_HEADER(CAN_UART_TX_MARKER, extended, false, dlc),
-    .id = id,
-    .data = *data
-  };
+  CanUartPacket packet = { .header =
+                               CAN_UART_BUILD_HEADER(CAN_UART_TX_MARKER, extended, false, dlc),
+                           .id = id,
+                           .data = *data };
   uint8_t newline = '\n';
 
   StatusCode ret = uart_tx(can_uart->uart, (uint8_t *)&packet, sizeof(packet));
