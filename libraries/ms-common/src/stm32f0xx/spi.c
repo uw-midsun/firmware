@@ -24,8 +24,13 @@ StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
   RCC_ClocksTypeDef clocks;
   RCC_GetClocksFreq(&clocks);
 
-  size_t index = (size_t)__builtin_ffsl((int32_t)(clocks.PCLK_Frequency / settings->baudrate));
-  if (index <= 2) {
+  // See stm32f0xx_spi.h or SPIx_CR1->BR for valid prescalers
+  // Since they must be powers of two with a minimum prescaler of /2,
+  // we find the largest power of two in the requested divider and offset it such that
+  // BR = f_PCLK / 2 = 0x00
+  // and shift it to the correct position.
+  size_t index = 32 - (size_t)__builtin_clz(clocks.PCLK_Frequency / settings->baudrate);
+  if (index < 2) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid baudrate");
   }
 
