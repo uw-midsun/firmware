@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "interrupt_def.h"
 #include "status.h"
@@ -24,3 +25,6 @@ StatusCode stm32f0xx_interrupt_exti_get_pending(uint8_t line, uint8_t *pending_b
 
 // Clears the pending flag for an external interrupt.
 StatusCode stm32f0xx_interrupt_exti_clear_pending(uint8_t line);
+
+// Masks or clears the external interrupt on the given line.
+StatusCode stm32f0xx_interrupt_exti_mask_set(uint8_t line, bool masked);
