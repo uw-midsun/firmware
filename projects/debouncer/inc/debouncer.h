@@ -1,9 +1,9 @@
 #pragma once
 
 #include "gpio.h"
+#include "gpio_it.h"
 #include "interrupt_def.h"
 #include "status.h"
-#include "gpio_it.h"
 
 typedef struct DebounceInfo {
   GPIOAddress address;
@@ -12,5 +12,5 @@ typedef struct DebounceInfo {
   void *context;
 } DebounceInfo;
 
-
-StatusCode debouncer_init_pin(DebounceInfo *debounce_info, const GPIOAddress *address, gpio_it_callback callback, void *context);
+StatusCode debouncer_init_pin(DebounceInfo *debounce_info, const GPIOAddress *address,
+                              gpio_it_callback callback, void *context);

@@ -13,17 +13,18 @@
 #include "debouncer.h"
 #include "soft_timer.h"
 
-void callback(const GPIOAddress *address, void *context){
+void callback(const GPIOAddress *address, void *context) {
   LOG_DEBUG("switched\n");
 }
 
 static void prv_handle_statuscode(const Status *status) {
-  LOG_DEBUG("Status code: %d from %s (caller %s): %s\n", status->code, status->source, status->caller, status->message);
+  LOG_DEBUG("Status code: %d from %s (caller %s): %s\n", status->code, status->source,
+            status->caller, status->message);
 }
 
 int main(void) {
- LOG_DEBUG("Hello World!\n");
- 
+  LOG_DEBUG("Hello World!\n");
+
   // Init GPIO module
   gpio_init();
   interrupt_init();
@@ -41,9 +42,8 @@ int main(void) {
 
   // Add infinite loop so we don't exit
   while (true) {
-    wait();     
+    wait();
   }
- 
+
   return 0;
 }
-
