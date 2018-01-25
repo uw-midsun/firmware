@@ -1,6 +1,6 @@
 #pragma once
 
-#include "can_msg_def.h"
+#include "can_msg_defs.h"
 #include "can_pack_impl.h"
 
 #define CAN_PACK_BPS_FAULT(msg_ptr) \
