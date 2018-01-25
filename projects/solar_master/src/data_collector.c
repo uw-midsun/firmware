@@ -7,6 +7,11 @@
 #include "data_collector.h"  // For data collection functions
 #include "delay.h"           // For real-time delays
 
+void slave_register_callback(SlaveMessages slave_response_id, slave_callback callback,
+	void *context) {
+	//TODO: how to constantly check for incoming response...or is this function even necessary?
+}
+
 // Sends LIN message to the solar slave with the corresponding request id
 void slave_send_lin_message(SlaveMessages slave_request_id, uint8_t *arr, size_t arr_size) {
   printf("Send request for slave #%d \n", slave_request_id);
@@ -29,5 +34,5 @@ static int prv_process_message(SlaveMessages slave_response_id, uint8_t *data, s
   printf("          Temperature (%d)\n", temperature);
 
   // Transmits data over CAN
-  CAN_TRANSMIT_SOLAR_DATA_FRONT(slave_id, current, voltage, temperature);
+  CAN_TRANSMIT_SOLAR_DATA_FRONT(slave_board_id, current, voltage, temperature);
 }

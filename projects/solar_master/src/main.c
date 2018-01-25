@@ -12,14 +12,14 @@
 
 int main(void) {
   // Initialize callback functions for each valid slave response
-  for (SlaveMessages slave_num_response = slave_0_response; slave_num_response < NUM_SLAVE_MESSAGES;
+  for (SlaveMessages slave_num_response = SLAVE_0_RESPONSE; slave_num_response < NUM_SLAVE_MESSAGES;
        slave_num_response++) {
     slave_register_callback(slave_num_response, prv_process_message, NULL);
   }
 
   while (1) {
     // Loop through all slaves
-    for (SlaveMessages slave_num_request = slave_0_request; slave_num_request < NUM_SLAVES;
+    for (SlaveMessages slave_num_request = SLAVE_0_REQUEST; slave_num_request < NUM_SLAVES;
          slave_num_request++) {
       slave_send_lin_message(slave_num_request, NULL, 0);  // send request message to each slave
     }
