@@ -30,8 +30,8 @@ typedef int (*slave_callback)(SlaveMessages message_id, uint8_t *data, size_t da
                               void *context);
 
 void slave_register_callback(SlaveMessages slave_response_id, slave_callback callback,
-	void *context);
+                             void *context);
 
 // An application of *slave_callback
-static int prv_process_message(SlaveMessages slave_response_id, uint8_t *data, size_t data_length,
-                               void *context);
+int prv_process_message(SlaveMessages slave_response_id, uint8_t *data, size_t data_length,
+                        void *context);

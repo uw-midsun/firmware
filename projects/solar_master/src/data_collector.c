@@ -8,8 +8,8 @@
 #include "delay.h"           // For real-time delays
 
 void slave_register_callback(SlaveMessages slave_response_id, slave_callback callback,
-	void *context) {
-	//TODO: how to constantly check for incoming response...or is this function even necessary?
+                             void *context) {
+  // TODO(TYPE-315): callback function to respond to sent back data
 }
 
 // Sends LIN message to the solar slave with the corresponding request id
@@ -18,8 +18,8 @@ void slave_send_lin_message(SlaveMessages slave_request_id, uint8_t *arr, size_t
 }
 
 // An application of *slave_callback
-static int prv_process_message(SlaveMessages slave_response_id, uint8_t *data, size_t data_length,
-                               void *context) {
+int prv_process_message(SlaveMessages slave_response_id, uint8_t *data, size_t data_length,
+                        void *context) {
   // Extract data
   uint8_t slave_board_id = data[0];  // uint8_t instead of uint16_t because there are not many ids
   uint16_t voltage = data[1] << 8 | data[2];
@@ -34,5 +34,7 @@ static int prv_process_message(SlaveMessages slave_response_id, uint8_t *data, s
   printf("          Temperature (%d)\n", temperature);
 
   // Transmits data over CAN
-  CAN_TRANSMIT_SOLAR_DATA_FRONT(slave_board_id, current, voltage, temperature);
+  CAN_TRANSMIT_SOLAR_DATA_FRONT(slave_board_id, voltage, current, temperature);
+
+  return 0;
 }
