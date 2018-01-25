@@ -94,14 +94,14 @@ StatusCode stm32f0xx_interrupt_exti_clear_pending(uint8_t line) {
 }
 
 StatusCode stm32f0xx_interrupt_exti_mask_set(uint8_t line, bool masked) {
-  if (line >= 16) {
+  if (line >= NUM_STM32F0XX_INTERRUPT_LINES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   
   if (masked) {
-    EXTI->IMR &= ~((uint32_t)1 << line);
+    EXTI->IMR &= ~((uint32_t)0x01 << line);
   } else {
-    EXTI->IMR |= (uint32_t)1 << line;
+    EXTI->IMR |= (uint32_t)0x01 << line;
   }
 
   return STATUS_CODE_OK;

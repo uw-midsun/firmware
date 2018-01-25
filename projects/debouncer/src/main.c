@@ -30,7 +30,7 @@ int main(void) {
   interrupt_init();
   soft_timer_init();
   status_register_callback(prv_handle_statuscode);
-  // Set up PA0 as an output, default to output 0 (GND)
+
   GPIOAddress button = {
     .port = GPIO_PORT_A,  //
     .pin = 0,             //

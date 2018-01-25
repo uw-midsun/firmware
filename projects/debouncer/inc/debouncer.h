@@ -1,5 +1,6 @@
 #pragma once
-
+// The debouncer module
+// Requires GPIO, interrupts and soft timer to be initialized
 #include "gpio.h"
 #include "gpio_it.h"
 #include "interrupt_def.h"
