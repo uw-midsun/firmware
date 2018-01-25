@@ -1,17 +1,17 @@
 #include <stdbool.h>
+
 #include "gpio.h"
 #include "gpio_it.h"
 #include "interrupt.h"
 #include "log.h"
 
-#include "delay.h"
+#include "soft_timer.h"
+
 #include "interrupt_def.h"
 
-#include "stm32f0xx.h"
 #include "wait.h"
 
 #include "debouncer.h"
-#include "soft_timer.h"
 
 void callback(const GPIOAddress *address, void *context) {
   LOG_DEBUG("switched\n");
