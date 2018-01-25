@@ -36,7 +36,7 @@ int main(void) {
     .pin = 0,             //
   };
 
-  DebounceInfo db = { 0 };
+  DebouncerInfo db = { 0 };
 
   debouncer_init_pin(&db, &button, callback, NULL);
 
