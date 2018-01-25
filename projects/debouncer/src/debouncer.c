@@ -3,8 +3,6 @@
 #include <stddef.h>
 #include "soft_timer.h"
 
-
-
 #define DEBOUNCER_INTERRUPT_MASKING_DURATION_MS 50
 
 // This is the callback for the soft timer. If there is a button input, it runs the user's callback.
