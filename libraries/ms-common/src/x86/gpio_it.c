@@ -67,5 +67,5 @@ StatusCode gpio_it_trigger_interrupt(const GPIOAddress *address) {
 }
 
 StatusCode gpio_it_mask_interrupt(const GPIOAddress *address, bool masked) {
-  return STATUS_CODE_OK;
+  return status_code(STATUS_CODE_UNIMPLEMENTED);
 }

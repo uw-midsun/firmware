@@ -3,7 +3,6 @@
 // Requires GPIO, interrupts and soft timer to be initialized
 #include "gpio.h"
 #include "gpio_it.h"
-#include "interrupt_def.h"
 #include "status.h"
 
 typedef struct DebouncerInfo {

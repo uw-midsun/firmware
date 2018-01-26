@@ -1,19 +1,15 @@
 #include <stdbool.h>
 
+#include "debouncer.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "interrupt.h"
-#include "log.h"
-
-#include "soft_timer.h"
-
 #include "interrupt_def.h"
-
+#include "log.h"
+#include "soft_timer.h"
 #include "wait.h"
 
-#include "debouncer.h"
-
-void callback(const GPIOAddress *address, void *context) {
+static void prv_callback(const GPIOAddress *address, void *context) {
   LOG_DEBUG("switched\n");
 }
 
@@ -36,9 +32,9 @@ int main(void) {
     .pin = 0,             //
   };
 
-  DebouncerInfo db = { 0 };
+  DebouncerInfo debouncer_info = { 0 };
 
-  debouncer_init_pin(&db, &button, callback, NULL);
+  debouncer_init_pin(&debouncer_info, &button, prv_callback, NULL);
 
   // Add infinite loop so we don't exit
   while (true) {
