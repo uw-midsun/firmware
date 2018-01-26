@@ -15,10 +15,8 @@ static void prv_timer_callback(SoftTimerID timer_id, void *context) {
 
   GPIOState current_state;
   gpio_get_state(&debouncer_info->address, &current_state);
-  if (debouncer_info->callback) {
-    if (current_state == debouncer_info->state) {
-      debouncer_info->callback(&debouncer_info->address, debouncer_info->context);
-    }
+  if (debouncer_info->callback && current_state == debouncer_info->state) {
+    debouncer_info->callback(&debouncer_info->address, debouncer_info->context);
   }
   gpio_it_mask_interrupt(&debouncer_info->address, false);
 }
