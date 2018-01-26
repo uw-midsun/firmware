@@ -9,7 +9,7 @@
 
 void slave_register_callback(SlaveMessages slave_response_id, slave_callback callback,
                              void *context) {
-  // TODO(TYPE-315): callback function to respond to sent back data
+  // TODO(TYPE-315): callback function to intercept slave response data over LIN
 }
 
 // Sends LIN message to the solar slave with the corresponding request id
