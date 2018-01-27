@@ -14,7 +14,7 @@
 static const GPIOAddress pins[] = {
   { .port = GPIO_PORT_A, .pin = 2 },  //
   { .port = GPIO_PORT_A, .pin = 3 },  //
-  { .port = GPIO_PORT_A, .pin = 7 },  //
+  { .port = GPIO_PORT_B, .pin = 3 },  //
   { .port = GPIO_PORT_C, .pin = 3 },  //
 };
 
@@ -36,34 +36,22 @@ int main(void) {
   // These structs below are placeholders, please update values as needed
   const GPIOSettings settings_tx = {
     .direction = GPIO_DIR_OUT,     // The pin needs to output.
-    .state = GPIO_STATE_HIGH,      // Start in the "on" state.
-    .alt_function = GPIO_ALTFN_1,  // No connections to peripherals.
-    .resistor = GPIO_RES_NONE,     // No need of a resistor to modify floating
-                                   // logic levels.
+    .state = GPIO_STATE_LOW,      // Start in the "off" state.
   };
 
   const GPIOSettings settings_rx = {
     .direction = GPIO_DIR_IN,      // The pin needs to input.
-    .state = GPIO_STATE_HIGH,      // Start in the "on" state.
-    .alt_function = GPIO_ALTFN_1,  // No connections to peripherals.
-    .resistor = GPIO_RES_NONE,     // No need of a resistor to modify floating
-                                   // logic levels.
+    .state = GPIO_STATE_LOW,      // Start in the "off" state.
   };
 
   const GPIOSettings settings_power = {
     .direction = GPIO_DIR_OUT,     // The pin needs to output.
-    .state = GPIO_STATE_HIGH,      // Start in the "on" state.
-    .alt_function = GPIO_ALTFN_1,  // No connections to peripherals.
-    .resistor = GPIO_RES_NONE,     // No need of a resistor to modify floating
-                                   // logic levels.
+    .state = GPIO_STATE_LOW,      // Start in the "off" state.
   };
 
   const GPIOSettings settings_on_off = {
     .direction = GPIO_DIR_OUT,     // The pin needs to output.
-    .state = GPIO_STATE_HIGH,      // Start in the "on" state.
-    .alt_function = GPIO_ALTFN_1,  // No connections to peripherals.
-    .resistor = GPIO_RES_NONE,     // No need of a resistor to modify floating
-                                   // logic levels.
+    .state = GPIO_STATE_LOW,      // Start in the "off" state.
   };
 
   UARTSettings s_settings = {
@@ -86,8 +74,8 @@ int main(void) {
   evm_gps_init(&settings);
   evm_gps_add_gga_handler(gga_handler, NULL);
 
-  for(int i = 0; i < 50; i++){
-    delay_s(2);
+  for(int i = 0; i < 50000; i++){
+    delay_ms(1);
     LOG_DEBUG("Looping: %d\n", i);
   }
   evm_gps_clean_up(&settings);
