@@ -1,9 +1,10 @@
 #pragma once
+// LTC2484 ADC internal-only header
+//
+// Application code should not need anything here (use ltc_adc.h instead).
 
 #include <stdint.h>
 
-#include "gpio.h"
-#include "spi.h"
 #include "status.h"
 
 // commands
@@ -37,32 +38,6 @@ typedef union {
   int32_t i32data;
 } Ltc2484Response;
 
-typedef enum {
-  LTC_2484_FILTER_50HZ_60HZ = 0,
-  LTC_2484_FILTER_50HZ,
-  LTC_2484_FILTER_60HZ,
-  NUM_LTC_2484_FILTER_MODES
-} Ltc2484FilterMode;
-
-typedef struct {
-  GPIOAddress cs;
-  GPIOAddress mosi;
-  GPIOAddress miso;
-  GPIOAddress sclk;
-
-  const SPIPort spi_port;
-  uint32_t spi_baudrate;
-
-  Ltc2484FilterMode filter_mode;
-} Ltc2484Settings;
-
-// Initializes the ADC by setting up the GPIO pins and configuring the ADC with
-// the selected settings
-StatusCode ltc2484_init(const Ltc2484Settings *config);
-
-// Read the voltage (in uV) reported by the ADC
-StatusCode ltc2484_read(const Ltc2484Settings *config, int32_t *value);
-
 // Parse the raw 24-bit ADC reading to a voltage measurement in uV. This is
-// called by ltc2484_read, and is exposed for testing
+// called by ltc_adc_read, and is exposed for testing
 StatusCode ltc2484_raw_adc_to_uv(uint8_t *spi_data, int32_t *voltage);

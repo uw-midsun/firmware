@@ -1,17 +1,19 @@
+#include "ltc_adc.h"
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include "ltc2484.h"
 
-uint8_t s_filter_modes[NUM_LTC_2484_FILTER_MODES] = {
+uint8_t s_filter_modes[NUM_LTC_ADC_FILTER_MODES] = {
   LTC2484_REJECTION_50HZ_60HZ,
   LTC2484_REJECTION_50HZ,
   LTC2484_REJECTION_60HZ,
 };
 
-StatusCode ltc2484_init(const Ltc2484Settings *config) {
-  if (config->filter_mode >= NUM_LTC_2484_FILTER_MODES) {
+StatusCode ltc_adc_init(const LtcAdcSettings *config) {
+  if (config->filter_mode >= NUM_LTC_ADC_FILTER_MODES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
@@ -66,7 +68,7 @@ StatusCode ltc2484_raw_adc_to_uv(uint8_t *spi_data, int32_t *voltage) {
   return STATUS_CODE_OK;
 }
 
-StatusCode ltc2484_read(const Ltc2484Settings *config, int32_t *value) {
+StatusCode ltc_adc_read(const LtcAdcSettings *config, int32_t *value) {
   // Pull CS low so we can check for MISO to go low, signalling that the
   // conversion is now complete
   gpio_set_state(&config->cs, GPIO_STATE_LOW);
