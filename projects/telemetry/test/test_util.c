@@ -5,9 +5,6 @@ void setup_test(void) {}
 void teardown_test(void) {}
 
 void test_compute_checksum(void) {
-  // The reason I refactored it to have the test data in variables is because I was having issues
-  // with testing. Turned out to be unrelated
-
   char* r1 = "25";
   char t1[3];
   evm_gps_compute_checksum("$PSRF103,00,01,00,01*", t1);
