@@ -12,6 +12,21 @@ uint8_t s_filter_modes[NUM_LTC_ADC_FILTER_MODES] = {
   LTC2484_REJECTION_60HZ,
 };
 
+static GPIOSettings s_settings = { .direction = GPIO_DIR_IN,
+                                   .state = GPIO_STATE_HIGH,
+                                   .resistor = GPIO_RES_NONE,
+                                   .alt_function = GPIO_ALTFN_0 };
+
+static void prv_toggle_pin_altfn(GPIOAddress addr, bool enable) {
+  if (enable) {
+    s_settings.alt_function = GPIO_ALTFN_0;
+  } else {
+    s_settings.alt_function = GPIO_ALTFN_NONE;
+  }
+
+  gpio_init_pin(&addr, &s_settings);
+}
+
 StatusCode ltc_adc_init(const LtcAdcSettings *config) {
   if (config->filter_mode >= NUM_LTC_ADC_FILTER_MODES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
@@ -29,10 +44,11 @@ StatusCode ltc_adc_init(const LtcAdcSettings *config) {
 
   spi_init(config->spi_port, &spi_config);
 
-  uint8_t data[1] = { LTC2484_ENABLE | LTC2484_EXTERNAL_INPUT | LTC2484_AUTO_CALIBRATION |
-                      s_filter_modes[config->filter_mode] };
+  uint8_t input[1] = { LTC2484_ENABLE | LTC2484_EXTERNAL_INPUT | LTC2484_AUTO_CALIBRATION |
+                       s_filter_modes[config->filter_mode] };
+  uint8_t output[3] = { 0 };
 
-  return spi_exchange(config->spi_port, data, 1, NULL, 0);
+  return spi_exchange(config->spi_port, input, 1, output, 3);
 }
 
 StatusCode ltc2484_raw_adc_to_uv(uint8_t *spi_data, int32_t *voltage) {
@@ -74,13 +90,7 @@ StatusCode ltc_adc_read(const LtcAdcSettings *config, int32_t *value) {
   gpio_set_state(&config->cs, GPIO_STATE_LOW);
 
   // Disable the Alt Fn on MISO so we can read the value
-  GPIOSettings settings = {
-    .direction = GPIO_DIR_IN,
-    .state = GPIO_STATE_HIGH,
-    .resistor = GPIO_RES_NONE,
-    .alt_function = GPIO_ALTFN_NONE,
-  };
-  gpio_init_pin(&config->miso, &settings);
+  prv_toggle_pin_altfn(config->miso, false);
 
   // According to the Timing Characteristics (p.5 in the datasheet), we should
   // expect 149.9ms for conversion time (in the worst case).
@@ -101,11 +111,7 @@ StatusCode ltc_adc_read(const LtcAdcSettings *config, int32_t *value) {
       gpio_set_state(&config->cs, GPIO_STATE_HIGH);
 
       // Restore the Alt Fn of the MISO pin
-      settings.alt_function = GPIO_ALTFN_0;
-      settings.direction = GPIO_DIR_IN;
-      settings.state = GPIO_STATE_HIGH;
-
-      gpio_init_pin(&config->miso, &settings);
+      prv_toggle_pin_altfn(config->miso, true);
 
       return status_code(STATUS_CODE_TIMEOUT);
     }
@@ -115,11 +121,7 @@ StatusCode ltc_adc_read(const LtcAdcSettings *config, int32_t *value) {
   gpio_set_state(&config->cs, GPIO_STATE_HIGH);
 
   // Restore the Alt Fn of the MISO pin
-  settings.alt_function = GPIO_ALTFN_0;
-  settings.direction = GPIO_DIR_IN;
-  settings.state = GPIO_STATE_HIGH;
-
-  gpio_init_pin(&config->miso, &settings);
+  prv_toggle_pin_altfn(config->miso, true);
 
   // Keep the previous mode and don't do anything special (ie. send a command
   // byte equal to 0). Since our SPI driver sends 0x00 by default, we can just
