@@ -2,9 +2,9 @@
 #include <string.h>
 #include "log.h"
 
-// CTX
+// CTX in ASCII
 #define CAN_UART_TX_MARKER 0x585443
-// CRX
+// CRX in ASCII
 #define CAN_UART_RX_MARKER 0x585243
 
 // Defined protocol: Header (u32), ID (u32), Data (u64), newline (u8)
@@ -23,7 +23,7 @@
   ({                                                                \
     uint32_t _header = header;                                      \
     *(marker) = _header & 0xFFFFFF;                                 \
-    *(extended) = (_header >> 25) & 0x1;                            \
+    *(extended) = (_header >> 24) & 0x1;                            \
     *(rtr) = (_header >> 25) & 0x1;                                 \
     *(dlc) = (_header >> 28) & 0xF;                                 \
     true;                                                           \

@@ -17,10 +17,11 @@ typedef struct CanUart {
   void *context;
 } CanUart;
 
-// Note that the provided UART port will have its RX handler overwritten.
+// Module init: Note that the provided UART port will have its RX handler overwritten.
 StatusCode can_uart_init(CanUart *can_uart);
 
-// Overrides the CAN HW RX handler to pass RX'd CAN messages over UART
+// Expects an initialized module.
+// Overrides CAN HW's RX handler and passes requested TX's directly to CAN HW
 StatusCode can_uart_hook_can_hw(CanUart *can_uart);
 
 // Intended to request a TX on the receiver
