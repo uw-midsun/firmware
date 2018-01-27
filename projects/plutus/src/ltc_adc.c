@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "delay.h"
 #include "ltc2484.h"
 
 uint8_t s_filter_modes[NUM_LTC_ADC_FILTER_MODES] = {
@@ -46,9 +47,17 @@ StatusCode ltc_adc_init(const LtcAdcSettings *config) {
 
   uint8_t input[1] = { LTC2484_ENABLE | LTC2484_EXTERNAL_INPUT | LTC2484_AUTO_CALIBRATION |
                        s_filter_modes[config->filter_mode] };
-  uint8_t output[3] = { 0 };
+  // send config
+  spi_exchange(config->spi_port, input, 1, NULL, 0);
 
-  return spi_exchange(config->spi_port, input, 1, output, 3);
+  // throw away the first value, which is garbage
+  int32_t value = 0;
+  StatusCode status = ltc_adc_read(config, &value);
+
+  // delay before returning and reading another value
+  // not sure why this is needed??
+  delay_ms(LTC2484_CONVERSION_TIMEOUT_MS);
+  return status;
 }
 
 StatusCode ltc2484_raw_adc_to_uv(uint8_t *spi_data, int32_t *voltage) {

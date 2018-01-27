@@ -26,6 +26,10 @@
 #define LTC2484_CONVERSION_CYCLES 5520
 #define LTC2484_TIMEOUT_CYCLES (LTC2484_CONVERSION_CYCLES * 3)
 
+// According to the datasheet, the maximum time that a conversion will take is
+// 163.5ms, so we choose 200ms to be conservative
+#define LTC2484_CONVERSION_TIMEOUT_MS 200
+
 #define LTC2484_OVERRANGE_CODE ((1 << 5) | (1 << 4))
 #define LTC2484_UNDERRANGE_CODE ((1 << 1) | (1 << 2) | (1 << 3))
 // We mask to check bits EOC, DMY, SIG, MSB, B27, B26, B25
