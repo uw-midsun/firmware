@@ -18,7 +18,7 @@ LtcAdcSettings adc_settings = {
   .sclk = { GPIO_PORT_B, 13 },  //
   .cs = { GPIO_PORT_B, 12 },    //
 
-  .spi_port = 1,                           //
+  .spi_port = SPI_PORT_2,                  //
   .spi_baudrate = 1500000,                 //
   .filter_mode = LTC_ADC_FILTER_50HZ_60HZ  //
 };
