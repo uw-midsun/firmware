@@ -23,9 +23,6 @@
 #define LTC2484_SPEED_2X (1 << 0)
 
 // constants
-#define LTC2484_CONVERSION_CYCLES 5520
-#define LTC2484_TIMEOUT_CYCLES (LTC2484_CONVERSION_CYCLES * 3)
-
 // According to the datasheet, the maximum time that a conversion will take is
 // 163.5ms, so we choose 200ms to be conservative
 #define LTC2484_CONVERSION_TIMEOUT_MS 200

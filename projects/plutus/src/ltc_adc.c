@@ -6,6 +6,7 @@
 
 #include "delay.h"
 #include "ltc2484.h"
+#include "soft_timer.h"
 
 uint8_t s_filter_modes[NUM_LTC_ADC_FILTER_MODES] = {
   LTC2484_REJECTION_50HZ_60HZ,
@@ -52,12 +53,7 @@ StatusCode ltc_adc_init(const LtcAdcSettings *config) {
 
   // throw away the first value, which is garbage
   int32_t value = 0;
-  StatusCode status = ltc_adc_read(config, &value);
-
-  // delay before returning and reading another value
-  // not sure why this is needed??
-  delay_ms(LTC2484_CONVERSION_TIMEOUT_MS);
-  return status;
+  return ltc_adc_read(config, &value);
 }
 
 StatusCode ltc2484_raw_adc_to_uv(uint8_t *spi_data, int32_t *voltage) {
@@ -93,6 +89,11 @@ StatusCode ltc2484_raw_adc_to_uv(uint8_t *spi_data, int32_t *voltage) {
   return STATUS_CODE_OK;
 }
 
+static void prv_timeout(SoftTimerID timer_id, void *context) {
+  volatile bool *timeout = context;
+  *timeout = true;
+}
+
 StatusCode ltc_adc_read(const LtcAdcSettings *config, int32_t *value) {
   // Pull CS low so we can check for MISO to go low, signalling that the
   // conversion is now complete
@@ -102,20 +103,24 @@ StatusCode ltc_adc_read(const LtcAdcSettings *config, int32_t *value) {
   prv_toggle_pin_altfn(config->miso, false);
 
   // According to the Timing Characteristics (p.5 in the datasheet), we should
-  // expect 149.9ms for conversion time (in the worst case).
-  //
-  // In order to prevent us from blocking forever, we set a timeout to 3x the
-  // expected number of times this busy loop cycles.
-  for (int i = 0; i < LTC2484_TIMEOUT_CYCLES; ++i) {
+  // expect 149.9ms for conversion time (in the worst case). We set a timeout
+  // to prevent from blocking forever.
+  volatile bool timeout = false;
+
+  SoftTimerID id = 0;
+  soft_timer_start_millis(LTC2484_CONVERSION_TIMEOUT_MS, prv_timeout, &timeout, &id);
+
+  while (true) {
     GPIOState state = NUM_GPIO_STATES;
     gpio_get_state(&config->miso, &state);
 
     if (state == GPIO_STATE_LOW) {
       // MISO has now gone low, signaling that the conversion has finished
+      soft_timer_cancel(id);
       break;
     }
 
-    if (i > LTC2484_TIMEOUT_CYCLES) {
+    if (timeout) {
       // Restore CS high
       gpio_set_state(&config->cs, GPIO_STATE_HIGH);
 
