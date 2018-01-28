@@ -29,6 +29,11 @@ static void prv_toggle_pin_altfn(GPIOAddress addr, bool enable) {
   gpio_init_pin(&addr, &s_settings);
 }
 
+static void prv_timeout(SoftTimerID timer_id, void *context) {
+  volatile bool *timeout = context;
+  *timeout = true;
+}
+
 StatusCode ltc_adc_init(const LtcAdcSettings *config) {
   if (config->filter_mode >= NUM_LTC_ADC_FILTER_MODES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
@@ -87,11 +92,6 @@ StatusCode ltc2484_raw_adc_to_uv(uint8_t *spi_data, int32_t *voltage) {
   *voltage = (int32_t)(((int64_t)(adc_value)*LTC2484_V_REF_MILLIVOLTS * 1000) >> 24);
 
   return STATUS_CODE_OK;
-}
-
-static void prv_timeout(SoftTimerID timer_id, void *context) {
-  volatile bool *timeout = context;
-  *timeout = true;
 }
 
 StatusCode ltc_adc_read(const LtcAdcSettings *config, int32_t *value) {
