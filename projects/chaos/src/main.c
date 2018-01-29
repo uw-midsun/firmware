@@ -13,7 +13,7 @@ void gyro_cmd(bool read, bool autoincrement, uint8_t addr, uint8_t *data) {
   uint8_t packet[] = { (read & 0x01) << 7 | (autoincrement & 0x01) << 6 | (addr & 0x3F),
                        (read) ? 0 : *data };
 
-  spi_exchange(1, packet, (size_t)(2 - read), data, read);
+  spi_exchange(SPI_PORT_2, packet, (size_t)(2 - read), data, read);
 }
 
 int main(void) {
@@ -28,8 +28,7 @@ int main(void) {
     .cs = { GPIO_PORT_C, 0 },
   };
 
-  // Using SPI port 2 - not using enum so build on x86 will pass
-  spi_init(1, &spi_settings);
+  spi_init(SPI_PORT_2, &spi_settings);
 
   uint8_t whoami = 0xAA;
   gyro_cmd(true, false, 0x0F, &whoami);
