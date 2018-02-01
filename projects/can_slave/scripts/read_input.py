@@ -39,7 +39,7 @@ def parse_line(line):
     Returns:
         None
     """
-    if len(line) != 17:
+    if len(line) != struct.calcsize(PACKET_FMT):
         return
 
     parsed_data = struct.unpack(PACKET_FMT, line)

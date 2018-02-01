@@ -22,9 +22,9 @@ StatusCode can_uart_init(CanUart *can_uart);
 
 // Expects an initialized module.
 // Overrides CAN HW's RX handler and passes requested TX's directly to CAN HW
-StatusCode can_uart_hook_can_hw(CanUart *can_uart);
+StatusCode can_uart_enable_passthrough(CanUart *can_uart);
 
 // Intended to request a TX on the receiver
 // i.e. from Master to Slave
-StatusCode can_uart_req_tx(const CanUart *can_uart, uint32_t id, bool extended,
-                           const uint64_t *data, size_t dlc);
+StatusCode can_uart_req_slave_tx(const CanUart *can_uart, uint32_t id, bool extended,
+                                 const uint64_t *data, size_t dlc);

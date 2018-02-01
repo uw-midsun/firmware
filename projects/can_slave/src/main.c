@@ -43,7 +43,7 @@ int main(void) {
     .context = NULL       //
   };
   can_uart_init(&can_uart);
-  can_uart_hook_can_hw(&can_uart);
+  can_uart_enable_passthrough(&can_uart);
 
   GPIOAddress led = { .port = GPIO_PORT_A, .pin = 15 };
   GPIOSettings settings = { .direction = GPIO_DIR_OUT, .state = GPIO_STATE_LOW };

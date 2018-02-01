@@ -69,10 +69,11 @@ static void prv_handle_can_rx(void *context) {
   uint64_t data;
   size_t dlc;
   while (can_hw_receive(&id, &extended, &data, &dlc)) {
-    CanUartPacket packet = { .header =
-                                 CAN_UART_BUILD_HEADER(CAN_UART_RX_MARKER, extended, false, dlc),
-                             .id = id,
-                             .data = data };
+    CanUartPacket packet = {
+      .header = CAN_UART_BUILD_HEADER(CAN_UART_RX_MARKER, extended, false, dlc),  //
+      .id = id,                                                                   //
+      .data = data                                                                //
+    };
     uint8_t newline = '\n';
 
     StatusCode ret = uart_tx(can_uart->uart, (uint8_t *)&packet, sizeof(packet));
@@ -86,16 +87,17 @@ StatusCode can_uart_init(CanUart *can_uart) {
   return uart_set_rx_handler(can_uart->uart, prv_rx_uart, can_uart);
 }
 
-StatusCode can_uart_hook_can_hw(CanUart *can_uart) {
+StatusCode can_uart_enable_passthrough(CanUart *can_uart) {
   return can_hw_register_callback(CAN_HW_EVENT_MSG_RX, prv_handle_can_rx, can_uart);
 }
 
-StatusCode can_uart_req_tx(const CanUart *can_uart, uint32_t id, bool extended,
-                           const uint64_t *data, size_t dlc) {
-  CanUartPacket packet = { .header =
-                               CAN_UART_BUILD_HEADER(CAN_UART_TX_MARKER, extended, false, dlc),
-                           .id = id,
-                           .data = *data };
+StatusCode can_uart_req_slave_tx(const CanUart *can_uart, uint32_t id, bool extended,
+                                 const uint64_t *data, size_t dlc) {
+  CanUartPacket packet = {
+    .header = CAN_UART_BUILD_HEADER(CAN_UART_TX_MARKER, extended, false, dlc),  //
+    .id = id,                                                                   //
+    .data = *data                                                               //
+  };
   uint8_t newline = '\n';
 
   StatusCode ret = uart_tx(can_uart->uart, (uint8_t *)&packet, sizeof(packet));
