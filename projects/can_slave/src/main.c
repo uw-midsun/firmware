@@ -1,4 +1,6 @@
 #include <stdbool.h>
+#include <stddef.h>
+
 #include "can_hw.h"
 #include "can_uart.h"
 #include "delay.h"
@@ -17,19 +19,19 @@ static void prv_init_periph(void) {
   soft_timer_init();
 
   CANHwSettings can_hw_settings = {
-    .tx = { GPIO_PORT_A, 12 },
-    .rx = { GPIO_PORT_A, 11 },
-    .bitrate = CAN_HW_BITRATE_500KBPS,
-    .loopback = false,
+    .tx = { .port = GPIO_PORT_A, .pin = 12 },  //
+    .rx = { .port = GPIO_PORT_A, .pin = 11 },  //
+    .bitrate = CAN_HW_BITRATE_500KBPS,         //
+    .loopback = false,                         //
   };
 
   can_hw_init(&can_hw_settings);
 
   UARTSettings uart_settings = {
-    .baudrate = 115200,        //
-    .tx = { GPIO_PORT_A, 3 },  //
-    .rx = { GPIO_PORT_A, 2 },  //
-    .alt_fn = GPIO_ALTFN_1     //
+    .baudrate = 115200,                       //
+    .tx = { .port = GPIO_PORT_A, .pin = 3 },  //
+    .rx = { .port = GPIO_PORT_A, .pin = 2 },  //
+    .alt_fn = GPIO_ALTFN_1                    //
   };
   uart_init(UART_PORT_2, &uart_settings, &s_uart_storage);
 }

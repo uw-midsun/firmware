@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
-"""Test CAN RX <-> UART script.
-"""
+"""Test CAN RX <-> UART script."""
 import struct
 import serial
 import serial.tools.list_ports
 
+# Packet format:
+# 3c: CTX or CRX
+# B: Header byte - extended flag, dlc
+# I: u32 ID
+# Q: u64 data
+# c: Newline
 PACKET_FMT = '3cBIQc'
 
 def select_device():
@@ -49,7 +54,6 @@ def parse_line(line):
     dlc = header >> 4 & 0xF
     can_id = parsed_data[4]
     data = parsed_data[5]
-
     print(marker, extended, dlc, can_id, data)
 
 def parse_serial(device):
@@ -73,7 +77,6 @@ def parse_serial(device):
 
 def main():
     """Main entry point"""
-
     dev = select_device()
     parse_serial(dev.device)
 
