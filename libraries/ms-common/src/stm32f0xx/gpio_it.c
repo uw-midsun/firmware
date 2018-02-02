@@ -102,3 +102,10 @@ void EXTI2_3_IRQHandler(void) {
 void EXTI4_15_IRQHandler(void) {
   prv_run_gpio_callbacks(4, 15);
 }
+
+StatusCode gpio_it_mask_interrupt(const GPIOAddress *address, bool masked) {
+  if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+  return stm32f0xx_interrupt_exti_mask_set(address->pin, masked);
+}
