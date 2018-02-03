@@ -1,4 +1,4 @@
-#include "util.h"
+#include "nmea.h"
 #include <stdbool.h>
 #include <string.h>
 
@@ -12,7 +12,7 @@ void prv_int_to_hex(uint8_t checksum, char *out) {
   out[2] = '\0';
 }
 
-void evm_gps_compute_checksum(char *message, char *out) {
+void nmea_compute_checksum(char *message, char *out) {
   uint8_t sum = 0;
   uint8_t message_len = strlen(message);
   for (uint8_t i = 1; message[i] != '*' && i < message_len; i++) {
@@ -21,7 +21,7 @@ void evm_gps_compute_checksum(char *message, char *out) {
   prv_int_to_hex(sum, out);
 }
 
-bool evm_gps_compare_checksum(char *message) {
+bool nmea_compare_checksum(char *message) {
   char *received = message + strlen(message) - 2;
   if (*(received - 1) != '*') {
     // return false if there's no checksum in the message
@@ -29,6 +29,6 @@ bool evm_gps_compare_checksum(char *message) {
   }
 
   char computed[3];
-  evm_gps_compute_checksum(message, computed);
+  nmea_compute_checksum(message, computed);
   return strcmp(computed, received) == 0;
 }
