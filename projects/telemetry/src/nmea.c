@@ -12,23 +12,22 @@ void prv_int_to_hex(uint8_t checksum, char *out) {
   out[2] = '\0';
 }
 
-void nmea_compute_checksum(char *message, char *out) {
+void nmea_compute_checksum(char *message, size_t message_len, char *out) {
   uint8_t sum = 0;
-  uint8_t message_len = strlen(message);
   for (uint8_t i = 1; message[i] != '*' && i < message_len; i++) {
     sum ^= message[i];
   }
   prv_int_to_hex(sum, out);
 }
 
-bool nmea_compare_checksum(char *message) {
-  char *received = message + strlen(message) - 2;
+bool nmea_compare_checksum(char *message, size_t message_len) {
+  char *received = message + message_len - 2;
   if (*(received - 1) != '*') {
     // return false if there's no checksum in the message
     return false;
   }
 
   char computed[3];
-  nmea_compute_checksum(message, computed);
-  return strcmp(computed, received) == 0;
+  nmea_compute_checksum(message, message_len, computed);
+  return strncmp(computed, received, 2) == 0;
 }
