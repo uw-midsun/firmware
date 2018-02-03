@@ -133,9 +133,10 @@ FIND := find $(PROJ_DIR) $(LIB_DIR) \
 				-iname "*.[ch]" -print
 
 # Lints libraries and projects, excludes IGNORE_CLEANUP_LIBS
+# Disable import error
 lint:
 	@$(FIND) | xargs -r python2 lint.py
-	@find $(MAKE_DIR) $(PROJ_DIR) -iname "*.py" -print | xargs -r pylint
+	@find $(MAKE_DIR) $(PROJ_DIR) -iname "*.py" -print | xargs -r pylint --disable=F0401
 
 # Formats libraries and projects, excludes IGNORE_CLEANUP_LIBS
 format:
