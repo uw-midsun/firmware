@@ -1,7 +1,7 @@
-#include <string.h>
 #include <stddef.h>
-#include "unity.h"
+#include <string.h>
 #include "nmea.h"
+#include "unity.h"
 
 void setup_test(void) {}
 void teardown_test(void) {}
@@ -21,14 +21,12 @@ void test_compute_checksum(void) {
   nmea_compute_checksum(message, message_len, computed_checksum);
   TEST_ASSERT_EQUAL_STRING("20", computed_checksum);
 
-  message =
-    "$GPGGA,053740.000,2503.6319,N,12136.0099,E,1,08,1.1,63.8,M,15.2,M,,0000*64";
+  message = "$GPGGA,053740.000,2503.6319,N,12136.0099,E,1,08,1.1,63.8,M,15.2,M,,0000*64";
   message_len = strlen(message);
   nmea_compute_checksum(message, message_len, computed_checksum);
   TEST_ASSERT_EQUAL_STRING("64", computed_checksum);
 
-  message =
-    "$GPGLL,2503.6319,N,12136.0099,E,053740.000,A,A*52";
+  message = "$GPGLL,2503.6319,N,12136.0099,E,053740.000,A,A*52";
   message_len = strlen(message);
   nmea_compute_checksum(message, message_len, computed_checksum);
   TEST_ASSERT_EQUAL_STRING("52", computed_checksum);
@@ -38,6 +36,7 @@ void test_compare_checksum(void) {
   char *input =
       "$GPGGA,053740.000,2503.6319,N,12136.0099,E,1,08,1.1,63.8,"
       "M,15.2,M,,0000*64";
+
   size_t message_len = strlen(input);
   TEST_ASSERT_TRUE(nmea_compare_checksum(input, message_len));
 }

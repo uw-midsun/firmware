@@ -1,7 +1,7 @@
 #pragma once
 #include <stdbool.h>
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 // Computes the checksum for a given NMEA message.
 //
