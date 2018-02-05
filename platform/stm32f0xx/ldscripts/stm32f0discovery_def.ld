@@ -14,3 +14,6 @@ MEMORY
 
 /* highest address of the user mode stack */
 _estack = 0x20002000;
+_flash_start = ORIGIN(FLASH);
+_flash_size = LENGTH(FLASH);
+_flash_page_size = 1024;
