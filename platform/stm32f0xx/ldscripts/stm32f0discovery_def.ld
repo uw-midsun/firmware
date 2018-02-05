@@ -16,4 +16,4 @@ MEMORY
 _estack = 0x20002000;
 _flash_start = ORIGIN(FLASH);
 _flash_size = LENGTH(FLASH);
-_flash_page_size = 1024;
+_flash_page_size = 0x800;
