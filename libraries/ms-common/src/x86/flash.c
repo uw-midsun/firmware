@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 
-#define FLASH_FILENAME "x86.flash"
+#define FLASH_FILENAME "x86_flash"
 
 static FILE *s_flash_fp = NULL;
 
