@@ -53,12 +53,8 @@ StatusCode flash_write(uintptr_t address, uint8_t *buffer, size_t buffer_len) {
   (void)read;
 
   for (size_t i = 0; i < buffer_len; i++) {
-    // bitwise - check if going from 0 -> 1
-    if ((buffer[i] & (read_buffer[i] ^ buffer[i])) != 0) {
-      LOG_DEBUG("write check failed - prev: 0x%x buffer: 0x%x result: 0x%x\n", read_buffer[i], buffer[i], (buffer[i] & (read_buffer[i] ^ buffer[i])));
-      // masks buffer - bits that have changed
-      // if a bit changed and the new buffer was 1, then we tried an invalid write
-      return status_msg(STATUS_CODE_INTERNAL_ERROR, "Flash: Attempted to write 0 -> 1");
+    if (read_buffer[i] != 0xFF) {
+      return status_msg(STATUS_CODE_INTERNAL_ERROR, "Flash: Attempted to write to already written flash");
     }
   }
 

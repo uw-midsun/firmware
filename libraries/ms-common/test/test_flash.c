@@ -35,14 +35,15 @@ void test_flash_overwrite(void) {
   TEST_ASSERT_OK(ret);
 
   // Overwrite with the same data
+  // STM32 does not allow overwriting at all
   ret = flash_write(TEST_FLASH_ADDR, data, SIZEOF_ARRAY(data));
-  TEST_ASSERT_OK(ret);
+  TEST_ASSERT_NOT_OK(ret);
 
   // Try modifying some bits from 1 -> 0
   data[0] = 0x11;
   data[2] = 0x11;
   ret = flash_write(TEST_FLASH_ADDR, data, SIZEOF_ARRAY(data));
-  TEST_ASSERT_OK(ret);
+  TEST_ASSERT_NOT_OK(ret);
 
   // Try modifying some bits from 0 -> 1
   data[1] = 0xff;

@@ -1,4 +1,6 @@
 #include "flash.h"
+#include "stm32f0xx.h"
+#include <string.h>
 
 StatusCode flash_init(void) {
   // Flash prefetch and latency are set up in system init
@@ -24,7 +26,7 @@ StatusCode flash_write(uintptr_t address, uint8_t *buffer, size_t buffer_len) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  uint32_t *data = buffer;
+  uint32_t *data = (uint32_t *)buffer;
   size_t data_len = buffer_len / FLASH_WRITE_BYTES;
 
   FLASH_Unlock();
