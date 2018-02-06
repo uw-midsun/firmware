@@ -10,7 +10,10 @@ void setup_test(void) {
   flash_erase(TEST_FLASH_PAGE);
 }
 
-void teardown_test(void) {}
+void teardown_test(void) {
+  // Be sure to erase the flash just in case an application uses it
+  flash_erase(TEST_FLASH_PAGE);
+}
 
 void test_flash_basic_rw(void) {
   uint8_t data[] = { 0x12, 0x34, 0x56, 0x78 };
