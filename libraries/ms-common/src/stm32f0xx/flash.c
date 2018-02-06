@@ -1,6 +1,6 @@
 #include "flash.h"
-#include "stm32f0xx.h"
 #include <string.h>
+#include "stm32f0xx.h"
 
 StatusCode flash_init(void) {
   // Flash prefetch and latency are set up in system init

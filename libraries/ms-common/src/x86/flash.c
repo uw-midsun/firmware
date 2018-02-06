@@ -1,8 +1,9 @@
 #include "flash.h"
-#include "log.h"
 #include <stdio.h>
-#include <unistd.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include "log.h"
 
 #define FLASH_FILENAME "x86_flash"
 
@@ -31,7 +32,7 @@ StatusCode flash_read(uintptr_t address, size_t read_bytes, uint8_t *buffer, siz
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 
-  fseek(s_flash_fp, (long int)address, SEEK_SET);
+  fseek(s_flash_fp, (intptr_t)address, SEEK_SET);
   size_t ret = fread(buffer, 1, read_bytes, s_flash_fp);
   (void)ret;
 
@@ -46,19 +47,24 @@ StatusCode flash_write(uintptr_t address, uint8_t *buffer, size_t buffer_len) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  uint8_t read_buffer[buffer_len];
+  uint8_t *read_buffer = malloc(buffer_len);
 
-  fseek(s_flash_fp, (long int)address, SEEK_SET);
+  fseek(s_flash_fp, (intptr_t)address, SEEK_SET);
   size_t read = fread(read_buffer, 1, buffer_len, s_flash_fp);
   (void)read;
 
   for (size_t i = 0; i < buffer_len; i++) {
+    // STM32 does not overwriting at all - emulate behavior
     if (read_buffer[i] != 0xFF) {
-      return status_msg(STATUS_CODE_INTERNAL_ERROR, "Flash: Attempted to write to already written flash");
+      free(read_buffer);
+      return status_msg(STATUS_CODE_INTERNAL_ERROR,
+                        "Flash: Attempted to write to already written flash");
     }
   }
 
-  fseek(s_flash_fp, (long int)address, SEEK_SET);
+  free(read_buffer);
+
+  fseek(s_flash_fp, (intptr_t)address, SEEK_SET);
   fwrite(buffer, 1, buffer_len, s_flash_fp);
   fflush(s_flash_fp);
 
@@ -73,7 +79,7 @@ StatusCode flash_erase(FlashPage page) {
   char buffer[FLASH_PAGE_BYTES];
   memset(buffer, 0xFF, sizeof(buffer));
 
-  fseek(s_flash_fp, (long int)FLASH_PAGE_TO_ADDR(page), SEEK_SET);
+  fseek(s_flash_fp, (intptr_t)FLASH_PAGE_TO_ADDR(page), SEEK_SET);
   fwrite(buffer, 1, sizeof(buffer), s_flash_fp);
   fflush(s_flash_fp);
 

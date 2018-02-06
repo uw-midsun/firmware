@@ -1,6 +1,6 @@
-#include "unity.h"
-#include "test_helpers.h"
 #include "flash.h"
+#include "test_helpers.h"
+#include "unity.h"
 
 #define TEST_FLASH_PAGE (NUM_FLASH_PAGES - 1)
 #define TEST_FLASH_ADDR FLASH_PAGE_TO_ADDR(TEST_FLASH_PAGE)
@@ -10,9 +10,7 @@ void setup_test(void) {
   flash_erase(TEST_FLASH_PAGE);
 }
 
-void teardown_test(void) {
-
-}
+void teardown_test(void) {}
 
 void test_flash_basic_rw(void) {
   uint8_t data[] = { 0x12, 0x34, 0x56, 0x78 };
