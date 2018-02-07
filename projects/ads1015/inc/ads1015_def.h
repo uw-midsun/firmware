@@ -6,7 +6,9 @@
 #define ADS1015_ADDRESS_POINTER_HI_THRESH   ((uint8_t)0x3)
 
 #define ADS1015_LO_THRESH_REGISTER_MSB ((uint8_t)0x0)
+#define ADS1015_LO_THRESH_REGISTER_LSB ((uint8_t)0x0)
 #define ADS1015_HI_THRESH_REGISTER_MSB ((uint8_t)0xFF)
+#define ADS1015_HI_THRESH_REGISTER_LSB ((uint8_t)0xFF)
 
 //typedef enum {
 #define  ADS1015_NO_EFFECT          ((uint8_t)0x0 << 7)   
@@ -25,12 +27,12 @@
 // } ADS1015MUX;
 
 //typedef enum {
-#define  ADS1015_PGA_FSR_0        ((uint8_t)0x0 << 1)  // ±6.144 V
-#define  ADS1015_PGA_FSR_1        ((uint8_t)0x1 << 1)  // ±4.096 V
-#define  ADS1015_PGA_FSR_DEFAULT  ((uint8_t)0x2 << 1)  // ±2.048 V
-#define  ADS1015_PGA_FSR_3        ((uint8_t)0x3 << 1)  // ±1.024 V 
-#define  ADS1015_PGA_FSR_4        ((uint8_t)0x4 << 1)  // ±0.512 V
-#define  ADS1015_PGA_FSR_5        ((uint8_t)0x5 << 1)  // ±0.256 V
+#define  ADS1015_PGA_FSR_6144        ((uint8_t)0x0 << 1)  // ±6.144 V
+#define  ADS1015_PGA_FSR_4096        ((uint8_t)0x1 << 1)  // ±4.096 V
+#define  ADS1015_PGA_FSR_2048        ((uint8_t)0x2 << 1)  // ±2.048 V
+#define  ADS1015_PGA_FSR_1024        ((uint8_t)0x3 << 1)  // ±1.024 V 
+#define  ADS1015_PGA_FSR_512         ((uint8_t)0x4 << 1)  // ±0.512 V
+#define  ADS1015_PGA_FSR_256         ((uint8_t)0x5 << 1)  // ±0.256 V
 //  NUM_ADS1015_PGA_FSRS,
 //} ADS1015PGA;
 
@@ -41,13 +43,13 @@
 //} ADS1015ConversionMode;
 
 // typedef enum {
-#define  ADS1015_DATA_RATE_0        ((uint8_t)0x0 << 5)   // 128 SPS
-#define  ADS1015_DATA_RATE_1        ((uint8_t)0x1 << 5)   // 250 SPS
-#define  ADS1015_DATA_RATE_2        ((uint8_t)0x2 << 5)   // 490 SPS
-#define  ADS1015_DATA_RATE_3        ((uint8_t)0x3 << 5)   // 920 SPS
-#define  ADS1015_DATA_RATE_DEFAULT  ((uint8_t)0x4 << 5)   // 1600 SPS
-#define  ADS1015_DATA_RATE_5        ((uint8_t)0x5 << 5)   // 2400 SPS
-#define  ADS1015_DATA_RATE_6        ((uint8_t)0x6 << 5)   // 3300 SPS
+#define  ADS1015_DATA_RATE_128        ((uint8_t)0x0 << 5)   //  128 SPS
+#define  ADS1015_DATA_RATE_250        ((uint8_t)0x1 << 5)   //  250 SPS
+#define  ADS1015_DATA_RATE_490        ((uint8_t)0x2 << 5)   //  490 SPS
+#define  ADS1015_DATA_RATE_920        ((uint8_t)0x3 << 5)   //  920 SPS
+#define  ADS1015_DATA_RATE_1600       ((uint8_t)0x4 << 5)   // 1600 SPS
+#define  ADS1015_DATA_RATE_2400       ((uint8_t)0x5 << 5)   // 2400 SPS
+#define  ADS1015_DATA_RATE_3300       ((uint8_t)0x6 << 5)   // 3300 SPS
 //  NUM_ADS1015_DATA_RATES,
 // } ADS1015DataRate;
 
@@ -82,21 +84,29 @@
 #define ADS1015_RESET_BYTE  ((uint8_t)0x6)
 
 #define CONFIG_REGISTER_MSB_0                                            \
-  (ADS1015_START_SINGLE_CONV | ADS1015_AIN_0 | ADS1015_PGA_FSR_DEFAULT | \
-   ADS1015_CONVERSION_MODE_CONT)
+  (ADS1015_START_SINGLE_CONV | ADS1015_AIN_0 | ADS1015_PGA_FSR_4096 | \
+   ADS1015_CONVERSION_MODE_SINGLE)
 
 #define CONFIG_REGISTER_MSB_1                                            \
-  (ADS1015_START_SINGLE_CONV | ADS1015_AIN_1 | ADS1015_PGA_FSR_DEFAULT | \
-   ADS1015_CONVERSION_MODE_CONT)
+  (ADS1015_START_SINGLE_CONV | ADS1015_AIN_1 | ADS1015_PGA_FSR_4096 | \
+   ADS1015_CONVERSION_MODE_SINGLE)
 
 #define CONFIG_REGISTER_MSB_2                                            \
-  (ADS1015_START_SINGLE_CONV | ADS1015_AIN_2 | ADS1015_PGA_FSR_DEFAULT | \
-   ADS1015_CONVERSION_MODE_CONT)
+  (ADS1015_START_SINGLE_CONV | ADS1015_AIN_2 | ADS1015_PGA_FSR_4096 | \
+   ADS1015_CONVERSION_MODE_SINGLE)
 
 #define CONFIG_REGISTER_MSB_3                                            \
-  (ADS1015_START_SINGLE_CONV | ADS1015_AIN_3 | ADS1015_PGA_FSR_DEFAULT | \
-   ADS1015_CONVERSION_MODE_CONT)
+  (ADS1015_START_SINGLE_CONV | ADS1015_AIN_3 | ADS1015_PGA_FSR_4096 | \
+   ADS1015_CONVERSION_MODE_SINGLE)
 
 #define CONFIG_REGISTER_LSB                                                     \
-  (ADS1015_DATA_RATE_DEFAULT | ADS1015_COMP_MODE_TRAD | ADS1015_COMP_POL_HIGH | \
+  (ADS1015_DATA_RATE_1600 | ADS1015_COMP_MODE_TRAD | ADS1015_COMP_POL_HIGH | \
    ADS1015_COMP_LAT_NON_LATCHING | ADS1015_COMP_QUE_1_CONV)
+
+// ADS1015 voltage conversion constants
+#define ADS1015_REFERENCE_VOLTAGE_6144 6144
+#define ADS1015_REFERENCE_VOLTAGE_4096 4096
+#define ADS1015_REFERENCE_VOLTAGE_2048 2048
+#define ADS1015_REFERENCE_VOLTAGE_1024 1024
+#define ADS1015_REFERENCE_VOLTAGE_512  512
+#define ADS1015_REFERENCE_VOLTAGE_256  256

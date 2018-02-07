@@ -23,7 +23,7 @@ typedef enum {
 
 typedef void (*ADS1015Callback)(ADS1015Channel channel, void *context);
 
-//typedef struct ADS1015Data;
+//struct ADS1015Data;
 typedef struct ADS1015Data {
   I2CPort i2c_port;
   ADS1015Address i2c_addr;
@@ -42,3 +42,5 @@ StatusCode ads1015_configure_channel(ADS1015Data *data, ADS1015Channel channel, 
                                      ADS1015Callback callback, void *context);
 
 StatusCode ads1015_read_raw(ADS1015Data *data, ADS1015Channel channel, int16_t *reading);
+
+StatusCode ads1015_read_converted(ADS1015Data *data, ADS1015Channel channel, int16_t *reading);

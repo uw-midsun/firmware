@@ -7,12 +7,14 @@
 #include "gpio_it.h"
 #include "i2c.h"
 #include "interrupt.h"
+
+/*
 static StatusCode prv_read(I2CPort i2c_port, ADS1015Address i2c_addr, uint8_t reg, uint8_t *read) {
   status_ok_or_return(i2c_write(i2c_port, i2c_addr | ADS1015_I2C_ADDRESS_GND, &reg, 1));
   status_ok_or_return(i2c_read(i2c_port, i2c_addr | ADS1015_I2C_ADDRESS_GND, read, 2));
   return STATUS_CODE_OK;
 }
-
+*/
 int convert(int dec) {
   if (dec == 0) {
     return 0;
@@ -63,38 +65,44 @@ int main() {
   uint8_t y[2];
   while (1) {
     for (uint8_t i = 0; i < NUM_ADS1015_CHANNELS; i++) {
-      ads1015_read_raw(&data, i, &adc_data[i]);
+     // ads1015_read_raw(&data, i, &adc_data[i]);
+     ads1015_read_converted(&data, i, &adc_data[i]);
     }
      printf("[ %d\t%d\t%d\t%d ]\n", adc_data[ADS1015_CHANNEL_0], adc_data[ADS1015_CHANNEL_1],
          adc_data[ADS1015_CHANNEL_2], adc_data[ADS1015_CHANNEL_3]);
-     printmine(&data);
-     prv_read(data.i2c_port, data.i2c_addr, write_conv, x);
-     printf("conversionreg: %d - %d \n", convert(x[0]), convert(x[1]));
-     prv_read(I2C_PORT_2, data.i2c_addr, write_config, y);
-     printf("config    reg: %d - %d\n", convert(y[0]), convert(y[1]));
-     prv_read(I2C_PORT_2, data.i2c_addr, write_lo, y);
-     printf("lo    reg: %d - %d\n", convert(y[0]), convert(y[1]));
-     prv_read(I2C_PORT_2, data.i2c_addr, write_hi, y);
-     printf("hi    reg: %d - %d\n", convert(y[0]), convert(y[1]));
      /*
-    i2c_write(I2C_PORT_2, ADS1015_ADDRESS_GND | ADS1015_I2C_ADDRESS_GND, ads1015_setup_config, 3);
-    
+      printmine(&data);
+       prv_read(data.i2c_port, data.i2c_addr, write_conv, x);
+       printf("conversionreg: %d - %d \n", convert(x[0]), convert(x[1]));
+       prv_read(I2C_PORT_2, data.i2c_addr, write_config, y);
+       printf("config    reg: %d - %d\n", convert(y[0]), convert(y[1]));
+       prv_read(I2C_PORT_2, data.i2c_addr, write_lo, y);
+       printf("lo    reg: %d - %d\n", convert(y[0]), convert(y[1]));
+       prv_read(I2C_PORT_2, data.i2c_addr, write_hi, y);
+       printf("hi    reg: %d - %d\n", convert(y[0]), convert(y[1]));
+       
 
 
-
-   uint8_t reset = ADS1015_RESET_BYTE;
-    status_ok_or_return(i2c_write(I2C_PORT_2, ADS1015_I2C_GENERAL_CALL, &reset, 1));
-    i2c_write(I2C_PORT_2, ADS1015_ADDRESS_GND | ADS1015_I2C_ADDRESS_GND, &write_config, 1);
-   // i2c_read(I2C_PORT_2, ADS1015_I2C_ADDRESS_GND, x, 2);
-    i2c_read(I2C_PORT_2, ADS1015_ADDRESS_GND | ADS1015_I2C_ADDRESS_GND,
-               x, 2);
-    
-    printmine(&data);
-    //i2c_read(I2C_PORT_2, ADS1015_ADDRESS_GND, &x[0], 1);
-   // printf("%d thisone \n", convert(x[0]));
-    
+      
+      
 
 
-  */
+  
+
+
+      uint8_t reset = ADS1015_RESET_BYTE;
+      status_ok_or_return(i2c_write(I2C_PORT_2, ADS1015_I2C_GENERAL_CALL, &reset, 1));
+      i2c_write(I2C_PORT_2, ADS1015_ADDRESS_GND | ADS1015_I2C_ADDRESS_GND, &write_config, 1);
+      // i2c_read(I2C_PORT_2, ADS1015_I2C_ADDRESS_GND, x, 2);
+      i2c_read(I2C_PORT_2, ADS1015_ADDRESS_GND | ADS1015_I2C_ADDRESS_GND, x, 2);
+
+      printmine(&data);
+      // i2c_read(I2C_PORT_2, ADS1015_ADDRESS_GND, &x[0], 1);
+      // printf("%d thisone \n", convert(x[0]));
+     
+
+
+ */
+     
   }
 }
