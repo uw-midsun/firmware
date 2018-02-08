@@ -1,9 +1,10 @@
 #pragma once
 
+#include <stdbool.h>
 #include "gpio.h"
 #include "i2c.h"
 #include "status.h"
-#include <stdbool.h>
+
 
 typedef enum {
   ADS1015_ADDRESS_GND = 0,
@@ -21,7 +22,7 @@ typedef enum {
   NUM_ADS1015_CHANNELS,
 } ADS1015Channel;
 
-typedef void (*ADS1015Callback)(ADS1015Channel channel, void *context);
+typedef void (*ADS1015Callback)(const GPIOAddress *address, void *context);
 
 //struct ADS1015Data;
 typedef struct ADS1015Data {
@@ -41,6 +42,6 @@ StatusCode ads1015_init(ADS1015Data *data, I2CPort i2c_port, ADS1015Address i2c_
 StatusCode ads1015_configure_channel(ADS1015Data *data, ADS1015Channel channel, bool enable,
                                      ADS1015Callback callback, void *context);
 
-StatusCode ads1015_read_raw(ADS1015Data *data, ADS1015Channel channel, int16_t *reading);
+StatusCode ads1015_read_raw(ADS1015Data *data, ADS1015Channel channel, uint16_t *reading);
 
 StatusCode ads1015_read_converted(ADS1015Data *data, ADS1015Channel channel, int16_t *reading);
