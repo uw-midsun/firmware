@@ -63,4 +63,3 @@ void test_can_message(void) {
 
 }
 
-
