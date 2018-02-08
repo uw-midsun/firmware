@@ -13,6 +13,9 @@
 #include "init_periph.h"
 #include "gpio_addresses.h"
 
+#define SOMEPORT 0
+#define SOMEPIN 0
+
 const GPIOAddress board_type_address = {
   .port = SOMEPORT,
   .pin = SOMEPIN

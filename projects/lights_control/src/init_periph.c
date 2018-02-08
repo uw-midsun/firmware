@@ -23,6 +23,7 @@ GPIOAddress ADDRESS_HEADLIGHTS = {
 };
 
 // rear board peripheral definitions
+
 GPIOAddress ADDRESS_SIGNAL_RIGHT_REAR = {
   .pin = 0,
   .port = 0

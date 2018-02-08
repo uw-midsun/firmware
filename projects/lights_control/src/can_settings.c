@@ -9,6 +9,8 @@
 #include "status.h"
 #include "gpio_addresses.h"
 
+#define SOMEPORT 0
+#define SOMEPIN 0
 
 #define CASE_PERIPH(device) \
   case PERIPH_##device: \

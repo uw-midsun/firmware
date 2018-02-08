@@ -1,8 +1,6 @@
 #pragma once
 
 #include "gpio.h"
-#define SOMEPORT 0 // TODO: DELELTE
-#define SOMEPIN 0 // TODO: DELETE
 
 const GPIOAddress board_type_address;
 
