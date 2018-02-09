@@ -1,8 +1,8 @@
 #include "ads1015.h"
+#include <status.h>
 #include <stdio.h>
 #include "ads1015_def.h"
 #include "gpio_it.h"
-#include <status.h>
 
 static void prv_check_status(StatusCode code) {
   if (!code) {
@@ -50,7 +50,7 @@ static ADS1015Channel prv_get_channel(uint8_t config_register_msb) {
 
 // switches to the the given channel by writing to config reg
 static StatusCode prv_set_channel(ADS1015Data *data, ADS1015Channel channel) {
-  if (channel >= NUM_ADS1015_CHANNELS){
+  if (channel >= NUM_ADS1015_CHANNELS) {
     return STATUS_CODE_INVALID_ARGS;
   }
   uint8_t config_register_msb_channels[] = { CONFIG_REGISTER_MSB_0, CONFIG_REGISTER_MSB_1,
@@ -59,7 +59,7 @@ static StatusCode prv_set_channel(ADS1015Data *data, ADS1015Channel channel) {
   prv_setup_register(data, ADS1015_ADDRESS_POINTER_CONFIG, config_register_msb_channels[channel],
                      CONFIG_REGISTER_LSB);
   data->current_channel = channel;
-  data->channel_enable[channel] = true;                     
+  data->channel_enable[channel] = true;
   return STATUS_CODE_OK;
 }
 
@@ -95,7 +95,7 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
 // initiates ads1015 by setting up registers and enabling ALRT/RDY Pin
 StatusCode ads1015_init(ADS1015Data *data, I2CPort i2c_port, ADS1015Address i2c_addr,
                         GPIOAddress *ready_pin) {
-  if (!data || !ready_pin){
+  if (!data || !ready_pin) {
     return STATUS_CODE_INVALID_ARGS;
   }
   data->i2c_port = i2c_port;
@@ -116,7 +116,7 @@ StatusCode ads1015_init(ADS1015Data *data, I2CPort i2c_port, ADS1015Address i2c_
   status_ok_or_return(prv_setup_register(data, ADS1015_ADDRESS_POINTER_LO_THRESH,
                                          ADS1015_LO_THRESH_REGISTER_MSB,
                                          ADS1015_LO_THRESH_REGISTER_LSB));
-  status_ok_or_return(prv_setup_register(data, ADS1015_ADDRESS_POINTER_HI_THRESH, 
+  status_ok_or_return(prv_setup_register(data, ADS1015_ADDRESS_POINTER_HI_THRESH,
                                          ADS1015_HI_THRESH_REGISTER_MSB,
                                          ADS1015_HI_THRESH_REGISTER_LSB));
 

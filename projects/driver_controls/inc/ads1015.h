@@ -9,7 +9,6 @@
 #include "i2c.h"
 #include "status.h"
 
-
 typedef enum {
   ADS1015_ADDRESS_GND = 0,
   ADS1015_ADDRESS_VDD,
