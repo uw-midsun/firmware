@@ -13,7 +13,7 @@
 static ADS1015Data data;
 GPIOAddress ready_pin = { GPIO_PORT_B, 2 };
 
-I2CSettings i2c_settings = {
+static I2CSettings i2c_settings = {
   .speed = I2C_SPEED_FAST, .scl = { GPIO_PORT_B, 10 }, .sda = { GPIO_PORT_B, 11 }
 };
 
