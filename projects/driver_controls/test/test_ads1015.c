@@ -36,7 +36,7 @@ void setup_test(void) {
 
 void teardown_test(void) {}
 
-void test_ads_init(void) {
+void test_ads1015_init(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     ads1015_init(NULL, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin));
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
