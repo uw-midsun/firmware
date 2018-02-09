@@ -6,7 +6,8 @@
 #include "critical_section.h"
 #include "log.h"
 
-#define FLASH_FILENAME "x86_flash"
+#define FLASH_DEFAULT_FILENAME "x86_flash"
+#define FLASH_USER_ENV "MIDSUN_X86_FLASH_FILE"
 
 static FILE *s_flash_fp = NULL;
 
@@ -15,10 +16,21 @@ StatusCode flash_init(void) {
     fclose(s_flash_fp);
   }
 
-  s_flash_fp = fopen(FLASH_FILENAME, "r+b");
+  char *flash_filename = getenv(FLASH_USER_ENV);
+  if (flash_filename == NULL) {
+    flash_filename = FLASH_DEFAULT_FILENAME;
+  }
+  LOG_DEBUG("Using flash file: %s\n", flash_filename);
+
+  s_flash_fp = fopen(flash_filename, "r+b");
   if (s_flash_fp == NULL) {
     LOG_DEBUG("Setting up new flash file\n");
-    s_flash_fp = fopen(FLASH_FILENAME, "w+b");
+    s_flash_fp = fopen(flash_filename, "w+b");
+    if (s_flash_fp == NULL) {
+      LOG_DEBUG("Error: could not open flash file\n");
+      exit(EXIT_FAILURE);
+    }
+
     for (int i = 0; i < NUM_FLASH_PAGES; i++) {
       flash_erase(i);
     }
