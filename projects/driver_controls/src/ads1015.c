@@ -58,6 +58,8 @@ static StatusCode prv_set_channel(ADS1015Data *data, ADS1015Channel channel) {
 
   prv_setup_register(data, ADS1015_ADDRESS_POINTER_CONFIG, config_register_msb_channels[channel],
                      CONFIG_REGISTER_LSB);
+  data->current_channel = channel;
+  data->channel_enable[channel] = true;                     
   return STATUS_CODE_OK;
 }
 
