@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "critical_section.h"
 #include "log.h"
 
 #define FLASH_FILENAME "x86_flash"
@@ -28,7 +29,7 @@ StatusCode flash_init(void) {
 
 StatusCode flash_read(uintptr_t address, size_t read_bytes, uint8_t *buffer, size_t buffer_len) {
   if (buffer_len < read_bytes || address < FLASH_BASE_ADDR ||
-      (address + read_bytes) > FLASH_END_ADDR) {
+      (address + read_bytes) > FLASH_END_ADDR || (intptr_t)address < 0) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 
@@ -39,9 +40,9 @@ StatusCode flash_read(uintptr_t address, size_t read_bytes, uint8_t *buffer, siz
   return STATUS_CODE_OK;
 }
 
-// buffer_len must be a multiple of FLASH_WRITE_BYTES
 StatusCode flash_write(uintptr_t address, uint8_t *buffer, size_t buffer_len) {
-  if (address < FLASH_BASE_ADDR || (address + buffer_len) > FLASH_END_ADDR) {
+  if (address < FLASH_BASE_ADDR || (address + buffer_len) > FLASH_END_ADDR ||
+      (intptr_t)address < 0) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   } else if (buffer_len % FLASH_WRITE_BYTES != 0 || address % FLASH_WRITE_BYTES != 0) {
     return status_code(STATUS_CODE_INVALID_ARGS);
@@ -72,7 +73,7 @@ StatusCode flash_write(uintptr_t address, uint8_t *buffer, size_t buffer_len) {
 }
 
 StatusCode flash_erase(FlashPage page) {
-  if (page > NUM_FLASH_PAGES) {
+  if (page >= NUM_FLASH_PAGES) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 

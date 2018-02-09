@@ -70,4 +70,7 @@ void test_flash_out_of_bounds(void) {
 
   ret = flash_write(FLASH_END_ADDR + FLASH_WRITE_BYTES, (uint8_t *)&data, sizeof(data));
   TEST_ASSERT_NOT_OK(ret);
+
+  ret = flash_erase(NUM_FLASH_PAGES);
+  TEST_ASSERT_NOT_OK(ret);
 }
