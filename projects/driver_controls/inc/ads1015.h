@@ -1,5 +1,9 @@
 #pragma once
-
+// Module for using ads1015
+// GPIO and Interrupt, I2C should be initiated
+// The user also needs to create a struct ADS1015Data which would persist accross functions
+// start the ads1015 using ads1015_init and then configure channels using ads1015_config_channel
+// read raw and converted values using ads1015_read_raw and ads1015_read_converted.
 #include <stdbool.h>
 #include "gpio.h"
 #include "i2c.h"
@@ -24,7 +28,6 @@ typedef enum {
 
 typedef void (*ADS1015Callback)(const GPIOAddress *address, void *context);
 
-//struct ADS1015Data;
 typedef struct ADS1015Data {
   I2CPort i2c_port;
   ADS1015Address i2c_addr;
