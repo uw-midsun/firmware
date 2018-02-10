@@ -26,24 +26,24 @@
 #define TEST_POWER_PATH_ADC_PERIOD_US 1000
 
 #define TEST_POWER_PATH_AUX_CURRENT_VAL 1
-#define TEST_POWER_PATH_AUX_VOLTAGE_VAL 2
+#define TEST_POWER_PATH_AUX_UV_VAL 2
 #define TEST_POWER_PATH_DCDC_CURRENT_VAL 3
-#define TEST_POWER_PATH_DCDC_VOLTAGE_VAL 4
+#define TEST_POWER_PATH_DCDC_UV_VAL 4
 
 static uint16_t prv_aux_current_convert(uint16_t value) {
   return TEST_POWER_PATH_AUX_CURRENT_VAL;
 }
 
-static uint16_t prv_aux_voltage_convert(uint16_t value) {
-  return TEST_POWER_PATH_AUX_VOLTAGE_VAL;
+static uint16_t prv_aux_undervoltage_convert(uint16_t value) {
+  return TEST_POWER_PATH_AUX_UV_VAL;
 }
 
 static uint16_t prv_dcdc_current_convert(uint16_t value) {
   return TEST_POWER_PATH_DCDC_CURRENT_VAL;
 }
 
-static uint16_t prv_dcdc_voltage_convert(uint16_t value) {
-  return TEST_POWER_PATH_DCDC_VOLTAGE_VAL;
+static uint16_t prv_dcdc_undervoltage_convert(uint16_t value) {
+  return TEST_POWER_PATH_DCDC_UV_VAL;
 }
 
 static volatile uint8_t s_dcdc_ov = UINT8_MAX;
@@ -65,7 +65,7 @@ static PowerPathCfg s_ppc = { .enable_pin = { .port = 0, .pin = 0 },
                                            .current_pin = { .port = 0, .pin = 4 },
                                            .readings = { .voltage = 0, .current = 0 },
                                            .current_convert_fn = prv_aux_current_convert,
-                                           .voltage_convert_fn = prv_aux_voltage_convert,
+                                           .voltage_convert_fn = prv_aux_undervoltage_convert,
                                            .period_us = 0,
                                            .timer_id = SOFT_TIMER_INVALID_TIMER,
                                            .monitoring_active = false },
@@ -75,7 +75,7 @@ static PowerPathCfg s_ppc = { .enable_pin = { .port = 0, .pin = 0 },
                                         .current_pin = { .port = 0, .pin = 7 },
                                         .readings = { .voltage = 0, .current = 0 },
                                         .current_convert_fn = prv_dcdc_current_convert,
-                                        .voltage_convert_fn = prv_dcdc_voltage_convert,
+                                        .voltage_convert_fn = prv_dcdc_undervoltage_convert,
                                         .period_us = 0,
                                         .timer_id = SOFT_TIMER_INVALID_TIMER,
                                         .monitoring_active = false } };
@@ -170,10 +170,10 @@ void test_power_path_adcs(void) {
   PowerPathVCReadings readings = { 0, 0 };
   TEST_ASSERT_OK(power_path_read_source(&s_ppc.aux_bat, &readings));
   TEST_ASSERT_EQUAL(TEST_POWER_PATH_AUX_CURRENT_VAL, readings.current);
-  TEST_ASSERT_EQUAL(TEST_POWER_PATH_AUX_VOLTAGE_VAL, readings.voltage);
+  TEST_ASSERT_EQUAL(TEST_POWER_PATH_AUX_UV_VAL, readings.voltage);
   TEST_ASSERT_OK(power_path_read_source(&s_ppc.dcdc, &readings));
   TEST_ASSERT_EQUAL(TEST_POWER_PATH_DCDC_CURRENT_VAL, readings.current);
-  TEST_ASSERT_EQUAL(TEST_POWER_PATH_DCDC_VOLTAGE_VAL, readings.voltage);
+  TEST_ASSERT_EQUAL(TEST_POWER_PATH_DCDC_UV_VAL, readings.voltage);
 
   TEST_ASSERT_OK(power_path_source_monitor_disable(&s_ppc.aux_bat));
   TEST_ASSERT_OK(power_path_source_monitor_disable(&s_ppc.dcdc));
