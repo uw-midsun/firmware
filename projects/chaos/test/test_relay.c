@@ -85,10 +85,10 @@ void test_relay_cycle(void) {
 
   Event e = { 0 };
   StatusCode status = NUM_STATUS_CODES;
-  for (size_t i = 0; i < SIZEOF_ARRAY(params); i++) {
+  for (uint16_t i = 0; i < SIZEOF_ARRAY(params); i++) {
     LOG_DEBUG("Id %u\n", params[i].id);
-    for (size_t j = 0; j < SIZEOF_ARRAY(events); j++) {
-      LOG_DEBUG("Event %lu\n", j);
+    for (uint16_t j = 0; j < SIZEOF_ARRAY(events); j++) {
+      LOG_DEBUG("Event %u\n", j);
       events[j].invoke_event.data = params[i].id;
       events[j].response_event.data = params[i].id;
       ack_status = params[i].retry[j] ? CAN_ACK_STATUS_INVALID : CAN_ACK_STATUS_OK;
