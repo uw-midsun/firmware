@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "adc.h"
+#include "event_queue.h"
 #include "gpio.h"
 #include "soft_timer.h"
 #include "status.h"
@@ -58,3 +59,7 @@ StatusCode power_path_source_monitor_disable(PowerPathSource *source);
 
 // Reads the latest voltage and current from the specified power source.
 StatusCode power_path_read_source(const PowerPathSource *source, PowerPathVCReadings *values);
+
+// A function to update the power path based on an event rather than a direct function call, meant
+// to emulate fsm_process_event with additional args.
+bool power_path_process_event(PowerPathCfg *cfg, const Event *e);
