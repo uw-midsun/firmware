@@ -16,10 +16,10 @@
 #include "status.h"
 
 // All values in millivolts
-#define POWER_PATH_AUX_UV 8460
-#define POWER_PATH_AUX_OV 14310
-#define POWER_PATH_DCDC_UV 11160
-#define POWER_PATH_DCDC_OV 12840
+#define POWER_PATH_AUX_UV_MILLIV 8460
+#define POWER_PATH_AUX_OV_MILLIV 14310
+#define POWER_PATH_DCDC_UV_MILLIV 11160
+#define POWER_PATH_DCDC_OV_MILLIV 12840
 
 // Evaluates if two GPIO addresses are equal.
 static bool prv_addr_eq(GPIOAddress addr1, GPIOAddress addr2) {
@@ -33,14 +33,14 @@ static void prv_voltage_warning(const GPIOAddress *addr, void *context) {
   StatusCode status = STATUS_CODE_OK;
   if (prv_addr_eq(*addr, pp->dcdc.uv_ov_pin) && pp->dcdc.monitoring_active) {
     power_path_read_source(&pp->dcdc, &readings);
-    LOG_DEBUG("DCDC\n");
-    status = CAN_TRANSMIT_OVUV_DCDC_AUX((readings.voltage >= POWER_PATH_DCDC_OV),
-                                        (readings.voltage <= POWER_PATH_DCDC_UV), false, false);
+    status =
+        CAN_TRANSMIT_OVUV_DCDC_AUX((readings.voltage >= POWER_PATH_DCDC_OV_MILLIV),
+                                   (readings.voltage <= POWER_PATH_DCDC_UV_MILLIV), false, false);
   } else if (prv_addr_eq(*addr, pp->aux_bat.uv_ov_pin) && pp->aux_bat.monitoring_active) {
     power_path_read_source(&pp->aux_bat, &readings);
-    LOG_DEBUG("AUX\n");
-    status = CAN_TRANSMIT_OVUV_DCDC_AUX(false, false, (readings.voltage >= POWER_PATH_AUX_OV),
-                                        (readings.voltage <= POWER_PATH_AUX_UV));
+    status =
+        CAN_TRANSMIT_OVUV_DCDC_AUX(false, false, (readings.voltage >= POWER_PATH_AUX_OV_MILLIV),
+                                   (readings.voltage <= POWER_PATH_AUX_UV_MILLIV));
   }
   if (!status_ok(status)) {
     event_raise(CHAOS_EVENT_CAN_TRANSMIT_ERROR, CAN_MESSAGE_OVUV_DCDC_AUX);
@@ -156,9 +156,9 @@ StatusCode power_path_read_source(const PowerPathSource *source, PowerPathVCRead
 bool power_path_process_event(PowerPathCfg *cfg, const Event *e) {
   PowerPathSource *source = NULL;
   if (e->data == POWER_PATH_SOURCE_ID_DCDC) {
-    PowerPathSource *source = &cfg->dcdc;
+    source = &cfg->dcdc;
   } else if (e->data == POWER_PATH_SOURCE_ID_AUX_BAT) {
-    PowerPathSource *source = &cfg->aux_bat;
+    source = &cfg->aux_bat;
   } else {
     return false;
   }

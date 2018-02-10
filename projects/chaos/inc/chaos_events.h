@@ -32,6 +32,7 @@ typedef enum {
   NUM_CHAOS_EVENTS_FSM  // 18
 } ChaosEventsFSM;
 
+// Used for the sequence generator that schedules and order events for the other FSMs.
 typedef enum {
   CHAOS_EVENT_SEQUENCE_IDLE = NUM_CHAOS_EVENTS_FSM + 1,  // 19
   CHAOS_EVENT_SEQUENCE_CHARGE,
@@ -40,4 +41,4 @@ typedef enum {
   NUM_CHAOS_EVENT_SEQUENCES,  // 23
 } ChaosEventSequence;
 
-#define NUM_CHAOS_EVENTS NUM_CHAOS_EVENTS_FSM
+#define NUM_CHAOS_EVENTS NUM_CHAOS_EVENT_SEQUENCES
