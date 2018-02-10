@@ -10,7 +10,7 @@
 #include "interrupt.h"
 #include "status.h"
 
-static ADS1015Data data;
+static Ads1015Storage storage;
 GPIOAddress ready_pin = { GPIO_PORT_B, 2 };
 
 static I2CSettings i2c_settings = {
@@ -19,8 +19,8 @@ static I2CSettings i2c_settings = {
 
 /*
 static void prv_callback(const GPIOAddress *address, void *context) {
-  ADS1015Data *data = context;
-  printf("converted from channel %d\n", data->current_channel);
+  Ads1015Storage *storage = context;
+  printf("converted from channel %d\n", storage->current_channel);
 }
 */
 
@@ -31,7 +31,7 @@ void setup_test(void) {
 
   i2c_init(I2C_PORT_2, &i2c_settings);
 
-  ads1015_init(&data, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
+  ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
 }
 
 void teardown_test(void) {}
@@ -40,21 +40,21 @@ void test_ads1015_init(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     ads1015_init(NULL, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin));
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
-                    ads1015_init(&data, I2C_PORT_2, ADS1015_ADDRESS_GND, NULL));
-  ads1015_init(&data, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
+                    ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, NULL));
+  ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
 }
 
 /*
 void test_ads_config_channel(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
-                    ads1015_configure_channel(&data, ADS1015_CHANNEL_0, true, prv_callback, &data));
+                    ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, prv_callback, &storage));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
-                    ads1015_configure_channel(&data, ADS1015_CHANNEL_0, true, prv_callback, &data));
+                    ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, prv_callback, &storage));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
-                    ads1015_configure_channel(&data, ADS1015_CHANNEL_0, true, NULL, &data));
+                    ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, NULL, &storage));
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
-                    ads1015_configure_channel(&data, NUM_ADS1015_CHANNELS, true, prv_callback,
-&data)); TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, ads1015_configure_channel(NULL,
-NUM_ADS1015_CHANNELS, true, prv_callback, &data));
+                    ads1015_configure_channel(&storage, NUM_ADS1015_CHANNELS, true, prv_callback,
+&storage)); TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, ads1015_configure_channel(NULL,
+NUM_ADS1015_CHANNELS, true, prv_callback, &storage));
 }
 */
