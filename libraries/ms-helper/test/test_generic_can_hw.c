@@ -18,7 +18,7 @@
 #include "unity.h"
 
 #define TEST_GENERIC_CAN_HW_FAULT_EVENT 1
-#define NUM_GENERIC_CAN_RX_HANDLERS 5
+#define NUM_GENERIC_CAN_RX_HANDLERS 10
 
 static GenericCanHw s_can;
 
