@@ -50,24 +50,30 @@ endif
 # Linker flags
 LDFLAGS := -lrt
 
+# Shell environment variables
+ENV_VARS := MIDSUN_X86_FLASH_FILE=$(BIN_DIR)/$(PROJECT)$(LIBRARY)_flash
+ifneq (,$(TEST))
+  ENV_VARS := $(ENV_VARS)_test_$(TEST)
+endif
+
 # Platform targets
 .PHONY: run gdb
 
 run: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT) socketcan
-	@$<
+	@$(ENV_VARS) $<
 
 gdb: $(GDB_TARGET) socketcan
-	@$(GDB) $<
+	@$(ENV_VARS) $(GDB) $<
 
 test_all: socketcan
 
 test: socketcan
 
 define session_wrapper
-$1
+$(ENV_VARS) $1; echo $(TEST)
 endef
 
 # Defines command to run for unit testing
 define test_run
-echo "\nRunning $(notdir $1)" && ./$1
+echo "\nRunning $(notdir $1)" && $(ENV_VARS) ./$1
 endef
