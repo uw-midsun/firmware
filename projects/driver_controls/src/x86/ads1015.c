@@ -23,6 +23,7 @@ StatusCode ads1015_read_raw(Ads1015Storage *storage, Ads1015Channel channel, uin
 }
 
 // reads conversion value in mVolt
-StatusCode ads1015_read_converted(Ads1015Storage *storage, Ads1015Channel channel, int16_t *reading) {
+StatusCode ads1015_read_converted(Ads1015Storage *storage, Ads1015Channel channel,
+                                  int16_t *reading) {
   return STATUS_CODE_UNIMPLEMENTED;
 }

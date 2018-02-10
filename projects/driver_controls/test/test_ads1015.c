@@ -47,10 +47,9 @@ void test_ads1015_init(void) {
 /*
 void test_ads_config_channel(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
-                    ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, prv_callback, &storage));
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK,
-                    ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, prv_callback, &storage));
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK,
+                    ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, prv_callback,
+&storage)); TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_configure_channel(&storage, ADS1015_CHANNEL_0,
+true, prv_callback, &storage)); TEST_ASSERT_EQUAL(STATUS_CODE_OK,
                     ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, NULL, &storage));
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     ads1015_configure_channel(&storage, NUM_ADS1015_CHANNELS, true, prv_callback,

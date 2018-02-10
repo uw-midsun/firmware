@@ -5,7 +5,7 @@
 #include "gpio_it.h"
 
 // reset the internal registers and enter a power-down state
-static StatusCode prv_reset(Ads1015Storage * storage) {
+static StatusCode prv_reset(Ads1015Storage *storage) {
   uint8_t reset = ADS1015_RESET_BYTE;
   return i2c_write(storage->i2c_port, ADS1015_I2C_GENERAL_CALL, &reset, sizeof(reset));
 }
@@ -41,7 +41,8 @@ static StatusCode prv_set_channel(Ads1015Storage *storage, Ads1015Channel channe
   }
   storage->current_channel = channel;
   storage->channel_enable[channel] = true;
-  return prv_setup_register(storage, ADS1015_ADDRESS_POINTER_CONFIG, CONFIG_REGISTER_MSB(channel), CONFIG_REGISTER_LSB);
+  return prv_setup_register(storage, ADS1015_ADDRESS_POINTER_CONFIG, CONFIG_REGISTER_MSB(channel),
+                            CONFIG_REGISTER_LSB);
 }
 
 // This function is registered as the callback for ALRT/RDY Pin.
@@ -58,9 +59,10 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
            SIZEOF_ARRAY(config_register));
 
   Ads1015Channel current_channel = prv_get_channel(config_register[0]);
-  // following line puts two read bytes into a uint16. 4 LSB's should be taken out. 
+  // following line puts two read bytes into a uint16. 4 LSB's should be taken out.
   // conversion value is only 12 bits.
-  storage->channel_readings[current_channel] = ((read_conv_register[0] << 8) | read_conv_register[1]) >> 4; 
+  storage->channel_readings[current_channel] =
+      ((read_conv_register[0] << 8) | read_conv_register[1]) >> 4;
   // runs the users callback if not NULL
   if (storage->channel_callback[current_channel]) {
     storage->channel_callback[current_channel](storage->current_channel,
@@ -91,9 +93,9 @@ StatusCode ads1015_init(Ads1015Storage *storage, I2CPort i2c_port, Ads1015Addres
   }
 
   status_ok_or_return(prv_reset(storage));
-  status_ok_or_return(
-      prv_setup_register(storage, ADS1015_ADDRESS_POINTER_CONFIG, CONFIG_REGISTER_MSB(ADS1015_CHANNEL_0),
-                         CONFIG_REGISTER_LSB));  // sets the starting channel to channel 0
+  status_ok_or_return(prv_setup_register(
+      storage, ADS1015_ADDRESS_POINTER_CONFIG, CONFIG_REGISTER_MSB(ADS1015_CHANNEL_0),
+      CONFIG_REGISTER_LSB));  // sets the starting channel to channel 0
   status_ok_or_return(prv_setup_register(storage, ADS1015_ADDRESS_POINTER_LO_THRESH,
                                          ADS1015_LO_THRESH_REGISTER_MSB,
                                          ADS1015_LO_THRESH_REGISTER_LSB));
@@ -130,8 +132,8 @@ StatusCode ads1015_configure_channel(Ads1015Storage *storage, Ads1015Channel cha
     .type = INTERRUPT_TYPE_INTERRUPT,
     .priority = INTERRUPT_PRIORITY_NORMAL,
   };
-  return gpio_it_register_interrupt(
-      &storage->ready_pin, &it_settings, INTERRUPT_EDGE_RISING, prv_interrupt_handler, storage);
+  return gpio_it_register_interrupt(&storage->ready_pin, &it_settings, INTERRUPT_EDGE_RISING,
+                                    prv_interrupt_handler, storage);
 }
 
 // reads raw 12 bit conversion results which are expressed in two's complement format
