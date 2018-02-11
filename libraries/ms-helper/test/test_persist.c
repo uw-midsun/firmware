@@ -129,7 +129,7 @@ void test_persist_size_change(void) {
 
 void test_persist_change_periodic(void) {
   uint32_t data[4] = { 0 };
-  LOG_DEBUG("Initializing persist layer\n");
+  LOG_DEBUG("Initializing persist layer with 0s\n");
   StatusCode ret = persist_init(&s_persist, &data, sizeof(data));
   TEST_ASSERT_OK(ret);
 
@@ -139,8 +139,8 @@ void test_persist_change_periodic(void) {
   }
 
   LOG_DEBUG("Data changed - delaying\n");
-  // Delay with some leeway
-  delay_ms(PERSIST_COMMIT_TIMEOUT_MS + 10);
+  // Delay with some leeway - should only see 1 commit
+  delay_ms(PERSIST_COMMIT_TIMEOUT_MS * 2 + 10);
 
   // Reload the persist layer
   LOG_DEBUG("Reloading persist layer\n");

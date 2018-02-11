@@ -33,23 +33,27 @@ static void prv_periodic_commit(SoftTimerID timer_id, void *context) {
   PersistStorage *persist = context;
 
   if (persist->prev_flash_addr == PERSIST_INVALID_ADDR) {
+    LOG_DEBUG("Periodic: New page\n");
     // This is the first commit for a new page
     persist_commit(persist);
   } else {
     // We should check if our data has changed from the stored copy
     uint32_t buffer = 0;
     PersistHeader header = { 0 };
+    LOG_DEBUG("Checking section: 0x%lx\n", persist->prev_flash_addr);
     flash_read(persist->prev_flash_addr, sizeof(header),
                (uint8_t *)&header, sizeof(header));
     if (persist->blob_size != header.size_bytes) {
+      LOG_DEBUG("Wrong size\n");
       // Wrong size - make sure we reflect the new size
       persist_commit(persist);
     } else {
       uintptr_t addr = persist->prev_flash_addr + sizeof(header);
       uint32_t *blob_u32 = (uint32_t *)persist->blob;
       for (size_t i = 0; i < header.size_bytes / sizeof(buffer); i++, addr += sizeof(buffer)) {
-        flash_read(addr, sizeof(addr), (uint8_t *)&addr, sizeof(addr));
+        flash_read(addr, sizeof(buffer), (uint8_t *)&buffer, sizeof(buffer));
         if (blob_u32[i] != buffer) {
+          LOG_DEBUG("Found difference - found %d, expected %d at %ld\n", buffer, blob_u32[i], i);
           // There is a difference between the two copies, so commit it
           persist_commit(persist);
           break;
