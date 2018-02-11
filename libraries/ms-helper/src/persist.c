@@ -40,8 +40,7 @@ static void prv_periodic_commit(SoftTimerID timer_id, void *context) {
     // We should check if our data has changed from the stored copy
     uint32_t buffer = 0;
     PersistHeader header = { 0 };
-    flash_read(persist->prev_flash_addr, sizeof(header),
-               (uint8_t *)&header, sizeof(header));
+    flash_read(persist->prev_flash_addr, sizeof(header), (uint8_t *)&header, sizeof(header));
     if (persist->blob_size != header.size_bytes) {
       // Wrong size - make sure we reflect the new size
       persist_commit(persist);
@@ -75,8 +74,8 @@ StatusCode persist_init(PersistStorage *persist, void *blob, size_t blob_size) {
 
   // Load stored data
   PersistHeader header = {
-    .marker = PERSIST_VALID_MARKER, //
-    .size_bytes = 0 //
+    .marker = PERSIST_VALID_MARKER,  //
+    .size_bytes = 0                  //
   };
   persist->flash_addr = PERSIST_BASE_ADDR;
 
@@ -88,8 +87,8 @@ StatusCode persist_init(PersistStorage *persist, void *blob, size_t blob_size) {
   // * This is a valid section. Use this address.
   //   Marker == 0xFFFFFFFF, Size != 0xFFFFFFFF
   do {
-    status_ok_or_return(flash_read(persist->flash_addr, sizeof(header),
-                        (uint8_t *)&header, sizeof(header)));
+    status_ok_or_return(
+        flash_read(persist->flash_addr, sizeof(header), (uint8_t *)&header, sizeof(header)));
     if (header.marker != PERSIST_VALID_MARKER) {
       persist->flash_addr += sizeof(header) + header.size_bytes;
     }
@@ -148,8 +147,8 @@ StatusCode persist_commit(PersistStorage *persist) {
   status_ok_or_return(ret);
 
   // Write persist blob
-  ret = flash_write(persist->flash_addr + sizeof(header),
-                    (uint8_t *)persist->blob, persist->blob_size);
+  ret = flash_write(persist->flash_addr + sizeof(header), (uint8_t *)persist->blob,
+                    persist->blob_size);
   status_ok_or_return(ret);
 
   persist->prev_flash_addr = persist->flash_addr;

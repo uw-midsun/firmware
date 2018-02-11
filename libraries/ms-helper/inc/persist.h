@@ -6,8 +6,8 @@
 // Data is written to flash periodically. Note that to reduce necessary wear on the flash, data is
 // only committed if changes have occurred.
 #include <stddef.h>
-#include "status.h"
 #include "flash.h"
+#include "status.h"
 
 // Commit data every second if dirty
 #define PERSIST_COMMIT_TIMEOUT_MS 1000

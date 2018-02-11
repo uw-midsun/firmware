@@ -1,11 +1,11 @@
-#include "unity.h"
 #include <inttypes.h>
-#include "persist.h"
-#include "test_helpers.h"
-#include "log.h"
-#include "interrupt.h"
-#include "soft_timer.h"
 #include "delay.h"
+#include "interrupt.h"
+#include "log.h"
+#include "persist.h"
+#include "soft_timer.h"
+#include "test_helpers.h"
+#include "unity.h"
 
 typedef struct TestPersistData {
   uint32_t foo;
@@ -26,20 +26,14 @@ void teardown_test(void) {
 }
 
 void test_persist_new(void) {
-  TestPersistData data = {
-    .foo = 0x12345678,
-    .bar = &s_persist
-  };
+  TestPersistData data = { .foo = 0x12345678, .bar = &s_persist };
 
   StatusCode ret = persist_init(&s_persist, &data, sizeof(data));
   TEST_ASSERT_OK(ret);
 }
 
 void test_persist_load_existing(void) {
-  TestPersistData data = {
-    .foo = 0x12345678,
-    .bar = &s_persist
-  };
+  TestPersistData data = { .foo = 0x12345678, .bar = &s_persist };
 
   LOG_DEBUG("Creating initial persist\n");
   StatusCode ret = persist_init(&s_persist, &data, sizeof(data));
