@@ -74,3 +74,7 @@ void test_flash_out_of_bounds(void) {
   ret = flash_erase(NUM_FLASH_PAGES);
   TEST_ASSERT_NOT_OK(ret);
 }
+
+void test_flash_verify_num_pages(void) {
+  TEST_ASSERT_EQUAL(FLASH_SIZE_BYTES / FLASH_PAGE_BYTES, NUM_FLASH_PAGES);
+}
