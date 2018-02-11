@@ -13,5 +13,5 @@ extern uint32_t _flash_page_size;
 
 typedef enum {
   FLASH_PAGE_0 = 0,      //
-  NUM_FLASH_PAGES = 128  //
+  NUM_FLASH_PAGES = 64  //
 } FlashPage;

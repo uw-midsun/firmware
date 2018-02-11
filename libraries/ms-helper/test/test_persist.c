@@ -1,4 +1,5 @@
 #include "unity.h"
+#include <inttypes.h>
 #include "persist.h"
 #include "test_helpers.h"
 #include "log.h"
@@ -47,7 +48,7 @@ void test_persist_load_existing(void) {
   // Force some extra commits to simulate multiple changes
   for (uint32_t i = 0; i < 4; i++) {
     data.foo += i;
-    LOG_DEBUG("Forcing commit %d to persist layer\n", i);
+    LOG_DEBUG("Forcing commit %" PRIu32 " to persist layer\n", i);
     ret = persist_commit(&s_persist);
     TEST_ASSERT_OK(ret);
   }
@@ -60,6 +61,7 @@ void test_persist_load_existing(void) {
   TEST_ASSERT_EQUAL(data.foo, new_data.foo);
   TEST_ASSERT_EQUAL(data.bar, new_data.bar);
 
+  LOG_DEBUG("Committing new data\n");
   // Make sure we can commit data after reading a valid section
   new_data.foo = 0x87654321;
   new_data.bar = &new_data;
@@ -67,6 +69,7 @@ void test_persist_load_existing(void) {
   TEST_ASSERT_OK(ret);
 
   // Readback
+  LOG_DEBUG("Reading back changed data\n");
   ret = persist_init(&s_persist, &data, sizeof(data));
   TEST_ASSERT_OK(ret);
 
@@ -75,7 +78,7 @@ void test_persist_load_existing(void) {
 }
 
 void test_persist_full_page(void) {
-  uint64_t data[32] = { 0 };
+  uint32_t data[64] = { 0 };
   for (size_t i = 0; i < SIZEOF_ARRAY(data); i++) {
     data[i] = i;
   }
@@ -86,7 +89,7 @@ void test_persist_full_page(void) {
 
   // Should be able to persist more than the maximum number of sections
   for (size_t i = 0; i < FLASH_PAGE_BYTES / sizeof(data) + 1; i++) {
-    LOG_DEBUG("Attempting commit %ld\n", i);
+    LOG_DEBUG("Attempting commit %" PRIu32 "\n", (uint32_t)i);
     data[i] += i;
     ret = persist_commit(&s_persist);
     TEST_ASSERT_OK(ret);
@@ -94,21 +97,21 @@ void test_persist_full_page(void) {
 
   // Should load post-erase properly
   LOG_DEBUG("Loading persist data\n");
-  uint64_t new_data[SIZEOF_ARRAY(data)] = { 0 };
+  uint32_t new_data[SIZEOF_ARRAY(data)] = { 0 };
   ret = persist_init(&s_persist, &new_data, sizeof(new_data));
   TEST_ASSERT_OK(ret);
 
-  TEST_ASSERT_EQUAL_HEX64_ARRAY(data, new_data, SIZEOF_ARRAY(data));
+  TEST_ASSERT_EQUAL_HEX32_ARRAY(data, new_data, SIZEOF_ARRAY(data));
 }
 
 void test_persist_size_change(void) {
   uint32_t data[4] = { 0x1, 0x2, 0x3, 0x4 };
-  LOG_DEBUG("Initializing persist layer with size %ld\n", sizeof(data));
+  LOG_DEBUG("Initializing persist layer with size %" PRIu32 "\n", (uint32_t)sizeof(data));
   StatusCode ret = persist_init(&s_persist, &data, sizeof(data));
   TEST_ASSERT_OK(ret);
 
   uint32_t small_data[2] = { 0x4, 0x5 };
-  LOG_DEBUG("Initializing persist layer with size %ld\n", sizeof(small_data));
+  LOG_DEBUG("Initializing persist layer with size %" PRIu32 "\n", (uint32_t)sizeof(small_data));
   ret = persist_init(&s_persist, &small_data, sizeof(small_data));
   TEST_ASSERT_OK(ret);
 
@@ -117,7 +120,7 @@ void test_persist_size_change(void) {
   TEST_ASSERT_EQUAL(0x5, small_data[1]);
 
   // Switch back to larger data size
-  LOG_DEBUG("Initializing persist layer with size %ld\n", sizeof(data));
+  LOG_DEBUG("Initializing persist layer with size %" PRIu32 "\n", (uint32_t)sizeof(data));
   ret = persist_init(&s_persist, &data, sizeof(data));
   TEST_ASSERT_OK(ret);
 
@@ -138,7 +141,7 @@ void test_persist_change_periodic(void) {
     data[i] = i;
   }
 
-  LOG_DEBUG("Data changed - delaying\n");
+  LOG_DEBUG("Data changed - delaying 2 periods (should only see 1 commit)\n");
   // Delay with some leeway - should only see 1 commit
   delay_ms(PERSIST_COMMIT_TIMEOUT_MS * 2 + 10);
 
