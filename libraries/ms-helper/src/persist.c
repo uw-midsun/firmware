@@ -1,5 +1,6 @@
 #include "persist.h"
 #include "log.h"
+#include "soft_timer.h"
 // The persistance layer allocates one page of flash so we can erase the entire page when full.
 // To reduce the number of erases, we partition the page into a number of sections. Each section
 // is the size of the specified blob plus a header. The header is used to mark the section as valid
@@ -27,6 +28,38 @@ typedef struct PersistHeader {
   uint32_t marker;
   uint32_t size_bytes;
 } PersistHeader;
+
+static void prv_periodic_commit(SoftTimerID timer_id, void *context) {
+  PersistStorage *persist = context;
+
+  if (persist->prev_flash_addr == PERSIST_INVALID_ADDR) {
+    // This is the first commit for a new page
+    persist_commit(persist);
+  } else {
+    // We should check if our data has changed from the stored copy
+    uint32_t buffer = 0;
+    PersistHeader header = { 0 };
+    flash_read(persist->prev_flash_addr, sizeof(header),
+               (uint8_t *)&header, sizeof(header));
+    if (persist->blob_size != header.size_bytes) {
+      // Wrong size - make sure we reflect the new size
+      persist_commit(persist);
+    } else {
+      uintptr_t addr = persist->prev_flash_addr + sizeof(header);
+      uint32_t *blob_u32 = (uint32_t *)persist->blob;
+      for (size_t i = 0; i < header.size_bytes / sizeof(buffer); i++, addr += sizeof(buffer)) {
+        flash_read(addr, sizeof(addr), (uint8_t *)&addr, sizeof(addr));
+        if (blob_u32[i] != buffer) {
+          // There is a difference between the two copies, so commit it
+          persist_commit(persist);
+          break;
+        }
+      }
+    }
+  }
+
+  soft_timer_start_millis(PERSIST_COMMIT_TIMEOUT_MS, prv_periodic_commit, persist, NULL);
+}
 
 StatusCode persist_init(PersistStorage *persist, void *blob, size_t blob_size) {
   if (blob_size > FLASH_PAGE_BYTES) {
@@ -71,15 +104,25 @@ StatusCode persist_init(PersistStorage *persist, void *blob, size_t blob_size) {
   if (header.size_bytes == PERSIST_INVALID_SIZE) {
     LOG_DEBUG("No valid sections found! New persist data will live at 0x%lx\n",
               persist->flash_addr);
+    persist_commit(persist);
+  } else if (header.size_bytes != persist->blob_size) {
+    LOG_DEBUG("Mismatched blob sizes! Invalidating old section\n");
+    persist->prev_flash_addr = persist->flash_addr;
+    persist->flash_addr += sizeof(header) + header.size_bytes;
+    persist_commit(persist);
   } else {
     LOG_DEBUG("Found valid section at 0x%lx (0x%x bytes), loading data\n",
               persist->flash_addr, header.size_bytes);
     StatusCode ret = flash_read(persist->flash_addr + sizeof(header), persist->blob_size,
                                 (uint8_t *)persist->blob, persist->blob_size);
     status_ok_or_return(ret);
+
+    // Increment flash_addr to the next new section
+    persist->prev_flash_addr = persist->flash_addr;
+    persist->flash_addr += sizeof(header) + header.size_bytes;
   }
 
-  return STATUS_CODE_OK;
+  return soft_timer_start_millis(PERSIST_COMMIT_TIMEOUT_MS, prv_periodic_commit, persist, NULL);
 }
 
 StatusCode persist_commit(PersistStorage *persist) {
@@ -98,6 +141,7 @@ StatusCode persist_commit(PersistStorage *persist) {
 
   // Write persist blob size, skipping the marker
   PersistHeader header = { .size_bytes = persist->blob_size };
+  LOG_DEBUG("Committing persistance layer to 0x%lx\n", persist->flash_addr);
   StatusCode ret = flash_write(persist->flash_addr + sizeof(header.marker),
                                (uint8_t *)&header.size_bytes, sizeof(header.size_bytes));
   status_ok_or_return(ret);
