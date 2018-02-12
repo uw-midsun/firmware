@@ -1,4 +1,5 @@
 #pragma once
+// This is an internal file for ads1015 module that provides macros mostly for register setup.
 
 // Base I2C address(GND) of ADS1015. Summing it with Ads1015Address enum gives an actual I2CAddress
 // From section 8.5.1.1 of the datasheet
@@ -93,9 +94,15 @@
 // These represent the full-scale range of ADS1015 scaling in mVolts.
 // They are used for calculating the LSB size, corresponding to PGA settings.
 // From section 8.3.3 of the datasheet
+// Mult. by 2 corresponds to the range from -FS to +FS
 #define ADS1015_FSR_6144 6144 * 2
 #define ADS1015_FSR_4096 4096 * 2
 #define ADS1015_FSR_2048 2048 * 2
 #define ADS1015_FSR_1024 1024 * 2
 #define ADS1015_FSR_512 512 * 2
 #define ADS1015_FSR_256 256 * 2
+
+// The LSB size in mVolt from section 8.3.3 of the datasheet.
+#define LSB_SIZE(fsr) fsr / (1 << 12)
+
+#define NUM_RESERVED_BITS_CONV_REG 4
