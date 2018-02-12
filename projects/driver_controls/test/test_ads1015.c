@@ -1,11 +1,10 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "ads1015.h"
-#include "unity.h"
 #include "gpio_it.h"
 #include "i2c.h"
 #include "interrupt.h"
-
+#include "unity.h"
 
 static Ads1015Storage storage;
 GPIOAddress ready_pin = { GPIO_PORT_B, 2 };
