@@ -1,10 +1,9 @@
 #pragma once
-// Module for using ads1015.
+// Module for using ADS1015.
 // GPIO and Interrupt, I2C should be initiated.
-// The user also needs to create a struct ADS1015Data which would persist accross functions.
+// The user also needs to create a struct ADS1015Storage which would persist accross functions.
 // Start the ads1015 using ads1015_init and then configure channels using ads1015_config_channel.
 // Read raw and converted values using ads1015_read_raw and ads1015_read_converted.
-// Ads1015Storage *Storage should persist throughout the program.
 #include <stdbool.h>
 #include "gpio.h"
 #include "i2c.h"

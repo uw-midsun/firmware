@@ -1,12 +1,12 @@
 #pragma once
 // This is an internal file for ads1015 module that provides macros mostly for register setup.
 
-// Base I2C address(GND) of ADS1015. Summing it with Ads1015Address enum gives an actual I2CAddress
-// From section 8.5.1.1 of the datasheet
+// Base I2C address(GND) of ADS1015. Summing it with Ads1015Address enum gives an actual I2CAddress.
+// From section 8.5.1.1 of the datasheet.
 #define ADS1015_I2C_BASE_ADDRESS ((uint8_t)0x48)
 
 // Register address pointers, used for switching between registers.
-// From section 8.6.1 of the datasheet
+// From section 8.6.1 of the datasheet.
 #define ADS1015_ADDRESS_POINTER_CONV ((uint8_t)0x0)
 #define ADS1015_ADDRESS_POINTER_CONFIG ((uint8_t)0x1)
 #define ADS1015_ADDRESS_POINTER_LO_THRESH ((uint8_t)0x2)
@@ -14,7 +14,7 @@
 
 // Upper and Lower bytes of Hi_thresh and Lo_thresh registers.
 // The most significant bit of both registers has been set accordingly to enable ALRT/RDY pin
-// From section 8.6.4 of the datasheet
+// From section 8.6.4 of the datasheet.
 #define ADS1015_LO_THRESH_REGISTER_MSB ((uint8_t)0x0)
 #define ADS1015_LO_THRESH_REGISTER_LSB ((uint8_t)0x0)
 #define ADS1015_HI_THRESH_REGISTER_MSB ((uint8_t)0xFF)
@@ -23,7 +23,7 @@
 // ********* The following bytes are fields for the config register *********************
 // ********* From section 8.6.3 of the datasheet ****************************************
 
-// Starts single conversion when in powerdown state
+// Starts single conversion when in powerdown state.
 #define ADS1015_START_SINGLE_CONV ((uint8_t)0x1 << 7)
 
 // Bytes for setting channels
@@ -33,7 +33,7 @@
 #define ADS1015_AIN_2 ((uint8_t)0x6 << 4)
 #define ADS1015_AIN_3 ((uint8_t)0x7 << 4)
 
-// These bytes set the FSR of the programmable gain amplifier
+// These bytes set the FSR of the programmable gain amplifier.
 #define ADS1015_PGA_FSR_6144 ((uint8_t)0x0 << 1)  // ±6.144 V
 #define ADS1015_PGA_FSR_4096 ((uint8_t)0x1 << 1)  // ±4.096 V (default)
 #define ADS1015_PGA_FSR_2048 ((uint8_t)0x2 << 1)  // ±2.048 V
@@ -75,26 +75,20 @@
 
 // **************************************************************************************
 
-// I2C general call address from section 8.5.1.2 of the datasheet
-#define ADS1015_I2C_GENERAL_CALL ((uint8_t)0x0)
-
-// Reset command byte from section 8.5.1.2 of the datasheet
-#define ADS1015_RESET_BYTE ((uint8_t)0x6)
-
-// Setup for the config register's upper byte.
-#define CONFIG_REGISTER_MSB(channel)                                         \
+// Setup for the config register's upper byte
+#define ADS1015_CONFIG_REGISTER_MSB(channel)                                 \
   (ADS1015_START_SINGLE_CONV | ADS1015_AIN(channel) | ADS1015_PGA_FSR_4096 | \
    ADS1015_CONVERSION_MODE_SINGLE)
 
-// Setup for the config register's lower byte.
-#define CONFIG_REGISTER_LSB                                                  \
+// Setup for the config register's lower byte
+#define ADS1015_CONFIG_REGISTER_LSB                                          \
   (ADS1015_DATA_RATE_1600 | ADS1015_COMP_MODE_TRAD | ADS1015_COMP_POL_HIGH | \
    ADS1015_COMP_LAT_NON_LATCHING | ADS1015_COMP_QUE_1_CONV)
 
 // These represent the full-scale range of ADS1015 scaling in mVolts.
 // They are used for calculating the LSB size, corresponding to PGA settings.
-// From section 8.3.3 of the datasheet
-// Mult. by 2 corresponds to the range from -FS to +FS
+// From section 8.3.3 of the datasheet.
+// Mult. by 2 corresponds to the range from -FS to +FS.
 #define ADS1015_FSR_6144 6144 * 2
 #define ADS1015_FSR_4096 4096 * 2
 #define ADS1015_FSR_2048 2048 * 2
@@ -103,6 +97,12 @@
 #define ADS1015_FSR_256 256 * 2
 
 // The LSB size in mVolt from section 8.3.3 of the datasheet.
-#define LSB_SIZE(fsr) fsr / (1 << 12)
+#define ADS1015_LSB_SIZE(fsr) fsr / (1 << 12)
 
-#define NUM_RESERVED_BITS_CONV_REG 4
+// This is used for removing 4 lsb's of the conversion register
+// as they are not part of the conversion result.
+// From section 8.6.2 of the datasheet.
+#define ADS1015_NUM_RESERVED_BITS_CONV_REG 4
+
+// This is stored as the reading for any disabled channel.
+#define ADS1015_DISABLED_CHANNEL_READING (1 << 15)
