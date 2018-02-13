@@ -18,6 +18,8 @@ static void prv_callback(Ads1015Channel channel, void *context) {
   printf("channel %d = channel %d\n", storage->current_channel, channel);
 }
 
+static int16_t reading;
+
 void setup_test(void) {
   gpio_init();
   interrupt_init();
@@ -37,7 +39,7 @@ void test_ads1015_init_invalid_input(void) {
                     ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, NULL));
 }
 
-void test_ads_config_channel(void) {
+void test_ads_config_channel_invalid_input(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true,
                                                               prv_callback, &storage));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, false,
@@ -49,5 +51,18 @@ void test_ads_config_channel(void) {
       ads1015_configure_channel(&storage, NUM_ADS1015_CHANNELS, true, prv_callback, &storage));
   TEST_ASSERT_EQUAL(
       STATUS_CODE_INVALID_ARGS,
-      ads1015_configure_channel(NULL, NUM_ADS1015_CHANNELS, true, prv_callback, &storage));
+      ads1015_configure_channel(NULL, ADS1015_CHANNEL_1, true, prv_callback, &storage));
+}
+
+void test_ads1015_read_invalid_input(void) {
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
+                    ads1015_read_converted(NULL, ADS1015_CHANNEL_2, &reading));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
+                    ads1015_read_converted(&storage, ADS1015_CHANNEL_2, NULL));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
+                    ads1015_read_converted(&storage, NUM_ADS1015_CHANNELS, &reading));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, ads1015_read_raw(NULL, ADS1015_CHANNEL_2, &reading));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, ads1015_read_raw(&storage, ADS1015_CHANNEL_2, NULL));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
+                    ads1015_read_raw(&storage, NUM_ADS1015_CHANNELS, &reading));
 }
