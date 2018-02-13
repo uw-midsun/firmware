@@ -18,12 +18,12 @@
 
 #define CAN_RX_ADDR { \
   0, \
-  0\
+  11\
 }
 
 #define CAN_TX_ADDR { \
   0, \
-  1\
+  12\
 }
 
 #define CAN_DEVICE_ID_FRONT 0
@@ -53,7 +53,7 @@ static CANSettings s_can_settings = {
   .loopback = true
 };
 
-static CANMessageID s_msg_id = 0x5; 
+static CANMessageID s_msg_id = 0x1; 
 static CANStorage s_can_storage;
 static CANRxHandler prv_rx_handlers[CAN_NUM_RX_HANDLERS];
 static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply);
