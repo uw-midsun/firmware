@@ -42,7 +42,7 @@ static StatusCode prv_ack_close_callback(CANMessageID msg_id, uint16_t device, C
   return STATUS_CODE_OK;
 }
 
-#define RELAY_FSM_CFG(name, id)                                                     \
+#define RELAY_FSM_SETUP(name, id)                                                   \
   static FSM s_##name##_fsm;                                                        \
   static const RelayId s_##name##_id = (id);                                        \
   static volatile CANAckRequest s_##name##_req = {                                  \
@@ -67,10 +67,10 @@ static StatusCode prv_ack_close_callback(CANMessageID msg_id, uint16_t device, C
     FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_RETRY_RELAY, prv_guard, opening_##name); \
   }
 
-RELAY_FSM_CFG(solar_front, RELAY_ID_SOLAR_MASTER_FRONT);
-RELAY_FSM_CFG(solar_rear, RELAY_ID_SOLAR_MASTER_REAR);
-RELAY_FSM_CFG(battery, RELAY_ID_BATTERY);
-RELAY_FSM_CFG(main_power, RELAY_ID_MAIN_POWER);
+RELAY_FSM_SETUP(solar_front, RELAY_ID_SOLAR_MASTER_FRONT);
+RELAY_FSM_SETUP(solar_rear, RELAY_ID_SOLAR_MASTER_REAR);
+RELAY_FSM_SETUP(battery, RELAY_ID_BATTERY);
+RELAY_FSM_SETUP(main_power, RELAY_ID_MAIN_POWER);
 
 static void prv_relay_transmit(RelayId id, RelayState state, const CANAckRequest *ack_request) {
   switch (id) {
