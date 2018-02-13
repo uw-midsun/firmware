@@ -16,13 +16,13 @@
 // 0x0 to the marker field. Because we skipped it earlier, this write succeeds and does not require
 // erasing the page. If all sections are invalid, we erase the entire page.
 //
-// At init, the persistance layer attemps to load the blob with the data stored in flash.
+// At init, the persistance layer attempts to load the blob with the data stored in flash.
 
 // Erased flash defaults to all 1's
 #define PERSIST_VALID_MARKER 0xFFFFFFFF
 #define PERSIST_INVALID_SIZE 0xFFFFFFFF
 #define PERSIST_INVALID_ADDR UINTPTR_MAX
-#define PERSIST_BASE_ADDR FLASH_PAGE_TO_ADDR(PERSIST_FLASH_PAGE)
+#define PERSIST_BASE_ADDR FLASH_PAGE_TO_ADDR(persist->page)
 #define PERSIST_END_ADDR (PERSIST_BASE_ADDR + FLASH_PAGE_BYTES)
 
 typedef struct PersistHeader {
@@ -38,6 +38,7 @@ static void prv_periodic_commit(SoftTimerID timer_id, void *context) {
     persist_commit(persist);
   } else {
     // We should check if our data has changed from the stored copy
+    // TODO: use hash
     uint32_t buffer = 0;
     PersistHeader header = { 0 };
     flash_read(persist->prev_flash_addr, sizeof(header), (uint8_t *)&header, sizeof(header));
@@ -58,11 +59,11 @@ static void prv_periodic_commit(SoftTimerID timer_id, void *context) {
     }
   }
 
-  soft_timer_start_millis(PERSIST_COMMIT_TIMEOUT_MS, prv_periodic_commit, persist, NULL);
+  soft_timer_start_millis(PERSIST_COMMIT_TIMEOUT_MS, prv_periodic_commit, persist, &persist->timer_id);
 }
 
-StatusCode persist_init(PersistStorage *persist, void *blob, size_t blob_size) {
-  if (blob_size > FLASH_PAGE_BYTES) {
+StatusCode persist_init(PersistStorage *persist, FlashPage page, void *blob, size_t blob_size) {
+  if (blob_size > FLASH_PAGE_BYTES || page >= NUM_FLASH_PAGES) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   } else if (blob_size % FLASH_WRITE_BYTES != 0) {
     return status_code(STATUS_CODE_INVALID_ARGS);
@@ -71,6 +72,7 @@ StatusCode persist_init(PersistStorage *persist, void *blob, size_t blob_size) {
   persist->blob = blob;
   persist->blob_size = blob_size;
   persist->prev_flash_addr = PERSIST_INVALID_ADDR;
+  persist->page = page;
 
   // Load stored data
   PersistHeader header = {
@@ -96,7 +98,7 @@ StatusCode persist_init(PersistStorage *persist, void *blob, size_t blob_size) {
     if (persist->flash_addr >= PERSIST_END_ADDR) {
       // Somehow had zero valid sections remaining - erase page
       LOG_DEBUG("Somehow started with a full invalid page - erasing page\n");
-      status_ok_or_return(flash_erase(PERSIST_FLASH_PAGE));
+      status_ok_or_return(flash_erase(persist->page));
       persist->flash_addr = PERSIST_BASE_ADDR;
     }
   } while (header.marker != PERSIST_VALID_MARKER);
@@ -122,7 +124,20 @@ StatusCode persist_init(PersistStorage *persist, void *blob, size_t blob_size) {
     persist->flash_addr += sizeof(header) + header.size_bytes;
   }
 
-  return soft_timer_start_millis(PERSIST_COMMIT_TIMEOUT_MS, prv_periodic_commit, persist, NULL);
+  return soft_timer_start_millis(PERSIST_COMMIT_TIMEOUT_MS, prv_periodic_commit, persist, &persist->timer_id);
+}
+
+StatusCode persist_ctrl_periodic(PersistStorage *persist, bool enabled) {
+  if (persist->timer_id == SOFT_TIMER_INVALID_TIMER && enabled) {
+    // Enable periodic commit - previously disabled
+    return soft_timer_start_millis(PERSIST_COMMIT_TIMEOUT_MS, prv_periodic_commit, persist, &persist->timer_id);
+  } else if (persist->timer_id != SOFT_TIMER_INVALID_TIMER && !enabled) {
+    // Disable periodic commit - previously enabled
+    soft_timer_cancel(persist->timer_id);
+    persist->timer_id = SOFT_TIMER_INVALID_TIMER;
+  }
+
+  return STATUS_CODE_OK;
 }
 
 StatusCode persist_commit(PersistStorage *persist) {
@@ -133,9 +148,8 @@ StatusCode persist_commit(PersistStorage *persist) {
   }
 
   // Check if we're overrunning the page
-  if (persist->flash_addr + sizeof(PersistHeader) + persist->blob_size > PERSIST_END_ADDR) {
-    // It should be okay if we're right on the boundary?
-    flash_erase(PERSIST_FLASH_PAGE);
+  if (persist->flash_addr + sizeof(PersistHeader) + persist->blob_size >= PERSIST_END_ADDR) {
+    flash_erase(persist->page);
     persist->flash_addr = PERSIST_BASE_ADDR;
   }
 

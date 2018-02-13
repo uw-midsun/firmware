@@ -5,24 +5,34 @@
 // Allocates one page of flash to keep data across resets.
 // Data is written to flash periodically. Note that to reduce necessary wear on the flash, data is
 // only committed if changes have occurred.
+//
+// Due to the way this is implemented, multiple persistance instances can be active at once.
+// However, note that there is no protection against multiple persistance instances writing to the
+// same page.
 #include <stddef.h>
 #include "flash.h"
 #include "status.h"
+#include "soft_timer.h"
 
 // Commit data every second if dirty
 #define PERSIST_COMMIT_TIMEOUT_MS 1000
-#define PERSIST_FLASH_PAGE (NUM_FLASH_PAGES - 1)
 
 typedef struct PersistStorage {
   void *blob;
   size_t blob_size;
   uintptr_t flash_addr;
   uintptr_t prev_flash_addr;
+  uint32_t prev_hash;
+  FlashPage page;
+  SoftTimerID timer_id;
 } PersistStorage;
 
 // Attempt to load stored data into the provided blob and retains the blob to commit periodically
 // Note that the blob must be a multiple of FLASH_WRITE_BYTES and must persist
-StatusCode persist_init(PersistStorage *persist, void *blob, size_t blob_size);
+StatusCode persist_init(PersistStorage *persist, FlashPage page, void *blob, size_t blob_size);
+
+// Control whether the periodic commit is enabled (enabled by default)
+StatusCode persist_ctrl_periodic(PersistStorage *persist, bool enabled);
 
 // Force a data commit - this should be avoided if possible.
 StatusCode persist_commit(PersistStorage *persist);
