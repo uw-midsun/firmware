@@ -15,7 +15,7 @@
 // test for initializing the CAN settings
 
 static BoardType s_boardtype = LIGHTS_BOARD_FRONT;
-static CANMessageID s_msg_id = 0x5; 
+static CANMessageID s_msg_id = 0x1; 
 
 void setup_test(void) {
   gpio_init();
@@ -32,20 +32,20 @@ static void prv_clock_tx(void) {
   StatusCode ret = event_process(&e);
   TEST_ASSERT_OK(ret);
   TEST_ASSERT_EQUAL(EVENT_CAN_TX, e.id);
+  bool processed = fsm_process_event(CAN_FSM, &e);
+  TEST_ASSERT_TRUE(processed);
 }
 
 void test_can_message(void) {
   CANMessage msg = {
-    .msg_id = 0x5,              
+    .msg_id = 0x1,              
     .type = CAN_MSG_TYPE_DATA,
     .data = 0x4,               
     .dlc = 1,                   
   };
 
   // Begin CAN transmit request
-  printf("sending can message\n");
   StatusCode ret = can_transmit(&msg, NULL);
-  printf("\ncan message id: %d\n", msg.msg_id);
   TEST_ASSERT_OK(ret);
   prv_clock_tx();
 
@@ -53,11 +53,11 @@ void test_can_message(void) {
 
   // Wait for RX
   while (event_process(&e) != STATUS_CODE_OK) {}
-
   TEST_ASSERT_EQUAL(EVENT_CAN_RX, e.id);
-
-  event_process(&e);
-  printf("event id: %d, event data:%d", e.id, e.data);
+  printf("receives the event\n")
+  bool processed = fsm_process_event(CAN_FSM, &e);
+  printf("but gets segfault here\n");
+  TEST_ASSERT_TRUE(processed);
 
 }
 
