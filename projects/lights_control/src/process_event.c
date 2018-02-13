@@ -4,6 +4,7 @@
 #include "fsm.h"
 #include "process_periph.h"
 
+
 static FSM s_signal_fsm_front;
 
 // returns true if event's data is false (used for turning off a signal)
@@ -36,9 +37,9 @@ StatusCode process_event(Event e) {
   switch (event) {
     case EVENT_HORN:
     case EVENT_HEADLIGHTS:
-    case EVENT_BRAKE:
+    case EVENT_BRAKES:
     case EVENT_STROBE:
-      return process_peripheral(e);
+      return simple_peripheral(e);
       break;
     default:
       return STATUS_CODE_OK;

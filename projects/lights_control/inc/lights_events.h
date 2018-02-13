@@ -2,10 +2,10 @@
 
 typedef enum {
   // front board events
-  EVENT_HORN,
+  EVENT_HORN = 0,
   EVENT_HEADLIGHTS,
   // rear board events
-  EVENT_BRAKE,
+  EVENT_BRAKES,
   EVENT_STROBE,
   // both boards
   EVENT_SIGNAL_LEFT,
@@ -14,6 +14,7 @@ typedef enum {
   // can internal events
   EVENT_CAN_RX,
   EVENT_CAN_TX,
-  EVENT_CAN_FAULT
+  EVENT_CAN_FAULT,
+  NUM_EVENTS
 } InputEvent;
 

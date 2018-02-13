@@ -7,11 +7,11 @@
 #include "interrupt.h"
 #include "status.h"
 #include "wait.h"
+#include "process_periph.h"
+
 
 #include "can_settings.h"
 #include "process_event.h"
-#include "init_periph.h"
-#include "gpio_addresses.h"
 
 #define SOMEPORT 0
 #define SOMEPIN 0
@@ -51,7 +51,7 @@ int main(void) {
   initialize_can_settings(boardtype);
   initialize_peripherals(boardtype);
 
-  while (1) {
+  while (true) {
     StatusCode status = event_process(&e);
     if (status == STATUS_CODE_OK) {
       process_event(e);

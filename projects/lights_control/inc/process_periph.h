@@ -1,9 +1,7 @@
 #pragma once
 
-#define HEADLIGHTS_PORT 0 // TODO: Ask these
-#define HEADLIGHTS_PIN  0
-// used for: horn, headlights, brake and strobe
-// because they all have simple behaviours
+#include "structs.h"
 
-StatusCode process_peripheral(Event e);
-
+StatusCode initialize_peripherals(BoardType boardtype);
+StatusCode simple_peripheral(Event e);
+        
