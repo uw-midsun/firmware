@@ -11,8 +11,8 @@
 // same page.
 #include <stddef.h>
 #include "flash.h"
-#include "status.h"
 #include "soft_timer.h"
+#include "status.h"
 
 // Commit data every second if dirty
 #define PERSIST_COMMIT_TIMEOUT_MS 1000

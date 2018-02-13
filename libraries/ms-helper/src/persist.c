@@ -38,7 +38,7 @@ static void prv_periodic_commit(SoftTimerID timer_id, void *context) {
     persist_commit(persist);
   } else {
     // We should check if our data has changed from the stored copy
-    // TODO: use hash
+    // TODO(ELEC-352): use hash
     uint32_t buffer = 0;
     PersistHeader header = { 0 };
     flash_read(persist->prev_flash_addr, sizeof(header), (uint8_t *)&header, sizeof(header));
@@ -59,7 +59,8 @@ static void prv_periodic_commit(SoftTimerID timer_id, void *context) {
     }
   }
 
-  soft_timer_start_millis(PERSIST_COMMIT_TIMEOUT_MS, prv_periodic_commit, persist, &persist->timer_id);
+  soft_timer_start_millis(PERSIST_COMMIT_TIMEOUT_MS, prv_periodic_commit, persist,
+                          &persist->timer_id);
 }
 
 StatusCode persist_init(PersistStorage *persist, FlashPage page, void *blob, size_t blob_size) {
@@ -124,13 +125,15 @@ StatusCode persist_init(PersistStorage *persist, FlashPage page, void *blob, siz
     persist->flash_addr += sizeof(header) + header.size_bytes;
   }
 
-  return soft_timer_start_millis(PERSIST_COMMIT_TIMEOUT_MS, prv_periodic_commit, persist, &persist->timer_id);
+  return soft_timer_start_millis(PERSIST_COMMIT_TIMEOUT_MS, prv_periodic_commit, persist,
+                                 &persist->timer_id);
 }
 
 StatusCode persist_ctrl_periodic(PersistStorage *persist, bool enabled) {
   if (persist->timer_id == SOFT_TIMER_INVALID_TIMER && enabled) {
     // Enable periodic commit - previously disabled
-    return soft_timer_start_millis(PERSIST_COMMIT_TIMEOUT_MS, prv_periodic_commit, persist, &persist->timer_id);
+    return soft_timer_start_millis(PERSIST_COMMIT_TIMEOUT_MS, prv_periodic_commit, persist,
+                                   &persist->timer_id);
   } else if (persist->timer_id != SOFT_TIMER_INVALID_TIMER && !enabled) {
     // Disable periodic commit - previously enabled
     soft_timer_cancel(persist->timer_id);
