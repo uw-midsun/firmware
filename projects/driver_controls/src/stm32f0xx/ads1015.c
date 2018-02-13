@@ -134,7 +134,7 @@ StatusCode ads1015_configure_channel(Ads1015Storage *storage, Ads1015Channel cha
 
 // reads raw 12 bit conversion results which are expressed in two's complement format
 StatusCode ads1015_read_raw(Ads1015Storage *storage, Ads1015Channel channel, int16_t *reading) {
-  if (channel >= NUM_ADS1015_CHANNELS) {
+  if (channel >= NUM_ADS1015_CHANNELS || storage == NULL || reading == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   *reading = storage->channel_readings[channel] >> NUM_RESERVED_BITS_CONV_REG;
@@ -144,7 +144,7 @@ StatusCode ads1015_read_raw(Ads1015Storage *storage, Ads1015Channel channel, int
 // reads conversion value in mVolt
 StatusCode ads1015_read_converted(Ads1015Storage *storage, Ads1015Channel channel,
                                   int16_t *reading) {
-  if (channel >= NUM_ADS1015_CHANNELS) {
+  if (channel >= NUM_ADS1015_CHANNELS || storage == NULL || reading == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   int16_t raw_12bit;
