@@ -10,19 +10,30 @@
 static GPIOSettings s_pin_settings[GPIO_TOTAL_PINS];
 static uint8_t s_gpio_pin_input_value[GPIO_TOTAL_PINS];
 
-// TCP command handler
-// Protocol: [0-3] = command string
-//           [4]   = port
-//           [5]   = pin
-static void prv_x86_cmd_handler(const char *cmd_str, void *context) {
-  GPIOAddress address = { .port = (uint8_t)cmd_str[4], .pin = (uint8_t)cmd_str[5] };
-
-  printf("P%c%d\n", (address.port + 65), address.pin);
-  // if (s_pin_settings[NUM_GPIO_PORTS].direction == GPIO_DIR_IN) { }
-}
-
 static uint32_t prv_get_index(const GPIOAddress *address) {
   return address->port * (uint32_t)NUM_GPIO_PORTS + address->pin;
+}
+
+// TCP command handler
+// Protocol: [0-3] = command string
+//           [4]   = space delimiter
+//           [5]   = port
+//           [6]   = pin
+//           [7]   = state
+static void prv_x86_cmd_handler(const char *cmd_str, void *context) {
+  GPIOAddress address = { .port = (uint8_t)cmd_str[5], .pin = (uint8_t)cmd_str[6] };
+  GPIOState state = (GPIOState)cmd_str[7];
+
+  if (address.port >= NUM_GPIO_PORTS || address.pin >= GPIO_PINS_PER_PORT ||
+      state >= NUM_GPIO_STATES) {
+    return;
+  }
+
+  if (s_pin_settings[prv_get_index(&address)].direction == GPIO_DIR_IN) {
+    s_pin_settings[prv_get_index(&address)].state = state;
+  }
+
+  return;
 }
 
 StatusCode gpio_init(void) {
