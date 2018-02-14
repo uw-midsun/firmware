@@ -14,7 +14,6 @@
 
 // test for initializing the CAN settings
 
-static BoardType s_boardtype = LIGHTS_BOARD_FRONT;
 static CANMessageID s_msg_id = 0x1; 
 
 void setup_test(void) {
@@ -22,42 +21,43 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
   event_queue_init();
-  initialize_can_settings(s_boardtype);
 }
 
 void teardown_test(void) {}
 
-static void prv_clock_tx(void) {
-  Event e = { 0 };
-  StatusCode ret = event_process(&e);
-  TEST_ASSERT_OK(ret);
-  TEST_ASSERT_EQUAL(EVENT_CAN_TX, e.id);
-  bool processed = fsm_process_event(CAN_FSM, &e);
-  TEST_ASSERT_TRUE(processed);
-}
-
-void test_can_message(void) {
+void test_can_rx_front(void) {
+  initialize_can_settings(LIGHTS_BOARD_FRONT);
   CANMessage msg = {
     .msg_id = 0x1,              
     .type = CAN_MSG_TYPE_DATA,
     .data = 0x4,               
-    .dlc = 1,                   
+    .dlc = 2
+  };
+  uint16_t test_messages[] = { 0x0, 0x101, 0x002, 0x103, 0x004 };
+  uint16_t assertion_values[][2] = {
+    { EVENT_SIGNAL_RIGHT, 0 },
+    { EVENT_SIGNAL_LEFT, 1 },
+    { EVENT_SIGNAL_HAZARD, 0 },
+    { EVENT_HORN, 1 },
+    { EVENT_HEADLIGHTS, 0 }
   };
 
-  // Begin CAN transmit request
-  StatusCode ret = can_transmit(&msg, NULL);
-  TEST_ASSERT_OK(ret);
-  prv_clock_tx();
-
-  Event e = { 0 };
-
-  // Wait for RX
-  while (event_process(&e) != STATUS_CODE_OK) {}
-  TEST_ASSERT_EQUAL(EVENT_CAN_RX, e.id);
-  printf("receives the event\n")
-  bool processed = fsm_process_event(CAN_FSM, &e);
-  printf("but gets segfault here\n");
-  TEST_ASSERT_TRUE(processed);
-
+  for (uint8_t i = 0; i < SIZEOF_ARRAY(test_messages); i++) {
+    msg.data = test_messages[i];
+    TEST_ASSERT_OK(can_transmit(&msg, NULL));
+    Event e = { 0 };
+    int ret;
+    do {
+      if (e.id == EVENT_CAN_RX)
+        fsm_process_event(CAN_FSM, &e);
+      if (e.id == EVENT_CAN_TX)
+        fsm_process_event(CAN_FSM, &e);
+      ret = event_process(&e);
+    } while (ret != STATUS_CODE_OK 
+                    || e.id == EVENT_CAN_RX || 
+                    e.id == EVENT_CAN_TX);
+    TEST_ASSERT_EQUAL(assertion_values[i][0], e.id); 
+    TEST_ASSERT_EQUAL(assertion_values[i][1], e.data); 
+  }
 }
 

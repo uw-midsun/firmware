@@ -7,13 +7,14 @@
 #include "can_unpack_impl.h"
 #include "event_queue.h"
 #include "status.h"
+#include "structs.h"
 
 #define SOMEPORT 0
 #define SOMEPIN 0
 
 #define CASE_ACTION(action) \
   case ACTION_##action: \
-    event_raise(EVENT_##action, *data); \
+    event_raise(EVENT_##action, data); \
     break;
 
 #define CAN_RX_ADDR { \
@@ -28,17 +29,6 @@
 
 #define CAN_DEVICE_ID_FRONT 0
 #define CAN_DEVICE_ID_REAR  0
-
-typedef enum {
-  ACTION_SIGNAL_RIGHT,
-  ACTION_SIGNAL_LEFT,
-  ACTION_SIGNAL_HAZARD,
-  ACTION_HORN,
-  ACTION_HEADLIGHTS,
-  ACTION_BRAKES,
-  ACTION_STROBE,
-  NUM_ACTION_ID
-} ActionID;
 
 BoardType s_boardtype;
 volatile CANMessage s_rx_msg = { 0 };
@@ -76,18 +66,14 @@ StatusCode initialize_can_settings(BoardType boardtype) {
 }
 
 static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
-  printf("CAN MESSAGE RECEIVED!");
   // unpacks the message, raises events based on which board is selected
-  uint8_t * PeripheralID = 0;
-  uint8_t * data = 0;
+  uint8_t PeripheralID = 0;
+  uint8_t data = 0;
 
-  can_unpack_impl_u8(msg, msg->dlc, PeripheralID, data, NULL, NULL, NULL, NULL, NULL, NULL);
-
-  printf("pripheral ID: %s", PeripheralID);
-  printf("data: %s", data);
+  can_unpack_impl_u8(msg, msg->dlc, &PeripheralID, &data, NULL, NULL, NULL, NULL, NULL, NULL);
 
   if (s_boardtype == LIGHTS_BOARD_FRONT) {
-    switch (*PeripheralID) {
+    switch (PeripheralID) {
       CASE_ACTION(SIGNAL_RIGHT)
       CASE_ACTION(SIGNAL_LEFT)
       CASE_ACTION(SIGNAL_HAZARD)
@@ -97,7 +83,7 @@ static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckSta
         return STATUS_CODE_INVALID_ARGS;
     }
   } else if (s_boardtype == LIGHTS_BOARD_REAR) {
-    switch (*PeripheralID) {
+    switch (PeripheralID) {
       CASE_ACTION(SIGNAL_RIGHT)
       CASE_ACTION(SIGNAL_LEFT)
       CASE_ACTION(SIGNAL_HAZARD)
