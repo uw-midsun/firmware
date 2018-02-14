@@ -91,9 +91,12 @@ static void *prv_serve_thread(void *arg) {
       int client_fd = client_fds[i];
       if (FD_ISSET(client_fd, &readfds)) {
         ssize_t read_len = read(client_fd, buf, X86_TCP_BUF_LEN);
+
         if (read_len == 0) {
           // Disconnected
           printf("Client disconnected\n");
+
+          ssize_t write_len = write(client_fd, "Disconnecting\n", 13);
           close(client_fd);
           client_fds[i] = 0;
         } else if (read_len > 0) {
@@ -106,6 +109,7 @@ static void *prv_serve_thread(void *arg) {
           if (parser != NULL) {
             parser(buf);
           }
+          ssize_t write_len = write(client_fd, "Success\n", 7);
         }
       }
     }
