@@ -1,5 +1,6 @@
 #include "persist.h"
 #include <inttypes.h>
+#include "crc32.h"
 #include "log.h"
 #include "soft_timer.h"
 // The persistance layer allocates one page of flash so we can erase the entire page when full.
@@ -37,26 +38,13 @@ static void prv_periodic_commit(SoftTimerID timer_id, void *context) {
     // This is the first commit for a new page
     persist_commit(persist);
   } else {
-    // We should check if our data has changed from the stored copy
-    // TODO(ELEC-352): use hash
-    uint32_t buffer = 0;
-    PersistHeader header = { 0 };
-    flash_read(persist->prev_flash_addr, sizeof(header), (uint8_t *)&header, sizeof(header));
-    if (persist->blob_size != header.size_bytes) {
-      // Wrong size - make sure we reflect the new size
+    // Check if our data has changed from the stored copy
+    uint32_t new_hash = crc32_arr((const uint8_t *)persist->blob, persist->blob_size);
+    if (new_hash != persist->prev_hash) {
+      // Data has changed - commit
       persist_commit(persist);
-    } else {
-      uintptr_t addr = persist->prev_flash_addr + sizeof(header);
-      uint32_t *blob_u32 = (uint32_t *)persist->blob;
-      for (size_t i = 0; i < header.size_bytes / sizeof(buffer); i++, addr += sizeof(buffer)) {
-        flash_read(addr, sizeof(buffer), (uint8_t *)&buffer, sizeof(buffer));
-        if (blob_u32[i] != buffer) {
-          // There is a difference between the two copies, so commit it
-          persist_commit(persist);
-          break;
-        }
-      }
     }
+    persist->prev_hash = new_hash;
   }
 
   soft_timer_start_millis(PERSIST_COMMIT_TIMEOUT_MS, prv_periodic_commit, persist,
@@ -119,6 +107,9 @@ StatusCode persist_init(PersistStorage *persist, FlashPage page, void *blob, siz
     StatusCode ret = flash_read(persist->flash_addr + sizeof(header), persist->blob_size,
                                 (uint8_t *)persist->blob, persist->blob_size);
     status_ok_or_return(ret);
+
+    // Calculate valid section's hash
+    persist->prev_hash = crc32_arr((const uint8_t *)persist->blob, persist->blob_size);
 
     // Increment flash_addr to the next new section
     persist->prev_flash_addr = persist->flash_addr;

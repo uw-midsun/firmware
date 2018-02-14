@@ -1,4 +1,5 @@
 #include <inttypes.h>
+#include "crc32.h"
 #include "delay.h"
 #include "interrupt.h"
 #include "log.h"
@@ -19,6 +20,8 @@ static PersistStorage s_persist;
 void setup_test(void) {
   interrupt_init();
   soft_timer_init();
+  crc32_init();
+
   flash_init();
   flash_erase(TEST_PERSIST_FLASH_PAGE);
 }

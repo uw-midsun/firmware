@@ -1,6 +1,6 @@
 #pragma once
 // Implements a flash-based persistance layer
-// Requires flash and soft timers to be initialized.
+// Requires flash, soft timers, and CRC32 to be initialized.
 //
 // Allocates one page of flash to keep data across resets.
 // Data is written to flash periodically. Note that to reduce necessary wear on the flash, data is
@@ -28,6 +28,7 @@ typedef struct PersistStorage {
 } PersistStorage;
 
 // Attempt to load stored data into the provided blob and retains the blob to commit periodically
+// Reserves the entire flash page for the persistance layer instance
 // Note that the blob must be a multiple of FLASH_WRITE_BYTES and must persist
 StatusCode persist_init(PersistStorage *persist, FlashPage page, void *blob, size_t blob_size);
 
