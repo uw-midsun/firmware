@@ -105,4 +105,4 @@
 #define ADS1015_NUM_RESERVED_BITS_CONV_REG 4
 
 // This is stored as the reading for any disabled channel.
-#define ADS1015_DISABLED_CHANNEL_READING (1 << 15)
+#define ADS1015_DISABLED_CHANNEL_READING ~(1 << 14)

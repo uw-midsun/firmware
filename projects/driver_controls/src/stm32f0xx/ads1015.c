@@ -1,5 +1,7 @@
 #include "ads1015.h"
-// All the important data about ADS1015 is stored in ADS1015Storage storage by different functions.
+// All the important data about ADS1015 is stored and changed in ADS1015Storage storage by different functions.
+// Storage has the channel_enable bitset to know which channels are enabled. It alse holds the current
+// channel that's being converted, the readings, channel callbacks, etc. 
 // Ads1015_init writes the desired settings to registers and inits the GPIO pin (ALRT/RDY). (This
 // pin is asserted when a conversion result is ready). Ads1015_init registers prv_interrupt_handler
 // as the callback for this pin. Once the interrupt is raised, it means that a conversion has been
@@ -7,7 +9,7 @@
 // in storage, and then switches the channel to the next enabled one.
 // The user could access conversion data by the provided read functions. These
 // functions get their data from storage and not directly by reading the registers. Also look at
-// ads1015_def for more information on macros and how registers are setup.
+// ads1015_def.h for more information on macros and how registers are setup.
 // Reading and writing to registers is done through I2C interface. Look at section 8.5.3 of the
 // datasheet for the timing diagrams.
 #include <status.h>
@@ -15,6 +17,15 @@
 #include <string.h>
 #include "ads1015_def.h"
 #include "gpio_it.h"
+
+// Updates the channel_enable bitset when a channel is enabled/disabled.
+static void prv_mark_channel_enabled(Ads1015Channel channel, bool enable, uint8_t *channel_enable) {
+  if (enable){
+    *channel_enable |= 1 << channel;
+  } else {
+    *channel_enable &= ~(1 << channel);
+  }
+}
 
 // Writes to register given upper and lower bytes.
 static StatusCode prv_setup_register(Ads1015Storage *storage, uint8_t reg, uint8_t msb,
@@ -42,40 +53,42 @@ static StatusCode prv_set_channel(Ads1015Storage *storage, Ads1015Channel channe
                                          ADS1015_CONFIG_REGISTER_MSB(channel),
                                          ADS1015_CONFIG_REGISTER_LSB));
   storage->current_channel = channel;
-  storage->channel_enable[channel] = true;
   return STATUS_CODE_OK;
 }
 
 // This function is registered as the callback for ALRT/RDY Pin.
 // Reads and stores the conversion value in storage, and switches to the next enabled channel.
+// Also if there is a callback on a channel, it will be run here.
 static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
   Ads1015Storage *storage = context;
   Ads1015Channel current_channel = storage->current_channel;
-  // The following if statement prevents recording of data for a channel if never enabled.
-  // In particular the very first time inside ads1015_init a certain channel(0) is set.
-  // However the user has to use ads1015_configure_channel to enable that channel.
-  if (storage->channel_enable[current_channel]) {
-    uint8_t read_conv_register[2];
-    prv_read_register(storage->i2c_port, storage->i2c_addr, ADS1015_ADDRESS_POINTER_CONV,
-                      read_conv_register, SIZEOF_ARRAY(read_conv_register));
-
-    // Following line puts the two read bytes into an int16.
-    // 4 LSB's are not part of the result hence the bitshift.
-    storage->channel_readings[current_channel] =
-        ((read_conv_register[0] << 8) | read_conv_register[1]) >>
-        ADS1015_NUM_RESERVED_BITS_CONV_REG;
-    // Runs the users callback if not NULL.
-    if (storage->channel_callback[current_channel] != NULL) {
-      storage->channel_callback[current_channel](storage->current_channel,
-                                                 storage->callback_context[current_channel]);
+  uint8_t channel_enable = storage->channel_enable;
+  uint8_t read_conv_register[2];
+  prv_read_register(storage->i2c_port, storage->i2c_addr, ADS1015_ADDRESS_POINTER_CONV,
+                    read_conv_register, SIZEOF_ARRAY(read_conv_register));
+  // Following line puts the two read bytes into an int16.
+  // 4 LSB's are not part of the result hence the bitshift.
+  storage->channel_readings[current_channel] =
+      ((read_conv_register[0] << 8) | read_conv_register[1]) >> ADS1015_NUM_RESERVED_BITS_CONV_REG;
+  // Runs the users callback if not NULL.
+  if (storage->channel_callback[current_channel] != NULL) {
+    storage->channel_callback[current_channel](current_channel,
+                                               storage->callback_context[current_channel]);
+  }
+  // if more than one channel is enabled go to next channel.
+  if (channel_enable != (1 << current_channel)) {
+    uint8_t temp = channel_enable;
+    temp &= ~((1 << (current_channel + 1)) - 1);
+    uint8_t index_ffs = __builtin_ffs(temp);
+    // The following if statement checks for the special case where
+    // the current channel is (NUM_ADS1015_CHANNELS - 1)
+    if (index_ffs) {
+      current_channel = index_ffs - 1;
+    } else {
+      current_channel = __builtin_ffs(channel_enable) - 1;
     }
     // Update so that the ADS1015 reads from the next channel.
-    do {
-      current_channel = (current_channel + 1) % NUM_ADS1015_CHANNELS;
-    } while (!storage->channel_enable[current_channel]);
     prv_set_channel(storage, current_channel);
-  } else {
-    storage->channel_readings[current_channel] = ADS1015_DISABLED_CHANNEL_READING;
   }
 }
 
@@ -108,9 +121,11 @@ StatusCode ads1015_init(Ads1015Storage *storage, I2CPort i2c_port, Ads1015Addres
     .type = INTERRUPT_TYPE_INTERRUPT,
     .priority = INTERRUPT_PRIORITY_NORMAL,
   };
-  status_ok_or_return(gpio_init_pin(&storage->ready_pin, &gpio_settings));
-  return gpio_it_register_interrupt(&storage->ready_pin, &it_settings, INTERRUPT_EDGE_RISING,
-                                    prv_interrupt_handler, storage);
+  status_ok_or_return(gpio_init_pin(ready_pin, &gpio_settings));
+  status_ok_or_return(gpio_it_register_interrupt(ready_pin, &it_settings, INTERRUPT_EDGE_RISING,
+                                                 prv_interrupt_handler, storage));
+  // Mask the interrupt until channels are enabled by the user.
+  return gpio_it_mask_interrupt(ready_pin, true);
 }
 
 // This function enable/disables channels, and registers callbacks for each channel.
@@ -118,12 +133,19 @@ StatusCode ads1015_configure_channel(Ads1015Storage *storage, Ads1015Channel cha
                                      Ads1015Callback callback, void *context) {
   if (storage == NULL || channel >= NUM_ADS1015_CHANNELS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
+  } else if (storage->channel_enable == 0 && enable){
+    // Activate the interrupt since the first channel is being enabled.
+    status_ok_or_return(gpio_it_mask_interrupt(&storage->ready_pin, false));
+    status_ok_or_return(prv_set_channel(storage, channel));
+  } else if (!enable) {
+    storage->channel_readings[channel] = ADS1015_DISABLED_CHANNEL_READING;
   }
-  storage->channel_enable[channel] = enable;
+  prv_mark_channel_enabled(channel, enable, &storage->channel_enable);
   storage->channel_callback[channel] = callback;
   storage->callback_context[channel] = context;
-  if (!enable) {
-    storage->channel_readings[channel] = ADS1015_DISABLED_CHANNEL_READING;
+  // Mask interrupt if all channels are disabled.
+  if (storage->channel_enable == 0) {
+    status_ok_or_return(gpio_it_mask_interrupt(&storage->ready_pin, true));
   }
   return STATUS_CODE_OK;
 }

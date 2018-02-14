@@ -25,6 +25,7 @@ typedef enum {
   NUM_ADS1015_CHANNELS,
 } Ads1015Channel;
 
+// The callback runs after each conversion from the channel.
 typedef void (*Ads1015Callback)(Ads1015Channel channel, void *context);
 
 typedef struct Ads1015Storage {
@@ -33,7 +34,7 @@ typedef struct Ads1015Storage {
   GPIOAddress ready_pin;
   int16_t channel_readings[NUM_ADS1015_CHANNELS];
   Ads1015Channel current_channel;
-  bool channel_enable[NUM_ADS1015_CHANNELS];
+  uint8_t channel_enable;
   Ads1015Callback channel_callback[NUM_ADS1015_CHANNELS];
   void *callback_context[NUM_ADS1015_CHANNELS];
 } Ads1015Storage;
@@ -42,7 +43,7 @@ typedef struct Ads1015Storage {
 StatusCode ads1015_init(Ads1015Storage *storage, I2CPort i2c_port, Ads1015Address i2c_addr,
                         GPIOAddress *ready_pin);
 
-// Enable/disables channels, and registers callbacks for each channel.
+// Enable/disables a channel, and registers a callback on the channel.
 StatusCode ads1015_configure_channel(Ads1015Storage *storage, Ads1015Channel channel, bool enable,
                                      Ads1015Callback callback, void *context);
 
