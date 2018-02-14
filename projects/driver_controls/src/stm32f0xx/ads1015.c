@@ -1,7 +1,7 @@
 #include "ads1015.h"
-// All the important data about ADS1015 is stored and changed in ADS1015Storage storage by different functions.
-// Storage has the channel_enable bitset to know which channels are enabled. It alse holds the current
-// channel that's being converted, the readings, channel callbacks, etc. 
+// All the important data about ADS1015 is stored and changed in ADS1015Storage storage by different
+// functions. Storage has the channel_enable bitset to know which channels are enabled. It alse
+// holds the current channel that's being converted, the readings, channel callbacks, etc.
 // Ads1015_init writes the desired settings to registers and inits the GPIO pin (ALRT/RDY). (This
 // pin is asserted when a conversion result is ready). Ads1015_init registers prv_interrupt_handler
 // as the callback for this pin. Once the interrupt is raised, it means that a conversion has been
@@ -20,7 +20,7 @@
 
 // Updates the channel_enable bitset when a channel is enabled/disabled.
 static void prv_mark_channel_enabled(Ads1015Channel channel, bool enable, uint8_t *channel_enable) {
-  if (enable){
+  if (enable) {
     *channel_enable |= 1 << channel;
   } else {
     *channel_enable &= ~(1 << channel);
@@ -133,7 +133,7 @@ StatusCode ads1015_configure_channel(Ads1015Storage *storage, Ads1015Channel cha
                                      Ads1015Callback callback, void *context) {
   if (storage == NULL || channel >= NUM_ADS1015_CHANNELS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
-  } else if (storage->channel_enable == 0 && enable){
+  } else if (storage->channel_enable == 0 && enable) {
     // Activate the interrupt since the first channel is being enabled.
     status_ok_or_return(gpio_it_mask_interrupt(&storage->ready_pin, false));
     status_ok_or_return(prv_set_channel(storage, channel));
