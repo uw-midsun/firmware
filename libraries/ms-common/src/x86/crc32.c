@@ -1,7 +1,9 @@
 #include "crc32.h"
 #include <stdint.h>
 #include <stdlib.h>
-// Generated using pyCRC model crc-32
+// Generated using pyCRC --model crc-32 --algorithm table-driven
+// Note that the final CRC needed to be inverted
+// See https://pycrc.org/
 
 static const uint32_t s_crc_table[256] = {
   0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f, 0xe963a535, 0x9e6495a3,
@@ -38,11 +40,14 @@ static const uint32_t s_crc_table[256] = {
   0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94, 0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
-StatusCode crc32_init(void) {
+void crc32_init(void) {
   return STATUS_CODE_OK;
 }
 
+// See http://www.sunshine2k.de/articles/coding/crc/understanding_crc.html
+// for information on how this works
 uint32_t crc32_arr(const uint8_t *buffer, size_t buffer_len) {
+  // Begin with initial value of 0xFFFFFFFF
   uint32_t crc = 0xffffffff;
   uint8_t tbl_idx = 0;
 
@@ -51,5 +56,7 @@ uint32_t crc32_arr(const uint8_t *buffer, size_t buffer_len) {
     crc = (s_crc_table[tbl_idx] ^ (crc >> 8)) & 0xffffffff;
     buffer++;
   }
+
+  // Invert the result
   return ~crc & 0xffffffff;
 }
