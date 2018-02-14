@@ -1,12 +1,12 @@
 #pragma once
 
 #include "can.h"
-#include "structs.h"
 #include "lights_events.h"
+#include "structs.h"
 
-#define CAN_NUM_RX_HANDLERS 5
+#define CAN_NUM_RX_HANDLERS 1
 
-StatusCode initialize_can_settings(BoardType type);
+StatusCode can_setup_init(BoardType type);
 
 typedef enum {
   PERIPH_SIGNAL_RIGHT,
@@ -17,5 +17,4 @@ typedef enum {
   PERIPH_BRAKE,
   PERIPH_STROBE,
   NUM_PERIPHERALS
-} Peripheral;
-
+} CanSetupPeripheral;

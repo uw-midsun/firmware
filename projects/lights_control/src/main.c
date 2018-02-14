@@ -1,31 +1,26 @@
 #include <stdint.h>
-#include <stdio.h>
 
 #include "adc.h"
 #include "can.h"
 #include "gpio_it.h"
 #include "interrupt.h"
+#include "lights_periph.h"
 #include "status.h"
 #include "wait.h"
-#include "process_periph.h"
 
-
-#include "can_settings.h"
+#include "can_setup.h"
 #include "process_event.h"
 
 #define SOMEPORT 0
 #define SOMEPIN 0
 
-const GPIOAddress board_type_address = {
-  .port = SOMEPORT,
-  .pin = SOMEPIN
-};
+const GPIOAddress s_board_type_address = { .port = SOMEPORT, .pin = SOMEPIN };
 
 // figure out whether it's the front board or the back board
-StatusCode get_board_type(BoardType * type) {
+StatusCode prv_get_board_type(BoardType* type) {
   GPIOState state;
-  StatusCode state_status = gpio_get_state(&board_type_address, &state);
-  if ( state_status != STATUS_CODE_OK ) {
+  StatusCode state_status = gpio_get_state(&s_board_type_address, &state);
+  if (state_status != STATUS_CODE_OK) {
     return state_status;
   }
   if (state == GPIO_STATE_LOW) {
@@ -47,9 +42,9 @@ int main(void) {
 
   // get the Board type (front or back)
   const BoardType boardtype;
-  get_board_type(&boardtype);
-  initialize_can_settings(boardtype);
-  initialize_peripherals(boardtype);
+  prv_get_board_type(&boardtype);
+  can_setup_init(boardtype);
+  lights_periph_init(boardtype);
 
   while (true) {
     StatusCode status = event_process(&e);
@@ -62,3 +57,4 @@ int main(void) {
 
   return STATUS_CODE_OK;
 }
+

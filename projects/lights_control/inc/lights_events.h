@@ -17,4 +17,3 @@ typedef enum {
   EVENT_CAN_FAULT,
   NUM_EVENTS
 } InputEvent;
-

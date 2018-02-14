@@ -15,4 +15,3 @@ typedef enum {
   ACTION_STROBE,
   NUM_ACTION_ID
 } ActionID;
-
