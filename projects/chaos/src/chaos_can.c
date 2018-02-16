@@ -17,17 +17,18 @@
 static CANStorage s_can_storage;
 static CANRxHandler s_can_rx_handlers[CHAOS_CAN_NUM_RX_HANDLERS];
 
-// TODO: Determine if there are any other messages we care about. BPS_FAULT comes to mind but if we
-// are driving at 100 kph the driver not the car should switch to idle to cut power.
+// TODO(ELEC-105): Determine if there are any other messages we care about. BPS_FAULT comes to mind
+// but if we are driving at 100 kph the driver not the car should switch to idle to cut power.
 
 static StatusCode prv_power_state_callback(const CANMessage *msg, void *context,
                                            CANAckStatus *ack_reply) {
   ChaosCanPowerState power_state = NUM_CHAOS_CAN_POWER_STATES;
   CAN_UNPACK_POWER_STATE(msg, (uint8_t *)&power_state);
   switch (power_state) {
-    // TODO: If the selected state cannot be transitioned to consider returning invalid. While not
-    // actionable this could at least provide feedback to the driver that the transition selected
-    // was invalid. Theoretically this should be enforced on the driver controls side though.
+    // TODO(ELEC-105): If the selected state cannot be transitioned to consider returning invalid.
+    // While not actionable this could at least provide feedback to the driver that the transition
+    // selected was invalid. Theoretically this should be enforced on the driver controls side
+    // though.
     case CHAOS_CAN_POWER_STATE_IDLE:
       event_raise(CHAOS_EVENT_SEQUENCE_IDLE, NO_DATA);
       break;
