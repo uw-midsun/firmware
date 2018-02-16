@@ -1,7 +1,7 @@
-#include "can.h" 
+#include "can_setup.h"
+#include "can.h"
 #include "can_hw.h"
 #include "can_msg_defs.h"
-#include "can_setup.h"
 
 #include "can_unpack_impl.h"
 #include "event_queue.h"
