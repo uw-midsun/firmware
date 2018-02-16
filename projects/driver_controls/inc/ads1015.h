@@ -1,6 +1,6 @@
 #pragma once
 // Module for using ADS1015.
-// GPIO and Interrupt, I2C should be initiated.
+//  I2C, GPIO and Interrupt should be initialized.
 // The user also needs to create a struct ADS1015Storage which would persist accross functions.
 // Start the ads1015 using ads1015_init and then configure channels using ads1015_config_channel.
 // Read raw and converted values using ads1015_read_raw and ads1015_read_converted.
@@ -30,11 +30,12 @@ typedef void (*Ads1015Callback)(Ads1015Channel channel, void *context);
 
 typedef struct Ads1015Storage {
   I2CPort i2c_port;
-  Ads1015Address i2c_addr;
+  uint8_t i2c_addr;
   GPIOAddress ready_pin;
   int16_t channel_readings[NUM_ADS1015_CHANNELS];
   Ads1015Channel current_channel;
-  uint8_t channel_enable;
+  uint8_t channel_enable_bitset;
+  uint8_t channel_enable_bitset_helper;
   Ads1015Callback channel_callback[NUM_ADS1015_CHANNELS];
   void *callback_context[NUM_ADS1015_CHANNELS];
 } Ads1015Storage;

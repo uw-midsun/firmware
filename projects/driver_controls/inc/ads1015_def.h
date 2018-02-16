@@ -27,7 +27,7 @@
 #define ADS1015_START_SINGLE_CONV ((uint8_t)0x1 << 7)
 
 // Bytes for setting channels
-#define ADS1015_AIN(channel) ((channel + 0x4) << 4)
+#define ADS1015_AIN(channel) (((channel) + 0x4) << 4)
 #define ADS1015_AIN_0 ((uint8_t)0x4 << 4)
 #define ADS1015_AIN_1 ((uint8_t)0x5 << 4)
 #define ADS1015_AIN_2 ((uint8_t)0x6 << 4)
@@ -89,15 +89,15 @@
 // They are used for calculating the LSB size, corresponding to PGA settings.
 // From section 8.3.3 of the datasheet.
 // Mult. by 2 corresponds to the range from -FS to +FS.
-#define ADS1015_FSR_6144 6144 * 2
-#define ADS1015_FSR_4096 4096 * 2
-#define ADS1015_FSR_2048 2048 * 2
-#define ADS1015_FSR_1024 1024 * 2
-#define ADS1015_FSR_512 512 * 2
-#define ADS1015_FSR_256 256 * 2
+#define ADS1015_FSR_6144 (6144 * 2)
+#define ADS1015_FSR_4096 (4096 * 2)
+#define ADS1015_FSR_2048 (2048 * 2)
+#define ADS1015_FSR_1024 (1024 * 2)
+#define ADS1015_FSR_512 (512 * 2)
+#define ADS1015_FSR_256 (256 * 2)
 
-// The LSB size in mVolt from section 8.3.3 of the datasheet.
-#define ADS1015_LSB_SIZE(fsr) fsr / (1 << 12)
+// The division factor for calculating LSB size from FSR in mVolt
+#define ADS1015_LSB_SIZE_FACTOR (1 << 12)
 
 // This is used for removing 4 lsb's of the conversion register
 // as they are not part of the conversion result.
@@ -105,4 +105,8 @@
 #define ADS1015_NUM_RESERVED_BITS_CONV_REG 4
 
 // This is stored as the reading for any disabled channel.
-#define ADS1015_DISABLED_CHANNEL_READING ~(1 << 14)
+#define ADS1015_DISABLED_CHANNEL_READING (~(1 << 14))
+
+#define ADS1015_BITSET_EMPTY 0
+
+#define ADS1015_READ_UNSUCCESSFUL (1 << 14)
