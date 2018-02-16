@@ -12,6 +12,7 @@
 #include "event_queue.h"
 #include "interrupt.h"
 #include "log.h"
+#include "relay_id.h"
 #include "soft_timer.h"
 #include "status.h"
 #include "test_helpers.h"
