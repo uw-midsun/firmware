@@ -1,0 +1,40 @@
+#include "gpio_fsm.h"
+
+#include "chaos_config.h"
+#include "chaos_events.h"
+#include "event_queue.h"
+#include "gpio.h"
+#include "interrupt.h"
+#include "soft_timer.h"
+#include "unity.h"
+
+void setup_test(void) {
+  const ChaosConfig *config = chaos_config_load();
+
+  interrupt_init();
+  soft_timer_init();
+  gpio_init();
+  gpio_fsm_init(config);
+}
+
+void teardown_test(void) {}
+
+void test_gpio_fsm(void) {
+  Event e = {
+    .id = CHAOS_EVENT_GPIO_CHARGE,
+  };
+
+  // Don't bother with testing the GPIO setting component since gpio_seq and gpio libraries will
+  // handle this.
+  TEST_ASSERT_TRUE(gpio_fsm_process_event(&e));
+  e.id = CHAOS_EVENT_GPIO_DRIVE;
+  TEST_ASSERT_FALSE(gpio_fsm_process_event(&e));
+  e.id = CHAOS_EVENT_GPIO_IDLE;
+  TEST_ASSERT_TRUE(gpio_fsm_process_event(&e));
+  e.id = CHAOS_EVENT_GPIO_DRIVE;
+  TEST_ASSERT_TRUE(gpio_fsm_process_event(&e));
+  e.id = CHAOS_EVENT_GPIO_CHARGE;
+  TEST_ASSERT_FALSE(gpio_fsm_process_event(&e));
+  e.id = CHAOS_EVENT_GPIO_IDLE;
+  TEST_ASSERT_TRUE(gpio_fsm_process_event(&e));
+}
