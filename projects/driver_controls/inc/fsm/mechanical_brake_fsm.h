@@ -7,8 +7,8 @@
 
 // Direction selector events will not be acknowledged while the mechanical brake is not pressed
 
-#include "fsm.h"
 #include "event_arbiter.h"
+#include "fsm.h"
 
 typedef enum {
   MECHANICAL_BRAKE_FSM_STATE_ENGAGED,

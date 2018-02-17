@@ -1,8 +1,8 @@
 #include "can_output.h"
+#include "can_msg_defs.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
-#include "can_msg_defs.h"
 
 // CAN device ids as defined in confluence
 // https://uwmidsun.atlassian.net/wiki/spaces/ELEC/pages/50003973/CAN+Message+Definitions

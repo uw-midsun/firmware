@@ -2,8 +2,8 @@
 
 // Keeps track of whether the horn is on or not
 
-#include "fsm.h"
 #include "event_arbiter.h"
+#include "fsm.h"
 
 typedef enum {
   HORN_FSM_STATE_OFF,

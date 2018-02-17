@@ -8,8 +8,8 @@
 // not pressed, which would be dangerous for the driver.
 
 #include "fsm.h"
-#include "status.h"
 #include "objpool.h"
+#include "status.h"
 
 // Arbitrary FSM cap
 #define EVENT_ARBITER_MAX_FSMS 10

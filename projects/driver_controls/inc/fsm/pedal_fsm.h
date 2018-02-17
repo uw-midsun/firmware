@@ -7,8 +7,8 @@
 // Driving State: The pedal is fully pressed, causing the car to accelerate
 // Cruise Control State: Activates cruise control and causes the car to move without the pedal
 
-#include "fsm.h"
 #include "event_arbiter.h"
+#include "fsm.h"
 
 typedef enum {
   PEDAL_FSM_STATE_BRAKE,

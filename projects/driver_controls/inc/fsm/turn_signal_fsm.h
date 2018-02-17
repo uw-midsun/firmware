@@ -2,8 +2,8 @@
 
 // Monitors the current state of the turn signals (Left, Right, or None)
 
-#include "fsm.h"
 #include "event_arbiter.h"
+#include "fsm.h"
 
 typedef enum {
   TURN_SIGNAL_FSM_STATE_NO_SIGNAL,
