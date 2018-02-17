@@ -19,6 +19,7 @@
 
 typedef struct RelayFsmAckCtx {
   RelayId id;
+  EventID event_id;
   uint8_t retries;
 } RelayFsmAckCtx;
 
@@ -34,43 +35,22 @@ static bool prv_guard(const FSM *fsm, const Event *e, void *context) {
   return e->data == fsm_ctx->ack_ctx.id;
 }
 
-static StatusCode prv_ack_open_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
-                                        uint16_t num_remaining, void *context) {
+static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+                                   uint16_t num_remaining, void *context) {
   RelayFsmAckCtx *ack_ctx = context;
   if (status != CAN_ACK_STATUS_OK) {
     if (ack_ctx->retries < RELAY_FSM_MAX_RETRIES) {
       ack_ctx->retries++;
       event_raise(CHAOS_EVENT_RETRY_RELAY, ack_ctx->id);
-      return STATUS_CODE_OK;
     } else {
       ack_ctx->retries = 0;
       event_raise(CHAOS_EVENT_RELAY_ERROR, ack_ctx->id);
-      return STATUS_CODE_OK;
     }
+  } else {
+    ack_ctx->retries = 0;
+    event_raise(ack_ctx->event_id, ack_ctx->id);
   }
 
-  ack_ctx->retries = 0;
-  event_raise(CHAOS_EVENT_RELAY_OPENED, ack_ctx->id);
-  return STATUS_CODE_OK;
-}
-
-static StatusCode prv_ack_close_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
-                                         uint16_t num_remaining, void *context) {
-  RelayFsmAckCtx *ack_ctx = context;
-  if (status != CAN_ACK_STATUS_OK) {
-    if (ack_ctx->retries < RELAY_FSM_MAX_RETRIES) {
-      ack_ctx->retries++;
-      event_raise(CHAOS_EVENT_RETRY_RELAY, ack_ctx->id);
-      return STATUS_CODE_OK;
-    } else {
-      ack_ctx->retries = 0;
-      event_raise(CHAOS_EVENT_RELAY_ERROR, ack_ctx->id);
-      return STATUS_CODE_OK;
-    }
-  }
-
-  ack_ctx->retries = 0;
-  event_raise(CHAOS_EVENT_RELAY_CLOSED, ack_ctx->id);
   return STATUS_CODE_OK;
 }
 
@@ -123,13 +103,13 @@ static void prv_relay_transmit(RelayId id, RelayState state, const CANAckRequest
 
 static void prv_opening(FSM *fsm, const Event *e, void *context) {
   RelayFsmCtx *relay_ctx = context;
-  relay_ctx->request.callback = prv_ack_open_callback;
+  relay_ctx->ack_ctx.event_id = CHAOS_EVENT_RELAY_OPENED;
   prv_relay_transmit(relay_ctx->ack_ctx.id, RELAY_STATE_OPEN, &relay_ctx->request);
 }
 
 static void prv_closing(FSM *fsm, const Event *e, void *context) {
   RelayFsmCtx *relay_ctx = context;
-  relay_ctx->request.callback = prv_ack_close_callback;
+  relay_ctx->ack_ctx.event_id = CHAOS_EVENT_RELAY_CLOSED;
   prv_relay_transmit(relay_ctx->ack_ctx.id, RELAY_STATE_CLOSE, &relay_ctx->request);
 }
 
