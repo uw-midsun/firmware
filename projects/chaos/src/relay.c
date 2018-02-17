@@ -7,10 +7,7 @@
 #include "relay_fsm.h"
 #include "relay_id.h"
 
-static FSM s_solar_front_relay_fsm;
-static FSM s_solar_rear_relay_fsm;
-static FSM s_battery_relay_fsm;
-static FSM s_main_relay_fsm;
+static FSM s_relay_fsms[NUM_RELAY_IDS];
 
 void relay_init(bool loopback) {
   relay_fsm_init();
@@ -32,19 +29,20 @@ void relay_init(bool loopback) {
     battery_bitset = CAN_ACK_EXPECTED_DEVICES(CAN_DEVICE_PLUTUS);
   }
 
-  relay_fsm_create(&s_solar_front_relay_fsm, RELAY_ID_SOLAR_MASTER_FRONT, "SolarFrontRelay",
-                   solar_front_bitset);
-  relay_fsm_create(&s_solar_rear_relay_fsm, RELAY_ID_SOLAR_MASTER_REAR, "SolarRearRelay",
-                   solar_rear_bitset);
-  relay_fsm_create(&s_battery_relay_fsm, RELAY_ID_BATTERY, "BatteryRelay", battery_bitset);
-  relay_fsm_create(&s_main_relay_fsm, RELAY_ID_MAIN_POWER, "MainRelay", main_bitset);
+  relay_fsm_create(&s_relay_fsms[RELAY_ID_SOLAR_MASTER_FRONT], RELAY_ID_SOLAR_MASTER_FRONT,
+                   "SolarFrontRelay", solar_front_bitset);
+  relay_fsm_create(&s_relay_fsms[RELAY_ID_SOLAR_MASTER_REAR], RELAY_ID_SOLAR_MASTER_REAR,
+                   "SolarRearRelay", solar_rear_bitset);
+  relay_fsm_create(&s_relay_fsms[RELAY_ID_BATTERY], RELAY_ID_BATTERY, "BatteryRelay",
+                   battery_bitset);
+  relay_fsm_create(&s_relay_fsms[RELAY_ID_MAIN_POWER], RELAY_ID_MAIN_POWER, "MainRelay",
+                   main_bitset);
 }
 
 bool relay_process_event(const Event *e) {
   bool ret = false;
-  ret |= fsm_process_event(&s_solar_front_relay_fsm, e);
-  ret |= fsm_process_event(&s_solar_rear_relay_fsm, e);
-  ret |= fsm_process_event(&s_battery_relay_fsm, e);
-  ret |= fsm_process_event(&s_main_relay_fsm, e);
+  for (uint16_t i = 0; i < NUM_RELAY_IDS; i++) {
+    ret |= fsm_process_event(&s_relay_fsms[i], e);
+  }
   return ret;
 }

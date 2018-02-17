@@ -5,6 +5,7 @@
 #include "relay_id.h"
 #include "status.h"
 
+#define RELAY_FSM_MAX_RETRIES 3
 #define NUM_RELAY_FSMS NUM_RELAY_IDS
 
 void relay_fsm_init(void);

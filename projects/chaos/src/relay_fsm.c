@@ -15,8 +15,6 @@
 #include "relay_id.h"
 #include "status.h"
 
-#define RELAY_FSM_MAX_RETRIES 3
-
 typedef struct RelayFsmAckCtx {
   RelayId id;
   EventID event_id;
@@ -30,7 +28,9 @@ typedef struct RelayFsmCtx {
 
 static RelayFsmCtx s_fsm_ctxs[NUM_RELAY_FSMS];
 
-static bool prv_guard(const FSM *fsm, const Event *e, void *context) {
+// Select whether the FSM is configured to handle that specific relay. The Event data field should
+// be the RelayId of the FSM that needs to be transitioned.
+static bool prv_guard_select_relay(const FSM *fsm, const Event *e, void *context) {
   RelayFsmCtx *fsm_ctx = context;
   return e->data == fsm_ctx->ack_ctx.id;
 }
@@ -56,28 +56,28 @@ static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckS
 
 FSM_DECLARE_STATE(relay_opened);
 
-FSM_DECLARE_STATE(closing_relay);
+FSM_DECLARE_STATE(relay_closing);
 
 FSM_DECLARE_STATE(relay_closed);
 
-FSM_DECLARE_STATE(opening_relay);
+FSM_DECLARE_STATE(relay_opening);
 
 FSM_STATE_TRANSITION(relay_opened) {
-  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_CLOSE_RELAY, prv_guard, closing_relay);
+  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_CLOSE_RELAY, prv_guard_select_relay, relay_closing);
 }
 
-FSM_STATE_TRANSITION(closing_relay) {
-  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_RELAY_CLOSED, prv_guard, relay_closed);
-  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_RETRY_RELAY, prv_guard, closing_relay);
+FSM_STATE_TRANSITION(relay_closing) {
+  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_RELAY_CLOSED, prv_guard_select_relay, relay_closed);
+  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_RETRY_RELAY, prv_guard_select_relay, relay_closing);
 }
 
 FSM_STATE_TRANSITION(relay_closed) {
-  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_OPEN_RELAY, prv_guard, opening_relay);
+  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_OPEN_RELAY, prv_guard_select_relay, relay_opening);
 }
 
-FSM_STATE_TRANSITION(opening_relay) {
-  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_RELAY_OPENED, prv_guard, relay_opened);
-  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_RETRY_RELAY, prv_guard, opening_relay);
+FSM_STATE_TRANSITION(relay_opening) {
+  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_RELAY_OPENED, prv_guard_select_relay, relay_opened);
+  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_RETRY_RELAY, prv_guard_select_relay, relay_opening);
 }
 
 static void prv_relay_transmit(RelayId id, RelayState state, const CANAckRequest *ack_request) {
@@ -114,8 +114,8 @@ static void prv_closing(FSM *fsm, const Event *e, void *context) {
 }
 
 void relay_fsm_init(void) {
-  fsm_state_init(opening_relay, prv_opening);
-  fsm_state_init(closing_relay, prv_closing);
+  fsm_state_init(relay_opening, prv_opening);
+  fsm_state_init(relay_closing, prv_closing);
 
   memset(s_fsm_ctxs, 0, sizeof(s_fsm_ctxs));
 }
@@ -127,6 +127,7 @@ StatusCode relay_fsm_create(FSM *fsm, RelayId relay_id, const char *fsm_name,
   }
   s_fsm_ctxs[relay_id].ack_ctx.id = relay_id;
   s_fsm_ctxs[relay_id].ack_ctx.retries = 0;
+  s_fsm_ctxs[relay_id].request.callback = prv_ack_callback;
   s_fsm_ctxs[relay_id].request.expected_bitset = ack_device_bitset;
   s_fsm_ctxs[relay_id].request.context = &s_fsm_ctxs[relay_id].ack_ctx;
   fsm_init(fsm, fsm_name, &relay_opened, &s_fsm_ctxs[relay_id]);
