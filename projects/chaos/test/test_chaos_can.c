@@ -18,13 +18,21 @@
 
 static CANAckRequests s_can_ack_requests;
 
-static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
-                                   uint16_t num_remaining, void *context) {
+static StatusCode prv_ack_power_state_callback(CANMessageID msg_id, uint16_t device,
+                                               CANAckStatus status, uint16_t num_remaining,
+                                               void *context) {
   TEST_ASSERT_EQUAL(0, num_remaining);
   TEST_ASSERT_EQUAL(CAN_DEVICE_CHAOS, device);
   TEST_ASSERT_EQUAL(CAN_MESSAGE_POWER_STATE, msg_id);
   CANAckStatus *expected_status = context;
   TEST_ASSERT_EQUAL(*expected_status, status);
+  return STATUS_CODE_OK;
+}
+
+static StatusCode prv_ack_bps_fault_callback(CANMessageID msg_id, uint16_t device,
+                                             CANAckStatus status, uint16_t num_remaining,
+                                             void *context) {
+  TEST_ASSERT_EQUAL(CAN_ACK_STATUS_OK, status);
   return STATUS_CODE_OK;
 }
 
@@ -58,15 +66,23 @@ typedef struct TestChaosCanParams {
   size_t expected_events_cnt;
 } TestChaosCanParams;
 
-void test_chaos_can(void) {
+// Tests that the power state transitions are handled correctly. Specifically,
+// it validates that the correct event is raised in the event each of the power
+// state change requests are delivered.
+void test_chaos_can_power_state(void) {
+  // Setup the ACK handlers callback.
   uint32_t expected_bitset = CAN_ACK_EXPECTED_DEVICES(CAN_DEVICE_CHAOS);
   CANAckStatus expected_status = NUM_ACK_STATUSES;
   const CANAckRequest req = {
     .context = &expected_status,
-    .callback = prv_ack_callback,
+    .callback = prv_ack_power_state_callback,
     .expected_bitset = expected_bitset,
   };
 
+  // Test parameters:
+  //
+  // Validate that when |power_state| is received that |expected_output| occurs as an event that the
+  // |expected_status| for the ack occurs and that the |expected_*_cnt| type of events occur.
   const TestChaosCanParams params[] = {
     { .power_state = CHAOS_CAN_POWER_STATE_IDLE,
       .expected_output = { .id = CHAOS_EVENT_SEQUENCE_IDLE },
@@ -89,11 +105,10 @@ void test_chaos_can(void) {
       .expected_events_cnt = 0,
       .expected_status = CAN_ACK_STATUS_INVALID },
   };
-  volatile Event e = { 0 };
-  volatile StatusCode status = NUM_STATUS_CODES;
+  Event e = { 0 };
+  StatusCode status = NUM_STATUS_CODES;
 
   for (uint16_t i = 0; i < SIZEOF_ARRAY(params); i++) {
-    LOG_DEBUG("Loop %u\n", i);
     TEST_ASSERT_OK(CAN_TRANSMIT_POWER_STATE(&req, params[i].power_state));
 
     // Request
@@ -130,5 +145,42 @@ void test_chaos_can(void) {
     }
     TEST_ASSERT_EQUAL(params[i].expected_can_cnt, can_event_cnt);
     TEST_ASSERT_EQUAL(params[i].expected_events_cnt, output_cnt);
+  }
+}
+
+void test_chaos_can_bps_fault(void) {
+  // Setup the ACK handlers callback.
+  uint32_t expected_bitset = CAN_ACK_EXPECTED_DEVICES(CAN_DEVICE_CHAOS);
+  CANAckStatus expected_status = NUM_ACK_STATUSES;
+  const CANAckRequest req = {
+    .context = &expected_status,
+    .callback = prv_ack_bps_fault_callback,
+    .expected_bitset = expected_bitset,
+  };
+
+  Event e = { 0 };
+  StatusCode status = NUM_STATUS_CODES;
+  TEST_ASSERT_OK(CAN_TRANSMIT_BPS_FAULT(&req));
+  // Request
+  // TX
+  do {
+    status = event_process(&e);
+  } while (status != STATUS_CODE_OK);
+  TEST_ASSERT_TRUE(chaos_can_process_event(&e));
+  // RX
+  do {
+    status = event_process(&e);
+  } while (status != STATUS_CODE_OK);
+  TEST_ASSERT_TRUE(chaos_can_process_event(&e));
+
+  // Ack and Process (non-deterministic order)
+  while (!(e.id == CHAOS_EVENT_SEQUENCE_EMERGENCY)) {
+    do {
+      status = event_process(&e);
+    } while (status != STATUS_CODE_OK);
+
+    if (e.id == CHAOS_EVENT_CAN_RX || e.id == CHAOS_EVENT_CAN_TX) {
+      TEST_ASSERT_TRUE(chaos_can_process_event(&e));
+    }
   }
 }

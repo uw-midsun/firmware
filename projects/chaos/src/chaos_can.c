@@ -11,14 +11,19 @@
 #include "misc.h"
 #include "status.h"
 
-#define NO_DATA 0
-#define CHAOS_CAN_NUM_RX_HANDLERS 1
+#define CHAOS_CAN_NO_DATA 0
+#define CHAOS_CAN_NUM_RX_HANDLERS 2
 
 static CANStorage s_can_storage;
 static CANRxHandler s_can_rx_handlers[CHAOS_CAN_NUM_RX_HANDLERS];
 
-// TODO(ELEC-105): Determine if there are any other messages we care about. BPS_FAULT comes to mind
-// but if we are driving at 100 kph the driver not the car should switch to idle to cut power.
+static StatusCode prv_bps_fault_callback(const CANMessage *msg, void *context,
+                                         CANAckStatus *ack_reply) {
+  // This event will immediately transitions the car into the equivalent of the IDLE state only LV
+  // systems powered off of the AUX Battery but it is irrecoverable without double IDLE requests.
+  event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, CHAOS_CAN_NO_DATA);
+  return STATUS_CODE_OK;
+}
 
 static StatusCode prv_power_state_callback(const CANMessage *msg, void *context,
                                            CANAckStatus *ack_reply) {
@@ -30,13 +35,13 @@ static StatusCode prv_power_state_callback(const CANMessage *msg, void *context,
     // selected was invalid. Theoretically this should be enforced on the driver controls side
     // though.
     case CHAOS_CAN_POWER_STATE_IDLE:
-      event_raise(CHAOS_EVENT_SEQUENCE_IDLE, NO_DATA);
+      event_raise(CHAOS_EVENT_SEQUENCE_IDLE, CHAOS_CAN_NO_DATA);
       break;
     case CHAOS_CAN_POWER_STATE_CHARGE:
-      event_raise(CHAOS_EVENT_SEQUENCE_CHARGE, NO_DATA);
+      event_raise(CHAOS_EVENT_SEQUENCE_CHARGE, CHAOS_CAN_NO_DATA);
       break;
     case CHAOS_CAN_POWER_STATE_DRIVE:
-      event_raise(CHAOS_EVENT_SEQUENCE_DRIVE, NO_DATA);
+      event_raise(CHAOS_EVENT_SEQUENCE_DRIVE, CHAOS_CAN_NO_DATA);
       break;
     case NUM_CHAOS_CAN_POWER_STATES:
     default:
@@ -52,6 +57,7 @@ StatusCode chaos_can_init(CANSettings *settings) {
 
   status_ok_or_return(
       can_register_rx_handler(CAN_MESSAGE_POWER_STATE, prv_power_state_callback, NULL));
+  status_ok_or_return(can_register_rx_handler(CAN_MESSAGE_BPS_FAULT, prv_bps_fault_callback, NULL));
   return STATUS_CODE_OK;
 }
 
