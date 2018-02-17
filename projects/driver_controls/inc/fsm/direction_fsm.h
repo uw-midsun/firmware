@@ -6,6 +6,7 @@
 // Power off events are forbidden while the FSM is in either the forward or reverse state
 
 #include "fsm.h"
+#include "event_arbiter.h"
 
 typedef enum {
   DIRECTION_FSM_STATE_NEUTRAL,
@@ -13,4 +14,4 @@ typedef enum {
   DIRECTION_FSM_STATE_REVERSE
 } DirectionFSMState;
 
-StatusCode direction_fsm_init(FSM *fsm);
+StatusCode direction_fsm_init(FSM *fsm, EventArbiterStorage *storage);

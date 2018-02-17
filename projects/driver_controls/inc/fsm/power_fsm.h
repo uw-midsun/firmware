@@ -6,6 +6,7 @@
 // forbidden while in the off state
 
 #include "fsm.h"
+#include "event_arbiter.h"
 
 typedef enum {
   POWER_FSM_STATE_OFF,
@@ -14,4 +15,4 @@ typedef enum {
   POWER_FSM_STATE_ON,
 } PowerFSMState;
 
-StatusCode power_fsm_init(FSM *fsm);
+StatusCode power_fsm_init(FSM *fsm, EventArbiterStorage *storage);

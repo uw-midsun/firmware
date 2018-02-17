@@ -1,61 +1,45 @@
+#include "event_arbiter.h"
 #include <stdio.h>
 
-#include "can_output.h"
-#include "event_arbiter.h"
-#include "log.h"
-
-static FSM *s_driver_fsms[EVENT_ARBITER_MAX_FSMS];
-static EventArbiterCheck s_event_checks[EVENT_ARBITER_MAX_FSMS];
-static EventArbiterOutput s_output;
-
-static uint8_t s_num_active_fsms = 0;
-
-static bool prv_event_permitted(Event *e) {
-  for (uint8_t i = 0; i < s_num_active_fsms; i++) {
-    if (s_event_checks[i] != NULL && !s_event_checks[i](e)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-StatusCode event_arbiter_init(EventArbiterOutput output) {
-  s_output = output;
-
-  for (uint8_t i = 0; i < EVENT_ARBITER_MAX_FSMS; i++) {
-    s_driver_fsms[i] = NULL;
-    s_event_checks[i] = NULL;
-  }
-  s_num_active_fsms = 0;
+StatusCode event_arbiter_init(EventArbiterStorage *storage) {
+  storage->num_registered_arbiters = 0;
 
   return STATUS_CODE_OK;
 }
 
-EventArbiterCheck *event_arbiter_add_fsm(FSM *fsm, EventArbiterCheck default_checker) {
-  if (s_num_active_fsms == EVENT_ARBITER_MAX_FSMS) {
+EventArbiter *event_arbiter_add_fsm(EventArbiterStorage *storage, FSM *fsm,
+                                    EventArbiterCheck event_check_fn) {
+  if (storage->num_registered_arbiters >= EVENT_ARBITER_MAX_FSMS) {
     return NULL;
   }
 
-  s_driver_fsms[s_num_active_fsms] = fsm;
-  s_event_checks[s_num_active_fsms] = default_checker;
+  EventArbiter *arbiter = &storage->arbiters[storage->num_registered_arbiters++];
 
-  return &s_event_checks[s_num_active_fsms++];
+  arbiter->fsm = fsm;
+  arbiter->event_check_fn = event_check_fn;
+
+  return arbiter;
 }
 
-bool event_arbiter_process_event(Event *e) {
-  bool transitioned = false;
+StatusCode event_arbiter_set_event_check(EventArbiter *arbiter, EventArbiterCheck event_check_fn) {
+  arbiter->event_check_fn = event_check_fn;
 
-  if (prv_event_permitted(e)) {
-    for (uint8_t i = 0; i < s_num_active_fsms; i++) {
-      transitioned |= fsm_process_event(s_driver_fsms[i], e);
+  return STATUS_CODE_OK;
+}
+
+bool event_arbiter_process_event(const EventArbiterStorage *storage, const Event *e) {
+  // Check if any of the arbiters block this event
+  for (size_t i = 0; i < storage->num_registered_arbiters; i++) {
+    if (storage->arbiters[i].event_check_fn != NULL && !storage->arbiters[i].event_check_fn(e)) {
+      return false;
     }
   }
-  return transitioned;
-}
 
-StatusCode event_arbiter_output(EventArbiterOutputData data) {
-  if (s_output != NULL) {
-    s_output(data);
+  bool transitioned = false;
+  // We didn't get blocked by any of the arbiters - process the event
+  for (size_t i = 0; i < storage->num_registered_arbiters; i++) {
+    transitioned |= fsm_process_event(storage->arbiters[i].fsm, e);
   }
-  return STATUS_CODE_OK;
+
+  return transitioned;
 }

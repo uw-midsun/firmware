@@ -27,22 +27,28 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     horn_state = HORN_FSM_STATE_ON;
   }
 
-  EventArbiterOutputData data = { .id = CAN_OUTPUT_MESSAGE_HORN, .state = horn_state, .data = 0 };
+  (void)horn_state;
 
-  event_arbiter_output(data);
+  // EventArbiterOutputData data = {
+  //   .id = CAN_OUTPUT_MESSAGE_HORN, //
+  //   .state = horn_state, //
+  //   .data = 0 //
+  // };
+
+  // event_arbiter_output(data);
 }
 
-StatusCode horn_fsm_init(FSM *fsm) {
+StatusCode horn_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_horn_off, prv_state_output);
   fsm_state_init(state_horn_on, prv_state_output);
 
-  void *context = event_arbiter_add_fsm(fsm, NULL);
+  EventArbiter *arbiter = event_arbiter_add_fsm(storage, fsm, NULL);
 
-  if (context == NULL) {
+  if (arbiter == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  fsm_init(fsm, "horn_fsm", &state_horn_off, context);
+  fsm_init(fsm, "horn_fsm", &state_horn_off, arbiter);
 
   return STATUS_CODE_OK;
 }

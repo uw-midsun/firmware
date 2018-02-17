@@ -8,6 +8,7 @@
 // Cruise Control State: Activates cruise control and causes the car to move without the pedal
 
 #include "fsm.h"
+#include "event_arbiter.h"
 
 typedef enum {
   PEDAL_FSM_STATE_BRAKE,
@@ -16,4 +17,4 @@ typedef enum {
   PEDAL_FSM_STATE_CRUISE_CONTROL
 } PedalFSMState;
 
-StatusCode pedal_fsm_init(FSM *fsm);
+StatusCode pedal_fsm_init(FSM *fsm, EventArbiterStorage *storage);
