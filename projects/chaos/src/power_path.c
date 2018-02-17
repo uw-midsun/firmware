@@ -43,7 +43,7 @@ static void prv_voltage_warning(const GPIOAddress *addr, void *context) {
                                    (readings.voltage <= POWER_PATH_AUX_UV_MILLIV));
   }
   if (!status_ok(status)) {
-    event_raise(CHAOS_EVENT_CAN_TRANSMIT_ERROR, CAN_MESSAGE_OVUV_DCDC_AUX);
+    event_raise(CHAOS_EVENT_CAN_TRANSMIT_ERROR, SYSTEM_CAN_MESSAGE_OVUV_DCDC_AUX);
   }
 }
 
