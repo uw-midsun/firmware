@@ -28,4 +28,4 @@ typedef struct ChaosConfig {
 } ChaosConfig;
 
 // Returns a lazy static pointer to the global ChaosConfig struct.
-ChaosConfig* chaos_config_load(void);
+ChaosConfig *chaos_config_load(void);

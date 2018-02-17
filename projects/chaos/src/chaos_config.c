@@ -2,6 +2,6 @@
 
 static ChaosConfig s_config;
 
-ChaosConfig* chaos_config_load(void) {
+ChaosConfig *chaos_config_load(void) {
   return &s_config;
 }
