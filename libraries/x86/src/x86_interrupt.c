@@ -24,7 +24,7 @@ static uint8_t s_x86_interrupt_next_interrupt_id = 0;
 static uint8_t s_x86_interrupt_next_handler_id = 0;
 
 static Interrupt s_x86_interrupt_interrupts_map[NUM_X86_INTERRUPT_INTERRUPTS];
-static x86InterruptHandler s_x86InterruptHandlers[NUM_X86_INTERRUPT_HANDLERS];
+static x86InterruptHandler s_x86_interrupt_handlers[NUM_X86_INTERRUPT_HANDLERS];
 
 // Signal handler for all interrupts. Prioritization is handled by the implementation of signals and
 // the init function. Signals of higher priority interrupt the running of this function. All other
@@ -36,7 +36,7 @@ void prv_sig_handler(int signum, siginfo_t *info, void *ptr) {
     if (!s_x86_interrupt_interrupts_map[info->si_value.sival_int].is_event) {
       // Execute the handler passing it the interrupt ID. To determine which handler look up in
       // the interrupts map by interrupt ID.
-      s_x86InterruptHandlers[s_x86_interrupt_interrupts_map[info->si_value.sival_int].handler_id](
+      s_x86_interrupt_handlers[s_x86_interrupt_interrupts_map[info->si_value.sival_int].handler_id](
           info->si_value.sival_int);
     }
   }
@@ -75,7 +75,7 @@ void x86_interrupt_init(void) {
   s_x86_interrupt_next_handler_id = 0;
 
   memset(&s_x86_interrupt_interrupts_map, 0, sizeof(s_x86_interrupt_interrupts_map));
-  memset(&s_x86InterruptHandlers, 0, sizeof(s_x86InterruptHandlers));
+  memset(&s_x86_interrupt_handlers, 0, sizeof(s_x86_interrupt_handlers));
 }
 
 StatusCode x86_interrupt_register_handler(x86InterruptHandler handler, uint8_t *handler_id) {
@@ -85,7 +85,7 @@ StatusCode x86_interrupt_register_handler(x86InterruptHandler handler, uint8_t *
 
   *handler_id = s_x86_interrupt_next_handler_id;
   s_x86_interrupt_next_handler_id++;
-  s_x86InterruptHandlers[*handler_id] = handler;
+  s_x86_interrupt_handlers[*handler_id] = handler;
 
   return STATUS_CODE_OK;
 }
