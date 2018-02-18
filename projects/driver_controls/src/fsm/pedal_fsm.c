@@ -5,7 +5,6 @@
 // state
 
 #include "pedal_fsm.h"
-#include "can_output.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
 #include "input_event.h"

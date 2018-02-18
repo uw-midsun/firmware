@@ -10,7 +10,6 @@
 #include "event_arbiter.h"
 #include "input_event.h"
 
-#include "can_output.h"
 #include "direction_fsm.h"
 #include "hazard_light_fsm.h"
 #include "horn_fsm.h"

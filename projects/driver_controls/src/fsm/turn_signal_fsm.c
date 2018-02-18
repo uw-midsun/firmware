@@ -1,5 +1,4 @@
 #include "turn_signal_fsm.h"
-#include "can_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
