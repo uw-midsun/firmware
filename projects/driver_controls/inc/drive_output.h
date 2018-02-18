@@ -23,23 +23,28 @@ typedef enum {
   NUM_DRIVE_OUTPUT_SOURCES
 } DriveOutputSource;
 
-typedef struct DriveOutput {
+typedef struct DriveOutputStorage {
   int16_t data[NUM_DRIVE_OUTPUT_SOURCES];
   EventID fault_event;
   EventID update_req_event;
   SoftTimerID watchdog_timer;
   SoftTimerID output_timer;
   uint8_t watchdog;
-} DriveOutput;
+} DriveOutputStorage;
 
 // Set the events to be raised in the case of a fault or to request a data update
 // Starts periodic drive output as disabled
-StatusCode drive_output_init(DriveOutput *output, EventID fault_event, EventID update_req_event);
+StatusCode drive_output_init(DriveOutputStorage *storage, EventID fault_event,
+                             EventID update_req_event);
 
 // Control whether periodic drive output is enabled (ex. disable when the car is off)
 // Note that if a fault occurs, periodic drive output will be disabled.
-StatusCode drive_output_enable(DriveOutput *output, bool enabled);
+StatusCode drive_output_enable(DriveOutputStorage *storage, bool enabled);
 
 // Throttle and steering angle expect sign-extended 12-bit values.
 // Direction counts negative values as reverse, positive as forward, and 0 as neutral.
-StatusCode drive_output_update(DriveOutput *output, DriveOutputSource source, int16_t data);
+StatusCode drive_output_update(DriveOutputStorage *storage, DriveOutputSource source, int16_t data);
+
+// Returns a pointer to the global drive output storage.
+// Note that this only exists because our FSMs already use their context pointers for event arbiters
+DriveOutputStorage *drive_output_global(void);

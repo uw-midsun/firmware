@@ -1,10 +1,7 @@
-// Some events can be raised despite the FSM being in the corresponding state (such as
-// INPUT_EVENT_PEDAL_BRAKE being called while the pedal FSM is in the brake state). Even though
-// these events will not cause state transitions, they still may have data that needs to be passed
-// to CAN. As a result, these repeated events are dealt with by transitioning back into their own
-// state
-
+// Responds to drive output update requests by updating the associated data
+// Note that this is accomplished by transitioning back to the current state.
 #include "pedal_fsm.h"
+#include "drive_output.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
 #include "input_event.h"
@@ -20,7 +17,7 @@ FSM_DECLARE_STATE(state_cruise_control);
 // Pedal FSM transition table definitions
 
 FSM_STATE_TRANSITION(state_brake) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_BRAKE, state_brake);
+  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_brake);
 
   // Press the gas pedal to start moving the car
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_COAST, state_coast);
@@ -28,18 +25,19 @@ FSM_STATE_TRANSITION(state_brake) {
 }
 
 FSM_STATE_TRANSITION(state_coast) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_COAST, state_coast);
+  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_coast);
 
   // Return to brake state through either regen or mechanical brakes
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_brake);
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_BRAKE, state_brake);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_PRESSED, state_driving);
+  // TODO: should we allow cruise control to be started from neutral?
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_cruise_control);
 }
 
 FSM_STATE_TRANSITION(state_driving) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_PRESSED, state_driving);
+  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_driving);
 
   // Return to brake state through either regen or mechanical brakes
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_brake);
@@ -50,10 +48,13 @@ FSM_STATE_TRANSITION(state_driving) {
 }
 
 FSM_STATE_TRANSITION(state_cruise_control) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_cruise_control);
+
   // Since the cruise control increase/decrease events have information that needs to be output to
   // CAN, they will cause repeat transitions
-  FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL_INC, state_cruise_control);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL_DEC, state_cruise_control);
+  // TODO: these should be moved somewhere else?
+  // FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL_INC, state_cruise_control);
+  // FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL_DEC, state_cruise_control);
 
   // Cruise control exits either through hitting the cruise control switch or by engaging the
   // mechanical brake
@@ -63,28 +64,22 @@ FSM_STATE_TRANSITION(state_cruise_control) {
 
 // Pedal FSM output functions
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  PedalFSMState pedal_state = PEDAL_FSM_STATE_BRAKE;
+  DriveOutputStorage *storage = drive_output_global();
 
-  State *current_state = fsm->current_state;
+  // TODO: steering angle sensor isn't updated by anything yet
+  drive_output_update(storage, DRIVE_OUTPUT_SOURCE_STEERING_ANGLE, 321);
 
-  if (current_state == &state_coast) {
-    pedal_state = PEDAL_FSM_STATE_COAST;
-  } else if (current_state == &state_driving) {
-    pedal_state = PEDAL_FSM_STATE_DRIVING;
-  } else if (current_state == &state_cruise_control) {
-    pedal_state = PEDAL_FSM_STATE_CRUISE_CONTROL;
+  if (fsm->current_state == &state_cruise_control) {
+    // TODO: actually get target value
+    drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, 1234);
+    // Ignore throttle data - default to neutral just in case
+    drive_output_update(storage, DRIVE_OUTPUT_SOURCE_THROTTLE, 0);
+  } else {
+    // Make sure cruise is disabled
+    drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, DRIVE_OUTPUT_INVALID_CRUISE_VELOCITY);
+    // TODO: Actually get throttle percentage
+    drive_output_update(storage, DRIVE_OUTPUT_SOURCE_THROTTLE, 1234);
   }
-
-  (void)pedal_state;
-
-  // // Output pedal level and angle data
-  // EventArbiterOutputData data = {
-  //   .id = CAN_OUTPUT_MESSAGE_PEDAL, //
-  //   .state = pedal_state, //
-  //   .data = e->data //
-  // };
-
-  // event_arbiter_output(data);
 }
 
 StatusCode pedal_fsm_init(FSM *fsm, EventArbiterStorage *storage) {

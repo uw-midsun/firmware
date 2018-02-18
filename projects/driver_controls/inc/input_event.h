@@ -1,12 +1,16 @@
 #pragma once
-
-// Common typedefs a functions for the various FSMs to use.
-
+// Shared events for FSMs
 #include "event_queue.h"
 
 // ID definitions for the driver input events.
 typedef enum {
-  INPUT_EVENT_POWER = 0,  // Event IDs for driver input events
+  INPUT_EVENT_DRIVE_WATCHDOG_FAULT = 0,
+  // Mechanical brake must take precedence over power so pressing the brake then the power button
+  // is handled properly
+  INPUT_EVENT_MECHANICAL_BRAKE_PRESSED,
+  INPUT_EVENT_DRIVE_UPDATE_REQUESTED,
+  INPUT_EVENT_MECHANICAL_BRAKE_RELEASED,
+  INPUT_EVENT_POWER,
   INPUT_EVENT_PEDAL_BRAKE,
   INPUT_EVENT_PEDAL_COAST,
   INPUT_EVENT_PEDAL_PRESSED,
@@ -20,8 +24,6 @@ typedef enum {
   INPUT_EVENT_TURN_SIGNAL_LEFT,
   INPUT_EVENT_TURN_SIGNAL_RIGHT,
   INPUT_EVENT_HAZARD_LIGHT,
-  INPUT_EVENT_MECHANICAL_BRAKE_PRESSED,
-  INPUT_EVENT_MECHANICAL_BRAKE_RELEASED,
   INPUT_EVENT_HORN,
   INPUT_EVENT_PUSH_TO_TALK,
   NUM_INPUT_EVENTS
