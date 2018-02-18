@@ -48,10 +48,11 @@
                     SYSTEM_CAN_MESSAGE_MC_ERROR_LIMITS, 4, (error_id_u16), (limits_u16), \
                     CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
-#define CAN_PACK_MOTOR_CONTROLS(msg_ptr, throttle_u16, steering_angle_u16)                      \
-  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,                               \
-                    SYSTEM_CAN_MESSAGE_MOTOR_CONTROLS, 4, (throttle_u16), (steering_angle_u16), \
-                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
+#define CAN_PACK_MOTOR_CONTROLS(msg_ptr, throttle_u16, direction_u16, cruise_control_u16,  \
+                                steering_angle_u16)                                        \
+  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,                          \
+                    SYSTEM_CAN_MESSAGE_MOTOR_CONTROLS, 8, (throttle_u16), (direction_u16), \
+                    (cruise_control_u16), (steering_angle_u16))
 
 #define CAN_PACK_LIGHTS_STATES(msg_ptr, light_id_u8, light_state_u8)                               \
   can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, SYSTEM_CAN_MESSAGE_LIGHTS_STATES, \
