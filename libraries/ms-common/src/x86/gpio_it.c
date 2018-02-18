@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "gpio.h"
 #include "interrupt_def.h"
@@ -11,6 +12,7 @@
 typedef struct GPIOITInterrupt {
   uint8_t interrupt_id;
   GPIOAddress address;
+  InterruptEdge edge;
   gpio_it_callback callback;
   void *context;
 } GPIOITInterrupt;
@@ -19,9 +21,17 @@ static uint8_t s_gpio_it_handler_id;
 static GPIOITInterrupt s_gpio_it_interrupts[GPIO_PINS_PER_PORT];
 
 static void prv_gpio_it_handler(uint8_t interrupt_id) {
+  GPIOState state;
+
   for (int i = 0; i < GPIO_PINS_PER_PORT; i++) {
+    // Check if the change in value corresponds with the specified edge trigger
+    gpio_get_value(&s_gpio_it_interrupts[i].address, &state);
+    bool edge_fail = ((s_gpio_it_interrupts[i].edge == INTERRUPT_EDGE_RISING) &&
+      (state != GPIO_STATE_HIGH)) || ((s_gpio_it_interrupts[i].edge == INTERRUPT_EDGE_FALLING) &&
+      (state != GPIO_STATE_LOW));
+
     if (s_gpio_it_interrupts[i].interrupt_id == interrupt_id &&
-        s_gpio_it_interrupts[i].callback != NULL) {
+        s_gpio_it_interrupts[i].callback != NULL && !edge_fail) {
       s_gpio_it_interrupts[i].callback(&s_gpio_it_interrupts[i].address,
                                        s_gpio_it_interrupts[i].context);
     }
@@ -52,6 +62,7 @@ StatusCode gpio_it_register_interrupt(const GPIOAddress *address, const Interrup
 
   s_gpio_it_interrupts[address->pin].interrupt_id = interrupt_id;
   s_gpio_it_interrupts[address->pin].address = *address;
+  s_gpio_it_interrupts[address->pin].edge = edge;
   s_gpio_it_interrupts[address->pin].callback = callback;
   s_gpio_it_interrupts[address->pin].context = context;
 
