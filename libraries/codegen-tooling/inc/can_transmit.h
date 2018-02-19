@@ -73,12 +73,14 @@
     status;                                                       \
   })
 
-#define CAN_TRANSMIT_MOTOR_CONTROLS(throttle_u16, steering_angle_u16)    \
-  ({                                                                     \
-    CANMessage msg = { 0 };                                              \
-    CAN_PACK_MOTOR_CONTROLS(&msg, (throttle_u16), (steering_angle_u16)); \
-    StatusCode status = can_transmit(&msg, NULL);                        \
-    status;                                                              \
+#define CAN_TRANSMIT_MOTOR_CONTROLS(throttle_u16, direction_u16, cruise_control_u16,     \
+                                    steering_angle_u16)                                  \
+  ({                                                                                     \
+    CANMessage msg = { 0 };                                                              \
+    CAN_PACK_MOTOR_CONTROLS(&msg, (throttle_u16), (direction_u16), (cruise_control_u16), \
+                            (steering_angle_u16));                                       \
+    StatusCode status = can_transmit(&msg, NULL);                                        \
+    status;                                                                              \
   })
 
 #define CAN_TRANSMIT_LIGHTS_STATES(light_id_u8, light_state_u8)    \
