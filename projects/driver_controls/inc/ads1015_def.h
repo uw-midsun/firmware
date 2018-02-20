@@ -80,6 +80,10 @@
   (ADS1015_START_SINGLE_CONV | ADS1015_AIN(channel) | ADS1015_PGA_FSR_4096 | \
    ADS1015_CONVERSION_MODE_SINGLE)
 
+#define ADS1015_CONFIG_REGISTER_MSB_IDLE                              \
+  (0 | ADS1015_AIN_0 | ADS1015_PGA_FSR_4096 | \
+   ADS1015_CONVERSION_MODE_SINGLE)
+
 // Setup for the config register's lower byte
 #define ADS1015_CONFIG_REGISTER_LSB                                          \
   (ADS1015_DATA_RATE_1600 | ADS1015_COMP_MODE_TRAD | ADS1015_COMP_POL_HIGH | \
@@ -95,9 +99,10 @@
 #define ADS1015_FSR_1024 (1024 * 2)
 #define ADS1015_FSR_512 (512 * 2)
 #define ADS1015_FSR_256 (256 * 2)
+#define ADS1015_CURRENT_FSR ADS1015_FSR_4096 // make sure PGA is set up accordingly
 
 // The division factor for calculating LSB size from FSR in mVolt
-#define ADS1015_LSB_SIZE_FACTOR (1 << 12)
+#define ADS1015_NUMBER_OF_CODES (1 << 12)
 
 // This is used for removing 4 lsb's of the conversion register
 // as they are not part of the conversion result.
@@ -105,8 +110,8 @@
 #define ADS1015_NUM_RESERVED_BITS_CONV_REG 4
 
 // This is stored as the reading for any disabled channel.
-#define ADS1015_DISABLED_CHANNEL_READING (~(1 << 14))
+#define ADS1015_DISABLED_CHANNEL_READING INT16_MAX
 
 #define ADS1015_BITSET_EMPTY 0
 
-#define ADS1015_READ_UNSUCCESSFUL (1 << 14)
+#define ADS1015_READ_UNSUCCESSFUL INT16_MIN

@@ -35,7 +35,7 @@ typedef struct Ads1015Storage {
   int16_t channel_readings[NUM_ADS1015_CHANNELS];
   Ads1015Channel current_channel;
   uint8_t channel_enable_bitset;
-  uint8_t channel_enable_bitset_helper;
+  uint8_t channel_enable_bitset_pending;
   Ads1015Callback channel_callback[NUM_ADS1015_CHANNELS];
   void *callback_context[NUM_ADS1015_CHANNELS];
 } Ads1015Storage;

@@ -10,8 +10,9 @@
 #include "soft_timer.h"
 #include "unity.h"
 
+// This function is registered as the callback for channels.
 static void prv_callback(Ads1015Channel channel, void *context) {
-  uint8_t *callback_called = context;
+  bool *callback_called = context;
   (*callback_called) = true;
 }
 
@@ -30,10 +31,13 @@ void teardown_test(void) {}
 void test_ads1015_init_invalid_input(void) {
   GPIOAddress ready_pin = { GPIO_PORT_B, 2 };
   Ads1015Storage storage;
+  // Tests a basic use of the function
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
                     ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin));
+  // Tests for storage being a null pointer.
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     ads1015_init(NULL, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin));
+  // Tests for ready pin being a null pointer.
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, NULL));
 }
@@ -43,15 +47,20 @@ void test_ads_config_channel_invalid_input(void) {
   GPIOAddress ready_pin = { GPIO_PORT_B, 2 };
 
   ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
+  // Tests a basic use of the function
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true,
                                                               prv_callback, &storage));
+  // Tests disabling a channel.
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, false,
                                                               prv_callback, &storage));
+  // Tests enabling a channel with no callback (context has no effect).
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
                     ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, NULL, &storage));
+  // Tests for out of bound channel.                     
   TEST_ASSERT_EQUAL(
       STATUS_CODE_INVALID_ARGS,
       ads1015_configure_channel(&storage, NUM_ADS1015_CHANNELS, true, prv_callback, &storage));
+  // Tests for storage being a null pointer.
   TEST_ASSERT_EQUAL(
       STATUS_CODE_INVALID_ARGS,
       ads1015_configure_channel(NULL, ADS1015_CHANNEL_1, true, prv_callback, &storage));
@@ -60,22 +69,26 @@ void test_ads_config_channel_invalid_input(void) {
 void test_ads1015_read_invalid_input(void) {
   int16_t reading;
   Ads1015Storage storage;
+  // Tests a correct use of the function.
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_read_converted(&storage, ADS1015_CHANNEL_0, &reading));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_read_raw(&storage, ADS1015_CHANNEL_2, &reading));
-
+  // Tests for storage being null.
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     ads1015_read_converted(NULL, ADS1015_CHANNEL_2, &reading));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, ads1015_read_raw(NULL, ADS1015_CHANNEL_2, &reading));
+  // Tests for reading being null.
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     ads1015_read_converted(&storage, ADS1015_CHANNEL_2, NULL));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, ads1015_read_raw(&storage, ADS1015_CHANNEL_2, NULL));
+
+  // Tests for out of bound channel.
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     ads1015_read_converted(&storage, NUM_ADS1015_CHANNELS, &reading));
-
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, ads1015_read_raw(NULL, ADS1015_CHANNEL_2, &reading));
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, ads1015_read_raw(&storage, ADS1015_CHANNEL_2, NULL));
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     ads1015_read_raw(&storage, NUM_ADS1015_CHANNELS, &reading));
 }
 
+// This test checks if the callbacks are called properly for enabled channels.
 void test_ads1015_channel_callback(void) {
   Ads1015Storage storage;
   GPIOAddress ready_pin = { GPIO_PORT_B, 2 };
@@ -94,4 +107,19 @@ void test_ads1015_channel_callback(void) {
   TEST_ASSERT_EQUAL(false, callback_called_1);
   TEST_ASSERT_EQUAL(true, callback_called_2);
   TEST_ASSERT_EQUAL(false, callback_called_3);
+}
+
+void test_ads_config_channel_enabling_order(void){
+  Ads1015Storage storage;
+  GPIOAddress ready_pin = { GPIO_PORT_B, 2 };
+  
+  ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, true, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_3, true, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, false, NULL, &storage);
+
+  TEST_ASSERT_EQUAL
+
 }
