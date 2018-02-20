@@ -23,13 +23,13 @@ FSM_STATE_TRANSITION(state_disengaged) {
 // Mechanical Brake FSM arbiter functions
 
 static bool prv_check_mechanical_brake_engaged(const Event *e) {
-  // While the brakes are engaged, the car should not accept any commands to move
+  // While the brakes are engaged, the car should not accept any commands to exit braking state
   switch (e->id) {
     case INPUT_EVENT_PEDAL_COAST:
     case INPUT_EVENT_PEDAL_PRESSED:
     case INPUT_EVENT_CRUISE_CONTROL:
-    case INPUT_EVENT_CRUISE_CONTROL_INC:
-    case INPUT_EVENT_CRUISE_CONTROL_DEC:
+      // case INPUT_EVENT_CRUISE_CONTROL_INC:
+      // case INPUT_EVENT_CRUISE_CONTROL_DEC:
       return false;
     default:
       return true;

@@ -64,7 +64,11 @@ FSM_STATE_TRANSITION(state_cruise_control) {
 
 // Pedal FSM output functions
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
+  // Note that the direction FSM should prevent the power from being turned off if the car is
+  // capable of moving
   DriveOutputStorage *storage = drive_output_global();
+
+  // TODO: need to figure out where brake lights are configured
 
   // TODO: steering angle sensor isn't updated by anything yet
   drive_output_update(storage, DRIVE_OUTPUT_SOURCE_STEERING_ANGLE, 321);
@@ -78,7 +82,8 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     // Make sure cruise is disabled
     drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, DRIVE_OUTPUT_INVALID_CRUISE_VELOCITY);
     // TODO: Actually get throttle percentage
-    drive_output_update(storage, DRIVE_OUTPUT_SOURCE_THROTTLE, 1234);
+    drive_output_update(storage, DRIVE_OUTPUT_SOURCE_THROTTLE,
+                        (fsm->current_state == &state_brake) ? -1234 : 1234);
   }
 }
 

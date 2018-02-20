@@ -49,7 +49,7 @@ FSM_STATE_TRANSITION(state_on) {
 // Power FSM arbiter functions
 static bool prv_check_off(const Event *e) {
   // The only valid events when the car isn't in drive are the power button and mechanical brake.
-  // This also prevents lights from being turned on unless the unprotected rail is powered.
+  // This also prevents lights, etc. from being turned on unless the unprotected rail is powered.
   switch (e->id) {
     case INPUT_EVENT_POWER:
     case INPUT_EVENT_MECHANICAL_BRAKE_RELEASED:
@@ -65,16 +65,13 @@ static bool prv_check_off(const Event *e) {
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   EventArbiter *arbiter = fsm->context;
 
-  LOG_DEBUG("power fsm output\n");
-
   EventArbiterCheck event_check_fn = prv_check_off;
+  LOG_DEBUG("Power FSM %s\n", fsm->current_state->name);
   if (fsm->current_state == &state_on) {
-    LOG_DEBUG("on\n");
     // Allow all events and begin sending periodic drive commands
     drive_output_enable(drive_output_global(), true);
     event_arbiter_set_event_check(arbiter, NULL);
   } else {
-    LOG_DEBUG("off\n");
     // Disable periodic drive output updates if not running
     drive_output_enable(drive_output_global(), false);
     event_arbiter_set_event_check(arbiter, event_check_fn);
