@@ -109,8 +109,9 @@ void test_ads1015_channel_callback(void) {
   TEST_ASSERT_EQUAL(false, callback_called_3);
 }
 
-void test_ads_config_channel_enabling_order(void){
+void test_ads_config_channel_enabling_order(void) {
   Ads1015Storage storage;
+  int16_t reading = ADS1015_READ_UNSUCCESSFUL;
   GPIOAddress ready_pin = { GPIO_PORT_B, 2 };
   
   ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
@@ -119,7 +120,53 @@ void test_ads_config_channel_enabling_order(void){
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, NULL, &storage);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_3, true, NULL, &storage);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, false, NULL, &storage);
+  delay_ms(50);
+  ads1015_read_converted(&storage, ADS1015_CHANNEL_0, &reading);
+  TEST_ASSERT_EQUAL(reading, ADS1015_DISABLED_CHANNEL_READING);
+  for (Ads1015Channel channel = ADS1015_CHANNEL_1; channel < NUM_ADS1015_CHANNELS; channel++) {
+    ads1015_read_converted(&storage, channel, &reading);
+    TEST_ASSERT_TRUE((reading < (ADS1015_CURRENT_FSR / 2)) && (reading >= 0));
+  }
 
-  TEST_ASSERT_EQUAL
+  ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, false, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, true, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, false, NULL, &storage);
+  delay_ms(50);
+  for (Ads1015Channel channel = 0; channel < NUM_ADS1015_CHANNELS; channel++) {
+    ads1015_read_converted(&storage, channel, &reading);
+    TEST_ASSERT_EQUAL(reading, ADS1015_DISABLED_CHANNEL_READING);
+  }
+  
+  ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, true, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, false, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, false, NULL, &storage);
+  delay_ms(50);
+  for (Ads1015Channel channel = 0; channel < NUM_ADS1015_CHANNELS; channel++) {
+    ads1015_read_converted(&storage, channel, &reading);
+    TEST_ASSERT_EQUAL(reading, ADS1015_DISABLED_CHANNEL_READING);
+  }
 
+  ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, false, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, false, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, false, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_3, false, NULL, &storage);
+  delay_ms(50);
+  for (Ads1015Channel channel = 0; channel < NUM_ADS1015_CHANNELS; channel++) {
+    ads1015_read_converted(&storage, channel, &reading);
+    TEST_ASSERT_EQUAL(reading, ADS1015_DISABLED_CHANNEL_READING);
+  }
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, true, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_3, true, NULL, &storage);
+  delay_ms(50);
+  for (Ads1015Channel channel = 0; channel < NUM_ADS1015_CHANNELS; channel++) {
+    ads1015_read_converted(&storage, channel, &reading);
+    TEST_ASSERT_TRUE((reading < (ADS1015_CURRENT_FSR / 2)) && (reading >= 0));
+  }
 }

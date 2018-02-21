@@ -55,7 +55,14 @@ int main() {
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, true, NULL, &storage);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, NULL, &storage);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_3, true, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, false, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, false, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, false, NULL, &storage);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_3, false, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, true, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_3, true, NULL, &storage);
   adc_init(ADC_MODE_CONTINUOUS);
     
   digital_io_init();

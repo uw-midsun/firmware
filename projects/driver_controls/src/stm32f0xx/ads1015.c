@@ -98,8 +98,8 @@ StatusCode ads1015_init(Ads1015Storage *storage, I2CPort i2c_port, Ads1015Addres
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   memset(storage, 0, sizeof(*storage));
-  for (uint8_t i = 0; i < NUM_ADS1015_CHANNELS; i++) {
-    storage->channel_readings[i] = ADS1015_DISABLED_CHANNEL_READING;
+  for (Ads1015Channel channel = 0; channel < NUM_ADS1015_CHANNELS; channel++) {
+    storage->channel_readings[channel] = ADS1015_DISABLED_CHANNEL_READING;
   }
   storage->i2c_port = i2c_port;
   storage->i2c_addr = i2c_addr + ADS1015_I2C_BASE_ADDRESS;
@@ -135,7 +135,7 @@ StatusCode ads1015_configure_channel(Ads1015Storage *storage, Ads1015Channel cha
   if (storage == NULL || channel >= NUM_ADS1015_CHANNELS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
-  gpio_it_mask_interrupt(&storage->ready_pin, true);
+  status_ok_or_return(gpio_it_mask_interrupt(&storage->ready_pin, true));
 
   uint8_t channel_enable_bitset = storage->channel_enable_bitset;
   prv_mark_channel_enabled(channel, enable, &storage->channel_enable_bitset);
@@ -148,7 +148,7 @@ StatusCode ads1015_configure_channel(Ads1015Storage *storage, Ads1015Channel cha
   } else if (!enable) {
     storage->channel_readings[channel] = ADS1015_DISABLED_CHANNEL_READING;
   }
-  gpio_it_mask_interrupt(&storage->ready_pin, false);
+  status_ok_or_return(gpio_it_mask_interrupt(&storage->ready_pin, false));
   if (storage->channel_enable_bitset == ADS1015_BITSET_EMPTY) {
     status_ok_or_return(gpio_it_mask_interrupt(&storage->ready_pin, true));
   }

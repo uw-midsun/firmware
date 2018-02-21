@@ -25,6 +25,8 @@
 
 // Starts single conversion when in powerdown state.
 #define ADS1015_START_SINGLE_CONV ((uint8_t)0x1 << 7)
+// Does not start a conversion.
+#define ADS1015_IDLE ((uint8_t)0x0)
 
 // Bytes for setting channels
 #define ADS1015_AIN(channel) (((channel) + 0x4) << 4)
@@ -80,9 +82,8 @@
   (ADS1015_START_SINGLE_CONV | ADS1015_AIN(channel) | ADS1015_PGA_FSR_4096 | \
    ADS1015_CONVERSION_MODE_SINGLE)
 
-#define ADS1015_CONFIG_REGISTER_MSB_IDLE                              \
-  (0 | ADS1015_AIN_0 | ADS1015_PGA_FSR_4096 | \
-   ADS1015_CONVERSION_MODE_SINGLE)
+#define ADS1015_CONFIG_REGISTER_MSB_IDLE \
+  (ADS1015_IDLE | ADS1015_AIN_0 | ADS1015_PGA_FSR_4096 | ADS1015_CONVERSION_MODE_SINGLE)
 
 // Setup for the config register's lower byte
 #define ADS1015_CONFIG_REGISTER_LSB                                          \
