@@ -100,7 +100,7 @@
 #define ADS1015_FSR_1024 (1024 * 2)
 #define ADS1015_FSR_512 (512 * 2)
 #define ADS1015_FSR_256 (256 * 2)
-#define ADS1015_CURRENT_FSR ADS1015_FSR_4096 // make sure PGA is set up accordingly
+#define ADS1015_CURRENT_FSR ADS1015_FSR_4096  // make sure PGA is set up accordingly
 
 // The division factor for calculating LSB size from FSR in mVolt
 #define ADS1015_NUMBER_OF_CODES (1 << 12)

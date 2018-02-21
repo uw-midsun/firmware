@@ -119,8 +119,8 @@ StatusCode ads1015_init(Ads1015Storage *storage, I2CPort i2c_port, Ads1015Addres
     .direction = GPIO_DIR_IN,  //
   };
   InterruptSettings it_settings = {
-    .type = INTERRUPT_TYPE_INTERRUPT,
-    .priority = INTERRUPT_PRIORITY_NORMAL,
+    .type = INTERRUPT_TYPE_INTERRUPT,       //
+    .priority = INTERRUPT_PRIORITY_NORMAL,  //
   };
   status_ok_or_return(gpio_init_pin(ready_pin, &gpio_settings));
   status_ok_or_return(gpio_it_register_interrupt(ready_pin, &it_settings, INTERRUPT_EDGE_RISING,
@@ -148,12 +148,12 @@ StatusCode ads1015_configure_channel(Ads1015Storage *storage, Ads1015Channel cha
   } else if (!enable) {
     storage->channel_readings[channel] = ADS1015_DISABLED_CHANNEL_READING;
   }
+  storage->channel_callback[channel] = callback;
+  storage->callback_context[channel] = context;
   status_ok_or_return(gpio_it_mask_interrupt(&storage->ready_pin, false));
   if (storage->channel_enable_bitset == ADS1015_BITSET_EMPTY) {
     status_ok_or_return(gpio_it_mask_interrupt(&storage->ready_pin, true));
   }
-  storage->channel_callback[channel] = callback;
-  storage->callback_context[channel] = context;
   return STATUS_CODE_OK;
 }
 
@@ -163,6 +163,9 @@ StatusCode ads1015_read_raw(Ads1015Storage *storage, Ads1015Channel channel, int
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   *reading = storage->channel_readings[channel];
+  if (!channel_is_enabled(storage, channel)) {
+    return STATUS_CODE_UNREACHABLE;
+  }
   return STATUS_CODE_OK;
 }
 
@@ -173,11 +176,14 @@ StatusCode ads1015_read_converted(Ads1015Storage *storage, Ads1015Channel channe
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   int16_t raw_reading = ADS1015_READ_UNSUCCESSFUL;
-  status_ok_or_return(ads1015_read_raw(storage, channel, &raw_reading));
+  ads1015_read_raw(storage, channel, &raw_reading);
   if (raw_reading == ADS1015_DISABLED_CHANNEL_READING) {
     *reading = raw_reading;
   } else {
     *reading = (raw_reading * ADS1015_CURRENT_FSR) / ADS1015_NUMBER_OF_CODES;
+  }
+  if (!channel_is_enabled(storage, channel)) {
+    return STATUS_CODE_UNREACHABLE;
   }
   return STATUS_CODE_OK;
 }

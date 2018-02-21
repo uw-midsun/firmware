@@ -13,6 +13,7 @@
 // This function is registered as the callback for channels.
 static void prv_callback(Ads1015Channel channel, void *context) {
   bool *callback_called = context;
+  LOG_DEBUG("\n %d %d %d %d\n", 5, 5, 5, 5);
   (*callback_called) = true;
 }
 
@@ -20,8 +21,11 @@ void setup_test(void) {
   gpio_init();
   interrupt_init();
   gpio_it_init();
+  soft_timer_init();
   I2CSettings i2c_settings = {
-    .speed = I2C_SPEED_FAST, .scl = { GPIO_PORT_B, 10 }, .sda = { GPIO_PORT_B, 11 }
+    .speed = I2C_SPEED_FAST,                    //
+    .scl = { .port = GPIO_PORT_B, .pin = 10 },  //
+    .sda = { .port = GPIO_PORT_B, .pin = 11 },  //
   };
   i2c_init(I2C_PORT_2, &i2c_settings);
 }
@@ -29,7 +33,10 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_ads1015_init_invalid_input(void) {
-  GPIOAddress ready_pin = { GPIO_PORT_B, 2 };
+  GPIOAddress ready_pin = {
+    .pin = GPIO_PORT_B,  //
+    .port = 2,           //
+  };
   Ads1015Storage storage;
   // Tests a basic use of the function
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
@@ -44,7 +51,10 @@ void test_ads1015_init_invalid_input(void) {
 
 void test_ads_config_channel_invalid_input(void) {
   Ads1015Storage storage;
-  GPIOAddress ready_pin = { GPIO_PORT_B, 2 };
+  GPIOAddress ready_pin = {
+    .pin = GPIO_PORT_B,  //
+    .port = 2,           //
+  };
 
   ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
   // Tests a basic use of the function
@@ -56,7 +66,7 @@ void test_ads_config_channel_invalid_input(void) {
   // Tests enabling a channel with no callback (context has no effect).
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
                     ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, NULL, &storage));
-  // Tests for out of bound channel.                     
+  // Tests for out of bound channel.
   TEST_ASSERT_EQUAL(
       STATUS_CODE_INVALID_ARGS,
       ads1015_configure_channel(&storage, NUM_ADS1015_CHANNELS, true, prv_callback, &storage));
@@ -68,7 +78,16 @@ void test_ads_config_channel_invalid_input(void) {
 
 void test_ads1015_read_invalid_input(void) {
   int16_t reading;
+  GPIOAddress ready_pin = {
+    .pin = GPIO_PORT_B,  //
+    .port = 2,           //
+  };
   Ads1015Storage storage;
+  ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, true, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_3, true, NULL, &storage);
   // Tests a correct use of the function.
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_read_converted(&storage, ADS1015_CHANNEL_0, &reading));
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_read_raw(&storage, ADS1015_CHANNEL_2, &reading));
@@ -90,8 +109,11 @@ void test_ads1015_read_invalid_input(void) {
 
 // This test checks if the callbacks are called properly for enabled channels.
 void test_ads1015_channel_callback(void) {
+  GPIOAddress ready_pin = {
+    .pin = GPIO_PORT_B,  //
+    .port = 2,           //
+  };
   Ads1015Storage storage;
-  GPIOAddress ready_pin = { GPIO_PORT_B, 2 };
   ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
   bool callback_called_0 = false;
   bool callback_called_1 = false;
@@ -101,7 +123,6 @@ void test_ads1015_channel_callback(void) {
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, false, prv_callback, &callback_called_1);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, prv_callback, &callback_called_2);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_3, false, prv_callback, &callback_called_3);
-  soft_timer_init();
   delay_ms(50);
   TEST_ASSERT_EQUAL(true, callback_called_0);
   TEST_ASSERT_EQUAL(false, callback_called_1);
@@ -112,8 +133,12 @@ void test_ads1015_channel_callback(void) {
 void test_ads_config_channel_enabling_order(void) {
   Ads1015Storage storage;
   int16_t reading = ADS1015_READ_UNSUCCESSFUL;
-  GPIOAddress ready_pin = { GPIO_PORT_B, 2 };
-  
+  GPIOAddress ready_pin = {
+    .pin = GPIO_PORT_B,  //
+    .port = 2,           //
+  };
+
+  // Tests a common order of enabling disabling channels.
   ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, NULL, &storage);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, true, NULL, &storage);
@@ -121,45 +146,33 @@ void test_ads_config_channel_enabling_order(void) {
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_3, true, NULL, &storage);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, false, NULL, &storage);
   delay_ms(50);
-  ads1015_read_converted(&storage, ADS1015_CHANNEL_0, &reading);
-  TEST_ASSERT_EQUAL(reading, ADS1015_DISABLED_CHANNEL_READING);
+  TEST_ASSERT_EQUAL(STATUS_CODE_UNREACHABLE,
+                    ads1015_read_converted(&storage, ADS1015_CHANNEL_0, &reading));
   for (Ads1015Channel channel = ADS1015_CHANNEL_1; channel < NUM_ADS1015_CHANNELS; channel++) {
     ads1015_read_converted(&storage, channel, &reading);
     TEST_ASSERT_TRUE((reading < (ADS1015_CURRENT_FSR / 2)) && (reading >= 0));
   }
 
+  // Tests enabling and disabling a channel right after the other.
   ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, NULL, &storage);
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, false, NULL, &storage);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, true, NULL, &storage);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, false, NULL, &storage);
   delay_ms(50);
-  for (Ads1015Channel channel = 0; channel < NUM_ADS1015_CHANNELS; channel++) {
-    ads1015_read_converted(&storage, channel, &reading);
-    TEST_ASSERT_EQUAL(reading, ADS1015_DISABLED_CHANNEL_READING);
-  }
-  
-  ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, NULL, &storage);
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, true, NULL, &storage);
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, false, NULL, &storage);
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, false, NULL, &storage);
-  delay_ms(50);
-  for (Ads1015Channel channel = 0; channel < NUM_ADS1015_CHANNELS; channel++) {
-    ads1015_read_converted(&storage, channel, &reading);
-    TEST_ASSERT_EQUAL(reading, ADS1015_DISABLED_CHANNEL_READING);
-  }
+  TEST_ASSERT_EQUAL(STATUS_CODE_UNREACHABLE,
+                    ads1015_read_converted(&storage, ADS1015_CHANNEL_1, &reading));
 
+  // Tests disabling an already disabled channel and enabling after.
   ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, false, NULL, &storage);
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, false, NULL, &storage);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, false, NULL, &storage);
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_3, false, NULL, &storage);
   delay_ms(50);
-  for (Ads1015Channel channel = 0; channel < NUM_ADS1015_CHANNELS; channel++) {
-    ads1015_read_converted(&storage, channel, &reading);
-    TEST_ASSERT_EQUAL(reading, ADS1015_DISABLED_CHANNEL_READING);
-  }
+  TEST_ASSERT_EQUAL(STATUS_CODE_UNREACHABLE,
+                    ads1015_read_converted(&storage, ADS1015_CHANNEL_2, &reading));
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, NULL, &storage);
+  delay_ms(50);
+  ads1015_read_converted(&storage, ADS1015_CHANNEL_2, &reading);
+  TEST_ASSERT_TRUE((reading < (ADS1015_CURRENT_FSR / 2)) && (reading >= 0));
+
+  // Tests a common case where every channel is enabled.
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, NULL, &storage);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, true, NULL, &storage);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, NULL, &storage);
