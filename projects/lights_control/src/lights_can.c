@@ -6,9 +6,9 @@
 #include "event_queue.h"
 #include "status.h"
 
-#include "lights_gpio.h"
 #include "lights_can.h"
 #include "lights_events.h"
+#include "lights_gpio.h"
 
 #define SOMEPORT 0
 #define SOMEPIN 0
@@ -35,24 +35,25 @@ static CANRxHandler s_rx_handlers[CAN_NUM_RX_HANDLERS];
 
 static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply);
 
-// TODO(ELEC-165): 
-// need to figure out: 
+// TODO(ELEC-165):
+// need to figure out:
 //      1.bitrate for can_settings
 //      2.CAN_TX_ADDR
 //      3.CAN_RX_ADDR
 //      4.msg_id
 void lights_can_init(BoardType boardtype) {
   CANSettings can_settings = { .bitrate = CAN_HW_BITRATE_125KBPS,
-                                        .rx_event = EVENT_CAN_RX,
-                                        .tx_event = EVENT_CAN_TX,
-                                        .fault_event = EVENT_CAN_FAULT,
-                                        .tx = CAN_TX_ADDR,
-                                        .rx = CAN_RX_ADDR,
-                                        .loopback = true };
+                               .rx_event = EVENT_CAN_RX,
+                               .tx_event = EVENT_CAN_TX,
+                               .fault_event = EVENT_CAN_FAULT,
+                               .tx = CAN_TX_ADDR,
+                               .rx = CAN_RX_ADDR,
+                               .loopback = true };
   volatile CANMessage rx_msg = { 0 };
   CANMessageID msg_id = 0x1;
   s_boardtype = boardtype;
-  can_settings.device_id = (boardtype == LIGHTS_BOARD_FRONT) ? CAN_DEVICE_ID_FRONT : CAN_DEVICE_ID_REAR;
+  can_settings.device_id =
+      (boardtype == LIGHTS_BOARD_FRONT) ? CAN_DEVICE_ID_FRONT : CAN_DEVICE_ID_REAR;
 
   // initialize CAN
   can_init(&can_settings, &s_can_storage, s_rx_handlers, CAN_NUM_RX_HANDLERS);
@@ -90,7 +91,10 @@ static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckSta
 
 // sends sync message:
 // both boards receive sync and reset the blinker
-// TODO(ELEC 165): see if the lights boards necessarily have to use different message id's, cuz it'd be cool if they didn't. That way they both process the sync message the same way, one uses loopback.
+// TODO(ELEC-165) see if the lights boards necessarily have
+// to use different message id's, cuz it'd be cool if
+// they didn't. That way they both process the sync
+// message the same way, one uses loopback.
 StatusCode send_sync() {
   CANMessage msg = {
     .msg_id = 0x1,              //
@@ -100,4 +104,3 @@ StatusCode send_sync() {
   };
   return can_transmit(&msg, NULL);
 }
-

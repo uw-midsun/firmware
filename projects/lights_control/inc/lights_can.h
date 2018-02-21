@@ -20,4 +20,3 @@ typedef enum {
   ACTION_SYNC,
   NUM_ACTION_ID
 } ActionID;
-

@@ -1,8 +1,8 @@
+#include "lights_gpio.h"
 #include "event_queue.h"
-#include "status.h"
 #include "gpio.h"
 #include "lights_events.h"
-#include "lights_gpio.h"
+#include "status.h"
 
 #define NUM_PERIPH_FRONT 4
 #define NUM_PERIPH_REAR 4
@@ -22,22 +22,22 @@ static GPIOAddress s_address_lookup[] = {
 StatusCode lights_periph_init(BoardType boardtype) {
   // same settings are used for all ports
   GPIOSettings settings = { .direction = GPIO_DIR_OUT,
-                                     .state = GPIO_STATE_LOW,    // defaulted to LOW
-                                     .resistor = GPIO_RES_NONE,  // TODO(ELEC-165): figure this out
-                                     .alt_function = GPIO_ALTFN_NONE };
-  
+                            .state = GPIO_STATE_LOW,    // defaulted to LOW
+                            .resistor = GPIO_RES_NONE,  // TODO(ELEC-165): figure this out
+                            .alt_function = GPIO_ALTFN_NONE };
+
   // initialize front lights board's peripherals
   if (boardtype == LIGHTS_BOARD_FRONT) {
-    s_address_lookup[EVENT_SIGNAL_LEFT] = (GPIOAddress) { .port = 0, .pin = 0 };
-    s_address_lookup[EVENT_SIGNAL_RIGHT] = (GPIOAddress) { .port = 0, .pin = 0 };
+    s_address_lookup[EVENT_SIGNAL_LEFT] = (GPIOAddress){ .port = 0, .pin = 0 };
+    s_address_lookup[EVENT_SIGNAL_RIGHT] = (GPIOAddress){ .port = 0, .pin = 0 };
     gpio_init_pin(&s_address_lookup[EVENT_HEADLIGHTS], &settings);
     gpio_init_pin(&s_address_lookup[EVENT_SIGNAL_LEFT], &settings);
     gpio_init_pin(&s_address_lookup[EVENT_SIGNAL_RIGHT], &settings);
     gpio_init_pin(&s_address_lookup[EVENT_HORN], &settings);
     // init rear board's peripherals
   } else {
-    s_address_lookup[EVENT_SIGNAL_LEFT] = (GPIOAddress) { .port = 0, .pin = 0 };
-    s_address_lookup[EVENT_SIGNAL_RIGHT] = (GPIOAddress) { .port = 0, .pin = 0 };
+    s_address_lookup[EVENT_SIGNAL_LEFT] = (GPIOAddress){ .port = 0, .pin = 0 };
+    s_address_lookup[EVENT_SIGNAL_RIGHT] = (GPIOAddress){ .port = 0, .pin = 0 };
     gpio_init_pin(&s_address_lookup[EVENT_BRAKES], &settings);
     gpio_init_pin(&s_address_lookup[EVENT_SIGNAL_LEFT], &settings);
     gpio_init_pin(&s_address_lookup[EVENT_SIGNAL_RIGHT], &settings);
@@ -51,8 +51,7 @@ StatusCode lights_periph_init(BoardType boardtype) {
 // the peripheral
 // used for strobe, headlights, horn and brakes
 StatusCode lights_gpio_set(Event e) {
-  return gpio_set_state(&s_address_lookup[e.id], 
-                          (e.data) ? GPIO_STATE_HIGH : GPIO_STATE_LOW);
+  return gpio_set_state(&s_address_lookup[e.id], (e.data) ? GPIO_STATE_HIGH : GPIO_STATE_LOW);
 }
 
 // figure out whether it's the front board or the back board
