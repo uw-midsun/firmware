@@ -33,11 +33,13 @@ typedef struct FSMGroup {
   FSM horn;
   FSM push_to_talk;
 } FSMGroup;
+/*
 static void prv_callback(Ads1015Channel channel, void *context) {
   bool *callback_called = context;
   printf("\n %d %d %d %d\n", 5, 5, 5, 5);
   (*callback_called) = true;
-}
+}*/
+
 int main() {
   FSMGroup fsm_group;
   Event e;
@@ -60,10 +62,10 @@ int main() {
   bool callback_called_1 = false;
   bool callback_called_2 = false;
   bool callback_called_3 = false;
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, prv_callback, &callback_called_0);
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, false, prv_callback, &callback_called_1);
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, prv_callback, &callback_called_2);
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_3, false, prv_callback, &callback_called_3);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, false, NULL, &callback_called_0);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, false, NULL, &callback_called_1);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, false, NULL, &callback_called_2);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_3, false, NULL, &callback_called_3);
 
   adc_init(ADC_MODE_CONTINUOUS);
 

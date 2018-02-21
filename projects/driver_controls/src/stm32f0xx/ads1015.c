@@ -162,10 +162,10 @@ StatusCode ads1015_read_raw(Ads1015Storage *storage, Ads1015Channel channel, int
   if (channel >= NUM_ADS1015_CHANNELS || storage == NULL || reading == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
-  *reading = storage->channel_readings[channel];
   if (!channel_is_enabled(storage, channel)) {
-    return STATUS_CODE_UNREACHABLE;
+    return status_code(STATUS_CODE_INVALID_ARGS);
   }
+  *reading = storage->channel_readings[channel];
   return STATUS_CODE_OK;
 }
 
@@ -175,15 +175,11 @@ StatusCode ads1015_read_converted(Ads1015Storage *storage, Ads1015Channel channe
   if (channel >= NUM_ADS1015_CHANNELS || storage == NULL || reading == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
-  int16_t raw_reading = ADS1015_READ_UNSUCCESSFUL;
-  ads1015_read_raw(storage, channel, &raw_reading);
-  if (raw_reading == ADS1015_DISABLED_CHANNEL_READING) {
-    *reading = raw_reading;
-  } else {
-    *reading = (raw_reading * ADS1015_CURRENT_FSR) / ADS1015_NUMBER_OF_CODES;
-  }
   if (!channel_is_enabled(storage, channel)) {
-    return STATUS_CODE_UNREACHABLE;
+    return status_code(STATUS_CODE_INVALID_ARGS);
   }
+  int16_t raw_reading = ADS1015_READ_UNSUCCESSFUL;
+  status_ok_or_return(ads1015_read_raw(storage, channel, &raw_reading));
+  *reading = (raw_reading * ADS1015_CURRENT_FSR) / ADS1015_NUMBER_OF_CODES;
   return STATUS_CODE_OK;
 }
