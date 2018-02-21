@@ -50,15 +50,14 @@ int main() {
 
   Ads1015Storage storage;
   i2c_init(I2C_PORT_2, &i2c_settings);
-printf("*********************************************************************\n");
   ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, NULL, &storage);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, true, NULL, &storage);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, NULL, &storage);
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_3, true, NULL, &storage);
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, false, NULL, &storage);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_3, false, NULL, &storage);
   adc_init(ADC_MODE_CONTINUOUS);
-
+    
   digital_io_init();
   analog_io_init();
 
