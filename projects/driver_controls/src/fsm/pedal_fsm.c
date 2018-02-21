@@ -1,5 +1,16 @@
-// Responds to drive output update requests by updating the associated data
-// Note that this is accomplished by transitioning back to the current state.
+// Updates to the drive output module are driven by the update requested events
+// The throttle module should continuously provide updates to move between states, but its data
+// will be polled on state outputs. This is so that we can handle mechanical braking and cruise
+// control properly. Since the throttle module is still providing updates, state changes will cause
+// drive output updates to ensure that major changes are reflected in the periodic updates.
+// If the throttle is not in a braking state while the mechanical brakes are pressed, it will be
+// set to coast.
+// TODO: is this the right way of doing it? seems to pull in dependencies that we don't need to
+// since the throttle module should already be raising events
+// however the mechanical brake only raises one event
+// if we're in the brake state due to mechanical braking or in the cruise control state, we rely on
+// the update request to update the drive output module.
+// TODO: should merge mechanical brake into pedal fsm?
 #include "pedal_fsm.h"
 #include "drive_output.h"
 #include "event_arbiter.h"
@@ -32,7 +43,6 @@ FSM_STATE_TRANSITION(state_coast) {
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_BRAKE, state_brake);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_PRESSED, state_driving);
-  // TODO: should we allow cruise control to be started from neutral?
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_cruise_control);
 }
 
@@ -59,7 +69,10 @@ FSM_STATE_TRANSITION(state_cruise_control) {
   // Cruise control exits either through hitting the cruise control switch or by engaging the
   // mechanical brake
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_brake);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_brake);
+  // TODO: verify what behavior is expected from exiting cruise control - it should probably be
+  // based on the actual behavior
+  // We enter coast as a safe default, but the next throttle command should update the proper state.
+  FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_coast);
 }
 
 // Pedal FSM output functions
