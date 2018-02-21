@@ -1,4 +1,6 @@
 #pragma once
+#include "event_queue.h"
+#include "status.h"
 
 typedef enum { LIGHTS_BOARD_FRONT, LIGHTS_BOARD_REAR } BoardType;
 
