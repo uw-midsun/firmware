@@ -11,6 +11,7 @@ typedef enum {
   EVENT_SIGNAL_LEFT,
   EVENT_SIGNAL_RIGHT,
   EVENT_SIGNAL_HAZARD,
+  EVENT_SYNC,
   // can internal events
   EVENT_CAN_RX,
   EVENT_CAN_TX,
