@@ -34,8 +34,8 @@ typedef struct Ads1015Storage {
   GPIOAddress ready_pin;
   int16_t channel_readings[NUM_ADS1015_CHANNELS];
   Ads1015Channel current_channel;
-  uint8_t channel_enable_bitset;
-  uint8_t channel_enable_bitset_pending;
+  uint8_t channel_bitset;
+  uint8_t pending_channel_bitset;
   Ads1015Callback channel_callback[NUM_ADS1015_CHANNELS];
   void *callback_context[NUM_ADS1015_CHANNELS];
 } Ads1015Storage;

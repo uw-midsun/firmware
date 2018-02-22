@@ -15,16 +15,15 @@
 
 // Checks if a channel is enabled (true) or disabled (false).
 static bool channel_is_enabled(Ads1015Storage *storage, Ads1015Channel channel) {
-  return ((storage->channel_enable_bitset & (1 << channel)) != 0);
+  return ((storage->channel_bitset & (1 << channel)) != 0);
 }
 
-// Updates the channel_enable_bitset when a channel is enabled/disabled.
-static void prv_mark_channel_enabled(Ads1015Channel channel, bool enable,
-                                     uint8_t *channel_enable_bitset) {
+// Updates the channel_bitset when a channel is enabled/disabled.
+static void prv_mark_channel_enabled(Ads1015Channel channel, bool enable, uint8_t *channel_bitset) {
   if (enable) {
-    *channel_enable_bitset |= (1 << channel);
+    *channel_bitset |= (1 << channel);
   } else {
-    *channel_enable_bitset &= ~(1 << channel);
+    *channel_bitset &= ~(1 << channel);
   }
 }
 
@@ -63,7 +62,7 @@ static StatusCode prv_set_channel(Ads1015Storage *storage, Ads1015Channel channe
 static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
   Ads1015Storage *storage = context;
   Ads1015Channel current_channel = storage->current_channel;
-  uint8_t channel_enable_bitset = storage->channel_enable_bitset;
+  uint8_t channel_bitset = storage->channel_bitset;
   uint8_t read_conv_register[2] = { 0, 0 };
   if (channel_is_enabled(storage, current_channel)) {
     prv_read_register(storage->i2c_port, storage->i2c_addr, ADS1015_ADDRESS_POINTER_CONV,
@@ -80,12 +79,12 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
     }
   }
 
-  prv_mark_channel_enabled(current_channel, false, &storage->channel_enable_bitset_pending);
-  if (storage->channel_enable_bitset_pending == ADS1015_BITSET_EMPTY) {
+  prv_mark_channel_enabled(current_channel, false, &storage->pending_channel_bitset);
+  if (storage->pending_channel_bitset == ADS1015_BITSET_EMPTY) {
     // Reset the pending bitset once gone through a cycle of channel rotation.
-    storage->channel_enable_bitset_pending = channel_enable_bitset;
+    storage->pending_channel_bitset = channel_bitset;
   }
-  current_channel = __builtin_ffs(storage->channel_enable_bitset_pending) - 1;
+  current_channel = __builtin_ffs(storage->pending_channel_bitset) - 1;
   // Update so that the ADS1015 reads from the next channel.
   prv_set_channel(storage, current_channel);
 }
@@ -137,34 +136,34 @@ StatusCode ads1015_configure_channel(Ads1015Storage *storage, Ads1015Channel cha
   }
   status_ok_or_return(gpio_it_mask_interrupt(&storage->ready_pin, true));
 
-  uint8_t channel_enable_bitset = storage->channel_enable_bitset;
-  prv_mark_channel_enabled(channel, enable, &storage->channel_enable_bitset);
-  storage->channel_enable_bitset_pending = storage->channel_enable_bitset;
-
-  if ((channel_enable_bitset == ADS1015_BITSET_EMPTY) && enable) {
-    // Activate the interrupt since the first channel is being enabled.
-    status_ok_or_return(prv_set_channel(storage, channel));
-    status_ok_or_return(gpio_it_mask_interrupt(&storage->ready_pin, false));
-  } else if (!enable) {
-    storage->channel_readings[channel] = ADS1015_DISABLED_CHANNEL_READING;
-  }
+  uint8_t channel_bitset = storage->channel_bitset;
+  prv_mark_channel_enabled(channel, enable, &storage->channel_bitset);
+  storage->pending_channel_bitset = storage->channel_bitset;
   storage->channel_callback[channel] = callback;
   storage->callback_context[channel] = context;
-  status_ok_or_return(gpio_it_mask_interrupt(&storage->ready_pin, false));
-  if (storage->channel_enable_bitset == ADS1015_BITSET_EMPTY) {
-    status_ok_or_return(gpio_it_mask_interrupt(&storage->ready_pin, true));
+
+  if ((channel_bitset == ADS1015_BITSET_EMPTY) && enable) {
+    // Set the given channel since the first channel is being enabled.
+    status_ok_or_return(prv_set_channel(storage, channel));
+  } else if (!enable) {
+    // Set the reading to an invalid value if channel is being disabled.
+    storage->channel_readings[channel] = ADS1015_DISABLED_CHANNEL_READING;
   }
+
+  bool mask = (storage->channel_bitset == ADS1015_BITSET_EMPTY);
+  // Unmask the interrupt if at least one channel is enabled.
+  // Mask if all channels are disabled.
+  status_ok_or_return(gpio_it_mask_interrupt(&storage->ready_pin, mask));
   return STATUS_CODE_OK;
 }
 
 // Reads raw 12 bit conversion results which are expressed in two's complement format.
 StatusCode ads1015_read_raw(Ads1015Storage *storage, Ads1015Channel channel, int16_t *reading) {
-  if (channel >= NUM_ADS1015_CHANNELS || storage == NULL || reading == NULL) {
+  if (channel >= NUM_ADS1015_CHANNELS || storage == NULL || reading == NULL ||
+      !channel_is_enabled(storage, channel)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
-  if (!channel_is_enabled(storage, channel)) {
-    return status_code(STATUS_CODE_INVALID_ARGS);
-  }
+
   *reading = storage->channel_readings[channel];
   return STATUS_CODE_OK;
 }
@@ -172,12 +171,11 @@ StatusCode ads1015_read_raw(Ads1015Storage *storage, Ads1015Channel channel, int
 // Reads conversion value in mVolt.
 StatusCode ads1015_read_converted(Ads1015Storage *storage, Ads1015Channel channel,
                                   int16_t *reading) {
-  if (channel >= NUM_ADS1015_CHANNELS || storage == NULL || reading == NULL) {
+  if (channel >= NUM_ADS1015_CHANNELS || storage == NULL || reading == NULL ||
+      !channel_is_enabled(storage, channel)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
-  if (!channel_is_enabled(storage, channel)) {
-    return status_code(STATUS_CODE_INVALID_ARGS);
-  }
+
   int16_t raw_reading = ADS1015_READ_UNSUCCESSFUL;
   status_ok_or_return(ads1015_read_raw(storage, channel, &raw_reading));
   *reading = (raw_reading * ADS1015_CURRENT_FSR) / ADS1015_NUMBER_OF_CODES;

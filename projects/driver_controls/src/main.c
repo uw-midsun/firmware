@@ -33,12 +33,6 @@ typedef struct FSMGroup {
   FSM horn;
   FSM push_to_talk;
 } FSMGroup;
-/*
-static void prv_callback(Ads1015Channel channel, void *context) {
-  bool *callback_called = context;
-  printf("\n %d %d %d %d\n", 5, 5, 5, 5);
-  (*callback_called) = true;
-}*/
 
 int main() {
   FSMGroup fsm_group;
@@ -49,23 +43,23 @@ int main() {
   interrupt_init();
   gpio_it_init();
 
-  GPIOAddress ready_pin = { GPIO_PORT_B, 2 };
+  GPIOAddress ready_pin = {
+    .port = GPIO_PORT_B,  //
+    .pin = 2,             //
+  };
   I2CSettings i2c_settings = {
-    .speed = I2C_SPEED_FAST, .scl = { GPIO_PORT_B, 10 }, .sda = { GPIO_PORT_B, 11 }
+    .speed = I2C_SPEED_FAST,                    //
+    .scl = { .port = GPIO_PORT_B, .pin = 10 },  //
+    .sda = { .port = GPIO_PORT_B, .pin = 11 },  //
   };
 
   Ads1015Storage storage;
   i2c_init(I2C_PORT_2, &i2c_settings);
   ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
-
-  bool callback_called_0 = false;
-  bool callback_called_1 = false;
-  bool callback_called_2 = false;
-  bool callback_called_3 = false;
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, false, NULL, &callback_called_0);
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, false, NULL, &callback_called_1);
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, false, NULL, &callback_called_2);
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_3, false, NULL, &callback_called_3);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, NULL, NULL);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, true, NULL, NULL);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, NULL, NULL);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_3, true, NULL, NULL);
 
   adc_init(ADC_MODE_CONTINUOUS);
 
