@@ -8,7 +8,6 @@
 // holds the state of each channel(enable/disable). The pending bitset determines
 // the next enabled channel by the find first set operation.
 #include <status.h>
-#include <stdio.h>
 #include <string.h>
 #include "ads1015_def.h"
 #include "gpio_it.h"
