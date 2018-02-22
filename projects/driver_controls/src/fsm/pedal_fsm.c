@@ -10,7 +10,8 @@
 // however the mechanical brake only raises one event
 // if we're in the brake state due to mechanical braking or in the cruise control state, we rely on
 // the update request to update the drive output module.
-// TODO: should merge mechanical brake into pedal fsm?
+// We probably still want to support regen braking if mechanical braking is active
+// todo: move cruise control out of the pedal FSM?
 #include "pedal_fsm.h"
 #include "drive_output.h"
 #include "event_arbiter.h"
@@ -98,6 +99,15 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     drive_output_update(storage, DRIVE_OUTPUT_SOURCE_THROTTLE,
                         (fsm->current_state == &state_brake) ? -1234 : 1234);
   }
+}
+
+static void prv_cruise_output(FSM *fsm, const Event *e, void *context) {
+  DriveOutputStorage *storage = drive_output_global();
+
+  // TODO actually get target value
+  // set throttle position to 0? might be nice to keep the actual position for debug
+  drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, 1234);
+  drive_output_update(storage, DRIVE_OUTPUT_SOURCE_THROTTLE, 0);
 }
 
 StatusCode pedal_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
