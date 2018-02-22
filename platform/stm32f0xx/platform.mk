@@ -41,20 +41,20 @@ OPENOCD_CFG := -s $(OPENOCD_SCRIPT_DIR) \
                -f $(SCRIPT_DIR)/stm32f0-openocd.cfg
 
 # Platform targets
-.PHONY: program gdb
+.PHONY: program gdb target
 
 program: $(GDB_TARGET:$(PLATFORM_EXT)=.bin)
 	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash $<" -c shutdown
 
 gdb: $(GDB_TARGET)
-	@pkill openocd || true
+	@pkill $(OPENOCD) || true
 	@setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
 	@$(GDB) $< -x "$(SCRIPT_DIR)/gdb_flash"
-	@pkill openocd
+	@pkill $(OPENOCD)
 
 define session_wrapper
 setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
-$1; pkill openocd
+$1; pkill $(OPENOCD)
 endef
 
 # Defines command to run for unit testing

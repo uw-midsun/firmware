@@ -4,13 +4,22 @@
 #include <string.h>
 
 #include "adc.h"
+#include "can_msg_defs.h"
+#include "can_transmit.h"
 #include "chaos_events.h"
 #include "event_queue.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "interrupt.h"
+#include "log.h"
 #include "soft_timer.h"
 #include "status.h"
+
+// All values in millivolts
+#define POWER_PATH_AUX_UV_MILLIV 8460
+#define POWER_PATH_AUX_OV_MILLIV 14310
+#define POWER_PATH_DCDC_UV_MILLIV 11160
+#define POWER_PATH_DCDC_OV_MILLIV 12840
 
 // Evaluates if two GPIO addresses are equal.
 static bool prv_addr_eq(GPIOAddress addr1, GPIOAddress addr2) {
@@ -20,10 +29,21 @@ static bool prv_addr_eq(GPIOAddress addr1, GPIOAddress addr2) {
 // Interrupt handler for over and under voltage warnings.
 static void prv_voltage_warning(const GPIOAddress *addr, void *context) {
   PowerPathCfg *pp = context;
+  PowerPathVCReadings readings = { 0 };
+  StatusCode status = STATUS_CODE_OK;
   if (prv_addr_eq(*addr, pp->dcdc.uv_ov_pin) && pp->dcdc.monitoring_active) {
-    event_raise(CHAOS_EVENT_CAN_UV_OV, POWER_PATH_SOURCE_ID_DCDC);
+    power_path_read_source(&pp->dcdc, &readings);
+    status =
+        CAN_TRANSMIT_OVUV_DCDC_AUX((readings.voltage >= POWER_PATH_DCDC_OV_MILLIV),
+                                   (readings.voltage <= POWER_PATH_DCDC_UV_MILLIV), false, false);
   } else if (prv_addr_eq(*addr, pp->aux_bat.uv_ov_pin) && pp->aux_bat.monitoring_active) {
-    event_raise(CHAOS_EVENT_CAN_UV_OV, POWER_PATH_SOURCE_ID_AUX_BAT);
+    power_path_read_source(&pp->aux_bat, &readings);
+    status =
+        CAN_TRANSMIT_OVUV_DCDC_AUX(false, false, (readings.voltage >= POWER_PATH_AUX_OV_MILLIV),
+                                   (readings.voltage <= POWER_PATH_AUX_UV_MILLIV));
+  }
+  if (!status_ok(status)) {
+    event_raise(CHAOS_EVENT_CAN_TRANSMIT_ERROR, SYSTEM_CAN_MESSAGE_OVUV_DCDC_AUX);
   }
 }
 
@@ -131,4 +151,25 @@ StatusCode power_path_read_source(const PowerPathSource *source, PowerPathVCRead
 
   *values = source->readings;
   return STATUS_CODE_OK;
+}
+
+bool power_path_process_event(PowerPathCfg *cfg, const Event *e) {
+  PowerPathSource *source = NULL;
+  if (e->data == POWER_PATH_SOURCE_ID_DCDC) {
+    source = &cfg->dcdc;
+  } else if (e->data == POWER_PATH_SOURCE_ID_AUX_BAT) {
+    source = &cfg->aux_bat;
+  } else {
+    return false;
+  }
+
+  if (e->id == CHAOS_EVENT_MONITOR_ENABLE) {
+    power_path_source_monitor_enable(source, source->period_us);
+    return true;
+  } else if (e->id == CHAOS_EVENT_MONITOR_DISABLE) {
+    power_path_source_monitor_disable(source);
+    return true;
+  }
+
+  return false;
 }
