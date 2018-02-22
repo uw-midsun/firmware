@@ -50,7 +50,7 @@ def fetch_release(url, tag, output_file):
     """
     popen = subprocess.Popen(
         [
-            'curl -s {}{} | grep "{}" | cut -d : -f 2,3 |tr -d \\" | wget -qi -'.
+            'curl -A "curl" -s {}{} | grep "{}" | cut -d : -f 2,3 |tr -d \\" | wget -qi -'.
             format(url, tag, output_file)
         ],
         shell=True,
