@@ -56,8 +56,9 @@ StatusCode chaos_can_init(CANSettings *settings) {
       can_init(settings, &s_can_storage, s_can_rx_handlers, SIZEOF_ARRAY(s_can_rx_handlers)));
 
   status_ok_or_return(
-      can_register_rx_handler(CAN_MESSAGE_POWER_STATE, prv_power_state_callback, NULL));
-  status_ok_or_return(can_register_rx_handler(CAN_MESSAGE_BPS_FAULT, prv_bps_fault_callback, NULL));
+      can_register_rx_handler(SYSTEM_CAN_MESSAGE_POWER_STATE, prv_power_state_callback, NULL));
+  status_ok_or_return(
+      can_register_rx_handler(SYSTEM_CAN_MESSAGE_BPS_FAULT, prv_bps_fault_callback, NULL));
   return STATUS_CODE_OK;
 }
 
