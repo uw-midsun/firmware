@@ -13,12 +13,12 @@
 #define OBJPOOL_MAX_NODES 64
 
 // Function to initialize nodes with
-typedef void (*objpool_node_init_fn)(void *node, void *context);
+typedef void (*ObjpoolNodeInitFn)(void *node, void *context);
 
 typedef struct ObjectPool {
   void *nodes;
   void *context;
-  objpool_node_init_fn init_node;
+  ObjpoolNodeInitFn init_node;
   size_t num_nodes;
   size_t node_size;
   uint64_t free_bitset;
@@ -31,7 +31,7 @@ typedef struct ObjectPool {
 
 // Initializes an object pool. The specified context is provided for node initialization.
 StatusCode objpool_init_verbose(ObjectPool *pool, void *nodes, size_t node_size, size_t num_nodes,
-                                objpool_node_init_fn init_node, void *context);
+                                ObjpoolNodeInitFn init_node, void *context);
 
 // Returns the pointer to an object from the pool.
 void *objpool_get_node(ObjectPool *pool);
