@@ -154,7 +154,8 @@ void test_relay_retry_limit(void) {
   can_register_rx_default_handler(prv_rx_handler, &ack_status);
 
   // Start the FSM.
-  Event e = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY };
+  Event e = { 0 };
+  TEST_ASSERT_OK(relay_fsm_close_event(RELAY_ID_BATTERY, &e));
   TEST_ASSERT_TRUE(relay_process_event(&e));
 
   // Track the number of retries.
@@ -191,7 +192,8 @@ void test_relay_concurrent(void) {
   can_register_rx_default_handler(prv_rx_handler, &ack_status);
 
   // Close the battery relay using the same harness as the previous test.
-  Event e = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY };
+  Event e = { 0 };
+  TEST_ASSERT_OK(relay_fsm_close_event(RELAY_ID_BATTERY, &e));
   TEST_ASSERT_TRUE(relay_process_event(&e));
 
   StatusCode status = NUM_STATUS_CODES;
@@ -208,8 +210,7 @@ void test_relay_concurrent(void) {
   }
 
   // Close the main power relay.
-  e.id = CHAOS_EVENT_CLOSE_RELAY;
-  e.data = RELAY_ID_MAIN_POWER;
+  TEST_ASSERT_OK(relay_fsm_close_event(RELAY_ID_MAIN_POWER, &e));
   TEST_ASSERT_TRUE(relay_process_event(&e));
 
   while (!(e.id == CHAOS_EVENT_RELAY_CLOSED && e.data == RELAY_ID_MAIN_POWER)) {
@@ -224,8 +225,7 @@ void test_relay_concurrent(void) {
   }
 
   // Open the main power relay.
-  e.id = CHAOS_EVENT_OPEN_RELAY;
-  e.data = RELAY_ID_MAIN_POWER;
+  TEST_ASSERT_OK(relay_fsm_open_event(RELAY_ID_MAIN_POWER, &e));
   TEST_ASSERT_TRUE(relay_process_event(&e));
 
   while (!(e.id == CHAOS_EVENT_RELAY_OPENED && e.data == RELAY_ID_MAIN_POWER)) {
@@ -239,9 +239,8 @@ void test_relay_concurrent(void) {
     }
   }
 
-  // Close the battery relay.
-  e.id = CHAOS_EVENT_OPEN_RELAY;
-  e.data = RELAY_ID_BATTERY;
+  // Open the battery relay.
+  TEST_ASSERT_OK(relay_fsm_open_event(RELAY_ID_BATTERY, &e));
   TEST_ASSERT_TRUE(relay_process_event(&e));
 
   while (!(e.id == CHAOS_EVENT_RELAY_OPENED && e.data == RELAY_ID_BATTERY)) {

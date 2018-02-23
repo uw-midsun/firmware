@@ -133,3 +133,21 @@ StatusCode relay_fsm_create(FSM *fsm, RelayId relay_id, const char *fsm_name,
   fsm_init(fsm, fsm_name, &relay_opened, &s_fsm_ctxs[relay_id]);
   return STATUS_CODE_OK;
 }
+
+StatusCode relay_fsm_open_event(RelayId relay_id, Event *e) {
+  if (relay_id >= NUM_RELAY_IDS) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+  e->id = CHAOS_EVENT_OPEN_RELAY;
+  e->data = relay_id;
+  return STATUS_CODE_OK;
+}
+
+StatusCode relay_fsm_close_event(RelayId relay_id, Event *e) {
+  if (relay_id >= NUM_RELAY_IDS) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+  e->id = CHAOS_EVENT_CLOSE_RELAY;
+  e->data = relay_id;
+  return STATUS_CODE_OK;
+}
