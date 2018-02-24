@@ -14,21 +14,21 @@
 
 static FSM s_gpio_fsm;
 
-FSM_DECLARE_STATE(idle);
-FSM_DECLARE_STATE(charge);
-FSM_DECLARE_STATE(drive);
+FSM_DECLARE_STATE(gpio_state_idle);
+FSM_DECLARE_STATE(gpio_state_charge);
+FSM_DECLARE_STATE(gpio_state_drive);
 
-FSM_STATE_TRANSITION(idle) {
-  FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_CHARGE, charge);
-  FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_DRIVE, drive);
+FSM_STATE_TRANSITION(gpio_state_idle) {
+  FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_CHARGE, gpio_state_charge);
+  FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_DRIVE, gpio_state_drive);
 }
 
-FSM_STATE_TRANSITION(charge) {
-  FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_IDLE, idle);
+FSM_STATE_TRANSITION(gpio_state_charge) {
+  FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_IDLE, gpio_state_idle);
 }
 
-FSM_STATE_TRANSITION(drive) {
-  FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_IDLE, idle);
+FSM_STATE_TRANSITION(gpio_state_drive) {
+  FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_IDLE, gpio_state_idle);
 }
 
 static void prv_gpio_state_idle(FSM *fsm, const Event *e, void *context) {
@@ -66,10 +66,10 @@ static void prv_gpio_state_drive(FSM *fsm, const Event *e, void *context) {
 }
 
 void gpio_fsm_init(const ChaosConfig *cfg) {
-  fsm_state_init(idle, prv_gpio_state_idle);
-  fsm_state_init(charge, prv_gpio_state_charge);
-  fsm_state_init(drive, prv_gpio_state_drive);
-  fsm_init(&s_gpio_fsm, "GpioFsm", &idle, cfg);
+  fsm_state_init(gpio_state_idle, prv_gpio_state_idle);
+  fsm_state_init(gpio_state_charge, prv_gpio_state_charge);
+  fsm_state_init(gpio_state_drive, prv_gpio_state_drive);
+  fsm_init(&s_gpio_fsm, "GpioFsm", &gpio_state_idle, (void *)cfg);
 
   GPIOSettings settings = {
     .direction = GPIO_DIR_OUT,

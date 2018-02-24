@@ -24,17 +24,29 @@ void test_gpio_fsm(void) {
     .id = CHAOS_EVENT_GPIO_CHARGE,
   };
 
-  // Don't bother with testing the GPIO setting component since gpio_seq and gpio libraries will
-  // handle this.
+  // Note: Don't bother with testing the GPIO setting component since gpio_seq and gpio libraries
+  // will handle this.
+
+  // Valid: idle -> charge
   TEST_ASSERT_TRUE(gpio_fsm_process_event(&e));
+
+  // Invalid: charge -> drive
   e.id = CHAOS_EVENT_GPIO_DRIVE;
   TEST_ASSERT_FALSE(gpio_fsm_process_event(&e));
+
+  // Valid: charge -> idle
   e.id = CHAOS_EVENT_GPIO_IDLE;
   TEST_ASSERT_TRUE(gpio_fsm_process_event(&e));
+
+  // Valid: idle -> drive
   e.id = CHAOS_EVENT_GPIO_DRIVE;
   TEST_ASSERT_TRUE(gpio_fsm_process_event(&e));
+
+  // Invalid: drive -> charge
   e.id = CHAOS_EVENT_GPIO_CHARGE;
   TEST_ASSERT_FALSE(gpio_fsm_process_event(&e));
+
+  // Valid: drive -> idle
   e.id = CHAOS_EVENT_GPIO_IDLE;
   TEST_ASSERT_TRUE(gpio_fsm_process_event(&e));
 }
