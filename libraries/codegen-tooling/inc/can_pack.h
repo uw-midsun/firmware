@@ -3,8 +3,11 @@
 #include "can_msg_defs.h"
 #include "can_pack_impl.h"
 
-#define CAN_PACK_BPS_FAULT(msg_ptr) \
-  can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_PLUTUS, SYSTEM_CAN_MESSAGE_BPS_FAULT)
+#define CAN_PACK_BPS_HEARTBEAT(msg_ptr, status_u8)                                             \
+  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_PLUTUS, SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT, 1,   \
+                   (status_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,              \
+                   CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_BATTERY_RELAY(msg_ptr, relay_state_u8)                                     \
   can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_CHAOS, SYSTEM_CAN_MESSAGE_BATTERY_RELAY, 1, \
@@ -35,6 +38,9 @@
                    1, (power_state_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                \
                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                \
                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
+
+#define CAN_PACK_POWERTRAIN_HEARTBEAT(msg_ptr) \
+  can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_CHAOS, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT)
 
 #define CAN_PACK_OVUV_DCDC_AUX(msg_ptr, dcdc_ov_flag_u8, dcdc_uv_flag_u8, aux_bat_ov_flag_u8, \
                                aux_bat_uv_flag_u8)                                            \

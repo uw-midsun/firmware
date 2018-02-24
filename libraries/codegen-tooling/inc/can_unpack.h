@@ -3,7 +3,10 @@
 #include "can_msg_defs.h"
 #include "can_unpack_impl.h"
 
-#define CAN_UNPACK_BPS_FAULT(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
+#define CAN_UNPACK_BPS_HEARTBEAT(msg_ptr, status_u8_ptr)                                          \
+  can_unpack_impl_u8((msg_ptr), 1, (status_u8_ptr), CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY,         \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
 #define CAN_UNPACK_BATTERY_RELAY(msg_ptr, relay_state_u8_ptr)                             \
   can_unpack_impl_u8((msg_ptr), 1, (relay_state_u8_ptr), CAN_UNPACK_IMPL_EMPTY,           \
@@ -29,6 +32,8 @@
   can_unpack_impl_u8((msg_ptr), 1, (power_state_u8_ptr), CAN_UNPACK_IMPL_EMPTY,           \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
+
+#define CAN_UNPACK_POWERTRAIN_HEARTBEAT(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
 
 #define CAN_UNPACK_OVUV_DCDC_AUX(msg_ptr, dcdc_ov_flag_u8_ptr, dcdc_uv_flag_u8_ptr,             \
                                  aux_bat_ov_flag_u8_ptr, aux_bat_uv_flag_u8_ptr)                \
