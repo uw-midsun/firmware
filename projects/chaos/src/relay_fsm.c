@@ -83,11 +83,10 @@ FSM_STATE_TRANSITION(relay_opening) {
 static void prv_relay_transmit(RelayId id, RelayState state, const CANAckRequest *ack_request) {
   switch (id) {
     case RELAY_ID_SOLAR_MASTER_FRONT:
-      // TODO(ELEC-105): Replace with solar front/back.
-      CAN_TRANSMIT_SOLAR_RELAY(ack_request, state);
+      CAN_TRANSMIT_SOLAR_RELAY_FRONT(ack_request, state);
       return;
     case RELAY_ID_SOLAR_MASTER_REAR:
-      CAN_TRANSMIT_SOLAR_RELAY(ack_request, state);
+      CAN_TRANSMIT_SOLAR_RELAY_REAR(ack_request, state);
       return;
     case RELAY_ID_BATTERY:
       CAN_TRANSMIT_BATTERY_RELAY(ack_request, state);
