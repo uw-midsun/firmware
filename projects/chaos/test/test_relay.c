@@ -38,7 +38,7 @@ void setup_test(void) {
   soft_timer_init();
 
   CANSettings settings = {
-    .device_id = CAN_DEVICE_CHAOS,
+    .device_id = SYSTEM_CAN_DEVICE_CHAOS,
     .bitrate = CAN_HW_BITRATE_125KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,
     .tx_event = CHAOS_EVENT_CAN_TX,
