@@ -70,7 +70,7 @@ test_all: socketcan
 test: socketcan
 
 define session_wrapper
-$(ENV_VARS) $1; echo $(TEST)
+$(ENV_VARS) $1
 endef
 
 # Defines command to run for unit testing

@@ -24,7 +24,7 @@ static uint8_t s_x86_interrupt_next_interrupt_id = 0;
 static uint8_t s_x86_interrupt_next_handler_id = 0;
 
 static Interrupt s_x86_interrupt_interrupts_map[NUM_X86_INTERRUPT_INTERRUPTS];
-static x86_interrupt_handler s_x86_interrupt_handlers[NUM_X86_INTERRUPT_HANDLERS];
+static x86InterruptHandler s_x86_interrupt_handlers[NUM_X86_INTERRUPT_HANDLERS];
 
 // Signal handler for all interrupts. Prioritization is handled by the implementation of signals and
 // the init function. Signals of higher priority interrupt the running of this function. All other
@@ -78,7 +78,7 @@ void x86_interrupt_init(void) {
   memset(&s_x86_interrupt_handlers, 0, sizeof(s_x86_interrupt_handlers));
 }
 
-StatusCode x86_interrupt_register_handler(x86_interrupt_handler handler, uint8_t *handler_id) {
+StatusCode x86_interrupt_register_handler(x86InterruptHandler handler, uint8_t *handler_id) {
   if (s_x86_interrupt_next_handler_id >= NUM_X86_INTERRUPT_HANDLERS) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }

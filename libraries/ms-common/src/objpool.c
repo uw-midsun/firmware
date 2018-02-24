@@ -19,7 +19,7 @@
   ((size_t)((uint8_t *)(node) - (uint8_t *)(pool)->nodes) / (pool->node_size))
 
 StatusCode objpool_init_verbose(ObjectPool *pool, void *nodes, size_t node_size, size_t num_nodes,
-                                objpool_node_init_fn init_node, void *context) {
+                                ObjpoolNodeInitFn init_node, void *context) {
   if (num_nodes > OBJPOOL_MAX_NODES) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
