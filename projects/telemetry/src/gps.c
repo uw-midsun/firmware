@@ -17,7 +17,7 @@
 #define GPS_HANDLER_ARRAY_LENGTH 5
 
 static evm_gps_gga_handler s_gga_handler[GPS_HANDLER_ARRAY_LENGTH] = { 0 };
-static UARTStorage s_storage = { 0 };
+static UARTStorage s_storage;
 
 // This is so that initializing multiple times does not cause bugs.
 // To clean up you must call evm_gps_clean_up(EvmSettings *settings)
@@ -25,10 +25,10 @@ static bool s_initialized = false;
 
 static void s_nmea_read(const uint8_t *rx_arr, size_t len, void *context) {
 
-  LOG_DEBUG("Read NMEA message");
+  LOG_DEBUG("Read NMEA message\n");
 
   if (!status_ok(evm_gps_is_valid_nmea(rx_arr, len))) {
-    LOG_DEBUG("Invalid nmea message");
+    LOG_DEBUG("Invalid nmea message\n");
     return;
   }
 
@@ -68,29 +68,37 @@ StatusCode evm_gps_remove_gga_handler(size_t index) {
 
 void prv_stop_ON_OFF(SoftTimerID timer_id, void *context) {
   evm_gps_settings *settings = context;
-  gpio_toggle_state(settings->pin_on_off);
+  gpio_set_state(settings->pin_on_off, GPIO_STATE_LOW);
+  LOG_DEBUG("No longer pulling ON OFF\n");
   // Here we should wait for one second
   // During this period of time we should hear something from the GPS chip
   // If not, start again from pull_ON_OFF
 }
 
 // This is useful as a method for callbacks
-void prv_toggle_chip_power(SoftTimerID timer_id, void *context) {
+void prv_chip_power_state_on(SoftTimerID timer_id, void *context) {
   evm_gps_settings *settings = context;
 
-  LOG_DEBUG("Starting powerup\n");
+  LOG_DEBUG("Sending power to GPS chip\n");
 
-  gpio_toggle_state(settings->pin_power);
+  gpio_set_state(settings->pin_power, GPIO_STATE_HIGH);
+}
+
+// This is useful as a method for callbacks
+void prv_chip_power_state_off(SoftTimerID timer_id, void *context) {
+  evm_gps_settings *settings = context;
+  LOG_DEBUG("Turning power off for GPS chip\n");
+  gpio_set_state(settings->pin_power, GPIO_STATE_LOW);
 }
 
 // This callback should start the initialization sequence
 void prv_pull_ON_OFF(SoftTimerID timer_id, void *context) {
   evm_gps_settings *settings = context;
 
-  LOG_DEBUG("Starting powerup 2\n");
+  LOG_DEBUG("Pulling ON OFF\n");
 
   // Can't really return a StatusCode here. Might need a messy work around / leave it?
-  gpio_toggle_state(settings->pin_on_off);
+  gpio_set_state(settings->pin_on_off, GPIO_STATE_HIGH);
   soft_timer_start_millis(100, prv_stop_ON_OFF, settings, NULL);
 }
 
@@ -103,25 +111,9 @@ StatusCode evm_gps_validate_settings(evm_gps_settings *settings) {
   if (!settings->uart_settings) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "The 'settings->uart_settings' argument is null\n");
   }
-  if (!settings->settings_tx) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "The 'settings->settings_tx' argument is null\n");
-  }
-  if (!settings->settings_rx) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "The 'settings->settings_rx' argument is null\n");
-  }
   if (!settings->settings_power) {
     return status_msg(STATUS_CODE_INVALID_ARGS,
                       "The 'settings->settings_power' argument is null\n");
-  }
-  if (!settings->settings_power) {
-    return status_msg(STATUS_CODE_INVALID_ARGS,
-                      "The 'settings->settings_on_off' argument is null\n");
-  }
-  if (!settings->pin_rx) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "The 'settings->pin_rx' argument is null\n");
-  }
-  if (!settings->pin_tx) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "The 'settings->pin_tx' argument is null\n");
   }
   if (!settings->pin_power) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "The 'settings->pin_power' argument is null\n");
@@ -135,28 +127,24 @@ StatusCode evm_gps_validate_settings(evm_gps_settings *settings) {
 // Initialization of this chip is described on page 10 of:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
 StatusCode evm_gps_init(evm_gps_settings *settings) {
-  LOG_DEBUG("Initializing\n");
+  LOG_DEBUG("Entering GPS initialization\n");
   if (s_initialized) return STATUS_CODE_OK;
+  LOG_DEBUG("Starting GPS initialization\n");
 
   status_ok_or_return(evm_gps_validate_settings(settings));
-
+  LOG_DEBUG("Settings are valid\n");
 
   settings->uart_settings->rx_handler = &s_nmea_read;
   // Makes sure that status codes are handled
-  status_ok_or_return(uart_init(*(settings->port), settings->uart_settings, &s_storage));
-
+  uart_init(*(settings->port), settings->uart_settings, &s_storage);
+  LOG_DEBUG("UART initialized\n");
   // These should already be initialized, but we do so anyway, to make sure
-  interrupt_init();
-  soft_timer_init();
-  status_ok_or_return(gpio_init());
 
-  status_ok_or_return(gpio_init_pin(settings->pin_tx, settings->settings_tx));
-  status_ok_or_return(gpio_init_pin(settings->pin_rx, settings->settings_rx));
   status_ok_or_return(gpio_init_pin(settings->pin_power, settings->settings_power));
   status_ok_or_return(gpio_init_pin(settings->pin_on_off, settings->settings_on_off));
 
   // From the documentation: Power needs to be on for one second before continuing
-  prv_toggle_chip_power(0, settings);
+  prv_chip_power_state_on(0, settings);
   status_ok_or_return(soft_timer_start_seconds(1, prv_pull_ON_OFF, settings, NULL));
   LOG_DEBUG("Initialized\n");
   s_initialized = true;
@@ -167,13 +155,16 @@ StatusCode evm_gps_init(evm_gps_settings *settings) {
 // From page 25 of:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
 StatusCode evm_gps_clean_up(evm_gps_settings *settings) {
+
   // This string is taken from the pdf mentioned above. The \r\n may not be necessary depending on
   // if the uart library adds it automatically or not.
   // The char array below should read $PSRF117,16*0B\r\n
   uint8_t message[] = { '$', 'P', 'S', 'R', 'F', '1', '1',  '7',
-                        ',', '1', '6', '*', '0', 'B', '\r', '\n' };
-  status_ok_or_return(uart_tx(*(settings->port), message, sizeof(message) / sizeof(message[0])));
-  status_ok_or_return(soft_timer_start_seconds(1, prv_toggle_chip_power, settings, NULL));
+                        ',', '1', '6', '*', '0', 'B'};
+
+  status_ok_or_return(uart_tx(*(settings->port), (uint8_t *) &message, sizeof(message)));
+  LOG_DEBUG("Sent shutdown message to GPS chip\n");
+  status_ok_or_return(soft_timer_start_seconds(1, prv_chip_power_state_off, settings, NULL));
 
   memset(&s_gga_handler, 0, SIZEOF_ARRAY(s_gga_handler));
   memset(&s_storage, 0, sizeof(s_storage));

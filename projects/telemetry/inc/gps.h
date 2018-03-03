@@ -13,8 +13,6 @@ typedef void (*evm_gps_gga_handler)(const evm_gps_gga_sentence);
 typedef struct {
   UARTPort *port;
   UARTSettings *uart_settings;    // The uart settings to be used
-  GPIOSettings *settings_tx;      // Pin configurations
-  GPIOSettings *settings_rx;      // Transmitting and receiving pins
   GPIOSettings *settings_power;   // Pin which provides power
   GPIOSettings *settings_on_off;  // Pin to power up the device
   GPIOAddress *pin_rx;            // Pin addresses
