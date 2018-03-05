@@ -1,10 +1,15 @@
 #pragma once
 // Module for the throttle.
 // Requires Ads1015, and soft timer to be initialized.
+// The module periodically reads the pedal inputs from ADS1015, translates them into
+// positions and raises the events that correspond to the pedal's position (braking, coasting, and
+// accelerating). It also checks if the readings are stale (in case of a disconnection for
+// example) and could raise a timeout event.
 // To use the module, init the ADS1015 for the pedal and pass its Ads1015Storage to throttle_init,
 // along with the two channels the pedal is connected to. At any time calling throttle_get_position
-// will give the current position of the pedal.
+// will give the current position of the pedal. 
 // Note that throttle_storage should persist across functions.
+// *** The throttle should be calibrated beforehand. ***
 #include <stdint.h>
 #include "ads1015.h"
 #include "soft_timer.h"
@@ -25,6 +30,7 @@ typedef struct ThrottlePosition {
   ThrottleFraction fraction;
 } ThrottlePosition;
 
+// Data that needs to be calibrated.
 typedef struct ThrottleCalibrationData {
   int16_t main_bottom_thresh;
   int16_t main_brake_thresh;
