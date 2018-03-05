@@ -1,12 +1,12 @@
-// The module operates based on the voltag readings that come from the pedals.
+// The module operates based on the voltage readings that come from the pedals.
 // The pedal occupies two channels of the ADS1015 one of which is chosen to be the "main" channel.
 // Everytime ADS1015 finishes a conversion of the pedal input on the main channel,
 // prv_flag_update_callback is called to set two flags accordingly which determine if
-// the readings are up tp date. It also verifies if the second channel is in synch with the main.
-// A periodic safety check, prv_raise_event_timer_callback, checks for
-// these flags and updates the position of the pedal in throttle_storage and raises the events
-// related to the pedal's position(braking, coasting, and accelerating zones).
-// If the data turns out to be stale, a timeout event will be raised.
+// the readings are up to date. A periodic safety check, prv_raise_event_timer_callback, checks 
+// for these flags and if ok, it updates the position of the pedal in throttle_storage and
+// raises the events related to the pedal's position (braking, coasting, and accelerating zones).
+// It also verifies if the second channel is in synch with the main channel.
+// If the data turns out to be stale or channels aren't synched, a timeout event will be raised.
 // The throttle_get_position function simply reads the position from throttle_storage.
 #include "throttle.h"
 #include <string.h>
@@ -24,9 +24,10 @@
 // This tolerance is defined for the scaled-to-12bits measures.
 #define THROTTLE_CHANNEL_SCALED_READINGS_TOLERANCE 10
 
-// Returns true if the channels match their supposed relationship.
-static bool prv_channels_synched(ThrottleStorage *throttle_storage, int16_t reading_main,
-                                 int16_t reading_secondary) {
+    // Returns true if the channels match their supposed relationship.
+    static bool
+    prv_channels_synched(ThrottleStorage *throttle_storage, int16_t reading_main,
+                         int16_t reading_secondary) {
   if (throttle_storage == NULL) {
     return false;
   }
