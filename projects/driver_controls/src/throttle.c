@@ -63,16 +63,16 @@ static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) 
 
   int16_t reading_main;
   int16_t reading_secondary;
-  StatusCode status_code;
-  status_code = ads1015_read_raw(throttle_storage->pedal_ads1015_storage,
+  StatusCode code;
+  code = ads1015_read_raw(throttle_storage->pedal_ads1015_storage,
                                  throttle_storage->channel_main, &reading_main);
-  if (!status_code) {
+  if (!status_ok(code)) {
     event_raise(INPUT_EVENT_PEDAL_TIMEOUT, 0);
     return;
   }
-  status_code = ads1015_read_raw(throttle_storage->pedal_ads1015_storage,
+  code = ads1015_read_raw(throttle_storage->pedal_ads1015_storage,
                                  throttle_storage->channel_secondary, &reading_secondary);
-  if (!status_code) {
+  if (!status_ok(code)) {
     event_raise(INPUT_EVENT_PEDAL_TIMEOUT, 0);
     return;
   }
