@@ -17,6 +17,9 @@
 #include "soft_timer.h"
 #include "status.h"
 
+// The time period between every update of the pedal readings.
+#define THROTTLE_UPDATE_PERIOD_MS 50
+
 typedef enum {
   THROTTLE_ZONE_BRAKE = 0,
   THROTTLE_ZONE_COAST,

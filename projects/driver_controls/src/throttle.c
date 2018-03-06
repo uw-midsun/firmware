@@ -13,9 +13,6 @@
 #include "event_queue.h"
 #include "input_event.h"
 
-// The time period between every update of the pedal readings.
-#define THROTTLE_UPDATE_PERIOD_MS 50
-
 // Scales a reading to a measure out of 12 bits based on the given range.
 #define THROTTLE_SCALE_READING_TO_12_BITS(reading, upper_bound, lower_bound) \
   ((1 << 12) * ((reading) - (lower_bound)) / ((upper_bound) - (lower_bound)))
