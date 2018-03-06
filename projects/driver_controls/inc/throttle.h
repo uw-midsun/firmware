@@ -7,9 +7,11 @@
 // example) and could raise a timeout event.
 // To use the module, init the ADS1015 for the pedal and pass its Ads1015Storage to throttle_init,
 // along with the two channels the pedal is connected to. At any time calling throttle_get_position
-// will give the current position of the pedal. 
-// Note that throttle_storage should persist across functions.
-// *** The throttle should be calibrated beforehand. ***
+// will give the current position of the pedal.
+// * throttle_storage should persist across functions.
+// ** The throttle should be calibrated beforehand. The throttle_set_calibration_data function
+// provides a temporary method for doing so manually before a calibration routine is implemented.
+
 #include <stdint.h>
 #include "ads1015.h"
 #include "soft_timer.h"
@@ -49,7 +51,7 @@ typedef struct ThrottleStorage {
   Ads1015Channel channel_secondary;
   SoftTimerID raise_event_timer_id;
   ThrottlePosition position;
-  ThrottleCalibrationData calibration_data;
+  ThrottleCalibrationData *calibration_data;
 } ThrottleStorage;
 
 // Initializes the throttle.
@@ -59,3 +61,7 @@ StatusCode throttle_init(ThrottleStorage *throttle_storage, Ads1015Storage *peda
 
 // Gets the current position of the pedal (writes to ThrottlePosition *position).
 StatusCode throttle_get_position(ThrottleStorage *throttle_storage, ThrottlePosition *position);
+
+// A temporary method for setting the calibration data.
+StatusCode throttle_set_calibration_data(ThrottleStorage *throttle_storage,
+                                         ThrottleCalibrationData *calibration_data);
