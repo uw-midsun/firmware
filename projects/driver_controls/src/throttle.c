@@ -52,6 +52,46 @@ static void prv_flag_update_callback(Ads1015Channel channel, void *context) {
   throttle_storage->reading_ok_flag = true;
 }
 
+static StatusCode prv_set_position_raise_event(ThrottleStorage *throttle_storage,
+                                               int16_t reading_main, int16_t reading_secondary) {
+  if (throttle_storage->reading_updated_flag &&
+      prv_channels_synched(throttle_storage, reading_main, reading_secondary)) {
+
+    if (reading_main < throttle_storage->calibration_data->main_brake_thresh) {
+      // Brake zone.
+      throttle_storage->position.zone = THROTTLE_ZONE_BRAKE;
+      throttle_storage->position.fraction = THROTTLE_SCALE_READING_TO_12_BITS(
+          reading_main, throttle_storage->calibration_data->main_brake_thresh,
+          throttle_storage->calibration_data->main_bottom_thresh);
+      status_ok_or_return(
+          event_raise(INPUT_EVENT_PEDAL_BRAKE, throttle_storage->position.fraction));
+
+    } else if (reading_main < throttle_storage->calibration_data->main_coast_thresh) {
+      // Coast zone.
+      throttle_storage->position.zone = THROTTLE_ZONE_COAST;
+      throttle_storage->position.fraction = THROTTLE_SCALE_READING_TO_12_BITS(
+          reading_main, throttle_storage->calibration_data->main_coast_thresh,
+          throttle_storage->calibration_data->main_brake_thresh);
+      status_ok_or_return(
+          event_raise(INPUT_EVENT_PEDAL_COAST, throttle_storage->position.fraction));
+
+    } else {
+      // Acceleration zone.
+      throttle_storage->position.zone = THROTTLE_ZONE_ACCEL;
+      throttle_storage->position.fraction = THROTTLE_SCALE_READING_TO_12_BITS(
+          reading_main, throttle_storage->calibration_data->main_accel_thresh,
+          throttle_storage->calibration_data->main_coast_thresh);
+      status_ok_or_return(
+          event_raise(INPUT_EVENT_PEDAL_PRESSED, throttle_storage->position.fraction));
+    }
+
+  } else {
+    throttle_storage->reading_ok_flag = false;
+    status_ok_or_return(event_raise(INPUT_EVENT_PEDAL_TIMEOUT, 0));
+  }
+  return STATUS_CODE_OK;
+}
+
 // The periodic callback which checks if readings are up to date and channels are in synch.
 // If they are, the event corresponding to the pedals position is raised.
 // If not, a pedal timout event is raised.
@@ -60,16 +100,17 @@ static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) 
     return;
   }
   ThrottleStorage *throttle_storage = context;
-
   int16_t reading_main;
   int16_t reading_secondary;
   StatusCode code;
+
   code = ads1015_read_raw(throttle_storage->pedal_ads1015_storage, throttle_storage->channel_main,
                           &reading_main);
   if (!status_ok(code)) {
     event_raise(INPUT_EVENT_PEDAL_TIMEOUT, 0);
     return;
   }
+
   code = ads1015_read_raw(throttle_storage->pedal_ads1015_storage,
                           throttle_storage->channel_secondary, &reading_secondary);
   if (!status_ok(code)) {
@@ -77,36 +118,9 @@ static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) 
     return;
   }
 
-  if (throttle_storage->reading_updated_flag &&
-      prv_channels_synched(throttle_storage, reading_main, reading_secondary)) {
-    if (reading_main < throttle_storage->calibration_data->main_brake_thresh) {
-      // Brake zone.
-      throttle_storage->position.zone = THROTTLE_ZONE_BRAKE;
-      throttle_storage->position.fraction = THROTTLE_SCALE_READING_TO_12_BITS(
-          reading_main, throttle_storage->calibration_data->main_brake_thresh,
-          throttle_storage->calibration_data->main_bottom_thresh);
-      event_raise(INPUT_EVENT_PEDAL_BRAKE, throttle_storage->position.fraction);
-
-    } else if (reading_main < throttle_storage->calibration_data->main_coast_thresh) {
-      // Coast zone.
-      throttle_storage->position.zone = THROTTLE_ZONE_COAST;
-      throttle_storage->position.fraction = THROTTLE_SCALE_READING_TO_12_BITS(
-          reading_main, throttle_storage->calibration_data->main_coast_thresh,
-          throttle_storage->calibration_data->main_brake_thresh);
-      event_raise(INPUT_EVENT_PEDAL_COAST, throttle_storage->position.fraction);
-
-    } else {
-      // Acceleration zone.
-      throttle_storage->position.zone = THROTTLE_ZONE_ACCEL;
-      throttle_storage->position.fraction = THROTTLE_SCALE_READING_TO_12_BITS(
-          reading_main, throttle_storage->calibration_data->main_accel_thresh,
-          throttle_storage->calibration_data->main_coast_thresh);
-      event_raise(INPUT_EVENT_PEDAL_PRESSED, throttle_storage->position.fraction);
-    }
-
-  } else {
-    throttle_storage->reading_ok_flag = false;
-    event_raise(INPUT_EVENT_PEDAL_TIMEOUT, 0);
+  code = prv_set_position_raise_event(throttle_storage, reading_main, reading_secondary);
+  if (!status_ok(code)) {
+    return;
   }
 
   throttle_storage->reading_updated_flag = false;
