@@ -9,5 +9,5 @@
 $(T)_DEPS := ms-common
 
 ifeq (x86,$(PLATFORM))
-$(T)_EXCLUDE_TESTS := gpio_expander magnetic_sensor ads1015 	
+$(T)_EXCLUDE_TESTS := gpio_expander magnetic_sensor 	
 endif
