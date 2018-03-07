@@ -1,7 +1,7 @@
 // This module emulates the behavior of ADS1015 on x86.
 // Instead of having interrupts raised by the device once a channel finishes conversion,
 // there is a soft timer with prv_timer_callback that is called periodically to update channel
-// readings and switch to the next channel. The rotation of the channels is implemented using 
+// readings and switch to the next channel. The rotation of the channels is implemented using
 // bitsets. The readings are just a arbitrary value.
 #include "ads1015.h"
 #include <string.h>
