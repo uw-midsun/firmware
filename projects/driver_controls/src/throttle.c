@@ -35,7 +35,12 @@ static bool prv_channels_synced(ThrottleStorage *throttle_storage, int16_t readi
       reading_secondary, throttle_storage->calibration_data->secondary_accel_thresh,
       throttle_storage->calibration_data->secondary_bottom_thresh);
 
-  return (abs(numerator_main - numerator_secondary)) < THROTTLE_CHANNEL_SCALED_READINGS_TOLERANCE;
+  int16_t tolerance = THROTTLE_SCALE_READING_TO_12_BITS(
+      THROTTLE_CHANNEL_SCALED_READINGS_TOLERANCE,
+      throttle_storage->calibration_data->secondary_accel_thresh,
+      throttle_storage->calibration_data->secondary_bottom_thresh);
+  
+  return (abs(numerator_main - numerator_secondary)) < tolerance;
 }
 
 // This callback is called whenever a conversion is done. It sets the flags
