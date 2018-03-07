@@ -23,7 +23,7 @@
 
 // Returns true if the channels match their supposed relationship.
 static bool prv_channels_synced(ThrottleStorage *throttle_storage, int16_t reading_main,
-                                 int16_t reading_secondary) {
+                                int16_t reading_secondary) {
   if (throttle_storage == NULL) {
     return false;
   }
@@ -53,7 +53,6 @@ static StatusCode prv_set_position_raise_event(ThrottleStorage *throttle_storage
                                                int16_t reading_main, int16_t reading_secondary) {
   if (throttle_storage->reading_updated_flag &&
       prv_channels_synced(throttle_storage, reading_main, reading_secondary)) {
-
     if (reading_main < throttle_storage->calibration_data->main_brake_thresh) {
       // Brake zone.
       throttle_storage->position.zone = THROTTLE_ZONE_BRAKE;
@@ -125,16 +124,30 @@ static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) 
                           &throttle_storage->raise_event_timer_id);
 }
 
+// Sets calibration data of the throttle_storage to calibration_data.
+static StatusCode prv_set_calibration_data(ThrottleStorage *throttle_storage,
+                                           ThrottleCalibrationData *calibration_data) {
+  if (throttle_storage == NULL || calibration_data == NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+  throttle_storage->calibration_data = calibration_data;
+  return STATUS_CODE_OK;
+}
+
 // Initializes the throttle by configuring the ADS1015 channels and
 // setting the periodic safety check callback.
-StatusCode throttle_init(ThrottleStorage *throttle_storage, Ads1015Storage *pedal_ads1015_storage,
-                         Ads1015Channel channel_main, Ads1015Channel channel_secondary) {
+StatusCode throttle_init(ThrottleStorage *throttle_storage,
+                         ThrottleCalibrationData *calibration_data,
+                         Ads1015Storage *pedal_ads1015_storage, Ads1015Channel channel_main,
+                         Ads1015Channel channel_secondary) {
   if (throttle_storage == NULL || pedal_ads1015_storage == NULL ||
       channel_main >= NUM_ADS1015_CHANNELS || channel_secondary >= NUM_ADS1015_CHANNELS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
-
   memset(throttle_storage, 0, sizeof(*throttle_storage));
+
+  status_ok_or_return(prv_set_calibration_data(throttle_storage, calibration_data));
+
   // The callback for updating flags is only set on the main channel.
   // Verifying later if the second channel is in sync with the main channel is sufficient.
   status_ok_or_return(ads1015_configure_channel(pedal_ads1015_storage, channel_main, true,
@@ -156,17 +169,8 @@ StatusCode throttle_get_position(ThrottleStorage *throttle_storage, ThrottlePosi
   }
   if (!throttle_storage->reading_ok_flag) {
     return status_code(STATUS_CODE_TIMEOUT);
-  } 
+  }
   position->zone = throttle_storage->position.zone;
   position->numerator = throttle_storage->position.numerator;
-  return STATUS_CODE_OK;
-}
-
-static StatusCode throttle_set_calibration_data(ThrottleStorage *throttle_storage,
-                                         ThrottleCalibrationData *calibration_data) {
-  if (throttle_storage == NULL || calibration_data == NULL) {
-    return status_code(STATUS_CODE_INVALID_ARGS);
-  }
-  throttle_storage->calibration_data = calibration_data;
   return STATUS_CODE_OK;
 }
