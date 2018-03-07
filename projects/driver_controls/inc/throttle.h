@@ -6,11 +6,10 @@
 // accelerating). It also checks if the readings are stale (in case of a disconnection for
 // example) and could raise a timeout event.
 // To use the module, init the ADS1015 for the pedal and pass its Ads1015Storage to throttle_init,
-// along with the two channels the pedal is connected to. At any time calling throttle_get_position
-// will give the current position of the pedal.
-// * throttle_storage should persist across functions.
-// ** The throttle should be calibrated beforehand. The throttle_set_calibration_data function
-// provides a temporary method for doing so manually before a calibration routine is implemented.
+// along with the two channels the pedal is connected to. Also pass a ThrottleCalibrationData
+// initialized with desired values. At any time calling throttle_get_position will give the current
+// position of the pedal.
+// Note that throttle_storage should persist across functions.
 
 #include <stdint.h>
 #include "ads1015.h"
@@ -38,12 +37,12 @@ typedef struct ThrottlePosition {
 
 // Data that needs to be calibrated.
 typedef struct ThrottleCalibrationData {
-  int16_t main_bottom_thresh; // min
+  int16_t main_bottom_thresh;  // min threshold
   int16_t main_brake_thresh;
   int16_t main_coast_thresh;
-  int16_t main_accel_thresh; // max
-  int16_t secondary_bottom_thresh; // min
-  int16_t secondary_accel_thresh; //max
+  int16_t main_accel_thresh;        // max threshold
+  int16_t secondary_bottom_thresh;  // min threshold
+  int16_t secondary_accel_thresh;   // max threshold
   int16_t channel_readings_tolerance;
 } ThrottleCalibrationData;
 
@@ -58,14 +57,12 @@ typedef struct ThrottleStorage {
   ThrottleCalibrationData *calibration_data;
 } ThrottleStorage;
 
-// Initializes the throttle.
+// Initializes the throttle and sets calibration data.
 // Ads1015Storage *pedal_ads1015_storage should be initialized in ads1015_init beforehand.
-StatusCode throttle_init(ThrottleStorage *throttle_storage, Ads1015Storage *pedal_ads1015_storage,
-                         Ads1015Channel channel_0, Ads1015Channel channel_1);
+StatusCode throttle_init(ThrottleStorage *throttle_storage,
+                         ThrottleCalibrationData *calibration_data,
+                         Ads1015Storage *pedal_ads1015_storage, Ads1015Channel channel_0,
+                         Ads1015Channel channel_1);
 
 // Gets the current position of the pedal (writes to ThrottlePosition *position).
 StatusCode throttle_get_position(ThrottleStorage *throttle_storage, ThrottlePosition *position);
-
-// A temporary method for setting the calibration data.
-StatusCode throttle_set_calibration_data(ThrottleStorage *throttle_storage,
-                                         ThrottleCalibrationData *calibration_data);
