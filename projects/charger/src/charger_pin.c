@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 
+#include "charger_events.h"
 #include "event_queue.h"
 #include "gpio.h"
 #include "gpio_it.h"
@@ -13,11 +14,12 @@ static void prv_charger_pin_it(const GPIOAddress *address, void *context) {
   GPIOState state = NUM_GPIO_STATES;
   gpio_get_state(address, &state);
   switch (state) {
+    // TODO(ELEC-355): Determine if this logic is correct.
     case GPIO_STATE_LOW:
-      // TODO(ELEC-355): raise charger attached
+      event_raise(CHARGER_EVENT_DISCONNECTED, 0);
       break;
     case GPIO_STATE_HIGH:
-      // TODO(ELEC-355): raise charger attached
+      event_raise(CHARGER_EVENT_CONNECTED, 0);
     case NUM_GPIO_STATES:
     default:
       // Unreachable
@@ -25,7 +27,7 @@ static void prv_charger_pin_it(const GPIOAddress *address, void *context) {
   }
 }
 
-StatusCode init_charger_pin(const GPIOAddress *address) {
+StatusCode charger_pin_init(const GPIOAddress *address) {
   const GPIOSettings settings = {
     .state = GPIO_STATE_LOW,
     .direction = GPIO_DIR_IN,

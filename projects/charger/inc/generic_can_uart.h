@@ -1,4 +1,6 @@
 #pragma once
+// Module to abstract the UART version of CAN away from the caller.
+// Requires UART to be enabled.
 
 #include <stdint.h>
 
@@ -14,4 +16,5 @@ typedef struct GenericCanUart {
   GenericCanRxStorage rx_storage[NUM_GENERIC_CAN_UART_RX_HANDLERS];
 } GenericCanUart;
 
+// Initialize |out| to use CAN UART on |port|.
 StatusCode generic_can_uart_init(UARTPort port, GenericCanUart* out);

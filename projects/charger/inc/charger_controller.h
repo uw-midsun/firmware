@@ -1,11 +1,12 @@
 #pragma once
+// Module for controlling the charger
+// Requires soft_timers, generic can and interrupts.
 
 #include <stdbool.h>
 #include <stdint.h>
 
 #include "can_interval.h"
 #include "generic_can.h"
-#include "soft_timer.h"
 
 // Defined in datasheet.
 typedef enum ChargerState {
@@ -33,7 +34,11 @@ typedef struct ChargerSettings {
   GenericCan *can_uart;
 } ChargerSettings;
 
-StatusCode charger_init(ChargerSettings *settings, ChargerStatus *status);
+// Initializes the charger controller. Expects |settings| to be fully populated.
+StatusCode charger_controller_init(ChargerSettings *settings, ChargerStatus *status);
 
 // Communicates with charger regarding what should be happening.
-StatusCode charger_set_state(ChargerState state);
+StatusCode charger_controller_set_state(ChargerState state);
+
+// Checks that |status| indicates a safe state.
+bool charger_controller_is_safe(ChargerStatus status);

@@ -6,6 +6,8 @@
 
 #include "can_interval.h"
 #include "can_transmit.h"
+#include "charger_events.h"
+#include "event_queue.h"
 #include "generic_can.h"
 #include "generic_can_msg.h"
 #include "status.h"
@@ -41,14 +43,12 @@ static const J1939CanId s_rx_id = {
   .r = 0,
   .priority = 0x06,  // From datasheet.
 };
-static_assert(CHARGER_EXPECTED_RX_ID == rx_id.raw_id);
 
 typedef struct ChargerControllerTxDataImpl {
   uint16_t max_voltage;
   uint16_t max_current;
   uint8_t charging;
 } ChargerControllerTxDataImpl;
-static_assert(CHARGER_EXPECTED_TX_DLC == sizeof(ChargerControllerTxDataImpl));
 
 typedef union ChargerControllerTxData {
   uint64_t raw_data;
@@ -60,7 +60,6 @@ typedef struct ChargerControllerRxDataImpl {
   uint16_t current;
   ChargerStatus status_flags;
 } ChargerControllerRxDataImpl;
-static_assert(CHARGER_EXPECTED_RX_DLC == sizeof(ChargerControllerRxDataImpl));
 
 typedef union ChargerControllerRxData {
   uint64_t raw_data;
@@ -78,17 +77,14 @@ static void prv_rx_handler(const GenericCanMsg *msg, void *context) {
   *s_charger_status = data.data_impl.status_flags;
 
   // Check for statuses
-  if (data.data_impl.status_flags.raw) {
-    if (data.data_impl.status_flags.starting_state || data.data_impl.status_flags.input_voltage) {
-      // TODO(ELEC-355): Raise event to stop charging since this is a safety issue.
-      charger_set_state(CHARGER_STATE_STOP)
-    }
-    // The other error types indicate issues with the communicating or interacting with the charger.
-    // Continue to try.
+  if (!charger_controller_is_safe(data.data_impl.status_flags)) {
+    // If unsafe immediately stop charging and force the FSM to transition to the unsafe state.
+    charger_controller_set_state(CHARGER_STATE_STOP);
+    event_raise(CHARGER_EVENT_STOP_CHARGING, 0);
   }
 }
 
-StatusCode charger_init(ChargerSettings *settings, ChargerStatus *status) {
+StatusCode charger_controller_init(ChargerSettings *settings, ChargerStatus *status) {
   // Explicit for readability.
   static const J1939CanId tx_id = {
     .source_address = 0xF4,  // Indicates BMS in the J1939 standard.
@@ -98,7 +94,6 @@ StatusCode charger_init(ChargerSettings *settings, ChargerStatus *status) {
     .r = 0,
     .priority = 0x06,  // From datasheet.
   };
-  static_assert(CHARGER_EXPECTED_TX_ID == tx_id.raw_id);
 
   const ChargerControllerTxData tx_data = { .data_impl = {
                                                 .max_voltage = settings->max_voltage,
@@ -111,8 +106,11 @@ StatusCode charger_init(ChargerSettings *settings, ChargerStatus *status) {
   s_tx_msg.data = tx_data.raw_data;
   s_tx_msg.extended = true;
 
+  if (s_interval != NULL) {
+    status_ok_or_return(can_interval_free(s_interval));
+  }
   status_ok_or_return(
-      can_interval_factory(settings->can_uart, &s_tx_msg, CHARGER_PERIOD_US, s_interval));
+      can_interval_factory(settings->can_uart, &s_tx_msg, CHARGER_PERIOD_US, &s_interval));
 
   status_ok_or_return(
       generic_can_register_rx(settings->can_uart, prv_rx_handler, s_rx_id.raw_id, settings->can));
@@ -120,7 +118,7 @@ StatusCode charger_init(ChargerSettings *settings, ChargerStatus *status) {
   return STATUS_CODE_OK;
 }
 
-StatusCode charger_set_state(ChargerState state) {
+StatusCode charger_controller_set_state(ChargerState state) {
   if (state >= NUM_CHARGER_STATES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -133,4 +131,14 @@ StatusCode charger_set_state(ChargerState state) {
   tx_data.data_impl.charging = state;
   s_tx_msg.data = tx_data.raw_data;
   return can_interval_send_now(s_interval);
+}
+
+bool charger_controller_is_safe(ChargerStatus status) {
+  // - Input voltage is an indication the charger is lower voltage the battery so don't charge.
+  // - Over Temp is an indication of a heat issue with the charger, it is possible to resume
+  //   charging after a break.
+  // - HW fault is an indeterminate hardware failure which should be addressed.
+  //
+  // Implicitly forgives communication issues.
+  return !(status.input_voltage || status.over_temp || status.hw_fault);
 }

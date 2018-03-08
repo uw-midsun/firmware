@@ -33,7 +33,7 @@ void can_interval_init(void) {
 }
 
 StatusCode can_interval_factory(const GenericCan *can, const GenericCanMsg *msg, uint32_t period,
-                                CanDispatch *interval) {
+                                CanInterval **interval) {
   CanInterval *interval_impl = objpool_get_node(&s_can_interval_pool);
   if (interval_impl == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
@@ -42,7 +42,7 @@ StatusCode can_interval_factory(const GenericCan *can, const GenericCanMsg *msg,
   interval_impl->can = can;
   interval_impl->msg = msg;
   interval_impl->period = period;
-  interval = interval_impl;
+  *interval = interval_impl;
   return STATUS_CODE_OK;
 }
 
@@ -57,7 +57,7 @@ StatusCode can_interval_free(CanInterval *interval) {
 StatusCode can_interval_send_now(CanInterval *interval) {
   status_ok_or_return(can_interval_disable(interval));
   status_ok_or_return(generic_can_tx(interval->can, interval->msg));
-  status_ok_or_return(can_interval_enable(interval));
+  return can_interval_enable(interval);
 }
 
 StatusCode can_interval_enable(CanInterval *interval) {
