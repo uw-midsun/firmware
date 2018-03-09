@@ -9,8 +9,13 @@
 #include "gpio_it.h"
 #include "soft_timer.h"
 
+<<<<<<< HEAD
 #define ADS1015_CHANNEL_UPDATE_PERIOD 10
 #define ADS1015_CHANNEL_ARBITRARY_READING 0
+=======
+#define ADS1015_CHANNEL_UPDATE_PERIOD 30
+#define ADS1015_CHANNEL_ARBITRARY_READING 1
+>>>>>>> 17bc01a11bf413ec907ac3ceeb977097c6f794f5
 
 // Checks if a channel is enabled (true) or disabled (false).
 static bool channel_is_enabled(Ads1015Storage *storage, Ads1015Channel channel) {
