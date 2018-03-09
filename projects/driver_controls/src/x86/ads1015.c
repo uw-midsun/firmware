@@ -43,7 +43,7 @@ static StatusCode prv_set_channel(Ads1015Storage *storage, Ads1015Channel channe
 
 // Periodically calls channels' callbacks imitating the interrupt behavior.
 static void prv_timer_callback(SoftTimerID id, void *context) {
-  if (context == NULL){
+  if (context == NULL) {
     return;
   }
   Ads1015Storage *storage = context;
@@ -81,7 +81,6 @@ StatusCode ads1015_init(Ads1015Storage *storage, I2CPort i2c_port, Ads1015Addres
     storage->channel_readings[channel] = ADS1015_DISABLED_CHANNEL_READING;
   }
   return soft_timer_start(ADS1015_CHANNEL_UPDATE_PERIOD, prv_timer_callback, storage, NULL);
-  
 }
 
 // Enable/disables a channel, and sets a callback for the channel.
