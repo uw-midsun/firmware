@@ -9,16 +9,22 @@
 #include "gpio_it.h"
 #include "soft_timer.h"
 
-#define ADS1015_CHANNEL_UPDATE_PERIOD 30
+#define ADS1015_CHANNEL_UPDATE_PERIOD 10
 #define ADS1015_CHANNEL_ARBITRARY_READING 0
 
 // Checks if a channel is enabled (true) or disabled (false).
 static bool channel_is_enabled(Ads1015Storage *storage, Ads1015Channel channel) {
+  if (storage == NULL || channel >= NUM_ADS1015_CHANNELS) {
+    return false;
+  }
   return ((storage->channel_bitset & (1 << channel)) != 0);
 }
 
 // Updates the channel_bitset when a channel is enabled/disabled.
 static void prv_mark_channel_enabled(Ads1015Channel channel, bool enable, uint8_t *channel_bitset) {
+  if (channel >= NUM_ADS1015_CHANNELS || channel_bitset == NULL) {
+    return;
+  }
   if (enable) {
     *channel_bitset |= (1 << channel);
   } else {
@@ -28,7 +34,7 @@ static void prv_mark_channel_enabled(Ads1015Channel channel, bool enable, uint8_
 
 // Sets the current channel of the storage.
 static StatusCode prv_set_channel(Ads1015Storage *storage, Ads1015Channel channel) {
-  if (channel >= NUM_ADS1015_CHANNELS) {
+  if (channel >= NUM_ADS1015_CHANNELS || storage == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
@@ -38,6 +44,9 @@ static StatusCode prv_set_channel(Ads1015Storage *storage, Ads1015Channel channe
 
 // Periodically calls channels' callbacks imitating the interrupt behavior.
 static void prv_timer_callback(SoftTimerID id, void *context) {
+  if (context == NULL){
+    return;
+  }
   Ads1015Storage *storage = context;
   Ads1015Channel current_channel = storage->current_channel;
   uint8_t channel_bitset = storage->channel_bitset;
@@ -72,8 +81,8 @@ StatusCode ads1015_init(Ads1015Storage *storage, I2CPort i2c_port, Ads1015Addres
   for (Ads1015Channel channel = 0; channel < NUM_ADS1015_CHANNELS; channel++) {
     storage->channel_readings[channel] = ADS1015_DISABLED_CHANNEL_READING;
   }
-  soft_timer_start(ADS1015_CHANNEL_UPDATE_PERIOD, prv_timer_callback, storage, NULL);
-  return STATUS_CODE_OK;
+  return soft_timer_start(ADS1015_CHANNEL_UPDATE_PERIOD, prv_timer_callback, storage, NULL);
+  
 }
 
 // Enable/disables a channel, and sets a callback for the channel.
