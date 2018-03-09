@@ -13,7 +13,7 @@
 static Ads1015Storage s_storage;
 
 // This function is registered as the callback for channels.
-static void prv_callback(Ads1015Channel channel, void *context) {
+static void prv_callback_channel(Ads1015Channel channel, void *context) {
   bool *callback_called = context;
   (*callback_called) = true;
 }
@@ -61,21 +61,21 @@ void test_ads1015_init_invalid_input(void) {
 void test_ads_config_channel_invalid_input(void) {
   // Tests a basic use of the function
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true,
-                                                              prv_callback, &s_storage));
+                                                              prv_callback_channel, &s_storage));
   // Tests disabling a channel.
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, false,
-                                                              prv_callback, &s_storage));
+                                                              prv_callback_channel, &s_storage));
   // Tests enabling a channel with no callback (context has no effect).
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true,
                                                               NULL, &s_storage));
   // Tests for out of bound channel.
   TEST_ASSERT_EQUAL(
       STATUS_CODE_INVALID_ARGS,
-      ads1015_configure_channel(&s_storage, NUM_ADS1015_CHANNELS, true, prv_callback, &s_storage));
+      ads1015_configure_channel(&s_storage, NUM_ADS1015_CHANNELS, true, prv_callback_channel, &s_storage));
   // Tests for s_storage being a null pointer.
   TEST_ASSERT_EQUAL(
       STATUS_CODE_INVALID_ARGS,
-      ads1015_configure_channel(NULL, ADS1015_CHANNEL_1, true, prv_callback, &s_storage));
+      ads1015_configure_channel(NULL, ADS1015_CHANNEL_1, true, prv_callback_channel, &s_storage));
 }
 
 void test_ads1015_read_invalid_input(void) {
@@ -112,10 +112,10 @@ void test_ads1015_channel_callback(void) {
   bool callback_called_1 = false;
   bool callback_called_2 = false;
   bool callback_called_3 = false;
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true, prv_callback, &callback_called_0);
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, false, prv_callback, &callback_called_1);
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_2, true, prv_callback, &callback_called_2);
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_3, false, prv_callback, &callback_called_3);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true, prv_callback_channel, &callback_called_0);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, false, prv_callback_channel, &callback_called_1);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_2, true, prv_callback_channel, &callback_called_2);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_3, false, prv_callback_channel, &callback_called_3);
   delay_ms(50);
   TEST_ASSERT_EQUAL(true, callback_called_0);
   TEST_ASSERT_EQUAL(false, callback_called_1);
