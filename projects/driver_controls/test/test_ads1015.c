@@ -58,7 +58,7 @@ void test_ads1015_init_invalid_input(void) {
                     ads1015_init(&s_storage, TEST_ADS1015_I2C_PORT, TEST_ADS1015_ADDR, NULL));
 }
 
-void test_ads_config_channel_invalid_input(void) {
+void test_ads1015_config_channel_invalid_input(void) {
   // Tests a basic use of the function
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true,
                                                               prv_callback, &s_storage));
@@ -79,7 +79,7 @@ void test_ads_config_channel_invalid_input(void) {
 }
 
 void test_ads1015_read_invalid_input(void) {
-  int16_t reading;
+  int16_t reading = 0;
 
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true, NULL, &s_storage);
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, true, NULL, &s_storage);
