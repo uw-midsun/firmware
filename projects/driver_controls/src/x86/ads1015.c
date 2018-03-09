@@ -6,19 +6,13 @@
 #include "ads1015.h"
 #include <string.h>
 #include "ads1015_def.h"
-#include "gpio_it.h"
 #include "soft_timer.h"
 
-<<<<<<< HEAD
 #define ADS1015_CHANNEL_UPDATE_PERIOD 10
 #define ADS1015_CHANNEL_ARBITRARY_READING 0
-=======
-#define ADS1015_CHANNEL_UPDATE_PERIOD 30
-#define ADS1015_CHANNEL_ARBITRARY_READING 1
->>>>>>> 17bc01a11bf413ec907ac3ceeb977097c6f794f5
 
 // Checks if a channel is enabled (true) or disabled (false).
-static bool channel_is_enabled(Ads1015Storage *storage, Ads1015Channel channel) {
+static bool prv_channel_is_enabled(Ads1015Storage *storage, Ads1015Channel channel) {
   if (storage == NULL || channel >= NUM_ADS1015_CHANNELS) {
     return false;
   }
@@ -56,7 +50,7 @@ static void prv_timer_callback(SoftTimerID id, void *context) {
   Ads1015Channel current_channel = storage->current_channel;
   uint8_t channel_bitset = storage->channel_bitset;
 
-  if (channel_is_enabled(storage, current_channel)) {
+  if (prv_channel_is_enabled(storage, current_channel)) {
     storage->channel_readings[current_channel] = ADS1015_CHANNEL_ARBITRARY_READING;
     // Runs the users callback if not NULL.
     if (storage->channel_callback[current_channel] != NULL) {
@@ -111,7 +105,7 @@ StatusCode ads1015_configure_channel(Ads1015Storage *storage, Ads1015Channel cha
 // Reads raw results from the storage.
 StatusCode ads1015_read_raw(Ads1015Storage *storage, Ads1015Channel channel, int16_t *reading) {
   if (channel >= NUM_ADS1015_CHANNELS || storage == NULL || reading == NULL ||
-      !channel_is_enabled(storage, channel)) {
+      !prv_channel_is_enabled(storage, channel)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
@@ -123,7 +117,7 @@ StatusCode ads1015_read_raw(Ads1015Storage *storage, Ads1015Channel channel, int
 StatusCode ads1015_read_converted(Ads1015Storage *storage, Ads1015Channel channel,
                                   int16_t *reading) {
   if (channel >= NUM_ADS1015_CHANNELS || storage == NULL || reading == NULL ||
-      !channel_is_enabled(storage, channel)) {
+      !prv_channel_is_enabled(storage, channel)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
