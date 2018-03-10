@@ -33,7 +33,7 @@ static void prv_it_callback(const GPIOAddress *address, void *context) {
 }
 
 StatusCode debouncer_init_pin(DebouncerInfo *debouncer_info, const GPIOAddress *address,
-                              gpio_it_callback callback, void *context) {
+                              GPIOItCallback callback, void *context) {
   GPIOSettings gpio_settings = {
     .direction = GPIO_DIR_IN,   //
     .resistor = GPIO_RES_NONE,  //
