@@ -7,6 +7,8 @@
 #include "status.h"
 #include "uart.h"
 
+#define CHARGER_CFG_SEND_PERIOD_S 30
+#define CHARGER_CFG_WATCHDOG_PERIOD_S 60
 #define CHARGER_CFG_NUM_CAN_RX_HANDLERS 2
 
 CANSettings *charger_cfg_load_can_settings(void);

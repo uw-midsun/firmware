@@ -6,7 +6,7 @@
 #include "status.h"
 
 // Initializes the permissions module to use GenericCan.
-StatusCode permissions_init(GenericCan *can);
+StatusCode permissions_init(GenericCan *can, uint32_t send_period_s, uint32_t watchdog_period_s);
 
 // Request permission periodically.
 void permissions_request(void);

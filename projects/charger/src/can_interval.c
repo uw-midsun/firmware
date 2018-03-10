@@ -56,7 +56,6 @@ StatusCode can_interval_free(CanInterval *interval) {
 
 StatusCode can_interval_send_now(CanInterval *interval) {
   status_ok_or_return(can_interval_disable(interval));
-  status_ok_or_return(generic_can_tx(interval->can, interval->msg));
   return can_interval_enable(interval);
 }
 
@@ -75,8 +74,10 @@ StatusCode can_interval_enable(CanInterval *interval) {
 
   // Check if already active.
   if (interval->timer_id == SOFT_TIMER_INVALID_TIMER) {
-    soft_timer_start(interval->period, prv_can_interval_timer_cb, (void *)interval,
-                     &interval->timer_id);
+    // Send now.
+    status_ok_or_return(generic_can_tx(interval->can, interval->msg));
+    status_ok_or_return(soft_timer_start(interval->period, prv_can_interval_timer_cb,
+                                         (void *)interval, &interval->timer_id));
   }
 
   return STATUS_CODE_OK;
@@ -96,5 +97,6 @@ StatusCode can_interval_disable(CanInterval *interval) {
   }
 
   soft_timer_cancel(interval->timer_id);
+  interval->timer_id = SOFT_TIMER_INVALID_TIMER;
   return STATUS_CODE_OK;
 }

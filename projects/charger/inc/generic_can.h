@@ -31,6 +31,11 @@ typedef struct GenericCan {
 } GenericCan;
 
 // Transmits a GenericCanMsg.
+//
+// Note: if backed by CAN |msg| needs to be compatible with CANMessage and its |source_id| will
+// automatically be set to the ID of the broadcaster as determined in |device_id| of a CANSettings
+// struct. Also |type| must be CAN_MSG_TYPE_DATA as this TX mode does not support acks (therefore
+// its ID must be > ).
 StatusCode generic_can_tx(const GenericCan *can, const GenericCanMsg *msg);
 
 // Registers a |rx_handler| (enabled by default) to an |id|.

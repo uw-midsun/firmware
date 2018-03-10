@@ -6,7 +6,7 @@
 #include "can_msg_defs.h"
 #include "charger_controller.h"
 #include "charger_events.h"
-#include "generic_can_can.h"
+#include "generic_can_network.h"
 #include "generic_can_uart.h"
 #include "gpio.h"
 #include "status.h"
@@ -50,7 +50,7 @@ GPIOAddress charger_cfg_load_charger_pin(void) {
   return ((GPIOAddress){ 0, 0 });
 }
 
-static GenericCanCan s_can_storage;
+static GenericCanNetwork s_can_storage;
 static GenericCanUart s_can_uart_storage;
 
 static ChargerSettings s_charger_settings = {
@@ -61,7 +61,7 @@ static ChargerSettings s_charger_settings = {
 };
 
 StatusCode charger_cfg_init_settings(void) {
-  status_ok_or_return(generic_can_can_init(&s_can_storage));
+  status_ok_or_return(generic_can_network_init(&s_can_storage));
   return generic_can_uart_init(charger_cfg_load_uart_port(), &s_can_uart_storage);
 }
 

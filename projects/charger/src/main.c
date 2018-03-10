@@ -44,7 +44,7 @@ int main(void) {
   ChargerStatus charger_status;
   charger_controller_init(charger_settings, &charger_status);
 
-  permissions_init(charger_settings->can);
+  permissions_init(charger_settings->can, CHARGER_CFG_SEND_PERIOD_S, CHARGER_CFG_WATCHDOG_PERIOD_S);
 
   charger_fsm_init(&charger_status);
 
