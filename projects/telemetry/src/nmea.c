@@ -17,6 +17,7 @@ StatusCode nmea_compute_checksum(char *message, size_t message_len, char *out, s
     return STATUS_CODE_INVALID_ARGS;
   }
   uint8_t sum = 0;
+  // start at the 2nd character, since the first character is $
   for (uint8_t i = 1; message[i] != '*' && i < (message_len - 1); i++) {
     sum ^= message[i];
   }
