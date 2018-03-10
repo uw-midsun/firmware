@@ -14,12 +14,12 @@
 //   occur in the FSM
 
 #include "pedal_fsm.h"
+#include "cruise.h"
 #include "drive_output.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
 #include "input_event.h"
 #include "log.h"
-#include "cruise.h"
 
 // Pedal FSM state definitions
 
@@ -93,7 +93,8 @@ FSM_STATE_TRANSITION(state_cruise_braking) {
   // We enter coast as a safe default, but the next throttle command should update the proper state.
   FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_coast);
   // We allow exiting cruise control by entering coast mode after we've released the pedal
-  // We do not allow exiting directly into brake to prevent extremely strong braking on cruise disable
+  // We do not allow exiting directly into brake to prevent extremely strong braking on cruise
+  // disable
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_COAST, state_coast);
 }
 
@@ -104,6 +105,7 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
 
   cruise_set_source(cruise, CRUISE_SOURCE_MOTOR_CONTROLLER);
 
+  // TODO: handle brake signal somewhere
   // Make sure cruise is disabled
   drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, DRIVE_OUTPUT_CRUISE_DISABLED_SPEED);
   // TODO: Actually get throttle percentage - this will not depend on the current state

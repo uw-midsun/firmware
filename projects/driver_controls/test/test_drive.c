@@ -16,9 +16,9 @@
 
 // Tests interaction between the drive output module and power/direction/pedal FSMs
 
-#define TEST_DRIVE_CLOCK_EVENT(event_id, should_succeed) \
-  { \
-    Event e = { .id = event_id }; \
+#define TEST_DRIVE_CLOCK_EVENT(event_id, should_succeed)                                    \
+  {                                                                                         \
+    Event e = { .id = event_id };                                                           \
     TEST_ASSERT_EQUAL(should_succeed, event_arbiter_process_event(&s_arbiter_storage, &e)); \
   }
 

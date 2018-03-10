@@ -1,12 +1,13 @@
 #include "cruise.h"
+#include "can.h"
 #include "can_msg_defs.h"
 #include "can_unpack.h"
-#include "can.h"
 #include "input_event.h"
 
 static CruiseStorage s_cruise_storage;
 
-static void prv_handle_motor_velocity(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static void prv_handle_motor_velocity(const CANMessage *msg, void *context,
+                                      CANAckStatus *ack_reply) {
   CruiseStorage *cruise = context;
 
   // TODO: store motor velocity - probably an average of >0

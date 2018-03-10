@@ -5,10 +5,10 @@
 // Set the source to motor controller to record the current speed when driving normally.
 // Set the source to stored value to start cruise with the current speed and offset it to change the
 // target speed.
-#include <stdint.h>
 #include <stdbool.h>
-#include "status.h"
+#include <stdint.h>
 #include "event_queue.h"
+#include "status.h"
 
 // How to much to increment/decrement in cm/s (m/s * 100)
 // Arbitrary default of ~1mph
@@ -21,7 +21,7 @@ typedef enum {
 } CruiseSource;
 
 typedef struct CruiseStorage {
-  int16_t target_speed_cms; // m/s * 100
+  int16_t target_speed_cms;  // m/s * 100
   CruiseSource source;
 } CruiseStorage;
 

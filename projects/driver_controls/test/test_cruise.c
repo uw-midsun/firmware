@@ -1,11 +1,11 @@
-#include "unity.h"
-#include "cruise.h"
 #include "can.h"
-#include "interrupt.h"
-#include "soft_timer.h"
+#include "cruise.h"
 #include "event_queue.h"
 #include "input_event.h"
+#include "interrupt.h"
+#include "soft_timer.h"
 #include "test_helpers.h"
+#include "unity.h"
 
 #define TEST_CRUISE_DEVICE_ID 1
 #define TEST_CRUISE_NUM_RX_HANDLERS 3
@@ -29,14 +29,14 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  StatusCode ret = can_init(&can_settings, &s_can_storage, s_rx_handlers, TEST_CRUISE_NUM_RX_HANDLERS);
+  StatusCode ret =
+      can_init(&can_settings, &s_can_storage, s_rx_handlers, TEST_CRUISE_NUM_RX_HANDLERS);
   TEST_ASSERT_OK(ret);
 
   cruise_init(cruise_global());
 }
 
-void teardown_test(void) {
-}
+void teardown_test(void) {}
 
 void test_cruise_basic(void) {
   CruiseStorage *cruise = cruise_global();
@@ -66,5 +66,5 @@ void test_cruise_can(void) {
   // TODO: verify that we can read motor speed from CAN, but stop updating it if we're using the
   // stored value
 
-  // Also make sure that if the motor velocity is negative, we limit to 0 - don't support cruise in reverse
+  // Also make sure that if the motor velocity is negative, we limit to 0
 }
