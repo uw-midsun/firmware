@@ -27,8 +27,8 @@ static const UARTPort s_port = UART_PORT_3;
 int main(void) {
   LOG_DEBUG("Starting main\n");
   // Enable various peripherals
-  gpio_init();
   interrupt_init();
+  gpio_init();
   soft_timer_init();
 
   UARTSettings s_settings = {
@@ -62,8 +62,7 @@ int main(void) {
   LOG_DEBUG("evm_gps_init returned with StatusCode: %d\n", ret);
   evm_gps_add_gga_handler(gga_handler, NULL);
 
-  for(int i = 0; i < 75000; i++){
-    // delay_ms(50);
+  for(int i = 0; i < 35000; i++){
     LOG_DEBUG("Looping %d\n", i);
   }
   evm_gps_clean_up(&settings);

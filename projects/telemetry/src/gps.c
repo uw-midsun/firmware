@@ -49,7 +49,7 @@ StatusCode evm_gps_add_gga_handler(evm_gps_gga_handler handler, size_t *index) {
   for (uint16_t i = 0; i < GPS_HANDLER_ARRAY_LENGTH; i++) {
     if (s_gga_handler[i] == NULL) {
       s_gga_handler[i] = handler;
-      // This cast won't be an issue, there's no way "i" will be big enought to
+      // This cast won't be an issue, there's no way "i" will be big enough to
       // cause an overflow
       if (index) {
         *index = i;
