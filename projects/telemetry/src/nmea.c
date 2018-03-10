@@ -7,8 +7,8 @@ static char s_hex[] = "0123456789ABCDEF";
 // out must be a pointer to at least 3 chars
 void prv_int_to_hex(uint8_t checksum, char *out) {
   // we know that it'll be a 2 digit hex number since the checksum is 8-bit
-  out[0] = s_hex[checksum >> 4];
-  out[1] = s_hex[checksum & 15];
+  out[0] = s_hex[checksum >> 0x4];
+  out[1] = s_hex[checksum & 0xF];
   out[2] = '\0';
 }
 
