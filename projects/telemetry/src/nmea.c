@@ -12,12 +12,16 @@ void prv_int_to_hex(uint8_t checksum, char *out) {
   out[2] = '\0';
 }
 
-void nmea_compute_checksum(char *message, size_t message_len, char *out) {
+StatusCode nmea_compute_checksum(char *message, size_t message_len, char *out, size_t out_len) {
+  if (out_len < 3) {
+    return STATUS_CODE_INVALID_ARGS;
+  }
   uint8_t sum = 0;
   for (uint8_t i = 1; message[i] != '*' && i < message_len; i++) {
     sum ^= message[i];
   }
   prv_int_to_hex(sum, out);
+  return STATUS_CODE_OK;
 }
 
 bool nmea_compare_checksum(char *message, size_t message_len) {
@@ -28,6 +32,10 @@ bool nmea_compare_checksum(char *message, size_t message_len) {
   }
 
   char computed[3];
-  nmea_compute_checksum(message, message_len, computed);
+  StatusCode status = nmea_compute_checksum(message, message_len, computed, sizeof(computed));
+  if (status != STATUS_CODE_OK) {
+    // return false if nmea_compute_checksum fails
+    return false;
+  }
   return strncmp(computed, received, 2) == 0;
 }
