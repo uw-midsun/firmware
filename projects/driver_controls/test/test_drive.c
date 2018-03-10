@@ -122,11 +122,6 @@ void test_drive_basic(void) {
 
   delay_ms(DRIVE_OUTPUT_BROADCAST_MS);
   prv_clock_update_request();
-
-  // TODO: make sure we can't turn the car off if we're driving
-
-  // TODO: should cruise control be associated with pedal? need to move to the appropriate state
-  // when cruise control is disabled
 }
 
 void test_drive_charge(void) {
@@ -191,8 +186,46 @@ void test_drive_power_interlock(void) {
 // mechanical brakes are active
 // The pedal FSM is also switched into the brake state and held there
 
-// Verify that cruise has the intended behavior
-// TODO: add steering angle events?
 void test_drive_cruise(void) {
-  // todo: try to switch into reverse while cruise control is active
+  LOG_DEBUG("Moving to powered drive\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_POWER, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
+
+  LOG_DEBUG("Attempting to enter cruise from braking state\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CRUISE_CONTROL, false);
+
+  // The cruise module will never support cruising in the negative velocity
+  LOG_DEBUG("Attempt to enter cruise from reverse\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CRUISE_CONTROL, false);
+
+  // Check cruise exits
+  LOG_DEBUG("Entering cruise\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CRUISE_CONTROL, true);
+
+  LOG_DEBUG("Exiting cruise and rentering\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CRUISE_CONTROL, true);
+  prv_dump_fsms();
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CRUISE_CONTROL, true);
+
+  LOG_DEBUG("Exiting cruise through mechanical brake and reentering\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
+  prv_dump_fsms();
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CRUISE_CONTROL, true);
+
+  LOG_DEBUG("Exiting cruise through coast\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_BRAKE, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_COAST, true);
+  prv_dump_fsms();
 }

@@ -2,7 +2,8 @@
 #include <string.h>
 #include "log.h"
 
-#define DRIVE_OUTPUT_VALID_WATCHDOG ((1 << NUM_DRIVE_OUTPUT_SOURCES) - 1)
+// TODO: update the steering angle somewhere
+#define DRIVE_OUTPUT_VALID_WATCHDOG (((1 << NUM_DRIVE_OUTPUT_SOURCES) - 1) & ~(1 << DRIVE_OUTPUT_SOURCE_STEERING_ANGLE))
 
 static DriveOutputStorage s_storage;
 

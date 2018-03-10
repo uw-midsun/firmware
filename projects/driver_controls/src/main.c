@@ -60,8 +60,6 @@ int main() {
   // horn_fsm_init(&fsm_group.horn);
   // push_to_talk_fsm_init(&fsm_group.push_to_talk);
 
-  int16_t adc_data[NUM_ADS1015_CHANNELS];
-
   for (;;) {
     if (status_ok(event_process(&e))) {
       // Process the event with the input FSMs

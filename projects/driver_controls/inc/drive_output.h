@@ -9,7 +9,7 @@
 #include "soft_timer.h"
 #include "status.h"
 
-#define DRIVE_OUTPUT_INVALID_CRUISE_VELOCITY INT16_MAX
+#define DRIVE_OUTPUT_CRUISE_DISABLED_SPEED 0
 // Arbitrary timeout - all data should be updated at least once within this timeout period
 #define DRIVE_OUTPUT_WATCHDOG_MS 500
 // How often to request state updates and broadcast drive commands

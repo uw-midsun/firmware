@@ -3,22 +3,23 @@
 // will be polled on state outputs. This is so that we can handle mechanical braking and cruise
 // control properly. Since the throttle module is still providing updates, state changes will cause
 // drive output updates to ensure that major changes are reflected in the periodic updates.
-// If the throttle is not in a braking state while the mechanical brakes are pressed, it will be
-// set to coast.
-// TODO: is this the right way of doing it? seems to pull in dependencies that we don't need to
-// since the throttle module should already be raising events
-// however the mechanical brake only raises one event
-// if we're in the brake state due to mechanical braking or in the cruise control state, we rely on
-// the update request to update the drive output module.
-// We probably still want to support regen braking if mechanical braking is active
-// todo: move cruise control out of the pedal FSM?
-// We can exit cruise control by entering coast mode on the throttle
+
+// The overall operation of the car is governed by the FSMs. They have an implicit hierarchy:
+// * Power FSM only allows power/mechanical braking when off
+// * Mechanical brake FSM prevents exiting braking state when engaged and only allows
+//   gear shifts while engaged
+// * Direction FSM prevents turning off the car when in drive or reverse and prevents
+//   drive/braking in neutral
+// * Pedal FSM is at the bottom - after all operations are filtered, drive output updates
+//   occur in the FSM
+
 #include "pedal_fsm.h"
 #include "drive_output.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
 #include "input_event.h"
 #include "log.h"
+#include "cruise.h"
 
 // Pedal FSM state definitions
 
@@ -78,7 +79,7 @@ FSM_STATE_TRANSITION(state_cruise_control) {
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_BRAKE, state_cruise_braking);
 }
 
-FSM_DECLARE_STATE(state_cruise_braking) {
+FSM_STATE_TRANSITION(state_cruise_braking) {
   FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_cruise_control);
 
   // Since the cruise control increase/decrease events have information that needs to be output to
@@ -98,36 +99,26 @@ FSM_DECLARE_STATE(state_cruise_braking) {
 
 // Pedal FSM output functions
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  // Note that the direction FSM should prevent the power from being turned off if the car is
-  // capable of moving
   DriveOutputStorage *storage = drive_output_global();
+  CruiseStorage *cruise = cruise_global();
 
-  // TODO: need to figure out where brake lights are configured
+  cruise_set_source(cruise, CRUISE_SOURCE_MOTOR_CONTROLLER);
 
-  // TODO: steering angle sensor isn't updated by anything yet
-  drive_output_update(storage, DRIVE_OUTPUT_SOURCE_STEERING_ANGLE, 321);
-
-  if (fsm->current_state == &state_cruise_control) {
-    // TODO: actually get target value
-    drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, 1234);
-    // Ignore throttle data - default to neutral just in case
-    drive_output_update(storage, DRIVE_OUTPUT_SOURCE_THROTTLE, 0);
-  } else {
-    // Make sure cruise is disabled
-    drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, DRIVE_OUTPUT_INVALID_CRUISE_VELOCITY);
-    // TODO: Actually get throttle percentage
-    drive_output_update(storage, DRIVE_OUTPUT_SOURCE_THROTTLE,
-                        (fsm->current_state == &state_brake) ? -1234 : 1234);
-  }
+  // Make sure cruise is disabled
+  drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, DRIVE_OUTPUT_CRUISE_DISABLED_SPEED);
+  // TODO: Actually get throttle percentage - this will not depend on the current state
+  drive_output_update(storage, DRIVE_OUTPUT_SOURCE_THROTTLE,
+                      (fsm->current_state == &state_brake) ? -1234 : 1234);
 }
 
 static void prv_cruise_output(FSM *fsm, const Event *e, void *context) {
   DriveOutputStorage *storage = drive_output_global();
+  CruiseStorage *cruise = cruise_global();
 
-  // TODO actually get target value
-  // set throttle position to 0? might be nice to keep the actual position for debug
-  // TODO: start with current speed
-  drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, 1234);
+  cruise_set_source(cruise, CRUISE_SOURCE_STORED_VALUE);
+
+  drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, cruise_get_target(cruise));
+  // TODO: get throttle state
   drive_output_update(storage, DRIVE_OUTPUT_SOURCE_THROTTLE, 0);
 }
 

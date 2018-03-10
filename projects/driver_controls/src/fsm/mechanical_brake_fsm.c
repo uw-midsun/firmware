@@ -28,8 +28,6 @@ static bool prv_check_mechanical_brake_engaged(const Event *e) {
     case INPUT_EVENT_PEDAL_COAST:
     case INPUT_EVENT_PEDAL_PRESSED:
     case INPUT_EVENT_CRUISE_CONTROL:
-      // case INPUT_EVENT_CRUISE_CONTROL_INC:
-      // case INPUT_EVENT_CRUISE_CONTROL_DEC:
       return false;
     default:
       return true;

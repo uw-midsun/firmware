@@ -38,11 +38,11 @@ FSM_STATE_TRANSITION(state_reverse) {
 // Direction selector FSM arbiter functions
 
 static bool prv_check_neutral(const Event *e) {
-  // The car must not be able to move while in the neutral state
+  // The car should always be coasting when in the neutral state
   // TODO: make sure the "update" event doesn't bypass this check? or make sure motor controller
   // interface checks
   switch (e->id) {
-    case INPUT_EVENT_PEDAL_COAST:
+    case INPUT_EVENT_PEDAL_BRAKE:
     case INPUT_EVENT_PEDAL_PRESSED:
     case INPUT_EVENT_CRUISE_CONTROL:
       return false;
