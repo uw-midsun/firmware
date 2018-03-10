@@ -6,8 +6,8 @@
 
 #define CAN_NUM_RX_HANDLERS 1
 
-void lights_can_init(BoardType type);
-StatusCode send_sync();
+void lights_can_init(BoardType type, bool loopback);
+StatusCode send_sync(void);
 
 typedef enum {
   ACTION_SIGNAL_RIGHT = 0,
@@ -20,3 +20,4 @@ typedef enum {
   ACTION_SYNC,
   NUM_ACTION_ID
 } ActionID;
+

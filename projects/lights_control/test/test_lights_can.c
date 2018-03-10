@@ -38,7 +38,7 @@ void teardown_test(void) {}
 // }
 
 void test_lights_rx_front(void) {
-  lights_can_init(LIGHTS_BOARD_FRONT);
+  lights_can_init(LIGHTS_BOARD_FRONT, true);
   CANMessage msg = { .msg_id = 0x1, .type = CAN_MSG_TYPE_DATA, .data = 0x4, .dlc = 2 };
   uint16_t test_messages[] = { 0x0, 0x101, 0x002, 0x103, 0x004, 0x107 };
 
@@ -67,7 +67,7 @@ void test_lights_rx_front(void) {
 }
 
 void test_lights_rx_rear(void) {
-  lights_can_init(LIGHTS_BOARD_REAR);
+  lights_can_init(LIGHTS_BOARD_REAR, true);
   CANMessage msg = { .msg_id = 0x1, .type = CAN_MSG_TYPE_DATA, .data = 0x4, .dlc = 2 };
   uint16_t test_messages[] = { 0x0, 0x101, 0x002, 0x105, 0x006, 0x007 };
 
@@ -95,7 +95,7 @@ void test_lights_rx_rear(void) {
 }
 
 void test_lights_tx_sync(void) {
-  lights_can_init(LIGHTS_BOARD_REAR);
+  lights_can_init(LIGHTS_BOARD_REAR, true);
   TEST_ASSERT_OK(send_sync());
   Event e = { 0 };
   int ret;

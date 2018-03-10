@@ -41,14 +41,14 @@ static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckSta
 //      2.CAN_TX_ADDR
 //      3.CAN_RX_ADDR
 //      4.msg_id
-void lights_can_init(BoardType boardtype) {
+void lights_can_init(BoardType boardtype, bool loopback) {
   CANSettings can_settings = { .bitrate = CAN_HW_BITRATE_125KBPS,
                                .rx_event = EVENT_CAN_RX,
                                .tx_event = EVENT_CAN_TX,
                                .fault_event = EVENT_CAN_FAULT,
                                .tx = CAN_TX_ADDR,
                                .rx = CAN_RX_ADDR,
-                               .loopback = true };
+                               .loopback = loopback };
   volatile CANMessage rx_msg = { 0 };
   CANMessageID msg_id = 0x1;
   s_boardtype = boardtype;
@@ -95,12 +95,14 @@ static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckSta
 // to use different message id's, cuz it'd be cool if
 // they didn't. That way they both process the sync
 // message the same way, one uses loopback.
-StatusCode send_sync() {
+StatusCode send_sync(void) {
   CANMessage msg = {
     .msg_id = 0x1,              //
     .type = CAN_MSG_TYPE_DATA,  //
     .data = 0x107,              //
     .dlc = 2,                   //
   };
+
+  event_raise(EVENT_SYNC, 1); \
   return can_transmit(&msg, NULL);
 }

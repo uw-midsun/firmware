@@ -25,9 +25,9 @@ int main(void) {
   BoardType boardtype;
   get_board_type(&boardtype);
 
-  lights_can_init(boardtype);
+  lights_can_init(boardtype, false);
   lights_gpio_init(boardtype);
-  simple_peripherals_init();
+  simple_peripherals_init(lights_gpio_set);
 
   while (true) {
     StatusCode status = event_process(&e);
@@ -39,3 +39,4 @@ int main(void) {
 
   return STATUS_CODE_OK;
 }
+
