@@ -17,7 +17,7 @@ StatusCode nmea_compute_checksum(char *message, size_t message_len, char *out, s
     return STATUS_CODE_INVALID_ARGS;
   }
   uint8_t sum = 0;
-  for (uint8_t i = 1; message[i] != '*' && i < message_len; i++) {
+  for (uint8_t i = 1; message[i] != '*' && i < (message_len - 1); i++) {
     sum ^= message[i];
   }
   prv_int_to_hex(sum, out);
@@ -25,7 +25,10 @@ StatusCode nmea_compute_checksum(char *message, size_t message_len, char *out, s
 }
 
 bool nmea_compare_checksum(char *message, size_t message_len) {
-  char *received = message + message_len - 2;
+  // We expect the last 2 characters in the message to be the sent checksum
+  // Hence, the 3rd last character should be '*' (we subtract 3 instead of 2 to
+  // account for \0)
+  char *received = message + message_len - 3;
   if (*(received - 1) != '*') {
     // return false if there's no checksum in the message
     return false;

@@ -43,6 +43,6 @@ void test_compare_checksum(void) {
       "$GPGGA,053740.000,2503.6319,N,12136.0099,E,1,08,1.1,63.8,"
       "M,15.2,M,,0000*64";
 
-  size_t message_len = strlen(input);
+  size_t message_len = strlen(input) + 1;
   TEST_ASSERT_TRUE(nmea_compare_checksum(input, message_len));
 }
