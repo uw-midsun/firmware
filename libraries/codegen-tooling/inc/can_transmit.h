@@ -7,10 +7,10 @@
 #include "can_msg_defs.h"
 #include "can_pack.h"
 
-#define CAN_TRANSMIT_BPS_FAULT(ack_ptr)                \
+#define CAN_TRANSMIT_BPS_HEARTBEAT(ack_ptr, status_u8) \
   ({                                                   \
     CANMessage msg = { 0 };                            \
-    CAN_PACK_BPS_FAULT(&msg);                          \
+    CAN_PACK_BPS_HEARTBEAT(&msg, (status_u8));         \
     StatusCode status = can_transmit(&msg, (ack_ptr)); \
     status;                                            \
   })
@@ -53,6 +53,14 @@
     CAN_PACK_POWER_STATE(&msg, (power_state_u8));         \
     StatusCode status = can_transmit(&msg, (ack_ptr));    \
     status;                                               \
+  })
+
+#define CAN_TRANSMIT_POWERTRAIN_HEARTBEAT(ack_ptr)     \
+  ({                                                   \
+    CANMessage msg = { 0 };                            \
+    CAN_PACK_POWERTRAIN_HEARTBEAT(&msg);               \
+    StatusCode status = can_transmit(&msg, (ack_ptr)); \
+    status;                                            \
   })
 
 #define CAN_TRANSMIT_OVUV_DCDC_AUX(dcdc_ov_flag_u8, dcdc_uv_flag_u8, aux_bat_ov_flag_u8,     \
