@@ -8,6 +8,9 @@
 # Specify the device library you want to include
 $(T)_DEPS := ms-common
 
+$(T)_INC_DIRS := $($(T)_INC_DIRS) $($(T)_DIR)/inc/fsm
+$(T)_SRC := $(wildcard $($(T)_SRC_ROOT)/*.c) $(wildcard $($(T)_SRC_ROOT)/fsm/*.c)
+
 ifeq (x86,$(PLATFORM))
 $(T)_EXCLUDE_TESTS := gpio_expander magnetic_sensor ads1015 	
 endif

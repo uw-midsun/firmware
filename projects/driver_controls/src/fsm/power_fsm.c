@@ -7,7 +7,7 @@
 //      to transition between the off and the on state.
 
 #include "power_fsm.h"
-#include "can_output.h"
+#include "drive_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
@@ -48,8 +48,8 @@ FSM_STATE_TRANSITION(state_on) {
 
 // Power FSM arbiter functions
 static bool prv_check_off(const Event *e) {
-  // The car must accept a command to power on while off. It must also acknowledge mechanical brake
-  // events, as the mechanical brake does not rely on the car being powered.
+  // The only valid events when the car isn't in drive are the power button and mechanical brake.
+  // This also prevents lights, etc. from being turned on unless the unprotected rail is powered.
   switch (e->id) {
     case INPUT_EVENT_POWER:
     case INPUT_EVENT_MECHANICAL_BRAKE_RELEASED:
@@ -62,56 +62,38 @@ static bool prv_check_off(const Event *e) {
 
 // Power FSM output functions
 
-static void prv_state_off(FSM *fsm, const Event *e, void *context) {
-  EventArbiterCheck *event_check = fsm->context;
-  *event_check = prv_check_off;
+static void prv_state_output(FSM *fsm, const Event *e, void *context) {
+  EventArbiter *arbiter = fsm->context;
 
-  PowerFSMState power_state;
-  State *current_state = fsm->current_state;
-
-  // If a transition has happened between the FSMs main states, a CAN message will be sent out.
-  if (current_state == &state_off) {
-    power_state = POWER_FSM_STATE_OFF;
-  } else if (current_state == &state_charging) {
-    power_state = POWER_FSM_STATE_CHARGING;
-  } else if (current_state == &state_on) {
-    power_state = POWER_FSM_STATE_ON;
+  EventArbiterCheck event_check_fn = prv_check_off;
+  LOG_DEBUG("Power FSM %s\n", fsm->current_state->name);
+  if (fsm->current_state == &state_on) {
+    // Allow all events and begin sending periodic drive commands
+    drive_output_enable(drive_output_global(), true);
+    event_arbiter_set_event_check(arbiter, NULL);
   } else {
-    // state_off_brake and state_charging_brake are simply substates of state_off and
-    // state_charging respectively. No CAN message gets sent out
-    return;
+    // Disable periodic drive output updates if not running
+    drive_output_enable(drive_output_global(), false);
+    event_arbiter_set_event_check(arbiter, event_check_fn);
   }
 
-  EventArbiterOutputData data = { .id = CAN_OUTPUT_MESSAGE_POWER, .state = power_state, .data = 0 };
-
-  event_arbiter_output(data);
+  // TODO: actually figure out what CAN message to send
 }
 
-static void prv_state_on(FSM *fsm, const Event *e, void *context) {
-  EventArbiterCheck *event_check = fsm->context;
-  *event_check = NULL;
+StatusCode power_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
+  fsm_state_init(state_off, prv_state_output);
+  fsm_state_init(state_off_brake, NULL);
+  fsm_state_init(state_charging, prv_state_output);
+  fsm_state_init(state_charging_brake, NULL);
+  fsm_state_init(state_on, prv_state_output);
 
-  EventArbiterOutputData data = {
-    .id = CAN_OUTPUT_MESSAGE_POWER, .state = POWER_FSM_STATE_ON, .data = 0
-  };
+  EventArbiter *arbiter = event_arbiter_add_fsm(storage, fsm, prv_check_off);
 
-  event_arbiter_output(data);
-}
-
-StatusCode power_fsm_init(FSM *fsm) {
-  fsm_state_init(state_off, prv_state_off);
-  fsm_state_init(state_off_brake, prv_state_off);
-  fsm_state_init(state_charging, prv_state_off);
-  fsm_state_init(state_charging_brake, prv_state_off);
-  fsm_state_init(state_on, prv_state_on);
-
-  void *context = event_arbiter_add_fsm(fsm, prv_check_off);
-
-  if (context == NULL) {
+  if (arbiter == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  fsm_init(fsm, "power_fsm", &state_off, context);
+  fsm_init(fsm, "power_fsm", &state_off, arbiter);
 
   return STATUS_CODE_OK;
 }
