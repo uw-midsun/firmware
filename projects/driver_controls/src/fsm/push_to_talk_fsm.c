@@ -1,5 +1,4 @@
 #include "push_to_talk_fsm.h"
-#include "can_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
@@ -28,24 +27,21 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     push_to_talk_state = PUSH_TO_TALK_FSM_STATE_ACTIVE;
   }
 
-  EventArbiterOutputData data = {
-    .id = CAN_OUTPUT_MESSAGE_PUSH_TO_TALK, .state = push_to_talk_state, .data = 0
-  };
-
-  event_arbiter_output(data);
+  (void)push_to_talk_state;
+  // Previous: Output PTT
 }
 
-StatusCode push_to_talk_fsm_init(FSM *fsm) {
+StatusCode push_to_talk_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_active, prv_state_output);
   fsm_state_init(state_inactive, prv_state_output);
 
-  void *context = event_arbiter_add_fsm(fsm, NULL);
+  EventArbiter *arbiter = event_arbiter_add_fsm(storage, fsm, NULL);
 
-  if (context == NULL) {
+  if (arbiter == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  fsm_init(fsm, "push_to_talk_fsm", &state_inactive, context);
+  fsm_init(fsm, "push_to_talk_fsm", &state_inactive, arbiter);
 
   return STATUS_CODE_OK;
 }

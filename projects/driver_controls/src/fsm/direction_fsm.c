@@ -1,5 +1,4 @@
 #include "direction_fsm.h"
-#include "can_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
@@ -55,50 +54,38 @@ static bool prv_check_reverse(const Event *e) {
 // Direction selector FSM output functions
 
 static void prv_state_neutral(FSM *fsm, const Event *e, void *context) {
-  EventArbiterCheck *event_check = fsm->context;
-  *event_check = prv_check_neutral;
+  EventArbiter *arbiter = fsm->context;
+  event_arbiter_set_event_check(arbiter, prv_check_neutral);
 
-  EventArbiterOutputData data = { .id = CAN_OUTPUT_MESSAGE_DIRECTION_SELECTOR,
-                                  .state = DIRECTION_FSM_STATE_NEUTRAL,
-                                  .data = e->data };
-
-  event_arbiter_output(data);
+  // Previous: Output Direction neutral
 }
 
 static void prv_state_forward(FSM *fsm, const Event *e, void *context) {
-  EventArbiterCheck *event_check = fsm->context;
-  *event_check = prv_check_forward;
+  EventArbiter *arbiter = fsm->context;
+  event_arbiter_set_event_check(arbiter, prv_check_forward);
 
-  EventArbiterOutputData data = { .id = CAN_OUTPUT_MESSAGE_DIRECTION_SELECTOR,
-                                  .state = DIRECTION_FSM_STATE_FORWARD,
-                                  .data = e->data };
-
-  event_arbiter_output(data);
+  // Previous: Output Direction forward
 }
 
 static void prv_state_reverse(FSM *fsm, const Event *e, void *context) {
-  EventArbiterCheck *event_check = fsm->context;
-  *event_check = prv_check_reverse;
+  EventArbiter *arbiter = fsm->context;
+  event_arbiter_set_event_check(arbiter, prv_check_reverse);
 
-  EventArbiterOutputData data = { .id = CAN_OUTPUT_MESSAGE_DIRECTION_SELECTOR,
-                                  .state = DIRECTION_FSM_STATE_REVERSE,
-                                  .data = e->data };
-
-  event_arbiter_output(data);
+  // Previous: Output Direction reverse
 }
 
-StatusCode direction_fsm_init(FSM *fsm) {
+StatusCode direction_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_neutral, prv_state_neutral);
   fsm_state_init(state_forward, prv_state_forward);
   fsm_state_init(state_reverse, prv_state_reverse);
 
-  void *context = event_arbiter_add_fsm(fsm, prv_check_neutral);
+  EventArbiter *arbiter = event_arbiter_add_fsm(storage, fsm, prv_check_neutral);
 
-  if (context == NULL) {
+  if (arbiter == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  fsm_init(fsm, "direction_fsm", &state_neutral, context);
+  fsm_init(fsm, "direction_fsm", &state_neutral, arbiter);
 
   return STATUS_CODE_OK;
 }

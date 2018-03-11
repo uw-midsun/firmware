@@ -7,7 +7,6 @@
 //      to transition between the off and the on state.
 
 #include "power_fsm.h"
-#include "can_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
@@ -63,8 +62,8 @@ static bool prv_check_off(const Event *e) {
 // Power FSM output functions
 
 static void prv_state_off(FSM *fsm, const Event *e, void *context) {
-  EventArbiterCheck *event_check = fsm->context;
-  *event_check = prv_check_off;
+  EventArbiter *arbiter = fsm->context;
+  event_arbiter_set_event_check(arbiter, prv_check_off);
 
   PowerFSMState power_state;
   State *current_state = fsm->current_state;
@@ -82,36 +81,31 @@ static void prv_state_off(FSM *fsm, const Event *e, void *context) {
     return;
   }
 
-  EventArbiterOutputData data = { .id = CAN_OUTPUT_MESSAGE_POWER, .state = power_state, .data = 0 };
-
-  event_arbiter_output(data);
+  (void)power_state;
+  // Previous: Output Power off
 }
 
 static void prv_state_on(FSM *fsm, const Event *e, void *context) {
-  EventArbiterCheck *event_check = fsm->context;
-  *event_check = NULL;
+  EventArbiter *arbiter = fsm->context;
+  event_arbiter_set_event_check(arbiter, NULL);
 
-  EventArbiterOutputData data = {
-    .id = CAN_OUTPUT_MESSAGE_POWER, .state = POWER_FSM_STATE_ON, .data = 0
-  };
-
-  event_arbiter_output(data);
+  // Previous: Output Power on
 }
 
-StatusCode power_fsm_init(FSM *fsm) {
+StatusCode power_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_off, prv_state_off);
   fsm_state_init(state_off_brake, prv_state_off);
   fsm_state_init(state_charging, prv_state_off);
   fsm_state_init(state_charging_brake, prv_state_off);
   fsm_state_init(state_on, prv_state_on);
 
-  void *context = event_arbiter_add_fsm(fsm, prv_check_off);
+  EventArbiter *arbiter = event_arbiter_add_fsm(storage, fsm, prv_check_off);
 
-  if (context == NULL) {
+  if (arbiter == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  fsm_init(fsm, "power_fsm", &state_off, context);
+  fsm_init(fsm, "power_fsm", &state_off, arbiter);
 
   return STATUS_CODE_OK;
 }

@@ -1,5 +1,4 @@
 #include "turn_signal_fsm.h"
-#include "can_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
@@ -42,25 +41,23 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
     turn_signal_state = TURN_SIGNAL_FSM_STATE_RIGHT_SIGNAL;
   }
 
-  EventArbiterOutputData data = {
-    .id = CAN_OUTPUT_MESSAGE_TURN_SIGNAL, .state = turn_signal_state, .data = 0
-  };
+  (void)turn_signal_state;
 
-  event_arbiter_output(data);
+  // Previous: Output turn signal state
 }
 
-StatusCode turn_signal_fsm_init(FSM *fsm) {
+StatusCode turn_signal_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_no_signal, prv_state_output);
   fsm_state_init(state_left_signal, prv_state_output);
   fsm_state_init(state_right_signal, prv_state_output);
 
-  void *context = event_arbiter_add_fsm(fsm, NULL);
+  EventArbiter *arbiter = event_arbiter_add_fsm(storage, fsm, NULL);
 
-  if (context == NULL) {
+  if (arbiter == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  fsm_init(fsm, "turn_signal_fsm", &state_no_signal, context);
+  fsm_init(fsm, "turn_signal_fsm", &state_no_signal, arbiter);
 
   return STATUS_CODE_OK;
 }
