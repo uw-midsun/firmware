@@ -20,6 +20,10 @@
 #define CHARGER_EXPECTED_TX_DLC 5
 #define CHARGER_EXPECTED_TX_ID 0x1806E5F4
 
+static CanInterval *s_interval;
+static ChargerStatus *s_charger_status;
+static GenericCanMsg s_tx_msg;
+
 typedef union J1939CanId {
   uint32_t raw_id;
   struct {
@@ -32,39 +36,23 @@ typedef union J1939CanId {
   };
 } J1939CanId;
 
-static CanInterval *s_interval;
-static ChargerStatus *s_charger_status;
-static GenericCanMsg s_tx_msg;
+// Explicit for readability.
 static const J1939CanId s_rx_id = {
   .source_address = 0xE5,  // Indicates BMS in the J1939 standard.
-  .pdu_specifics = 0xF4,   // Charger control system (CCS) id.
+  .pdu_specifics = 0x50,   // Broadcast address (BCA) id.
   .pdu_format = 0xFF,      // From datasheet.
   .dp = 0,
   .r = 0,
   .priority = 0x06,  // From datasheet.
 };
-
-typedef struct ChargerControllerTxDataImpl {
-  uint16_t max_voltage;
-  uint16_t max_current;
-  uint8_t charging;
-} ChargerControllerTxDataImpl;
-
-typedef union ChargerControllerTxData {
-  uint64_t raw_data;
-  ChargerControllerTxDataImpl data_impl;
-} ChargerControllerTxData;
-
-typedef struct ChargerControllerRxDataImpl {
-  uint16_t voltage;
-  uint16_t current;
-  ChargerStatus status_flags;
-} ChargerControllerRxDataImpl;
-
-typedef union ChargerControllerRxData {
-  uint64_t raw_data;
-  ChargerControllerRxDataImpl data_impl;
-} ChargerControllerRxData;
+static const J1939CanId s_tx_id = {
+  .source_address = 0xF4,  // Indicates BMS in the J1939 standard.
+  .pdu_specifics = 0xE5,   // Charger control system (CCS) id.
+  .pdu_format = 0x06,      // From datasheet.
+  .dp = 0,
+  .r = 0,
+  .priority = 0x06,  // From datasheet.
+};
 
 // GenericCanRx
 static void prv_rx_handler(const GenericCanMsg *msg, void *context) {
@@ -85,15 +73,9 @@ static void prv_rx_handler(const GenericCanMsg *msg, void *context) {
 }
 
 StatusCode charger_controller_init(ChargerSettings *settings, ChargerStatus *status) {
-  // Explicit for readability.
-  static const J1939CanId tx_id = {
-    .source_address = 0xF4,  // Indicates BMS in the J1939 standard.
-    .pdu_specifics = 0xE5,   // Charger control system (CCS) id.
-    .pdu_format = 0x06,      // From datasheet.
-    .dp = 0,
-    .r = 0,
-    .priority = 0x06,  // From datasheet.
-  };
+  assert(s_tx_id.raw_id == CHARGER_EXPECTED_TX_ID);
+  assert(s_rx_id.raw_id == CHARGER_EXPECTED_RX_ID);
+  s_charger_status = status;
 
   const ChargerControllerTxData tx_data = { .data_impl = {
                                                 .max_voltage = settings->max_voltage,
@@ -101,7 +83,7 @@ StatusCode charger_controller_init(ChargerSettings *settings, ChargerStatus *sta
                                                 .charging = CHARGER_STATE_STOP,
                                             } };
 
-  s_tx_msg.id = tx_id.raw_id;
+  s_tx_msg.id = s_tx_id.raw_id;
   s_tx_msg.dlc = CHARGER_EXPECTED_TX_DLC;
   s_tx_msg.data = tx_data.raw_data;
   s_tx_msg.extended = true;
@@ -121,8 +103,11 @@ StatusCode charger_controller_init(ChargerSettings *settings, ChargerStatus *sta
 StatusCode charger_controller_set_state(ChargerState state) {
   if (state >= NUM_CHARGER_STATES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
+  } else if (!charger_controller_is_safe(*s_charger_status)) {
+    // Unsafe to start
+    return status_code(STATUS_CODE_INTERNAL_ERROR);
   }
-  // TODO(ELEC-355): Consider disabling rx rebroadcasts (1/s).
+  // TODO(ELEC-355): Consider disabling rx rebroadcasts if off (1/s).
 
   ChargerControllerTxData tx_data = {
     .raw_data = s_tx_msg.data,

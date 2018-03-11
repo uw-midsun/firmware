@@ -19,7 +19,6 @@ static GenericCanInterface s_interface;
 // CANHwEventHandlerCb: Tx Error
 void prv_tx_handler(void *context) {
   (void)context;
-  LOG_DEBUG("Failed to transmit.\n");
 }
 
 // CANHwEventHandlerCb: Rx Occurred

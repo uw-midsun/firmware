@@ -34,6 +34,28 @@ typedef struct ChargerSettings {
   GenericCan *can_uart;
 } ChargerSettings;
 
+typedef struct ChargerControllerTxDataImpl {
+  uint16_t max_voltage;
+  uint16_t max_current;
+  uint8_t charging;
+} ChargerControllerTxDataImpl;
+
+typedef union ChargerControllerTxData {
+  uint64_t raw_data;
+  ChargerControllerTxDataImpl data_impl;
+} ChargerControllerTxData;
+
+typedef struct ChargerControllerRxDataImpl {
+  uint16_t voltage;
+  uint16_t current;
+  ChargerStatus status_flags;
+} ChargerControllerRxDataImpl;
+
+typedef union ChargerControllerRxData {
+  uint64_t raw_data;
+  ChargerControllerRxDataImpl data_impl;
+} ChargerControllerRxData;
+
 // Initializes the charger controller. Expects |settings| to be fully populated.
 StatusCode charger_controller_init(ChargerSettings *settings, ChargerStatus *status);
 
