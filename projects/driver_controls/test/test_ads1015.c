@@ -11,6 +11,7 @@
 #include "unity.h"
 
 static Ads1015Storage s_storage;
+static bool callback_called[4];
 
 // This function is registered as the callback for channels.
 static void prv_callback_channel(Ads1015Channel channel, void *context) {
@@ -106,36 +107,28 @@ void test_ads1015_read_invalid_input(void) {
                     ads1015_read_raw(&s_storage, NUM_ADS1015_CHANNELS, &reading));
 }
 
-/* This test checks if the callbacks are called properly for enabled channels.
+// This test checks if the callbacks are called properly for enabled channels.
 void test_ads1015_channel_callback(void) {
-  LOG_DEBUG("hello\n");
-  TEST_ASSERT_TRUE(soft_timer_inuse());
-  bool callback_called_0 = false;
-  bool callback_called_1 = false;
-  bool callback_called_2 = false;
-  bool callback_called_3 = false;
+  for (Ads1015Channel channel = ADS1015_CHANNEL_0; channel < NUM_ADS1015_CHANNELS; channel++) {
+    callback_called[channel] = false;
+  }
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true, prv_callback_channel,
                             &callback_called_0);
-  LOG_DEBUG("hello\n");
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, false, prv_callback_channel,
                             &callback_called_1);
-  LOG_DEBUG("hello\n");
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_2, true, prv_callback_channel,
                             &callback_called_2);
-  LOG_DEBUG("hello\n");
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_3, false, prv_callback_channel,
                             &callback_called_3);
-  LOG_DEBUG("hello\n");
-  TEST_ASSERT_EQUAL(true, callback_called_0);
-  TEST_ASSERT_EQUAL(false, callback_called_1);
-  TEST_ASSERT_EQUAL(true, callback_called_2);
-  TEST_ASSERT_EQUAL(false, callback_called_3);
+  delay_ms(50);
+  TEST_ASSERT_EQUAL(true, callback_called[ADS1015_CHANNEL_0]);
+  TEST_ASSERT_EQUAL(false, callback_called[ADS1015_CHANNEL_1]);
+  TEST_ASSERT_EQUAL(true, callback_called[ADS1015_CHANNEL_2]);
+  TEST_ASSERT_EQUAL(false, callback_called[ADS1015_CHANNEL_3]);
 }
-*/
 
 // Tests enabling a channel after disabling.
 void test_ads1015_disable_enable_channel(void) {
-  LOG_DEBUG("hello\n");
   int16_t reading = ADS1015_READ_UNSUCCESSFUL;
 
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, false, NULL, &s_storage);

@@ -8,7 +8,7 @@
 #include "ads1015_def.h"
 #include "soft_timer.h"
 
-#define ADS1015_CHANNEL_UPDATE_PERIOD 10
+#define ADS1015_CHANNEL_UPDATE_PERIOD 30
 #define ADS1015_CHANNEL_ARBITRARY_READING 0
 
 // Checks if a channel is enabled (true) or disabled (false).
