@@ -13,17 +13,11 @@
 
 // Checks if a channel is enabled (true) or disabled (false).
 static bool prv_channel_is_enabled(Ads1015Storage *storage, Ads1015Channel channel) {
-  if (storage == NULL || channel >= NUM_ADS1015_CHANNELS) {
-    return false;
-  }
   return ((storage->channel_bitset & (1 << channel)) != 0);
 }
 
 // Updates the channel_bitset when a channel is enabled/disabled.
 static void prv_mark_channel_enabled(Ads1015Channel channel, bool enable, uint8_t *channel_bitset) {
-  if (channel >= NUM_ADS1015_CHANNELS || channel_bitset == NULL) {
-    return;
-  }
   if (enable) {
     *channel_bitset |= (1 << channel);
   } else {
@@ -33,7 +27,7 @@ static void prv_mark_channel_enabled(Ads1015Channel channel, bool enable, uint8_
 
 // Sets the current channel of the storage.
 static StatusCode prv_set_channel(Ads1015Storage *storage, Ads1015Channel channel) {
-  if (channel >= NUM_ADS1015_CHANNELS || storage == NULL) {
+  if (channel >= NUM_ADS1015_CHANNELS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
@@ -43,12 +37,8 @@ static StatusCode prv_set_channel(Ads1015Storage *storage, Ads1015Channel channe
 
 // Periodically calls channels' callbacks imitating the interrupt behavior.
 static void prv_timer_callback(SoftTimerID id, void *context) {
-  if (context == NULL) {
-    return;
-  }
   Ads1015Storage *storage = context;
   Ads1015Channel current_channel = storage->current_channel;
-  uint8_t channel_bitset = storage->channel_bitset;
 
   if (prv_channel_is_enabled(storage, current_channel)) {
     storage->channel_readings[current_channel] = ADS1015_CHANNEL_ARBITRARY_READING;
@@ -58,12 +48,13 @@ static void prv_timer_callback(SoftTimerID id, void *context) {
                                                  storage->callback_context[current_channel]);
     }
   }
-
+  // Disable the channel on the pending bitset. 
   prv_mark_channel_enabled(current_channel, false, &storage->pending_channel_bitset);
+  // Reset the pending bitset once gone through a cycle of channel rotation.
   if (storage->pending_channel_bitset == ADS1015_BITSET_EMPTY) {
-    // Reset the pending bitset once gone through a cycle of channel rotation.
-    storage->pending_channel_bitset = channel_bitset;
+    storage->pending_channel_bitset = storage->channel_bitset;
   }
+  // Obtain the next enabled channel.
   current_channel = __builtin_ffs(storage->pending_channel_bitset) - 1;
   // Update so that the ADS1015 reads from the next channel.
   prv_set_channel(storage, current_channel);
@@ -73,7 +64,7 @@ static void prv_timer_callback(SoftTimerID id, void *context) {
 // Inits the storage for ADS1015 and starts the soft timer.
 StatusCode ads1015_init(Ads1015Storage *storage, I2CPort i2c_port, Ads1015Address i2c_addr,
                         GPIOAddress *ready_pin) {
-  if ((storage == NULL) || (ready_pin == NULL)) {
+  if (storage == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   memset(storage, 0, sizeof(*storage));
@@ -89,7 +80,6 @@ StatusCode ads1015_configure_channel(Ads1015Storage *storage, Ads1015Channel cha
   if (storage == NULL || channel >= NUM_ADS1015_CHANNELS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
-  uint8_t channel_bitset = storage->channel_bitset;
   prv_mark_channel_enabled(channel, enable, &storage->channel_bitset);
   storage->pending_channel_bitset = storage->channel_bitset;
   storage->channel_callback[channel] = callback;
