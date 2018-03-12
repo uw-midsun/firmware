@@ -113,13 +113,13 @@ void test_ads1015_channel_callback(void) {
     callback_called[channel] = false;
   }
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true, prv_callback_channel,
-                            &callback_called_0);
+                            &callback_called[ADS1015_CHANNEL_0]);
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, false, prv_callback_channel,
-                            &callback_called_1);
+                            &callback_called[ADS1015_CHANNEL_1]);
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_2, true, prv_callback_channel,
-                            &callback_called_2);
+                            &callback_called[ADS1015_CHANNEL_2]);
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_3, false, prv_callback_channel,
-                            &callback_called_3);
+                            &callback_called[ADS1015_CHANNEL_3]);
   delay_ms(50);
   TEST_ASSERT_EQUAL(true, callback_called[ADS1015_CHANNEL_0]);
   TEST_ASSERT_EQUAL(false, callback_called[ADS1015_CHANNEL_1]);
