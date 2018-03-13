@@ -11,7 +11,7 @@ typedef void (*evm_gps_gga_handler)(const evm_gps_gga_sentence);
 // Check this document on page 4:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/evm-gps-f4.pdf
 typedef struct {
-  UARTPort *port;
+  UARTPort port;
   UARTSettings *uart_settings;    // The uart settings to be used
   GPIOSettings *settings_power;   // Pin which provides power
   GPIOSettings *settings_on_off;  // Pin to power up the device

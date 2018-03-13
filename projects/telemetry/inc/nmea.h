@@ -7,7 +7,8 @@
 // This enum contains the list of NMEA sentences (not all of then are supported yet)
 
 typedef enum {
-  EVM_GPS_GGA = 0,  // These are the number of data fields in each message type,
+  EVM_GPS_UNKNOWN = 0,
+  EVM_GPS_GGA,  // These are the number of data fields in each message type,
                     // excluding the message id
   EVM_GPS_GLL,
   EVM_GPS_GSA,
@@ -57,6 +58,6 @@ typedef struct {
 } evm_gps_gga_sentence;
 
 // Parsing function for gga sentence
-evm_gps_gga_sentence evm_gps_parse_nmea_gga_sentence(const uint8_t *nmea_input, size_t len);
+void evm_gps_parse_nmea_gga_sentence(const uint8_t *nmea_input, size_t len);
 StatusCode evm_gps_is_valid_nmea(const uint8_t *to_check, size_t len);
-StatusCode evm_gps_get_nmea_sentence_type(const uint8_t *rx_arr, EVM_GPS_NMEA_MESSAGE_ID *result);
+StatusCode evm_gps_get_nmea_sentence_type(const uint8_t *rx_arr, size_t len, EVM_GPS_NMEA_MESSAGE_ID *result);

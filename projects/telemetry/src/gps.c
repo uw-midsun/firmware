@@ -18,46 +18,56 @@
 
 static evm_gps_gga_handler s_gga_handler[GPS_HANDLER_ARRAY_LENGTH] = { 0 };
 static UARTStorage s_storage;
+static bool s_use_power = false;
 
 // This is so that initializing multiple times does not cause bugs.
 // To clean up you must call evm_gps_clean_up(EvmSettings *settings)
 static bool s_initialized = false;
 
-static void s_nmea_read(const uint8_t *rx_arr, size_t len, void *context) {
-
-  LOG_DEBUG("Read NMEA message\n");
-
-  if (!status_ok(evm_gps_is_valid_nmea(rx_arr, len))) {
-    LOG_DEBUG("Invalid nmea message\n");
-    return;
+static void prv_nmea_read(const uint8_t *rx_arr, size_t len, void *context) {
+  for(size_t i = 0; i < len; i++){
+    printf("%c", rx_arr[i]);
   }
+  //printf("\n");
+  return;
+  // printf("Read NMEA message\n");
+  // if (!status_ok(evm_gps_is_valid_nmea(rx_arr, len))) {
+  //   printf("Invalid nmea message\n");
+  //   return;
+  // }
+  
+  // EVM_GPS_NMEA_MESSAGE_ID message_id = EVM_GPS_UNKNOWN;
+  // StatusCode ret = evm_gps_get_nmea_sentence_type(rx_arr, len, &message_id);
+  // printf("Got nmea message statuscode: %d\n", ret);
+  // printf("Messageid: %d\n", message_id);
 
-  EVM_GPS_NMEA_MESSAGE_ID message_id;
-  evm_gps_get_nmea_sentence_type(rx_arr, &message_id);
-
-  if (message_id == EVM_GPS_GGA) {
-    evm_gps_gga_sentence r = evm_gps_parse_nmea_gga_sentence(rx_arr, len);
-    for (uint32_t i = 0; i < GPS_HANDLER_ARRAY_LENGTH; i++) {
-      if (s_gga_handler[i] != NULL) {
-        (*s_gga_handler[i])(r);
-      }
-    }
-  }
+  // if (message_id != EVM_GPS_UNKNOWN && message_id == EVM_GPS_GGA) {
+  //   evm_gps_parse_nmea_gga_sentence(rx_arr, len);
+  //   //for (uint32_t i = 0; i < GPS_HANDLER_ARRAY_LENGTH; i++) {
+  //   //  if (s_gga_handler[i] != NULL && s_gga_handler[i] != 0) {
+  //   //    //(*s_gga_handler[i])(r);
+  //   //  }
+  //   //}
+  // } else {
+  //   printf("Could not enter and parse gga sentence");
+  // }
+  
 }
 
 StatusCode evm_gps_add_gga_handler(evm_gps_gga_handler handler, size_t *index) {
-  for (uint16_t i = 0; i < GPS_HANDLER_ARRAY_LENGTH; i++) {
-    if (s_gga_handler[i] == NULL) {
-      s_gga_handler[i] = handler;
-      // This cast won't be an issue, there's no way "i" will be big enough to
-      // cause an overflow
-      if (index) {
-        *index = i;
-      }
-      return STATUS_CODE_OK;
-    }
-  }
-  return STATUS_CODE_UNKNOWN;
+  // for (uint16_t i = 0; i < GPS_HANDLER_ARRAY_LENGTH; i++) {
+  //   if (s_gga_handler[i] == NULL) {
+  //     s_gga_handler[i] = handler;
+  //     // This cast won't be an issue, there's no way "i" will be big enough to
+  //     // cause an overflow
+  //     if (index != NULL) {
+  //       *index = i;
+  //     }
+  //     return STATUS_CODE_OK;
+  //   }
+  // }
+  // return STATUS_CODE_UNKNOWN;
+  return STATUS_CODE_OK;
 }
 
 StatusCode evm_gps_remove_gga_handler(size_t index) {
@@ -69,7 +79,7 @@ StatusCode evm_gps_remove_gga_handler(size_t index) {
 void prv_stop_ON_OFF(SoftTimerID timer_id, void *context) {
   evm_gps_settings *settings = context;
   gpio_set_state(settings->pin_on_off, GPIO_STATE_LOW);
-  LOG_DEBUG("No longer pulling ON OFF\n");
+  printf("No longer pulling ON OFF\n");
   // Here we should wait for one second
   // During this period of time we should hear something from the GPS chip
   // If not, start again from pull_ON_OFF
@@ -79,23 +89,27 @@ void prv_stop_ON_OFF(SoftTimerID timer_id, void *context) {
 void prv_chip_power_state_on(SoftTimerID timer_id, void *context) {
   evm_gps_settings *settings = context;
 
-  LOG_DEBUG("Sending power to GPS chip\n");
+  printf("Sending power to GPS chip\n");
 
-  gpio_set_state(settings->pin_power, GPIO_STATE_HIGH);
+  if (s_use_power){
+    gpio_set_state(settings->pin_power, GPIO_STATE_HIGH);
+  }
 }
 
 // This is useful as a method for callbacks
 void prv_chip_power_state_off(SoftTimerID timer_id, void *context) {
   evm_gps_settings *settings = context;
-  LOG_DEBUG("Turning power off for GPS chip\n");
-  gpio_set_state(settings->pin_power, GPIO_STATE_LOW);
+  printf("Turning power off for GPS chip\n");
+  if (s_use_power) {
+    gpio_set_state(settings->pin_power, GPIO_STATE_LOW);
+  }
 }
 
 // This callback should start the initialization sequence
 void prv_pull_ON_OFF(SoftTimerID timer_id, void *context) {
   evm_gps_settings *settings = context;
 
-  LOG_DEBUG("Pulling ON OFF\n");
+  printf("Pulling ON OFF\n");
 
   // Can't really return a StatusCode here. Might need a messy work around / leave it?
   gpio_set_state(settings->pin_on_off, GPIO_STATE_HIGH);
@@ -127,27 +141,34 @@ StatusCode evm_gps_validate_settings(evm_gps_settings *settings) {
 // Initialization of this chip is described on page 10 of:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
 StatusCode evm_gps_init(evm_gps_settings *settings) {
-  LOG_DEBUG("Entering GPS initialization\n");
-  if (s_initialized) return STATUS_CODE_OK;
-  LOG_DEBUG("Starting GPS initialization\n");
+  // printf("Entering GPS initialization\n");
+  // //if (s_initialized) return STATUS_CODE_OK;
+  // printf("Starting GPS initialization\n");
 
   status_ok_or_return(evm_gps_validate_settings(settings));
-  LOG_DEBUG("Settings are valid\n");
+  printf("Settings are valid\n");
 
-  settings->uart_settings->rx_handler = &s_nmea_read;
+  settings->uart_settings->rx_handler = &prv_nmea_read;
   // Makes sure that status codes are handled
-  uart_init(*(settings->port), settings->uart_settings, &s_storage);
-  LOG_DEBUG("UART initialized\n");
-  // These should already be initialized, but we do so anyway, to make sure
+  StatusCode ret = uart_init(settings->port, settings->uart_settings, &s_storage);
+  printf("UART initialized with code %d\n", ret);
 
-  status_ok_or_return(gpio_init_pin(settings->pin_power, settings->settings_power));
-  status_ok_or_return(gpio_init_pin(settings->pin_on_off, settings->settings_on_off));
+  // if (s_use_power) {
+  //   status_ok_or_return(gpio_init_pin(settings->pin_power, settings->settings_power));
+  //   printf("pin_power initialized\n");
+  // } else {
+  //   printf("Bypassing pin_power initialization\n");
+  // }
 
-  // From the documentation: Power needs to be on for one second before continuing
-  prv_chip_power_state_on(0, settings);
-  status_ok_or_return(soft_timer_start_seconds(1, prv_pull_ON_OFF, settings, NULL));
-  LOG_DEBUG("Initialized\n");
-  s_initialized = true;
+  // status_ok_or_return(gpio_init_pin(settings->pin_on_off, settings->settings_on_off));
+
+  // printf("pin_on_off initialized\n");
+
+  // // From the documentation: Power needs to be on for one second before continuing
+  // prv_chip_power_state_on(0, settings);
+  // status_ok_or_return(soft_timer_start_seconds(1, prv_pull_ON_OFF, settings, NULL));
+  // printf("Initialized\n");
+  // s_initialized = true;
   return STATUS_CODE_OK;
 }
 
@@ -162,8 +183,8 @@ StatusCode evm_gps_clean_up(evm_gps_settings *settings) {
   uint8_t message[] = { '$', 'P', 'S', 'R', 'F', '1', '1',  '7',
                         ',', '1', '6', '*', '0', 'B'};
 
-  status_ok_or_return(uart_tx(*(settings->port), (uint8_t *) &message, sizeof(message)));
-  LOG_DEBUG("Sent shutdown message to GPS chip\n");
+  status_ok_or_return(uart_tx(settings->port, (uint8_t *) &message, sizeof(message)));
+  printf("Sent shutdown message to GPS chip\n");
   status_ok_or_return(soft_timer_start_seconds(1, prv_chip_power_state_off, settings, NULL));
 
   memset(&s_gga_handler, 0, SIZEOF_ARRAY(s_gga_handler));

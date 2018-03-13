@@ -1,6 +1,7 @@
 #include "util.h"
 #include <stdbool.h>
 #include <string.h>
+#include "log.h"
 
 static char s_hex[] = "0123456789ABCDEF";
 
@@ -26,5 +27,6 @@ bool evm_gps_compare_checksum(char* message) {
   char computed[3];
   evm_gps_compute_checksum(message, computed);
   char* received = message + strlen(message) - 2;
+  printf("Comparing checksums: received: %s, computed: %s", received, computed);
   return strcmp(computed, received) == 0;
 }

@@ -17,15 +17,14 @@ static const GPIOAddress pins[] = {
 };
 
 void gga_handler(evm_gps_gga_sentence result) {
-  LOG_DEBUG("r.north_south: %c\n", (char)result.north_south);
-  return;
+  //printf("r.north_south: %c\n", result.north_south);
 }
 
 // For GPS
 static const UARTPort s_port = UART_PORT_3;
 
 int main(void) {
-  LOG_DEBUG("Starting main\n");
+  printf("Starting main\n");
   // Enable various peripherals
   interrupt_init();
   gpio_init();
@@ -34,8 +33,8 @@ int main(void) {
   UARTSettings s_settings = {
     .baudrate = 9600,
 
-    .tx = { .port = GPIO_PORT_B, .pin = 10 },
-    .rx = { .port = GPIO_PORT_B, .pin = 11 },
+    .tx = { .port = GPIO_PORT_A, .pin = 10 },
+    .rx = { .port = GPIO_PORT_A, .pin = 10 },
     .alt_fn = GPIO_ALTFN_4,
   };
   
@@ -57,13 +56,15 @@ int main(void) {
                                 .pin_power = &pins[0],
                                 .pin_on_off = &pins[1],
                                 .uart_settings = &s_settings,
-                                .port = &s_port };
+                                .port = s_port };
   StatusCode ret = evm_gps_init(&settings);
-  LOG_DEBUG("evm_gps_init returned with StatusCode: %d\n", ret);
-  evm_gps_add_gga_handler(gga_handler, NULL);
+  // printf("evm_gps_init returned with StatusCode: %d\n", ret);
+  //ret = evm_gps_add_gga_handler(gga_handler, NULL);
+  //printf("evm_gps_add_gga_handler returned with StatusCode: %d\n", ret);
 
-  for(int i = 0; i < 35000; i++){
-    LOG_DEBUG("Looping %d\n", i);
+  while(true){
+    // printf("%s","");
+    //delay_s(1);
   }
   evm_gps_clean_up(&settings);
   return 0;
