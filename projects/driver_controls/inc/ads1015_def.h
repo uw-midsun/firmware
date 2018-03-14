@@ -56,7 +56,11 @@
 #define ADS1015_DATA_RATE_2400 ((uint8_t)0x5 << 5)  // 2400 SPS
 #define ADS1015_DATA_RATE_3300 ((uint8_t)0x6 << 5)  // 3300 SPS
 
-#define ADS1015_CONVERSION_TIME_US_1600_SPS (0xF4240 / 1600)
+// A second in microseconds, i.e. a million.
+#define ADS1015_SECOND_IN_US (0xF4240)
+
+// Time between each conversion in microseconds.
+#define ADS1015_CONVERSION_TIME_US_1600_SPS (ADS1015_SECOND_IN_US / 1600)
 
 // Comparator operating mode
 #define ADS1015_COMP_MODE_TRAD ((uint8_t)0x0 << 4)  // default
