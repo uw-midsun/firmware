@@ -8,7 +8,7 @@
 #include "ads1015_def.h"
 #include "soft_timer.h"
 
-#define ADS1015_CHANNEL_UPDATE_PERIOD 10
+#define ADS1015_CHANNEL_UPDATE_PERIOD_US ADS1015_CONVERSION_TIME_US_1600_SPS
 #define ADS1015_CHANNEL_ARBITRARY_READING 0
 
 // Checks if a channel is enabled (true) or disabled (false).
@@ -58,7 +58,7 @@ static void prv_timer_callback(SoftTimerID id, void *context) {
   current_channel = __builtin_ffs(storage->pending_channel_bitset) - 1;
   // Update so that the ADS1015 reads from the next channel.
   prv_set_channel(storage, current_channel);
-  soft_timer_start(ADS1015_CHANNEL_UPDATE_PERIOD, prv_timer_callback, storage, NULL);
+  soft_timer_start(ADS1015_CHANNEL_UPDATE_PERIOD_US, prv_timer_callback, storage, NULL);
 }
 
 // Inits the storage for ADS1015 and starts the soft timer.
@@ -67,11 +67,11 @@ StatusCode ads1015_init(Ads1015Storage *storage, I2CPort i2c_port, Ads1015Addres
   if (storage == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
-  memset(storage, 0, sizeof(*storage));
+  memset(storage, 0, sizeof(Ads1015Storage));
   for (Ads1015Channel channel = 0; channel < NUM_ADS1015_CHANNELS; channel++) {
     storage->channel_readings[channel] = ADS1015_DISABLED_CHANNEL_READING;
   }
-  return soft_timer_start(ADS1015_CHANNEL_UPDATE_PERIOD, prv_timer_callback, storage, NULL);
+  return soft_timer_start(ADS1015_CHANNEL_UPDATE_PERIOD_US, prv_timer_callback, storage, NULL);
 }
 
 // Enable/disables a channel, and sets a callback for the channel.

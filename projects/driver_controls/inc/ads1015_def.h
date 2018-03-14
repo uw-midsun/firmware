@@ -56,6 +56,8 @@
 #define ADS1015_DATA_RATE_2400 ((uint8_t)0x5 << 5)  // 2400 SPS
 #define ADS1015_DATA_RATE_3300 ((uint8_t)0x6 << 5)  // 3300 SPS
 
+#define ADS1015_CONVERSION_TIME_US_1600_SPS (0xF4240 / 1600)
+
 // Comparator operating mode
 #define ADS1015_COMP_MODE_TRAD ((uint8_t)0x0 << 4)  // default
 #define ADS1015_COMP_MODE_WINDOW ((uint8_t)0x1 << 4)

@@ -12,15 +12,20 @@
 #include "input_event.h"
 
 #include "ads1015.h"
+#include "ads1015_def.h"
 #include "can_output.h"
+#include "critical_section.h"
 #include "direction_fsm.h"
 #include "hazard_light_fsm.h"
 #include "horn_fsm.h"
+#include "log.h"
 #include "mechanical_brake_fsm.h"
 #include "pedal_fsm.h"
 #include "power_fsm.h"
 #include "push_to_talk_fsm.h"
+#include "soft_timer.h"
 #include "turn_signal_fsm.h"
+#include "delay.h"
 
 // Struct of FSMs to be used in the program
 typedef struct FSMGroup {
@@ -33,6 +38,22 @@ typedef struct FSMGroup {
   FSM horn;
   FSM push_to_talk;
 } FSMGroup;
+static bool callback_called[4] = { false, false, false, false };
+static void prv_callback_main(Ads1015Channel channel, void *context) {
+  //LOG_DEBUG("yuppppppppp\n");
+  bool *callback_called = context;
+ // (*callback_called) = true;
+ // LOG_DEBUG("channel %d\n", channel);
+
+}
+
+static void prv_timer_callback(SoftTimerID id, void *context) {
+  LOG_DEBUG("yuppppppppp\n");
+
+  prv_callback_main(2, &callback_called[0]);
+  soft_timer_start(10, prv_timer_callback, NULL, NULL);
+}
+
 
 int main() {
   FSMGroup fsm_group;
@@ -42,6 +63,27 @@ int main() {
   gpio_init();
   interrupt_init();
   gpio_it_init();
+  Ads1015Storage storage;
+
+  soft_timer_init();
+  soft_timer_start(10, prv_timer_callback, NULL, NULL);
+
+  
+
+  // ads1015_init(&storage, 0, 0, NULL);
+  //ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, prv_callback_main,
+   //                         &callback_called[0]);
+  /*ads1015_configure_channel(&storage, ADS1015_CHANNEL_1, false, prv_callback_main,
+                            &callback_called[1]);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, prv_callback_main,
+                            &callback_called[2]);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_3, false, prv_callback_main,
+                            &callback_called[3]);
+*/
+  while (1) {
+    //LOG_DEBUG("hey\n");
+    // callback_called[0] = false;
+  }
 
   adc_init(ADC_MODE_CONTINUOUS);
 

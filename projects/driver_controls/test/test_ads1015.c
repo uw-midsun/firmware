@@ -16,7 +16,7 @@ static bool callback_called[4];
 // This function is registered as the callback for channels.
 static void prv_callback_channel(Ads1015Channel channel, void *context) {
   bool *callback_called = context;
-  (*callback_called) = true;
+  *callback_called = true;
 }
 
 static bool prv_channel_reading_valid(int16_t reading) {
