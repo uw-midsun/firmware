@@ -48,7 +48,7 @@ static void prv_timer_callback(SoftTimerID id, void *context) {
                                                  storage->callback_context[current_channel]);
     }
   }
-  // Disable the channel on the pending bitset. 
+  // Disable the channel on the pending bitset.
   prv_mark_channel_enabled(current_channel, false, &storage->pending_channel_bitset);
   // Reset the pending bitset once gone through a cycle of channel rotation.
   if (storage->pending_channel_bitset == ADS1015_BITSET_EMPTY) {
@@ -64,7 +64,7 @@ static void prv_timer_callback(SoftTimerID id, void *context) {
 // Inits the storage for ADS1015 and starts the soft timer.
 StatusCode ads1015_init(Ads1015Storage *storage, I2CPort i2c_port, Ads1015Address i2c_addr,
                         GPIOAddress *ready_pin) {
-  if (storage == NULL) {
+  if (storage == NULL || ready_pin == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   memset(storage, 0, sizeof(Ads1015Storage));
