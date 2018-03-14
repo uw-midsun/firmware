@@ -6,7 +6,17 @@
 
 #define CAN_NUM_RX_HANDLERS 1
 
+// initializes the lights_can module.
+// needs to know whether it's the front light board or
+// the rear light board.
 void lights_can_init(BoardType type, bool loopback);
+
+// This will get used by the sync module
+// Rear board is the board that will be sending the
+// sync message to the front board. It raises a sync
+// event at the current board, and it transmits a CAN
+// sync message.
+
 StatusCode send_sync(void);
 
 typedef enum {

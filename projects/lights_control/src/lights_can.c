@@ -24,7 +24,7 @@
 #define CAN_TX_ADDR \
   { 0, 12 }
 
-// TODO(ELEC-165): remove these and get the device ID from elsewhere
+// TODO(ELEC-372): remove these and get the device ID from elsewhere
 #define CAN_DEVICE_ID_FRONT 0
 #define CAN_DEVICE_ID_REAR 0
 
@@ -35,7 +35,7 @@ static CANRxHandler s_rx_handlers[CAN_NUM_RX_HANDLERS];
 
 static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply);
 
-// TODO(ELEC-165):
+// TODO(ELEC-372):
 // need to figure out:
 //      1.bitrate for can_settings
 //      2.CAN_TX_ADDR
@@ -60,6 +60,7 @@ void lights_can_init(BoardType boardtype, bool loopback) {
   can_register_rx_handler(msg_id, prv_rx_handler, &rx_msg);
 }
 
+// RX handler for CAN.
 static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   // unpacks the message, raises events based on which board is selected
   uint8_t peripheral_id = 0;
@@ -91,7 +92,7 @@ static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckSta
 
 // sends sync message:
 // both boards receive sync and reset the blinker
-// TODO(ELEC-165) see if the lights boards necessarily have
+// TODO(ELEC-372) see if the lights boards necessarily have
 // to use different message id's, cuz it'd be cool if
 // they didn't. That way they both process the sync
 // message the same way, one uses loopback.
