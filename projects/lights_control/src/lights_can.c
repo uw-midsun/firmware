@@ -103,6 +103,6 @@ StatusCode send_sync(void) {
     .dlc = 2,                   //
   };
 
-  event_raise(EVENT_SYNC, 1); \
+  event_raise(EVENT_SYNC, 1);
   return can_transmit(&msg, NULL);
 }
