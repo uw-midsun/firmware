@@ -12,35 +12,51 @@
 #include <string.h>
 #include "event_queue.h"
 #include "input_event.h"
+#include "ads1015_def.h"
 
-// Scales a reading to a measure out of 12 bits based on the given range.
-#define THROTTLE_SCALE_READING_TO_12_BITS(reading, upper_bound, lower_bound) \
-  ((1 << 12) * ((reading) - (lower_bound)) / ((upper_bound) - (lower_bound)))
+// Scales a reading to a measure out of 12 bits based on the given range (min - max).
+static uint16_t prv_scale_reading(int16_t reading, int16_t max, int16_t min) {
+  return (1 << 12) * (reading - min) / (max - min);
+}
+
+static uint16_t prv_get_numerator(int16_t reading_main, ThrottleZone zone, ThrottleStorage *throttle_storage) {
+  return prv_scale_reading(reading_main,
+                    throttle_storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MAX],
+                    throttle_storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MIN]);
+}
 
 // The tolerance for verifying channel readings match their supposed relationship.
 // This tolerance is defined for the scaled-to-12bits measures.
 #define THROTTLE_CHANNEL_SCALED_READINGS_TOLERANCE 10
 
+static bool prv_reading_within_zone(int16_t reading_main, ThrottleZone zone,
+                                    ThrottleStorage *throttle_storage) {
+  return (
+      (reading_main < throttle_storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MAX]) &&
+      (reading_main > throttle_storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MIN]));
+}
+
 // Returns true if the channels match their supposed relationship.
 static bool prv_channels_synced(ThrottleStorage *throttle_storage, int16_t reading_main,
                                 int16_t reading_secondary) {
-  if (throttle_storage == NULL) {
-    return false;
-  }
-  int16_t numerator_main = THROTTLE_SCALE_READING_TO_12_BITS(
-      reading_main, throttle_storage->calibration_data->main_accel_thresh,
-      throttle_storage->calibration_data->main_bottom_thresh);
 
-  int16_t numerator_secondary = THROTTLE_SCALE_READING_TO_12_BITS(
-      reading_secondary, throttle_storage->calibration_data->secondary_accel_thresh,
-      throttle_storage->calibration_data->secondary_bottom_thresh);
+  int16_t upper_bound_main = throttle_storage->calibration_data
+                                 ->zone_thresholds_main[THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MAX];
+  int16_t lower_bound_main = throttle_storage->calibration_data
+                                 ->zone_thresholds_main[THROTTLE_ZONE_BRAKE][THROTTLE_THRESH_MIN];
+  int16_t upper_bound_secondary =
+      throttle_storage->calibration_data
+          ->zone_thresholds_secondary[THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MAX];
+  int16_t lower_bound_secondary =
+      throttle_storage->calibration_data
+          ->zone_thresholds_secondary[THROTTLE_ZONE_BRAKE][THROTTLE_THRESH_MIN];
 
-  int16_t tolerance = THROTTLE_SCALE_READING_TO_12_BITS(
-      THROTTLE_CHANNEL_SCALED_READINGS_TOLERANCE,
-      throttle_storage->calibration_data->secondary_accel_thresh,
-      throttle_storage->calibration_data->secondary_bottom_thresh);
-  
-  return (abs(numerator_main - numerator_secondary)) < tolerance;
+  uint16_t numerator_main = prv_scale_reading(reading_main, upper_bound_main, lower_bound_main);
+
+  uint16_t numerator_secondary =
+      prv_scale_reading(reading_secondary, upper_bound_secondary, lower_bound_secondary);
+
+  return (abs(numerator_main - numerator_secondary)) < THROTTLE_CHANNEL_SCALED_READINGS_TOLERANCE;
 }
 
 // This callback is called whenever a conversion is done. It sets the flags
@@ -51,77 +67,50 @@ static void prv_flag_update_callback(Ads1015Channel channel, void *context) {
   }
   ThrottleStorage *throttle_storage = context;
   throttle_storage->reading_updated_flag = true;
-  throttle_storage->reading_ok_flag = true;
 }
 
-static StatusCode prv_set_position_raise_event(ThrottleStorage *throttle_storage,
-                                               int16_t reading_main, int16_t reading_secondary) {
-  if (throttle_storage->reading_updated_flag &&
-      prv_channels_synced(throttle_storage, reading_main, reading_secondary)) {
-    if (reading_main < throttle_storage->calibration_data->main_brake_thresh) {
-      // Brake zone.
-      throttle_storage->position.zone = THROTTLE_ZONE_BRAKE;
-      throttle_storage->position.numerator = THROTTLE_SCALE_READING_TO_12_BITS(
-          reading_main, throttle_storage->calibration_data->main_brake_thresh,
-          throttle_storage->calibration_data->main_bottom_thresh);
-      status_ok_or_return(
-          event_raise(INPUT_EVENT_PEDAL_BRAKE, throttle_storage->position.numerator));
-
-    } else if (reading_main < throttle_storage->calibration_data->main_coast_thresh) {
-      // Coast zone.
-      throttle_storage->position.zone = THROTTLE_ZONE_COAST;
-      throttle_storage->position.numerator = THROTTLE_SCALE_READING_TO_12_BITS(
-          reading_main, throttle_storage->calibration_data->main_coast_thresh,
-          throttle_storage->calibration_data->main_brake_thresh);
-      status_ok_or_return(
-          event_raise(INPUT_EVENT_PEDAL_COAST, throttle_storage->position.numerator));
-
-    } else {
-      // Acceleration zone.
-      throttle_storage->position.zone = THROTTLE_ZONE_ACCEL;
-      throttle_storage->position.numerator = THROTTLE_SCALE_READING_TO_12_BITS(
-          reading_main, throttle_storage->calibration_data->main_accel_thresh,
-          throttle_storage->calibration_data->main_coast_thresh);
-      status_ok_or_return(
-          event_raise(INPUT_EVENT_PEDAL_PRESSED, throttle_storage->position.numerator));
-    }
-
-  } else {
-    throttle_storage->reading_ok_flag = false;
-    status_ok_or_return(event_raise(INPUT_EVENT_PEDAL_TIMEOUT, 0));
-  }
-  return STATUS_CODE_OK;
-}
 
 // The periodic callback which checks if readings are up to date and channels are in sync.
 // If they are, the event corresponding to the pedals position is raised.
 // If not, a pedal timout event is raised.
 static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) {
-  if (context == NULL) {
-    return;
-  }
   ThrottleStorage *throttle_storage = context;
-  int16_t reading_main;
-  int16_t reading_secondary;
-  StatusCode code;
+  int16_t reading_main = ADS1015_READ_UNSUCCESSFUL;
+  int16_t reading_secondary = ADS1015_READ_UNSUCCESSFUL;
 
-  code = ads1015_read_raw(throttle_storage->pedal_ads1015_storage, throttle_storage->channel_main,
+  ads1015_read_raw(throttle_storage->pedal_ads1015_storage, throttle_storage->channel_main,
                           &reading_main);
-  if (!status_ok(code)) {
-    event_raise(INPUT_EVENT_PEDAL_TIMEOUT, 0);
-    return;
-  }
 
-  code = ads1015_read_raw(throttle_storage->pedal_ads1015_storage,
+  ads1015_read_raw(throttle_storage->pedal_ads1015_storage,
                           throttle_storage->channel_secondary, &reading_secondary);
-  if (!status_ok(code)) {
-    event_raise(INPUT_EVENT_PEDAL_TIMEOUT, 0);
-    return;
-  }
 
-  code = prv_set_position_raise_event(throttle_storage, reading_main, reading_secondary);
-  if (!status_ok(code)) {
-    return;
+  InputEvent event = NUM_INPUT_EVENTS;
+  ThrottleZone zone = NUM_THROTTLE_ZONES;
+
+  if (throttle_storage->reading_updated_flag &&
+      prv_channels_synced(throttle_storage, reading_main, reading_secondary)) {
+    if (prv_reading_within_zone(reading_main, THROTTLE_ZONE_BRAKE, throttle_storage)) {
+      // Brake zone.
+      zone = THROTTLE_ZONE_BRAKE;
+      event = INPUT_EVENT_PEDAL_BRAKE;
+    } else if (prv_reading_within_zone(reading_main, THROTTLE_ZONE_COAST, throttle_storage)) {
+      // Coast zone.
+      zone = THROTTLE_ZONE_COAST;
+      event = INPUT_EVENT_PEDAL_COAST;
+    } else {
+      // Acceleration zone.
+      zone = THROTTLE_ZONE_ACCEL;
+      event = INPUT_EVENT_PEDAL_PRESSED;
+    }
+
+    throttle_storage->position.zone = zone;
+    throttle_storage->position.numerator = prv_get_numerator(reading_main, zone, throttle_storage);
+    throttle_storage->reading_ok_flag = true;
+    event_raise(event, throttle_storage->position.numerator);
+
+  } else {
+    throttle_storage->reading_ok_flag = false;
+    event_raise(INPUT_EVENT_PEDAL_TIMEOUT, 0);
   }
 
   throttle_storage->reading_updated_flag = false;
