@@ -1,9 +1,9 @@
+#include <stddef.h>
 #include "event_arbiter.h"
 #include "log.h"
 #include "status.h"
 #include "test_helpers.h"
 #include "unity.h"
-#include <stddef.h>
 
 typedef enum {
   TEST_EVENT_ARBITER_EVENT_A = 0,
