@@ -1,6 +1,7 @@
 #include "soft_timer.h"
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "critical_section.h"
 #include "hal_test_helpers.h"
@@ -8,6 +9,19 @@
 #include "log.h"
 #include "test_helpers.h"
 #include "unity.h"
+
+typedef struct TestSoftTimerRepetitiveCtx {
+  uint32_t period;
+  uint16_t counter;
+  SoftTimerID id;
+} TestSoftTimerRepetitiveCtx;
+
+static void prv_repetitive_timer(SoftTimerID timer_id, void *context) {
+  (void)timer_id;
+  TestSoftTimerRepetitiveCtx *rctx = context;
+  rctx->counter++;
+  soft_timer_start(rctx->period, prv_repetitive_timer, context, &rctx->id);
+}
 
 static void prv_timeout_cb(SoftTimerID timer_id, void *context) {
   SoftTimerID *cb_id = context;
@@ -198,4 +212,16 @@ void test_soft_timer_exhausted(void) {
   }
 
   TEST_ASSERT_FALSE(soft_timer_inuse());
+}
+
+void test_fast_timer(void) {
+  volatile TestSoftTimerRepetitiveCtx rctx = {
+    .counter = 0,
+    .period = 10,  // us
+    .id = SOFT_TIMER_INVALID_TIMER,
+  };
+  TEST_ASSERT_OK(soft_timer_start(rctx.period, prv_repetitive_timer, (void *)&rctx, &rctx.id));
+  while (rctx.counter < 500) {
+  }
+  soft_timer_cancel(rctx.id);
 }
