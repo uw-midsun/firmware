@@ -11,7 +11,6 @@
 #include "event_arbiter.h"
 #include "input_event.h"
 
-#include "ads1015.h"
 #include "direction_fsm.h"
 #include "hazard_light_fsm.h"
 #include "horn_fsm.h"
@@ -19,6 +18,7 @@
 #include "pedal_fsm.h"
 #include "power_fsm.h"
 #include "push_to_talk_fsm.h"
+#include "soft_timer.h"
 #include "turn_signal_fsm.h"
 
 // Struct of FSMs to be used in the program
@@ -41,6 +41,8 @@ int main() {
   gpio_init();
   interrupt_init();
   gpio_it_init();
+
+  soft_timer_init();
 
   adc_init(ADC_MODE_CONTINUOUS);
 
