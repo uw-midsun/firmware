@@ -16,13 +16,8 @@
 
 static GenericCanInterface s_interface;
 
-// CANHwEventHandlerCb: Tx Error
-void prv_tx_handler(void *context) {
-  (void)context;
-}
-
 // CANHwEventHandlerCb: Rx Occurred
-void prv_rx_handler(void *context) {
+static void prv_rx_handler(void *context) {
   GenericCanHw *gch = (GenericCanHw *)context;
   GenericCanMsg rx_msg = { 0 };
   while (can_hw_receive(&rx_msg.id, &rx_msg.extended, &rx_msg.data, &rx_msg.dlc)) {
@@ -37,7 +32,7 @@ void prv_rx_handler(void *context) {
 }
 
 // CANHwEventHandlerCb: Fault Occurred
-void prv_bus_error_timeout_handler(SoftTimerID timer_id, void *context) {
+static void prv_bus_error_timeout_handler(SoftTimerID timer_id, void *context) {
   (void)timer_id;
   GenericCanHw *gch = context;
 
@@ -49,7 +44,7 @@ void prv_bus_error_timeout_handler(SoftTimerID timer_id, void *context) {
   }
 }
 
-void prv_bus_error_handler(void *context) {
+static void prv_bus_error_handler(void *context) {
   GenericCanHw *gch = context;
 
   soft_timer_start_millis(CAN_BUS_OFF_RECOVERY_TIME_MS, prv_bus_error_timeout_handler, gch, NULL);
@@ -127,7 +122,6 @@ StatusCode generic_can_hw_init(const CANHwSettings *settings, EventID fault_even
   out->fault_event = fault_event;
   status_ok_or_return(can_hw_init(settings));
 
-  can_hw_register_callback(CAN_HW_EVENT_TX_READY, prv_tx_handler, out);
   can_hw_register_callback(CAN_HW_EVENT_MSG_RX, prv_rx_handler, out);
   can_hw_register_callback(CAN_HW_EVENT_BUS_ERROR, prv_bus_error_handler, out);
   return STATUS_CODE_OK;
