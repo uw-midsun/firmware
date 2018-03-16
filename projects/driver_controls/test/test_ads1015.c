@@ -12,10 +12,15 @@
 
 static Ads1015Storage s_storage;
 
+// The elements of this array are used as contexts for channel callbacks.
+// It is set to be static since the callbacks might try to access the array
+// after the test function has returned causing a segmentation fault.
+static bool s_callback_called[NUM_ADS1015_CHANNELS];
+
 // This function is registered as the callback for channels.
-static void prv_callback(Ads1015Channel channel, void *context) {
-  bool *callback_called = context;
-  (*callback_called) = true;
+static void prv_callback_channel(Ads1015Channel channel, void *context) {
+  bool *s_callback_called = context;
+  *s_callback_called = true;
 }
 
 static bool prv_channel_reading_valid(int16_t reading) {
@@ -58,33 +63,37 @@ void test_ads1015_init_invalid_input(void) {
                     ads1015_init(&s_storage, TEST_ADS1015_I2C_PORT, TEST_ADS1015_ADDR, NULL));
 }
 
-void test_ads_config_channel_invalid_input(void) {
+void test_ads1015_config_channel_invalid_input(void) {
   // Tests a basic use of the function
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true,
-                                                              prv_callback, &s_storage));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_configure_channel(
+                                        &s_storage, ADS1015_CHANNEL_0, true, prv_callback_channel,
+                                        &s_callback_called[ADS1015_CHANNEL_0]));
   // Tests disabling a channel.
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, false,
-                                                              prv_callback, &s_storage));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_configure_channel(
+                                        &s_storage, ADS1015_CHANNEL_0, false, prv_callback_channel,
+                                        &s_callback_called[ADS1015_CHANNEL_0]));
   // Tests enabling a channel with no callback (context has no effect).
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true,
-                                                              NULL, &s_storage));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK,
+                    ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true, NULL,
+                                              &s_callback_called[ADS1015_CHANNEL_0]));
   // Tests for out of bound channel.
   TEST_ASSERT_EQUAL(
       STATUS_CODE_INVALID_ARGS,
-      ads1015_configure_channel(&s_storage, NUM_ADS1015_CHANNELS, true, prv_callback, &s_storage));
+      ads1015_configure_channel(&s_storage, NUM_ADS1015_CHANNELS, true, prv_callback_channel,
+                                &s_callback_called[ADS1015_CHANNEL_0]));
   // Tests for s_storage being a null pointer.
-  TEST_ASSERT_EQUAL(
-      STATUS_CODE_INVALID_ARGS,
-      ads1015_configure_channel(NULL, ADS1015_CHANNEL_1, true, prv_callback, &s_storage));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
+                    ads1015_configure_channel(NULL, ADS1015_CHANNEL_1, true, prv_callback_channel,
+                                              &s_callback_called[ADS1015_CHANNEL_1]));
 }
 
 void test_ads1015_read_invalid_input(void) {
-  int16_t reading;
+  int16_t reading = 0;
 
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true, NULL, &s_storage);
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, true, NULL, &s_storage);
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_2, true, NULL, &s_storage);
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_3, true, NULL, &s_storage);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true, NULL, NULL);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, true, NULL, NULL);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_2, true, NULL, NULL);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_3, true, NULL, NULL);
   // Tests a correct use of the function.
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
                     ads1015_read_converted(&s_storage, ADS1015_CHANNEL_0, &reading));
@@ -108,27 +117,30 @@ void test_ads1015_read_invalid_input(void) {
 
 // This test checks if the callbacks are called properly for enabled channels.
 void test_ads1015_channel_callback(void) {
-  bool callback_called_0 = false;
-  bool callback_called_1 = false;
-  bool callback_called_2 = false;
-  bool callback_called_3 = false;
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true, prv_callback, &callback_called_0);
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, false, prv_callback, &callback_called_1);
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_2, true, prv_callback, &callback_called_2);
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_3, false, prv_callback, &callback_called_3);
+  for (Ads1015Channel channel = ADS1015_CHANNEL_0; channel < NUM_ADS1015_CHANNELS; channel++) {
+    s_callback_called[channel] = false;
+  }
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true, prv_callback_channel,
+                            &s_callback_called[ADS1015_CHANNEL_0]);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, false, prv_callback_channel,
+                            &s_callback_called[ADS1015_CHANNEL_1]);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_2, true, prv_callback_channel,
+                            &s_callback_called[ADS1015_CHANNEL_2]);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_3, false, prv_callback_channel,
+                            &s_callback_called[ADS1015_CHANNEL_3]);
   delay_ms(50);
-  TEST_ASSERT_EQUAL(true, callback_called_0);
-  TEST_ASSERT_EQUAL(false, callback_called_1);
-  TEST_ASSERT_EQUAL(true, callback_called_2);
-  TEST_ASSERT_EQUAL(false, callback_called_3);
+  TEST_ASSERT_EQUAL(true, s_callback_called[ADS1015_CHANNEL_0]);
+  TEST_ASSERT_EQUAL(false, s_callback_called[ADS1015_CHANNEL_1]);
+  TEST_ASSERT_EQUAL(true, s_callback_called[ADS1015_CHANNEL_2]);
+  TEST_ASSERT_EQUAL(false, s_callback_called[ADS1015_CHANNEL_3]);
 }
 
 // Tests enabling a channel after disabling.
 void test_ads1015_disable_enable_channel(void) {
   int16_t reading = ADS1015_READ_UNSUCCESSFUL;
 
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, false, NULL, &s_storage);
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, true, NULL, &s_storage);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, false, NULL, NULL);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, true, NULL, NULL);
   delay_ms(50);
   ads1015_read_converted(&s_storage, ADS1015_CHANNEL_1, &reading);
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
@@ -139,8 +151,8 @@ void test_ads1015_disable_enable_channel(void) {
 void test_ads1015_enable_disable_channel(void) {
   int16_t reading = ADS1015_READ_UNSUCCESSFUL;
 
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, true, NULL, &s_storage);
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, false, NULL, &s_storage);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, true, NULL, NULL);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, false, NULL, NULL);
   delay_ms(50);
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     ads1015_read_converted(&s_storage, ADS1015_CHANNEL_1, &reading));
@@ -150,11 +162,11 @@ void test_ads1015_enable_disable_channel(void) {
 void test_ads1015_disable_already_disabled_channel(void) {
   int16_t reading = ADS1015_READ_UNSUCCESSFUL;
 
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_2, false, NULL, &s_storage);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_2, false, NULL, NULL);
   delay_ms(50);
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     ads1015_read_converted(&s_storage, ADS1015_CHANNEL_2, &reading));
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_2, true, NULL, &s_storage);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_2, true, NULL, NULL);
   delay_ms(50);
   ads1015_read_converted(&s_storage, ADS1015_CHANNEL_2, &reading);
   TEST_ASSERT_TRUE(prv_channel_reading_valid(reading));
@@ -164,10 +176,10 @@ void test_ads1015_disable_already_disabled_channel(void) {
 void test_ads1015_all_channels_enabled(void) {
   int16_t reading = ADS1015_READ_UNSUCCESSFUL;
 
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true, NULL, &s_storage);
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, true, NULL, &s_storage);
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_2, true, NULL, &s_storage);
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_3, true, NULL, &s_storage);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true, NULL, NULL);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, true, NULL, NULL);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_2, true, NULL, NULL);
+  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_3, true, NULL, NULL);
   delay_ms(50);
   for (Ads1015Channel channel = 0; channel < NUM_ADS1015_CHANNELS; channel++) {
     ads1015_read_converted(&s_storage, channel, &reading);
