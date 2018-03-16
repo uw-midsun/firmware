@@ -9,7 +9,7 @@
 // along with the two channels the pedal is connected to. Also pass a ThrottleCalibrationData
 // initialized with desired values. At any time calling throttle_get_position will give the current
 // position of the pedal.
-// Note that throttle_storage should persist across functions.
+// Note that storage should persist across functions.
 
 #include <stdint.h>
 #include "ads1015.h"
@@ -23,6 +23,7 @@ typedef enum {
   THROTTLE_ZONE_BRAKE = 0,
   THROTTLE_ZONE_COAST,
   THROTTLE_ZONE_ACCEL,
+  THROTTLE_ZONE_ALL,
   NUM_THROTTLE_ZONES
 } ThrottleZone;
 
@@ -65,10 +66,9 @@ typedef struct ThrottleStorage {
 
 // Initializes the throttle and sets calibration data.
 // Ads1015Storage *pedal_ads1015_storage should be initialized in ads1015_init beforehand.
-StatusCode throttle_init(ThrottleStorage *throttle_storage,
-                         ThrottleCalibrationData *calibration_data,
-                         Ads1015Storage *pedal_ads1015_storage, Ads1015Channel channel_0,
-                         Ads1015Channel channel_1);
+StatusCode throttle_init(ThrottleStorage *storage, ThrottleCalibrationData *calibration_data,
+                         Ads1015Storage *pedal_ads1015_storage, Ads1015Channel channel_main,
+                         Ads1015Channel channel_secondary);
 
 // Gets the current position of the pedal (writes to ThrottlePosition *position).
-StatusCode throttle_get_position(ThrottleStorage *throttle_storage, ThrottlePosition *position);
+StatusCode throttle_get_position(ThrottleStorage *storage, ThrottlePosition *position);
