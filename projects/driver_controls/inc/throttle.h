@@ -9,12 +9,6 @@
 // along with the two channels the pedal is connected to. Also pass a ThrottleCalibrationData
 // initialized with desired values. At any time calling throttle_get_position will give the current
 // position of the pedal.
-<<<<<<< HEAD
-// Note that storage should persist across functions.
-=======
-// Note that throttle_storage should persist across functions.
->>>>>>> 2e9dbb48075af28d70f4c0976ea7b63abf3de5a3
-
 #include <stdint.h>
 #include "ads1015.h"
 #include "soft_timer.h"
@@ -70,7 +64,7 @@ typedef struct ThrottleStorage {
 
 // Initializes the throttle and sets calibration data.
 // Ads1015Storage *pedal_ads1015_storage should be initialized in ads1015_init beforehand.
-// *storage, pedal_ads1015_storage, and calibration_data should persist.
+// storage, pedal_ads1015_storage, and calibration_data should persist.
 StatusCode throttle_init(ThrottleStorage *storage, ThrottleCalibrationData *calibration_data,
                          Ads1015Storage *pedal_ads1015_storage, Ads1015Channel channel_main,
                          Ads1015Channel channel_secondary);
