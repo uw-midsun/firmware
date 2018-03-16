@@ -34,10 +34,6 @@ static uint16_t prv_get_numerator(int16_t reading, ThrottleZone zone, ThrottleCh
   }
 }
 
-// The tolerance for verifying channel readings match their supposed relationship.
-// This tolerance is defined for the scaled-to-12bits measures.
-// #define THROTTLE_CHANNEL_SCALED_READINGS_TOLERANCE 10
-
 static bool prv_reading_within_zone(int16_t reading_main, ThrottleZone zone,
                                     ThrottleStorage *storage) {
   return (
