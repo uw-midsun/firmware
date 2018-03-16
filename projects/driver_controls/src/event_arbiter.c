@@ -1,5 +1,5 @@
 #include "event_arbiter.h"
-#include <stdio.h>
+#include <stddef.h>
 
 StatusCode event_arbiter_init(EventArbiterStorage *storage) {
   storage->num_registered_arbiters = 0;
