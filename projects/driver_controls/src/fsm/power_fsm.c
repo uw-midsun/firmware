@@ -45,7 +45,7 @@ FSM_STATE_TRANSITION(state_on) {
   FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_off);
 }
 
-// Power FSM arbiter functions
+// Power FSM guard functions
 static bool prv_check_off(const Event *e) {
   // The car must accept a command to power on while off. It must also acknowledge mechanical brake
   // events, as the mechanical brake does not rely on the car being powered.
@@ -62,8 +62,8 @@ static bool prv_check_off(const Event *e) {
 // Power FSM output functions
 
 static void prv_state_off(FSM *fsm, const Event *e, void *context) {
-  EventArbiter *arbiter = fsm->context;
-  event_arbiter_set_event_check(arbiter, prv_check_off);
+  EventArbiterGuard *guard = fsm->context;
+  event_arbiter_set_guard_fn(guard, prv_check_off);
 
   PowerFSMState power_state;
   State *current_state = fsm->current_state;
@@ -86,8 +86,8 @@ static void prv_state_off(FSM *fsm, const Event *e, void *context) {
 }
 
 static void prv_state_on(FSM *fsm, const Event *e, void *context) {
-  EventArbiter *arbiter = fsm->context;
-  event_arbiter_set_event_check(arbiter, NULL);
+  EventArbiterGuard *guard = fsm->context;
+  event_arbiter_set_guard_fn(guard, NULL);
 
   // Previous: Output Power on
 }
@@ -99,13 +99,13 @@ StatusCode power_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_charging_brake, prv_state_off);
   fsm_state_init(state_on, prv_state_on);
 
-  EventArbiter *arbiter = event_arbiter_add_fsm(storage, fsm, prv_check_off);
+  EventArbiterGuard *guard = event_arbiter_add_fsm(storage, fsm, prv_check_off);
 
-  if (arbiter == NULL) {
+  if (guard == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  fsm_init(fsm, "power_fsm", &state_off, arbiter);
+  fsm_init(fsm, "power_fsm", &state_off, guard);
 
   return STATUS_CODE_OK;
 }

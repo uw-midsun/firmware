@@ -67,16 +67,12 @@ void test_event_arbiter_add(void) {
 void test_event_arbiter_basic(void) {
   Event e = { 0 };
 
-  // Make sure the default arbiter allows all messages through
-  EventArbiter *arbiter_a = event_arbiter_add_fsm(&s_arbiter_storage, &s_fsm_a, NULL);
-  fsm_init(&s_fsm_a, "FSM A", &state_a, arbiter_a);
+  // Make sure the default guard allows all messages through
+  EventArbiterGuard *guard_a = event_arbiter_add_fsm(&s_arbiter_storage, &s_fsm_a, NULL);
+  fsm_init(&s_fsm_a, "FSM A", &state_a, NULL);
 
-  EventArbiter *arbiter_b = event_arbiter_add_fsm(&s_arbiter_storage, &s_fsm_b, NULL);
-  fsm_init(&s_fsm_b, "FSM B", &state_c, arbiter_b);
-
-  // Test that the context pointers point to the stored arbiter functions
-  TEST_ASSERT_NOT_EQUAL(NULL, s_fsm_a.context);
-  TEST_ASSERT_NOT_EQUAL(NULL, s_fsm_b.context);
+  EventArbiterGuard *guard_b = event_arbiter_add_fsm(&s_arbiter_storage, &s_fsm_b, NULL);
+  fsm_init(&s_fsm_b, "FSM B", &state_c, NULL);
 
   // Move FSM A to state B
   e.id = TEST_EVENT_ARBITER_EVENT_B;
@@ -88,8 +84,8 @@ void test_event_arbiter_basic(void) {
   TEST_ASSERT_TRUE(event_arbiter_process_event(&s_arbiter_storage, &e));
   TEST_ASSERT_EQUAL(2, s_output_runs);
 
-  // Switch FSM B's arbiter to disable event B
-  event_arbiter_set_event_check(arbiter_b, prv_disable_event_b);
+  // Switch FSM B's guard to disable event B
+  event_arbiter_set_guard_fn(guard_b, prv_disable_event_b);
 
   // Fail to move FSM A to state B
   e.id = TEST_EVENT_ARBITER_EVENT_B;

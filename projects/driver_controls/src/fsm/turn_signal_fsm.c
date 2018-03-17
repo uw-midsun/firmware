@@ -51,13 +51,13 @@ StatusCode turn_signal_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_left_signal, prv_state_output);
   fsm_state_init(state_right_signal, prv_state_output);
 
-  EventArbiter *arbiter = event_arbiter_add_fsm(storage, fsm, NULL);
+  EventArbiterGuard *guard = event_arbiter_add_fsm(storage, fsm, NULL);
 
-  if (arbiter == NULL) {
+  if (guard == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  fsm_init(fsm, "turn_signal_fsm", &state_no_signal, arbiter);
+  fsm_init(fsm, "turn_signal_fsm", &state_no_signal, guard);
 
   return STATUS_CODE_OK;
 }

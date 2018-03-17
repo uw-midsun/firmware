@@ -15,16 +15,16 @@
 #define EVENT_ARBITER_MAX_FSMS 10
 
 // Returns whether the given event should be processed by any FSMs
-typedef bool (*EventArbiterCheck)(const Event *e);
+typedef bool (*EventArbiterGuardFn)(const Event *e);
 
-typedef struct EventArbiter {
+typedef struct EventArbiterGuard {
   FSM *fsm;
-  EventArbiterCheck event_check_fn;
-} EventArbiter;
+  EventArbiterGuardFn guard_fn;
+} EventArbiterGuard;
 
 typedef struct EventArbiterStorage {
   size_t num_registered_arbiters;
-  EventArbiter arbiters[EVENT_ARBITER_MAX_FSMS];
+  EventArbiterGuard arbiters[EVENT_ARBITER_MAX_FSMS];
 } EventArbiterStorage;
 
 // Initializes the event arbiter to the default state with a given output function
@@ -32,10 +32,10 @@ StatusCode event_arbiter_init(EventArbiterStorage *storage);
 
 // Registers an FSM and initializes an arbiter with the given event check function
 // A NULL event check allows all events by default.
-EventArbiter *event_arbiter_add_fsm(EventArbiterStorage *storage, FSM *fsm,
-                                    EventArbiterCheck event_check_fn);
+EventArbiterGuard *event_arbiter_add_fsm(EventArbiterStorage *storage, FSM *fsm,
+                                         EventArbiterGuardFn guard_fn);
 
-StatusCode event_arbiter_set_event_check(EventArbiter *arbiter, EventArbiterCheck event_check_fn);
+StatusCode event_arbiter_set_guard_fn(EventArbiterGuard *guard, EventArbiterGuardFn guard_fn);
 
 // Process an event if allowed by the registered arbiters
 bool event_arbiter_process_event(const EventArbiterStorage *storage, const Event *e);

@@ -35,13 +35,13 @@ StatusCode push_to_talk_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_active, prv_state_output);
   fsm_state_init(state_inactive, prv_state_output);
 
-  EventArbiter *arbiter = event_arbiter_add_fsm(storage, fsm, NULL);
+  EventArbiterGuard *guard = event_arbiter_add_fsm(storage, fsm, NULL);
 
-  if (arbiter == NULL) {
+  if (guard == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  fsm_init(fsm, "push_to_talk_fsm", &state_inactive, arbiter);
+  fsm_init(fsm, "push_to_talk_fsm", &state_inactive, guard);
 
   return STATUS_CODE_OK;
 }

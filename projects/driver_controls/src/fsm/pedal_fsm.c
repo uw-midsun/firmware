@@ -85,13 +85,13 @@ StatusCode pedal_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_driving, prv_state_output);
   fsm_state_init(state_cruise_control, prv_state_output);
 
-  EventArbiter *arbiter = event_arbiter_add_fsm(storage, fsm, NULL);
+  EventArbiterGuard *guard = event_arbiter_add_fsm(storage, fsm, NULL);
 
-  if (arbiter == NULL) {
+  if (guard == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  fsm_init(fsm, "pedal_fsm", &state_brake, arbiter);
+  fsm_init(fsm, "pedal_fsm", &state_brake, guard);
 
   return STATUS_CODE_OK;
 }

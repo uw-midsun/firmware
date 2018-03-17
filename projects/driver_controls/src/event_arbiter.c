@@ -7,22 +7,22 @@ StatusCode event_arbiter_init(EventArbiterStorage *storage) {
   return STATUS_CODE_OK;
 }
 
-EventArbiter *event_arbiter_add_fsm(EventArbiterStorage *storage, FSM *fsm,
-                                    EventArbiterCheck event_check_fn) {
+EventArbiterGuard *event_arbiter_add_fsm(EventArbiterStorage *storage, FSM *fsm,
+                                         EventArbiterGuardFn guard_fn) {
   if (storage->num_registered_arbiters >= EVENT_ARBITER_MAX_FSMS) {
     return NULL;
   }
 
-  EventArbiter *arbiter = &storage->arbiters[storage->num_registered_arbiters++];
+  EventArbiterGuard *arbiter = &storage->arbiters[storage->num_registered_arbiters++];
 
   arbiter->fsm = fsm;
-  arbiter->event_check_fn = event_check_fn;
+  arbiter->guard_fn = guard_fn;
 
   return arbiter;
 }
 
-StatusCode event_arbiter_set_event_check(EventArbiter *arbiter, EventArbiterCheck event_check_fn) {
-  arbiter->event_check_fn = event_check_fn;
+StatusCode event_arbiter_set_guard_fn(EventArbiterGuard *arbiter, EventArbiterGuardFn guard_fn) {
+  arbiter->guard_fn = guard_fn;
 
   return STATUS_CODE_OK;
 }
@@ -30,7 +30,7 @@ StatusCode event_arbiter_set_event_check(EventArbiter *arbiter, EventArbiterChec
 bool event_arbiter_process_event(const EventArbiterStorage *storage, const Event *e) {
   // Check if any of the arbiters block this event
   for (size_t i = 0; i < storage->num_registered_arbiters; i++) {
-    if (storage->arbiters[i].event_check_fn != NULL && !storage->arbiters[i].event_check_fn(e)) {
+    if (storage->arbiters[i].guard_fn != NULL && !storage->arbiters[i].guard_fn(e)) {
       return false;
     }
   }
