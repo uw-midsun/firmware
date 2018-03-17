@@ -1,4 +1,6 @@
 #include "can.h"
+#include "can_msg_defs.h"
+#include "can_pack.h"
 #include "event_queue.h"
 #include "interrupt.h"
 #include "status.h"
@@ -7,11 +9,38 @@
 
 #include "lights_can.h"
 #include "lights_events.h"
-#include "lights_gpio.h"
+
+#define NUM_TEST_MESSAGES_FRONT 6
+#define NUM_TEST_MESSAGES_REAR 6
+#define LIGHT_STATE_ON 6
+#define LIGHT_STATE_OFF 6
+
+#define CAN_RX_ADDR \
+  { 0, 11 }
+
+#define CAN_TX_ADDR \
+  { 0, 12 }
 
 // test for initializing the CAN settings
 
 static CANMessageID s_msg_id = 0x1;
+
+void prv_wait_tx_rx(Event *e) {
+  int ret = NUM_STATUS_CODES;  // invalid status code
+  while (ret != STATUS_CODE_OK) {
+    ret = event_process(e);
+    // wait
+  }
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_CAN_TX, e->id);
+  fsm_process_event(CAN_FSM, e);  // process TX event
+  ret = NUM_STATUS_CODES;
+  while (ret != STATUS_CODE_OK) {
+    ret = event_process(e);
+    // wait
+  }
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_CAN_RX, e->id);
+  fsm_process_event(CAN_FSM, e);  // process RX event
+}
 
 void setup_test(void) {
   gpio_init();
@@ -22,88 +51,92 @@ void setup_test(void) {
 
 void teardown_test(void) {}
 
-// static void prv_clock_tx(Event* e) {
-//   StatusCode ret;
-//   do {
-//     ret = event_process(e);
-//   } while (ret != STATUS_CODE_OK);
-//   TEST_ASSERT_EQUAL(EVENT_CAN_TX, e->id);
-//   TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, e));
-//
-//   do {
-//     ret = event_process(e);
-//   } while (ret != STATUS_CODE_OK);
-//   TEST_ASSERT_EQUAL(EVENT_CAN_RX, e->id);
-//   TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, e));
-// }
-
 void test_lights_rx_front(void) {
-  lights_can_init(LIGHTS_BOARD_FRONT, true);
-  CANMessage msg = { .msg_id = 0x1, .type = CAN_MSG_TYPE_DATA, .data = 0x4, .dlc = 2 };
-  uint16_t test_messages[] = { 0x0, 0x101, 0x002, 0x103, 0x004, 0x107 };
+  const CANSettings can_settings_front = { .bitrate = CAN_HW_BITRATE_125KBPS,
+                                           .rx_event = LIGHTS_EVENT_CAN_RX,
+                                           .tx_event = LIGHTS_EVENT_CAN_TX,
+                                           .fault_event = LIGHTS_EVENT_CAN_FAULT,
+                                           .tx = CAN_TX_ADDR,
+                                           .rx = CAN_RX_ADDR,
+                                           .device_id = SYSTEM_CAN_DEVICE_LIGHTS_FRONT,
+                                           .loopback = true };
 
-  uint16_t assertion_values[][2] = { { EVENT_SIGNAL_RIGHT, 0 },  { EVENT_SIGNAL_LEFT, 1 },
-                                     { EVENT_SIGNAL_HAZARD, 0 }, { EVENT_HORN, 1 },
-                                     { EVENT_HEADLIGHTS, 0 },    { EVENT_SYNC, 1 } };
+  lights_can_init(&can_settings_front);
 
-  for (uint8_t i = 0; i < SIZEOF_ARRAY(test_messages); i++) {
-    msg.data = test_messages[i];
+  uint16_t test_messages_front[NUM_TEST_MESSAGES_FRONT][2] = {
+    { LIGHTS_ACTION_SIGNAL_RIGHT, LIGHT_STATE_ON },   //
+    { LIGHTS_ACTION_SIGNAL_LEFT, LIGHT_STATE_OFF },   //
+    { LIGHTS_ACTION_SIGNAL_HAZARD, LIGHT_STATE_ON },  //
+    { LIGHTS_ACTION_HORN, LIGHT_STATE_ON },           //
+    { LIGHTS_ACTION_HEADLIGHTS, LIGHT_STATE_OFF },    //
+    { LIGHTS_ACTION_SYNC, LIGHT_STATE_ON },           //
+  };
+
+  uint16_t assertion_values_front[NUM_TEST_MESSAGES_FRONT][2] = {
+    { LIGHTS_EVENT_SIGNAL_RIGHT, LIGHT_STATE_ON },  { LIGHTS_EVENT_SIGNAL_LEFT, LIGHT_STATE_OFF },
+    { LIGHTS_EVENT_SIGNAL_HAZARD, LIGHT_STATE_ON }, { LIGHTS_EVENT_HORN, LIGHT_STATE_ON },
+    { LIGHTS_EVENT_HEADLIGHTS, LIGHT_STATE_OFF },   { LIGHTS_EVENT_SYNC, LIGHT_STATE_ON }
+  };
+
+  CANMessage msg = { 0 };
+
+  for (uint8_t i = 0; i < NUM_TEST_MESSAGES_FRONT; i++) {
+    TEST_ASSERT_OK(
+        CAN_PACK_LIGHTS_STATES(&msg, test_messages_front[i][0], test_messages_front[i][1]));
     TEST_ASSERT_OK(can_transmit(&msg, NULL));
     Event e = { 0 };
-    int ret;
-    do {
-      if (e.id == EVENT_CAN_RX) fsm_process_event(CAN_FSM, &e);
-      if (e.id == EVENT_CAN_TX) fsm_process_event(CAN_FSM, &e);
+    prv_wait_tx_rx(&e);
+    int ret = NUM_STATUS_CODES;
+    while (ret != STATUS_CODE_OK) {
       ret = event_process(&e);
-    } while (ret != STATUS_CODE_OK || e.id == EVENT_CAN_RX || e.id == EVENT_CAN_TX);
-    // prv_clock_tx(&e);
-    // StatusCode ret;
-    // do {
-    //   ret = event_process(&e);
-    // } while (ret != STATUS_CODE_OK);
-    TEST_ASSERT_EQUAL(assertion_values[i][0], e.id);
-    TEST_ASSERT_EQUAL(assertion_values[i][1], e.data);
+      // wait
+    }
+    TEST_ASSERT_EQUAL(assertion_values_front[i][0], e.id);
+    TEST_ASSERT_EQUAL(assertion_values_front[i][1], e.data);
   }
 }
 
 void test_lights_rx_rear(void) {
-  lights_can_init(LIGHTS_BOARD_REAR, true);
-  CANMessage msg = { .msg_id = 0x1, .type = CAN_MSG_TYPE_DATA, .data = 0x4, .dlc = 2 };
-  uint16_t test_messages[] = { 0x0, 0x101, 0x002, 0x105, 0x006, 0x007 };
+  const CANSettings can_settings_rear = { .bitrate = CAN_HW_BITRATE_125KBPS,
+                                          .rx_event = LIGHTS_EVENT_CAN_RX,
+                                          .tx_event = LIGHTS_EVENT_CAN_TX,
+                                          .fault_event = LIGHTS_EVENT_CAN_FAULT,
+                                          .tx = CAN_TX_ADDR,
+                                          .rx = CAN_RX_ADDR,
+                                          .device_id = SYSTEM_CAN_DEVICE_LIGHTS_REAR,
+                                          .loopback = true };
 
-  uint16_t assertion_values[][2] = { { EVENT_SIGNAL_RIGHT, 0 },  { EVENT_SIGNAL_LEFT, 1 },
-                                     { EVENT_SIGNAL_HAZARD, 0 }, { EVENT_BRAKES, 1 },
-                                     { EVENT_STROBE, 0 },        { EVENT_SYNC, 0 } };
-  for (uint8_t i = 0; i < SIZEOF_ARRAY(test_messages); i++) {
-    msg.data = test_messages[i];
+  lights_can_init(&can_settings_rear);
+
+  uint16_t test_messages_rear[NUM_TEST_MESSAGES_REAR][2] = {
+    { LIGHTS_ACTION_SIGNAL_RIGHT, LIGHT_STATE_OFF },  //
+    { LIGHTS_ACTION_SIGNAL_LEFT, LIGHT_STATE_OFF },   //
+    { LIGHTS_ACTION_SIGNAL_HAZARD, LIGHT_STATE_ON },  //
+    { LIGHTS_ACTION_BRAKES, LIGHT_STATE_OFF },        //
+    { LIGHTS_ACTION_STROBE, LIGHT_STATE_ON },         //
+    { LIGHTS_ACTION_SYNC, LIGHT_STATE_ON },           //
+  };
+
+  uint16_t assertion_values_rear[NUM_TEST_MESSAGES_REAR][2] = {
+    { LIGHTS_EVENT_SIGNAL_RIGHT, LIGHT_STATE_OFF }, { LIGHTS_EVENT_SIGNAL_LEFT, LIGHT_STATE_OFF },
+    { LIGHTS_EVENT_SIGNAL_HAZARD, LIGHT_STATE_ON }, { LIGHTS_EVENT_BRAKES, LIGHT_STATE_OFF },
+    { LIGHTS_EVENT_STROBE, LIGHT_STATE_ON },        { LIGHTS_EVENT_SYNC, LIGHT_STATE_ON }
+  };
+
+  CANMessage msg = { 0 };
+
+  for (uint8_t i = 0; i < NUM_TEST_MESSAGES_REAR; i++) {
+    TEST_ASSERT_OK(
+        CAN_PACK_LIGHTS_STATES(&msg, test_messages_rear[i][0], test_messages_rear[i][1]));
     TEST_ASSERT_OK(can_transmit(&msg, NULL));
     Event e = { 0 };
-    int ret;
-    do {
-      if (e.id == EVENT_CAN_RX) fsm_process_event(CAN_FSM, &e);
-      if (e.id == EVENT_CAN_TX) fsm_process_event(CAN_FSM, &e);
+    prv_wait_tx_rx(&e);
+    int ret = NUM_STATUS_CODES;
+    while (ret != STATUS_CODE_OK) {
       ret = event_process(&e);
-    } while (ret != STATUS_CODE_OK || e.id == EVENT_CAN_RX || e.id == EVENT_CAN_TX);
-    // prv_clock_tx(&e);
-    // StatusCode ret;
-    // do {
-    //   ret = event_process(&e);
-    // } while (ret != STATUS_CODE_OK);
-    TEST_ASSERT_EQUAL(assertion_values[i][0], e.id);
-    TEST_ASSERT_EQUAL(assertion_values[i][1], e.data);
+      // wait
+    }
+    TEST_ASSERT_EQUAL(assertion_values_rear[i][0], e.id);
+    TEST_ASSERT_EQUAL(assertion_values_rear[i][1], e.data);
   }
-}
-
-void test_lights_tx_sync(void) {
-  lights_can_init(LIGHTS_BOARD_REAR, true);
-  TEST_ASSERT_OK(send_sync());
-  Event e = { 0 };
-  int ret;
-  do {
-    if (e.id == EVENT_CAN_RX) fsm_process_event(CAN_FSM, &e);
-    if (e.id == EVENT_CAN_TX) fsm_process_event(CAN_FSM, &e);
-    ret = event_process(&e);
-  } while (ret != STATUS_CODE_OK || e.id == EVENT_CAN_RX || e.id == EVENT_CAN_TX);
-  TEST_ASSERT_EQUAL(EVENT_SYNC, e.id);
-  TEST_ASSERT_EQUAL(1, e.data);
 }

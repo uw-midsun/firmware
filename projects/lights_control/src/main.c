@@ -7,8 +7,10 @@
 #include "wait.h"
 
 #include "lights_can.h"
-#include "lights_gpio.h"
 
 int main(void) {
+  while (true) {
+    // process raised events
+  }
   return STATUS_CODE_OK;
 }
