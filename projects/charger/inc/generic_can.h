@@ -6,6 +6,8 @@
 #include "generic_can_msg.h"
 #include "status.h"
 
+#define NUM_GENERIC_CAN_RX_HANDLERS 5
+
 struct GenericCan;
 
 typedef void (*GenericCanRx)(const GenericCanMsg *msg, void *context);
@@ -28,7 +30,44 @@ typedef struct GenericCanInterface {
 
 typedef struct GenericCan {
   GenericCanInterface *interface;
+  GenericCanRxStorage rx_storage[NUM_GENERIC_CAN_RX_HANDLERS];
 } GenericCan;
+
+// Usage:
+//
+// GenericCan uses dynamic dispatch where each struct for an implementation variant of CAN carries
+// with it an implementation of tx, register_rx, enable_rx and disable_rx. To use a given
+// implementation one simply needs to past the specific type of GenericCan<Network|Hw|Uart> to one
+// of the following functions. Since all three of those types use GenericCan as a base by casting to
+// (GenericCan *). It is possible to derive the interface function pointers without knowing about
+// the rest of the data carried in the struct. This allows an object oriented approach where the
+// remaining variable for a given implementation are "private/protected" meanwhile the interface is
+// consistent for all variants of GenericCan.
+//
+// Example:
+//
+// GenericCanUart can_uart = { 0 };
+// generic_can_uart_init(&can_uart, UART_PORT_1);
+//
+// // Transmit
+// GenericCanMsg my_msg = { 0 };
+//
+// // Populate...
+//
+// generic_can_tx((GenericCan *)&can_uart, &my_msg);
+//
+// The primary advantage of this is that if you build a function that relies on CAN it can accept
+// any GenericCan implementation and be ignorant to its underlying behavior. For example:
+//
+// static uint64_t s_data;
+//
+// void send_internal_data(const GenericCan *can) {
+//   GenericCanMsg my_msg = { .data = &s_data };
+//   generic_can_tx(&can, &my_msg);
+// }
+//
+// In this way the data can be sent via UART, CAN Hw or CAN Network without the caller knowing which
+// specific CAN variant it is dealing with!
 
 // Transmits a GenericCanMsg.
 //
