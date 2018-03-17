@@ -51,7 +51,7 @@ StatusCode drive_output_init(DriveOutputStorage *storage, EventID fault_event,
   return STATUS_CODE_OK;
 }
 
-StatusCode drive_output_enable(DriveOutputStorage *storage, bool enabled) {
+StatusCode drive_output_set_enabled(DriveOutputStorage *storage, bool enabled) {
   soft_timer_cancel(storage->watchdog_timer);
   soft_timer_cancel(storage->output_timer);
 

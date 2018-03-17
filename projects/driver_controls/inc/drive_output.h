@@ -39,7 +39,7 @@ StatusCode drive_output_init(DriveOutputStorage *storage, EventID fault_event,
 
 // Control whether periodic drive output is enabled (ex. disable when the car is off)
 // Note that if a fault occurs, periodic drive output will be disabled.
-StatusCode drive_output_enable(DriveOutputStorage *storage, bool enabled);
+StatusCode drive_output_set_enabled(DriveOutputStorage *storage, bool enabled);
 
 // Throttle and steering angle expect sign-extended 12-bit values.
 // Direction counts negative values as reverse, positive as forward, and 0 as neutral.
