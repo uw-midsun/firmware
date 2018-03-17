@@ -2,6 +2,9 @@
 
 // basic idea: tx is stored in a buffer, interrupt-driven
 // rx is buffered, once a newline is hit or the buffer is full, call rx_handler
+// requires tty0tty to be installed
+// sudo depmod && sudo modprobe tty0tty && sudo chmod 666 /dev/tnt*
+// must be run each time vagrant is started
 
 typedef struct {
   int fd;
@@ -19,6 +22,9 @@ static UARTPortData s_port[] = {
 
 StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage) {
   s_port[uart].fd = open(s_port[uart].port, O_RDWR | O_NOCTTY);
+  if (fd < 0) {
+    LOG_DEBUG("Null modem emulator tty0tty may not be installed or initialized properly.")
+  }
 
   // save current serial port settings
   tcgetattr(s_port[uart].fd, &s_port[uart].oldtio);
