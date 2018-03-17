@@ -37,7 +37,7 @@ typedef struct GenericCan {
 //
 // GenericCan uses dynamic dispatch where each struct for an implementation variant of CAN carries
 // with it an implementation of tx, register_rx, enable_rx and disable_rx. To use a given
-// implementation one simply needs to past the specific type of GenericCan<Network|Hw|Uart> to one
+// implementation one simply needs to pass the specific type of GenericCan<Network|Hw|Uart> to one
 // of the following functions. Since all three of those types use GenericCan as a base by casting to
 // (GenericCan *). It is possible to derive the interface function pointers without knowing about
 // the rest of the data carried in the struct. This allows an object oriented approach where the
@@ -71,18 +71,18 @@ typedef struct GenericCan {
 
 // Transmits a GenericCanMsg.
 //
-// Note: if backed by CAN |msg| needs to be compatible with CANMessage and its |source_id| will
-// automatically be set to the ID of the broadcaster as determined in |device_id| of a CANSettings
-// struct. Also |type| must be CAN_MSG_TYPE_DATA as this TX mode does not support acks (therefore
-// its ID must be > ).
+// Note: if backed by CAN Network |msg| needs to be compatible with CANMessage and its |source_id|
+// will automatically be set to the ID of the broadcaster as determined in |device_id| of a
+// CANSettings struct. Also |type| must be CAN_MSG_TYPE_DATA as this TX mode does not support acks
+// (therefore its msg ID must be in the range [0, 2047].
 StatusCode generic_can_tx(const GenericCan *can, const GenericCanMsg *msg);
 
-// Registers a |rx_handler| (enabled by default) to an |id|.
-StatusCode generic_can_register_rx(GenericCan *can, GenericCanRx rx_handler, uint32_t id,
+// Registers a |rx_handler| (enabled by default) to a |raw_id|.
+StatusCode generic_can_register_rx(GenericCan *can, GenericCanRx rx_handler, uint32_t raw_id,
                                    void *context);
 
-// Enables the stored GenericCanRx for |id|.
-StatusCode generic_can_enable_rx(GenericCan *can, uint32_t id);
+// Enables the stored GenericCanRx for |raw_id|.
+StatusCode generic_can_enable_rx(GenericCan *can, uint32_t raw_id);
 
-// Disabled the stored GenericCanRx for |id|.
-StatusCode generic_can_disable_rx(GenericCan *can, uint32_t id);
+// Disabled the stored GenericCanRx for |raw_id|.
+StatusCode generic_can_disable_rx(GenericCan *can, uint32_t raw_id);
