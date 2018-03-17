@@ -23,7 +23,7 @@ static CANAckRequest s_ack_request;
 static void prv_hb_watchdog(SoftTimerID timer_id, void *context) {
   (void)timer_id;
   (void)context;
-  // TODO(ELEC-105): Raise emergency event.
+  event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, 0);
 }
 
 static void prv_kick_watchdog(void) {
@@ -81,7 +81,8 @@ bool powertrain_heartbeat_process_event(const Event *e) {
     prv_kick_watchdog();
     prv_send_hb_request(SOFT_TIMER_INVALID_TIMER, NULL);
     soft_timer_start_millis(POWERTRAIN_HB_MS, prv_send_hb_request, NULL, &s_interval_id);
-  } else if (e->id > NUM_CHAOS_EVENTS_FSM && e->id < NUM_CHAOS_EVENT_SEQUENCES) {
+  } else if ((e->id > NUM_CHAOS_EVENTS_FSM && e->id < NUM_CHAOS_EVENT_SEQUENCES) ||
+             e->id == CHAOS_EVENT_SEQUENCE_EMERGENCY) {
     soft_timer_cancel(s_interval_id);
     soft_timer_cancel(s_watchdog_id);
     s_interval_id = SOFT_TIMER_INVALID_TIMER;
