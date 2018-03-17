@@ -32,7 +32,7 @@ StatusCode flash_init(void) {
     }
 
     for (int i = 0; i < NUM_FLASH_PAGES; i++) {
-      flash_erase(i);
+      flash_erase((FlashPage)i);
     }
   }
 
