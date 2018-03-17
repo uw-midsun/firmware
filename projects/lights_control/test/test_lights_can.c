@@ -25,7 +25,10 @@
 
 static CANMessageID s_msg_id = 0x1;
 
-void prv_wait_tx_rx(Event *e) {
+// waits for the internal RX/TX events to be sent
+// and processes those events so that the next event
+// is the one risen from lights_can.c
+static void prv_wait_tx_rx(Event *e) {
   int ret = NUM_STATUS_CODES;  // invalid status code
   while (ret != STATUS_CODE_OK) {
     ret = event_process(e);
@@ -51,6 +54,9 @@ void setup_test(void) {
 
 void teardown_test(void) {}
 
+// sends messages to the front board using the loopback interface
+// asserts that the correct event has been risen with the correct
+// data.
 void test_lights_rx_front(void) {
   const CANSettings can_settings_front = { .bitrate = CAN_HW_BITRATE_125KBPS,
                                            .rx_event = LIGHTS_EVENT_CAN_RX,
@@ -96,6 +102,7 @@ void test_lights_rx_front(void) {
   }
 }
 
+// same as test_lights_rx_front, but for the rear board.
 void test_lights_rx_rear(void) {
   const CANSettings can_settings_rear = { .bitrate = CAN_HW_BITRATE_125KBPS,
                                           .rx_event = LIGHTS_EVENT_CAN_RX,

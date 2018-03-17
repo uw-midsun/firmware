@@ -28,16 +28,14 @@ static LightsEvent s_event_lookup[NUM_ACTION_ID] = {
   [LIGHTS_ACTION_SYNC] = LIGHTS_EVENT_SYNC,                    //
 };
 
-static volatile CANMessage s_rx_msg = { 0 };
-
 void lights_can_init(const CANSettings *can_settings) {
   CANMessageID msg_id = SYSTEM_CAN_MESSAGE_LIGHTS_STATES;
   // initialize CAN
   can_init(can_settings, &s_can_storage, s_rx_handlers, CAN_NUM_RX_HANDLERS);
   if (can_settings->device_id == SYSTEM_CAN_DEVICE_LIGHTS_FRONT) {
-    can_register_rx_handler(msg_id, prv_rx_handler_front, &s_rx_msg);
+    can_register_rx_handler(msg_id, prv_rx_handler_front, NULL);
   } else {
-    can_register_rx_handler(msg_id, prv_rx_handler_rear, &s_rx_msg);
+    can_register_rx_handler(msg_id, prv_rx_handler_rear, NULL);
   }
 }
 
