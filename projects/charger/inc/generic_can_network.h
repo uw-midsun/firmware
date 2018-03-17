@@ -11,7 +11,7 @@ typedef struct GenericCanNetwork {
 } GenericCanNetwork;
 
 // Initializes the generic CAN for the hardware CAN.
-StatusCode generic_can_network_init(GenericCanNetwork* can_network);
+StatusCode generic_can_network_init(GenericCanNetwork *can_network);
 
 // Note: this utilizes Network Layer CAN not Hardware Layer so support is limited to network layer
 // rules! If you wish to use this to send extended id messages use the generic_can_hw module.
