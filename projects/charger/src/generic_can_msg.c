@@ -19,7 +19,9 @@ StatusCode generic_can_msg_to_can_message(const GenericCanMsg* src, CANMessage* 
 }
 
 StatusCode can_message_to_generic_can_message(const CANMessage* src, GenericCanMsg* dst) {
-  const CANId raw_id = {
+  // Make this volatile to bypass a bug with -Wclobbered
+  // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65041
+  volatile CANId raw_id = {
     .source_id = src->source_id,
     .msg_id = src->msg_id,
     .type = src->type,
