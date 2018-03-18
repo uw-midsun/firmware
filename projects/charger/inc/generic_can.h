@@ -74,7 +74,7 @@ typedef struct GenericCan {
 // Note: if backed by CAN Network |msg| needs to be compatible with CANMessage and its |source_id|
 // will automatically be set to the ID of the broadcaster as determined in |device_id| of a
 // CANSettings struct. Also |type| must be CAN_MSG_TYPE_DATA as this TX mode does not support acks
-// (therefore its msg ID must be in the range [0, 2047].
+// (therefore its CANMessage.msg_id must be in the range [0, 2047].
 StatusCode generic_can_tx(const GenericCan *can, const GenericCanMsg *msg);
 
 // Registers a |rx_handler| (enabled by default) to a |raw_id|.
@@ -84,5 +84,5 @@ StatusCode generic_can_register_rx(GenericCan *can, GenericCanRx rx_handler, uin
 // Enables the stored GenericCanRx for |raw_id|.
 StatusCode generic_can_enable_rx(GenericCan *can, uint32_t raw_id);
 
-// Disabled the stored GenericCanRx for |raw_id|.
+// Disables the stored GenericCanRx for |raw_id|.
 StatusCode generic_can_disable_rx(GenericCan *can, uint32_t raw_id);

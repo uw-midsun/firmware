@@ -1,5 +1,6 @@
 #pragma once
-// Helpers for common code used in generic_can implementations.
+// Helpers for common code used in generic_can implementations. This interface is intended to be
+// **private** to generic_can*.c files and it should never be included in a *.h file.
 
 #include <stdbool.h>
 #include <stdint.h>

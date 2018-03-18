@@ -1,9 +1,10 @@
 #pragma once
 // Wrapper around CAN Hw for use of extended ids with Generic CAN.
 // This performs the initialization of can_hw.
-// Note this is primarily intended for testing. It isn't nearly as fault tolerant as CAN network.
 //
-// TODO(ELEC-355): Create extended support for the CAN Network layer.
+// NOTE: this is primarily intended for testing. It isn't nearly as fault tolerant as Network Layer
+// CAN and should only be used in situations where faults are permissible and message traffic is
+// light (i.e. talking to a device not on the primary CAN Network).
 
 #include "can_hw.h"
 #include "event_queue.h"
