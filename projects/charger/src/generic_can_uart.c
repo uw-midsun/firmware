@@ -39,7 +39,6 @@ static StatusCode prv_tx(const GenericCan *can, const GenericCanMsg *msg) {
   if (gcu->base.interface != &s_interface || gcu->can_uart != &s_can_uart) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "GenericCan not aligned to GenericCanUart.");
   }
-
   return can_uart_req_slave_tx(gcu->can_uart, msg->id, msg->extended, &msg->data, msg->dlc);
 }
 
@@ -50,7 +49,6 @@ static StatusCode prv_register_rx(GenericCan *can, GenericCanRx rx_handler, uint
   if (gcu->base.interface != &s_interface || gcu->can_uart != &s_can_uart) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "GenericCan not aligned to GenericCanUart.");
   }
-
   return generic_can_helpers_register_rx(can, rx_handler, id, context);
 }
 

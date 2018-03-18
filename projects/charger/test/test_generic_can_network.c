@@ -71,7 +71,7 @@ void test_generic_can(void) {
     .extended = false,
   };
 
-  TEST_ASSERT_OK(generic_can_register_rx(can, prv_can_rx_callback, raw_id.msg_id, &counter));
+  TEST_ASSERT_OK(generic_can_register_rx(can, prv_can_rx_callback, raw_id.raw, &counter));
 
   Event e = { 0, 0 };
   StatusCode status = NUM_STATUS_CODES;
@@ -95,7 +95,7 @@ void test_generic_can(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
 
   // Mask the rx handler
-  TEST_ASSERT_OK(generic_can_disable_rx(can, raw_id.msg_id));
+  TEST_ASSERT_OK(generic_can_disable_rx(can, raw_id.raw));
 
   // TX
   TEST_ASSERT_OK(generic_can_tx(can, &msg));
@@ -109,7 +109,7 @@ void test_generic_can(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
 
   // Unmask the rx handler
-  TEST_ASSERT_OK(generic_can_enable_rx(can, raw_id.msg_id));
+  TEST_ASSERT_OK(generic_can_enable_rx(can, raw_id.raw));
   // TX
   TEST_ASSERT_OK(generic_can_tx(can, &msg));
   do {
