@@ -49,7 +49,7 @@ static StatusCode prv_register_rx(GenericCan *can, GenericCanRx rx_handler, uint
     return status_msg(STATUS_CODE_INVALID_ARGS, "GenericCan not aligned to GenericCanNetwork.");
   }
 
-  for (size_t i = 0; i < NUM_GENERIC_CAN_NETWORK_RX_HANDLERS; i++) {
+  for (size_t i = 0; i < NUM_GENERIC_CAN_RX_HANDLERS; i++) {
     if (gcn->base.rx_storage[i].rx_handler == NULL && !gcn->base.rx_storage[i].enabled) {
       gcn->base.rx_storage[i].id = id;
       gcn->base.rx_storage[i].rx_handler = rx_handler;

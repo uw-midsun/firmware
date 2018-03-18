@@ -4,8 +4,6 @@
 
 #include "generic_can.h"
 
-#define NUM_GENERIC_CAN_NETWORK_RX_HANDLERS 5
-
 typedef struct GenericCanNetwork {
   GenericCan base;
 } GenericCanNetwork;
