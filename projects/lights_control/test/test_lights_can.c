@@ -21,13 +21,10 @@
 #define CAN_TX_ADDR \
   { 0, 12 }
 
-// test for initializing the CAN settings
-
 static CANMessageID s_msg_id = 0x1;
 
-// waits for the internal RX/TX events to be sent
-// and processes those events so that the next event
-// is the one risen from lights_can.c
+// Waits for the internal RX/TX events to be sent and processes those events so that the next event
+// is one raised by lights_can.c
 static void prv_wait_tx_rx(Event *e) {
   int ret = NUM_STATUS_CODES;  // invalid status code
   while (ret != STATUS_CODE_OK) {
@@ -54,9 +51,8 @@ void setup_test(void) {
 
 void teardown_test(void) {}
 
-// sends messages to the front board using the loopback interface
-// asserts that the correct event has been risen with the correct
-// data.
+// sends messages to the front board using the loopback interface asserts that the correct event
+// has been raised with the correct data.
 void test_lights_rx_front(void) {
   const CANSettings can_settings_front = { .bitrate = CAN_HW_BITRATE_125KBPS,
                                            .rx_event = LIGHTS_EVENT_CAN_RX,
@@ -67,7 +63,7 @@ void test_lights_rx_front(void) {
                                            .device_id = SYSTEM_CAN_DEVICE_LIGHTS_FRONT,
                                            .loopback = true };
 
-  lights_can_init(&can_settings_front);
+  TEST_ASSERT_OK(lights_can_init(&can_settings_front));
 
   uint16_t test_messages_front[NUM_TEST_MESSAGES_FRONT][2] = {
     { LIGHTS_ACTION_SIGNAL_RIGHT, LIGHT_STATE_ON },   //
@@ -79,9 +75,12 @@ void test_lights_rx_front(void) {
   };
 
   uint16_t assertion_values_front[NUM_TEST_MESSAGES_FRONT][2] = {
-    { LIGHTS_EVENT_SIGNAL_RIGHT, LIGHT_STATE_ON },  { LIGHTS_EVENT_SIGNAL_LEFT, LIGHT_STATE_OFF },
-    { LIGHTS_EVENT_SIGNAL_HAZARD, LIGHT_STATE_ON }, { LIGHTS_EVENT_HORN, LIGHT_STATE_ON },
-    { LIGHTS_EVENT_HEADLIGHTS, LIGHT_STATE_OFF },   { LIGHTS_EVENT_SYNC, LIGHT_STATE_ON }
+    { LIGHTS_EVENT_SIGNAL_RIGHT, LIGHT_STATE_ON },   //
+    { LIGHTS_EVENT_SIGNAL_LEFT, LIGHT_STATE_OFF },   //
+    { LIGHTS_EVENT_SIGNAL_HAZARD, LIGHT_STATE_ON },  //
+    { LIGHTS_EVENT_HORN, LIGHT_STATE_ON },           //
+    { LIGHTS_EVENT_HEADLIGHTS, LIGHT_STATE_OFF },    //
+    { LIGHTS_EVENT_SYNC, LIGHT_STATE_ON }            //
   };
 
   CANMessage msg = { 0 };
@@ -113,7 +112,7 @@ void test_lights_rx_rear(void) {
                                           .device_id = SYSTEM_CAN_DEVICE_LIGHTS_REAR,
                                           .loopback = true };
 
-  lights_can_init(&can_settings_rear);
+  TEST_ASSERT_OK(lights_can_init(&can_settings_rear));
 
   uint16_t test_messages_rear[NUM_TEST_MESSAGES_REAR][2] = {
     { LIGHTS_ACTION_SIGNAL_RIGHT, LIGHT_STATE_OFF },  //
@@ -125,9 +124,12 @@ void test_lights_rx_rear(void) {
   };
 
   uint16_t assertion_values_rear[NUM_TEST_MESSAGES_REAR][2] = {
-    { LIGHTS_EVENT_SIGNAL_RIGHT, LIGHT_STATE_OFF }, { LIGHTS_EVENT_SIGNAL_LEFT, LIGHT_STATE_OFF },
-    { LIGHTS_EVENT_SIGNAL_HAZARD, LIGHT_STATE_ON }, { LIGHTS_EVENT_BRAKES, LIGHT_STATE_OFF },
-    { LIGHTS_EVENT_STROBE, LIGHT_STATE_ON },        { LIGHTS_EVENT_SYNC, LIGHT_STATE_ON }
+    { LIGHTS_EVENT_SIGNAL_RIGHT, LIGHT_STATE_OFF },  //
+    { LIGHTS_EVENT_SIGNAL_LEFT, LIGHT_STATE_OFF },   //
+    { LIGHTS_EVENT_SIGNAL_HAZARD, LIGHT_STATE_ON },  //
+    { LIGHTS_EVENT_BRAKES, LIGHT_STATE_OFF },        //
+    { LIGHTS_EVENT_STROBE, LIGHT_STATE_ON },         //
+    { LIGHTS_EVENT_SYNC, LIGHT_STATE_ON }            //
   };
 
   CANMessage msg = { 0 };

@@ -28,15 +28,23 @@ static LightsEvent s_event_lookup[NUM_ACTION_ID] = {
   [LIGHTS_ACTION_SYNC] = LIGHTS_EVENT_SYNC,                    //
 };
 
-void lights_can_init(const CANSettings *can_settings) {
+StatusCode lights_can_init(const CANSettings *can_settings) {
   CANMessageID msg_id = SYSTEM_CAN_MESSAGE_LIGHTS_STATES;
+  StatusCode can_init_status, can_register_rx_status;
   // initialize CAN
-  can_init(can_settings, &s_can_storage, s_rx_handlers, CAN_NUM_RX_HANDLERS);
-  if (can_settings->device_id == SYSTEM_CAN_DEVICE_LIGHTS_FRONT) {
-    can_register_rx_handler(msg_id, prv_rx_handler_front, NULL);
-  } else {
-    can_register_rx_handler(msg_id, prv_rx_handler_rear, NULL);
+  can_init_status = can_init(can_settings, &s_can_storage, s_rx_handlers, CAN_NUM_RX_HANDLERS);
+  if (can_init_status != STATUS_CODE_OK) {
+    return can_init_status;
   }
+  if (can_settings->device_id == SYSTEM_CAN_DEVICE_LIGHTS_FRONT) {
+    can_register_rx_status = can_register_rx_handler(msg_id, prv_rx_handler_front, NULL);
+  } else {
+    can_register_rx_status = can_register_rx_handler(msg_id, prv_rx_handler_rear, NULL);
+  }
+  if (!can_register_rx_status != STATUS_CODE_OK) {
+    return can_register_rx_status;
+  }
+  return STATUS_CODE_OK;
 }
 
 // RX handler for front board.
