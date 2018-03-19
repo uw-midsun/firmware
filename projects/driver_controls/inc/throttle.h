@@ -35,7 +35,8 @@ typedef enum {
 
 typedef enum { THROTTLE_THRESH_MIN = 0, THROTTLE_THRESH_MAX, NUM_THROTTLE_THRESHES } ThrottleThresh;
 
-typedef int16_t ThrottleZoneThresh[NUM_THROTTLE_ZONES][NUM_THROTTLE_THRESHES];
+typedef int16_t ThrottleZoneThresh[NUM_THROTTLE_CHANNELS][NUM_THROTTLE_ZONES]
+                                  [NUM_THROTTLE_THRESHES];
 
 // A measure in a 12 bit scale of how far within a zone a pedal is pressed.
 // I.e. the numerator of a fraction with denominator of 2^12.
@@ -48,8 +49,7 @@ typedef struct ThrottlePosition {
 
 // Data that needs to be calibrated.
 typedef struct ThrottleCalibrationData {
-  ThrottleZoneThresh zone_thresholds_main;
-  ThrottleZoneThresh zone_thresholds_secondary;
+  ThrottleZoneThresh zone_thresholds;
   int16_t channel_readings_tolerance;
 } ThrottleCalibrationData;
 

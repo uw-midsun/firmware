@@ -14,22 +14,34 @@ static ThrottleCalibrationData calibration_data;
 // This will be way of setting calibration data before the calibration routine is implemented.
 static void prv_set_calibration_data(ThrottleCalibrationData *data, int16_t min, int16_t brake_max,
                                      int16_t coast_max, int16_t accel_max, int16_t tolerance) {
-  data->zone_thresholds_main[THROTTLE_ZONE_BRAKE][THROTTLE_THRESH_MIN] = min * 2;
-  data->zone_thresholds_main[THROTTLE_ZONE_BRAKE][THROTTLE_THRESH_MAX] = brake_max * 2;
-  data->zone_thresholds_main[THROTTLE_ZONE_COAST][THROTTLE_THRESH_MIN] = brake_max * 2;
-  data->zone_thresholds_main[THROTTLE_ZONE_COAST][THROTTLE_THRESH_MAX] = coast_max * 2;
-  data->zone_thresholds_main[THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MIN] = coast_max * 2;
-  data->zone_thresholds_main[THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MAX] = accel_max * 2;
-  data->zone_thresholds_main[THROTTLE_ZONE_ALL][THROTTLE_THRESH_MIN] = min * 2;
-  data->zone_thresholds_main[THROTTLE_ZONE_ALL][THROTTLE_THRESH_MAX] = accel_max * 2;
-  data->zone_thresholds_secondary[THROTTLE_ZONE_BRAKE][THROTTLE_THRESH_MIN] = min;
-  data->zone_thresholds_secondary[THROTTLE_ZONE_BRAKE][THROTTLE_THRESH_MAX] = brake_max;
-  data->zone_thresholds_secondary[THROTTLE_ZONE_COAST][THROTTLE_THRESH_MIN] = brake_max;
-  data->zone_thresholds_secondary[THROTTLE_ZONE_COAST][THROTTLE_THRESH_MAX] = coast_max;
-  data->zone_thresholds_secondary[THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MIN] = coast_max;
-  data->zone_thresholds_secondary[THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MAX] = accel_max;
-  data->zone_thresholds_secondary[THROTTLE_ZONE_ALL][THROTTLE_THRESH_MIN] = min;
-  data->zone_thresholds_secondary[THROTTLE_ZONE_ALL][THROTTLE_THRESH_MAX] = accel_max;
+  data->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_BRAKE][THROTTLE_THRESH_MIN] = min * 2;
+  data->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_BRAKE][THROTTLE_THRESH_MAX] =
+      brake_max * 2;
+  data->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_COAST][THROTTLE_THRESH_MIN] =
+      brake_max * 2;
+  data->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_COAST][THROTTLE_THRESH_MAX] =
+      coast_max * 2;
+  data->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MIN] =
+      coast_max * 2;
+  data->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MAX] =
+      accel_max * 2;
+  data->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_ALL][THROTTLE_THRESH_MIN] = min * 2;
+  data->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_ALL][THROTTLE_THRESH_MAX] =
+      accel_max * 2;
+  data->zone_thresholds[THROTTLE_CHANNEL_SECONDARY][THROTTLE_ZONE_BRAKE][THROTTLE_THRESH_MIN] = min;
+  data->zone_thresholds[THROTTLE_CHANNEL_SECONDARY][THROTTLE_ZONE_BRAKE][THROTTLE_THRESH_MAX] =
+      brake_max;
+  data->zone_thresholds[THROTTLE_CHANNEL_SECONDARY][THROTTLE_ZONE_COAST][THROTTLE_THRESH_MIN] =
+      brake_max;
+  data->zone_thresholds[THROTTLE_CHANNEL_SECONDARY][THROTTLE_ZONE_COAST][THROTTLE_THRESH_MAX] =
+      coast_max;
+  data->zone_thresholds[THROTTLE_CHANNEL_SECONDARY][THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MIN] =
+      coast_max;
+  data->zone_thresholds[THROTTLE_CHANNEL_SECONDARY][THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MAX] =
+      accel_max;
+  data->zone_thresholds[THROTTLE_CHANNEL_SECONDARY][THROTTLE_ZONE_ALL][THROTTLE_THRESH_MIN] = min;
+  data->zone_thresholds[THROTTLE_CHANNEL_SECONDARY][THROTTLE_ZONE_ALL][THROTTLE_THRESH_MAX] =
+      accel_max;
   data->channel_readings_tolerance = tolerance;
 }
 

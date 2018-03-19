@@ -84,11 +84,14 @@
   can_unpack_impl_u16((msg_ptr), 8, (mc_voltage_1_u16_ptr), (mc_current_1_u16_ptr),         \
                       (mc_voltage_2_u16_ptr), (mc_current_2_u16_ptr))
 
-#define CAN_UNPACK_MOTOR_VELOCITY_L(msg_ptr, vehicle_velocity_u32_ptr, angular_freq_u32_ptr) \
-  can_unpack_impl_u32((msg_ptr), 8, (vehicle_velocity_u32_ptr), (angular_freq_u32_ptr))
+#define CAN_UNPACK_MOTOR_VELOCITY(msg_ptr, vehicle_velocity_left_u32_ptr, \
+                                  vehicle_velocity_right_u32_ptr)         \
+  can_unpack_impl_u32((msg_ptr), 8, (vehicle_velocity_left_u32_ptr),      \
+                      (vehicle_velocity_right_u32_ptr))
 
-#define CAN_UNPACK_MOTOR_VELOCITY_R(msg_ptr, vehicle_velocity_u32_ptr, angular_freq_u32_ptr) \
-  can_unpack_impl_u32((msg_ptr), 8, (vehicle_velocity_u32_ptr), (angular_freq_u32_ptr))
+#define CAN_UNPACK_MOTOR_ANGULAR_FREQUENCY(msg_ptr, angular_freq_left_u32_ptr, \
+                                           angular_freq_right_u32_ptr)         \
+  can_unpack_impl_u32((msg_ptr), 8, (angular_freq_left_u32_ptr), (angular_freq_right_u32_ptr))
 
 #define CAN_UNPACK_MOTOR_TEMPS(msg_ptr, motor_temp_l_u32_ptr, motor_temp_r_u32_ptr) \
   can_unpack_impl_u32((msg_ptr), 8, (motor_temp_l_u32_ptr), (motor_temp_r_u32_ptr))

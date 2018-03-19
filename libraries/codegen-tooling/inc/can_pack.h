@@ -100,15 +100,15 @@
                     SYSTEM_CAN_MESSAGE_MOTOR_CONTROLLER_VC, 8, (mc_voltage_1_u16), \
                     (mc_current_1_u16), (mc_voltage_2_u16), (mc_current_2_u16))
 
-#define CAN_PACK_MOTOR_VELOCITY_L(msg_ptr, vehicle_velocity_u32, angular_freq_u32)  \
-  can_pack_impl_u32((msg_ptr), SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,                  \
-                    SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY_L, 8, (vehicle_velocity_u32), \
-                    (angular_freq_u32))
+#define CAN_PACK_MOTOR_VELOCITY(msg_ptr, vehicle_velocity_left_u32, vehicle_velocity_right_u32) \
+  can_pack_impl_u32((msg_ptr), SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,                              \
+                    SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY, 8, (vehicle_velocity_left_u32),          \
+                    (vehicle_velocity_right_u32))
 
-#define CAN_PACK_MOTOR_VELOCITY_R(msg_ptr, vehicle_velocity_u32, angular_freq_u32)  \
-  can_pack_impl_u32((msg_ptr), SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,                  \
-                    SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY_R, 8, (vehicle_velocity_u32), \
-                    (angular_freq_u32))
+#define CAN_PACK_MOTOR_ANGULAR_FREQUENCY(msg_ptr, angular_freq_left_u32, angular_freq_right_u32) \
+  can_pack_impl_u32((msg_ptr), SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,                               \
+                    SYSTEM_CAN_MESSAGE_MOTOR_ANGULAR_FREQUENCY, 8, (angular_freq_left_u32),      \
+                    (angular_freq_right_u32))
 
 #define CAN_PACK_MOTOR_TEMPS(msg_ptr, motor_temp_l_u32, motor_temp_r_u32)                          \
   can_pack_impl_u32((msg_ptr), SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER, SYSTEM_CAN_MESSAGE_MOTOR_TEMPS, \

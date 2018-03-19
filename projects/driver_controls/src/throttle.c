@@ -22,22 +22,16 @@ static uint16_t prv_scale_reading(int16_t reading, int16_t max, int16_t min) {
 
 static uint16_t prv_get_numerator(int16_t reading, ThrottleZone zone, ThrottleChannel channel,
                                   ThrottleStorage *storage) {
-  if (channel == THROTTLE_CHANNEL_MAIN) {
-    return prv_scale_reading(
-        reading, storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MAX],
-        storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MIN]);
-  } else {
-    return prv_scale_reading(
-        reading, storage->calibration_data->zone_thresholds_secondary[zone][THROTTLE_THRESH_MAX],
-        storage->calibration_data->zone_thresholds_secondary[zone][THROTTLE_THRESH_MIN]);
-  }
+  return prv_scale_reading(
+      reading, storage->calibration_data->zone_thresholds[channel][zone][THROTTLE_THRESH_MAX],
+      storage->calibration_data->zone_thresholds[channel][zone][THROTTLE_THRESH_MIN]);
 }
 
-static bool prv_reading_within_zone(int16_t reading_main, ThrottleZone zone,
+static bool prv_reading_within_zone(int16_t reading, ThrottleZone zone, ThrottleChannel channel,
                                     ThrottleStorage *storage) {
   return (
-      (reading_main < storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MAX]) &&
-      (reading_main >= storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MIN]));
+      (reading < storage->calibration_data->zone_thresholds[channel][zone][THROTTLE_THRESH_MAX]) &&
+      (reading >= storage->calibration_data->zone_thresholds[channel][zone][THROTTLE_THRESH_MIN]));
 }
 
 // Returns true if the channels match their supposed relationship.
@@ -69,33 +63,26 @@ static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) 
   int16_t reading_secondary = INT16_MIN;
 
   ads1015_read_raw(storage->pedal_ads1015_storage, storage->channel_main, &reading_main);
-
   ads1015_read_raw(storage->pedal_ads1015_storage, storage->channel_secondary, &reading_secondary);
 
-  InputEvent event = NUM_INPUT_EVENTS;
-  ThrottleZone zone = NUM_THROTTLE_ZONES;
+  InputEvent pedal_events[NUM_THROTTLE_ZONES - 1] = {
+    INPUT_EVENT_PEDAL_BRAKE, INPUT_EVENT_PEDAL_COAST, INPUT_EVENT_PEDAL_PRESSED
+  };
 
   if (storage->reading_updated_flag &&
       prv_channels_synced(storage, reading_main, reading_secondary) &&
-      prv_reading_within_zone(reading_main, THROTTLE_ZONE_ALL, storage)) {
-    if (prv_reading_within_zone(reading_main, THROTTLE_ZONE_BRAKE, storage)) {
-      // Brake zone.
-      zone = THROTTLE_ZONE_BRAKE;
-      event = INPUT_EVENT_PEDAL_BRAKE;
-    } else if (prv_reading_within_zone(reading_main, THROTTLE_ZONE_COAST, storage)) {
-      // Coast zone.
-      zone = THROTTLE_ZONE_COAST;
-      event = INPUT_EVENT_PEDAL_COAST;
-    } else {
-      // Acceleration zone.
-      zone = THROTTLE_ZONE_ACCEL;
-      event = INPUT_EVENT_PEDAL_PRESSED;
+      prv_reading_within_zone(reading_main, THROTTLE_ZONE_ALL, THROTTLE_CHANNEL_MAIN, storage)) {
+    ThrottleZone zone = NUM_THROTTLE_ZONES;
+    for (zone = THROTTLE_ZONE_BRAKE; zone < (NUM_THROTTLE_ZONES - 1); zone++) {
+      if (prv_reading_within_zone(reading_main, zone, THROTTLE_CHANNEL_MAIN, storage)) {
+        break;
+      }
     }
-
     storage->position.zone = zone;
     storage->position.numerator =
         prv_get_numerator(reading_main, zone, THROTTLE_CHANNEL_MAIN, storage);
     storage->reading_ok_flag = true;
+    InputEvent event = pedal_events[zone];
     event_raise(event, storage->position.numerator);
 
   } else {
