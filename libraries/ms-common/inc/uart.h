@@ -16,8 +16,7 @@
 
 #define UART_MAX_BUFFER_LEN 256
 
-// baudrate definition in termios.h
-#define BAUDRATE B38400
+#define BAUDRATE 115200
 
 typedef void (*UARTRxHandler)(const uint8_t *rx_arr, size_t len, void *context);
 
@@ -53,8 +52,6 @@ StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *co
 // Non-blocking TX
 StatusCode uart_tx(UARTPort uart, uint8_t *tx_data, size_t len);
 
-// Pops from TX Fifo and sends to serial device
-void prv_tx_pop(UARTPort uart);
-
-// Reads from serial device and pushes to RX Fifo
-void prv_rx_push(UARTPort uart);
+// Interrupt handlers
+void USART1_IRQHandler(void);
+void USART2_IRQHandler(void);

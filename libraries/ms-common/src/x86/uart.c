@@ -2,9 +2,8 @@
 
 // basic idea: tx is stored in a buffer, interrupt-driven
 // rx is buffered, once a newline is hit or the buffer is full, call rx_handler
-// requires tty0tty to be installed
-// sudo depmod && sudo modprobe tty0tty && sudo chmod 666 /dev/tnt*
-// must be run each time vagrant is started
+// run the command once on vagrant startup
+// socat -d -d pty,raw,echo=0,link=/home/vagrant/s0 pty,raw,echo=0,link=/home/vagrant/s1 & disown
 
 typedef struct {
   int fd;
@@ -17,13 +16,17 @@ typedef struct {
 
 // /dev/tnt0 and /dev/tnt1 are the connected virtual ports
 static UARTPortData s_port[] = {
-      [UART_PORT_1] = {.port = "/dev/tnt0" }, [UART_PORT_2] = {.port = "/dev/tnt1" },
+      [UART_PORT_1] = {.port = "/home/vagrant/s0" }, [UART_PORT_2] = {.port = "/home/vagrant/s1" },
 };
+
+static void prv_tx_pop(UARTPort uart);
+static void prv_rx_push(UARTPort uart);
+static void prv_handle_irq(UARTPort uart);
 
 StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage) {
   s_port[uart].fd = open(s_port[uart].port, O_RDWR | O_NOCTTY);
-  if (fd < 0) {
-    LOG_DEBUG("Null modem emulator tty0tty may not be installed or initialized properly.")
+  if (s_port[uart].fd < 0) {
+    return STATUS_CODE_UNREACHABLE;
   }
 
   // save current serial port settings
@@ -93,7 +96,7 @@ StatusCode uart_tx(UARTPort uart, uint8_t *tx_data, size_t len) {
   return STATUS_CODE_OK;
 }
 
-void prv_tx_pop(UARTPort uart) {
+static void prv_tx_pop(UARTPort uart) {
   if (fifo_size(&s_port[uart].storage->tx_fifo) != 0) {
     int res;
     size_t num_bytes = fifo_size(&s_port[uart].storage->tx_fifo);
@@ -115,10 +118,11 @@ void prv_tx_pop(UARTPort uart) {
   }
 }
 
-void prv_rx_push(UARTPort uart) {
+static void prv_rx_push(UARTPort uart) {
   int res;
   uint8_t rx_data;
   res = read(s_port[uart].fd, &rx_data, 1);
+  LOG_DEBUG("%c\n", rx_data);
   fifo_push(&s_port[uart].storage->rx_fifo, &rx_data);
 
   size_t num_bytes = fifo_size(&s_port[uart].storage->rx_fifo);
@@ -135,4 +139,17 @@ void prv_rx_push(UARTPort uart) {
   if (res < 0) {
     LOG_DEBUG("Could not read from serial port.");
   }
+}
+
+static void prv_handle_irq(UARTPort uart) {
+  prv_tx_pop(uart);
+  prv_rx_push(uart);
+}
+
+void USART1_IRQHandler(void) {
+  prv_handle_irq(UART_PORT_1);
+}
+
+void USART2_IRQHandler(void) {
+  prv_handle_irq(UART_PORT_2);
 }
