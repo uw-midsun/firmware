@@ -25,9 +25,7 @@ static void prv_set_calibration_data(ThrottleCalibrationData *data, int16_t min,
       coast_max * 2;
   data->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MAX] =
       accel_max * 2;
-  data->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_ALL][THROTTLE_THRESH_MIN] = min * 2;
-  data->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_ALL][THROTTLE_THRESH_MAX] =
-      accel_max * 2;
+
   data->zone_thresholds[THROTTLE_CHANNEL_SECONDARY][THROTTLE_ZONE_BRAKE][THROTTLE_THRESH_MIN] = min;
   data->zone_thresholds[THROTTLE_CHANNEL_SECONDARY][THROTTLE_ZONE_BRAKE][THROTTLE_THRESH_MAX] =
       brake_max;
@@ -39,9 +37,7 @@ static void prv_set_calibration_data(ThrottleCalibrationData *data, int16_t min,
       coast_max;
   data->zone_thresholds[THROTTLE_CHANNEL_SECONDARY][THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MAX] =
       accel_max;
-  data->zone_thresholds[THROTTLE_CHANNEL_SECONDARY][THROTTLE_ZONE_ALL][THROTTLE_THRESH_MIN] = min;
-  data->zone_thresholds[THROTTLE_CHANNEL_SECONDARY][THROTTLE_ZONE_ALL][THROTTLE_THRESH_MAX] =
-      accel_max;
+
   data->channel_readings_tolerance = tolerance;
 }
 

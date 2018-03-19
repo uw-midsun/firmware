@@ -35,13 +35,12 @@ static bool prv_reading_within_zone(int16_t reading, ThrottleZone zone, Throttle
 }
 
 // Returns true if the channels match their supposed relationship.
-static bool prv_channels_synced(ThrottleStorage *storage, int16_t reading_main,
-                                int16_t reading_secondary) {
-  uint16_t numerator_main =
-      prv_get_numerator(reading_main, THROTTLE_ZONE_ALL, THROTTLE_CHANNEL_MAIN, storage);
+static bool prv_channels_synced(int16_t reading_main, int16_t reading_secondary, ThrottleZone zone,
+                                ThrottleStorage *storage) {
+  uint16_t numerator_main = prv_get_numerator(reading_main, zone, THROTTLE_CHANNEL_MAIN, storage);
 
   uint16_t numerator_secondary =
-      prv_get_numerator(reading_secondary, THROTTLE_ZONE_ALL, THROTTLE_CHANNEL_SECONDARY, storage);
+      prv_get_numerator(reading_secondary, zone, THROTTLE_CHANNEL_SECONDARY, storage);
 
   return (abs(numerator_main - numerator_secondary)) <=
          storage->calibration_data->channel_readings_tolerance;
@@ -65,29 +64,26 @@ static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) 
   ads1015_read_raw(storage->pedal_ads1015_storage, storage->channel_main, &reading_main);
   ads1015_read_raw(storage->pedal_ads1015_storage, storage->channel_secondary, &reading_secondary);
 
-  InputEvent pedal_events[NUM_THROTTLE_ZONES - 1] = {
-    INPUT_EVENT_PEDAL_BRAKE, INPUT_EVENT_PEDAL_COAST, INPUT_EVENT_PEDAL_PRESSED
-  };
-
-  if (storage->reading_updated_flag &&
-      prv_channels_synced(storage, reading_main, reading_secondary) &&
-      prv_reading_within_zone(reading_main, THROTTLE_ZONE_ALL, THROTTLE_CHANNEL_MAIN, storage)) {
-    ThrottleZone zone = NUM_THROTTLE_ZONES;
-    for (zone = THROTTLE_ZONE_BRAKE; zone < (NUM_THROTTLE_ZONES - 1); zone++) {
-      if (prv_reading_within_zone(reading_main, zone, THROTTLE_CHANNEL_MAIN, storage)) {
+  InputEvent pedal_events[NUM_THROTTLE_ZONES] = { INPUT_EVENT_PEDAL_BRAKE, INPUT_EVENT_PEDAL_COAST,
+                                                  INPUT_EVENT_PEDAL_PRESSED };
+  bool fault = true;
+  if (storage->reading_updated_flag) {
+    for (ThrottleZone zone = THROTTLE_ZONE_BRAKE; zone < NUM_THROTTLE_ZONES; zone++) {
+      if (prv_reading_within_zone(reading_main, zone, THROTTLE_CHANNEL_MAIN, storage) &&
+          prv_channels_synced(reading_main, reading_secondary, zone, storage)) {
+        fault = false;
+        storage->position.zone = zone;
+        storage->position.numerator =
+            prv_get_numerator(reading_main, zone, THROTTLE_CHANNEL_MAIN, storage);
+        storage->reading_ok_flag = true;
+        event_raise(pedal_events[zone], storage->position.numerator);
         break;
       }
     }
-    storage->position.zone = zone;
-    storage->position.numerator =
-        prv_get_numerator(reading_main, zone, THROTTLE_CHANNEL_MAIN, storage);
-    storage->reading_ok_flag = true;
-    InputEvent event = pedal_events[zone];
-    event_raise(event, storage->position.numerator);
-
-  } else {
+  }
+  if (fault) {
     storage->reading_ok_flag = false;
-    event_raise(INPUT_EVENT_PEDAL_TIMEOUT, 0);
+    event_raise(INPUT_EVENT_PEDAL_FAULT, 0);
   }
 
   storage->reading_updated_flag = false;
