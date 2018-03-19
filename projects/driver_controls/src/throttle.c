@@ -12,7 +12,6 @@
 // The throttle_get_position function simply reads the position from storage.
 #include "throttle.h"
 #include <string.h>
-#include "ads1015_def.h"
 #include "event_queue.h"
 #include "input_event.h"
 
@@ -57,9 +56,6 @@ static bool prv_channels_synced(ThrottleStorage *storage, int16_t reading_main,
 // This callback is called whenever a conversion is done. It sets the flags
 // so that we know conversions are happening.
 static void prv_flag_update_callback(Ads1015Channel channel, void *context) {
-  if (context == NULL) {
-    return;
-  }
   ThrottleStorage *storage = context;
   storage->reading_updated_flag = true;
 }
@@ -69,8 +65,8 @@ static void prv_flag_update_callback(Ads1015Channel channel, void *context) {
 // If not, a pedal timout event is raised.
 static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) {
   ThrottleStorage *storage = context;
-  int16_t reading_main = ADS1015_READ_UNSUCCESSFUL;
-  int16_t reading_secondary = ADS1015_READ_UNSUCCESSFUL;
+  int16_t reading_main = INT16_MIN;
+  int16_t reading_secondary = INT16_MIN;
 
   ads1015_read_raw(storage->pedal_ads1015_storage, storage->channel_main, &reading_main);
 
@@ -112,12 +108,6 @@ static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) 
                           &storage->raise_event_timer_id);
 }
 
-// Sets calibration data of the storage to calibration_data.
-static void prv_set_calibration_data(ThrottleStorage *storage,
-                                     ThrottleCalibrationData *calibration_data) {
-  storage->calibration_data = calibration_data;
-}
-
 // Initializes the throttle by configuring the ADS1015 channels and
 // setting the periodic safety check callback.
 StatusCode throttle_init(ThrottleStorage *storage, ThrottleCalibrationData *calibration_data,
@@ -129,7 +119,7 @@ StatusCode throttle_init(ThrottleStorage *storage, ThrottleCalibrationData *cali
   }
   memset(storage, 0, sizeof(*storage));
 
-  prv_set_calibration_data(storage, calibration_data);
+  storage->calibration_data = calibration_data;
 
   // The callback for updating flags is only set on the main channel.
   // Verifying later if the second channel is in sync with the main channel is sufficient.
