@@ -7,6 +7,7 @@
 //      to transition between the off and the on state.
 
 #include "power_fsm.h"
+#include "drive_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 #include "log.h"
@@ -45,10 +46,10 @@ FSM_STATE_TRANSITION(state_on) {
   FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_off);
 }
 
-// Power FSM guard functions
-static bool prv_check_off(const Event *e) {
-  // The car must accept a command to power on while off. It must also acknowledge mechanical brake
-  // events, as the mechanical brake does not rely on the car being powered.
+// Power FSM arbiter functions
+static bool prv_guard_off(const Event *e) {
+  // The only valid events when the car isn't in drive are the power button and mechanical brake.
+  // This also prevents lights, etc. from being turned on unless the unprotected rail is powered.
   switch (e->id) {
     case INPUT_EVENT_POWER:
     case INPUT_EVENT_MECHANICAL_BRAKE_RELEASED:
@@ -61,45 +62,30 @@ static bool prv_check_off(const Event *e) {
 
 // Power FSM output functions
 
-static void prv_state_off(FSM *fsm, const Event *e, void *context) {
+static void prv_on_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
-  event_arbiter_set_guard_fn(guard, prv_check_off);
 
-  PowerFSMState power_state;
-  State *current_state = fsm->current_state;
-
-  // If a transition has happened between the FSMs main states, a CAN message will be sent out.
-  if (current_state == &state_off) {
-    power_state = POWER_FSM_STATE_OFF;
-  } else if (current_state == &state_charging) {
-    power_state = POWER_FSM_STATE_CHARGING;
-  } else if (current_state == &state_on) {
-    power_state = POWER_FSM_STATE_ON;
-  } else {
-    // state_off_brake and state_charging_brake are simply substates of state_off and
-    // state_charging respectively. No CAN message gets sent out
-    return;
-  }
-
-  (void)power_state;
-  // Previous: Output Power off
+  // Allow all events and begin sending periodic drive commands
+  drive_output_set_enabled(drive_output_global(), true);
+  event_arbiter_set_guard_fn(guard, NULL);
 }
 
-static void prv_state_on(FSM *fsm, const Event *e, void *context) {
+static void prv_off_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
-  event_arbiter_set_guard_fn(guard, NULL);
 
-  // Previous: Output Power on
+  // Disable periodic drive output updates if not running
+  drive_output_set_enabled(drive_output_global(), false);
+  event_arbiter_set_guard_fn(guard, prv_guard_off);
 }
 
 StatusCode power_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
-  fsm_state_init(state_off, prv_state_off);
-  fsm_state_init(state_off_brake, prv_state_off);
-  fsm_state_init(state_charging, prv_state_off);
-  fsm_state_init(state_charging_brake, prv_state_off);
-  fsm_state_init(state_on, prv_state_on);
+  fsm_state_init(state_off, prv_off_output);
+  fsm_state_init(state_off_brake, NULL);
+  fsm_state_init(state_charging, prv_off_output);
+  fsm_state_init(state_charging_brake, NULL);
+  fsm_state_init(state_on, prv_on_output);
 
-  EventArbiterGuard *guard = event_arbiter_add_fsm(storage, fsm, prv_check_off);
+  EventArbiterGuard *guard = event_arbiter_add_fsm(storage, fsm, prv_guard_off);
 
   if (guard == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
