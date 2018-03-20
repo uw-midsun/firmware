@@ -157,20 +157,20 @@
     status;                                                                                        \
   })
 
-#define CAN_TRANSMIT_MOTOR_VELOCITY_L(vehicle_velocity_u32, angular_freq_u32)    \
-  ({                                                                             \
-    CANMessage msg = { 0 };                                                      \
-    CAN_PACK_MOTOR_VELOCITY_L(&msg, (vehicle_velocity_u32), (angular_freq_u32)); \
-    StatusCode status = can_transmit(&msg, NULL);                                \
-    status;                                                                      \
+#define CAN_TRANSMIT_MOTOR_VELOCITY(vehicle_velocity_left_u32, vehicle_velocity_right_u32)    \
+  ({                                                                                          \
+    CANMessage msg = { 0 };                                                                   \
+    CAN_PACK_MOTOR_VELOCITY(&msg, (vehicle_velocity_left_u32), (vehicle_velocity_right_u32)); \
+    StatusCode status = can_transmit(&msg, NULL);                                             \
+    status;                                                                                   \
   })
 
-#define CAN_TRANSMIT_MOTOR_VELOCITY_R(vehicle_velocity_u32, angular_freq_u32)    \
-  ({                                                                             \
-    CANMessage msg = { 0 };                                                      \
-    CAN_PACK_MOTOR_VELOCITY_R(&msg, (vehicle_velocity_u32), (angular_freq_u32)); \
-    StatusCode status = can_transmit(&msg, NULL);                                \
-    status;                                                                      \
+#define CAN_TRANSMIT_MOTOR_ANGULAR_FREQUENCY(angular_freq_left_u32, angular_freq_right_u32)    \
+  ({                                                                                           \
+    CANMessage msg = { 0 };                                                                    \
+    CAN_PACK_MOTOR_ANGULAR_FREQUENCY(&msg, (angular_freq_left_u32), (angular_freq_right_u32)); \
+    StatusCode status = can_transmit(&msg, NULL);                                              \
+    status;                                                                                    \
   })
 
 #define CAN_TRANSMIT_MOTOR_TEMPS(motor_temp_l_u32, motor_temp_r_u32)    \
