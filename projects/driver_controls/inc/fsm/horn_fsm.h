@@ -2,6 +2,7 @@
 
 // Keeps track of whether the horn is on or not
 
+#include "event_arbiter.h"
 #include "fsm.h"
 
 typedef enum {
@@ -9,4 +10,4 @@ typedef enum {
   HORN_FSM_STATE_ON,
 } HornFSMState;
 
-StatusCode horn_fsm_init(FSM *fsm);
+StatusCode horn_fsm_init(FSM *fsm, EventArbiterStorage *storage);
