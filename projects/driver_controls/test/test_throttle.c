@@ -3,6 +3,7 @@
 #include "ads1015_def.h"
 #include "delay.h"
 #include "gpio_it.h"
+#include "input_event.h"
 #include "interrupt.h"
 #include "throttle.h"
 #include "unity.h"
@@ -10,7 +11,8 @@
 static Ads1015Storage ads1015_storage;
 static ThrottleStorage throttle_storage;
 static ThrottleCalibrationData calibration_data;
-static int16_t s_fake_reading;
+static int16_t s_mocked_reading;
+static EventID s_mocked_event;
 static int16_t s_threshes_main[NUM_THROTTLE_ZONES][NUM_THROTTLE_THRESHES] = {
   { 325, 625 },   //
   { 625, 1135 },  //
@@ -23,13 +25,20 @@ static int16_t s_threshes_secondary[NUM_THROTTLE_ZONES][NUM_THROTTLE_THRESHES] =
 };
 static int16_t s_tolerance = 10;
 
-/*
 StatusCode TEST_MOCK(ads1015_read_raw)(Ads1015Storage *storage, Ads1015Channel channel,
-                                      int16_t *reading) {
-  *reading = s_reading;
+                                       int16_t *reading) {
+  if (channel == throttle_storage.channel_main) {
+    *reading = s_mocked_reading;
+  } else {
+    *reading = s_mocked_reading / 2;
+  }
   return STATUS_CODE_OK;
 }
-*/
+
+StatusCode TEST_MOCK(event_raise)(EventID id, uint16_t data){
+  s_mocked_event = id;
+}
+
 
 // Sets the tolerance for comparing channel readings.
 static void prv_set_calibration_data_tolerance(int16_t tolerance, ThrottleCalibrationData *data) {
@@ -98,12 +107,56 @@ void test_throttle_get_pos_invalid_args(void) {
   ThrottlePosition position;
   throttle_init(&throttle_storage, &calibration_data, &ads1015_storage, ADS1015_CHANNEL_0,
                 ADS1015_CHANNEL_1);
-  delay_ms(50);
-  // Test with valid arguments.
-  // TEST_ASSERT_EQUAL(STATUS_CODE_OK, throttle_get_position(&throttle_storage, &position));
   // Check for null pointers.
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, throttle_get_position(NULL, &position));
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, throttle_get_position(&throttle_storage, NULL));
 }
 
-// void test_throttle_
+void test_throttle_verify_zone_event(void){
+  ThrottlePosition position;
+  throttle_init(&throttle_storage, &calibration_data, &ads1015_storage, ADS1015_CHANNEL_0,
+                ADS1015_CHANNEL_1);
+  // Brake zone.
+  s_mocked_reading =
+      (throttle_storage.calibration_data
+           ->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_BRAKE][THROTTLE_THRESH_MAX] +
+       throttle_storage.calibration_data
+           ->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_BRAKE][THROTTLE_THRESH_MIN]) /
+      2;
+  delay_us(100);
+  TEST_ASSERT_OK(throttle_get_position(&throttle_storage, &position));
+  TEST_ASSERT_EQUAL(THROTTLE_ZONE_BRAKE, position.zone);
+  TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_BRAKE, s_mocked_event);
+
+  // Coast zone.
+  s_mocked_reading =
+      (throttle_storage.calibration_data
+           ->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_COAST][THROTTLE_THRESH_MAX] +
+       throttle_storage.calibration_data
+           ->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_COAST][THROTTLE_THRESH_MIN]) /
+      2;
+  delay_us(100);
+  TEST_ASSERT_OK(throttle_get_position(&throttle_storage, &position));
+  TEST_ASSERT_EQUAL(THROTTLE_ZONE_COAST, position.zone);
+  TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_COAST, s_mocked_event);
+
+  // Acceleration zone.
+  s_mocked_reading =
+      (throttle_storage.calibration_data
+           ->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MAX] +
+       throttle_storage.calibration_data
+           ->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MIN]) /
+      2;
+  delay_us(100);
+  TEST_ASSERT_OK(throttle_get_position(&throttle_storage, &position));
+  TEST_ASSERT_EQUAL(THROTTLE_ZONE_ACCEL, position.zone);
+  TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_PRESSED, s_mocked_event);
+
+  // Out of bound case.
+  s_mocked_reading =
+      throttle_storage.calibration_data
+           ->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MAX] * 2;
+  delay_us(100);
+  TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&throttle_storage, &position));
+  TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_FAULT, s_mocked_event);
+}
