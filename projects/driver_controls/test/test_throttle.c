@@ -10,6 +10,26 @@
 static Ads1015Storage ads1015_storage;
 static ThrottleStorage throttle_storage;
 static ThrottleCalibrationData calibration_data;
+static int16_t s_fake_reading;
+static int16_t s_threshes_main[NUM_THROTTLE_ZONES][NUM_THROTTLE_THRESHES] = {
+  { 325, 625 },   //
+  { 625, 1135 },  //
+  { 1135, 1404 }  //
+};
+static int16_t s_threshes_secondary[NUM_THROTTLE_ZONES][NUM_THROTTLE_THRESHES] = {
+  { 162, 312 },  //
+  { 312, 575 },  //
+  { 575, 707 }   //
+};
+static int16_t s_tolerance = 10;
+
+/*
+StatusCode TEST_MOCK(ads1015_read_raw)(Ads1015Storage *storage, Ads1015Channel channel,
+                                      int16_t *reading) {
+  *reading = s_reading;
+  return STATUS_CODE_OK;
+}
+*/
 
 // Sets the tolerance for comparing channel readings.
 static void prv_set_calibration_data_tolerance(int16_t tolerance, ThrottleCalibrationData *data) {
@@ -17,14 +37,9 @@ static void prv_set_calibration_data_tolerance(int16_t tolerance, ThrottleCalibr
 }
 
 // Sets zone thresholds for the given channel.
-static void prv_set_calibration_data(ThrottleChannel channel, int16_t min, int16_t brake_max,
-                                     int16_t coast_max, int16_t accel_max,
+static void prv_set_calibration_data(ThrottleChannel channel,
+                                     int16_t threshes[NUM_THROTTLE_ZONES][NUM_THROTTLE_THRESHES],
                                      ThrottleCalibrationData *data) {
-  int16_t threshes[NUM_THROTTLE_ZONES][NUM_THROTTLE_THRESHES] = {
-    { min, brake_max },        //
-    { brake_max, coast_max },  //
-    { coast_max, accel_max }   //
-  };
   for (ThrottleZone zone = THROTTLE_ZONE_BRAKE; zone < NUM_THROTTLE_ZONES; zone++) {
     for (ThrottleThresh thresh = THROTTLE_THRESH_MIN; thresh < NUM_THROTTLE_THRESHES; thresh++) {
       data->zone_thresholds[channel][zone][thresh] = threshes[zone][thresh];
@@ -48,9 +63,9 @@ void setup_test(void) {
     .pin = 2,             //
   };
   ads1015_init(&ads1015_storage, TEST_ADS1015_I2C_PORT, TEST_ADS1015_ADDR, &ready_pin);
-  prv_set_calibration_data(THROTTLE_CHANNEL_MAIN, 325, 625, 1135, 1404, &calibration_data);
-  prv_set_calibration_data(THROTTLE_CHANNEL_SECONDARY, 162, 312, 575, 707, &calibration_data);
-  prv_set_calibration_data_tolerance(10, &calibration_data);
+  prv_set_calibration_data(THROTTLE_CHANNEL_MAIN, s_threshes_main, &calibration_data);
+  prv_set_calibration_data(THROTTLE_CHANNEL_SECONDARY, s_threshes_secondary, &calibration_data);
+  prv_set_calibration_data_tolerance(s_tolerance, &calibration_data);
 }
 
 void teardown_test(void) {}
@@ -90,3 +105,5 @@ void test_throttle_get_pos_invalid_args(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, throttle_get_position(NULL, &position));
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, throttle_get_position(&throttle_storage, NULL));
 }
+
+// void test_throttle_
