@@ -83,6 +83,7 @@ static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) 
   }
   if (fault) {
     storage->reading_ok_flag = false;
+    storage->position.zone = NUM_THROTTLE_ZONES;
     event_raise(INPUT_EVENT_PEDAL_FAULT, 0);
   }
 
