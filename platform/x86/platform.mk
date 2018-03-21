@@ -51,14 +51,15 @@ endif
 LDFLAGS := -lrt
 
 # Shell environment variables
+FLASH_VAR := MIDSUN_X86_FLASH_FILE
 ifneq (,$(filter test test_all,$(MAKECMDGOALS)))
 ifeq (,$(TEST))
-  ENV_VARS = MIDSUN_X86_FLASH_FILE=$(test)_flash
+  ENV_VARS = $(FLASH_VAR)=$(test)_flash
 else
-  ENV_VARS = MIDSUN_X86_FLASH_FILE=$<_flash
+  ENV_VARS = $(FLASH_VAR)=$<_flash
 endif
 else
-  ENV_VARS := MIDSUN_X86_FLASH_FILE=$(BIN_DIR)/$(PROJECT)$(LIBRARY)_flash
+  ENV_VARS := $(FLASH_VAR)=$(BIN_DIR)/$(PROJECT)$(LIBRARY)_flash
 endif
 
 # Platform targets
