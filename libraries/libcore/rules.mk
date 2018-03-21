@@ -5,4 +5,6 @@
 # $(T)_INC_DIRS: $(T)_DIR/inc{/$(PLATFORM)}
 # $(T)_SRC: $(T)_DIR/src{/$(PLATFORM)}/*.{c,s}
 
-$(T)_DEPS := 
+$(T)_DEPS :=
+
+$(T)_test_mock_MOCKS := status_impl_update

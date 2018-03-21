@@ -66,6 +66,7 @@ GDB_TARGET = $(BIN_DIR)/test/$(LIBRARY)$(PROJECT)/test_$(TEST)_runner$(PLATFORM_
 endif
 
 DIRS := $(BUILD_DIR) $(BIN_DIR) $(STATIC_LIB_DIR) $(OBJ_CACHE)
+COMMA := ,
 
 # Please don't touch anything below this line
 ###################################################################################################
