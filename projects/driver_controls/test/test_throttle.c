@@ -35,10 +35,9 @@ StatusCode TEST_MOCK(ads1015_read_raw)(Ads1015Storage *storage, Ads1015Channel c
   return STATUS_CODE_OK;
 }
 
-StatusCode TEST_MOCK(event_raise)(EventID id, uint16_t data){
+StatusCode TEST_MOCK(event_raise)(EventID id, uint16_t data) {
   s_mocked_event = id;
 }
-
 
 // Sets the tolerance for comparing channel readings.
 static void prv_set_calibration_data_tolerance(int16_t tolerance, ThrottleCalibrationData *data) {
@@ -112,7 +111,7 @@ void test_throttle_get_pos_invalid_args(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, throttle_get_position(&throttle_storage, NULL));
 }
 
-void test_throttle_verify_zone_event(void){
+void test_throttle_verify_zone_event(void) {
   ThrottlePosition position;
   throttle_init(&throttle_storage, &calibration_data, &ads1015_storage, ADS1015_CHANNEL_0,
                 ADS1015_CHANNEL_1);
@@ -155,7 +154,8 @@ void test_throttle_verify_zone_event(void){
   // Out of bound case.
   s_mocked_reading =
       throttle_storage.calibration_data
-           ->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MAX] * 2;
+          ->zone_thresholds[THROTTLE_CHANNEL_MAIN][THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MAX] *
+      2;
   delay_us(100);
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&throttle_storage, &position));
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_FAULT, s_mocked_event);

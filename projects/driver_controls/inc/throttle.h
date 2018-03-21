@@ -32,11 +32,7 @@ typedef enum {
   NUM_THROTTLE_CHANNELS
 } ThrottleChannel;
 
-typedef enum {
-  THROTTLE_THRESH_MIN = 0,  
-  THROTTLE_THRESH_MAX,      
-  NUM_THROTTLE_THRESHES
-} ThrottleThresh;
+typedef enum { THROTTLE_THRESH_MIN = 0, THROTTLE_THRESH_MAX, NUM_THROTTLE_THRESHES } ThrottleThresh;
 
 // A measure in a 12 bit scale of how far within a zone a pedal is pressed.
 // I.e. the numerator of a fraction with denominator of 2^12.
