@@ -23,4 +23,3 @@ int main(void) {
 
   return STATUS_CODE_OK;
 }
-
