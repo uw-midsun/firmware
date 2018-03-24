@@ -5,7 +5,6 @@
 
 #include "can.h"
 #include "can_hw.h"
-#include "charger_events.h"
 #include "delay.h"
 #include "event_queue.h"
 #include "fsm.h"
@@ -18,6 +17,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 
+#define TEST_GENERIC_CAN_HW_FAULT_EVENT 1
 #define NUM_GENERIC_CAN_RX_HANDLERS 5
 
 static GenericCanHw s_can;
@@ -43,7 +43,7 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  TEST_ASSERT_OK(generic_can_hw_init(&s_can, &can_hw_settings, CHARGER_EVENT_CAN_FAULT));
+  TEST_ASSERT_OK(generic_can_hw_init(&s_can, &can_hw_settings, TEST_GENERIC_CAN_HW_FAULT_EVENT));
 }
 
 void teardown_test(void) {}
