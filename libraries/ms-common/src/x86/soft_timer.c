@@ -9,7 +9,6 @@
 
 #include "critical_section.h"
 #include "interrupt_def.h"
-#include "log.h"
 #include "status.h"
 #include "x86_interrupt.h"
 
@@ -36,8 +35,8 @@ static void prv_soft_timer_interrupt(void) {
     if (s_posix_timers[i].inuse) {
       timer_gettime(s_posix_timers[i].timer_id, &spec);
       if (spec.it_value.tv_sec == 0 && spec.it_value.tv_nsec == 0) {
-        s_posix_timers[i].callback(i, s_posix_timers[i].context);
         s_posix_timers[i].inuse = false;
+        s_posix_timers[i].callback(i, s_posix_timers[i].context);
         s_active_timers--;
       }
     }

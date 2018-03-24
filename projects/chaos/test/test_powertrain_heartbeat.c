@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include "can.h"
 #include "can_ack.h"
@@ -27,7 +28,37 @@
 
 static CANStorage s_storage;
 static CANRxHandler s_rx_handlers[NUM_CAN_RX_HANDLERS];
-static CANAckRequests s_can_ack_requests;
+
+static void prv_transmit(uint16_t times) {
+  Event e = { 0 };
+  StatusCode status = NUM_STATUS_CODES;
+  for (uint16_t i = 0; i < times; i++) {
+    // TX
+    do {
+      status = event_process(&e);
+    } while (status == STATUS_CODE_EMPTY);
+    TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_TX, e.id);
+    TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+    // RX
+    do {
+      status = event_process(&e);
+    } while (status == STATUS_CODE_EMPTY);
+    TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_RX, e.id);
+    TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+    // TX
+    do {
+      status = event_process(&e);
+    } while (status == STATUS_CODE_EMPTY);
+    TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_TX, e.id);
+    TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+    // RX
+    do {
+      status = event_process(&e);
+    } while (status == STATUS_CODE_EMPTY);
+    TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_RX, e.id);
+    TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  }
+}
 
 void setup_test(void) {
   interrupt_init();
@@ -53,114 +84,88 @@ void setup_test(void) {
 
 void teardown_test(void) {}
 
-// void test_powertrain_heartbeat_watchdog(void) {
-//   Event e = { 0 };
-//   volatile StatusCode status = NUM_STATUS_CODES;
-//   e.id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE;
-//   TEST_ASSERT_TRUE(powertrain_heartbeat_process_event(&e));
-//
-//   // Send 3 times (all three will have ack failures).
-//   // TX
-//   do {
-//     status = event_process(&e);
-//   } while (status == STATUS_CODE_EMPTY);
-//   TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_TX, e.id);
-//   TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-//   do {
-//     status = event_process(&e);
-//   } while (status == STATUS_CODE_EMPTY);
-//   TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_RX, e.id);
-//   TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-//
-//
-//   // Watchdog should activate.
-//   do {
-//     status = event_process(&e);
-//   } while (status == STATUS_CODE_EMPTY);
-//   TEST_ASSERT_EQUAL(CHAOS_EVENT_SEQUENCE_EMERGENCY, e.id);
-//
-//   // No more should activate.
-//   delay_ms(POWERTRAIN_HEARTBEAT_WATCHDOG_MS);
-//   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
-// }
+void test_powertrain_heartbeat_watchdog(void) {
+  Event e = { 0 };
+  volatile StatusCode status = NUM_STATUS_CODES;
+  e.id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE;
+  TEST_ASSERT_TRUE(powertrain_heartbeat_process_event(&e));
+
+  // Send 3 times (all three will have ack failures).
+  prv_transmit(3);
+
+  // Watchdog should activate.
+  do {
+    status = event_process(&e);
+  } while (status == STATUS_CODE_EMPTY);
+  TEST_ASSERT_EQUAL(CHAOS_EVENT_SEQUENCE_EMERGENCY, e.id);
+
+  // No more should activate.
+  delay_ms(POWERTRAIN_HEARTBEAT_WATCHDOG_MS);
+  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
+}
 
 void test_stop_heartbeat(void) {
   Event e = { 0 };
   StatusCode status = NUM_STATUS_CODES;
   e.id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE;
   TEST_ASSERT_TRUE(powertrain_heartbeat_process_event(&e));
-  // TX
+
+  prv_transmit(1);
+
+  e.id = CHAOS_EVENT_SEQUENCE_EMERGENCY;
+  TEST_ASSERT_TRUE(powertrain_heartbeat_process_event(&e));
+
+  delay_ms(POWERTRAIN_HEARTBEAT_WATCHDOG_MS + 100);
+  // No activation should occur.
+  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
+}
+
+void test_kick_watchdog(void) {
+  CANMessage msg = {
+    .type = CAN_MSG_TYPE_ACK,
+    .msg_id = SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
+  };
+
+  Event e = { 0 };
+  volatile StatusCode status = NUM_STATUS_CODES;
+  e.id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE;
+  TEST_ASSERT_TRUE(powertrain_heartbeat_process_event(&e));
+
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
   TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_TX, e.id);
   TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-  // RX
+
+  msg.source_id = SYSTEM_CAN_DEVICE_PLUTUS;
+  TEST_ASSERT_OK(can_ack_handle_msg(&s_storage.ack_requests, &msg));
+  msg.source_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS;
+  TEST_ASSERT_OK(can_ack_handle_msg(&s_storage.ack_requests, &msg));
+  msg.source_id = SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER;
+  TEST_ASSERT_OK(can_ack_handle_msg(&s_storage.ack_requests, &msg));
+
+  do {
+    status = event_process(&e);
+  } while (status == STATUS_CODE_EMPTY);
+  TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_RX, e.id);
+  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  do {
+    status = event_process(&e);
+  } while (status == STATUS_CODE_EMPTY);
+  TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_TX, e.id);
+  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
   TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_RX, e.id);
   TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
 
-  e.id = CHAOS_EVENT_SEQUENCE_EMERGENCY;
-  TEST_ASSERT_TRUE(powertrain_heartbeat_process_event(&e));
-  // No activation should occur.
-  delay_ms(POWERTRAIN_HEARTBEAT_WATCHDOG_MS + 100);
-  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
-}
+  // Skip the two messages that should send
+  prv_transmit(2);
 
-// void test_kick_watchdog(void) {
-//   Event e = { 0 };
-//   volatile StatusCode status = NUM_STATUS_CODES;
-//   e.id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE;
-//   TEST_ASSERT_TRUE(powertrain_heartbeat_process_event(&e));
-//
-//   // TX
-//   do {
-//     status = event_process(&e);
-//   } while (status == STATUS_CODE_EMPTY);
-//   TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_TX, e.id);
-//   TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-//   do {
-//     status = event_process(&e);
-//   } while (status == STATUS_CODE_EMPTY);
-//   TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_RX, e.id);
-//   TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-//
-//   CANMessage msg = { 0 };
-//   CAN_PACK_POWERTRAIN_HEARTBEAT(&msg);
-//   msg.source_id = SYSTEM_CAN_DEVICE_PLUTUS;
-//   TEST_ASSERT_OK(can_ack_handle_msg(&s_can_ack_requests, &msg));
-//   msg.source_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS;
-//   TEST_ASSERT_OK(can_ack_handle_msg(&s_can_ack_requests, &msg));
-//   msg.source_id = SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER;
-//   TEST_ASSERT_OK(can_ack_handle_msg(&s_can_ack_requests, &msg));
-//
-//   // // Skip the two messages that should send
-//   // // TX
-//   // do {
-//   //   status = event_process(&e);
-//   // } while (status == STATUS_CODE_EMPTY);
-//   // TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_TX, e.id);
-//   // TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-//   // // TX
-//   // do {
-//   //   status = event_process(&e);
-//   // } while (status == STATUS_CODE_EMPTY);
-//   // TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-//
-//   // // Watchdog shouldn't trigger.
-//   // TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
-//
-//   // // TX
-//   // do {
-//   //   status = event_process(&e);
-//   // } while (status == STATUS_CODE_EMPTY);
-//   // TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-//
-//   // // Watchdog should trigger.
-//   // do {
-//   //   status = event_process(&e);
-//   // } while (status == STATUS_CODE_EMPTY);
-//   // TEST_ASSERT_EQUAL(CHAOS_EVENT_SEQUENCE_EMERGENCY, e.id);
-// }
+  // Watchdog should trigger.
+  do {
+    status = event_process(&e);
+  } while (status == STATUS_CODE_EMPTY);
+  TEST_ASSERT_EQUAL(CHAOS_EVENT_SEQUENCE_EMERGENCY, e.id);
+}
