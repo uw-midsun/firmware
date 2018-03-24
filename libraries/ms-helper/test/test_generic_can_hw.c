@@ -70,22 +70,4 @@ void test_generic_can(void) {
   delay_ms(300);
   // Callback is triggered.
   TEST_ASSERT_EQUAL(1, counter);
-
-  // Mask the rx handler
-  TEST_ASSERT_OK(generic_can_disable_rx(can, msg.id));
-
-  // TX
-  TEST_ASSERT_OK(generic_can_tx(can, &msg));
-  // No RX
-  delay_ms(300);
-  TEST_ASSERT_EQUAL(1, counter);
-
-  // Unmask the rx handler
-  TEST_ASSERT_OK(generic_can_enable_rx(can, msg.id));
-  // TX
-  TEST_ASSERT_OK(generic_can_tx(can, &msg));
-  // RX
-  delay_ms(300);
-  // Callback is triggered.
-  TEST_ASSERT_EQUAL(2, counter);
 }

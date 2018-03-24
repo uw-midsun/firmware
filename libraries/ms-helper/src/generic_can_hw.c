@@ -28,8 +28,7 @@ static void prv_rx_handler(void *context) {
   GenericCanMsg rx_msg = { 0 };
   while (can_hw_receive(&rx_msg.id, &rx_msg.extended, &rx_msg.data, &rx_msg.dlc)) {
     for (size_t i = 0; i < NUM_GENERIC_CAN_RX_HANDLERS; i++) {
-      if (rx_msg.id == gch->base.rx_storage[i].id && gch->base.rx_storage[i].rx_handler != NULL &&
-          gch->base.rx_storage[i].enabled) {
+      if (rx_msg.id == gch->base.rx_storage[i].id && gch->base.rx_storage[i].rx_handler != NULL) {
         gch->base.rx_storage[i].rx_handler(&rx_msg, gch->base.rx_storage[i].context);
         break;
       }
@@ -81,30 +80,10 @@ static StatusCode prv_register_rx(GenericCan *can, GenericCanRx rx_handler, uint
   return generic_can_helpers_register_rx(can, rx_handler, id, context);
 }
 
-// enable_rx
-static StatusCode prv_enable_rx(GenericCan *can, uint32_t id) {
-  GenericCanHw *gch = (GenericCanHw *)can;
-  if (gch->base.interface != &s_interface) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "GenericCan not aligned to GenericCanHw.");
-  }
-  return generic_can_helpers_set_rx(can, id, true);
-}
-
-// disable_rx
-static StatusCode prv_disable_rx(GenericCan *can, uint32_t id) {
-  GenericCanHw *gch = (GenericCanHw *)can;
-  if (gch->base.interface != &s_interface) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "GenericCan not aligned to GenericCanHw.");
-  }
-  return generic_can_helpers_set_rx(can, id, false);
-}
-
 StatusCode generic_can_hw_init(GenericCanHw *can_hw, const CANHwSettings *settings,
                                EventID fault_event) {
   s_interface.tx = prv_tx;
   s_interface.register_rx = prv_register_rx;
-  s_interface.disable_rx = prv_disable_rx;
-  s_interface.enable_rx = prv_enable_rx;
 
   memset(can_hw->base.rx_storage, 0, sizeof(GenericCanRx) * NUM_GENERIC_CAN_RX_HANDLERS);
 

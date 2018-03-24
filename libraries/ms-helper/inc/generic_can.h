@@ -16,7 +16,6 @@ typedef struct GenericCanRxStorage {
   uint32_t id;
   GenericCanRx rx_handler;
   void *context;
-  bool enabled;
 } GenericCanRxStorage;
 
 typedef struct GenericCanInterface {
@@ -24,8 +23,6 @@ typedef struct GenericCanInterface {
   // Doesn't support ACKable messages (defaults to enabled).
   StatusCode (*register_rx)(struct GenericCan *can, GenericCanRx rx_handler, uint32_t id,
                             void *context);
-  StatusCode (*enable_rx)(struct GenericCan *can, uint32_t id);
-  StatusCode (*disable_rx)(struct GenericCan *can, uint32_t id);
 } GenericCanInterface;
 
 typedef struct GenericCan {
@@ -77,12 +74,6 @@ typedef struct GenericCan {
 // (therefore its CANMessage.msg_id must be in the range [0, 2047].
 StatusCode generic_can_tx(const GenericCan *can, const GenericCanMsg *msg);
 
-// Registers a |rx_handler| (enabled by default) to a |raw_id|.
+// Registers a |rx_handler| to a |raw_id|.
 StatusCode generic_can_register_rx(GenericCan *can, GenericCanRx rx_handler, uint32_t raw_id,
                                    void *context);
-
-// Enables the stored GenericCanRx for |raw_id|.
-StatusCode generic_can_enable_rx(GenericCan *can, uint32_t raw_id);
-
-// Disables the stored GenericCanRx for |raw_id|.
-StatusCode generic_can_disable_rx(GenericCan *can, uint32_t raw_id);

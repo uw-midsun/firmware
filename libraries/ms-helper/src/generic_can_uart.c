@@ -19,8 +19,7 @@ static void prv_generic_can_uart_rx_handler(const CanUart *can_uart, uint32_t id
   (void)can_uart;
   GenericCanUart *gcu = context;
   for (size_t i = 0; i < NUM_GENERIC_CAN_RX_HANDLERS; i++) {
-    if (id == gcu->base.rx_storage[i].id && gcu->base.rx_storage[i].rx_handler != NULL &&
-        gcu->base.rx_storage[i].enabled) {
+    if (id == gcu->base.rx_storage[i].id && gcu->base.rx_storage[i].rx_handler != NULL) {
       const GenericCanMsg msg = {
         .id = id,
         .extended = extended,
@@ -52,29 +51,9 @@ static StatusCode prv_register_rx(GenericCan *can, GenericCanRx rx_handler, uint
   return generic_can_helpers_register_rx(can, rx_handler, id, context);
 }
 
-// enable_rx
-static StatusCode prv_enable_rx(GenericCan *can, uint32_t id) {
-  GenericCanUart *gcu = (GenericCanUart *)can;
-  if (gcu->base.interface != &s_interface || gcu->can_uart != &s_can_uart) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "GenericCan not aligned to GenericCanUart.");
-  }
-  return generic_can_helpers_set_rx(can, id, true);
-}
-
-// disable_rx
-static StatusCode prv_disable_rx(GenericCan *can, uint32_t id) {
-  GenericCanUart *gcu = (GenericCanUart *)can;
-  if (gcu->base.interface != &s_interface || gcu->can_uart != &s_can_uart) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "GenericCan not aligned to GenericCanUart.");
-  }
-  return generic_can_helpers_set_rx(can, id, false);
-}
-
 StatusCode generic_can_uart_init(GenericCanUart *can_uart, UARTPort port) {
   s_interface.tx = prv_tx;
   s_interface.register_rx = prv_register_rx;
-  s_interface.enable_rx = prv_enable_rx;
-  s_interface.disable_rx = prv_disable_rx;
 
   s_can_uart.uart = port;
   s_can_uart.context = (void *)can_uart;

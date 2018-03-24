@@ -13,11 +13,3 @@ StatusCode generic_can_register_rx(GenericCan *can, GenericCanRx rx_handler, uin
                                    void *context) {
   return can->interface->register_rx(can, rx_handler, raw_id, context);
 }
-
-StatusCode generic_can_enable_rx(GenericCan *can, uint32_t raw_id) {
-  return can->interface->enable_rx(can, raw_id);
-}
-
-StatusCode generic_can_disable_rx(GenericCan *can, uint32_t raw_id) {
-  return can->interface->disable_rx(can, raw_id);
-}

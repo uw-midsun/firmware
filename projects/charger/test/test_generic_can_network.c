@@ -93,39 +93,4 @@ void test_generic_can(void) {
 
   // Queue Empty
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
-
-  // Mask the rx handler
-  TEST_ASSERT_OK(generic_can_disable_rx(can, raw_id.raw));
-
-  // TX
-  TEST_ASSERT_OK(generic_can_tx(can, &msg));
-  do {
-    status = event_process(&e);
-  } while (status != STATUS_CODE_OK);
-  TEST_ASSERT_EQUAL(CHARGER_EVENT_CAN_TX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-  // No RX
-  TEST_ASSERT_EQUAL(1, counter);
-  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
-
-  // Unmask the rx handler
-  TEST_ASSERT_OK(generic_can_enable_rx(can, raw_id.raw));
-  // TX
-  TEST_ASSERT_OK(generic_can_tx(can, &msg));
-  do {
-    status = event_process(&e);
-  } while (status != STATUS_CODE_OK);
-  TEST_ASSERT_EQUAL(CHARGER_EVENT_CAN_TX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-  // RX
-  do {
-    status = event_process(&e);
-  } while (status != STATUS_CODE_OK);
-  TEST_ASSERT_EQUAL(CHARGER_EVENT_CAN_RX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-  // Callback is triggered.
-  TEST_ASSERT_EQUAL(2, counter);
-
-  // Queue empty
-  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
 }
