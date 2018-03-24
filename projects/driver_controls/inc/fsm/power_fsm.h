@@ -5,6 +5,7 @@
 // All events aside from the power ON and mechanical brake events are
 // forbidden while in the off state
 
+#include "event_arbiter.h"
 #include "fsm.h"
 
 typedef enum {
@@ -14,4 +15,4 @@ typedef enum {
   POWER_FSM_STATE_ON,
 } PowerFSMState;
 
-StatusCode power_fsm_init(FSM *fsm);
+StatusCode power_fsm_init(FSM *fsm, EventArbiterStorage *storage);

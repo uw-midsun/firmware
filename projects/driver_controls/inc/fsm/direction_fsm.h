@@ -5,6 +5,7 @@
 // Coast and drive events are forbidden while the FSM is in the neutral state
 // Power off events are forbidden while the FSM is in either the forward or reverse state
 
+#include "event_arbiter.h"
 #include "fsm.h"
 
 typedef enum {
@@ -13,4 +14,4 @@ typedef enum {
   DIRECTION_FSM_STATE_REVERSE
 } DirectionFSMState;
 
-StatusCode direction_fsm_init(FSM *fsm);
+StatusCode direction_fsm_init(FSM *fsm, EventArbiterStorage *storage);
