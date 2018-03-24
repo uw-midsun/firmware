@@ -58,20 +58,21 @@ void test_generic_can(void) {
 
   volatile uint8_t counter = 0;
 
-  const CANId raw_id = {
+  CANId raw_id = {
     .source_id = SYSTEM_CAN_DEVICE_CHARGER,
     .msg_id = 30,
     .type = CAN_MSG_TYPE_DATA,
   };
 
-  const GenericCanMsg msg = {
+  GenericCanMsg msg = {
     .id = raw_id.raw,
     .data = 255,
     .dlc = 1,
     .extended = false,
   };
 
-  TEST_ASSERT_OK(generic_can_register_rx(can, prv_can_rx_callback, raw_id.raw, &counter));
+  TEST_ASSERT_OK(generic_can_register_rx(can, prv_can_rx_callback, GENERIC_CAN_EMPTY_MASK,
+                                         raw_id.raw, false, &counter));
 
   Event e = { 0, 0 };
   StatusCode status = NUM_STATUS_CODES;
@@ -93,4 +94,22 @@ void test_generic_can(void) {
 
   // Queue Empty
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
+
+  // TX (doesn't pass filter)
+  --raw_id.msg_id;
+  msg.id = raw_id.raw;
+  TEST_ASSERT_OK(generic_can_tx(can, &msg));
+  do {
+    status = event_process(&e);
+  } while (status != STATUS_CODE_OK);
+  TEST_ASSERT_EQUAL(CHARGER_EVENT_CAN_TX, e.id);
+  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  // RX
+  do {
+    status = event_process(&e);
+  } while (status != STATUS_CODE_OK);
+  TEST_ASSERT_EQUAL(CHARGER_EVENT_CAN_RX, e.id);
+  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  // Callback isn't triggered.
+  TEST_ASSERT_EQUAL(1, counter);
 }

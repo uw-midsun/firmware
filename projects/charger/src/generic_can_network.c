@@ -21,8 +21,8 @@ static StatusCode prv_generic_can_network_rx_handler(const CANMessage *msg, void
   GenericCanMsg generic_msg = { 0 };
   can_message_to_generic_can_message(msg, &generic_msg);
   for (size_t i = 0; i < NUM_GENERIC_CAN_RX_HANDLERS; i++) {
-    if (generic_msg.id == gcn->base.rx_storage[i].id &&
-        gcn->base.rx_storage[i].rx_handler != NULL) {
+    if (gcn->base.rx_storage[i].rx_handler != NULL &&
+        (generic_msg.id & gcn->base.rx_storage[i].mask) == gcn->base.rx_storage[i].filter) {
       gcn->base.rx_storage[i].rx_handler(&generic_msg, gcn->base.rx_storage[i].context);
       break;
     }
@@ -43,13 +43,15 @@ static StatusCode prv_tx(const GenericCan *can, const GenericCanMsg *msg) {
 }
 
 // register_rx
-static StatusCode prv_register_rx(GenericCan *can, GenericCanRx rx_handler, uint32_t id,
-                                  void *context) {
+static StatusCode prv_register_rx(GenericCan *can, GenericCanRx rx_handler, uint32_t mask,
+                                  uint32_t filter, bool extended, void *context) {
   GenericCanNetwork *gcn = (GenericCanNetwork *)can;
   if (gcn->base.interface != &s_interface) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "GenericCan not aligned to GenericCanNetwork.");
+  } else if (extended) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
   }
-  return generic_can_helpers_register_rx(can, rx_handler, id, context);
+  return generic_can_helpers_register_rx(can, rx_handler, mask, filter, context);
 }
 
 StatusCode generic_can_network_init(GenericCanNetwork *can_network) {

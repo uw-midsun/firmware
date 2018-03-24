@@ -28,7 +28,8 @@ static void prv_rx_handler(void *context) {
   GenericCanMsg rx_msg = { 0 };
   while (can_hw_receive(&rx_msg.id, &rx_msg.extended, &rx_msg.data, &rx_msg.dlc)) {
     for (size_t i = 0; i < NUM_GENERIC_CAN_RX_HANDLERS; i++) {
-      if (rx_msg.id == gch->base.rx_storage[i].id && gch->base.rx_storage[i].rx_handler != NULL) {
+      if (gch->base.rx_storage[i].rx_handler != NULL &&
+          (rx_msg.id & gch->base.rx_storage[i].mask) == gch->base.rx_storage[i].filter) {
         gch->base.rx_storage[i].rx_handler(&rx_msg, gch->base.rx_storage[i].context);
         break;
       }
@@ -68,16 +69,16 @@ static StatusCode prv_tx(const GenericCan *can, const GenericCanMsg *msg) {
 }
 
 // register_rx
-static StatusCode prv_register_rx(GenericCan *can, GenericCanRx rx_handler, uint32_t id,
-                                  void *context) {
+static StatusCode prv_register_rx(GenericCan *can, GenericCanRx rx_handler, uint32_t mask,
+                                  uint32_t filter, bool extended, void *context) {
   GenericCanHw *gch = (GenericCanHw *)can;
   if (gch->base.interface != &s_interface) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "GenericCan not aligned to GenericCanHw.");
   } else if (can == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
-
-  return generic_can_helpers_register_rx(can, rx_handler, id, context);
+  status_ok_or_return(can_hw_add_filter(mask, filter, extended));
+  return generic_can_helpers_register_rx(can, rx_handler, mask, filter, context);
 }
 
 StatusCode generic_can_hw_init(GenericCanHw *can_hw, const CANHwSettings *settings,

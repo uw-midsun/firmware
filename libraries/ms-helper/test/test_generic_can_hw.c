@@ -53,18 +53,27 @@ void test_generic_can(void) {
 
   volatile uint8_t counter = 0;
 
-  const GenericCanMsg msg = {
-    .id = 0xFFFFFFF,
+  GenericCanMsg msg = {
+    .id = 0x0000FF,
     .data = 255,
     .dlc = 1,
     .extended = true,
   };
 
-  TEST_ASSERT_OK(generic_can_register_rx(can, prv_can_rx_callback, msg.id, &counter));
+  TEST_ASSERT_OK(generic_can_register_rx(can, prv_can_rx_callback, GENERIC_CAN_EMPTY_MASK, msg.id,
+                                         true, &counter));
 
   Event e = { 0, 0 };
   StatusCode status = NUM_STATUS_CODES;
   // TX
+  TEST_ASSERT_OK(generic_can_tx(can, &msg));
+  // RX
+  delay_ms(300);
+  // Callback is triggered.
+  TEST_ASSERT_EQUAL(1, counter);
+
+  // TX (Masked)
+  --msg.id;
   TEST_ASSERT_OK(generic_can_tx(can, &msg));
   // RX
   delay_ms(300);

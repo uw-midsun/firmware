@@ -1,11 +1,13 @@
 #pragma once
 // Module for abstracting CAN implementation details.
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "generic_can_msg.h"
 #include "status.h"
 
+#define GENERIC_CAN_EMPTY_MASK UINT32_MAX
 #define NUM_GENERIC_CAN_RX_HANDLERS 5
 
 struct GenericCan;
@@ -13,7 +15,8 @@ struct GenericCan;
 typedef void (*GenericCanRx)(const GenericCanMsg *msg, void *context);
 
 typedef struct GenericCanRxStorage {
-  uint32_t id;
+  uint32_t filter;
+  uint32_t mask;
   GenericCanRx rx_handler;
   void *context;
 } GenericCanRxStorage;
@@ -21,8 +24,8 @@ typedef struct GenericCanRxStorage {
 typedef struct GenericCanInterface {
   StatusCode (*tx)(const struct GenericCan *can, const GenericCanMsg *msg);
   // Doesn't support ACKable messages (defaults to enabled).
-  StatusCode (*register_rx)(struct GenericCan *can, GenericCanRx rx_handler, uint32_t id,
-                            void *context);
+  StatusCode (*register_rx)(struct GenericCan *can, GenericCanRx rx_handler, uint32_t mask,
+                            uint32_t filter, bool extended, void *context);
 } GenericCanInterface;
 
 typedef struct GenericCan {
@@ -75,5 +78,5 @@ typedef struct GenericCan {
 StatusCode generic_can_tx(const GenericCan *can, const GenericCanMsg *msg);
 
 // Registers a |rx_handler| to a |raw_id|.
-StatusCode generic_can_register_rx(GenericCan *can, GenericCanRx rx_handler, uint32_t raw_id,
-                                   void *context);
+StatusCode generic_can_register_rx(GenericCan *can, GenericCanRx rx_handler, uint32_t mask,
+                                   uint32_t filter, bool extended, void *context);
