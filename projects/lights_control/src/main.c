@@ -6,9 +6,6 @@
 #include "status.h"
 #include "wait.h"
 
-#define SOMEPORT 0
-#define SOMEPIN 0
-
 int main(void) {
   Event e;
 

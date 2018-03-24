@@ -6,9 +6,9 @@
 #include "lights_events.h"
 #include "lights_simple_peripherals.h"
 
-static StatusCode prv_custom_callback(Event e) {
+static StatusCode prv_custom_callback(const Event *e) {
   // these events should not be processed, thus callback shouldn't be called with them
-  switch (e.id) {
+  switch (e->id) {
     case LIGHTS_EVENT_SIGNAL_LEFT:
     case LIGHTS_EVENT_SIGNAL_RIGHT:
     case LIGHTS_EVENT_SIGNAL_HAZARD:
@@ -23,7 +23,7 @@ static StatusCode prv_custom_callback(Event e) {
     [LIGHTS_EVENT_DRL] = LIGHTS_SIMPLE_STATE_OFF,        //
     [LIGHTS_EVENT_BRAKES] = LIGHTS_SIMPLE_STATE_ON,      //
   };
-  TEST_ASSERT_EQUAL(e.data, callback_data_lookup[e.id]);
+  TEST_ASSERT_EQUAL(e->data, callback_data_lookup[e->id]);
   return STATUS_CODE_OK;
 }
 
@@ -49,7 +49,7 @@ void test_lights_simple_peripherals_event(void) {
   };
 
   for (uint8_t i = 0; i < SIZEOF_ARRAY(event_data_lookup); i++) {
-    Event e = { .id = i, .data = event_data_lookup[i] };
-    TEST_ASSERT_OK(lights_simple_peripherals_process_event(e));
+    const Event e = { .id = i, .data = event_data_lookup[i] };
+    TEST_ASSERT_OK(lights_simple_peripherals_process_event(&e));
   }
 }
