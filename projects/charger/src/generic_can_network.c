@@ -17,16 +17,10 @@ static GenericCanInterface s_interface;
 static StatusCode prv_generic_can_network_rx_handler(const CANMessage *msg, void *context,
                                                      CANAckStatus *ack_reply) {
   (void)ack_reply;
-  GenericCanNetwork *gcn = context;
+  GenericCanRxStorage *gcrx = context;
   GenericCanMsg generic_msg = { 0 };
   can_message_to_generic_can_message(msg, &generic_msg);
-  for (size_t i = 0; i < NUM_GENERIC_CAN_RX_HANDLERS; i++) {
-    if (gcn->base.rx_storage[i].rx_handler != NULL &&
-        (generic_msg.id & gcn->base.rx_storage[i].mask) == gcn->base.rx_storage[i].filter) {
-      gcn->base.rx_storage[i].rx_handler(&generic_msg, gcn->base.rx_storage[i].context);
-      break;
-    }
-  }
+  gcrx->rx_handler(&generic_msg, gcrx->context);
   return STATUS_CODE_OK;
 }
 
@@ -51,7 +45,12 @@ static StatusCode prv_register_rx(GenericCan *can, GenericCanRx rx_handler, uint
   } else if (extended) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
-  return generic_can_helpers_register_rx(can, rx_handler, mask, filter, context);
+
+  uint16_t idx = UINT16_MAX;
+  status_ok_or_return(
+      generic_can_helpers_register_rx(can, rx_handler, mask, filter, context, &idx));
+  return can_register_rx_handler(filter, prv_generic_can_network_rx_handler,
+                                 &gcn->base.rx_storage[idx]);
 }
 
 StatusCode generic_can_network_init(GenericCanNetwork *can_network) {
@@ -61,8 +60,6 @@ StatusCode generic_can_network_init(GenericCanNetwork *can_network) {
   memset(can_network->base.rx_storage, 0, sizeof(GenericCanRx) * NUM_GENERIC_CAN_RX_HANDLERS);
 
   can_network->base.interface = &s_interface;
-  status_ok_or_return(
-      can_register_rx_default_handler(prv_generic_can_network_rx_handler, can_network));
 
   return STATUS_CODE_OK;
 }

@@ -14,5 +14,4 @@ StatusCode generic_can_network_init(GenericCanNetwork *can_network);
 // NOTE: this utilizes **Network Layer CAN** not Hardware Layer! Support is limited to network layer
 // rules! If you wish to send extended ID messages use the generic_can_hw module.
 //
-// For generic_can_register_rx |mask| and |filter| act on the **raw** id not the msg_id recognized
-// by the Network layer.
+// For generic_can_register_rx |mask| is unused and |filter| is the expected message id.

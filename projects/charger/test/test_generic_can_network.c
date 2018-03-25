@@ -72,7 +72,7 @@ void test_generic_can(void) {
   };
 
   TEST_ASSERT_OK(generic_can_register_rx(can, prv_can_rx_callback, GENERIC_CAN_EMPTY_MASK,
-                                         raw_id.raw, false, &counter));
+                                         raw_id.msg_id, false, &counter));
 
   Event e = { 0, 0 };
   StatusCode status = NUM_STATUS_CODES;

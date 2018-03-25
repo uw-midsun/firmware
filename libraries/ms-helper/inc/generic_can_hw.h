@@ -4,7 +4,7 @@
 //
 // NOTE: this is primarily intended for testing. It isn't nearly as fault tolerant as Network Layer
 // CAN and should only be used in situations where faults are permissible and message traffic is
-// light (i.e. talking to a device not on the primary CAN Network).
+// light (i.e. communicating with a device not on the primary CAN Network).
 
 #include "can_hw.h"
 #include "event_queue.h"

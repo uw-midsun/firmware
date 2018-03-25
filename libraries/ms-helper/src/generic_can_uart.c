@@ -50,7 +50,7 @@ static StatusCode prv_register_rx(GenericCan *can, GenericCanRx rx_handler, uint
   if (gcu->base.interface != &s_interface || gcu->can_uart != &s_can_uart) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "GenericCan not aligned to GenericCanUart.");
   }
-  return generic_can_helpers_register_rx(can, rx_handler, mask, filter, context);
+  return generic_can_helpers_register_rx(can, rx_handler, mask, filter, context, NULL);
 }
 
 StatusCode generic_can_uart_init(GenericCanUart *can_uart, UARTPort port) {

@@ -78,7 +78,7 @@ static StatusCode prv_register_rx(GenericCan *can, GenericCanRx rx_handler, uint
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   status_ok_or_return(can_hw_add_filter(mask, filter, extended));
-  return generic_can_helpers_register_rx(can, rx_handler, mask, filter, context);
+  return generic_can_helpers_register_rx(can, rx_handler, mask, filter, context, NULL);
 }
 
 StatusCode generic_can_hw_init(GenericCanHw *can_hw, const CANHwSettings *settings,
