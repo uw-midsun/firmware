@@ -27,7 +27,7 @@ static CANRxHandler s_rx_handlers[NUM_CAN_RX_HANDLERS];
 static CANAckRequests s_can_ack_requests;
 
 static StatusCode prv_bps_ack_request(CANMessageID msg_id, uint16_t device, CANAckStatus status,
-                                      uint16_t remaining, void* context) {
+                                      uint16_t remaining, void *context) {
   (void)context;
   TEST_ASSERT_EQUAL(SYSTEM_CAN_DEVICE_CHAOS, device);
   TEST_ASSERT_EQUAL(CAN_ACK_STATUS_OK, status);
