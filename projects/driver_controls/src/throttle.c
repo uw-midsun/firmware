@@ -20,30 +20,42 @@ static uint16_t prv_scale_reading(int16_t reading, int16_t max, int16_t min) {
   return (1 << 12) * (reading - min) / (max - min);
 }
 
-static uint16_t prv_get_numerator(int16_t reading, ThrottleZone zone, ThrottleChannel channel,
+static uint16_t prv_get_numerator(int16_t reading, ThrottleChannel channel,
                                   ThrottleStorage *storage) {
   return prv_scale_reading(
-      reading, storage->calibration_data->zone_thresholds[channel][zone][THROTTLE_THRESH_MAX],
-      storage->calibration_data->zone_thresholds[channel][zone][THROTTLE_THRESH_MIN]);
+      reading, storage->calibration_data->line_of_best_fit[channel][THROTTLE_THRESH_MAX],
+      storage->calibration_data->line_of_best_fit[channel][THROTTLE_THRESH_MIN]);
 }
 
-static bool prv_reading_within_zone(int16_t reading, ThrottleZone zone, ThrottleChannel channel,
+static uint16_t prv_get_numerator_zone(int16_t reading_main, ThrottleZone zone,
+                                       ThrottleStorage *storage) {
+  return prv_scale_reading(
+      reading_main, storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MAX],
+      storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MIN]);
+}
+
+static bool prv_reading_within_zone(int16_t reading_main, ThrottleZone zone,
                                     ThrottleStorage *storage) {
   return (
-      (reading < storage->calibration_data->zone_thresholds[channel][zone][THROTTLE_THRESH_MAX]) &&
-      (reading >= storage->calibration_data->zone_thresholds[channel][zone][THROTTLE_THRESH_MIN]));
+      (reading_main < storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MAX]) &&
+      (reading_main >= storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MIN]));
 }
 
 // Returns true if the channels match their supposed relationship.
-static bool prv_channels_synced(int16_t reading_main, int16_t reading_secondary, ThrottleZone zone,
+static bool prv_channels_synced(int16_t reading_main, int16_t reading_secondary,
                                 ThrottleStorage *storage) {
-  uint16_t numerator_main = prv_get_numerator(reading_main, zone, THROTTLE_CHANNEL_MAIN, storage);
+  uint16_t numerator_main = prv_get_numerator(reading_main, THROTTLE_CHANNEL_MAIN, storage);
 
-  uint16_t numerator_secondary =
-      prv_get_numerator(reading_secondary, zone, THROTTLE_CHANNEL_SECONDARY, storage);
+  uint16_t expected_reading_secondary =
+      ((storage->calibration_data
+            ->line_of_best_fit[THROTTLE_CHANNEL_SECONDARY][THROTTLE_THRESH_MAX] -
+        storage->calibration_data
+            ->line_of_best_fit[THROTTLE_CHANNEL_SECONDARY][THROTTLE_THRESH_MIN]) *
+       numerator_main / (1 << 12)) +
+      storage->calibration_data->line_of_best_fit[THROTTLE_CHANNEL_SECONDARY][THROTTLE_THRESH_MIN];
 
-  return (abs(numerator_main - numerator_secondary)) <=
-         storage->calibration_data->channel_readings_tolerance;
+  return (abs(expected_reading_secondary - reading_secondary)) <=
+         storage->calibration_data->channel_readings_tolerance[THROTTLE_CHANNEL_SECONDARY];
 }
 
 // This callback is called whenever a conversion is done. It sets the flags
@@ -67,14 +79,13 @@ static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) 
   InputEvent pedal_events[NUM_THROTTLE_ZONES] = { INPUT_EVENT_PEDAL_BRAKE, INPUT_EVENT_PEDAL_COAST,
                                                   INPUT_EVENT_PEDAL_PRESSED };
   bool fault = true;
-  if (storage->reading_updated_flag) {
+  if (storage->reading_updated_flag &&
+      prv_channels_synced(reading_main, reading_secondary, storage)) {
     for (ThrottleZone zone = THROTTLE_ZONE_BRAKE; zone < NUM_THROTTLE_ZONES; zone++) {
-      if (prv_reading_within_zone(reading_main, zone, THROTTLE_CHANNEL_MAIN, storage) &&
-          prv_channels_synced(reading_main, reading_secondary, zone, storage)) {
+      if (prv_reading_within_zone(reading_main, zone, storage)) {
         fault = false;
         storage->position.zone = zone;
-        storage->position.numerator =
-            prv_get_numerator(reading_main, zone, THROTTLE_CHANNEL_MAIN, storage);
+        storage->position.numerator = prv_get_numerator_zone(reading_main, zone, storage);
         storage->reading_ok_flag = true;
         event_raise(pedal_events[zone], storage->position.numerator);
         break;
