@@ -2,6 +2,7 @@
 
 // Keeps track of whether the hazard lights are powered
 
+#include "event_arbiter.h"
 #include "fsm.h"
 
 typedef enum {
@@ -9,4 +10,4 @@ typedef enum {
   HAZARD_LIGHT_FSM_STATE_ON,
 } HazardLightFSMState;
 
-StatusCode hazard_light_fsm_init(FSM *fsm);
+StatusCode hazard_light_fsm_init(FSM *fsm, EventArbiterStorage *storage);

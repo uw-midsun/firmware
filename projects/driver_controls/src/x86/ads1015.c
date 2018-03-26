@@ -55,7 +55,7 @@ static void prv_timer_callback(SoftTimerID id, void *context) {
     storage->pending_channel_bitset = storage->channel_bitset;
   }
   // Obtain the next enabled channel.
-  current_channel = __builtin_ffs(storage->pending_channel_bitset) - 1;
+  current_channel = (Ads1015Channel)(__builtin_ffs(storage->pending_channel_bitset) - 1);
   // Update so that the ADS1015 reads from the next channel.
   prv_set_channel(storage, current_channel);
   soft_timer_start(ADS1015_CHANNEL_UPDATE_PERIOD_US, prv_timer_callback, storage, NULL);
