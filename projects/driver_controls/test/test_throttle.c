@@ -169,7 +169,7 @@ void test_throttle_verify_event_accel(void) {
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_PRESSED, e.id);
 }
 
-void test_throttle_verify_event_fault(void) {
+void test_throttle_event_fault_out_of_bound(void) {
   ThrottlePosition position;
   Event e;
   event_queue_init();
@@ -184,7 +184,14 @@ void test_throttle_verify_event_fault(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&s_throttle_storage, &position));
   event_process(&e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_FAULT, e.id);
+}
 
+void test_throttle_event_fault_out_of_sync(void) {
+  ThrottlePosition position;
+  Event e;
+  event_queue_init();
+  throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
+                THROTTLE_ADC_CHANNEL_MAIN, THROTTLE_ADC_CHANNEL_SECONDARY);
   // Readings out of sync case.
   s_mocked_reading_main = (s_throttle_storage.calibration_data
                                ->zone_thresholds_main[THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MAX] +
@@ -196,14 +203,28 @@ void test_throttle_verify_event_fault(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&s_throttle_storage, &position));
   event_process(&e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_FAULT, e.id);
+}
 
+void test_throttle_event_fault_stale_channel_main(void) {
+  ThrottlePosition position;
+  Event e;
+  event_queue_init();
+  throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
+                THROTTLE_ADC_CHANNEL_MAIN, THROTTLE_ADC_CHANNEL_SECONDARY);
   // Turning off main channel to produce the stale reading case.
   ads1015_configure_channel(&s_ads1015_storage, THROTTLE_ADC_CHANNEL_MAIN, false, NULL, NULL);
   delay_us(THROTTLE_UPDATE_PERIOD_US);
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&s_throttle_storage, &position));
   event_process(&e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_FAULT, e.id);
+}
 
+void test_throttle_event_fault_stale_channel_secondary(void) {
+  ThrottlePosition position;
+  Event e;
+  event_queue_init();
+  throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
+                THROTTLE_ADC_CHANNEL_MAIN, THROTTLE_ADC_CHANNEL_SECONDARY);
   // Turning off second channel to produce the stale reading case.
   ads1015_configure_channel(&s_ads1015_storage, THROTTLE_ADC_CHANNEL_SECONDARY, false, NULL, NULL);
   delay_us(THROTTLE_UPDATE_PERIOD_US);
