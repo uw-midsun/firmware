@@ -9,28 +9,28 @@
 #include "throttle.h"
 #include "unity.h"
 
-#define THROTTLE_ADC_CHANNEL_MAIN ADS1015_CHANNEL_0
-#define THROTTLE_ADC_CHANNEL_SECONDARY ADS1015_CHANNEL_1
+#define TEST_THROTTLE_ADC_CHANNEL_MAIN ADS1015_CHANNEL_0
+#define TEST_THROTTLE_ADC_CHANNEL_SECONDARY ADS1015_CHANNEL_1
 #define THROTTLE_UPDATE_PERIOD_US (1000 * THROTTLE_UPDATE_PERIOD_MS)
 static Ads1015Storage s_ads1015_storage;
 static ThrottleStorage s_throttle_storage;
 static ThrottleCalibrationData s_calibration_data;
 static int16_t s_mocked_reading_main;
 static int16_t s_mocked_reading_secondary;
-static int16_t s_threshes_main[NUM_THROTTLE_ZONES][NUM_THROTTLE_THRESHES] = {
+static const int16_t s_threshes_main[NUM_THROTTLE_ZONES][NUM_THROTTLE_THRESHES] = {
   { 320, 683 },   // Brake zone
   { 684, 1064 },  // Coast zone
   { 1065, 1410 }  // Accel zone
 };
-static int16_t s_line_of_best_fit[NUM_THROTTLE_CHANNELS][NUM_THROTTLE_THRESHES] = {
+static const int16_t s_line_of_best_fit[NUM_THROTTLE_CHANNELS][NUM_THROTTLE_THRESHES] = {
   { 325, 1405 },  // Main channel
   { 160, 710 }    //  Secondary channel
 };
-static int16_t s_tolerance[NUM_THROTTLE_CHANNELS] = { 5, 10 };
+static const int16_t s_tolerance[NUM_THROTTLE_CHANNELS] = { 5, 10 };
 
 StatusCode TEST_MOCK(ads1015_read_raw)(Ads1015Storage *storage, Ads1015Channel channel,
                                        int16_t *reading) {
-  if (channel == THROTTLE_ADC_CHANNEL_MAIN) {
+  if (channel == TEST_THROTTLE_ADC_CHANNEL_MAIN) {
     *reading = s_mocked_reading_main;
   } else {
     *reading = s_mocked_reading_secondary;
@@ -39,8 +39,9 @@ StatusCode TEST_MOCK(ads1015_read_raw)(Ads1015Storage *storage, Ads1015Channel c
 }
 
 // Sets zone thresholds for the given channel.
-static void prv_set_calibration_data(int16_t threshes[NUM_THROTTLE_ZONES][NUM_THROTTLE_THRESHES],
-                                     ThrottleCalibrationData *data) {
+static void prv_set_calibration_data(
+    const int16_t threshes[NUM_THROTTLE_ZONES][NUM_THROTTLE_THRESHES],
+    ThrottleCalibrationData *data) {
   for (ThrottleZone zone = THROTTLE_ZONE_BRAKE; zone < NUM_THROTTLE_ZONES; zone++) {
     for (ThrottleThresh thresh = THROTTLE_THRESH_MIN; thresh < NUM_THROTTLE_THRESHES; thresh++) {
       data->zone_thresholds_main[zone][thresh] = threshes[zone][thresh];
@@ -78,32 +79,36 @@ void teardown_test(void) {}
 
 void test_throttle_init_invalid_args(void) {
   // Test with valid arguments.
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK,
-                    throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                                  THROTTLE_ADC_CHANNEL_MAIN, THROTTLE_ADC_CHANNEL_SECONDARY));
+  TEST_ASSERT_EQUAL(
+      STATUS_CODE_OK,
+      throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
+                    TEST_THROTTLE_ADC_CHANNEL_MAIN, TEST_THROTTLE_ADC_CHANNEL_SECONDARY));
   // Check for null pointers.
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
-                    throttle_init(NULL, &s_calibration_data, &s_ads1015_storage,
-                                  THROTTLE_ADC_CHANNEL_MAIN, THROTTLE_ADC_CHANNEL_SECONDARY));
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
-                    throttle_init(&s_throttle_storage, NULL, &s_ads1015_storage,
-                                  THROTTLE_ADC_CHANNEL_MAIN, THROTTLE_ADC_CHANNEL_SECONDARY));
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
-                    throttle_init(&s_throttle_storage, &s_calibration_data, NULL,
-                                  THROTTLE_ADC_CHANNEL_MAIN, THROTTLE_ADC_CHANNEL_SECONDARY));
+  TEST_ASSERT_EQUAL(
+      STATUS_CODE_INVALID_ARGS,
+      throttle_init(NULL, &s_calibration_data, &s_ads1015_storage, TEST_THROTTLE_ADC_CHANNEL_MAIN,
+                    TEST_THROTTLE_ADC_CHANNEL_SECONDARY));
+  TEST_ASSERT_EQUAL(
+      STATUS_CODE_INVALID_ARGS,
+      throttle_init(&s_throttle_storage, NULL, &s_ads1015_storage, TEST_THROTTLE_ADC_CHANNEL_MAIN,
+                    TEST_THROTTLE_ADC_CHANNEL_SECONDARY));
+  TEST_ASSERT_EQUAL(
+      STATUS_CODE_INVALID_ARGS,
+      throttle_init(&s_throttle_storage, &s_calibration_data, NULL, TEST_THROTTLE_ADC_CHANNEL_MAIN,
+                    TEST_THROTTLE_ADC_CHANNEL_SECONDARY));
   // Check for invalid channels.
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                                  NUM_ADS1015_CHANNELS, THROTTLE_ADC_CHANNEL_SECONDARY));
+                                  NUM_ADS1015_CHANNELS, TEST_THROTTLE_ADC_CHANNEL_SECONDARY));
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                                  THROTTLE_ADC_CHANNEL_MAIN, NUM_ADS1015_CHANNELS));
+                                  TEST_THROTTLE_ADC_CHANNEL_MAIN, NUM_ADS1015_CHANNELS));
 }
 
 void test_throttle_get_pos_invalid_args(void) {
   ThrottlePosition position;
   throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                THROTTLE_ADC_CHANNEL_MAIN, THROTTLE_ADC_CHANNEL_SECONDARY);
+                TEST_THROTTLE_ADC_CHANNEL_MAIN, TEST_THROTTLE_ADC_CHANNEL_SECONDARY);
   // Check for null pointers.
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, throttle_get_position(NULL, &position));
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, throttle_get_position(&s_throttle_storage, NULL));
@@ -114,7 +119,7 @@ void test_throttle_verify_event_brake(void) {
   Event e;
   event_queue_init();
   throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                THROTTLE_ADC_CHANNEL_MAIN, THROTTLE_ADC_CHANNEL_SECONDARY);
+                TEST_THROTTLE_ADC_CHANNEL_MAIN, TEST_THROTTLE_ADC_CHANNEL_SECONDARY);
   // Brake zone.
   s_mocked_reading_main = (s_threshes_main[THROTTLE_ZONE_BRAKE][THROTTLE_THRESH_MAX] +
                            s_threshes_main[THROTTLE_ZONE_BRAKE][THROTTLE_THRESH_MIN]) /
@@ -132,7 +137,7 @@ void test_throttle_verify_event_brake_special_case(void) {
   Event e;
   event_queue_init();
   throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                THROTTLE_ADC_CHANNEL_MAIN, THROTTLE_ADC_CHANNEL_SECONDARY);
+                TEST_THROTTLE_ADC_CHANNEL_MAIN, TEST_THROTTLE_ADC_CHANNEL_SECONDARY);
   // Just below the brake zone but within the tolerance.
   s_mocked_reading_main = s_line_of_best_fit[THROTTLE_CHANNEL_MAIN][THROTTLE_THRESH_MIN] -
                           s_tolerance[THROTTLE_CHANNEL_MAIN];
@@ -158,7 +163,7 @@ void test_throttle_verify_event_coast(void) {
   Event e;
   event_queue_init();
   throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                THROTTLE_ADC_CHANNEL_MAIN, THROTTLE_ADC_CHANNEL_SECONDARY);
+                TEST_THROTTLE_ADC_CHANNEL_MAIN, TEST_THROTTLE_ADC_CHANNEL_SECONDARY);
   // Coast zone.
   s_mocked_reading_main = (s_threshes_main[THROTTLE_ZONE_COAST][THROTTLE_THRESH_MAX] +
                            s_threshes_main[THROTTLE_ZONE_COAST][THROTTLE_THRESH_MIN]) /
@@ -176,7 +181,7 @@ void test_throttle_verify_event_accel(void) {
   Event e;
   event_queue_init();
   throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                THROTTLE_ADC_CHANNEL_MAIN, THROTTLE_ADC_CHANNEL_SECONDARY);
+                TEST_THROTTLE_ADC_CHANNEL_MAIN, TEST_THROTTLE_ADC_CHANNEL_SECONDARY);
   // Acceleration zone.
   s_mocked_reading_main = (s_threshes_main[THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MAX] +
                            s_threshes_main[THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MIN]) /
@@ -194,7 +199,7 @@ void test_throttle_verify_event_accel_special_case(void) {
   Event e;
   event_queue_init();
   throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                THROTTLE_ADC_CHANNEL_MAIN, THROTTLE_ADC_CHANNEL_SECONDARY);
+                TEST_THROTTLE_ADC_CHANNEL_MAIN, TEST_THROTTLE_ADC_CHANNEL_SECONDARY);
   // Just above the accel zone but within the tolerance.
   s_mocked_reading_main = s_line_of_best_fit[THROTTLE_CHANNEL_MAIN][THROTTLE_THRESH_MAX] +
                           s_tolerance[THROTTLE_CHANNEL_MAIN];
@@ -220,7 +225,7 @@ void test_throttle_event_fault_out_of_bound(void) {
   Event e;
   event_queue_init();
   throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                THROTTLE_ADC_CHANNEL_MAIN, THROTTLE_ADC_CHANNEL_SECONDARY);
+                TEST_THROTTLE_ADC_CHANNEL_MAIN, TEST_THROTTLE_ADC_CHANNEL_SECONDARY);
   // Out of bound case.
   s_mocked_reading_main = s_threshes_main[THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MAX] * 2;
   s_mocked_reading_secondary = s_mocked_reading_main / 2;
@@ -235,7 +240,7 @@ void test_throttle_event_fault_out_of_sync(void) {
   Event e;
   event_queue_init();
   throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                THROTTLE_ADC_CHANNEL_MAIN, THROTTLE_ADC_CHANNEL_SECONDARY);
+                TEST_THROTTLE_ADC_CHANNEL_MAIN, TEST_THROTTLE_ADC_CHANNEL_SECONDARY);
   // Readings out of sync case.
   s_mocked_reading_main = (s_threshes_main[THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MAX] +
                            s_threshes_main[THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MIN]) /
@@ -252,9 +257,9 @@ void test_throttle_event_fault_stale_channel_main(void) {
   Event e;
   event_queue_init();
   throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                THROTTLE_ADC_CHANNEL_MAIN, THROTTLE_ADC_CHANNEL_SECONDARY);
+                TEST_THROTTLE_ADC_CHANNEL_MAIN, TEST_THROTTLE_ADC_CHANNEL_SECONDARY);
   // Turning off main channel to produce the stale reading case.
-  ads1015_configure_channel(&s_ads1015_storage, THROTTLE_ADC_CHANNEL_MAIN, false, NULL, NULL);
+  ads1015_configure_channel(&s_ads1015_storage, TEST_THROTTLE_ADC_CHANNEL_MAIN, false, NULL, NULL);
   delay_us(THROTTLE_UPDATE_PERIOD_US);
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&s_throttle_storage, &position));
   event_process(&e);
@@ -266,9 +271,10 @@ void test_throttle_event_fault_stale_channel_secondary(void) {
   Event e;
   event_queue_init();
   throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                THROTTLE_ADC_CHANNEL_MAIN, THROTTLE_ADC_CHANNEL_SECONDARY);
+                TEST_THROTTLE_ADC_CHANNEL_MAIN, TEST_THROTTLE_ADC_CHANNEL_SECONDARY);
   // Turning off second channel to produce the stale reading case.
-  ads1015_configure_channel(&s_ads1015_storage, THROTTLE_ADC_CHANNEL_SECONDARY, false, NULL, NULL);
+  ads1015_configure_channel(&s_ads1015_storage, TEST_THROTTLE_ADC_CHANNEL_SECONDARY, false, NULL,
+                            NULL);
   delay_us(THROTTLE_UPDATE_PERIOD_US);
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&s_throttle_storage, &position));
   event_process(&e);
