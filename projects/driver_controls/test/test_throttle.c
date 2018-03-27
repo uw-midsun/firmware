@@ -52,7 +52,7 @@ static void prv_set_calibration_data(int16_t threshes[NUM_THROTTLE_ZONES][NUM_TH
       data->line_of_best_fit[channel][thresh] = s_line_of_best_fit[channel][thresh];
     }
   }
-  data->channel_readings_tolerance[THROTTLE_CHANNEL_SECONDARY] = s_tolerance_secondary;
+  data->tolerance = s_tolerance_secondary;
 }
 
 void setup_test(void) {

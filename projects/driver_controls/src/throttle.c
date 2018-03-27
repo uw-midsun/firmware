@@ -1,25 +1,28 @@
 // The module operates based on the voltage readings that come from the pedals.
-// The pedal occupies two channels of the ADS1015 one of which is chosen to be the "main" channel.
+// The pedal occupies two channels of the ADS1015. The channel with a higher resolution is chosen
+// to be the "main" channel.
 // Everytime ADS1015 finishes a conversion of the pedal input on the main channel,
 // prv_flag_update_callback is called to set reading_updated_flag accordingly which determines if
 // the readings are up to date. A periodic safety check, prv_raise_event_timer_callback, checks
 // for this flag and if ok, it updates the position of the pedal in storage and
 // raises the events related to the pedal's position (braking, coasting, and accelerating zones).
-// The reading_ok_flag basically holds the actual state of reading_updated_flag when it is reset.
-// It also verifies if the second channel is in sync with the main channel to ensure the validity
-// of the data.
-// If the data turns out to be stale or channels aren't synched, a timeout event will be raised.
-// The throttle_get_position function simply reads the position from storage.
+// The reading_ok_flag basically holds the actual state of reading_updated_flag as it resets.
+// In this module, it is assumed that channels hold a linear relationship with respect to the
+// pedal's position. This is used to verify if the readings are valid and "real" i.e if channels
+// are synced. If the data turns out to be stale or channels aren't synced, a timeout event will
+// be raised. The throttle_get_position function simply reads the position from storage.
 #include "throttle.h"
 #include <string.h>
 #include "event_queue.h"
 #include "input_event.h"
 
-// Scales a reading to a measure out of 12 bits based on the given range (min - max).
+// Scales a reading to a measure out of 12 bits based on the given range(min to max).
 static uint16_t prv_scale_reading(int16_t reading, int16_t max, int16_t min) {
   return (1 << 12) * (reading - min) / (max - min);
 }
 
+// Given the reading(y), finds the corresponding pedal's position(x) according to line of best fit.
+// X-axis -> (0 to 2^12), Y-axis -> voltage.
 static uint16_t prv_get_numerator(int16_t reading, ThrottleChannel channel,
                                   ThrottleStorage *storage) {
   return prv_scale_reading(
@@ -27,6 +30,8 @@ static uint16_t prv_get_numerator(int16_t reading, ThrottleChannel channel,
       storage->calibration_data->line_of_best_fit[channel][THROTTLE_THRESH_MIN]);
 }
 
+// Given a reading from main channel and a zone, finds how far within that zone the pedal is pushed.
+// The scale goes from 0(0%) to 2^12(100%). For ex. pedal is at 2^11(50%) in brake zone.
 static uint16_t prv_get_numerator_zone(int16_t reading_main, ThrottleZone zone,
                                        ThrottleStorage *storage) {
   return prv_scale_reading(
@@ -34,6 +39,7 @@ static uint16_t prv_get_numerator_zone(int16_t reading_main, ThrottleZone zone,
       storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MIN]);
 }
 
+// Given a reading from main channel and a zone, finds if the reading belongs to that zone.
 static bool prv_reading_within_zone(int16_t reading_main, ThrottleZone zone,
                                     ThrottleStorage *storage) {
   return (
@@ -41,21 +47,31 @@ static bool prv_reading_within_zone(int16_t reading_main, ThrottleZone zone,
       (reading_main >= storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MIN]));
 }
 
-// Returns true if the channels match their supposed relationship.
+// Returns true if the channel readings follow their linear relationship.
 static bool prv_channels_synced(int16_t reading_main, int16_t reading_secondary,
                                 ThrottleStorage *storage) {
+  // Gets pedal's position given the reading from main channel on line of best fit for main channel.
   uint16_t numerator_main = prv_get_numerator(reading_main, THROTTLE_CHANNEL_MAIN, storage);
 
-  uint16_t expected_reading_secondary =
-      ((storage->calibration_data
-            ->line_of_best_fit[THROTTLE_CHANNEL_SECONDARY][THROTTLE_THRESH_MAX] -
-        storage->calibration_data
-            ->line_of_best_fit[THROTTLE_CHANNEL_SECONDARY][THROTTLE_THRESH_MIN]) *
-       numerator_main / (1 << 12)) +
+  // Refers to y = mx + b for line of best fit of secondary channel.
+  // m(slope) = (max - min) / 2^12. x(pedal's position) = numerator_main.
+  int16_t mx = (storage->calibration_data
+                    ->line_of_best_fit[THROTTLE_CHANNEL_SECONDARY][THROTTLE_THRESH_MAX] -
+                storage->calibration_data
+                    ->line_of_best_fit[THROTTLE_CHANNEL_SECONDARY][THROTTLE_THRESH_MIN]) *
+               numerator_main / (1 << 12);
+  // Refers to y = mx + b for line of best fit of secondary channel.
+  // b(y-intercept) = min.
+  int16_t b =
       storage->calibration_data->line_of_best_fit[THROTTLE_CHANNEL_SECONDARY][THROTTLE_THRESH_MIN];
 
-  return (abs(expected_reading_secondary - reading_secondary)) <=
-         storage->calibration_data->channel_readings_tolerance[THROTTLE_CHANNEL_SECONDARY];
+  // So this gives expected reading on the secondary channel, by feeding pedal's position obtained
+  // from main channel to the equation for seconday channel's line of best fit.
+  int16_t expected_reading_secondary = mx + b;
+
+  // Checks if the seconday channel reading is within given bounds around the expected reading.
+  return abs(expected_reading_secondary - reading_secondary) <=
+         storage->calibration_data->tolerance;
 }
 
 // This callback is called whenever a conversion is done. It sets the flags

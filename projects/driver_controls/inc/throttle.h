@@ -1,14 +1,17 @@
 #pragma once
 // Module for the throttle.
-// Requires Ads1015, and soft timer to be initialized.
+// Requires ADS1015, and soft timer to be initialized.
 // The module periodically reads the pedal inputs from ADS1015, translates them into
 // positions and raises the events that correspond to the pedal's position (braking, coasting, and
-// accelerating). It also checks if the readings are stale (in case of a disconnection for
-// example) and could raise a timeout event.
+// accelerating). It also detects faulty events caused by disconnections or ADS1015 malfunctioning.
 // To use the module, init the ADS1015 for the pedal and pass its Ads1015Storage to throttle_init,
 // along with the two channels the pedal is connected to. Also pass a ThrottleCalibrationData
-// initialized with desired values. At any time calling throttle_get_position will give the current
-// position of the pedal.
+// that has been calibrated. This structure holds zone thresholds for determining the state of the
+// pedal based on the reading from main channel and two lines that approximate (best fit)
+// the voltage-position graph. It is assumed that channel readings hold a linear
+// relationship with respect to the pedal's position. The tolerance accounts for possible deviation
+// of the data on the second channel when compared to main channel.
+// At any time calling throttle_get_position will give the current position of the pedal.
 // Note that storage, pedal_ads1015_storage, and calibration_data should persist.
 
 #include <stdint.h>
@@ -38,7 +41,7 @@ typedef enum {
   NUM_THROTTLE_THRESHES
 } ThrottleThresh;
 
-// A measure in a 12 bit scale of how far within a zone a pedal is pressed.
+// A measure in a 12 bit scale of how far (within a zone) a pedal is pressed.
 // I.e. the numerator of a fraction with denominator of 2^12.
 typedef uint16_t ThrottleNumerator;
 
@@ -49,9 +52,12 @@ typedef struct ThrottlePosition {
 
 // Data that needs to be calibrated.
 typedef struct ThrottleCalibrationData {
+  // Boundaries of each zone in raw reading format.
   int16_t zone_thresholds_main[NUM_THROTTLE_ZONES][NUM_THROTTLE_THRESHES];
+  // The line of best fit described by set of 2 points in raw reading format
+  // at the extreme ends for each channel.
   int16_t line_of_best_fit[NUM_THROTTLE_CHANNELS][NUM_THROTTLE_THRESHES];
-  int16_t channel_readings_tolerance[NUM_THROTTLE_CHANNELS];
+  int16_t tolerance;
 } ThrottleCalibrationData;
 
 typedef struct ThrottleStorage {
