@@ -31,6 +31,8 @@ bool critical_section_start(void) {
 }
 
 void critical_section_end(bool disabled_in_scope) {
+  // Unlock the mutex before clearing interrupts. This is to prevent the recursive mutex from
+  // hitting a recursion limit in the event interrupts (signals) are received in rapid succession.
   pthread_mutex_unlock(&s_mutex);
   if (s_interrupts_disabled && disabled_in_scope) {
     // Clear the block mask for this process to allow signals to be processed. (They will queue when

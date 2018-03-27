@@ -35,6 +35,8 @@ static void prv_soft_timer_interrupt(void) {
     if (s_posix_timers[i].inuse) {
       timer_gettime(s_posix_timers[i].timer_id, &spec);
       if (spec.it_value.tv_sec == 0 && spec.it_value.tv_nsec == 0) {
+        // Mark as no longer inuse in case a timer is cancelled within its callback resulting in
+        // underflow of |s_active_timers|.
         s_posix_timers[i].inuse = false;
         s_posix_timers[i].callback(i, s_posix_timers[i].context);
         s_active_timers--;
