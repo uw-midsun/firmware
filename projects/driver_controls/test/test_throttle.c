@@ -26,7 +26,7 @@ static int16_t s_line_of_best_fit[NUM_THROTTLE_CHANNELS][NUM_THROTTLE_THRESHES] 
   { 325, 1405 },  // Main channel
   { 160, 710 }    //  Secondary channel
 };
-static int16_t s_tolerance_secondary = 10;
+static int16_t s_tolerance[NUM_THROTTLE_CHANNELS] = { 5, 10 };
 
 StatusCode TEST_MOCK(ads1015_read_raw)(Ads1015Storage *storage, Ads1015Channel channel,
                                        int16_t *reading) {
@@ -48,11 +48,11 @@ static void prv_set_calibration_data(int16_t threshes[NUM_THROTTLE_ZONES][NUM_TH
   }
   for (ThrottleChannel channel = THROTTLE_CHANNEL_MAIN; channel < NUM_THROTTLE_CHANNELS;
        channel++) {
+    data->tolerance[channel] = s_tolerance[channel];
     for (ThrottleThresh thresh = THROTTLE_THRESH_MIN; thresh < NUM_THROTTLE_THRESHES; thresh++) {
       data->line_of_best_fit[channel][thresh] = s_line_of_best_fit[channel][thresh];
     }
   }
-  data->tolerance = s_tolerance_secondary;
 }
 
 void setup_test(void) {

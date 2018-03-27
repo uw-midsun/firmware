@@ -57,7 +57,7 @@ typedef struct ThrottleCalibrationData {
   // The line of best fit described by set of 2 points in raw reading format
   // at the extreme ends for each channel.
   int16_t line_of_best_fit[NUM_THROTTLE_CHANNELS][NUM_THROTTLE_THRESHES];
-  int16_t tolerance;
+  int16_t tolerance[NUM_THROTTLE_CHANNELS];
 } ThrottleCalibrationData;
 
 typedef struct ThrottleStorage {
