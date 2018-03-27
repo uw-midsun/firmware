@@ -48,7 +48,8 @@ static uint16_t prv_get_numerator_zone(int16_t reading_main, ThrottleZone zone,
 static bool prv_reading_within_zone(int16_t reading_main, ThrottleZone zone,
                                     ThrottleStorage *storage) {
   return (
-      (reading_main < storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MAX]) &&
+      (reading_main <=
+       storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MAX]) &&
       (reading_main >= storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MIN]));
 }
 
