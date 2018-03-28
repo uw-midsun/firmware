@@ -74,5 +74,15 @@ StatusCode gpio_it_trigger_interrupt(const GPIOAddress *address) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  return x86_interrupt_trigger(s_gpio_it_interrupts[address->pin].interrupt_id);
+  InterruptEdge edge = s_gpio_it_interrupts[address->pin].edge;
+  GPIOState state;
+  gpio_get_value(address, &state);
+
+  if (((edge == INTERRUPT_EDGE_RISING) && (state == GPIO_STATE_HIGH)) ||
+      ((edge == INTERRUPT_EDGE_FALLING) && (state == GPIO_STATE_LOW)) ||
+        edge == INTERRUPT_EDGE_RISING_FALLING) {
+    return x86_interrupt_trigger(s_gpio_it_interrupts[address->pin].interrupt_id);
+  }
+
+  return STATUS_CODE_OK;
 }

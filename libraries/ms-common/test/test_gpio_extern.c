@@ -1,9 +1,10 @@
+#include <string.h>
+#include <unistd.h>
+#include <stdbool.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <stdbool.h>
-#include <unistd.h>
 
-#include <string.h>
+#include <errno.h>
 
 #include "gpio.h"
 #include "interrupt.h"
@@ -14,29 +15,48 @@
 #include "status.h"
 #include "test_helpers.h"
 
+// printf -> LOG_DEBUG and delete todo
+
 #define PORT 4000
 
+typedef struct GPIOMessage {
+  char cmd[5];
+  uint8_t port;
+  uint8_t pin;
+  uint8_t state;
+  uint8_t padding;
+} GPIOMessage;
+
 static int client_fd;
-
 static bool callback_ran;
+static GPIOMessage message;
 
-//static void prv_callback(const GPIOAddress *address, void *context) {
-//  callback_ran = true;
-//}
+static void prv_callback(const GPIOAddress *address, void *context) {
+  callback_ran = true;
+}
 
-/*
 static StatusCode prv_client(void *arg, size_t len) {
   char *buffer = (char*)arg;
+  char reply[len];
+
+  ssize_t msg_len = 0;
 
   // Send message
-  if(send(client_fd, buffer, len, 0) < 0) {
-      LOG_DEBUG("Send failed");
+  if (write(client_fd, buffer, len) <= 0) {
+      LOG_DEBUG("Send failed - %s\n", strerror(errno));
       return status_code(STATUS_CODE_UNREACHABLE);
+  }
+
+  // Retry if the read is interrupted 
+  while (true) {
+    msg_len = read(client_fd, reply, len);
+    if (msg_len >= 0){
+      break;
+    }
   }
 
   return STATUS_CODE_OK;
 }
-*/
 
 void setup_test(void) {
   // Set up x86 GPIO
@@ -49,27 +69,36 @@ void setup_test(void) {
   // Set up client
   client_fd = socket(AF_INET, SOCK_STREAM, 0);
 
-  if (client_fd == 0) {
+  if (client_fd < 0) {
     LOG_DEBUG("Failed to create socket\n");
     return;
   }
 
   // Connect to server
-  struct sockaddr_in server = { .sin_family = AF_INET, .sin_addr.s_addr = INADDR_ANY,
-                             .sin_port = htons(PORT), .sin_zero = { 0 } };
+  struct sockaddr_in server = {
+    .sin_family = AF_INET,
+    .sin_addr.s_addr = INADDR_ANY,
+    .sin_port = htons(PORT),
+    .sin_zero = { 0 }
+  };
 
   if (connect(client_fd, (struct sockaddr *)&server, sizeof(server)) < 0) {
       LOG_DEBUG("Failed to connect to server\n");
       return;
   }
+
+  message = (GPIOMessage){ .cmd = { 'g', 'p', 'i', 'o', ' ' },
+              .port = GPIO_PORT_A,
+              .pin = 0,
+              .state = GPIO_STATE_HIGH,
+              .padding = '\n' };
 }
 
 void teardown_test(void) {
-  // Close socket
   close(client_fd);
 }
 
-void test_set_value(void) {/*
+void test_set_value(void) {
   GPIOAddress address = { GPIO_PORT_A, 0x0 };
   GPIOSettings gpio_settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_NONE };
   GPIOState state = GPIO_STATE_LOW;
@@ -80,19 +109,16 @@ void test_set_value(void) {/*
   TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
 
   // Change GPIO state with TCP message
-  char message[] = { 'g', 'p', 'i', 'o', ' ', GPIO_PORT_A, 0, GPIO_STATE_HIGH, 1, '\0'};
-  TEST_ASSERT_OK(prv_client(message, sizeof(message)));
+  message.state = GPIO_STATE_HIGH;
+
+  TEST_ASSERT_OK(prv_client(&message, sizeof(message)));
 
   // Test to see if the value has been correctly written
-  do {
-    gpio_get_value(&address, &state);
-  } while (state == GPIO_STATE_LOW);
-
-  TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);*/
+  gpio_get_value(&address, &state);
+  TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
 }
 
-void test_interrupt(void) {/*
-  // Configure interrupt settings
+void test_interrupt(void) {
   GPIOAddress address = { GPIO_PORT_A, 0x0 };
   GPIOSettings gpio_settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_NONE };
   InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_NORMAL };
@@ -101,43 +127,62 @@ void test_interrupt(void) {/*
   gpio_it_register_interrupt(&address, &it_settings, INTERRUPT_EDGE_RISING_FALLING,
                              prv_callback, NULL);
 
-  TEST_ASSERT_FALSE(callback_ran);
-
-  // Trigger interrupt with TCP
-  char message[] = { 'g', 'p', 'i', 'o', ' ', GPIO_PORT_A, 0, GPIO_STATE_HIGH, 1, '\0'};
-  prv_client(message, sizeof(message));
-
-  while (!callback_ran) { }
-
-  TEST_ASSERT_TRUE(callback_ran);*/
+  message.state = GPIO_STATE_HIGH;
+  
+  TEST_ASSERT_OK(prv_client(&message, sizeof(message)));
+  TEST_ASSERT_TRUE(callback_ran);
 }
 
-void test_interrupt_rising_edge(void) {/*
-  // Configure interrupt settings for rising edge
+void test_interrupt_rising_edge(void) {
   GPIOAddress address = { GPIO_PORT_A, 0x0 };
   GPIOSettings gpio_settings = { GPIO_DIR_IN, GPIO_STATE_HIGH, GPIO_RES_NONE, GPIO_ALTFN_NONE };
   InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_NORMAL };
+  GPIOState state;
 
   gpio_init_pin(&address, &gpio_settings);
-  gpio_it_register_interrupt(&address, &it_settings, INTERRUPT_EDGE_RISING, prv_callback, NULL);
+  gpio_it_register_interrupt(&address, &it_settings, INTERRUPT_EDGE_RISING,
+                             prv_callback, NULL);
 
+  // Test that falling edge interrupts do not work
+  message.state = GPIO_STATE_LOW;
+  TEST_ASSERT_OK(prv_client(&message, sizeof(message)));
   TEST_ASSERT_FALSE(callback_ran);
 
-  // Check that falling edge does not trigger interrupt
-  char message[] = { 'g', 'p', 'i', 'o', ' ', GPIO_PORT_A, 0, GPIO_STATE_LOW, 1, '\0'};
-  prv_client(message, sizeof(message));
-  TEST_ASSERT_FALSE(callback_ran);
+  gpio_get_value(&address, &state);
+  TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
 
-  // Check that rising edge does trigger interrupt
-  message[7] = GPIO_STATE_HIGH;
-  prv_client(message, sizeof(message));
-  TEST_ASSERT_TRUE(callback_ran);*/
+  // Test that rising edge interrupts work
+  message.state = GPIO_STATE_HIGH;
+  TEST_ASSERT_OK(prv_client(&message, sizeof(message)));
+  TEST_ASSERT_TRUE(callback_ran);
+
+  gpio_get_value(&address, &state);
+  TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
 }
 
-void test_interrupt_falling_edge(void) {/*
-  // Configure interrupt settings for falling edge
+void test_interrupt_falling_edge(void) {
   GPIOAddress address = { GPIO_PORT_A, 0x0 };
   GPIOSettings gpio_settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_NONE };
   InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_NORMAL };
-*/
+  GPIOState state;
+
+  gpio_init_pin(&address, &gpio_settings);
+  gpio_it_register_interrupt(&address, &it_settings, INTERRUPT_EDGE_FALLING,
+                             prv_callback, NULL);
+
+  // Test that rising edge interrupts do not work
+  message.state = GPIO_STATE_HIGH;
+  TEST_ASSERT_OK(prv_client(&message, sizeof(message)));
+  TEST_ASSERT_FALSE(callback_ran);
+  
+  gpio_get_value(&address, &state);
+  TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
+
+  // Test that falling edge interrupts work
+  message.state = GPIO_STATE_LOW;
+  TEST_ASSERT_OK(prv_client(&message, sizeof(message)));
+  TEST_ASSERT_TRUE(callback_ran);
+
+  gpio_get_value(&address, &state);
+  TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
 }
