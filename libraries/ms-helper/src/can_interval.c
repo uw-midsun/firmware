@@ -1,6 +1,7 @@
 #include "can_interval.h"
 
 #include <stdint.h>
+#include <string.h>
 
 #include "can.h"
 #include "can_uart.h"
@@ -15,7 +16,7 @@ static CanInterval s_can_interval_storage[CAN_INTERVAL_POOL_SIZE];
 static void prv_can_interval_timer_cb(SoftTimerID id, void *context) {
   (void)id;
   CanInterval *interval = context;
-  generic_can_tx(interval->can, interval->msg);
+  generic_can_tx(interval->can, &interval->msg);
   soft_timer_start(interval->period, prv_can_interval_timer_cb, context, &interval->timer_id);
 }
 
@@ -24,7 +25,7 @@ static void prv_init_can_interval(void *object, void *context) {
   CanInterval *interval = object;
   interval->period = 0;
   interval->timer_id = SOFT_TIMER_INVALID_TIMER;
-  interval->msg = NULL;
+  memset(&interval->msg, 0, sizeof(GenericCanMsg));
   interval->can = NULL;
 }
 
@@ -40,18 +41,10 @@ StatusCode can_interval_factory(const GenericCan *can, const GenericCanMsg *msg,
   }
 
   interval_impl->can = can;
-  interval_impl->msg = msg;
+  interval_impl->msg = *msg;
   interval_impl->period = period;
   *interval = interval_impl;
   return STATUS_CODE_OK;
-}
-
-StatusCode can_interval_free(CanInterval *interval) {
-  if (interval == NULL) {
-    return status_code(STATUS_CODE_INVALID_ARGS);
-  }
-
-  return objpool_free_node(&s_can_interval_pool, interval);
 }
 
 StatusCode can_interval_send_now(CanInterval *interval) {
@@ -60,22 +53,14 @@ StatusCode can_interval_send_now(CanInterval *interval) {
 }
 
 StatusCode can_interval_enable(CanInterval *interval) {
-  // Check that the pointer is aligned to one of the elements of s_can_interval_storage.
-  bool valid = false;
-  for (size_t i = 0; i < CAN_INTERVAL_POOL_SIZE; i++) {
-    if (interval == &s_can_interval_storage[i]) {
-      valid = true;
-      break;
-    }
-  }
-  if (!valid) {
-    return status_code(STATUS_CODE_UNINITIALIZED);
+  if (interval == NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
   // Check if already active.
   if (interval->timer_id == SOFT_TIMER_INVALID_TIMER) {
     // Send now.
-    status_ok_or_return(generic_can_tx(interval->can, interval->msg));
+    status_ok_or_return(generic_can_tx(interval->can, &interval->msg));
     status_ok_or_return(soft_timer_start(interval->period, prv_can_interval_timer_cb,
                                          (void *)interval, &interval->timer_id));
   }
@@ -84,16 +69,8 @@ StatusCode can_interval_enable(CanInterval *interval) {
 }
 
 StatusCode can_interval_disable(CanInterval *interval) {
-  // Check that the pointer is aligned to one of the elements of s_can_interval_storage.
-  bool valid = false;
-  for (size_t i = 0; i < CAN_INTERVAL_POOL_SIZE; i++) {
-    if (interval == &s_can_interval_storage[i]) {
-      valid = true;
-      break;
-    }
-  }
-  if (!valid) {
-    return status_code(STATUS_CODE_UNINITIALIZED);
+  if (interval == NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
   soft_timer_cancel(interval->timer_id);

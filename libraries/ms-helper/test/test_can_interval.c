@@ -90,6 +90,4 @@ void test_can_interval(void) {
   delay_us(TEST_CAN_INTERVAL_PERIOD_US + 1000);
   // Queue empty
   TEST_ASSERT_EQUAL(3, counter);
-
-  TEST_ASSERT_OK(can_interval_free(interval));
 }
