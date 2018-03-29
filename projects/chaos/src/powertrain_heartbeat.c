@@ -12,6 +12,17 @@
 #include "soft_timer.h"
 #include "status.h"
 
+// Implementation Details
+//
+// There are two timers:
+// - A heartbeat which loops to repeatedly signal POWERTRAIN_HEARTBEAT.
+// - A watchdog which after a period of no successful acks will signal for the Emergency state.
+//
+// The heartbeat if successfully ACK'd by all expected devices kicks the watchdog for another
+// period. Starting the heartbeat immediately sends a heartbeat before starting the periodic loop.
+// Although a counter could be substituted for the watchdog timer this has the added benefit of
+// signalling in the event the CAN bus starts faulting and the message cannot be sent.
+
 static SoftTimerID s_interval_id = SOFT_TIMER_INVALID_TIMER;
 static SoftTimerID s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
 
