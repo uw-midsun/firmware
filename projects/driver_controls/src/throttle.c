@@ -51,11 +51,10 @@ static bool prv_channels_synced(int16_t reading_main, int16_t reading_secondary,
 
   int16_t max_main = data->line_of_best_fit[THROTTLE_CHANNEL_MAIN][THROTTLE_THRESH_MAX];
   int16_t min_main = data->line_of_best_fit[THROTTLE_CHANNEL_MAIN][THROTTLE_THRESH_MIN];
-  int16_t tolerance_main = data->tolerance[THROTTLE_CHANNEL_MAIN];
 
   int16_t max_secondary = data->line_of_best_fit[THROTTLE_CHANNEL_SECONDARY][THROTTLE_THRESH_MAX];
   int16_t min_secondary = data->line_of_best_fit[THROTTLE_CHANNEL_SECONDARY][THROTTLE_THRESH_MIN];
-  int16_t tolerance_secondary = data->tolerance[THROTTLE_CHANNEL_SECONDARY];
+  int16_t tolerance = data->tolerance;
 
   if (reading_main < min_main) {
     reading_main = min_main;
@@ -69,8 +68,8 @@ static bool prv_channels_synced(int16_t reading_main, int16_t reading_secondary,
       (max_secondary - min_secondary) * (reading_main - min_main) / (max_main - min_main) +
       min_secondary;
 
-  // Checks if the seconday channel reading is within given bounds around the expected reading.
-  return abs(expected_reading_secondary - reading_secondary) <= tolerance_secondary;
+  // Checks if the secondary channel reading is within given bounds around the expected reading.
+  return abs(expected_reading_secondary - reading_secondary) <= tolerance;
 }
 
 // This callback is called whenever a conversion is done. It sets the flags
