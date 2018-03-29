@@ -21,20 +21,6 @@ static uint16_t prv_scale_reading(int16_t reading, int16_t max, int16_t min) {
   return (1 << 12) * (reading - min) / (max - min);
 }
 
-// Given the reading(y), finds the corresponding pedal's position(x) according to line of best fit.
-// X-axis -> (0 to 2^12), Y-axis -> voltage.
-static uint16_t prv_get_numerator(int16_t reading, ThrottleChannel channel,
-                                  ThrottleStorage *storage) {
-  int16_t max = storage->calibration_data->line_of_best_fit[channel][THROTTLE_THRESH_MAX];
-  int16_t min = storage->calibration_data->line_of_best_fit[channel][THROTTLE_THRESH_MIN];
-  if (reading < min) {
-    return 0;
-  } else if (reading > max) {
-    return (1 << 12);
-  }
-  return prv_scale_reading(reading, max, min);
-}
-
 // Given a reading from main channel and a zone, finds how far within that zone the pedal is pushed.
 // The scale goes from 0(0%) to 2^12(100%). For ex. pedal is at 2^11(50%) in brake zone.
 static uint16_t prv_get_numerator_zone(int16_t reading_main, ThrottleZone zone,
@@ -56,34 +42,32 @@ static bool prv_reading_within_zone(int16_t reading_main, ThrottleZone zone,
 // Returns true if the channel readings follow their linear relationship.
 static bool prv_channels_synced(int16_t reading_main, int16_t reading_secondary,
                                 ThrottleStorage *storage) {
-  int16_t max_main =
-      storage->calibration_data->line_of_best_fit[THROTTLE_CHANNEL_MAIN][THROTTLE_THRESH_MAX];
-  int16_t min_main =
-      storage->calibration_data->line_of_best_fit[THROTTLE_CHANNEL_MAIN][THROTTLE_THRESH_MIN];
-  int16_t tolerance_main = storage->calibration_data->tolerance[THROTTLE_CHANNEL_MAIN];
-
-  if ((reading_main < min_main && (min_main - reading_main) > tolerance_main) ||
-      (reading_main > max_main && (reading_main - max_main) > tolerance_main)) {
+  ThrottleCalibrationData *data = storage->calibration_data;
+  // Check if the reading_main is out of bounds.
+  if ((reading_main < data->zone_thresholds_main[THROTTLE_ZONE_BRAKE][THROTTLE_THRESH_MIN]) ||
+      (reading_main > data->zone_thresholds_main[THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MAX])) {
     return false;
   }
-  // Gets pedal's position given the reading from main channel on line of best fit for main channel.
-  uint16_t numerator_main = prv_get_numerator(reading_main, THROTTLE_CHANNEL_MAIN, storage);
 
-  int16_t max_secondary =
-      storage->calibration_data->line_of_best_fit[THROTTLE_CHANNEL_SECONDARY][THROTTLE_THRESH_MAX];
-  int16_t min_secondary =
-      storage->calibration_data->line_of_best_fit[THROTTLE_CHANNEL_SECONDARY][THROTTLE_THRESH_MIN];
-  int16_t tolerance_secondary = storage->calibration_data->tolerance[THROTTLE_CHANNEL_SECONDARY];
+  int16_t max_main = data->line_of_best_fit[THROTTLE_CHANNEL_MAIN][THROTTLE_THRESH_MAX];
+  int16_t min_main = data->line_of_best_fit[THROTTLE_CHANNEL_MAIN][THROTTLE_THRESH_MIN];
+  int16_t tolerance_main = data->tolerance[THROTTLE_CHANNEL_MAIN];
 
-  // Refers to y = mx + b for line of best fit of secondary channel.
-  // m(slope) = (max - min) / 2^12. x(pedal's position) = numerator_main.
-  // b(y-intercept) = min.
-  int16_t mx = (max_secondary - min_secondary) * numerator_main / (1 << 12);
-  int16_t b = min_secondary;
+  int16_t max_secondary = data->line_of_best_fit[THROTTLE_CHANNEL_SECONDARY][THROTTLE_THRESH_MAX];
+  int16_t min_secondary = data->line_of_best_fit[THROTTLE_CHANNEL_SECONDARY][THROTTLE_THRESH_MIN];
+  int16_t tolerance_secondary = data->tolerance[THROTTLE_CHANNEL_SECONDARY];
 
-  // So this gives expected reading on the secondary channel, by feeding pedal's position obtained
-  // from main channel to the equation for seconday channel's line of best fit.
-  int16_t expected_reading_secondary = mx + b;
+  if (reading_main < min_main) {
+    reading_main = min_main;
+  } else if (reading_main > max_main) {
+    reading_main = max_main;
+  }
+
+  // The document "Math behind Throttle Module" on Confluence explains the equation below.
+  // Finds expected secondary reading that corresponds to the same pedal position as main reading.
+  int16_t expected_reading_secondary =
+      (max_secondary - min_secondary) * (reading_main - min_main) / (max_main - min_main) +
+      min_secondary;
 
   // Checks if the seconday channel reading is within given bounds around the expected reading.
   return abs(expected_reading_secondary - reading_secondary) <= tolerance_secondary;
