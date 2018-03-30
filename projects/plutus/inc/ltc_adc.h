@@ -31,5 +31,6 @@ typedef struct {
 // the selected settings
 StatusCode ltc_adc_init(const LtcAdcSettings *config);
 
-// Read the voltage (in uV) reported by the ADC
-StatusCode ltc_adc_read(const LtcAdcSettings *config, int32_t *value);
+// Get the last voltage reading (in uV) reported by the ADC
+// The buffered value will be updated every 200ms
+StatusCode ltc_adc_get_value(const LtcAdcSettings *config, int32_t *value);

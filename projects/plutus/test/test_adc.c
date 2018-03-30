@@ -1,9 +1,12 @@
+#include "ltc_adc.h"
+
 #include <inttypes.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#include "delay.h"
 #include "interrupt.h"
 #include "log.h"
-#include "ltc_adc.h"
 #include "misc.h"
 #include "plutus_config.h"
 #include "soft_timer.h"
@@ -19,7 +22,7 @@ LtcAdcSettings adc_settings = {
   .cs = { GPIO_PORT_B, 12 },    //
 
   .spi_port = SPI_PORT_2,                  //
-  .spi_baudrate = 1500000,                 //
+  .spi_baudrate = 750000,                  //
   .filter_mode = LTC_ADC_FILTER_50HZ_60HZ  //
 };
 
@@ -32,16 +35,18 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_ltc_adc_characterize_ripple(void) {
-  TEST_ASSERT_OK(ltc_adc_init(&adc_settings));
+  ltc_adc_init(&adc_settings);
 
   int32_t value = 0;
-  StatusCode status = ltc_adc_read(&adc_settings, &value);
+  StatusCode status = ltc_adc_get_value(&adc_settings, &value);
 
   int32_t min_value = value;
   int32_t max_value = value;
-
   for (int readings = 0; readings < TEST_ADC_NUM_SAMPLES; ++readings) {
-    status = ltc_adc_read(&adc_settings, &value);
+    // Delay to ensure that conversions have run
+    delay_ms(200);
+
+    status = ltc_adc_get_value(&adc_settings, &value);
     if (status_ok(status)) {
       min_value = MIN(value, min_value);
       max_value = MAX(value, max_value);
