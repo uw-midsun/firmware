@@ -1,8 +1,8 @@
-#include "ltc_adc.h"
-
 #include <inttypes.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#include "ltc_adc.h"
 
 #include "delay.h"
 #include "interrupt.h"
