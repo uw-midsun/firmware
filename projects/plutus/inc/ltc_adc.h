@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "gpio.h"
+#include "soft_timer.h"
 #include "spi.h"
 #include "status.h"
 
@@ -16,21 +17,31 @@ typedef enum {
 } LtcAdcFilterMode;
 
 typedef struct {
-  GPIOAddress cs;
-  GPIOAddress mosi;
-  GPIOAddress miso;
-  GPIOAddress sclk;
+  StatusCode status;
+  int32_t value;
+
+  SoftTimerID timer_id;
+} LtcAdcStorageBuffer;
+
+typedef struct {
+  // Storage buffer managed by the driver
+  LtcAdcStorageBuffer buffer;
+
+  const GPIOAddress cs;
+  const GPIOAddress mosi;
+  const GPIOAddress miso;
+  const GPIOAddress sclk;
 
   const SPIPort spi_port;
-  uint32_t spi_baudrate;
+  const uint32_t spi_baudrate;
 
-  LtcAdcFilterMode filter_mode;
-} LtcAdcSettings;
+  const LtcAdcFilterMode filter_mode;
+} LtcAdcStorage;
 
 // Initializes the ADC by setting up the GPIO pins and configuring the ADC with
 // the selected settings
-StatusCode ltc_adc_init(const LtcAdcSettings *config);
+StatusCode ltc_adc_init(LtcAdcStorage *storage);
 
 // Get the last voltage reading (in uV) reported by the ADC
 // The buffered value will be updated every 200ms
-StatusCode ltc_adc_get_value(const LtcAdcSettings *config, int32_t *value);
+StatusCode ltc_adc_get_value(LtcAdcStorage *storage, int32_t *value);

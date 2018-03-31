@@ -15,15 +15,15 @@
 
 #define TEST_ADC_NUM_SAMPLES 200
 
-LtcAdcSettings adc_settings = {
+LtcAdcStorage adc_settings = {
   .mosi = { GPIO_PORT_B, 15 },  //
   .miso = { GPIO_PORT_B, 14 },  //
   .sclk = { GPIO_PORT_B, 13 },  //
   .cs = { GPIO_PORT_B, 12 },    //
 
-  .spi_port = SPI_PORT_2,                  //
-  .spi_baudrate = 750000,                  //
-  .filter_mode = LTC_ADC_FILTER_50HZ_60HZ  //
+  .spi_port = SPI_PORT_2,  //
+  .spi_baudrate = 750000,  //
+  .filter_mode = LTC_ADC_FILTER_50HZ_60HZ,
 };
 
 void setup_test(void) {

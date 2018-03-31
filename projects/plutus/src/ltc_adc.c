@@ -15,18 +15,6 @@ uint8_t s_filter_modes[NUM_LTC_ADC_FILTER_MODES] = {
   LTC2484_REJECTION_60HZ,
 };
 
-typedef struct {
-  StatusCode status;
-  int32_t value;
-} LtcAdcBuffer;
-
-static LtcAdcSettings *s_config;
-static LtcAdcBuffer s_result_buffer = {
-  .status = STATUS_CODE_UNINITIALIZED,
-  .value = 0,
-};
-static SoftTimerID s_timer_id;
-
 static void prv_toggle_pin_altfn(GPIOAddress addr, bool enable) {
   GPIOSettings settings = {
     .direction = GPIO_DIR_IN,
@@ -45,30 +33,30 @@ static void prv_toggle_pin_altfn(GPIOAddress addr, bool enable) {
 }
 
 static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
-  LtcAdcBuffer *buffer = (LtcAdcBuffer *)context;
+  LtcAdcStorage *storage = (LtcAdcStorage *)context;
 
   // Pull CS low so we can check for MISO to go low, signalling that the
   // conversion is now complete
-  gpio_set_state(&s_config->cs, GPIO_STATE_LOW);
+  gpio_set_state(&storage->cs, GPIO_STATE_LOW);
 
   // Disable the Alt Fn on MISO so we can read the value
-  prv_toggle_pin_altfn(s_config->miso, false);
+  prv_toggle_pin_altfn(storage->miso, false);
 
   // According to the Timing Characteristics (p.5 in the datasheet), we should
   // expect 149.9ms for conversion time (in the worst case).
   GPIOState state = NUM_GPIO_STATES;
-  gpio_get_state(&s_config->miso, &state);
+  gpio_get_state(&storage->miso, &state);
 
   // Restore CS high so we can trigger a SPI exchange
-  gpio_set_state(&s_config->cs, GPIO_STATE_HIGH);
+  gpio_set_state(&storage->cs, GPIO_STATE_HIGH);
 
   // Restore the Alt Fn of the MISO pin
-  prv_toggle_pin_altfn(s_config->miso, true);
+  prv_toggle_pin_altfn(storage->miso, true);
 
   if (state != GPIO_STATE_LOW) {
     // MISO should have gone low, signaling that the conversion has finished
     bool disabled = critical_section_start();
-    buffer->status = status_code(STATUS_CODE_TIMEOUT);
+    storage->buffer.status = status_code(STATUS_CODE_TIMEOUT);
     critical_section_end(disabled);
   }
 
@@ -79,41 +67,40 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
   // Due to the way our SPI driver works, we send NULL bytes in order to ensure
   // that 4 bytes are exchanged in total.
   uint8_t result[4] = { 0 };
-  StatusCode status = spi_exchange(s_config->spi_port, NULL, 0, result, 4);
+  StatusCode status = spi_exchange(storage->spi_port, NULL, 0, result, 4);
 
   bool disabled = critical_section_start();
-  buffer->status = ltc2484_raw_adc_to_uv(result, &buffer->value);
+  storage->buffer.status = ltc2484_raw_adc_to_uv(result, &storage->buffer.value);
   critical_section_end(disabled);
 
-  soft_timer_start_millis(LTC2484_MAX_CONVERSION_TIME_MS, prv_ltc_adc_read, &s_result_buffer,
-                          &s_timer_id);
+  soft_timer_start_millis(LTC2484_MAX_CONVERSION_TIME_MS, prv_ltc_adc_read, storage,
+                          &storage->buffer.timer_id);
 }
 
-StatusCode ltc_adc_init(const LtcAdcSettings *config) {
-  if (config->filter_mode >= NUM_LTC_ADC_FILTER_MODES) {
+StatusCode ltc_adc_init(LtcAdcStorage *storage) {
+  if (storage->filter_mode >= NUM_LTC_ADC_FILTER_MODES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
   // The LTC2484 uses SPI Mode 0 (see Figure 5 on p.20 in the datasheet)
   SPISettings spi_config = {
-    .baudrate = config->spi_baudrate,
+    .baudrate = storage->spi_baudrate,
     .mode = SPI_MODE_0,
-    .mosi = config->mosi,
-    .miso = config->miso,
-    .sclk = config->sclk,
-    .cs = config->cs,
+    .mosi = storage->mosi,
+    .miso = storage->miso,
+    .sclk = storage->sclk,
+    .cs = storage->cs,
   };
 
-  spi_init(config->spi_port, &spi_config);
+  spi_init(storage->spi_port, &spi_config);
 
   uint8_t input[1] = { LTC2484_ENABLE | LTC2484_EXTERNAL_INPUT | LTC2484_AUTO_CALIBRATION |
-                       s_filter_modes[config->filter_mode] };
+                       s_filter_modes[storage->filter_mode] };
   // send config
-  spi_exchange(config->spi_port, input, 1, NULL, 0);
+  spi_exchange(storage->spi_port, input, 1, NULL, 0);
 
-  s_result_buffer.status = STATUS_CODE_UNINITIALIZED;
-  s_result_buffer.value = 0;
-  s_config = config;
+  storage->buffer.status = STATUS_CODE_UNINITIALIZED;
+  storage->buffer.value = 0;
 
   // Wait for at least 200ms before attempting another read
   //
@@ -123,8 +110,8 @@ StatusCode ltc_adc_init(const LtcAdcSettings *config) {
   // (without requiring a clock signal), we are unable to test that correctly,
   // and thus we are forced to delay for the maximum conversion time before
   // performing another read.
-  return soft_timer_start_millis(LTC2484_MAX_CONVERSION_TIME_MS, prv_ltc_adc_read, &s_result_buffer,
-                                 &s_timer_id);
+  return soft_timer_start_millis(LTC2484_MAX_CONVERSION_TIME_MS, prv_ltc_adc_read, storage,
+                                 &storage->buffer.timer_id);
 }
 
 StatusCode ltc2484_raw_adc_to_uv(uint8_t *spi_data, int32_t *voltage) {
@@ -160,14 +147,14 @@ StatusCode ltc2484_raw_adc_to_uv(uint8_t *spi_data, int32_t *voltage) {
   return STATUS_CODE_OK;
 }
 
-StatusCode ltc_adc_get_value(const LtcAdcSettings *config, int32_t *value) {
+StatusCode ltc_adc_get_value(LtcAdcStorage *storage, int32_t *value) {
   bool disabled = critical_section_start();
 
-  StatusCode result = s_result_buffer.status;
-  *value = s_result_buffer.value;
+  StatusCode result = storage->buffer.status;
+  *value = storage->buffer.value;
 
-  s_result_buffer.status = STATUS_CODE_UNINITIALIZED;
-  s_result_buffer.value = 0;
+  storage->buffer.status = STATUS_CODE_UNINITIALIZED;
+  storage->buffer.value = 0;
 
   critical_section_end(disabled);
   return result;
