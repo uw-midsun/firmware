@@ -25,9 +25,9 @@ ARCH_CFLAGS :=
 LDSCRIPT := $(PLATFORM_DIR)/ldscripts
 
 # Build flags for the device
-CDEFINES :=
+CDEFINES := _GNU_SOURCE
 
-ifeq (gcc, $(COMPILER))
+ifeq (gcc,$(COMPILER))
   CSFLAGS := -g -Os
 else ifeq (asan, $(COPTIONS))
   CSFLAGS := -O1 -g -fsanitize=address -fno-omit-frame-pointer
@@ -42,23 +42,44 @@ CFLAGS := $(CSFLAGS) -Wall -Wextra -Werror -std=gnu11 -Wno-discarded-qualifiers 
           -ffunction-sections -fdata-sections -pthread \
           $(ARCH_CFLAGS) $(addprefix -D,$(CDEFINES))
 
+ifeq (clang,$(COMPILER))
+  CFLAGS := $(filter-out -Wno-discarded-qualifiers,$(CFLAGS)) -Wno-missing-field-initializers \
+            -Wno-incompatible-pointer-types-discards-qualifiers -Wno-missing-braces
+endif
+
 # Linker flags
 LDFLAGS := -lrt
+
+# Shell environment variables
+FLASH_VAR := MIDSUN_X86_FLASH_FILE
+ifneq (,$(filter test test_all,$(MAKECMDGOALS)))
+ifeq (,$(TEST))
+  ENV_VARS = $(FLASH_VAR)=$(test)_flash
+else
+  ENV_VARS = $(FLASH_VAR)=$<_flash
+endif
+else
+  ENV_VARS := $(FLASH_VAR)=$(BIN_DIR)/$(PROJECT)$(LIBRARY)_flash
+endif
 
 # Platform targets
 .PHONY: run gdb
 
-run: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
-	@$<
+run: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT) socketcan
+	@$(ENV_VARS) $<
 
-gdb: $(GDB_TARGET)
-	@$(GDB) $<
+gdb: $(GDB_TARGET) socketcan
+	@$(ENV_VARS) $(GDB) $<
+
+test_all: socketcan
+
+test: socketcan
 
 define session_wrapper
-$1
+$(ENV_VARS) $1
 endef
 
 # Defines command to run for unit testing
 define test_run
-echo "\nRunning $(notdir $1)" && ./$1
+echo "\nRunning $(notdir $1)" && $(ENV_VARS) ./$1
 endef

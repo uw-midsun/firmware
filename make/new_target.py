@@ -7,18 +7,20 @@ Usage: python3 new_target.py project|library name
 """
 import os
 import argparse
+import textwrap
 from string import Template
 
-RULES_TEMPLATE = Template("""# Defines $$(T)_SRC, $$(T)_INC, $$(T)_DEPS, and $$(T)_CFLAGS for the build makefile.
-# Tests can be excluded by defining $$(T)_EXCLUDE_TESTS.
-# Pre-defined:
-# $$(T)_SRC_ROOT: $$(T)_DIR/src
-# $$(T)_INC_DIRS: $$(T)_DIR/inc{/$$(PLATFORM)}
-# $$(T)_SRC: $$(T)_DIR/src{/$$(PLATFORM)}/*.{c,s}
+RULES_TEMPLATE = Template("""\
+    # Defines $$(T)_SRC, $$(T)_INC, $$(T)_DEPS, and $$(T)_CFLAGS for the build makefile.
+    # Tests can be excluded by defining $$(T)_EXCLUDE_TESTS.
+    # Pre-defined:
+    # $$(T)_SRC_ROOT: $$(T)_DIR/src
+    # $$(T)_INC_DIRS: $$(T)_DIR/inc{/$$(PLATFORM)}
+    # $$(T)_SRC: $$(T)_DIR/src{/$$(PLATFORM)}/*.{c,s}
 
-# Specify the libraries you want to include
-$$(T)_DEPS := $deps
-""")
+    # Specify the libraries you want to include
+    $$(T)_DEPS := $deps
+    """)
 
 def new_target(target_type, name):
     """Creates a new project or library.
@@ -55,15 +57,20 @@ def new_target(target_type, name):
 
     deps = 'ms-common' if target_type == 'project' else ''
 
-    with open(os.path.join(proj_path, 'rules.mk'), 'w') as f:
-        f.write(RULES_TEMPLATE.substitute({'deps': deps}))
+    with open(os.path.join(proj_path, 'rules.mk'), 'w') as rules_file:
+        rules_file.write(textwrap.dedent(RULES_TEMPLATE.substitute({'deps': deps})))
 
     print('Created new {0} {1}'.format(target_type, name))
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser('Creates new project/library')
+def main():
+    """Main entry point of program"""
+    parser = argparse.ArgumentParser(description='Creates new project/library')
     parser.add_argument('type', choices=['project', 'library'])
     parser.add_argument('name')
     args = parser.parse_args()
 
     new_target(args.type, args.name)
+
+
+if __name__ == '__main__':
+    main()

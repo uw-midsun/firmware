@@ -11,12 +11,8 @@ typedef struct {
 } SPIPortData;
 
 static SPIPortData s_port[NUM_SPI_PORTS] = {
-      [SPI_PORT_1] = {.rcc_cmd = RCC_APB2PeriphClockCmd,
-                      .periph = RCC_APB2Periph_SPI1,
-                      .base = SPI1 },
-      [SPI_PORT_2] = {.rcc_cmd = RCC_APB1PeriphClockCmd,
-                      .periph = RCC_APB1Periph_SPI2,
-                      .base = SPI2 },
+  [SPI_PORT_1] = { .rcc_cmd = RCC_APB2PeriphClockCmd, .periph = RCC_APB2Periph_SPI1, .base = SPI1 },
+  [SPI_PORT_2] = { .rcc_cmd = RCC_APB1PeriphClockCmd, .periph = RCC_APB1Periph_SPI2, .base = SPI2 },
 };
 
 StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
@@ -28,8 +24,13 @@ StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
   RCC_ClocksTypeDef clocks;
   RCC_GetClocksFreq(&clocks);
 
-  size_t index = (size_t)__builtin_ffsl((int32_t)(clocks.PCLK_Frequency / settings->baudrate));
-  if (index <= 2) {
+  // See stm32f0xx_spi.h or SPIx_CR1->BR for valid prescalers
+  // Since they must be powers of two with a minimum prescaler of /2,
+  // we find the largest power of two in the requested divider and offset it such that
+  // BR = f_PCLK / 2 = 0x00
+  // and shift it to the correct position.
+  size_t index = 32 - (size_t)__builtin_clz(clocks.PCLK_Frequency / settings->baudrate);
+  if (index < 2) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid baudrate");
   }
 
@@ -77,7 +78,7 @@ StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *r
   if (spi >= NUM_SPI_PORTS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid SPI port.");
   }
-  gpio_set_pin_state(&s_port[spi].cs, GPIO_STATE_LOW);
+  gpio_set_state(&s_port[spi].cs, GPIO_STATE_LOW);
 
   for (size_t i = 0; i < tx_len; i++) {
     while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_TXE) == RESET) {
@@ -99,7 +100,7 @@ StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *r
     rx_data[i] = SPI_ReceiveData8(s_port[spi].base);
   }
 
-  gpio_set_pin_state(&s_port[spi].cs, GPIO_STATE_HIGH);
+  gpio_set_state(&s_port[spi].cs, GPIO_STATE_HIGH);
 
   return STATUS_CODE_OK;
 }

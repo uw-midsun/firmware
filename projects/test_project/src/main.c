@@ -2,18 +2,25 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "x86_cmd.h"
 #include "gpio.h"
+#include "gpio_it.h"
 
-void handler(const char *cmd_str, void *context) {
-  printf("Test: received [%s]\n", cmd_str);
+void callback(const GPIOAddress *address, void *context) {
+  printf("callback\n");
 }
 
 int main(void) {
-  x86_cmd_register_handler("test", handler, NULL);
   gpio_init();
 
-  while (1) { }
+  GPIOAddress address = { GPIO_PORT_A, 0 };
+  GPIOSettings gpio_settings = { GPIO_DIR_IN, GPIO_STATE_LOW, GPIO_RES_NONE, GPIO_ALTFN_NONE };
+  InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_NORMAL };
+
+  gpio_init_pin(&address, &gpio_settings);
+  gpio_it_register_interrupt(&address, &it_settings, INTERRUPT_EDGE_RISING_FALLING, callback, NULL);
+
+  while (1) {
+  }
 
   return 0;
 }

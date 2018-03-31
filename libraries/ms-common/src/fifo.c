@@ -1,5 +1,6 @@
 #include "fifo.h"
 #include <string.h>
+#include "critical_section.h"
 
 StatusCode fifo_init_impl(Fifo *fifo, void *buffer, size_t elem_size, size_t num_elems) {
   memset(fifo, 0, sizeof(*fifo));
@@ -16,7 +17,11 @@ StatusCode fifo_init_impl(Fifo *fifo, void *buffer, size_t elem_size, size_t num
 }
 
 size_t fifo_size(Fifo *fifo) {
-  return fifo->num_elems;
+  bool disabled = critical_section_start();
+  size_t fifo_size = fifo->num_elems;
+  critical_section_end(disabled);
+
+  return fifo_size;
 }
 
 StatusCode fifo_push_impl(Fifo *fifo, void *source_elem, size_t elem_size) {
@@ -26,6 +31,7 @@ StatusCode fifo_push_impl(Fifo *fifo, void *source_elem, size_t elem_size) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
+  bool disabled = critical_section_start();
   memcpy(fifo->next, source_elem, fifo->elem_size);
 
   *(uint8_t **)&fifo->next += elem_size;
@@ -34,6 +40,23 @@ StatusCode fifo_push_impl(Fifo *fifo, void *source_elem, size_t elem_size) {
   }
 
   fifo->num_elems++;
+  critical_section_end(disabled);
+
+  return STATUS_CODE_OK;
+}
+
+StatusCode fifo_peek_impl(Fifo *fifo, void *dest_elem, size_t elem_size) {
+  if (fifo->num_elems == 0) {
+    return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
+  } else if (fifo->elem_size != elem_size && dest_elem != NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+
+  bool disabled = critical_section_start();
+  if (dest_elem != NULL) {
+    memcpy(dest_elem, fifo->head, fifo->elem_size);
+  }
+  critical_section_end(disabled);
 
   return STATUS_CODE_OK;
 }
@@ -45,6 +68,7 @@ StatusCode fifo_pop_impl(Fifo *fifo, void *dest_elem, size_t elem_size) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
+  bool disabled = critical_section_start();
   if (dest_elem != NULL) {
     memcpy(dest_elem, fifo->head, fifo->elem_size);
   }
@@ -57,6 +81,7 @@ StatusCode fifo_pop_impl(Fifo *fifo, void *dest_elem, size_t elem_size) {
   }
 
   fifo->num_elems--;
+  critical_section_end(disabled);
 
   return STATUS_CODE_OK;
 }
@@ -68,6 +93,7 @@ StatusCode fifo_push_arr_impl(Fifo *fifo, void *source_arr, size_t elem_size, si
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
+  bool disabled = critical_section_start();
   uint8_t *new_next = (uint8_t *)fifo->next + fifo->elem_size * num_elems;
 
   size_t wrap_bytes = 0;
@@ -88,6 +114,7 @@ StatusCode fifo_push_arr_impl(Fifo *fifo, void *source_arr, size_t elem_size, si
   }
 
   fifo->num_elems += num_elems;
+  critical_section_end(disabled);
 
   return STATUS_CODE_OK;
 }
@@ -99,6 +126,7 @@ StatusCode fifo_pop_arr_impl(Fifo *fifo, void *dest_arr, size_t elem_size, size_
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
+  bool disabled = critical_section_start();
   uint8_t *new_head = (uint8_t *)fifo->head + fifo->elem_size * num_elems;
 
   size_t wrap_bytes = 0;
@@ -127,6 +155,7 @@ StatusCode fifo_pop_arr_impl(Fifo *fifo, void *dest_arr, size_t elem_size, size_
   }
 
   fifo->num_elems -= num_elems;
+  critical_section_end(disabled);
 
   return STATUS_CODE_OK;
 }

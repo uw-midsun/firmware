@@ -9,7 +9,7 @@ VALID_LIBRARIES := $(patsubst $(LIB_DIR)/%/rules.mk,%,$(wildcard $(LIB_DIR)/*/ru
 # - For test, gdb, and program, check to see if PLATFORM and {PROJECT or {LIBRARY and TEST}} are valid
 # - For build, check if PLATFORM and {PROJECT or LIBRARY} are valid
 
-ifneq (,$(filter reallyclean lint format build_all test_all,$(MAKECMDGOALS)))
+ifneq (,$(filter reallyclean lint format build_all test_all test_format socketcan,$(MAKECMDGOALS)))
   # Universal operation: do nothing - args are not used or only PLATFORM is checked
 else ifneq (,$(filter new,$(MAKECMDGOALS)))
   # New project: just make sure PROJECT or LIBRARY is defined
@@ -26,7 +26,7 @@ else
   override PROJECT := $(filter $(VALID_PROJECTS),$(PROJECT))
   override LIBRARY := $(filter $(VALID_LIBRARIES),$(LIBRARY))
 
-  ifeq (,$(PLATFORM)$(LIBRARY))
+  ifeq (,$(PROJECT)$(LIBRARY))
     $(error Invalid project or library. Expected PROJECT=[$(VALID_PROJECTS)] or LIBRARY=[$(VALID_LIBRARIES)])
   endif
 endif

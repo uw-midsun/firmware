@@ -1,8 +1,8 @@
 #include "gpio_it.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 #include "gpio.h"
 #include "interrupt_def.h"
@@ -13,7 +13,7 @@ typedef struct GPIOITInterrupt {
   uint8_t interrupt_id;
   GPIOAddress address;
   InterruptEdge edge;
-  gpio_it_callback callback;
+  GPIOItCallback callback;
   void *context;
 } GPIOITInterrupt;
 
@@ -25,10 +25,10 @@ static void prv_gpio_it_handler(uint8_t interrupt_id) {
 
   for (int i = 0; i < GPIO_PINS_PER_PORT; i++) {
     // Check if the change in value corresponds with the specified edge trigger
-    gpio_get_value(&s_gpio_it_interrupts[i].address, &state);
-    bool edge_fail = ((s_gpio_it_interrupts[i].edge == INTERRUPT_EDGE_RISING) &&
-      (state != GPIO_STATE_HIGH)) || ((s_gpio_it_interrupts[i].edge == INTERRUPT_EDGE_FALLING) &&
-      (state != GPIO_STATE_LOW));
+    gpio_get_state(&s_gpio_it_interrupts[i].address, &state);
+    bool edge_fail =
+        ((s_gpio_it_interrupts[i].edge == INTERRUPT_EDGE_RISING) && (state != GPIO_STATE_HIGH)) ||
+        ((s_gpio_it_interrupts[i].edge == INTERRUPT_EDGE_FALLING) && (state != GPIO_STATE_LOW));
 
     if (s_gpio_it_interrupts[i].interrupt_id == interrupt_id &&
         s_gpio_it_interrupts[i].callback != NULL && !edge_fail) {
@@ -48,8 +48,7 @@ void gpio_it_init(void) {
 }
 
 StatusCode gpio_it_register_interrupt(const GPIOAddress *address, const InterruptSettings *settings,
-                                      InterruptEdge edge, gpio_it_callback callback,
-                                      void *context) {
+                                      InterruptEdge edge, GPIOItCallback callback, void *context) {
   if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   } else if (s_gpio_it_interrupts[address->pin].callback) {
@@ -76,13 +75,17 @@ StatusCode gpio_it_trigger_interrupt(const GPIOAddress *address) {
 
   InterruptEdge edge = s_gpio_it_interrupts[address->pin].edge;
   GPIOState state;
-  gpio_get_value(address, &state);
+  gpio_get_state(address, &state);
 
   if (((edge == INTERRUPT_EDGE_RISING) && (state == GPIO_STATE_HIGH)) ||
       ((edge == INTERRUPT_EDGE_FALLING) && (state == GPIO_STATE_LOW)) ||
-        edge == INTERRUPT_EDGE_RISING_FALLING) {
+      edge == INTERRUPT_EDGE_RISING_FALLING) {
     return x86_interrupt_trigger(s_gpio_it_interrupts[address->pin].interrupt_id);
   }
 
   return STATUS_CODE_OK;
+}
+
+StatusCode gpio_it_mask_interrupt(const GPIOAddress *address, bool masked) {
+  return status_code(STATUS_CODE_UNIMPLEMENTED);
 }

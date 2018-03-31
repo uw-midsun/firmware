@@ -35,7 +35,7 @@ PLATFORMS_DIR := platform
 LIB_DIR := libraries
 MAKE_DIR := make
 
-PLATFORM := stm32f0xx
+PLATFORM ?= stm32f0xx
 
 # Include argument filters
 include $(MAKE_DIR)/filter.mk
@@ -66,6 +66,7 @@ GDB_TARGET = $(BIN_DIR)/test/$(LIBRARY)$(PROJECT)/test_$(TEST)_runner$(PLATFORM_
 endif
 
 DIRS := $(BUILD_DIR) $(BIN_DIR) $(STATIC_LIB_DIR) $(OBJ_CACHE)
+COMMA := ,
 
 # Please don't touch anything below this line
 ###################################################################################################
@@ -133,20 +134,29 @@ FIND := find $(PROJ_DIR) $(LIB_DIR) \
 				-iname "*.[ch]" -print
 
 # Lints libraries and projects, excludes IGNORE_CLEANUP_LIBS
+# Disable import error
 lint:
 	@$(FIND) | xargs -r python2 lint.py
+	@find $(MAKE_DIR) $(PROJ_DIR) -iname "*.py" -print | xargs -r pylint --disable=F0401
 
 # Formats libraries and projects, excludes IGNORE_CLEANUP_LIBS
 format:
 	@echo "Formatting *.[ch] in $(PROJ_DIR), $(LIB_DIR)"
 	@echo "Excluding libraries: $(IGNORE_CLEANUP_LIBS)"
-	@$(FIND) | xargs -r clang-format -i
+	@$(FIND) | xargs -r clang-format -i -style=file
 
-# Builds the project (if exists) and all its tests
+# Tests that all files have been run through the format target mainly for CI usage
+test_format: format
+	@! git diff --name-only --diff-filter=ACMRT | xargs -n1 clang-format -style=file -output-replacements-xml | grep '<replacements' > /dev/null; if [ $$? -ne 0 ] ; then git --no-pager diff && exit 1 ; fi
+
+# Builds the project or library
 ifneq (,$(PROJECT))
 build: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+else
+build: $(STATIC_LIB_DIR)/lib$(LIBRARY).a
 endif
 
+# Assumes that all libraries are used and will be built along with the projects
 build_all: $(VALID_PROJECTS:%=$(BIN_DIR)/%$(PLATFORM_EXT))
 
 $(DIRS):
@@ -161,7 +171,7 @@ $(BIN_DIR)/%.bin: $(BIN_DIR)/%$(PLATFORM_EXT)
 
 # clean and remake rules, use reallyclean to clean everything
 
-.PHONY: clean reallyclean remake new
+.PHONY: clean reallyclean remake new socketcan
 
 new:
 	@python3 $(MAKE_DIR)/new_target.py $(NEW_TYPE) $(PROJECT)$(LIBRARY)
@@ -174,3 +184,11 @@ reallyclean: clean
 	@rm -rf $(BUILD_DIR)
 
 remake: clean all
+
+socketcan:
+	@sudo modprobe can
+	@sudo modprobe can_raw
+	@sudo modprobe vcan
+	@sudo ip link add dev vcan0 type vcan || true
+	@sudo ip link set up vcan0 || true
+	@ip link show vcan0

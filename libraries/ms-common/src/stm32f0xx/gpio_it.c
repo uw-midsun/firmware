@@ -11,7 +11,7 @@
 
 typedef struct GPIOITInterrupt {
   GPIOAddress address;
-  gpio_it_callback callback;
+  GPIOItCallback callback;
   void *context;
 } GPIOITInterrupt;
 
@@ -35,8 +35,7 @@ static uint8_t prv_get_irq_channel(uint8_t pin) {
 }
 
 StatusCode gpio_it_register_interrupt(const GPIOAddress *address, const InterruptSettings *settings,
-                                      InterruptEdge edge, gpio_it_callback callback,
-                                      void *context) {
+                                      InterruptEdge edge, GPIOItCallback callback, void *context) {
   if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   } else if (s_gpio_it_interrupts[address->pin].callback) {
@@ -101,4 +100,11 @@ void EXTI2_3_IRQHandler(void) {
 // IV Handler for pins 4 - 15.
 void EXTI4_15_IRQHandler(void) {
   prv_run_gpio_callbacks(4, 15);
+}
+
+StatusCode gpio_it_mask_interrupt(const GPIOAddress *address, bool masked) {
+  if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+  return stm32f0xx_interrupt_exti_mask_set(address->pin, masked);
 }

@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include "event_arbiter.h"
 #include "log.h"
 #include "status.h"
@@ -5,85 +6,94 @@
 #include "unity.h"
 
 typedef enum {
-  TEST_EVENT_ARBITER_EVENT_A,
+  TEST_EVENT_ARBITER_EVENT_A = 0,
   TEST_EVENT_ARBITER_EVENT_B,
   TEST_EVENT_ARBITER_EVENT_C,
-  TEST_EVENT_ARBITER_EVENT_D
-} TEST_EVENT_ARBITER_EVENT;
+  NUM_TEST_EVENT_ARBITER_EVENTS
+} TestEventArbiterEvent;
 
 FSM_DECLARE_STATE(state_a);
 FSM_DECLARE_STATE(state_b);
 FSM_DECLARE_STATE(state_c);
-FSM_DECLARE_STATE(state_d);
 
 FSM_STATE_TRANSITION(state_a) {
+  FSM_ADD_TRANSITION(TEST_EVENT_ARBITER_EVENT_A, state_a);
   FSM_ADD_TRANSITION(TEST_EVENT_ARBITER_EVENT_B, state_b);
+  FSM_ADD_TRANSITION(TEST_EVENT_ARBITER_EVENT_C, state_c);
 }
 
 FSM_STATE_TRANSITION(state_b) {
   FSM_ADD_TRANSITION(TEST_EVENT_ARBITER_EVENT_A, state_a);
+  FSM_ADD_TRANSITION(TEST_EVENT_ARBITER_EVENT_B, state_b);
 }
 
 FSM_STATE_TRANSITION(state_c) {
-  FSM_ADD_TRANSITION(TEST_EVENT_ARBITER_EVENT_D, state_d);
-}
-
-FSM_STATE_TRANSITION(state_d) {
-  FSM_ADD_TRANSITION(TEST_EVENT_ARBITER_EVENT_C, state_c);
+  // Empty state to keep FSM B constant
 }
 
 static FSM s_fsm_a;
 static FSM s_fsm_b;
+static EventArbiterStorage s_arbiter_storage;
 
-static bool prv_check_state_c(const Event *e) {
+static uint8_t s_output_runs;
+
+static bool prv_disable_event_b(const Event *e) {
   return (e->id != TEST_EVENT_ARBITER_EVENT_B);
 }
 
-static void prv_state_c(FSM *fsm, const Event *e, void *context) {
-  EventArbiterCheck *event_check = fsm->context;
-  *event_check = prv_check_state_c;
+static void prv_state_output(FSM *fsm, const Event *e, void *context) {
+  s_output_runs++;
 }
 
-static void prv_state_d(FSM *fsm, const Event *e, void *context) {
-  EventArbiterCheck *event_check = fsm->context;
-  *event_check = NULL;
+void setup_test(void) {
+  s_output_runs = 0;
+
+  event_arbiter_init(&s_arbiter_storage);
+
+  fsm_state_init(state_a, prv_state_output);
+  fsm_state_init(state_b, prv_state_output);
+  fsm_state_init(state_c, prv_state_output);
 }
 
-void setup_test() {
-  fsm_state_init(state_c, prv_state_c);
-  fsm_state_init(state_d, prv_state_d);
+void teardown_test(void) {}
 
-  fsm_init(&s_fsm_a, "test_fsm_a", &state_a, NULL);
-  fsm_init(&s_fsm_b, "test_fsm_b", &state_c, prv_check_state_c);
-
-  event_arbiter_init();
-}
-
-void teardown_test() {}
-
-void test_event_arbiter_add() {
+void test_event_arbiter_add(void) {
   for (uint8_t i = 0; i < EVENT_ARBITER_MAX_FSMS; i++) {
-    TEST_ASSERT_NOT_EQUAL(NULL, event_arbiter_add_fsm(&s_fsm_a, NULL));
+    TEST_ASSERT_NOT_EQUAL(NULL, event_arbiter_add_fsm(&s_arbiter_storage, &s_fsm_a, NULL));
   }
-  TEST_ASSERT_EQUAL(NULL, event_arbiter_add_fsm(&s_fsm_a, NULL));
+  TEST_ASSERT_EQUAL(NULL, event_arbiter_add_fsm(&s_arbiter_storage, &s_fsm_a, NULL));
 }
 
-void test_event_arbiter_process() {
-  Event e;
+void test_event_arbiter_basic(void) {
+  Event e = { 0 };
 
-  s_fsm_a.context = event_arbiter_add_fsm(&s_fsm_a, NULL);
-  s_fsm_b.context = event_arbiter_add_fsm(&s_fsm_b, prv_check_state_c);
+  // Make sure the default guard allows all messages through
+  EventArbiterGuard *guard_a = event_arbiter_add_fsm(&s_arbiter_storage, &s_fsm_a, NULL);
+  fsm_init(&s_fsm_a, "FSM A", &state_a, NULL);
 
-  // Test that the context pointers point to the stored arbiter functions
-  TEST_ASSERT_NOT_EQUAL(NULL, s_fsm_a.context);
-  TEST_ASSERT_NOT_EQUAL(NULL, s_fsm_b.context);
+  EventArbiterGuard *guard_b = event_arbiter_add_fsm(&s_arbiter_storage, &s_fsm_b, NULL);
+  fsm_init(&s_fsm_b, "FSM B", &state_c, NULL);
 
+  // Move FSM A to state B
   e.id = TEST_EVENT_ARBITER_EVENT_B;
-  TEST_ASSERT_FALSE(event_arbiter_process_event(&e));
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&s_arbiter_storage, &e));
+  TEST_ASSERT_EQUAL(1, s_output_runs);
 
-  e.id = TEST_EVENT_ARBITER_EVENT_D;
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  // Move FSM A to state A
+  e.id = TEST_EVENT_ARBITER_EVENT_A;
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&s_arbiter_storage, &e));
+  TEST_ASSERT_EQUAL(2, s_output_runs);
 
+  // Switch FSM B's guard to disable event B
+  event_arbiter_set_guard_fn(guard_b, prv_disable_event_b);
+
+  // Fail to move FSM A to state B
   e.id = TEST_EVENT_ARBITER_EVENT_B;
-  TEST_ASSERT_TRUE(event_arbiter_process_event(&e));
+  TEST_ASSERT_FALSE(event_arbiter_process_event(&s_arbiter_storage, &e));
+  TEST_ASSERT_EQUAL(2, s_output_runs);
+
+  // Move FSM A to state C
+  e.id = TEST_EVENT_ARBITER_EVENT_C;
+  TEST_ASSERT_TRUE(event_arbiter_process_event(&s_arbiter_storage, &e));
+  TEST_ASSERT_EQUAL(3, s_output_runs);
 }

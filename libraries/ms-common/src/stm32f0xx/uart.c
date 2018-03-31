@@ -21,22 +21,22 @@ typedef struct {
 } UARTPortData;
 
 static UARTPortData s_port[] = {
-      [UART_PORT_1] = {.rcc_cmd = RCC_APB2PeriphClockCmd,
-                       .periph = RCC_APB2Periph_USART1,
-                       .irq = USART1_IRQn,
-                       .base = USART1 },
-      [UART_PORT_2] = {.rcc_cmd = RCC_APB1PeriphClockCmd,
-                       .periph = RCC_APB1Periph_USART2,
-                       .irq = USART2_IRQn,
-                       .base = USART2 },
-      [UART_PORT_3] = {.rcc_cmd = RCC_APB1PeriphClockCmd,
-                       .periph = RCC_APB1Periph_USART3,
-                       .irq = USART3_4_IRQn,
-                       .base = USART3 },
-      [UART_PORT_4] = {.rcc_cmd = RCC_APB1PeriphClockCmd,
-                       .periph = RCC_APB1Periph_USART4,
-                       .irq = USART3_4_IRQn,
-                       .base = USART4 },
+  [UART_PORT_1] = { .rcc_cmd = RCC_APB2PeriphClockCmd,
+                    .periph = RCC_APB2Periph_USART1,
+                    .irq = USART1_IRQn,
+                    .base = USART1 },
+  [UART_PORT_2] = { .rcc_cmd = RCC_APB1PeriphClockCmd,
+                    .periph = RCC_APB1Periph_USART2,
+                    .irq = USART2_IRQn,
+                    .base = USART2 },
+  [UART_PORT_3] = { .rcc_cmd = RCC_APB1PeriphClockCmd,
+                    .periph = RCC_APB1Periph_USART3,
+                    .irq = USART3_4_IRQn,
+                    .base = USART3 },
+  [UART_PORT_4] = { .rcc_cmd = RCC_APB1PeriphClockCmd,
+                    .periph = RCC_APB1Periph_USART4,
+                    .irq = USART3_4_IRQn,
+                    .base = USART4 },
 };
 
 static void prv_tx_pop(UARTPort uart);
@@ -75,6 +75,13 @@ StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage
   stm32f0xx_interrupt_nvic_enable(s_port[uart].irq, INTERRUPT_PRIORITY_NORMAL);
 
   USART_Cmd(s_port[uart].base, ENABLE);
+
+  return STATUS_CODE_OK;
+}
+
+StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *context) {
+  s_port[uart].storage->rx_handler = rx_handler;
+  s_port[uart].storage->context = context;
 
   return STATUS_CODE_OK;
 }

@@ -24,6 +24,9 @@ typedef struct {
 // Push a single element onto the FIFO.
 #define fifo_push(fifo, source) fifo_push_impl((fifo), (source), sizeof(*(source)))
 
+// Peek at the first element on the FIFO.
+#define fifo_peek(fifo, dest) fifo_peek_impl((fifo), (dest), sizeof(*(dest)))
+
 // Pop a single element off of the FIFO.
 #define fifo_pop(fifo, dest) fifo_pop_impl((fifo), (dest), sizeof(*VOID_PTR_UINT8(dest)))
 
@@ -41,6 +44,8 @@ StatusCode fifo_init_impl(Fifo *fifo, void *buffer, size_t elem_size, size_t num
 size_t fifo_size(Fifo *fifo);
 
 StatusCode fifo_push_impl(Fifo *fifo, void *source_elem, size_t elem_size);
+
+StatusCode fifo_peek_impl(Fifo *fifo, void *dest_elem, size_t elem_size);
 
 StatusCode fifo_pop_impl(Fifo *fifo, void *dest_elem, size_t elem_size);
 

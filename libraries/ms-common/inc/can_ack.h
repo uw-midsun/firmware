@@ -10,6 +10,8 @@
 //
 // If the ACK has timed out or we've received the expected number of ACKs, we remove the ACK request
 // from the list. We use an object pool and an array of pointers to do so efficiently.
+#include <assert.h>
+#include <limits.h>
 #include "can_msg.h"
 #include "objpool.h"
 #include "soft_timer.h"
@@ -17,9 +19,20 @@
 
 // ACK timeout: Should account for transit and computation time
 // Note that this timeout is currently an arbitrary value, but should be minimized.
-#define CAN_ACK_TIMEOUT_MS 10
-
+#define CAN_ACK_TIMEOUT_MS 15
 #define CAN_ACK_MAX_REQUESTS 10
+
+// Converts devices IDs to their bitset form. Populate ACK request bitsets using this.
+// Example: ack_request.expected_bitset = CAN_ACK_EXPECTED_DEVICES(CAN_DEVICE_A, CAN_DEVICE_D)
+#define CAN_ACK_EXPECTED_DEVICES(...)                       \
+  ({                                                        \
+    uint32_t device_ids[] = { __VA_ARGS__ };                \
+    uint32_t bitset = 0;                                    \
+    for (size_t i = 0; i < SIZEOF_ARRAY(device_ids); i++) { \
+      bitset |= ((uint32_t)1 << device_ids[i]);             \
+    }                                                       \
+    bitset;                                                 \
+  })
 
 typedef enum {
   CAN_ACK_STATUS_OK = 0,
@@ -38,17 +51,24 @@ typedef StatusCode (*CANAckRequestCb)(CANMessageID msg_id, uint16_t device, CANA
 typedef struct CANAckRequest {
   CANAckRequestCb callback;
   void *context;
-  uint16_t num_expected;
+  uint32_t expected_bitset;
 } CANAckRequest;
+static_assert(SIZEOF_FIELD(CANAckRequest, expected_bitset) * CHAR_BIT >= CAN_MSG_MAX_DEVICES,
+              "CAN ACK request expected bitset field not large enough to fit all CAN devices!");
 
 typedef struct CANAckPendingReq {
-  CANMessageID msg_id;
-  uint16_t num_remaining;
   CANAckRequestCb callback;
   void *context;
-  SoftTimerID timer;
+  uint32_t expected_bitset;
   uint32_t response_bitset;
+  SoftTimerID timer;
+  CANMessageID msg_id;
 } CANAckPendingReq;
+static_assert(SIZEOF_FIELD(CANAckPendingReq, expected_bitset) * CHAR_BIT >= CAN_MSG_MAX_DEVICES,
+              "CAN pending ACK expected bitset field not large enough to fit all CAN devices!");
+static_assert(SIZEOF_FIELD(CANAckPendingReq, expected_bitset) ==
+                  SIZEOF_FIELD(CANAckPendingReq, response_bitset),
+              "CAN pending ACK expected bitset size not equal to response bitset size");
 
 typedef struct CANAckRequests {
   ObjectPool pool;
@@ -59,6 +79,7 @@ typedef struct CANAckRequests {
 
 StatusCode can_ack_init(CANAckRequests *requests);
 
+// ack_request's expected bitset should be populated using CAN_ACK_EXPECTED_DEVICES.
 StatusCode can_ack_add_request(CANAckRequests *requests, CANMessageID msg_id,
                                const CANAckRequest *ack_request);
 
