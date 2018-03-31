@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "critical_section.h"
 #include "delay.h"
 #include "ltc2484.h"
 #include "soft_timer.h"
@@ -65,8 +66,10 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
   prv_toggle_pin_altfn(s_config->miso, true);
 
   if (state != GPIO_STATE_LOW) {
-    // MISO has now gone low, signaling that the conversion has finished
+    // MISO should have gone low, signaling that the conversion has finished
+    bool disabled = critical_section_start();
     buffer->status = status_code(STATUS_CODE_TIMEOUT);
+    critical_section_end(disabled);
   }
 
   // Keep the previous mode and don't do anything special (ie. send a command
@@ -78,7 +81,9 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
   uint8_t result[4] = { 0 };
   StatusCode status = spi_exchange(s_config->spi_port, NULL, 0, result, 4);
 
+  bool disabled = critical_section_start();
   buffer->status = ltc2484_raw_adc_to_uv(result, &buffer->value);
+  critical_section_end(disabled);
 
   soft_timer_start_millis(200, prv_ltc_adc_read, &s_result_buffer, &s_timer_id);
 }
@@ -154,11 +159,14 @@ StatusCode ltc2484_raw_adc_to_uv(uint8_t *spi_data, int32_t *voltage) {
 }
 
 StatusCode ltc_adc_get_value(const LtcAdcSettings *config, int32_t *value) {
+  bool disabled = critical_section_start();
+
   StatusCode result = s_result_buffer.status;
   *value = s_result_buffer.value;
 
   s_result_buffer.status = STATUS_CODE_UNINITIALIZED;
   s_result_buffer.value = 0;
 
+  critical_section_end(disabled);
   return result;
 }
