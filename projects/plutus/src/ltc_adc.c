@@ -85,7 +85,8 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
   buffer->status = ltc2484_raw_adc_to_uv(result, &buffer->value);
   critical_section_end(disabled);
 
-  soft_timer_start_millis(200, prv_ltc_adc_read, &s_result_buffer, &s_timer_id);
+  soft_timer_start_millis(LTC2484_MAX_CONVERSION_TIME_MS, prv_ltc_adc_read, &s_result_buffer,
+                          &s_timer_id);
 }
 
 StatusCode ltc_adc_init(const LtcAdcSettings *config) {
@@ -122,7 +123,8 @@ StatusCode ltc_adc_init(const LtcAdcSettings *config) {
   // (without requiring a clock signal), we are unable to test that correctly,
   // and thus we are forced to delay for the maximum conversion time before
   // performing another read.
-  return soft_timer_start_millis(200, prv_ltc_adc_read, &s_result_buffer, &s_timer_id);
+  return soft_timer_start_millis(LTC2484_MAX_CONVERSION_TIME_MS, prv_ltc_adc_read, &s_result_buffer,
+                                 &s_timer_id);
 }
 
 StatusCode ltc2484_raw_adc_to_uv(uint8_t *spi_data, int32_t *voltage) {
