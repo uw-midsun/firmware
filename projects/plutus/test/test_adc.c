@@ -40,8 +40,8 @@ void test_ltc_adc_characterize_ripple(void) {
   int32_t value = 0;
   StatusCode status = ltc_adc_get_value(&adc_settings, &value);
 
-  int32_t min_value = value;
-  int32_t max_value = value;
+  int32_t min_value = INT32_MAX;
+  int32_t max_value = INT32_MIN;
   for (int readings = 0; readings < TEST_ADC_NUM_SAMPLES; ++readings) {
     // Delay to ensure that conversions have run
     delay_ms(200);
@@ -54,8 +54,8 @@ void test_ltc_adc_characterize_ripple(void) {
       LOG_DEBUG("ERROR: The status was %d\n", status);
     }
 
-    if (readings % 10 == 0) {
-      LOG_DEBUG("[%d/200] Samples taken\n", readings);
+    if ((readings + 1) % 10 == 0) {
+      LOG_DEBUG("[%d/200] Samples taken\n", (readings + 1));
     }
   }
 

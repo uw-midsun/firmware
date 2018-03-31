@@ -55,23 +55,19 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
 
   if (state != GPIO_STATE_LOW) {
     // MISO should have gone low, signaling that the conversion has finished
-    bool disabled = critical_section_start();
     storage->buffer.status = status_code(STATUS_CODE_TIMEOUT);
-    critical_section_end(disabled);
+  } else {
+    // Keep the previous mode and don't do anything special (ie. send a command
+    // byte equal to 0). Since our SPI driver sends 0x00 by default, we can
+    // just send NULL.
+    //
+    // Due to the way our SPI driver works, we send NULL bytes in order to
+    // ensure that 4 bytes are exchanged in total.
+    uint8_t result[4] = { 0 };
+    StatusCode status = spi_exchange(storage->spi_port, NULL, 0, result, 4);
+
+    storage->buffer.status = ltc2484_raw_adc_to_uv(result, &storage->buffer.value);
   }
-
-  // Keep the previous mode and don't do anything special (ie. send a command
-  // byte equal to 0). Since our SPI driver sends 0x00 by default, we can just
-  // send NULL.
-  //
-  // Due to the way our SPI driver works, we send NULL bytes in order to ensure
-  // that 4 bytes are exchanged in total.
-  uint8_t result[4] = { 0 };
-  StatusCode status = spi_exchange(storage->spi_port, NULL, 0, result, 4);
-
-  bool disabled = critical_section_start();
-  storage->buffer.status = ltc2484_raw_adc_to_uv(result, &storage->buffer.value);
-  critical_section_end(disabled);
 
   soft_timer_start_millis(LTC2484_MAX_CONVERSION_TIME_MS, prv_ltc_adc_read, storage,
                           &storage->buffer.timer_id);
@@ -81,6 +77,9 @@ StatusCode ltc_adc_init(LtcAdcStorage *storage) {
   if (storage->filter_mode >= NUM_LTC_ADC_FILTER_MODES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
+
+  storage->buffer.status = STATUS_CODE_UNINITIALIZED;
+  storage->buffer.value = -1000;
 
   // The LTC2484 uses SPI Mode 0 (see Figure 5 on p.20 in the datasheet)
   SPISettings spi_config = {
@@ -98,9 +97,6 @@ StatusCode ltc_adc_init(LtcAdcStorage *storage) {
                        s_filter_modes[storage->filter_mode] };
   // send config
   spi_exchange(storage->spi_port, input, 1, NULL, 0);
-
-  storage->buffer.status = STATUS_CODE_UNINITIALIZED;
-  storage->buffer.value = 0;
 
   // Wait for at least 200ms before attempting another read
   //
@@ -152,9 +148,6 @@ StatusCode ltc_adc_get_value(LtcAdcStorage *storage, int32_t *value) {
 
   StatusCode result = storage->buffer.status;
   *value = storage->buffer.value;
-
-  storage->buffer.status = STATUS_CODE_UNINITIALIZED;
-  storage->buffer.value = 0;
 
   critical_section_end(disabled);
   return result;
