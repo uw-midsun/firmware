@@ -129,14 +129,14 @@ void test_lights_gpio_set_rear() {
 
 void test_get_lights_board_front() {
   TEST_ASSERT_OK(lights_gpio_init(LIGHTS_GPIO_INIT_MODE_TEST_FRONT));
-  LightsBoard board;
+  volatile LightsBoard board;
   TEST_ASSERT_OK(lights_gpio_get_lights_board(&board));
   TEST_ASSERT_EQUAL(board, LIGHTS_BOARD_FRONT);
 }
 
 void test_get_lights_board_rear() {
   TEST_ASSERT_OK(lights_gpio_init(LIGHTS_GPIO_INIT_MODE_TEST_REAR));
-  LightsBoard board;
+  volatile LightsBoard board;
   TEST_ASSERT_OK(lights_gpio_get_lights_board(&board));
   TEST_ASSERT_EQUAL(board, LIGHTS_BOARD_REAR);
 }
