@@ -111,6 +111,8 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   // TODO(ELEC-350): Actually get throttle percentage - this will not depend on the current state
   drive_output_update(storage, DRIVE_OUTPUT_SOURCE_THROTTLE,
                       (fsm->current_state == &state_brake) ? -1234 : 1234);
+  // TODO(ELEC-350): Implement steering angle
+  drive_output_update(storage, DRIVE_OUTPUT_SOURCE_STEERING_ANGLE, 0);
 }
 
 static void prv_cruise_output(FSM *fsm, const Event *e, void *context) {
@@ -124,6 +126,8 @@ static void prv_cruise_output(FSM *fsm, const Event *e, void *context) {
   drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, cruise_get_target(cruise));
   // TODO(ELEC-350): get throttle state
   drive_output_update(storage, DRIVE_OUTPUT_SOURCE_THROTTLE, 0);
+  // TODO(ELEC-350): Implement steering angle
+  drive_output_update(storage, DRIVE_OUTPUT_SOURCE_STEERING_ANGLE, 0);
 }
 
 StatusCode pedal_fsm_init(FSM *fsm, EventArbiterStorage *storage) {

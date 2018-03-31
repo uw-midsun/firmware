@@ -2,9 +2,7 @@
 #include <string.h>
 #include "log.h"
 
-// Disable steering angle check
-#define DRIVE_OUTPUT_VALID_WATCHDOG \
-  (((1 << NUM_DRIVE_OUTPUT_SOURCES) - 1) & ~(1 << DRIVE_OUTPUT_SOURCE_STEERING_ANGLE))
+#define DRIVE_OUTPUT_VALID_WATCHDOG ((1 << NUM_DRIVE_OUTPUT_SOURCES) - 1)
 
 static DriveOutputStorage s_storage;
 
