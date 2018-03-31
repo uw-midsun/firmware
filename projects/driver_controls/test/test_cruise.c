@@ -63,8 +63,6 @@ void test_cruise_basic(void) {
 }
 
 void test_cruise_can(void) {
-  // TODO: verify that we can read motor speed from CAN, but stop updating it if we're using the
-  // stored value
-
+  // Send motor velocity messages
   // Also make sure that if the motor velocity is negative, we limit to 0
 }

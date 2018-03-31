@@ -10,8 +10,7 @@ static void prv_handle_motor_velocity(const CANMessage *msg, void *context,
                                       CANAckStatus *ack_reply) {
   CruiseStorage *cruise = context;
 
-  // TODO: store motor velocity - probably an average of >0
-  // TODO: motor controller will send
+  // TODO(ELEC-354): store motor velocity - probably an average of >0
   // CAN_UNPACK_MOTOR_VELOCITY(msg);
   // cruise->target_speed_ms = ;
 }

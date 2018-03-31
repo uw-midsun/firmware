@@ -93,8 +93,6 @@ void test_drive_basic(void) {
   delay_ms(DRIVE_OUTPUT_BROADCAST_MS);
   prv_clock_update_request();
 
-  // TODO: add CAN handler to validate data
-
   LOG_DEBUG("Attempt to move forward with mechanical brake still held\n");
   // Go forward - fail due to mech brake still being held
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, false);
@@ -125,8 +123,7 @@ void test_drive_basic(void) {
 }
 
 void test_drive_charge(void) {
-  // TODO: we should verify that receiving a "charging request" notification from the charger
-  // puts us into the correct state
+  // TODO(ELEC-354): Handle charging request
   Event e = { 0 };
 
   // Move to charging
@@ -141,7 +138,6 @@ void test_drive_charge(void) {
   StatusCode ret = event_process(&e);
   TEST_ASSERT_NOT_OK(ret);
 
-  // TODO: make sure that charging state has been sent to power distribution
   // Make sure we don't allow any movement during charging
   LOG_DEBUG("Pressing the pedal should do nothing\n");
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, false);

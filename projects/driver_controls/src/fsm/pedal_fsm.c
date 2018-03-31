@@ -105,10 +105,10 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
 
   cruise_set_source(cruise, CRUISE_SOURCE_MOTOR_CONTROLLER);
 
-  // TODO: handle brake signal lights somewhere
+  // TODO(ELEC-354): handle brake signal lights somewhere
   // Make sure cruise is disabled
   drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, DRIVE_OUTPUT_CRUISE_DISABLED_SPEED);
-  // TODO: Actually get throttle percentage - this will not depend on the current state
+  // TODO(ELEC-350): Actually get throttle percentage - this will not depend on the current state
   drive_output_update(storage, DRIVE_OUTPUT_SOURCE_THROTTLE,
                       (fsm->current_state == &state_brake) ? -1234 : 1234);
 }
@@ -122,7 +122,7 @@ static void prv_cruise_output(FSM *fsm, const Event *e, void *context) {
   // Cruise is enabled - since we're using the stored source, the target can now be modified
   // by the INC/DEC inputs
   drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, cruise_get_target(cruise));
-  // TODO: get throttle state
+  // TODO(ELEC-350): get throttle state
   drive_output_update(storage, DRIVE_OUTPUT_SOURCE_THROTTLE, 0);
 }
 

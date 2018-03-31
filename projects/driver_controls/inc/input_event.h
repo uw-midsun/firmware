@@ -5,7 +5,6 @@
 // ID definitions for the driver input events.
 typedef enum {
   INPUT_EVENT_DRIVE_WATCHDOG_FAULT = 0,
-  // TODO: rename this
   INPUT_EVENT_CAN_RX,
   INPUT_EVENT_CAN_TX,
   INPUT_EVENT_CAN_FAULT,

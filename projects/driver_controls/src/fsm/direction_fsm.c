@@ -39,8 +39,6 @@ FSM_STATE_TRANSITION(state_reverse) {
 
 static bool prv_guard_neutral(const Event *e) {
   // The car should always be coasting when in the neutral state
-  // TODO: make sure the "update" event doesn't bypass this check? or make sure motor controller
-  // interface checks
   switch (e->id) {
     case INPUT_EVENT_PEDAL_BRAKE:
     case INPUT_EVENT_PEDAL_PRESSED:
@@ -96,7 +94,7 @@ StatusCode direction_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  // TODO: should we start in neutral or forward? might need to load new direction at init
+  // TODO(ELEC-354): should we start in neutral or forward?
   fsm_init(fsm, "direction_fsm", &state_neutral, guard);
 
   return STATUS_CODE_OK;
