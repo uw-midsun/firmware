@@ -25,10 +25,10 @@ static int prv_setup_socket(void) {
   bool opt = true;
   setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, (void *)&opt, sizeof(opt));
 
-  struct sockaddr_in addr = {.sin_family = AF_INET,
-                             .sin_addr.s_addr = INADDR_ANY,
-                             .sin_port = htons(X86_TCP_PORT),
-                             .sin_zero = { 0 } };
+  struct sockaddr_in addr = { .sin_family = AF_INET,
+                              .sin_addr.s_addr = INADDR_ANY,
+                              .sin_port = htons(X86_TCP_PORT),
+                              .sin_zero = { 0 } };
   if (bind(server_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
     printf("Failed to bind socket\n");
     return -1;

@@ -1,12 +1,12 @@
 #include "gpio.h"
 
-#include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
+#include "gpio_it.h"
 #include "status.h"
 #include "x86_cmd.h"
-#include "gpio_it.h"
 
 static GPIOSettings s_pin_settings[GPIO_TOTAL_PINS];
 static uint8_t s_gpio_pin_input_value[GPIO_TOTAL_PINS];
