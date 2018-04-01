@@ -52,7 +52,8 @@ void test_lights_gpio_init_front() {
   LightsConfig *conf = lights_config_load();
   const GPIOAddress *front_addrs = conf->addresses_front;
   uint8_t front_addrs_num = conf->num_addresses_front;
-  TEST_ASSERT_OK(lights_gpio_init(LIGHTS_GPIO_INIT_MODE_TEST_FRONT));
+  TEST_ASSERT_OK(test_gpio_set_input_state(conf->board_type_address, GPIO_STATE_HIGH));
+  TEST_ASSERT_OK(lights_gpio_init());
   prv_gpio_initialized_high(front_addrs, front_addrs_num);
 }
 
@@ -60,20 +61,24 @@ void test_lights_gpio_init_rear() {
   LightsConfig *conf = lights_config_load();
   const GPIOAddress *rear_addrs = conf->addresses_rear;
   uint8_t rear_addrs_num = conf->num_addresses_rear;
-  TEST_ASSERT_OK(lights_gpio_init(LIGHTS_GPIO_INIT_MODE_TEST_REAR));
+  TEST_ASSERT_OK(test_gpio_set_input_state(conf->board_type_address, GPIO_STATE_LOW));
+  TEST_ASSERT_OK(lights_gpio_init());
   prv_gpio_initialized_high(rear_addrs, rear_addrs_num);
 }
 
 void test_lights_gpio_set_invalid_event_front() {
-  TEST_ASSERT_OK(lights_gpio_init(LIGHTS_GPIO_INIT_MODE_TEST_FRONT));
+  LightsConfig *conf = lights_config_load();
+  TEST_ASSERT_OK(test_gpio_set_input_state(conf->board_type_address, GPIO_STATE_HIGH));
+  TEST_ASSERT_OK(lights_gpio_init());
   const Event invalid_event = { .id = NUM_FRONT_LIGHTS_EVENTS, .data = 0 };
   TEST_ASSERT_NOT_OK(lights_gpio_set(&invalid_event));
 }
 
 void test_lights_gpio_set_front() {
-  TEST_ASSERT_OK(lights_gpio_init(LIGHTS_GPIO_INIT_MODE_TEST_FRONT));
-  uint16_t *mapping = test_lights_gpio_event_mappings(LIGHTS_BOARD_FRONT);
   LightsConfig *conf = lights_config_load();
+  TEST_ASSERT_OK(test_gpio_set_input_state(conf->board_type_address, GPIO_STATE_HIGH));
+  TEST_ASSERT_OK(lights_gpio_init());
+  uint16_t *mapping = test_lights_gpio_event_mappings(LIGHTS_BOARD_FRONT);
   const GPIOAddress *addresses_front = conf->addresses_front;
 
   const Event test_events[] = {
@@ -98,15 +103,18 @@ void test_lights_gpio_set_front() {
 }
 
 void test_lights_gpio_set_invalid_event_rear() {
-  TEST_ASSERT_OK(lights_gpio_init(LIGHTS_GPIO_INIT_MODE_TEST_REAR));
+  LightsConfig *conf = lights_config_load();
+  TEST_ASSERT_OK(test_gpio_set_input_state(conf->board_type_address, GPIO_STATE_LOW));
+  TEST_ASSERT_OK(lights_gpio_init());
   const Event invalid_event = { .id = NUM_REAR_LIGHTS_EVENTS, .data = 0 };
   TEST_ASSERT_NOT_OK(lights_gpio_set(&invalid_event));
 }
 
 void test_lights_gpio_set_rear() {
-  TEST_ASSERT_OK(lights_gpio_init(LIGHTS_GPIO_INIT_MODE_TEST_REAR));
-  uint16_t *mapping = test_lights_gpio_event_mappings(LIGHTS_BOARD_REAR);
   LightsConfig *conf = lights_config_load();
+  TEST_ASSERT_OK(test_gpio_set_input_state(conf->board_type_address, GPIO_STATE_LOW));
+  TEST_ASSERT_OK(lights_gpio_init());
+  uint16_t *mapping = test_lights_gpio_event_mappings(LIGHTS_BOARD_REAR);
   const GPIOAddress *addresses_rear = conf->addresses_rear;
 
   const Event test_events[] = {
@@ -128,15 +136,19 @@ void test_lights_gpio_set_rear() {
 }
 
 void test_get_lights_board_front() {
-  TEST_ASSERT_OK(lights_gpio_init(LIGHTS_GPIO_INIT_MODE_TEST_FRONT));
   volatile LightsBoard board;
+  LightsConfig *conf = lights_config_load();
+  TEST_ASSERT_OK(test_gpio_set_input_state(conf->board_type_address, GPIO_STATE_HIGH));
+  TEST_ASSERT_OK(lights_gpio_init());
   TEST_ASSERT_OK(lights_gpio_get_lights_board(&board));
   TEST_ASSERT_EQUAL(board, LIGHTS_BOARD_FRONT);
 }
 
 void test_get_lights_board_rear() {
-  TEST_ASSERT_OK(lights_gpio_init(LIGHTS_GPIO_INIT_MODE_TEST_REAR));
   volatile LightsBoard board;
+  LightsConfig *conf = lights_config_load();
+  TEST_ASSERT_OK(test_gpio_set_input_state(conf->board_type_address, GPIO_STATE_LOW));
+  TEST_ASSERT_OK(lights_gpio_init());
   TEST_ASSERT_OK(lights_gpio_get_lights_board(&board));
   TEST_ASSERT_EQUAL(board, LIGHTS_BOARD_REAR);
 }

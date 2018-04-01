@@ -13,7 +13,7 @@ typedef enum {
 } LightsGPIOInitMode;
 
 // initializes all the GPIO peripherals
-StatusCode lights_gpio_init(LightsGPIOInitMode mode);
+StatusCode lights_gpio_init();
 
 // used by other modules to get board type
 StatusCode lights_gpio_get_lights_board(LightsBoard *board);

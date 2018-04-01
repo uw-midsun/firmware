@@ -76,3 +76,12 @@ StatusCode gpio_get_state(const GPIOAddress *address, GPIOState *state) {
   }
   return STATUS_CODE_OK;
 }
+
+StatusCode test_gpio_set_input_state(const GPIOAddress *address, GPIOState state) {
+  if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT ||
+      state >= NUM_GPIO_STATES) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+  s_gpio_pin_input_value[prv_get_index(address)] = state;
+  return STATUS_CODE_OK;
+}

@@ -35,10 +35,7 @@ StatusCode prv_set_peripherals(uint16_t bitset, GPIOState state) {
   uint8_t i;
   while (bitset) {
     i = __builtin_ffs(bitset) - 1;  // index of first 1 bit
-    StatusCode s = gpio_set_state(&s_addresses[i], state);
-    if (s) {
-      return s;
-    }
+    status_ok_or_return(gpio_set_state(&s_addresses[i], state));
     bitset &= ~(1 << i);  // bit is read, so we clear it
   }
   return STATUS_CODE_OK;
@@ -46,41 +43,25 @@ StatusCode prv_set_peripherals(uint16_t bitset, GPIOState state) {
 
 static StatusCode prv_get_board_type(LightsBoard *board, LightsConfig *config) {
   // initializing board type pin
-  StatusCode board_type_init_status =
-      gpio_init_pin(config->board_type_address, config->gpio_settings_in);
-  if (board_type_init_status) {
-    return board_type_init_status;
-  }
+  status_ok_or_return(gpio_init_pin(config->board_type_address, config->gpio_settings_in));
   // reading the state to know the board type
   GPIOState state;
   StatusCode state_status = gpio_get_state(config->board_type_address, &state);
-  if (state_status) {
-    return state_status;
-  }
+  status_ok_or_return(state_status);
   *board = (state) ? LIGHTS_BOARD_FRONT : LIGHTS_BOARD_REAR;
   return STATUS_CODE_OK;
 }
 
-StatusCode lights_gpio_init(LightsGPIOInitMode mode) {
+StatusCode lights_gpio_init() {
   LightsConfig *config = lights_config_load();
   // test modes are used for unit tests
-  if (mode == LIGHTS_GPIO_INIT_MODE_NORMAL) {
-    StatusCode s = prv_get_board_type(&s_board, config);
-    if (s) {
-      return s;
-    }
-  } else {
-    s_board = (mode == LIGHTS_GPIO_INIT_MODE_TEST_FRONT) ? LIGHTS_BOARD_FRONT : LIGHTS_BOARD_REAR;
-  }
+  status_ok_or_return(prv_get_board_type(&s_board, config));
   s_addresses = (s_board) ? config->addresses_rear : config->addresses_front;
 
   uint8_t num_addresses = (s_board) ? config->num_addresses_rear : config->num_addresses_front;
 
   for (uint8_t i = 0; i < num_addresses; i++) {
-    StatusCode s = gpio_init_pin(&s_addresses[i], config->gpio_settings_out);
-    if (s) {
-      return s;
-    }
+    status_ok_or_return(gpio_init_pin(&s_addresses[i], config->gpio_settings_out));
   }
   return STATUS_CODE_OK;
 }

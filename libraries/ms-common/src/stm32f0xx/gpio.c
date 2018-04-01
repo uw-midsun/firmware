@@ -101,3 +101,7 @@ StatusCode gpio_get_state(const GPIOAddress *address, GPIOState *input_state) {
   *input_state = GPIO_ReadInputDataBit(s_gpio_port_map[address->port], 0x01 << address->pin);
   return STATUS_CODE_OK;
 }
+
+StatusCode test_gpio_set_input_state(const GPIOAddress *address, GPIOState state) {
+  return STATUS_CODE_OK;
+}
