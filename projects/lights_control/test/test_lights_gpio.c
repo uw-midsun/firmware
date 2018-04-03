@@ -2,6 +2,7 @@
 
 #include "event_queue.h"
 #include "gpio.h"
+#include "misc.h"
 #include "test_helpers.h"
 #include "unity.h"
 
@@ -9,7 +10,51 @@
 #include "lights_events.h"
 #include "lights_gpio.h"
 
-typedef enum { LIGHTS_ACTION_TURN_OFF = 0, LIGHTS_ACTION_TURN_ON, NUM_LIGHTS_ACTIONS } LightsAction;
+#define MAKE_MASK(num) 1 << num
+
+typedef enum {
+  LIGHTS_ACTION_TURN_OFF = 0,  //
+  LIGHTS_ACTION_TURN_ON,       //
+  NUM_LIGHTS_ACTIONS           //
+} LightsAction;
+
+typedef enum {
+  MOCK_EVENT_1 = 0,  //
+  MOCK_EVENT_2,      //
+  MOCK_EVENT_3,      //
+  NUM_MOCK_EVENTS    //
+} MockEvent;
+
+typedef enum {
+  MOCK_PERIPHERAL_1 = 0,  //
+  MOCK_PERIPHERAL_2,      //
+  MOCK_PERIPHERAL_3,      //
+  MOCK_PERIPHERAL_4,      //
+  MOCK_PERIPHERAL_5,      //
+  NUM_MOCK_PERIPHERALS    //
+} MockPeripheral;
+
+static const GPIOAddress s_mock_addresses[] = {
+  // some valid addresses
+  [MOCK_PERIPHERAL_1] = { .port = GPIO_PORT_A, .pin = 0 },  //
+  [MOCK_PERIPHERAL_2] = { .port = GPIO_PORT_B, .pin = 0 },  //
+  [MOCK_PERIPHERAL_3] = { .port = GPIO_PORT_A, .pin = 4 },  //
+  [MOCK_PERIPHERAL_4] = { .port = GPIO_PORT_B, .pin = 1 },  //
+  [MOCK_PERIPHERAL_5] = { .port = GPIO_PORT_A, .pin = 3 },  //
+};
+
+static const uint8_t s_num_mock_addresses = SIZEOF_ARRAY(s_mock_addresses);
+
+static const GPIOSettings s_mock_gpio_settings_out = { .direction = GPIO_DIR_OUT,
+                                                       .state = GPIO_STATE_HIGH,
+                                                       .resistor = GPIO_RES_NONE,
+                                                       .alt_function = GPIO_ALTFN_NONE };
+
+static const uint16_t s_mock_event_mappings[] = {
+  [MOCK_EVENT_1] = MAKE_MASK(MOCK_PERIPHERAL_1) | MAKE_MASK(MOCK_PERIPHERAL_3),
+  [MOCK_EVENT_2] = MAKE_MASK(MOCK_PERIPHERAL_2),
+  [MOCK_EVENT_3] = MAKE_MASK(MOCK_PERIPHERAL_4) | MAKE_MASK(MOCK_PERIPHERAL_5)
+};
 
 void setup_test(void) {
   TEST_ASSERT_OK(gpio_init());
@@ -18,8 +63,8 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 static void prv_gpio_initialized_high(const GPIOAddress *addrs, uint8_t size) {
+  GPIOState state;
   for (uint8_t i = 0; i < size; i++) {
-    GPIOState state;
     TEST_ASSERT_OK(gpio_get_state(&addrs[i], &state));
     TEST_ASSERT_EQUAL(state, GPIO_STATE_HIGH);
   }
@@ -38,117 +83,33 @@ static StatusCode prv_assert_gpio_state(uint16_t bitset, GPIOState expected_stat
   return STATUS_CODE_OK;
 }
 
-void test_get_lights_board_not_initialized() {
-  LightsBoard board;
-  TEST_ASSERT_NOT_OK(lights_gpio_get_lights_board(&board));
-}
-
-void test_lights_gpio_set_not_initialized() {
-  const Event e = { .id = 0, .data = 0 };  // some valid event
-  TEST_ASSERT_NOT_OK(lights_gpio_set(&e));
-}
+static LightsConfig s_mock_conf = { .addresses = s_mock_addresses,
+                                    .num_addresses = &s_num_mock_addresses,
+                                    .gpio_settings_out = &s_mock_gpio_settings_out,
+                                    .event_mappings = s_mock_event_mappings };
 
 void test_lights_gpio_init_front() {
-  LightsConfig *conf = lights_config_load();
-  const GPIOAddress *front_addrs = conf->addresses_front;
-  uint8_t front_addrs_num = conf->num_addresses_front;
-  TEST_ASSERT_OK(test_gpio_set_input_state(conf->board_type_address, GPIO_STATE_HIGH));
-  TEST_ASSERT_OK(lights_gpio_init());
-  prv_gpio_initialized_high(front_addrs, front_addrs_num);
-}
-
-void test_lights_gpio_init_rear() {
-  LightsConfig *conf = lights_config_load();
-  const GPIOAddress *rear_addrs = conf->addresses_rear;
-  uint8_t rear_addrs_num = conf->num_addresses_rear;
-  TEST_ASSERT_OK(test_gpio_set_input_state(conf->board_type_address, GPIO_STATE_LOW));
-  TEST_ASSERT_OK(lights_gpio_init());
-  prv_gpio_initialized_high(rear_addrs, rear_addrs_num);
+  TEST_ASSERT_OK(lights_gpio_init(&s_mock_conf));
+  prv_gpio_initialized_high(s_mock_addresses, s_num_mock_addresses);
 }
 
 void test_lights_gpio_set_invalid_event_front() {
-  LightsConfig *conf = lights_config_load();
-  TEST_ASSERT_OK(test_gpio_set_input_state(conf->board_type_address, GPIO_STATE_HIGH));
-  TEST_ASSERT_OK(lights_gpio_init());
-  const Event invalid_event = { .id = NUM_FRONT_LIGHTS_EVENTS, .data = 0 };
-  TEST_ASSERT_NOT_OK(lights_gpio_set(&invalid_event));
+  TEST_ASSERT_OK(lights_gpio_init(&s_mock_conf));
+  const Event invalid_event = { .id = NUM_LIGHTS_EVENTS, .data = 0 };
+  TEST_ASSERT_NOT_OK(lights_gpio_process_event(&invalid_event, &s_mock_conf));
 }
 
-void test_lights_gpio_set_front() {
-  LightsConfig *conf = lights_config_load();
-  TEST_ASSERT_OK(test_gpio_set_input_state(conf->board_type_address, GPIO_STATE_HIGH));
-  TEST_ASSERT_OK(lights_gpio_init());
-  uint16_t *mapping = test_lights_gpio_event_mappings(LIGHTS_BOARD_FRONT);
-  const GPIOAddress *addresses_front = conf->addresses_front;
-
+void test_lights_gpio_process_event() {
+  TEST_ASSERT_OK(lights_gpio_init(&s_mock_conf));
   const Event test_events[] = {
-    { .id = FRONT_LIGHTS_EVENT_HORN, .data = LIGHTS_ACTION_TURN_ON },
-    { .id = FRONT_LIGHTS_EVENT_HIGH_BEAMS, .data = LIGHTS_ACTION_TURN_ON },
-    { .id = FRONT_LIGHTS_EVENT_LOW_BEAMS, .data = LIGHTS_ACTION_TURN_OFF },
-    { .id = FRONT_LIGHTS_EVENT_DRL, .data = LIGHTS_ACTION_TURN_OFF },
-    { .id = FRONT_LIGHTS_EVENT_SIGNAL_LEFT, .data = LIGHTS_ACTION_TURN_OFF },
-    { .id = FRONT_LIGHTS_EVENT_SIGNAL_RIGHT, .data = LIGHTS_ACTION_TURN_ON },
-    { .id = FRONT_LIGHTS_EVENT_SIGNAL_HAZARD, .data = LIGHTS_ACTION_TURN_ON },
-    { .id = FRONT_LIGHTS_EVENT_SYNC, .data = LIGHTS_ACTION_TURN_OFF },
-    { .id = FRONT_LIGHTS_EVENT_CAN_RX, .data = LIGHTS_ACTION_TURN_ON },
-    { .id = FRONT_LIGHTS_EVENT_CAN_TX, .data = LIGHTS_ACTION_TURN_ON },
-    { .id = FRONT_LIGHTS_EVENT_CAN_FAULT, .data = LIGHTS_ACTION_TURN_ON },
+    { .id = MOCK_EVENT_1, .data = LIGHTS_ACTION_TURN_ON },   //
+    { .id = MOCK_EVENT_2, .data = LIGHTS_ACTION_TURN_ON },   //
+    { .id = MOCK_EVENT_3, .data = LIGHTS_ACTION_TURN_OFF },  //
   };
 
-  for (uint8_t i = 0; i < NUM_FRONT_LIGHTS_EVENTS; i++) {
-    TEST_ASSERT_OK(lights_gpio_set(&test_events[i]));
-    TEST_ASSERT_OK(
-        prv_assert_gpio_state(mapping[test_events[i].id], !test_events[i].data, addresses_front));
+  for (uint8_t i = 0; i < NUM_MOCK_EVENTS; i++) {
+    TEST_ASSERT_OK(lights_gpio_process_event(&test_events[i], &s_mock_conf));
+    TEST_ASSERT_OK(prv_assert_gpio_state(s_mock_event_mappings[test_events[i].id],
+                                         !test_events[i].data, s_mock_addresses));
   }
-}
-
-void test_lights_gpio_set_invalid_event_rear() {
-  LightsConfig *conf = lights_config_load();
-  TEST_ASSERT_OK(test_gpio_set_input_state(conf->board_type_address, GPIO_STATE_LOW));
-  TEST_ASSERT_OK(lights_gpio_init());
-  const Event invalid_event = { .id = NUM_REAR_LIGHTS_EVENTS, .data = 0 };
-  TEST_ASSERT_NOT_OK(lights_gpio_set(&invalid_event));
-}
-
-void test_lights_gpio_set_rear() {
-  LightsConfig *conf = lights_config_load();
-  TEST_ASSERT_OK(test_gpio_set_input_state(conf->board_type_address, GPIO_STATE_LOW));
-  TEST_ASSERT_OK(lights_gpio_init());
-  uint16_t *mapping = test_lights_gpio_event_mappings(LIGHTS_BOARD_REAR);
-  const GPIOAddress *addresses_rear = conf->addresses_rear;
-
-  const Event test_events[] = {
-    { .id = REAR_LIGHTS_EVENT_STROBE, .data = LIGHTS_ACTION_TURN_ON },
-    { .id = REAR_LIGHTS_EVENT_BRAKES, .data = LIGHTS_ACTION_TURN_OFF },
-    { .id = REAR_LIGHTS_EVENT_SIGNAL_LEFT, .data = LIGHTS_ACTION_TURN_ON },
-    { .id = REAR_LIGHTS_EVENT_SIGNAL_RIGHT, .data = LIGHTS_ACTION_TURN_OFF },
-    { .id = REAR_LIGHTS_EVENT_SIGNAL_HAZARD, .data = LIGHTS_ACTION_TURN_OFF },
-    { .id = REAR_LIGHTS_EVENT_CAN_RX, .data = LIGHTS_ACTION_TURN_ON },
-    { .id = REAR_LIGHTS_EVENT_CAN_TX, .data = LIGHTS_ACTION_TURN_ON },
-    { .id = REAR_LIGHTS_EVENT_CAN_FAULT, .data = LIGHTS_ACTION_TURN_OFF },
-  };
-
-  for (uint8_t i = 0; i < NUM_REAR_LIGHTS_EVENTS; i++) {
-    TEST_ASSERT_OK(lights_gpio_set(&test_events[i]));
-    TEST_ASSERT_OK(
-        prv_assert_gpio_state(mapping[test_events[i].id], !test_events[i].data, addresses_rear));
-  }
-}
-
-void test_get_lights_board_front() {
-  volatile LightsBoard board;
-  LightsConfig *conf = lights_config_load();
-  TEST_ASSERT_OK(test_gpio_set_input_state(conf->board_type_address, GPIO_STATE_HIGH));
-  TEST_ASSERT_OK(lights_gpio_init());
-  TEST_ASSERT_OK(lights_gpio_get_lights_board(&board));
-  TEST_ASSERT_EQUAL(board, LIGHTS_BOARD_FRONT);
-}
-
-void test_get_lights_board_rear() {
-  volatile LightsBoard board;
-  LightsConfig *conf = lights_config_load();
-  TEST_ASSERT_OK(test_gpio_set_input_state(conf->board_type_address, GPIO_STATE_LOW));
-  TEST_ASSERT_OK(lights_gpio_init());
-  TEST_ASSERT_OK(lights_gpio_get_lights_board(&board));
-  TEST_ASSERT_EQUAL(board, LIGHTS_BOARD_REAR);
 }

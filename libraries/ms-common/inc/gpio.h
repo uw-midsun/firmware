@@ -74,6 +74,3 @@ StatusCode gpio_toggle_state(const GPIOAddress *address);
 
 // Gets the value of the input register for a pin and assigns it to the state that is passed in.
 StatusCode gpio_get_state(const GPIOAddress *address, GPIOState *input_state);
-
-// Test function used for setting the value of GPIO input registers (for X86 architechture)
-StatusCode test_gpio_set_input_state(const GPIOAddress *address, GPIOState state);
