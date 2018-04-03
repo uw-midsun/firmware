@@ -24,7 +24,7 @@
 // The time period between every update of the pedal readings.
 #define THROTTLE_UPDATE_PERIOD_MS 10
 
-// The range used for pedal's position in within a zone or the whole range. 
+// The range used for pedal's position in within a zone or the whole range.
 #define THROTTLE_DENOMINATOR (1 << 12)
 
 typedef enum {

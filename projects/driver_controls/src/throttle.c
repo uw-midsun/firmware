@@ -27,9 +27,9 @@ static uint16_t prv_get_numerator_zone(int16_t reading_main, ThrottleZone zone,
                                        ThrottleStorage *storage) {
   ThrottleZoneThreshold *zone_thresholds_main = storage->calibration_data->zone_thresholds_main;
   if (zone == THROTTLE_ZONE_BRAKE) {
-    // Brake is at its max when pedal not pressed. 
+    // Brake is at its max when pedal not pressed.
     return THROTTLE_DENOMINATOR - (prv_scale_reading(reading_main, zone_thresholds_main[zone].max,
-                                  zone_thresholds_main[zone].min));
+                                                     zone_thresholds_main[zone].min));
   } else if (zone == THROTTLE_ZONE_COAST) {
     // Coast is either on or off, not a range of values.
     return THROTTLE_DENOMINATOR;
