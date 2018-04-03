@@ -30,7 +30,7 @@ static const ThrottleLine s_line[NUM_THROTTLE_CHANNELS] = {
   { .full_brake_reading = 325, .full_throttle_reading = 1405 },  // Main channel
   { .full_brake_reading = 160, .full_throttle_reading = 710 }    //  Secondary channel
 };
-static const int16_t s_tolerance = 10;
+#define TEST_THROTTLE_TOLERANCE 10
 
 // Mocks ads1015_read_raw to allow feeding desired inputs to throttle for both channels.
 StatusCode TEST_MOCK(ads1015_read_raw)(Ads1015Storage *storage, Ads1015Channel channel,
@@ -48,7 +48,7 @@ static void prv_set_calibration_data(ThrottleCalibrationData *data) {
   memcpy(data->zone_thresholds_main, s_threshes_main,
          NUM_THROTTLE_ZONES * sizeof(ThrottleZoneThreshold));
   memcpy(data->line, s_line, NUM_THROTTLE_CHANNELS * sizeof(ThrottleLine));
-  data->tolerance = s_tolerance;
+  data->tolerance = TEST_THROTTLE_TOLERANCE;
 }
 
 void setup_test(void) {
@@ -223,7 +223,7 @@ void test_throttle_secondary_reading_on_edge_valid(void) {
   s_mocked_reading_secondary = (s_line[THROTTLE_CHANNEL_SECONDARY].full_throttle_reading +
                                 s_line[THROTTLE_CHANNEL_SECONDARY].full_brake_reading) /
                                    2 +
-                               s_tolerance;
+                               TEST_THROTTLE_TOLERANCE;
   delay_us(THROTTLE_UPDATE_PERIOD_US);
   TEST_ASSERT_OK(throttle_get_position(&s_throttle_storage, &position));
   TEST_ASSERT_EQUAL(THROTTLE_ZONE_COAST, position.zone);
@@ -237,7 +237,7 @@ void test_throttle_secondary_reading_on_edge_valid(void) {
   s_mocked_reading_secondary = (s_line[THROTTLE_CHANNEL_SECONDARY].full_throttle_reading +
                                 s_line[THROTTLE_CHANNEL_SECONDARY].full_brake_reading) /
                                    2 -
-                               s_tolerance;
+                               TEST_THROTTLE_TOLERANCE;
   delay_us(THROTTLE_UPDATE_PERIOD_US);
   TEST_ASSERT_OK(throttle_get_position(&s_throttle_storage, &position));
   TEST_ASSERT_EQUAL(THROTTLE_ZONE_COAST, position.zone);
@@ -260,7 +260,7 @@ void test_throttle_secondary_reading_on_edge_invalid(void) {
   s_mocked_reading_secondary = (s_line[THROTTLE_CHANNEL_SECONDARY].full_throttle_reading +
                                 s_line[THROTTLE_CHANNEL_SECONDARY].full_brake_reading) /
                                    2 +
-                               s_tolerance + 1;
+                               TEST_THROTTLE_TOLERANCE + 1;
   delay_us(THROTTLE_UPDATE_PERIOD_US);
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&s_throttle_storage, &position));
   event_process(&e);
@@ -273,7 +273,7 @@ void test_throttle_secondary_reading_on_edge_invalid(void) {
   s_mocked_reading_secondary = (s_line[THROTTLE_CHANNEL_SECONDARY].full_throttle_reading +
                                 s_line[THROTTLE_CHANNEL_SECONDARY].full_brake_reading) /
                                    2 -
-                               s_tolerance - 1;
+                               TEST_THROTTLE_TOLERANCE - 1;
   delay_us(THROTTLE_UPDATE_PERIOD_US);
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&s_throttle_storage, &position));
   event_process(&e);

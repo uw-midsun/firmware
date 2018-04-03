@@ -24,6 +24,9 @@
 // The time period between every update of the pedal readings.
 #define THROTTLE_UPDATE_PERIOD_MS 10
 
+// The range used for pedal's position in within a zone or the whole range. 
+#define THROTTLE_DENOMINATOR (1 << 12)
+
 typedef enum {
   THROTTLE_ZONE_BRAKE = 0,
   THROTTLE_ZONE_COAST,
@@ -37,8 +40,8 @@ typedef enum {
   NUM_THROTTLE_CHANNELS
 } ThrottleChannel;
 
-// A measure in a 12 bit scale of how far (within a zone) a pedal is pressed.
-// I.e. the numerator of a fraction with denominator of 2^12.
+// The measure of how far (within a zone) a pedal is pressed.
+// I.e. the numerator of a fraction with denominator THROTTLE_DENOMINATOR.
 typedef uint16_t ThrottleNumerator;
 
 typedef struct ThrottlePosition {

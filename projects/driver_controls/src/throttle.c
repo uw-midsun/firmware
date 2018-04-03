@@ -16,23 +16,23 @@
 #include "event_queue.h"
 #include "input_event.h"
 
-// Scales a reading to a measure out of 12 bits based on the given range(min to max).
+// Scales a reading to a measure out of THROTTLE_DENOMINATOR based on the given range(min to max).
 static uint16_t prv_scale_reading(int16_t reading, int16_t max, int16_t min) {
-  return (1 << 12) * (reading - min) / (max - min);
+  return THROTTLE_DENOMINATOR * (reading - min) / (max - min);
 }
 
 // Given a reading from main channel and a zone, finds how far within that zone the pedal is pushed.
-// The scale goes from 0(0%) to 2^12(100%).
+// The scale goes from 0(0%) to THROTTLE_DENOMINATOR(100%).
 static uint16_t prv_get_numerator_zone(int16_t reading_main, ThrottleZone zone,
                                        ThrottleStorage *storage) {
   ThrottleZoneThreshold *zone_thresholds_main = storage->calibration_data->zone_thresholds_main;
   if (zone == THROTTLE_ZONE_BRAKE) {
     // Brake is at its max when pedal not pressed. 
-    return (1 << 12) - (prv_scale_reading(reading_main, zone_thresholds_main[zone].max,
+    return THROTTLE_DENOMINATOR - (prv_scale_reading(reading_main, zone_thresholds_main[zone].max,
                                   zone_thresholds_main[zone].min));
   } else if (zone == THROTTLE_ZONE_COAST) {
     // Coast is either on or off, not a range of values.
-    return (1 << 12);
+    return THROTTLE_DENOMINATOR;
   } else {
     // Acceleration is at its max when pedal pressed fully.
     return prv_scale_reading(reading_main, zone_thresholds_main[zone].max,
