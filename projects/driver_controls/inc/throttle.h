@@ -7,10 +7,12 @@
 // To use the module, init the ADS1015 for the pedal and pass its Ads1015Storage to throttle_init,
 // along with the two channels the pedal is connected to. Also pass a ThrottleCalibrationData
 // that has been calibrated. This structure holds zone thresholds for determining the state of the
-// pedal based on the reading from main channel and two lines that approximate (best fit)
-// the voltage-position graph. It is assumed that channel readings hold a linear
-// relationship with respect to the pedal's position. The tolerance accounts for possible deviation
-// of the data on the second channel when compared to main channel.
+// pedal based on the reading from main channel, and two lines that approximate
+// the voltage-position graph for each channel. The main line is the main source for obtaining the
+// position, and the second line along with a tolerance is used to check if the readings agree.
+// It is assumed that channel readings hold a linear relationship with respect to the pedal's
+// position.
+// Look at "Math behind Throttle Module" on Confluence to see how the logic exactly works.
 // At any time calling throttle_get_position will give the current position of the pedal.
 // Note that storage, pedal_ads1015_storage, and calibration_data should persist.
 
@@ -35,12 +37,6 @@ typedef enum {
   NUM_THROTTLE_CHANNELS
 } ThrottleChannel;
 
-typedef enum {
-  THROTTLE_THRESH_MIN = 0,  //
-  THROTTLE_THRESH_MAX,      //
-  NUM_THROTTLE_THRESHES
-} ThrottleThresh;
-
 // A measure in a 12 bit scale of how far (within a zone) a pedal is pressed.
 // I.e. the numerator of a fraction with denominator of 2^12.
 typedef uint16_t ThrottleNumerator;
@@ -50,13 +46,25 @@ typedef struct ThrottlePosition {
   ThrottleNumerator numerator;
 } ThrottlePosition;
 
+typedef struct ThrottleZoneThreshold {
+  int16_t min;
+  int16_t max;
+} ThrottleZoneThreshold;
+
+// Models a voltage-position line using the readings at extreme ends.
+typedef struct ThrottleLine {
+  int16_t full_brake_reading;     // Reading for pedal not pressed.
+  int16_t full_throttle_reading;  // Reading for pedal fully pressed.
+} ThrottleLine;
+
 // Data that needs to be calibrated.
 typedef struct ThrottleCalibrationData {
   // Boundaries of each zone in raw reading format.
-  int16_t zone_thresholds_main[NUM_THROTTLE_ZONES][NUM_THROTTLE_THRESHES];
-  // The line of best fit described by set of 2 points in raw reading format
-  // at the extreme ends for each channel.
-  int16_t line_of_best_fit[NUM_THROTTLE_CHANNELS][NUM_THROTTLE_THRESHES];
+  ThrottleZoneThreshold zone_thresholds_main[NUM_THROTTLE_ZONES];
+  // Lines that describe voltage-position graph for channels.
+  ThrottleLine line[NUM_THROTTLE_CHANNELS];
+  // Tolerance can be thought of as 1/2 of width of a band around the secondary line,
+  // which describes a range of possible "secondary readings" for every single "main reading".
   int16_t tolerance;
 } ThrottleCalibrationData;
 
@@ -66,7 +74,6 @@ typedef struct ThrottleStorage {
   bool reading_ok_flag;
   Ads1015Channel channel_main;
   Ads1015Channel channel_secondary;
-  SoftTimerID raise_event_timer_id;
   ThrottlePosition position;
   ThrottleCalibrationData *calibration_data;
 } ThrottleStorage;

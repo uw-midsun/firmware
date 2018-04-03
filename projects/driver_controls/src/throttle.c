@@ -25,37 +25,40 @@ static uint16_t prv_scale_reading(int16_t reading, int16_t max, int16_t min) {
 // The scale goes from 0(0%) to 2^12(100%). For ex. pedal is at 2^11(50%) in brake zone.
 static uint16_t prv_get_numerator_zone(int16_t reading_main, ThrottleZone zone,
                                        ThrottleStorage *storage) {
-  return prv_scale_reading(
-      reading_main, storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MAX],
-      storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MIN]);
+  ThrottleZoneThreshold *zone_thresholds_main = storage->calibration_data->zone_thresholds_main;
+  return prv_scale_reading(reading_main, zone_thresholds_main[zone].max,
+                           zone_thresholds_main[zone].min);
 }
 
 // Given a reading from main channel and a zone, finds if the reading belongs to that zone.
 static bool prv_reading_within_zone(int16_t reading_main, ThrottleZone zone,
                                     ThrottleStorage *storage) {
-  return (
-      (reading_main <=
-       storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MAX]) &&
-      (reading_main >= storage->calibration_data->zone_thresholds_main[zone][THROTTLE_THRESH_MIN]));
+  ThrottleZoneThreshold *zone_thresholds_main = storage->calibration_data->zone_thresholds_main;
+  return ((reading_main <= zone_thresholds_main[zone].max) &&
+          (reading_main >= zone_thresholds_main[zone].min));
 }
 
 // Returns true if the channel readings follow their linear relationship.
 static bool prv_channels_synced(int16_t reading_main, int16_t reading_secondary,
                                 ThrottleStorage *storage) {
-  ThrottleCalibrationData *data = storage->calibration_data;
+  ThrottleZoneThreshold *zone_thresholds_main = storage->calibration_data->zone_thresholds_main;
   // Check if the reading_main is out of bounds.
-  if ((reading_main < data->zone_thresholds_main[THROTTLE_ZONE_BRAKE][THROTTLE_THRESH_MIN]) ||
-      (reading_main > data->zone_thresholds_main[THROTTLE_ZONE_ACCEL][THROTTLE_THRESH_MAX])) {
+  if ((reading_main < zone_thresholds_main[THROTTLE_ZONE_BRAKE].min) ||
+      (reading_main > zone_thresholds_main[THROTTLE_ZONE_ACCEL].max)) {
     return false;
   }
 
-  int16_t max_main = data->line_of_best_fit[THROTTLE_CHANNEL_MAIN][THROTTLE_THRESH_MAX];
-  int16_t min_main = data->line_of_best_fit[THROTTLE_CHANNEL_MAIN][THROTTLE_THRESH_MIN];
+  ThrottleLine *line = storage->calibration_data->line;
 
-  int16_t max_secondary = data->line_of_best_fit[THROTTLE_CHANNEL_SECONDARY][THROTTLE_THRESH_MAX];
-  int16_t min_secondary = data->line_of_best_fit[THROTTLE_CHANNEL_SECONDARY][THROTTLE_THRESH_MIN];
-  int16_t tolerance = data->tolerance;
+  int16_t max_main = line[THROTTLE_CHANNEL_MAIN].full_throttle_reading;
+  int16_t min_main = line[THROTTLE_CHANNEL_MAIN].full_brake_reading;
 
+  int16_t max_secondary = line[THROTTLE_CHANNEL_SECONDARY].full_throttle_reading;
+  int16_t min_secondary = line[THROTTLE_CHANNEL_SECONDARY].full_brake_reading;
+
+  int16_t tolerance = storage->calibration_data->tolerance;
+
+  // This condition checks for edge cases where readings are valid but not on the line.
   if (reading_main < min_main) {
     reading_main = min_main;
   } else if (reading_main > max_main) {
@@ -91,7 +94,7 @@ static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) 
   ads1015_read_raw(storage->pedal_ads1015_storage, storage->channel_secondary, &reading_secondary);
 
   InputEvent pedal_events[NUM_THROTTLE_ZONES] = { INPUT_EVENT_PEDAL_BRAKE, INPUT_EVENT_PEDAL_COAST,
-                                                  INPUT_EVENT_PEDAL_PRESSED };
+                                                  INPUT_EVENT_PEDAL_ACCELERATION };
   bool fault = true;
   if (storage->reading_updated_flag &&
       prv_channels_synced(reading_main, reading_secondary, storage)) {
@@ -113,8 +116,7 @@ static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) 
   }
 
   storage->reading_updated_flag = false;
-  soft_timer_start_millis(THROTTLE_UPDATE_PERIOD_MS, prv_raise_event_timer_callback, context,
-                          &storage->raise_event_timer_id);
+  soft_timer_start_millis(THROTTLE_UPDATE_PERIOD_MS, prv_raise_event_timer_callback, context, NULL);
 }
 
 // Initializes the throttle by configuring the ADS1015 channels and
@@ -141,7 +143,7 @@ StatusCode throttle_init(ThrottleStorage *storage, ThrottleCalibrationData *cali
   storage->channel_main = channel_main;
   storage->channel_secondary = channel_secondary;
   return soft_timer_start_millis(THROTTLE_UPDATE_PERIOD_MS, prv_raise_event_timer_callback, storage,
-                                 &storage->raise_event_timer_id);
+                                 NULL);
 }
 
 // Gets the current position of the pedal (writes to position).
