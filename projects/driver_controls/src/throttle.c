@@ -22,12 +22,22 @@ static uint16_t prv_scale_reading(int16_t reading, int16_t max, int16_t min) {
 }
 
 // Given a reading from main channel and a zone, finds how far within that zone the pedal is pushed.
-// The scale goes from 0(0%) to 2^12(100%). For ex. pedal is at 2^11(50%) in brake zone.
+// The scale goes from 0(0%) to 2^12(100%).
 static uint16_t prv_get_numerator_zone(int16_t reading_main, ThrottleZone zone,
                                        ThrottleStorage *storage) {
   ThrottleZoneThreshold *zone_thresholds_main = storage->calibration_data->zone_thresholds_main;
-  return prv_scale_reading(reading_main, zone_thresholds_main[zone].max,
-                           zone_thresholds_main[zone].min);
+  if (zone == THROTTLE_ZONE_BRAKE) {
+    // Brake is at its max when pedal not pressed. 
+    return (1 << 12) - (prv_scale_reading(reading_main, zone_thresholds_main[zone].max,
+                                  zone_thresholds_main[zone].min));
+  } else if (zone == THROTTLE_ZONE_COAST) {
+    // Coast is either on or off, not a range of values.
+    return (1 << 12);
+  } else {
+    // Acceleration is at its max when pedal pressed fully.
+    return prv_scale_reading(reading_main, zone_thresholds_main[zone].max,
+                             zone_thresholds_main[zone].min);
+  }
 }
 
 // Given a reading from main channel and a zone, finds if the reading belongs to that zone.
