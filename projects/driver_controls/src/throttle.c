@@ -68,7 +68,8 @@ static bool prv_channels_synced(int16_t reading_main, int16_t reading_secondary,
 
   int16_t tolerance = storage->calibration_data->tolerance;
 
-  // This condition checks for edge cases where readings are valid but not on the line.
+  // This condition checks for edge cases where readings are valid but do not exist on the line.
+  // For ex. if reading is below the line, it should be thought of as full_brake_reading.
   if (reading_main < min_main) {
     reading_main = min_main;
   } else if (reading_main > max_main) {
@@ -104,7 +105,7 @@ static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) 
   ads1015_read_raw(storage->pedal_ads1015_storage, storage->channel_secondary, &reading_secondary);
 
   InputEvent pedal_events[NUM_THROTTLE_ZONES] = { INPUT_EVENT_PEDAL_BRAKE, INPUT_EVENT_PEDAL_COAST,
-                                                  INPUT_EVENT_PEDAL_ACCELERATION };
+                                                  INPUT_EVENT_PEDAL_ACCEL };
   bool fault = true;
   if (storage->reading_updated_flag &&
       prv_channels_synced(reading_main, reading_secondary, storage)) {

@@ -32,7 +32,7 @@ static bool prv_check_neutral(const Event *e) {
   // The car must not be able to move while in the neutral state
   switch (e->id) {
     case INPUT_EVENT_PEDAL_COAST:
-    case INPUT_EVENT_PEDAL_ACCELERATION:
+    case INPUT_EVENT_PEDAL_ACCEL:
     case INPUT_EVENT_CRUISE_CONTROL:
       return false;
     default:

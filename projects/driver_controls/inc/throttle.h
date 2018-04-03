@@ -1,18 +1,23 @@
 #pragma once
 // Module for the throttle.
 // Requires ADS1015, and soft timer to be initialized.
-// The module periodically reads the pedal inputs from ADS1015, translates them into
-// positions and raises the events that correspond to the pedal's position (braking, coasting, and
-// accelerating). It also detects faulty events caused by disconnections or ADS1015 malfunctioning.
+//
+// The module periodically reads pedal inputs from ADS1015, translates and stores them as positions.
+// At the same time, it raises events, INPUT_EVENT_PEDAL_BRAKE, _COAST, and _ACCEL which would
+// match the current position, and for the event's data field, a numerator to describe the exact
+// position of the pedal within current zone. (The numerator for coast zone is irrelevant).
+// The module also detects faulty events such as disconnections or ADS1015 malfunctioning which
+// could result in reading invalid numbers. INPUT_EVENT_PEDAL_FAULT would be raised in such cases.
+//
 // To use the module, init the ADS1015 for the pedal and pass its Ads1015Storage to throttle_init,
-// along with the two channels the pedal is connected to. Also pass a ThrottleCalibrationData
-// that has been calibrated. This structure holds zone thresholds for determining the state of the
-// pedal based on the reading from main channel, and two lines that approximate
-// the voltage-position graph for each channel. The main line is the main source for obtaining the
-// position, and the second line along with a tolerance is used to check if the readings agree.
-// It is assumed that channel readings hold a linear relationship with respect to the pedal's
-// position.
+// along with the two channels the pedal is connected to. Also pass a ThrottleCalibrationData that
+// has been calibrated. This structure holds zone thresholds for determining the state of the pedal
+// based on the reading from main channel, and two lines that approximate the voltage-position
+// graph for each channel. The main line is the main source for obtaining the position, and the
+// second line along with a tolerance is used to check if the readings agree. It is assumed that
+// channel readings hold a linear relationship with respect to the pedal's position.
 // Look at "Math behind Throttle Module" on Confluence to see how the logic exactly works.
+//
 // At any time calling throttle_get_position will give the current position of the pedal.
 // Note that storage, pedal_ads1015_storage, and calibration_data should persist.
 
@@ -27,6 +32,10 @@
 // The range used for pedal's position in within a zone or the whole range.
 #define THROTTLE_DENOMINATOR (1 << 12)
 
+// The measure of how far (within a zone or the full range) the pedal is pressed.
+// I.e. the numerator of a fraction with denominator THROTTLE_DENOMINATOR.
+typedef uint16_t ThrottleNumerator;
+
 typedef enum {
   THROTTLE_ZONE_BRAKE = 0,
   THROTTLE_ZONE_COAST,
@@ -39,10 +48,6 @@ typedef enum {
   THROTTLE_CHANNEL_SECONDARY,
   NUM_THROTTLE_CHANNELS
 } ThrottleChannel;
-
-// The measure of how far (within a zone) a pedal is pressed.
-// I.e. the numerator of a fraction with denominator THROTTLE_DENOMINATOR.
-typedef uint16_t ThrottleNumerator;
 
 typedef struct ThrottlePosition {
   ThrottleZone zone;

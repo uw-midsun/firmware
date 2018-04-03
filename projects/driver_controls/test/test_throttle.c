@@ -152,7 +152,7 @@ void test_throttle_reading_in_accel_zone(void) {
   TEST_ASSERT_OK(throttle_get_position(&s_throttle_storage, &position));
   TEST_ASSERT_EQUAL(THROTTLE_ZONE_ACCEL, position.zone);
   event_process(&e);
-  TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_ACCELERATION, e.id);
+  TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_ACCEL, e.id);
 }
 
 void test_throttle_reading_at_bottom_thresh_valid(void) {
@@ -193,7 +193,7 @@ void test_throttle_reading_at_top_thresh_valid(void) {
   TEST_ASSERT_OK(throttle_get_position(&s_throttle_storage, &position));
   TEST_ASSERT_EQUAL(THROTTLE_ZONE_ACCEL, position.zone);
   event_process(&e);
-  TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_ACCELERATION, e.id);
+  TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_ACCEL, e.id);
 }
 
 void test_throttle_reading_at_top_thresh_invalid(void) {
