@@ -35,7 +35,7 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_ltc_adc_characterize_ripple(void) {
-  ltc_adc_init(&adc_settings);
+  TEST_ASSERT_OK(ltc_adc_init(&adc_settings));
 
   int32_t value = 0;
   StatusCode status = ltc_adc_get_value(&adc_settings, &value);
