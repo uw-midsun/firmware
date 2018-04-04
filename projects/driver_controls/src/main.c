@@ -47,7 +47,6 @@ int main() {
   adc_init(ADC_MODE_CONTINUOUS);
 
   digital_io_init();
-  analog_io_init();
 
   event_queue_init();
 
