@@ -79,7 +79,7 @@ StatusCode ltc_adc_init(LtcAdcStorage *storage) {
   }
 
   storage->buffer.status = STATUS_CODE_UNINITIALIZED;
-  storage->buffer.value = -1000;
+  storage->buffer.value = INT16_MAX;
 
   // The LTC2484 uses SPI Mode 0 (see Figure 5 on p.20 in the datasheet)
   SPISettings spi_config = {
