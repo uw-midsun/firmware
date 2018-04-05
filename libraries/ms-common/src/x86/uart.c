@@ -1,155 +1,133 @@
 #include "uart.h"
-
-// basic idea: tx is stored in a buffer, interrupt-driven
-// rx is buffered, once a newline is hit or the buffer is full, call rx_handler
-// run the command once on vagrant startup
-// socat -d -d pty,raw,echo=0,link=/home/vagrant/s0 pty,raw,echo=0,link=/home/vagrant/s1 & disown
+#include "log.h"
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <pthread.h>
 
 typedef struct {
-  int fd;
-  int res;
-  char *port;
-  struct termios oldtio;
-  struct termios newtio;
-  UARTStorage *storage;
-} UARTPortData;
+  int sockfd;
+  int listenfd;
+  int connectfd;
+  struct sockaddr_in addr;
+  UARTStorage storage;
+} SocketData;
 
-// /dev/tnt0 and /dev/tnt1 are the connected virtual ports
-static UARTPortData s_port[] = {
-      [UART_PORT_1] = {.port = "/home/vagrant/s0" }, [UART_PORT_2] = {.port = "/home/vagrant/s1" },
+static SocketData sock = {
+  .sockfd = 0,
+  .listenfd = 0,
+  .connectfd = 0,
 };
 
-static void prv_tx_pop(UARTPort uart);
-static void prv_rx_push(UARTPort uart);
-static void prv_handle_irq(UARTPort uart);
+static void *accept_handler(void *unused);
+static void *thread_handler(void *unused);
 
-StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage) {
-  s_port[uart].fd = open(s_port[uart].port, O_RDWR | O_NOCTTY);
-  if (s_port[uart].fd < 0) {
-    return STATUS_CODE_UNREACHABLE;
+void *accept_handler(void *unused) {
+
+  pthread_t receiver_thread;
+
+  sock.connectfd = accept(sock.listenfd, (struct sockaddr*)NULL, NULL);
+  close(sock.listenfd);
+
+  sock.sockfd = sock.connectfd;
+
+  if(pthread_create(&receiver_thread, NULL, thread_handler, NULL) < 0) {
+    LOG_DEBUG("Error creating receiving thread.\n");
   }
 
-  // save current serial port settings
-  tcgetattr(s_port[uart].fd, &s_port[uart].oldtio);
-  // clear struct for new port settings
-  memset(&s_port[uart].newtio, 0, sizeof(s_port[uart].newtio));
+  pthread_exit(NULL);
+}
 
-  // set baudrate, hardware flow control, 8n1, local connection, enable
-  // receiving characters
-  s_port[uart].newtio.c_cflag = BAUDRATE | CRTSCTS | CS8 | CLOCAL | CREAD;
+void *thread_handler(void *unused) {
 
-  // ignore bytes with parity errors
-  // change CR to NL for eol
-  s_port[uart].newtio.c_iflag = IGNPAR | ICRNL;
+  int n = 0;
+  uint8_t buf[1024];
+  int done = 0;
 
-  // raw output
-  s_port[uart].newtio.c_oflag = 0;
+  while (!done) {
 
-  // enable cannonical input
-  s_port[uart].newtio.c_lflag = ICANON;
+    n = read(sock.sockfd, buf, sizeof(buf)-1);
 
-  // initialize all contorl characters
-  s_port[uart].newtio.c_cc[VINTR] = 0;     // Ctrl-c
-  s_port[uart].newtio.c_cc[VQUIT] = 0;     // Ctrl-\ //
-  s_port[uart].newtio.c_cc[VERASE] = 0;    // del
-  s_port[uart].newtio.c_cc[VKILL] = 0;     // @
-  s_port[uart].newtio.c_cc[VEOF] = 4;      // Ctrl-d
-  s_port[uart].newtio.c_cc[VTIME] = 0;     // inter-character timer unused
-  s_port[uart].newtio.c_cc[VMIN] = 1;      // blocking read until 1 character arrives
-  s_port[uart].newtio.c_cc[VSWTC] = 0;     // '\0'
-  s_port[uart].newtio.c_cc[VSTART] = 0;    // Ctrl-q
-  s_port[uart].newtio.c_cc[VSTOP] = 0;     // Ctrl-s
-  s_port[uart].newtio.c_cc[VSUSP] = 0;     // Ctrl-z
-  s_port[uart].newtio.c_cc[VEOL] = 0;      // '\0'
-  s_port[uart].newtio.c_cc[VREPRINT] = 0;  // Ctrl-r
-  s_port[uart].newtio.c_cc[VDISCARD] = 0;  // Ctrl-u
-  s_port[uart].newtio.c_cc[VWERASE] = 0;   // Ctrl-w
-  s_port[uart].newtio.c_cc[VLNEXT] = 0;    // Ctrl-v
-  s_port[uart].newtio.c_cc[VEOL2] = 0;     // '\0'
+    if (n) {
+      buf[n] = 0;
+      sock.storage.rx_handler(buf, sizeof(buf), sock.storage.context);
+    }
 
-  // clean modem line and activate settings
-  tcflush(s_port[uart].fd, TCIFLUSH);
-  tcsetattr(s_port[uart].fd, TCSANOW, &s_port[uart].newtio);
+    if(buf[0] == 'z') {
+      done = 1;
+    }
+  }
 
-  s_port[uart].storage = storage;
-  memset(storage, 0, sizeof(*storage));
+  return NULL;
+}
 
-  s_port[uart].storage->rx_handler = settings->rx_handler;
-  s_port[uart].storage->context = settings->context;
-  fifo_init(&s_port[uart].storage->tx_fifo, s_port[uart].storage->tx_buf);
-  fifo_init(&s_port[uart].storage->rx_fifo, s_port[uart].storage->rx_buf);
+StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage) {
 
-  return STATUS_CODE_OK;
+  int one = 1;
+  pthread_t receiver_thread;
+  sock.storage.rx_handler = settings->rx_handler;
+  sock.storage.context = settings->context;
+
+  memset(&sock.addr, '0', sizeof(sock.addr));
+
+  if((sock.sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    LOG_DEBUG("Error: Could not create sock.\n");
+    return status_code(STATUS_CODE_INTERNAL_ERROR);
+  }
+
+  sock.addr.sin_family = AF_INET;
+  sock.addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  sock.addr.sin_port = htons(5000);
+
+  if(connect(sock.sockfd, (struct sockaddr*)&sock.addr, sizeof(sock.addr)) < 0) {
+    LOG_DEBUG("Could not connect to an open socket, listening for incoming connections.\n");
+
+    sock.listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    memset(&sock.addr, '0', sizeof(sock.addr));
+
+    sock.addr.sin_family = AF_INET;
+    sock.addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    sock.addr.sin_port = htons(5000);
+    int one = 1;
+    setsockopt(sock.listenfd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+
+    if(bind(sock.listenfd, (struct sockaddr*)&sock.addr, sizeof(sock.addr)) < 0) {
+      LOG_DEBUG("Could not bind to an open sock.\n");
+      return status_code(STATUS_CODE_INTERNAL_ERROR);
+    }
+    listen(sock.listenfd, 1);
+
+    if(pthread_create(&receiver_thread, NULL, accept_handler, NULL) < 0) {
+      LOG_DEBUG("Error creating receiving thread.\n");
+      return status_code(STATUS_CODE_INTERNAL_ERROR);
+    }
+
+    return STATUS_CODE_UNINITIALIZED;
+
+  } else {
+    if(pthread_create(&receiver_thread, NULL, thread_handler, NULL) < 0) {
+      LOG_DEBUG("Error creating receiving thread.\n");
+      return status_code(STATUS_CODE_INTERNAL_ERROR);
+    }
+    return STATUS_CODE_OK;
+  }
 }
 
 StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *context) {
-  s_port[uart].storage->rx_handler = rx_handler;
-  s_port[uart].storage->context = context;
+  sock.storage.rx_handler = rx_handler;
+  sock.storage.context = context;
 
   return STATUS_CODE_OK;
 }
 
 StatusCode uart_tx(UARTPort uart, uint8_t *tx_data, size_t len) {
-  status_ok_or_return(fifo_push_arr(&s_port[uart].storage->tx_fifo, tx_data, len));
-  prv_tx_pop(uart);
+
+  if(write(sock.sockfd, tx_data, len) < 0) {
+    LOG_DEBUG("Error sending data.\n");
+    return status_code(STATUS_CODE_INTERNAL_ERROR);
+  }
 
   return STATUS_CODE_OK;
-}
-
-static void prv_tx_pop(UARTPort uart) {
-  if (fifo_size(&s_port[uart].storage->tx_fifo) != 0) {
-    int res;
-    size_t num_bytes = fifo_size(&s_port[uart].storage->tx_fifo);
-    uint8_t tx_data[num_bytes];
-
-    fifo_pop_arr(&s_port[uart].storage->tx_fifo, tx_data, num_bytes);
-
-    // send the string
-    res = write(s_port[uart].fd, tx_data, num_bytes);
-
-    // ensure a terminating character is subsequent
-    if (tx_data[0] != '\n') {
-      res = write(s_port[uart].fd, "\n", 1);
-    }
-
-    if (res < 0) {
-      LOG_DEBUG("Could not send to serial port.");
-    }
-  }
-}
-
-static void prv_rx_push(UARTPort uart) {
-  int res;
-  uint8_t rx_data;
-  res = read(s_port[uart].fd, &rx_data, 1);
-  LOG_DEBUG("%c\n", rx_data);
-  fifo_push(&s_port[uart].storage->rx_fifo, &rx_data);
-
-  size_t num_bytes = fifo_size(&s_port[uart].storage->rx_fifo);
-
-  if (rx_data == '\n' || num_bytes == UART_MAX_BUFFER_LEN) {
-    uint8_t buf[UART_MAX_BUFFER_LEN + 1] = { 0 };
-    fifo_pop_arr(&s_port[uart].storage->rx_fifo, buf, num_bytes);
-
-    if (s_port[uart].storage->rx_handler != NULL) {
-      s_port[uart].storage->rx_handler(buf, num_bytes, s_port[uart].storage->context);
-    }
-  }
-
-  if (res < 0) {
-    LOG_DEBUG("Could not read from serial port.");
-  }
-}
-
-static void prv_handle_irq(UARTPort uart) {
-  prv_tx_pop(uart);
-  prv_rx_push(uart);
-}
-
-void USART1_IRQHandler(void) {
-  prv_handle_irq(UART_PORT_1);
-}
-
-void USART2_IRQHandler(void) {
-  prv_handle_irq(UART_PORT_2);
 }
