@@ -16,3 +16,4 @@ ifeq (x86,$(PLATFORM))
 $(T)_EXCLUDE_TESTS := gpio_expander magnetic_sensor
 endif
 
+$(T)_test_throttle_MOCKS := ads1015_read_raw
