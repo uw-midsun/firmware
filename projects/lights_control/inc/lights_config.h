@@ -9,11 +9,12 @@ typedef enum {
 } LightsConfigBoardType;
 
 typedef struct LightsConfig {
-  const LightsConfigBoardType *board_type;
+  const LightsConfigBoardType board_type;
   const GPIOAddress *addresses;
-  const uint8_t *num_addresses;
+  const uint8_t num_addresses;
   const GPIOSettings *gpio_settings_out;
-  const uint16_t *event_mappings;
+  const uint16_t (*event_mappings)[2];
+  const uint8_t num_supported_events;
 } LightsConfig;
 
 typedef enum {
