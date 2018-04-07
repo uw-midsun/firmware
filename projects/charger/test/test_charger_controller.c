@@ -35,15 +35,9 @@ static volatile bool s_received;
 static void prv_send_status(ChargerCanStatus status) {
   LOG_DEBUG("Charger Tx'd\n");
   const ChargerCanRxData tx_data = {
-    .data_impl =
-        {
-            .voltage = TEST_CHARGER_MAX_VOLTAGE,
-            .current = TEST_CHARGER_MAX_VOLTAGE,
-            .status_flags =
-                {
-                    .raw = status.raw,
-                },
-        },
+    .data_impl = { .voltage = TEST_CHARGER_MAX_VOLTAGE,
+                   .current = TEST_CHARGER_MAX_VOLTAGE,
+                   .status_flags = { .raw = status.raw } },
   };
 
   const GenericCanMsg response = {
