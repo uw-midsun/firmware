@@ -29,7 +29,8 @@ static void prv_adc_callback(int32_t *value, void *context) {
 
   storage->samples++;
   if ((storage->samples + 1) % 10 == 0) {
-    LOG_DEBUG("[%lu/" STRINGIFY(TEST_ADC_NUM_SAMPLES) "] Samples taken\n", (storage->samples + 1));
+    LOG_DEBUG("[%" PRIu32 "/" STRINGIFY(TEST_ADC_NUM_SAMPLES) "] Samples taken\n",
+              (storage->samples + 1));
   }
 }
 
