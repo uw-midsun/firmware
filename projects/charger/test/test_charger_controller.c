@@ -15,20 +15,26 @@
 #include "test_helpers.h"
 #include "unity.h"
 
+#define TEST_CHARGER_CAN_DELAY_MS 250
+
 #define TEST_CHARGER_MAX_VOLTAGE 100
 #define TEST_CHARGER_MAX_CURRENT 200
 
-// Opposite of the ones in the charger so that
 #define TEST_CHARGER_EXPECTED_DLC 5
+// NOTE: the TX and RX used for these IDs are from the perspective of the charger that is being
+// mocked. Internally, the charger controller labels these the other way around!
 #define TEST_CHARGER_EXPECTED_TX_ID 0x18FF50E5
 #define TEST_CHARGER_EXPECTED_RX_ID 0x1806E5F4
 
 static uint8_t s_counter;
 static GenericCanHw s_can;
-static ChargerState s_expected_state;
+static ChargerCanState s_expected_state;
+static volatile bool s_received;
 
-static void prv_send_status(ChargerStatus status) {
-  const ChargerControllerRxData tx_data = {
+// Mock the charger sending a status message.
+static void prv_send_status(ChargerCanStatus status) {
+  LOG_DEBUG("Charger Tx'd\n");
+  const ChargerCanRxData tx_data = {
     .data_impl =
         {
             .voltage = TEST_CHARGER_MAX_VOLTAGE,
@@ -50,10 +56,11 @@ static void prv_send_status(ChargerStatus status) {
   generic_can_tx((GenericCan *)&s_can, &response);
 }
 
+// Mock the charger receiving a message.
 static void prv_rx_handler(const GenericCanMsg *msg, void *context) {
-  LOG_DEBUG("CB triggered\n");
-  ChargerStatus *status = context;
-  ChargerControllerTxData data = { .raw_data = msg->data };
+  LOG_DEBUG("Charger Rx'd\n");
+  ChargerCanStatus *status = context;
+  ChargerCanTxData data = { .raw_data = msg->data };
   TEST_ASSERT_EQUAL(TEST_CHARGER_EXPECTED_RX_ID, msg->id);
   TEST_ASSERT_EQUAL(TEST_CHARGER_MAX_CURRENT, data.data_impl.max_current);
   TEST_ASSERT_EQUAL(TEST_CHARGER_MAX_VOLTAGE, data.data_impl.max_voltage);
@@ -64,6 +71,7 @@ static void prv_rx_handler(const GenericCanMsg *msg, void *context) {
   prv_send_status(*status);
 
   s_counter++;
+  s_received = true;
 }
 
 void setup_test(void) {
@@ -88,7 +96,7 @@ void teardown_test(void) {}
 
 void test_charger_controller(void) {
   GenericCan *can = (GenericCan *)&s_can;
-  ChargerStatus returned_status = { 0 };
+  ChargerCanStatus returned_status = { 0 };
 
   TEST_ASSERT_OK(generic_can_register_rx(can, prv_rx_handler, GENERIC_CAN_EMPTY_MASK,
                                          TEST_CHARGER_EXPECTED_RX_ID, true, &returned_status));
@@ -96,34 +104,38 @@ void test_charger_controller(void) {
   ChargerSettings settings = {
     .max_voltage = TEST_CHARGER_MAX_VOLTAGE,
     .max_current = TEST_CHARGER_MAX_CURRENT,
-    .can = can,  // Use pure HW can for both CAN and CAN UART since Extended support is needed.
+    .can = can,  // Use pure HW can for both CAN and CAN UART since Extended support is needed while
+                 // mocking.
     .can_uart = can,
   };
 
   Event e = { 0, 0 };
-  ChargerStatus status = { 0 };
+  ChargerCanStatus status = { 0 };
 
   // Starts in stop mode
   s_expected_state = CHARGER_STATE_STOP;
+  s_received = false;
   TEST_ASSERT_OK(charger_controller_init(&settings, &status));
-
   // Let the callback trigger
-  delay_ms(250);
+  while (!s_received) {
+  }
 
   // Start the charger
   s_expected_state = CHARGER_STATE_START;
+  s_received = false;
   TEST_ASSERT_OK(charger_controller_set_state(CHARGER_STATE_START));
   // Let the callback trigger
-  delay_ms(250);
+  while (!s_received) {
+  }
 
+  // Send a bad status (auto stop)
   s_expected_state = CHARGER_STATE_STOP;
   returned_status.hw_fault = true;
   prv_send_status(returned_status);
   // Let the send occur
-  delay_ms(250);
-
+  delay_ms(TEST_CHARGER_CAN_DELAY_MS);
   TEST_ASSERT_EQUAL(returned_status.raw, status.raw);
-  delay_ms(250);
+  delay_ms(TEST_CHARGER_CAN_DELAY_MS);
 
   // Prevent starting under a fault.
   TEST_ASSERT_EQUAL(STATUS_CODE_INTERNAL_ERROR, charger_controller_set_state(CHARGER_STATE_START));
@@ -131,18 +143,23 @@ void test_charger_controller(void) {
   returned_status.hw_fault = false;
   prv_send_status(returned_status);
   // Let the send occur
-  delay_ms(250);
+  delay_ms(TEST_CHARGER_CAN_DELAY_MS);
 
+  s_received = false;
   s_expected_state = CHARGER_STATE_START;
   TEST_ASSERT_OK(charger_controller_set_state(CHARGER_STATE_START));
   // Let the callback trigger twice
-  delay_ms(1250);
+  while (!s_received) {
+  }
+  s_received = false;
+  while (!s_received) {
+  }
 
-  TEST_ASSERT_EQUAL(5, s_counter);
+  TEST_ASSERT_EQUAL(4, s_counter);
 }
 
 void test_charger_controller_status(void) {
-  ChargerStatus status = {
+  ChargerCanStatus status = {
     .hw_fault = false,
     .over_temp = false,
     .input_voltage = false,
