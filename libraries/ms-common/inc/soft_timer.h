@@ -6,12 +6,12 @@
 
 #include "status.h"
 
-#define SOFT_TIMER_MAX_TIMERS 10
+#define SOFT_TIMER_MAX_TIMERS 20
 #define SOFT_TIMER_INVALID_TIMER (SOFT_TIMER_MAX_TIMERS)
 
 typedef uint16_t SoftTimerID;
 
-typedef void (*SoftTimerCallback)(SoftTimerID timer_id, void* context);
+typedef void (*SoftTimerCallback)(SoftTimerID timer_id, void *context);
 
 // Initializes a set of software timers. Clock speed should be in MHz. Subsequent calls will do
 // nothing. The clock speed is that of the external PLL crystal.
@@ -20,8 +20,8 @@ void soft_timer_init(void);
 // Adds a software timer. The provided duration is the number of microseconds before running and the
 // callback is the process to run once the time has expired. The timer_id is set to the id of the
 // timer that will run the callback.
-StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, void* context,
-                            SoftTimerID* timer_id);
+StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, void *context,
+                            SoftTimerID *timer_id);
 
 // Starts a software timer in milliseconds. Max duration is still UINT32_MAX us.
 #define soft_timer_start_millis(duration_ms, callback, context, timer_id) \

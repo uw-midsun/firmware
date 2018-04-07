@@ -92,7 +92,7 @@ void setup_test(void) {
   adc_init(ADC_MODE_SINGLE);
 
   CANSettings can_settings = {
-    .device_id = CAN_DEVICE_CHAOS,
+    .device_id = SYSTEM_CAN_DEVICE_CHAOS,
     .bitrate = CAN_HW_BITRATE_125KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,
     .tx_event = CHAOS_EVENT_CAN_TX,
@@ -111,7 +111,7 @@ void teardown_test(void) {}
 
 void test_power_path_uv_ov(void) {
   volatile CANMessage rx_msg = { 0 };
-  can_register_rx_handler(CAN_MESSAGE_OVUV_DCDC_AUX, prv_handle_uvov, &rx_msg);
+  can_register_rx_handler(SYSTEM_CAN_MESSAGE_OVUV_DCDC_AUX, prv_handle_uvov, &rx_msg);
 
   TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.aux_bat, TEST_POWER_PATH_ADC_PERIOD_US));
   TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.dcdc, TEST_POWER_PATH_ADC_PERIOD_US));

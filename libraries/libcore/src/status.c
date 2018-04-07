@@ -7,10 +7,10 @@ static Status s_global_status = {
   .caller = "",   //
   .message = "",  //
 };
-static status_callback s_callback;
+static StatusCallback s_callback;
 
-StatusCode status_impl_update(const StatusCode code, const char* source, const char* caller,
-                              const char* message) {
+StatusCode status_impl_update(const StatusCode code, const char *source, const char *caller,
+                              const char *message) {
   s_global_status.code = code;
   s_global_status.source = source;
   s_global_status.caller = caller;
@@ -25,6 +25,6 @@ Status status_get(void) {
   return s_global_status;
 }
 
-void status_register_callback(status_callback callback) {
+void status_register_callback(StatusCallback callback) {
   s_callback = callback;
 }

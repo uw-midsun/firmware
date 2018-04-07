@@ -34,7 +34,7 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
   // Identify all pins with a pending interrupt and execute their callbacks
   GPIOExpanderPin current_pin;
   while (intf != 0) {
-    current_pin = __builtin_ffs(intf) - 1;
+    current_pin = (GPIOExpanderPin)(__builtin_ffs(intf) - 1);
 
     if (s_interrupts[current_pin].callback != NULL) {
       s_interrupts[current_pin].callback(current_pin, (intcap >> current_pin) & 1,

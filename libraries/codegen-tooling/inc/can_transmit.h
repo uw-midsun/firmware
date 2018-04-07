@@ -7,10 +7,10 @@
 #include "can_msg_defs.h"
 #include "can_pack.h"
 
-#define CAN_TRANSMIT_BPS_FAULT(ack_ptr)                \
+#define CAN_TRANSMIT_BPS_HEARTBEAT(ack_ptr, status_u8) \
   ({                                                   \
     CANMessage msg = { 0 };                            \
-    CAN_PACK_BPS_FAULT(&msg);                          \
+    CAN_PACK_BPS_HEARTBEAT(&msg, (status_u8));         \
     StatusCode status = can_transmit(&msg, (ack_ptr)); \
     status;                                            \
   })
@@ -31,12 +31,20 @@
     status;                                              \
   })
 
-#define CAN_TRANSMIT_SOLAR_RELAY(ack_ptr, relay_state_u8) \
-  ({                                                      \
-    CANMessage msg = { 0 };                               \
-    CAN_PACK_SOLAR_RELAY(&msg, (relay_state_u8));         \
-    StatusCode status = can_transmit(&msg, (ack_ptr));    \
-    status;                                               \
+#define CAN_TRANSMIT_SOLAR_RELAY_REAR(ack_ptr, relay_state_u8) \
+  ({                                                           \
+    CANMessage msg = { 0 };                                    \
+    CAN_PACK_SOLAR_RELAY_REAR(&msg, (relay_state_u8));         \
+    StatusCode status = can_transmit(&msg, (ack_ptr));         \
+    status;                                                    \
+  })
+
+#define CAN_TRANSMIT_SOLAR_RELAY_FRONT(ack_ptr, relay_state_u8) \
+  ({                                                            \
+    CANMessage msg = { 0 };                                     \
+    CAN_PACK_SOLAR_RELAY_FRONT(&msg, (relay_state_u8));         \
+    StatusCode status = can_transmit(&msg, (ack_ptr));          \
+    status;                                                     \
   })
 
 #define CAN_TRANSMIT_POWER_STATE(ack_ptr, power_state_u8) \
@@ -45,6 +53,14 @@
     CAN_PACK_POWER_STATE(&msg, (power_state_u8));         \
     StatusCode status = can_transmit(&msg, (ack_ptr));    \
     status;                                               \
+  })
+
+#define CAN_TRANSMIT_POWERTRAIN_HEARTBEAT(ack_ptr)     \
+  ({                                                   \
+    CANMessage msg = { 0 };                            \
+    CAN_PACK_POWERTRAIN_HEARTBEAT(&msg);               \
+    StatusCode status = can_transmit(&msg, (ack_ptr)); \
+    status;                                            \
   })
 
 #define CAN_TRANSMIT_OVUV_DCDC_AUX(dcdc_ov_flag_u8, dcdc_uv_flag_u8, aux_bat_ov_flag_u8,     \
@@ -57,46 +73,30 @@
     status;                                                                                  \
   })
 
-#define CAN_TRANSMIT_MC_ERROR_LIMITS(error_id_u32, limits_u32)    \
+#define CAN_TRANSMIT_MC_ERROR_LIMITS(error_id_u16, limits_u16)    \
   ({                                                              \
     CANMessage msg = { 0 };                                       \
-    CAN_PACK_MC_ERROR_LIMITS(&msg, (error_id_u32), (limits_u32)); \
+    CAN_PACK_MC_ERROR_LIMITS(&msg, (error_id_u16), (limits_u16)); \
     StatusCode status = can_transmit(&msg, NULL);                 \
     status;                                                       \
   })
 
-#define CAN_TRANSMIT_THROTTLE()                   \
-  ({                                              \
-    CANMessage msg = { 0 };                       \
-    CAN_PACK_THROTTLE(&msg);                      \
-    StatusCode status = can_transmit(&msg, NULL); \
-    status;                                       \
+#define CAN_TRANSMIT_MOTOR_CONTROLS(throttle_u16, direction_u16, cruise_control_u16,     \
+                                    steering_angle_u16)                                  \
+  ({                                                                                     \
+    CANMessage msg = { 0 };                                                              \
+    CAN_PACK_MOTOR_CONTROLS(&msg, (throttle_u16), (direction_u16), (cruise_control_u16), \
+                            (steering_angle_u16));                                       \
+    StatusCode status = can_transmit(&msg, NULL);                                        \
+    status;                                                                              \
   })
 
-#define CAN_TRANSMIT_MOTOR_CRUISE()               \
-  ({                                              \
-    CANMessage msg = { 0 };                       \
-    CAN_PACK_MOTOR_CRUISE(&msg);                  \
-    StatusCode status = can_transmit(&msg, NULL); \
-    status;                                       \
-  })
-
-#define CAN_TRANSMIT_DIRECTION_SELECTOR()         \
-  ({                                              \
-    CANMessage msg = { 0 };                       \
-    CAN_PACK_DIRECTION_SELECTOR(&msg);            \
-    StatusCode status = can_transmit(&msg, NULL); \
-    status;                                       \
-  })
-
-#define CAN_TRANSMIT_LIGHTS_STATES(hazard_u8, left_turn_u8, right_turn_u8, brakes_u8,       \
-                                   headlights_u8)                                           \
-  ({                                                                                        \
-    CANMessage msg = { 0 };                                                                 \
-    CAN_PACK_LIGHTS_STATES(&msg, (hazard_u8), (left_turn_u8), (right_turn_u8), (brakes_u8), \
-                           (headlights_u8));                                                \
-    StatusCode status = can_transmit(&msg, NULL);                                           \
-    status;                                                                                 \
+#define CAN_TRANSMIT_LIGHTS_STATES(light_id_u8, light_state_u8)    \
+  ({                                                               \
+    CANMessage msg = { 0 };                                        \
+    CAN_PACK_LIGHTS_STATES(&msg, (light_id_u8), (light_state_u8)); \
+    StatusCode status = can_transmit(&msg, NULL);                  \
+    status;                                                        \
   })
 
 #define CAN_TRANSMIT_HORN(state_u8)               \
@@ -107,12 +107,28 @@
     status;                                       \
   })
 
-#define CAN_TRANSMIT_MECHANICAL_BRAKE()           \
+#define CAN_TRANSMIT_MECHANICAL_BRAKE(state_u8)   \
   ({                                              \
     CANMessage msg = { 0 };                       \
-    CAN_PACK_MECHANICAL_BRAKE(&msg);              \
+    CAN_PACK_MECHANICAL_BRAKE(&msg, (state_u8));  \
     StatusCode status = can_transmit(&msg, NULL); \
     status;                                       \
+  })
+
+#define CAN_TRANSMIT_CHARGING_REQ()               \
+  ({                                              \
+    CANMessage msg = { 0 };                       \
+    CAN_PACK_CHARGING_REQ(&msg);                  \
+    StatusCode status = can_transmit(&msg, NULL); \
+    status;                                       \
+  })
+
+#define CAN_TRANSMIT_CHARGING_PERMISSION(allowed_u8)  \
+  ({                                                  \
+    CANMessage msg = { 0 };                           \
+    CAN_PACK_CHARGING_PERMISSION(&msg, (allowed_u8)); \
+    StatusCode status = can_transmit(&msg, NULL);     \
+    status;                                           \
   })
 
 #define CAN_TRANSMIT_BATTERY_SOC()                \
@@ -141,34 +157,42 @@
     status;                                                                                        \
   })
 
-#define CAN_TRANSMIT_MOTOR_VELOCITY()             \
-  ({                                              \
-    CANMessage msg = { 0 };                       \
-    CAN_PACK_MOTOR_VELOCITY(&msg);                \
-    StatusCode status = can_transmit(&msg, NULL); \
-    status;                                       \
+#define CAN_TRANSMIT_MOTOR_VELOCITY(vehicle_velocity_left_u32, vehicle_velocity_right_u32)    \
+  ({                                                                                          \
+    CANMessage msg = { 0 };                                                                   \
+    CAN_PACK_MOTOR_VELOCITY(&msg, (vehicle_velocity_left_u32), (vehicle_velocity_right_u32)); \
+    StatusCode status = can_transmit(&msg, NULL);                                             \
+    status;                                                                                   \
   })
 
-#define CAN_TRANSMIT_MOTOR_CONTROLLER_TEMPS()     \
-  ({                                              \
-    CANMessage msg = { 0 };                       \
-    CAN_PACK_MOTOR_CONTROLLER_TEMPS(&msg);        \
-    StatusCode status = can_transmit(&msg, NULL); \
-    status;                                       \
+#define CAN_TRANSMIT_MOTOR_ANGULAR_FREQUENCY(angular_freq_left_u32, angular_freq_right_u32)    \
+  ({                                                                                           \
+    CANMessage msg = { 0 };                                                                    \
+    CAN_PACK_MOTOR_ANGULAR_FREQUENCY(&msg, (angular_freq_left_u32), (angular_freq_right_u32)); \
+    StatusCode status = can_transmit(&msg, NULL);                                              \
+    status;                                                                                    \
   })
 
-#define CAN_TRANSMIT_MOTOR_AMP_HR()               \
-  ({                                              \
-    CANMessage msg = { 0 };                       \
-    CAN_PACK_MOTOR_AMP_HR(&msg);                  \
-    StatusCode status = can_transmit(&msg, NULL); \
-    status;                                       \
+#define CAN_TRANSMIT_MOTOR_TEMPS(motor_temp_l_u32, motor_temp_r_u32)    \
+  ({                                                                    \
+    CANMessage msg = { 0 };                                             \
+    CAN_PACK_MOTOR_TEMPS(&msg, (motor_temp_l_u32), (motor_temp_r_u32)); \
+    StatusCode status = can_transmit(&msg, NULL);                       \
+    status;                                                             \
   })
 
-#define CAN_TRANSMIT_ODOMETER()                   \
+#define CAN_TRANSMIT_MOTOR_AMP_HR(motor_amp_hr_l_u32, motor_amp_hr_r_u32)    \
+  ({                                                                         \
+    CANMessage msg = { 0 };                                                  \
+    CAN_PACK_MOTOR_AMP_HR(&msg, (motor_amp_hr_l_u32), (motor_amp_hr_r_u32)); \
+    StatusCode status = can_transmit(&msg, NULL);                            \
+    status;                                                                  \
+  })
+
+#define CAN_TRANSMIT_ODOMETER(odometer_val_u32)   \
   ({                                              \
     CANMessage msg = { 0 };                       \
-    CAN_PACK_ODOMETER(&msg);                      \
+    CAN_PACK_ODOMETER(&msg, (odometer_val_u32));  \
     StatusCode status = can_transmit(&msg, NULL); \
     status;                                       \
   })
@@ -207,14 +231,6 @@
                              (temperature_u16));                                               \
     StatusCode status = can_transmit(&msg, NULL);                                              \
     status;                                                                                    \
-  })
-
-#define CAN_TRANSMIT_STEERING_ANGLE()             \
-  ({                                              \
-    CANMessage msg = { 0 };                       \
-    CAN_PACK_STEERING_ANGLE(&msg);                \
-    StatusCode status = can_transmit(&msg, NULL); \
-    status;                                       \
   })
 
 #define CAN_TRANSMIT_LINEAR_ACCELERATION()        \
