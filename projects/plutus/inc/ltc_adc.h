@@ -23,9 +23,14 @@ typedef struct {
   SoftTimerID timer_id;
 } LtcAdcStorageBuffer;
 
+typedef void (*LtcAdcCallback)(int32_t *value, void *context);
+
 typedef struct {
   // Storage buffer managed by the driver
   LtcAdcStorageBuffer buffer;
+  // Callback that is run whenever new data is available
+  LtcAdcCallback callback;
+  void *context;
 
   const GPIOAddress cs;
   const GPIOAddress mosi;
@@ -42,6 +47,6 @@ typedef struct {
 // the selected settings
 StatusCode ltc_adc_init(LtcAdcStorage *storage);
 
-// Get the last voltage reading (in uV) reported by the ADC
-// The buffered value will be updated every 200ms
-StatusCode ltc_adc_get_value(LtcAdcStorage *storage, int32_t *value);
+// Register a callback to be run whenever there is new data
+StatusCode ltc_adc_register_callback(LtcAdcStorage *storage, LtcAdcCallback callback,
+                                     void *context);

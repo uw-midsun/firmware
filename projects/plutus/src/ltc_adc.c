@@ -67,6 +67,13 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
     StatusCode status = spi_exchange(storage->spi_port, NULL, 0, result, 4);
 
     storage->buffer.status = ltc2484_raw_adc_to_uv(result, &storage->buffer.value);
+
+    // Invoke callback with the new data
+    if (storage->callback != NULL) {
+      bool disabled = critical_section_start();
+      storage->callback(&storage->buffer.value, storage->context);
+      critical_section_end(disabled);
+    }
   }
 
   soft_timer_start_millis(LTC2484_MAX_CONVERSION_TIME_MS, prv_ltc_adc_read, storage,
@@ -74,12 +81,14 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
 }
 
 StatusCode ltc_adc_init(LtcAdcStorage *storage) {
-  if (storage->filter_mode >= NUM_LTC_ADC_FILTER_MODES) {
+  if (storage == NULL || storage->filter_mode >= NUM_LTC_ADC_FILTER_MODES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
   storage->buffer.status = STATUS_CODE_UNINITIALIZED;
   storage->buffer.value = INT16_MAX;
+  storage->callback = NULL;
+  storage->context = NULL;
 
   // The LTC2484 uses SPI Mode 0 (see Figure 5 on p.20 in the datasheet)
   SPISettings spi_config = {
@@ -143,12 +152,13 @@ StatusCode ltc2484_raw_adc_to_uv(uint8_t *spi_data, int32_t *voltage) {
   return STATUS_CODE_OK;
 }
 
-StatusCode ltc_adc_get_value(LtcAdcStorage *storage, int32_t *value) {
-  bool disabled = critical_section_start();
+StatusCode ltc_adc_register_callback(LtcAdcStorage *storage, LtcAdcCallback callback,
+                                     void *context) {
+  if (storage == NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+  storage->callback = callback;
+  storage->context = context;
 
-  StatusCode result = storage->buffer.status;
-  *value = storage->buffer.value;
-
-  critical_section_end(disabled);
-  return result;
+  return STATUS_CODE_OK;
 }

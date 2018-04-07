@@ -15,7 +15,31 @@
 
 #define TEST_ADC_NUM_SAMPLES 200
 
-LtcAdcStorage adc_settings = {
+typedef struct {
+  int32_t min_value;
+  int32_t max_value;
+  uint32_t samples;
+} TestAdcStorage;
+
+static void prv_adc_callback(int32_t *value, void *context) {
+  TestAdcStorage *storage = (TestAdcStorage *)context;
+
+  storage->min_value = MIN(*value, storage->min_value);
+  storage->max_value = MAX(*value, storage->max_value);
+
+  storage->samples++;
+  if ((storage->samples + 1) % 10 == 0) {
+    LOG_DEBUG("[%lu/200] Samples taken\n", (storage->samples + 1));
+  }
+}
+
+static volatile TestAdcStorage s_storage = {
+  .min_value = INT32_MAX,
+  .max_value = INT32_MIN,
+  .samples = 0,
+};
+
+static LtcAdcStorage s_adc_settings = {
   .mosi = { GPIO_PORT_B, 15 },  //
   .miso = { GPIO_PORT_B, 14 },  //
   .sclk = { GPIO_PORT_B, 13 },  //
@@ -30,36 +54,23 @@ void setup_test(void) {
   gpio_init();
   interrupt_init();
   soft_timer_init();
+
+  s_storage.min_value = INT32_MAX;
+  s_storage.max_value = INT32_MIN;
+  s_storage.samples = 0;
 }
 
 void teardown_test(void) {}
 
 void test_ltc_adc_characterize_ripple(void) {
-  TEST_ASSERT_OK(ltc_adc_init(&adc_settings));
+  TEST_ASSERT_OK(ltc_adc_init(&s_adc_settings));
+  TEST_ASSERT_OK(ltc_adc_register_callback(&s_adc_settings, prv_adc_callback, (void *)&s_storage));
 
-  int32_t value = 0;
-  StatusCode status = ltc_adc_get_value(&adc_settings, &value);
-
-  int32_t min_value = INT32_MAX;
-  int32_t max_value = INT32_MIN;
-  for (int readings = 0; readings < TEST_ADC_NUM_SAMPLES; ++readings) {
-    // Delay to ensure that conversions have run
-    delay_ms(200);
-
-    status = ltc_adc_get_value(&adc_settings, &value);
-    if (status_ok(status)) {
-      min_value = MIN(value, min_value);
-      max_value = MAX(value, max_value);
-    } else {
-      LOG_DEBUG("ERROR: The status was %d\n", status);
-    }
-
-    if ((readings + 1) % 10 == 0) {
-      LOG_DEBUG("[%d/200] Samples taken\n", (readings + 1));
-    }
+  while (s_storage.samples < TEST_ADC_NUM_SAMPLES) {
+    // block until TEST_ADC_NUM_SAMPLES samples have been taken
   }
 
-  LOG_DEBUG("Min: %" PRId32 "\n", min_value);
-  LOG_DEBUG("Max: %" PRId32 "\n", max_value);
-  LOG_DEBUG("Ripple: %" PRId32 "\n", max_value - min_value);
+  LOG_DEBUG("Min: %" PRId32 "\n", s_storage.min_value);
+  LOG_DEBUG("Max: %" PRId32 "\n", s_storage.max_value);
+  LOG_DEBUG("Ripple: %" PRId32 "\n", s_storage.max_value - s_storage.min_value);
 }
