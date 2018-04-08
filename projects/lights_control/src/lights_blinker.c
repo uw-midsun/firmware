@@ -22,7 +22,7 @@ StatusCode lights_blinker_init(LightsBlinker *blinker) {
 
 StatusCode lights_blinker_on_us(LightsBlinker *blinker, LightsBlinkerDuration duration_us,
                                 EventID id) {
-  if (blinker->timer_id != SOFT_TIMER_INVALID_TIMER) {
+  if (lights_blinker_inuse(blinker)) {
     // the passed-in blinker may have active timers
     return STATUS_CODE_INVALID_ARGS;
   }
@@ -47,8 +47,8 @@ StatusCode lights_blinker_off(LightsBlinker *blinker) {
 }
 
 StatusCode lights_blinker_reset(LightsBlinker *blinker) {
-  // the passed-in blinker should have a valid timer id
-  if (blinker->timer_id == SOFT_TIMER_INVALID_TIMER) {
+  // the passed-in blinker should have an active timer
+  if (!lights_blinker_inuse(blinker)) {
     return STATUS_CODE_INVALID_ARGS;
   }
   // cancel its current timer
@@ -58,3 +58,8 @@ StatusCode lights_blinker_reset(LightsBlinker *blinker) {
   return soft_timer_start(blinker->duration_us, prv_timer_callback, (void *)blinker,
                           &blinker->timer_id);
 }
+
+bool lights_blinker_inuse(LightsBlinker *blinker) {
+  return (blinker->timer_id != SOFT_TIMER_INVALID_TIMER);
+}
+

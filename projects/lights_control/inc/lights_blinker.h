@@ -33,5 +33,8 @@ StatusCode lights_blinker_off(LightsBlinker *);
 // resets the blinker, scheduling a new timer, and setting it state to on
 StatusCode lights_blinker_reset(LightsBlinker *);
 
+// returns if the current blinker has active timers
+bool lights_blinker_inuse(LightsBlinker *);
+
 #define lights_blinker_on_millis(blinker, duration, event_id) \
   lights_blinker_on_us(blinker, duration * 1000, event_id)
