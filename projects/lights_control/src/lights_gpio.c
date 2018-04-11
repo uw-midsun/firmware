@@ -2,18 +2,18 @@
 #include "event_queue.h"
 #include "gpio.h"
 #include "gpio_mcu.h"
-#include "lights_config.h"
 #include "lights_events.h"
+#include "lights_gpio_config.h"
 #include "status.h"
 
 static StatusCode prv_search_mappings_table(LightsConfig *conf, const Event *e, uint16_t *bitset) {
-  for (uint8_t i = 0; i < conf->num_supported_events; i++) {
-    if (e->id == conf->event_mappings[i][0]) {
-      *bitset = conf->event_mappings[i][1];
+  for (uint8_t i = 0; i < conf->num_event_mappings; i++) {
+    if (e->id == conf->event_mappings[i].event_id) {
+      *bitset = conf->event_mappings[i].bitset;
       return STATUS_CODE_OK;
     }
   }
-  return STATUS_CODE_INVALID_ARGS;
+  return status_msg(STATUS_CODE_INVALID_ARGS, "Unsupported event");
 }
 
 static StatusCode prv_set_peripherals(LightsConfig *conf, uint16_t bitset, GPIOState state) {
@@ -41,7 +41,7 @@ StatusCode lights_gpio_init(LightsConfig *conf) {
 }
 
 StatusCode lights_gpio_process_event(LightsConfig *conf, const Event *e) {
-  uint16_t bitset_map;
+  uint16_t bitset_map = 0;
   status_ok_or_return(prv_search_mappings_table(conf, e, &bitset_map));
   // All the lights are active low, so we negate data field
   return prv_set_peripherals(conf, bitset_map, !e->data);

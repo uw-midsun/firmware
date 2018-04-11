@@ -6,9 +6,9 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#include "lights_config.h"
 #include "lights_events.h"
 #include "lights_gpio.h"
+#include "lights_gpio_config.h"
 
 #define TEST_LIGHTS_GPIO_MAKE_MASK(num) ((1) << (num))
 
@@ -44,27 +44,21 @@ static const GPIOAddress s_mock_addresses[] = {
   [MOCK_PERIPHERAL_5] = { .port = GPIO_PORT_A, .pin = 3 },  //
 };
 
-static const GPIOSettings s_mock_gpio_settings_out = {
-  .direction = GPIO_DIR_OUT,       //
-  .state = GPIO_STATE_HIGH,        //
-  .resistor = GPIO_RES_NONE,       //
-  .alt_function = GPIO_ALTFN_NONE  //
-};
-
-static const uint16_t s_mock_event_mappings[][2] = {
-  { MOCK_EVENT_1, TEST_LIGHTS_GPIO_MAKE_MASK(MOCK_PERIPHERAL_1) |
-                      TEST_LIGHTS_GPIO_MAKE_MASK(MOCK_PERIPHERAL_3) },  //
-  { MOCK_EVENT_2, TEST_LIGHTS_GPIO_MAKE_MASK(MOCK_PERIPHERAL_2) },      //
-  { MOCK_EVENT_3, TEST_LIGHTS_GPIO_MAKE_MASK(MOCK_PERIPHERAL_4) |
-                      TEST_LIGHTS_GPIO_MAKE_MASK(MOCK_PERIPHERAL_5) }  //
+static LightsEventMapping s_mock_event_mappings[] = {
+  { .event_id = MOCK_EVENT_1,
+    .bitset = TEST_LIGHTS_GPIO_MAKE_MASK(MOCK_PERIPHERAL_1) |
+              TEST_LIGHTS_GPIO_MAKE_MASK(MOCK_PERIPHERAL_3) },                            //
+  { .event_id = MOCK_EVENT_2, .bitset = TEST_LIGHTS_GPIO_MAKE_MASK(MOCK_PERIPHERAL_2) },  //
+  { .event_id = MOCK_EVENT_3,
+    .bitset = TEST_LIGHTS_GPIO_MAKE_MASK(MOCK_PERIPHERAL_4) |
+              TEST_LIGHTS_GPIO_MAKE_MASK(MOCK_PERIPHERAL_5) }  //
 };
 
 static LightsConfig s_mock_conf = {
-  .addresses = s_mock_addresses,                                //
-  .num_addresses = SIZEOF_ARRAY(s_mock_addresses),              //
-  .gpio_settings_out = &s_mock_gpio_settings_out,               //
-  .event_mappings = s_mock_event_mappings,                      //
-  .num_supported_events = SIZEOF_ARRAY(s_mock_event_mappings),  //
+  .addresses = s_mock_addresses,                              //
+  .num_addresses = SIZEOF_ARRAY(s_mock_addresses),            //
+  .event_mappings = s_mock_event_mappings,                    //
+  .num_event_mappings = SIZEOF_ARRAY(s_mock_event_mappings),  //
 };
 
 static void prv_gpio_initialized_high(const GPIOAddress *addrs, uint8_t size) {
@@ -76,9 +70,9 @@ static void prv_gpio_initialized_high(const GPIOAddress *addrs, uint8_t size) {
 }
 
 static StatusCode prv_search_mappings_table(LightsConfig *conf, const Event *e, uint16_t *bitset) {
-  for (uint8_t i = 0; i < conf->num_supported_events; i++) {
-    if (e->id == conf->event_mappings[i][0]) {
-      *bitset = conf->event_mappings[i][1];
+  for (uint8_t i = 0; i < conf->num_event_mappings; i++) {
+    if (e->id == conf->event_mappings[i].event_id) {
+      *bitset = conf->event_mappings[i].bitset;
       return STATUS_CODE_OK;
     }
   }
