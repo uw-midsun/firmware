@@ -10,7 +10,8 @@ static void prv_timer_callback(SoftTimerID timer_id, void *context) {
   LightsBlinker *blinker = (LightsBlinker *)context;
   blinker->state = !blinker->state;
   event_raise(blinker->event_id, (uint16_t)blinker->state);
-  soft_timer_start(blinker->duration_us, prv_timer_callback, (void *)blinker, &blinker->timer_id);
+  soft_timer_start_millis(blinker->duration, prv_timer_callback, (void *)blinker,
+                          &blinker->timer_id);
 }
 
 // blinker's timer id needs to be initialized to an invalid timer if it's not being used otherwise
@@ -20,18 +21,17 @@ StatusCode lights_blinker_init(LightsBlinker *blinker) {
   return STATUS_CODE_OK;
 }
 
-StatusCode lights_blinker_on_us(LightsBlinker *blinker, LightsBlinkerDuration duration_us,
-                                EventID id) {
+StatusCode lights_blinker_on(LightsBlinker *blinker, LightsBlinkerDuration duration, EventID id) {
   if (lights_blinker_inuse(blinker)) {
     // the passed-in blinker may have active timers
     return STATUS_CODE_INVALID_ARGS;
   }
-  blinker->duration_us = duration_us;
+  blinker->duration = duration;
   blinker->state = LIGHTS_BLINKER_STATE_ON;
   blinker->event_id = id;
   status_ok_or_return(event_raise(blinker->event_id, (uint16_t)blinker->state));
-  return soft_timer_start(blinker->duration_us, prv_timer_callback, (void *)blinker,
-                          &blinker->timer_id);
+  return soft_timer_start_millis(blinker->duration, prv_timer_callback, (void *)blinker,
+                                 &blinker->timer_id);
 }
 
 StatusCode lights_blinker_off(LightsBlinker *blinker) {
@@ -55,11 +55,10 @@ StatusCode lights_blinker_reset(LightsBlinker *blinker) {
   soft_timer_cancel(blinker->timer_id);
   blinker->state = LIGHTS_BLINKER_STATE_ON;
   status_ok_or_return(event_raise(blinker->event_id, (uint16_t)blinker->state));
-  return soft_timer_start(blinker->duration_us, prv_timer_callback, (void *)blinker,
-                          &blinker->timer_id);
+  return soft_timer_start_millis(blinker->duration, prv_timer_callback, (void *)blinker,
+                                 &blinker->timer_id);
 }
 
 bool lights_blinker_inuse(LightsBlinker *blinker) {
   return (blinker->timer_id != SOFT_TIMER_INVALID_TIMER);
 }
-
