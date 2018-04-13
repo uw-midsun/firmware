@@ -86,6 +86,7 @@ StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage
   num_sock += 1;
   sock = (SocketData*)calloc(num_sock, sizeof(SocketData));
   memcpy(sock, tmp, sizeof(SocketData)*latest_sock);
+  free(tmp);
 
 
   sock[latest_sock].port = uart;
