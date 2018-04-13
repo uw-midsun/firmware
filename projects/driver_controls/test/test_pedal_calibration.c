@@ -5,6 +5,7 @@
 #include "input_event.h"
 #include "interrupt.h"
 #include "pedal_calibration.h"
+#include "persist.h"
 #include "test_helpers.h"
 #include "unity.h"
 
@@ -13,6 +14,8 @@ static Ads1015Storage s_ads1015_storage;
 static ThrottleCalibrationData s_throttle_calibration_data;
 static DebouncerInfo s_debouncer_info;
 static bool s_continue_flag;
+static PersistStorage s_persist;
+
 #define TEST_PEDAL_CALIBRATION_ADC_CHANNEL_A ADS1015_CHANNEL_0
 #define TEST_PEDAL_CALIBRATION_ADC_CHANNEL_B ADS1015_CHANNEL_1
 #define TEST_PEDAL_CALIBRATION_BRAKE_PERCENTAGE 30
@@ -33,6 +36,7 @@ void setup_test(void) {
   interrupt_init();
   gpio_it_init();
   soft_timer_init();
+  crc32_init();
   I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,                    //
     .scl = { .port = GPIO_PORT_B, .pin = 10 },  //

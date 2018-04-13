@@ -25,8 +25,9 @@ typedef struct PedalCalibrationRange {
 typedef struct PedalCalibrationStorage {
   PedalCalibrationRange band[NUM_PEDAL_CALIBRATION_CHANNELS][NUM_PEDAL_CALIBRATION_STATES];
   Ads1015Storage *ads1015_storage;
-  Ads1015Channel channel_a;
-  Ads1015Channel channel_b;
+  Ads1015Channel adc_channel[NUM_PEDAL_CALIBRATION_CHANNELS];
+  PedalCalibrationState state;
+  uint8_t sample_counter[NUM_PEDAL_CALIBRATION_CHANNELS];
 } PedalCalibrationStorage;
 
 StatusCode pedal_calibration_init(PedalCalibrationStorage *storage, Ads1015Storage *ads1015_storage,

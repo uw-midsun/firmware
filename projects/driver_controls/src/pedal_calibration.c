@@ -6,55 +6,77 @@ StatusCode pedal_calibration_init(PedalCalibrationStorage *storage, Ads1015Stora
                                   Ads1015Channel channel_a, Ads1015Channel channel_b) {
   memset(storage, 0, sizeof(*storage));
   storage->ads1015_storage = ads1015_storage;
-  storage->channel_a = channel_a;
-  storage->channel_b = channel_b;
-  status_ok_or_return(ads1015_configure_channel(ads1015_storage, channel_a, true, NULL, NULL));
-  status_ok_or_return(ads1015_configure_channel(ads1015_storage, channel_b, true, NULL, NULL));
+  storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_A] = channel_a;
+  storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_B] = channel_b;
+
   return STATUS_CODE_OK;
+}
+
+// ADS1015 user callback: it is called after every new conversion and reads raw values and
+// updates the thresholds of the band for the state and channel.
+// It will be called PEDAL_CALIBRATION_NUM_SAMPLES number of times.
+void pedal_calibration_adc_callback(Ads1015Channel ads1015_channel, void *context) {
+  PedalCalibrationStorage *storage = context;
+  PedalCalibrationChannel channel;
+  PedalCalibrationState state = storage->state;
+  int16_t reading;
+
+  // Find out which channel corresponds to the ads1015_channel.
+  for (channel = PEDAL_CALIBRATION_CHANNEL_A; channel < NUM_PEDAL_CALIBRATION_CHANNELS; channel++) {
+    if (storage->adc_channel[channel] == ads1015_channel) {
+      break;
+    }
+  }
+  // Check if there are enough samples taken for the channel.
+  if (storage->sample_counter[channel] >= PEDAL_CALIBRATION_NUM_SAMPLES) {
+    // If yes, stop sampling and turn off the channel.
+    ads1015_configure_channel(storage->ads1015_storage, ads1015_channel, false, NULL, NULL);
+  } else {
+    // If not, continue reading.
+    ads1015_read_raw(storage->ads1015_storage, ads1015_channel, &reading);
+    storage->sample_counter[channel]++;
+    // Update the min and max reading if needed.
+    if (reading < storage->band[channel][state].min) {
+      storage->band[channel][state].min = reading;
+    } else if (reading > storage->band[channel][state].max) {
+      storage->band[channel][state].max = reading;
+    }
+  }
 }
 
 // Given the state (full throttle/brake), it finds the min and max raw readings of each channel.
 // The function samples as many times as PEDAL_CALIBRATION_NUM_SAMPLES.
 StatusCode pedal_calibration_get_band(PedalCalibrationStorage *storage,
                                       PedalCalibrationState state) {
-  int16_t *min_a = &storage->band[PEDAL_CALIBRATION_CHANNEL_A][state].min;
+  storage->state = state;
+  storage->sample_counter[PEDAL_CALIBRATION_CHANNEL_A] = 0;
+  storage->sample_counter[PEDAL_CALIBRATION_CHANNEL_B] = 0;
 
-  int16_t *max_a = &storage->band[PEDAL_CALIBRATION_CHANNEL_A][state].max;
-
-  int16_t *min_b = &storage->band[PEDAL_CALIBRATION_CHANNEL_B][state].min;
-
-  int16_t *max_b = &storage->band[PEDAL_CALIBRATION_CHANNEL_B][state].max;
-
-  int16_t reading_a;
-  int16_t reading_b;
-
-  // Read once first to initialize the max and min.
-
-  status_ok_or_return(ads1015_read_raw(storage->ads1015_storage, storage->channel_a, &reading_a));
-  *min_a = reading_a;
-  *max_a = reading_a;
-
-  status_ok_or_return(ads1015_read_raw(storage->ads1015_storage, storage->channel_b, &reading_b));
-  *min_b = reading_b;
-  *max_b = reading_b;
-
-  // Continue reading to determine the max and min occured reading.
-  for (uint16_t i = 0; i < PEDAL_CALIBRATION_NUM_SAMPLES; i++) {
-    status_ok_or_return(ads1015_read_raw(storage->ads1015_storage, storage->channel_a, &reading_a));
-
-    if (reading_a < *min_a) {
-      *min_a = reading_a;
-    } else if (reading_a > *max_a) {
-      *max_a = reading_a;
-    }
-
-    status_ok_or_return(ads1015_read_raw(storage->ads1015_storage, storage->channel_b, &reading_b));
-
-    if (reading_b < *min_b) {
-      *min_b = reading_b;
-    } else if (reading_b > *max_b) {
-      *max_b = reading_b;
-    }
+  status_ok_or_return(ads1015_configure_channel(storage->ads1015_storage,
+                                                storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_A],
+                                                true, NULL, NULL));
+  status_ok_or_return(ads1015_configure_channel(storage->ads1015_storage,
+                                                storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_B],
+                                                true, NULL, NULL));
+  int16_t reading;
+  for (PedalCalibrationChannel channel = PEDAL_CALIBRATION_CHANNEL_A;
+       channel < NUM_PEDAL_CALIBRATION_CHANNELS; channel++) {
+    // Read once first to initialize the max and min.
+    status_ok_or_return(
+        ads1015_read_raw(storage->ads1015_storage, storage->adc_channel[channel], &reading));
+    storage->band[channel][state].min = reading;
+    storage->band[channel][state].max = reading;
+  }
+  // Set up callback on channels which would read new values after each conversion.
+  status_ok_or_return(ads1015_configure_channel(storage->ads1015_storage,
+                                                storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_A],
+                                                true, pedal_calibration_adc_callback, storage));
+  status_ok_or_return(ads1015_configure_channel(storage->ads1015_storage,
+                                                storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_B],
+                                                true, pedal_calibration_adc_callback, storage));
+  // Wait until both channels finish sampling.
+  while (storage->sample_counter[PEDAL_CALIBRATION_CHANNEL_A] < PEDAL_CALIBRATION_NUM_SAMPLES ||
+         storage->sample_counter[PEDAL_CALIBRATION_CHANNEL_B] < PEDAL_CALIBRATION_NUM_SAMPLES) {
   }
   return STATUS_CODE_OK;
 }
@@ -80,9 +102,10 @@ StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
   if (range_a < range_b) {
     main_channel = PEDAL_CALIBRATION_CHANNEL_B;
     secondary_channel = PEDAL_CALIBRATION_CHANNEL_A;
-    Ads1015Channel temp = storage->channel_a;
-    storage->channel_a = storage->channel_b;
-    storage->channel_b = temp;
+    Ads1015Channel temp = storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_A];
+    storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_A] =
+        storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_B];
+    storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_B] = temp;
   }
 
   // Get the main band's vertices.
@@ -146,9 +169,9 @@ StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
 Ads1015Channel pedal_calibration_get_channel(PedalCalibrationStorage *storage,
                                              ThrottleChannel channel) {
   if (channel == THROTTLE_CHANNEL_MAIN) {
-    return storage->channel_a;
+    return storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_A];
   } else if (channel == THROTTLE_CHANNEL_SECONDARY) {
-    return storage->channel_b;
+    return storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_B];
   } else {
     return NUM_ADS1015_CHANNELS;
   }
