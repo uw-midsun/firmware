@@ -8,28 +8,20 @@
 #include "persist.h"
 #include "test_helpers.h"
 #include "unity.h"
+#include "crc32.h"
 
 static PedalCalibrationStorage s_storage;
 static Ads1015Storage s_ads1015_storage;
 static ThrottleCalibrationData s_throttle_calibration_data;
-static DebouncerInfo s_debouncer_info;
-static bool s_continue_flag;
 static PersistStorage s_persist;
 
 #define TEST_PEDAL_CALIBRATION_ADC_CHANNEL_A ADS1015_CHANNEL_0
 #define TEST_PEDAL_CALIBRATION_ADC_CHANNEL_B ADS1015_CHANNEL_1
 #define TEST_PEDAL_CALIBRATION_BRAKE_PERCENTAGE 30
 #define TEST_PEDAL_CALIBRATION_COAST_PERCENTAGE 10
+#define TEST_PEDAL_CALIBRATION_SAFETY_FACTOR 2
 
-static void prv_wait_for_button(void) {
-  s_continue_flag = false;
-  while (!s_continue_flag) {
-  }
-}
-
-static void prv_continue_calibration(const GPIOAddress *address, void *context) {
-  s_continue_flag = true;
-}
+static void prv_wait_for_button(void) {}
 
 void setup_test(void) {
   gpio_init();
@@ -47,15 +39,10 @@ void setup_test(void) {
     .port = GPIO_PORT_B,  //
     .pin = 2,             //
   };
-  GPIOAddress calibration_button = {
-    .port = 0,  //
-    .pin = 0,   //
-  };
 
   ads1015_init(&s_ads1015_storage, TEST_ADS1015_I2C_PORT, TEST_ADS1015_ADDR, &ready_pin);
   pedal_calibration_init(&s_storage, &s_ads1015_storage, TEST_PEDAL_CALIBRATION_ADC_CHANNEL_A,
                          TEST_PEDAL_CALIBRATION_ADC_CHANNEL_B);
-  debouncer_init_pin(&s_debouncer_info, &calibration_button, prv_continue_calibration, NULL);
 }
 
 void test_pedal_calibration(void) {
@@ -67,9 +54,9 @@ void test_pedal_calibration(void) {
 
   pedal_calibration_get_band(&s_storage, PEDAL_CALIBRATION_STATE_FULL_THROTTLE);
 
-  pedal_calibration_calculate(&s_storage, &s_throttle_calibration_data,
-                              TEST_PEDAL_CALIBRATION_BRAKE_PERCENTAGE,
-                              TEST_PEDAL_CALIBRATION_COAST_PERCENTAGE);
+  pedal_calibration_calculate(
+      &s_storage, &s_throttle_calibration_data, TEST_PEDAL_CALIBRATION_BRAKE_PERCENTAGE,
+      TEST_PEDAL_CALIBRATION_COAST_PERCENTAGE, TEST_PEDAL_CALIBRATION_SAFETY_FACTOR);
 }
 
 void teardown_test(void) {}

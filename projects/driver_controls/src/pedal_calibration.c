@@ -87,7 +87,7 @@ StatusCode pedal_calibration_get_band(PedalCalibrationStorage *storage,
 StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
                                        ThrottleCalibrationData *throttle_calibration,
                                        uint8_t brake_zone_percentage,
-                                       uint8_t coast_zone_percentage) {
+                                       uint8_t coast_zone_percentage, uint8_t tolerance_safety_factor) {
   // Compare the range of bands from channels and set the channel with bigger range to channel A.
   int16_t range_a =
       storage->band[PEDAL_CALIBRATION_CHANNEL_A][PEDAL_CALIBRATION_STATE_FULL_THROTTLE].max -
@@ -157,8 +157,9 @@ StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
   throttle_calibration->line[THROTTLE_CHANNEL_SECONDARY].full_throttle_reading =
       (min_accel + max_accel) / 2;
   // Tolerance should be half of the band's width assuming the width is constant.
-  // In this case we take the maximum of widths at both ends.
-  throttle_calibration->tolerance = MAX((max_brake - min_brake) / 2, (max_accel - min_accel) / 2);
+  // In this case we take the maximum of widths at both ends multiplied by the given safety factor.
+  throttle_calibration->tolerance =
+      MAX((max_brake - min_brake) / 2, (max_accel - min_accel) / 2) * tolerance_safety_factor;
 
   return STATUS_CODE_OK;
 }
