@@ -39,7 +39,7 @@ static void prv_full_throttle_output(FSM *fsm, const Event *e, void *context) {}
 static void prv_calculate_output(FSM *fsm, const Event *e, void *context) {}
 static void prv_validate_output(FSM *fsm, const Event *e, void *context) {}
 
-StatusCode calibration_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
+StatusCode pedal_calibration_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_start, prv_start_output);
   fsm_state_init(state_full_brake, prv_full_brake_output);
   fsm_state_init(state_full_throttle, prv_full_throttle_output);
