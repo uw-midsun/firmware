@@ -1,4 +1,5 @@
 #include "ads1015_def.h"
+#include "crc32.h"
 #include "debouncer.h"
 #include "delay.h"
 #include "gpio_it.h"
@@ -8,7 +9,6 @@
 #include "persist.h"
 #include "test_helpers.h"
 #include "unity.h"
-#include "crc32.h"
 
 static PedalCalibrationStorage s_storage;
 static Ads1015Storage s_ads1015_storage;

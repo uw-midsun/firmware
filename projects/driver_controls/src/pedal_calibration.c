@@ -86,8 +86,8 @@ StatusCode pedal_calibration_get_band(PedalCalibrationStorage *storage,
 // To be called only after pedal_calibration_get_band.
 StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
                                        ThrottleCalibrationData *throttle_calibration,
-                                       uint8_t brake_zone_percentage,
-                                       uint8_t coast_zone_percentage, uint8_t tolerance_safety_factor) {
+                                       uint8_t brake_zone_percentage, uint8_t coast_zone_percentage,
+                                       uint8_t tolerance_safety_factor) {
   // Compare the range of bands from channels and set the channel with bigger range to channel A.
   int16_t range_a =
       storage->band[PEDAL_CALIBRATION_CHANNEL_A][PEDAL_CALIBRATION_STATE_FULL_THROTTLE].max -

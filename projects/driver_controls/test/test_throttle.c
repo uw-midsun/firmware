@@ -78,19 +78,15 @@ void teardown_test(void) {}
 
 void test_throttle_init_invalid_args(void) {
   // Test with valid arguments.
-  TEST_ASSERT_EQUAL(
-      STATUS_CODE_OK,
-      throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK,
+                    throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage));
   // Check for null pointers.
-  TEST_ASSERT_EQUAL(
-      STATUS_CODE_INVALID_ARGS,
-      throttle_init(NULL, &s_calibration_data, &s_ads1015_storage));
-  TEST_ASSERT_EQUAL(
-      STATUS_CODE_INVALID_ARGS,
-      throttle_init(&s_throttle_storage, NULL, &s_ads1015_storage));
-  TEST_ASSERT_EQUAL(
-      STATUS_CODE_INVALID_ARGS,
-      throttle_init(&s_throttle_storage, &s_calibration_data, NULL));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
+                    throttle_init(NULL, &s_calibration_data, &s_ads1015_storage));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
+                    throttle_init(&s_throttle_storage, NULL, &s_ads1015_storage));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
+                    throttle_init(&s_throttle_storage, &s_calibration_data, NULL));
 }
 
 void test_throttle_get_pos_invalid_args(void) {
