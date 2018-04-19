@@ -40,3 +40,5 @@ StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
                                        ThrottleCalibrationData *throttle_calibration,
                                        uint8_t brake_zone_percentage, uint8_t coast_zone_percentage,
                                        uint8_t tolerance_safety_factor);
+StatusCode pedal_calibration_validate(PedalCalibrationStorage *storage,
+                                      ThrottleCalibrationData *throttle_calibration);

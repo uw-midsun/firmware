@@ -1,6 +1,7 @@
 #include "pedal_calibration.h"
+#include "log.h"
 #include "string.h"
-
+#include "throttle.h"
 // Initializes the calibration storage and configures ADC to start reading.
 StatusCode pedal_calibration_init(PedalCalibrationStorage *storage, Ads1015Storage *ads1015_storage,
                                   Ads1015Channel channel_a, Ads1015Channel channel_b) {
@@ -175,5 +176,20 @@ Ads1015Channel pedal_calibration_get_channel(PedalCalibrationStorage *storage,
     return storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_B];
   } else {
     return NUM_ADS1015_CHANNELS;
+  }
+}
+
+StatusCode pedal_calibration_validate(PedalCalibrationStorage *storage,
+                                      ThrottleCalibrationData *throttle_calibration) {
+  ThrottleStorage throttle;
+  ThrottlePosition position;
+  status_ok_or_return(throttle_init(&throttle, throttle_calibration, storage->ads1015_storage));
+  while (true) {
+    status_ok_or_return(throttle_get_position(&throttle, &position));
+    char *zones[NUM_THROTTLE_ZONES] = { [THROTTLE_ZONE_BRAKE] = "Brake",
+                                        [THROTTLE_ZONE_COAST] = "Coast",
+                                        [THROTTLE_ZONE_ACCEL] = "Accel" };
+    LOG_DEBUG("%s zone: %d / %d OR %d percent\n", zones[position.zone], position.numerator,
+              THROTTLE_DENOMINATOR, position.numerator * 100 / THROTTLE_DENOMINATOR);
   }
 }
