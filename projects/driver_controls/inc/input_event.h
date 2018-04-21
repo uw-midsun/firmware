@@ -8,6 +8,7 @@ typedef enum {
   INPUT_EVENT_CAN_RX,
   INPUT_EVENT_CAN_TX,
   INPUT_EVENT_CAN_FAULT,
+  INPUT_EVENT_BPS_FAULT,
   // Mechanical brake must take precedence over power so pressing the brake then the power button
   // is handled properly
   INPUT_EVENT_MECHANICAL_BRAKE_PRESSED,
