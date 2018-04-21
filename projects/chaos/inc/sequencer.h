@@ -20,6 +20,13 @@ void sequencer_init(void);
 // be handled, if it is not an FSM event it will be skipped. If it is an unexpected FSM event the
 // sequence will restart.
 //
+// NOTE: this implicitly means any events in the range
+// (NUM_CHAOS_EVENTS_CAN, NUM_CHAOS_EVENTS_FSM) must originate from the sequencer!!! This is to
+// ensure redundancy and allow retry attempts. If this fails 3 times consecutively then a serious
+// fault has occurred with Chaos. We enter the emergency state as something terrible has happened.
+// Realistically this is almost impossible and would only be triggered by relays repeatedly
+// failing to transition.
+//
 // Example flow:
 //
 // ----------------------
