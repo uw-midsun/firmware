@@ -11,14 +11,93 @@
 #include "power_path.h"
 #include "relay_id.h"
 
-#define EMPTY_DATA 0
+#define SEQUENCER_EMPTY_DATA 0
 
+typedef struct SequencerStorage {
+  Event *events_arr;
+  uint16_t num_events;
+  uint16_t event_idx;
+  uint8_t retries;
+} SequencerStorage;
+
+// Statics
 static FSM s_sequencer_fsm;
-static const Event *s_events;
-static uint8_t s_retries = 0;
-static uint16_t s_event_idx;
-static uint16_t s_sizeof_events = 0;
+static SequencerStorage s_storage;
 
+// Event order declarations
+static const Event s_emergency_events[] = {
+  { .id = CHAOS_EVENT_MONITOR_DISABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
+  { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MAIN_POWER },
+  { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_MAIN_POWER },
+  { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
+  { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_REAR },
+  { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
+  { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_FRONT },
+  { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_BATTERY },
+  { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_BATTERY },
+  { .id = CHAOS_EVENT_GPIO_EMERGENCY, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_SEQUENCE_EMERGENCY_DONE, .data = SEQUENCER_EMPTY_DATA },
+};
+
+static const Event s_idle_events[] = {
+  { .id = CHAOS_EVENT_MONITOR_DISABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
+  { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MAIN_POWER },
+  { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_MAIN_POWER },
+  { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
+  { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_REAR },
+  { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
+  { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_FRONT },
+  { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_BATTERY },
+  { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_BATTERY },
+  { .id = CHAOS_EVENT_GPIO_IDLE, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_SEQUENCE_IDLE_DONE, .data = SEQUENCER_EMPTY_DATA },
+};
+
+static const Event s_charge_events[] = {
+  { .id = CHAOS_EVENT_GPIO_CHARGE, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY },
+  { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY },
+  { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
+  { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR },
+  { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
+  { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT },
+  { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MAIN_POWER },
+  { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MAIN_POWER },
+  { .id = CHAOS_EVENT_MONITOR_ENABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
+  { .id = CHAOS_EVENT_SEQUENCE_CHARGE_DONE, .data = SEQUENCER_EMPTY_DATA },
+};
+
+static const Event s_drive_events[] = {
+  { .id = CHAOS_EVENT_GPIO_DRIVE, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY },
+  { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY },
+  { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
+  { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR },
+  { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
+  { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT },
+  { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MAIN_POWER },
+  { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA },
+  { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MAIN_POWER },
+  { .id = CHAOS_EVENT_MONITOR_ENABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
+  { .id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE, .data = SEQUENCER_EMPTY_DATA },
+};
+
+// FSM Setup
 FSM_DECLARE_STATE(sequencer_state_emergency);
 FSM_DECLARE_STATE(sequencer_state_idle);
 FSM_DECLARE_STATE(sequencer_state_charge);
@@ -49,119 +128,51 @@ FSM_STATE_TRANSITION(sequencer_state_drive) {
   FSM_ADD_TRANSITION(CHAOS_EVENT_SEQUENCE_RESET, sequencer_state_drive);
 }
 
+// FSM Transitions
 static void prv_sequencer_state_emergency(FSM *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
-  (void)context;
-  static const Event emergency_events[] = {
-    { .id = CHAOS_EVENT_MONITOR_DISABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
-    { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MAIN_POWER },
-    { .id = CHAOS_EVENT_NO_OP, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_MAIN_POWER },
-    { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
-    { .id = CHAOS_EVENT_NO_OP, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_REAR },
-    { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
-    { .id = CHAOS_EVENT_NO_OP, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_FRONT },
-    { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_BATTERY },
-    { .id = CHAOS_EVENT_NO_OP, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_BATTERY },
-    { .id = CHAOS_EVENT_GPIO_EMERGENCY, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_SEQUENCE_EMERGENCY_DONE, .data = EMPTY_DATA },
-  };
-  s_event_idx = 0;
-  s_sizeof_events = SIZEOF_ARRAY(emergency_events);
-  s_events = emergency_events;
+  SequencerStorage *storage = context;
+  storage->event_idx = 0;
+  storage->num_events = SIZEOF_ARRAY(s_emergency_events);
+  storage->events_arr = (Event *)s_emergency_events;
 }
 
 static void prv_sequencer_state_idle(FSM *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
-  (void)context;
-  static const Event idle_events[] = {
-    { .id = CHAOS_EVENT_MONITOR_DISABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
-    { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MAIN_POWER },
-    { .id = CHAOS_EVENT_NO_OP, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_MAIN_POWER },
-    { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
-    { .id = CHAOS_EVENT_NO_OP, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_REAR },
-    { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
-    { .id = CHAOS_EVENT_NO_OP, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_FRONT },
-    { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_BATTERY },
-    { .id = CHAOS_EVENT_NO_OP, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_BATTERY },
-    { .id = CHAOS_EVENT_GPIO_IDLE, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_SEQUENCE_IDLE_DONE, .data = EMPTY_DATA },
-  };
-  s_event_idx = 0;
-  s_sizeof_events = SIZEOF_ARRAY(idle_events);
-  s_events = idle_events;
+  SequencerStorage *storage = context;
+  storage->event_idx = 0;
+  storage->num_events = SIZEOF_ARRAY(s_idle_events);
+  storage->events_arr = (Event *)s_idle_events;
 }
 
 static void prv_sequencer_state_charge(FSM *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
-  (void)context;
-  static const Event charge_events[] = {
-    { .id = CHAOS_EVENT_GPIO_CHARGE, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY },
-    { .id = CHAOS_EVENT_NO_OP, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY },
-    { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
-    { .id = CHAOS_EVENT_NO_OP, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR },
-    { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
-    { .id = CHAOS_EVENT_NO_OP, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT },
-    { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MAIN_POWER },
-    { .id = CHAOS_EVENT_NO_OP, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MAIN_POWER },
-    { .id = CHAOS_EVENT_MONITOR_ENABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
-    { .id = CHAOS_EVENT_SEQUENCE_CHARGE_DONE, .data = EMPTY_DATA },
-  };
-  s_event_idx = 0;
-  s_sizeof_events = SIZEOF_ARRAY(charge_events);
-  s_events = charge_events;
+  SequencerStorage *storage = context;
+  storage->event_idx = 0;
+  storage->num_events = SIZEOF_ARRAY(s_charge_events);
+  storage->events_arr = (Event *)s_charge_events;
 }
 
 static void prv_sequencer_state_drive(FSM *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
-  (void)context;
-  static const Event drive_events[] = {
-    { .id = CHAOS_EVENT_GPIO_DRIVE, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY },
-    { .id = CHAOS_EVENT_NO_OP, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY },
-    { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
-    { .id = CHAOS_EVENT_NO_OP, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR },
-    { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
-    { .id = CHAOS_EVENT_NO_OP, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT },
-    { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MAIN_POWER },
-    { .id = CHAOS_EVENT_NO_OP, .data = EMPTY_DATA },
-    { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MAIN_POWER },
-    { .id = CHAOS_EVENT_MONITOR_ENABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
-    { .id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE, .data = EMPTY_DATA },
-  };
-  s_event_idx = 0;
-  s_sizeof_events = SIZEOF_ARRAY(drive_events);
-  s_events = drive_events;
+  SequencerStorage *storage = context;
+  storage->event_idx = 0;
+  storage->num_events = SIZEOF_ARRAY(s_drive_events);
+  storage->events_arr = (Event *)s_drive_events;
 }
 
+// Public interface
 void sequencer_init(void) {
-  s_retries = 0;
+  memset(&s_storage, 0, sizeof(s_storage));
   fsm_state_init(sequencer_state_emergency, prv_sequencer_state_emergency);
   fsm_state_init(sequencer_state_idle, prv_sequencer_state_idle);
   fsm_state_init(sequencer_state_charge, prv_sequencer_state_charge);
   fsm_state_init(sequencer_state_drive, prv_sequencer_state_drive);
-  fsm_init(&s_sequencer_fsm, "SequenceFSM", &sequencer_state_idle, NULL);
-  // Invalid event_idx since vehicle starts IDLE.
-  s_event_idx = UINT16_MAX;
+  fsm_init(&s_sequencer_fsm, "SequenceFSM", &sequencer_state_idle, &s_storage);
 }
 
 StatusCode sequencer_publish_next_event(const Event *previous_event) {
@@ -170,7 +181,7 @@ StatusCode sequencer_publish_next_event(const Event *previous_event) {
         previous_event->id == CHAOS_EVENT_SEQUENCE_EMERGENCY_DONE)) {
     // Not in the range of handled events. This isn't necessarily invalid but won't be handled so
     // return unknown.
-    return STATUS_CODE_UNKNOWN;
+    return status_code(STATUS_CODE_UNKNOWN);
   } else if (previous_event->id == CHAOS_EVENT_NO_OP) {
     return STATUS_CODE_OK;
   }
@@ -188,15 +199,16 @@ StatusCode sequencer_publish_next_event(const Event *previous_event) {
   }
 
   // Stop if there are no more events.
-  if (s_event_idx >= s_sizeof_events) {
-    s_retries = 0;
+  if (s_storage.event_idx >= s_storage.num_events) {
+    s_storage.retries = 0;
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
   // If the s_event_idx == 0 we have no need to check the previous event.
-  if (s_event_idx == 0) {
-    event_raise(s_events[s_event_idx].id, s_events[s_event_idx].data);
-    s_event_idx++;
+  if (s_storage.event_idx == 0) {
+    event_raise(s_storage.events_arr[s_storage.event_idx].id,
+                s_storage.events_arr[s_storage.event_idx].data);
+    s_storage.event_idx++;
     return STATUS_CODE_OK;
   }
 
@@ -207,9 +219,9 @@ StatusCode sequencer_publish_next_event(const Event *previous_event) {
   // fault has occurred with Chaos. We enter the emergency state as something terrible has happened.
   // Realistically this is almost impossible and would only be triggered by relays repeatedly
   // failing to transition.
-  if (memcmp(previous_event, &s_events[s_event_idx - 1], sizeof(Event)) != 0) {
-    s_retries++;
-    if (s_retries >= 3) {
+  if (memcmp(previous_event, &s_storage.events_arr[s_storage.event_idx - 1], sizeof(Event)) != 0) {
+    s_storage.retries++;
+    if (s_storage.retries >= 3) {
       event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, 0);
       return status_msg(STATUS_CODE_INTERNAL_ERROR, "Consistent failure! Emergency");
     }
@@ -217,15 +229,15 @@ StatusCode sequencer_publish_next_event(const Event *previous_event) {
     return status_msg(STATUS_CODE_INTERNAL_ERROR, "Restarting Sequence");
   }
 
-  Event event = s_events[s_event_idx];
+  Event event = s_storage.events_arr[s_storage.event_idx];
   if (event.id == CHAOS_EVENT_NO_OP) {
     // Skip the event we have to wait on an external event. This works by skipping the NO_OP and the
     // expected event in the list. Then when processing the next event we check the expected event.
-    s_event_idx += 2;
+    s_storage.event_idx += 2;
   } else {
     // Raise the next event to execute.
     event_raise(event.id, event.data);
-    s_event_idx++;
+    s_storage.event_idx++;
   }
   return STATUS_CODE_OK;
 }
