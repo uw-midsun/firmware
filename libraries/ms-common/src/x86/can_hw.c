@@ -1,17 +1,22 @@
 #include "can_hw.h"
+
 #include <fcntl.h>
 #include <linux/can.h>
 #include <linux/can/raw.h>
 #include <net/if.h>
 #include <poll.h>
 #include <pthread.h>
+#include <semaphore.h>
+#include <signal.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 #include "fifo.h"
+#include "interrupt_def.h"
 #include "log.h"
 
 #define CAN_HW_DEV_INTERFACE "vcan0"
@@ -36,10 +41,11 @@ typedef struct CANHwSocketData {
   uint32_t delay_us;
 } CANHwSocketData;
 
+static sigset_t s_signal_mask;
 static pthread_t s_rx_pthread_id;
 static pthread_t s_tx_pthread_id;
-static pthread_mutex_t s_tx_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t s_tx_cond = PTHREAD_COND_INITIALIZER;
+// Producer/Consumer semaphore
+static sem_t s_tx_sem;
 
 // Locked if the TX/RX threads should be alive, unlocked on exit
 static pthread_mutex_t s_keep_alive = PTHREAD_MUTEX_INITIALIZER;
@@ -58,6 +64,7 @@ static uint32_t prv_get_delay(CANHwBitrate bitrate) {
 }
 
 static void *prv_rx_thread(void *arg) {
+  pthread_sigmask(SIG_BLOCK, &s_signal_mask, NULL);
   LOG_DEBUG("CAN HW RX thread started\n");
 
   struct timeval timeout = { .tv_usec = CAN_HW_THREAD_EXIT_PERIOD_US };
@@ -91,25 +98,15 @@ static void *prv_rx_thread(void *arg) {
 }
 
 static void *prv_tx_thread(void *arg) {
+  pthread_sigmask(SIG_BLOCK, &s_signal_mask, NULL);
   LOG_DEBUG("CAN HW TX thread started\n");
   struct can_frame frame = { 0 };
 
   // Mutex is unlocked when the thread should exit
   while (pthread_mutex_trylock(&s_keep_alive) != 0) {
-    pthread_mutex_lock(&s_tx_mutex);
-    while (fifo_size(&s_socket_data.tx_fifo) == 0) {
-      pthread_cond_wait(&s_tx_cond, &s_tx_mutex);
-
-      if (pthread_mutex_trylock(&s_keep_alive) == 0) {
-        // Mutex was unlocked and we were able to lock it
-        pthread_mutex_unlock(&s_keep_alive);
-        break;
-      }
-    }
-
+    // Wait until the producer has created an item
+    sem_wait(&s_tx_sem);
     fifo_pop(&s_socket_data.tx_fifo, &frame);
-    pthread_mutex_unlock(&s_tx_mutex);
-
     int bytes = write(s_socket_data.can_fd, &frame, sizeof(frame));
 
     // Delay to simulate bus speed
@@ -127,6 +124,11 @@ static void *prv_tx_thread(void *arg) {
 }
 
 StatusCode can_hw_init(const CANHwSettings *settings) {
+  sigemptyset(&s_signal_mask);
+  sigaddset(&s_signal_mask, SIGRTMIN + INTERRUPT_PRIORITY_LOW);
+  sigaddset(&s_signal_mask, SIGRTMIN + INTERRUPT_PRIORITY_NORMAL);
+  sigaddset(&s_signal_mask, SIGRTMIN + INTERRUPT_PRIORITY_HIGH);
+
   if (s_socket_data.can_fd != -1) {
     // Request threads to exit
     close(s_socket_data.can_fd);
@@ -135,17 +137,16 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
 
     pthread_join(s_rx_pthread_id, NULL);
 
-    // Signal condition variable in case TX thread is waiting
-    pthread_mutex_lock(&s_tx_mutex);
-    pthread_mutex_unlock(&s_tx_mutex);
-    pthread_cond_signal(&s_tx_cond);
+    // Allow the TX thread to continue
+    sem_post(&s_tx_sem);
 
+    sem_destroy(&s_tx_sem);
     pthread_join(s_tx_pthread_id, NULL);
   }
 
   pthread_mutex_init(&s_keep_alive, NULL);
-  pthread_mutex_init(&s_tx_mutex, NULL);
-  pthread_cond_init(&s_tx_cond, NULL);
+  // Init semaphore to thread-shared and locked
+  sem_init(&s_tx_sem, 0, 0);
 
   pthread_mutex_lock(&s_keep_alive);
 
@@ -237,16 +238,13 @@ StatusCode can_hw_transmit(uint32_t id, bool extended, const uint8_t *data, size
   struct can_frame frame = { .can_id = (id & mask) | extended_bit, .can_dlc = len };
   memcpy(&frame.data, data, len);
 
-  pthread_mutex_lock(&s_tx_mutex);
   StatusCode ret = fifo_push(&s_socket_data.tx_fifo, &frame);
   if (ret != STATUS_CODE_OK) {
     // Fifo is full
-    pthread_mutex_unlock(&s_tx_mutex);
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN HW TX failed");
   }
-
-  pthread_cond_signal(&s_tx_cond);
-  pthread_mutex_unlock(&s_tx_mutex);
+  // Unblock TX thread
+  sem_post(&s_tx_sem);
 
   return STATUS_CODE_OK;
 }

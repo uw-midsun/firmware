@@ -7,6 +7,11 @@
 
 #include "status.h"
 
+// Technically the maximum is 163.5ms, which occurs in 50Hz mode
+// We just add 40ms to be safe (which is plenty, especially since soft-timers
+// should never under-count the time duration
+#define LTC2484_MAX_CONVERSION_TIME_MS (200)
+
 // commands
 // see datasheet Table 1 (p. 14) for these command values
 #define LTC2484_ENABLE (1 << 7)
