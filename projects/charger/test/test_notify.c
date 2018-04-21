@@ -22,7 +22,7 @@
 #define TEST_NOTIFY_WATCHDOG_PERIOD_S 2
 #define TEST_NOTIFY_NUM_CAN_RX_HANDLERS 4
 
-static uint8_t s_permission;
+static uint8_t s_response;
 static GenericCanNetwork s_generic_can;
 static CANStorage s_can_storage;
 static CANRxHandler s_rx_handlers[TEST_NOTIFY_NUM_CAN_RX_HANDLERS];
@@ -85,9 +85,9 @@ void setup_test(void) {
   TEST_ASSERT_OK(
       can_init(&can_settings, &s_can_storage, s_rx_handlers, TEST_NOTIFY_NUM_CAN_RX_HANDLERS));
   TEST_ASSERT_OK(generic_can_network_init(&s_generic_can));
-  const CANId id = { .msg_id = SYSTEM_CAN_MESSAGE_CHARGING_REQ };
   TEST_ASSERT_OK(generic_can_register_rx((GenericCan *)&s_generic_can, prv_callback,
-                                         GENERIC_CAN_EMPTY_MASK, id.raw, false, &s_permission));
+                                         GENERIC_CAN_EMPTY_MASK, SYSTEM_CAN_MESSAGE_CHARGING_REQ,
+                                         false, &s_response));
   can_interval_init();
 }
 
@@ -100,8 +100,8 @@ void test_permissions(void) {
   Event e = { 0, 0 };
   StatusCode status = NUM_STATUS_CODES;
 
-  // Permitted
-  s_permission = true;
+  // Charge
+  s_response = true;
   notify_post();
   // Do twice to ensure the watchdog doesn't get triggered
   prv_transmit(1);
@@ -116,8 +116,8 @@ void test_permissions(void) {
   } while (status != STATUS_CODE_OK);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_START_CHARGING, e.id);
 
-  // Not Permitted
-  s_permission = false;
+  // Don't charge
+  s_response = false;
   prv_transmit(1);
   do {
     status = event_process(&e);
@@ -125,7 +125,7 @@ void test_permissions(void) {
   TEST_ASSERT_EQUAL(CHARGER_EVENT_STOP_CHARGING, e.id);
 
   // Watchdog
-  s_permission = UINT8_MAX;
+  s_response = UINT8_MAX;
   e.id = UINT16_MAX;
   while (e.id != CHARGER_EVENT_STOP_CHARGING) {
     do {
@@ -137,8 +137,8 @@ void test_permissions(void) {
   }
 
   // Check still running
-  // Permitted
-  s_permission = true;
+  // Charge
+  s_response = true;
   prv_transmit(1);
   do {
     status = event_process(&e);

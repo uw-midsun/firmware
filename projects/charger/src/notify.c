@@ -16,7 +16,6 @@
 
 static uint32_t s_watchdog_period_s;
 static CanInterval *s_interval;
-static GenericCanMsg s_msg;
 static SoftTimerID s_watchdog = SOFT_TIMER_INVALID_TIMER;
 
 // Watchdog activated when commanded to start. Requires reaffirmation every minute or it will cease
@@ -54,21 +53,21 @@ StatusCode notify_init(GenericCan *can, uint32_t send_period_s, uint32_t watchdo
 
   CANMessage msg = { 0 };
   CAN_PACK_CHARGING_REQ(&msg);
-  status_ok_or_return(can_message_to_generic_can_message(&msg, &s_msg));
+  GenericCanMsg generic_msg;
+  status_ok_or_return(can_message_to_generic_can_message(&msg, &generic_msg));
 
-  status_ok_or_return(can_interval_factory(can, &s_msg, send_period_s * 1000000, &s_interval));
-  const CANId id = { .msg_id = SYSTEM_CAN_MESSAGE_CHARGING_PERMISSION };
-  return generic_can_register_rx(can, prv_command_rx, GENERIC_CAN_EMPTY_MASK, id.raw, false, NULL);
+  status_ok_or_return(
+      can_interval_factory(can, &generic_msg, send_period_s * 1000000, &s_interval));
+  return generic_can_register_rx(can, prv_command_rx, GENERIC_CAN_EMPTY_MASK,
+                                 SYSTEM_CAN_MESSAGE_CHARGING_PERMISSION, false, NULL);
 }
 
 void notify_post(void) {
-  const CANId id = { .msg_id = SYSTEM_CAN_MESSAGE_CHARGING_PERMISSION };
-  can_interval_enable(s_interval);
   // Don't start the watchdog until the first message is received.
+  can_interval_enable(s_interval);
 }
 
 void notify_cease(void) {
-  const CANId id = { .msg_id = SYSTEM_CAN_MESSAGE_CHARGING_PERMISSION };
   can_interval_disable(s_interval);
   soft_timer_cancel(s_watchdog);
   s_watchdog = SOFT_TIMER_INVALID_TIMER;
