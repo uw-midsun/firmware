@@ -18,6 +18,7 @@ typedef union ChargerCanJ1939Id {
 typedef enum ChargerCanState {
   CHARGER_STATE_START = 0,
   CHARGER_STATE_STOP = 1,
+  CHARGER_STATE_OFF = 2,
   NUM_CHARGER_STATES,
 } ChargerCanState;
 

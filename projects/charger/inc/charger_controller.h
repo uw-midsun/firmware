@@ -22,6 +22,9 @@ typedef struct ChargerSettings {
 StatusCode charger_controller_init(ChargerSettings *settings, ChargerCanStatus *status);
 
 // Communicates with charger regarding what should be happening.
+// CHARGER_STATE_START - Start charging.
+// CHARGER_STATE_STOP  - Stop charging.
+// CHARGER_STATE_OFF   - Charger is disconnected. Send one stop signal then turn off.
 StatusCode charger_controller_set_state(ChargerCanState state);
 
 // Checks that |status| indicates a safe state.

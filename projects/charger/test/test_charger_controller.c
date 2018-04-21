@@ -106,13 +106,8 @@ void test_charger_controller(void) {
   Event e = { 0, 0 };
   ChargerCanStatus status = { 0 };
 
-  // Starts in stop mode
-  s_expected_state = CHARGER_STATE_STOP;
-  s_received = false;
+  // Starts in off.
   TEST_ASSERT_OK(charger_controller_init(&settings, &status));
-  // Let the callback trigger
-  while (!s_received) {
-  }
 
   // Start the charger
   s_expected_state = CHARGER_STATE_START;
@@ -149,7 +144,7 @@ void test_charger_controller(void) {
   while (!s_received) {
   }
 
-  TEST_ASSERT_EQUAL(4, s_counter);
+  TEST_ASSERT_EQUAL(3, s_counter);
 }
 
 void test_charger_controller_status(void) {
@@ -166,4 +161,55 @@ void test_charger_controller_status(void) {
     status.raw = i;
     TEST_ASSERT_FALSE(charger_controller_is_safe(status));
   }
+}
+
+void test_charger_controller_off(void) {
+  GenericCan *can = (GenericCan *)&s_can;
+  ChargerCanStatus returned_status = { 0 };
+
+  TEST_ASSERT_OK(generic_can_register_rx(can, prv_rx_handler, GENERIC_CAN_EMPTY_MASK,
+                                         TEST_CHARGER_EXPECTED_RX_ID, true, &returned_status));
+
+  ChargerSettings settings = {
+    .max_voltage = TEST_CHARGER_MAX_VOLTAGE,
+    .max_current = TEST_CHARGER_MAX_CURRENT,
+    .can = can,  // Use pure HW can for both CAN and CAN UART since Extended support is needed while
+                 // mocking.
+    .can_uart = can,
+  };
+
+  Event e = { 0, 0 };
+  ChargerCanStatus status = { 0 };
+
+  // Starts in off.
+  TEST_ASSERT_OK(charger_controller_init(&settings, &status));
+
+  // Start the charger in stop
+  s_expected_state = CHARGER_STATE_STOP;
+  s_received = false;
+  TEST_ASSERT_OK(charger_controller_set_state(CHARGER_STATE_STOP));
+  // Let the callback trigger
+  while (!s_received) {
+  }
+
+  // Start the charger
+  s_expected_state = CHARGER_STATE_START;
+  s_received = false;
+  TEST_ASSERT_OK(charger_controller_set_state(CHARGER_STATE_START));
+  // Let the callback trigger
+  while (!s_received) {
+  }
+
+  // Turn off the charger
+  s_expected_state = CHARGER_STATE_STOP;
+  s_received = false;
+  TEST_ASSERT_OK(charger_controller_set_state(CHARGER_STATE_OFF));
+  // Let the callback trigger
+  while (!s_received) {
+  }
+
+  // Delay until sending is validated to stop (sends every second).
+  delay_ms(1500);
+
+  TEST_ASSERT_EQUAL(3, s_counter);
 }

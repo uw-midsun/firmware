@@ -78,25 +78,28 @@ StatusCode charger_controller_init(ChargerSettings *settings, ChargerCanStatus *
   status_ok_or_return(generic_can_register_rx(settings->can_uart, prv_rx_handler,
                                               GENERIC_CAN_EMPTY_MASK, s_rx_id.raw_id, true,
                                               settings->can));
-  status_ok_or_return(can_interval_enable(s_interval));
   return STATUS_CODE_OK;
 }
 
 StatusCode charger_controller_set_state(ChargerCanState state) {
   if (state >= NUM_CHARGER_STATES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
-  } else if (!charger_controller_is_safe(*s_charger_status)) {
+  } else if (s_charger_status == NULL || !charger_controller_is_safe(*s_charger_status)) {
     // Unsafe to start
     return status_code(STATUS_CODE_INTERNAL_ERROR);
   }
-  // TODO(ELEC-355): Consider disabling rx rebroadcasts if off (1/s).
 
   ChargerCanTxData tx_data = {
     .raw_data = s_interval->msg.data,
   };
 
-  tx_data.data_impl.charging = state;
+  tx_data.data_impl.charging = state ? CHARGER_STATE_STOP : CHARGER_STATE_START;
   s_interval->msg.data = tx_data.raw_data;
+
+  if (state == CHARGER_STATE_OFF) {
+    status_ok_or_return(can_interval_send_now(s_interval));
+    return can_interval_disable(s_interval);
+  }
   return can_interval_send_now(s_interval);
 }
 
