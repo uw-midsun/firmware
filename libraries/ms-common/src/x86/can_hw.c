@@ -5,13 +5,13 @@
 #include <net/if.h>
 #include <poll.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <semaphore.h>
 #include "fifo.h"
 #include "log.h"
 
