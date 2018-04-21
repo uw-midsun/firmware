@@ -10,25 +10,33 @@
 #include "gpio_seq.h"
 #include "misc.h"
 
-#define GPIO_FSM_SLEW_RATE 10
+#define GPIO_FSM_SLEW_RATE_US 10
 
 static FSM s_gpio_fsm;
 
 FSM_DECLARE_STATE(gpio_state_idle);
 FSM_DECLARE_STATE(gpio_state_charge);
 FSM_DECLARE_STATE(gpio_state_drive);
+FSM_DECLARE_STATE(gpio_state_emergency);
+
+FSM_STATE_TRANSITION(gpio_state_emergency) {
+  FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_IDLE, gpio_state_idle);
+}
 
 FSM_STATE_TRANSITION(gpio_state_idle) {
   FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_CHARGE, gpio_state_charge);
   FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_DRIVE, gpio_state_drive);
+  FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_EMERGENCY, gpio_state_emergency);
 }
 
 FSM_STATE_TRANSITION(gpio_state_charge) {
   FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_IDLE, gpio_state_idle);
+  FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_EMERGENCY, gpio_state_emergency);
 }
 
 FSM_STATE_TRANSITION(gpio_state_drive) {
   FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_IDLE, gpio_state_idle);
+  FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_EMERGENCY, gpio_state_emergency);
 }
 
 static void prv_gpio_state_idle(FSM *fsm, const Event *e, void *context) {
@@ -39,7 +47,7 @@ static void prv_gpio_state_idle(FSM *fsm, const Event *e, void *context) {
     cfg->battery_box_power,
   };
 
-  gpio_seq_set_state(sequence, SIZEOF_ARRAY(sequence), GPIO_STATE_LOW, GPIO_FSM_SLEW_RATE);
+  gpio_seq_set_state(sequence, SIZEOF_ARRAY(sequence), GPIO_STATE_LOW, GPIO_FSM_SLEW_RATE_US);
 }
 
 static void prv_gpio_state_charge(FSM *fsm, const Event *e, void *context) {
@@ -51,7 +59,7 @@ static void prv_gpio_state_charge(FSM *fsm, const Event *e, void *context) {
     cfg->rear_lights_power,
   };
 
-  gpio_seq_set_state(sequence, SIZEOF_ARRAY(sequence), GPIO_STATE_HIGH, GPIO_FSM_SLEW_RATE);
+  gpio_seq_set_state(sequence, SIZEOF_ARRAY(sequence), GPIO_STATE_HIGH, GPIO_FSM_SLEW_RATE_US);
 }
 
 static void prv_gpio_state_drive(FSM *fsm, const Event *e, void *context) {
@@ -62,10 +70,12 @@ static void prv_gpio_state_drive(FSM *fsm, const Event *e, void *context) {
     cfg->rear_lights_power,
   };
 
-  gpio_seq_set_state(sequence, SIZEOF_ARRAY(sequence), GPIO_STATE_HIGH, GPIO_FSM_SLEW_RATE);
+  gpio_seq_set_state(sequence, SIZEOF_ARRAY(sequence), GPIO_STATE_HIGH, GPIO_FSM_SLEW_RATE_US);
 }
 
 void gpio_fsm_init(const ChaosConfig *cfg) {
+  fsm_state_init(gpio_state_emergency,
+                 prv_gpio_state_idle);  // Emergency should behave identically to Idle.
   fsm_state_init(gpio_state_idle, prv_gpio_state_idle);
   fsm_state_init(gpio_state_charge, prv_gpio_state_charge);
   fsm_state_init(gpio_state_drive, prv_gpio_state_drive);
@@ -83,7 +93,7 @@ void gpio_fsm_init(const ChaosConfig *cfg) {
   };
 
   gpio_seq_init_pins(init_high_sequence, SIZEOF_ARRAY(init_high_sequence), &settings,
-                     GPIO_FSM_SLEW_RATE);
+                     GPIO_FSM_SLEW_RATE_US);
 
   const GPIOAddress init_low_sequence[] = {
     cfg->motor_interface_power, cfg->rear_camera_power,    cfg->front_lights_power,
@@ -93,7 +103,7 @@ void gpio_fsm_init(const ChaosConfig *cfg) {
   settings.state = GPIO_STATE_LOW;
 
   gpio_seq_init_pins(init_low_sequence, SIZEOF_ARRAY(init_low_sequence), &settings,
-                     GPIO_FSM_SLEW_RATE);
+                     GPIO_FSM_SLEW_RATE_US);
 }
 
 bool gpio_fsm_process_event(const Event *e) {
