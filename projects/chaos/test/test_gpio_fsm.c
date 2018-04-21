@@ -38,6 +38,26 @@ void test_gpio_fsm(void) {
   e.id = CHAOS_EVENT_GPIO_IDLE;
   TEST_ASSERT_TRUE(gpio_fsm_process_event(&e));
 
+  // Valid: idle -> charge
+  e.id = CHAOS_EVENT_GPIO_CHARGE;
+  TEST_ASSERT_TRUE(gpio_fsm_process_event(&e));
+
+  // Valid: charge -> emergency
+  e.id = CHAOS_EVENT_GPIO_EMERGENCY;
+  TEST_ASSERT_TRUE(gpio_fsm_process_event(&e));
+
+  // Invalid: emergency -> charge
+  e.id = CHAOS_EVENT_GPIO_CHARGE;
+  TEST_ASSERT_FALSE(gpio_fsm_process_event(&e));
+
+  // Invalid: emergency -> drive
+  e.id = CHAOS_EVENT_GPIO_DRIVE;
+  TEST_ASSERT_FALSE(gpio_fsm_process_event(&e));
+
+  // Valid: emergency -> idle
+  e.id = CHAOS_EVENT_GPIO_IDLE;
+  TEST_ASSERT_TRUE(gpio_fsm_process_event(&e));
+
   // Valid: idle -> drive
   e.id = CHAOS_EVENT_GPIO_DRIVE;
   TEST_ASSERT_TRUE(gpio_fsm_process_event(&e));
@@ -48,5 +68,13 @@ void test_gpio_fsm(void) {
 
   // Valid: drive -> idle
   e.id = CHAOS_EVENT_GPIO_IDLE;
+  TEST_ASSERT_TRUE(gpio_fsm_process_event(&e));
+
+  // Valid: idle -> drive
+  e.id = CHAOS_EVENT_GPIO_DRIVE;
+  TEST_ASSERT_TRUE(gpio_fsm_process_event(&e));
+
+  // Valid: drive -> emergency
+  e.id = CHAOS_EVENT_GPIO_EMERGENCY;
   TEST_ASSERT_TRUE(gpio_fsm_process_event(&e));
 }
