@@ -79,6 +79,9 @@ void test_drive_basic(void) {
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_POWER, true);
 
+  LOG_DEBUG("Moving direction to reverse\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, true);
+
   // Power should now be on - process events before the watchdog faults
   LOG_DEBUG("Expecting drive update requests\n");
   delay_ms(DRIVE_OUTPUT_BROADCAST_MS);
@@ -143,50 +146,10 @@ void test_drive_charge(void) {
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, false);
 }
 
-// Verifies basic interlocks
-// goal: ensure that we can't power on or off in invalid situations
-void test_drive_power_interlock(void) {
-  Event e = { 0 };
-
-  LOG_DEBUG("Moving to powered state\n");
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_POWER, true);
-
-  LOG_DEBUG("Releasing mechanical brake and starting to drive\n");
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, true);
-
-  LOG_DEBUG("Attempting to power off (should fail)\n");
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_POWER, false);
-
-  LOG_DEBUG("Switching into cruise and attempting to turn power off\n");
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CRUISE_CONTROL, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL, false);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_POWER, false);
-
-  LOG_DEBUG("Exiting cruise and attempting to turn power off\n");
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CRUISE_CONTROL, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_POWER, false);
-  prv_dump_fsms();
-
-  LOG_DEBUG("Attempting to switch to neutral using regen brake\n");
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_BRAKE, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_NEUTRAL, false);
-  prv_dump_fsms();
-}
-
-// Basically, the direction FSM is used to ensure that power is never switched off while the car is
-// not in neutral
-// The mechanical brake FSM is used to ensure that the direction FSM is only changed while
-// mechanical brakes are active
-// The pedal FSM is also switched into the brake state and held there
-
 void test_drive_cruise(void) {
   LOG_DEBUG("Moving to powered drive\n");
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_POWER, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
 
   LOG_DEBUG("Attempting to enter cruise from braking state\n");
@@ -224,4 +187,45 @@ void test_drive_cruise(void) {
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_BRAKE, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_COAST, true);
   prv_dump_fsms();
+}
+
+void test_drive_fault(void) {
+  Event e;
+
+  LOG_DEBUG("Moving to powered drive\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_POWER, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, true);
+
+  LOG_DEBUG("Raising fault\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_BPS_FAULT, true);
+
+  // Fault occurred - almost all events are disabled
+  // TODO: fault should probably have a new output state that resets things?
+  LOG_DEBUG("Raising a bunch of events\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, false);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_TURN_SIGNAL_LEFT, false);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, false);
+
+  // Make sure that drive commands are not sent
+  delay_ms(DRIVE_OUTPUT_WATCHDOG_MS);
+
+  // No update or fault event should be raised
+  LOG_DEBUG("Ensuring that no drive commands were sent\n");
+  StatusCode ret = event_process(&e);
+  TEST_ASSERT_NOT_OK(ret);
+
+  LOG_DEBUG("Clearing fault\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_POWER, true);
+
+  LOG_DEBUG("Powering on\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_POWER, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_POWER, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
+
+  LOG_DEBUG("Checking for new drive commands\n");
+  delay_ms(DRIVE_OUTPUT_BROADCAST_MS);
+  prv_clock_update_request();
 }

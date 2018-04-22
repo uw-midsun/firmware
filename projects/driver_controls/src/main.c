@@ -6,8 +6,6 @@
 #include "i2c.h"
 #include "interrupt.h"
 
-#include "analog_io.h"
-#include "digital_io.h"
 #include "event_arbiter.h"
 #include "input_event.h"
 
@@ -45,9 +43,6 @@ int main() {
   soft_timer_init();
 
   adc_init(ADC_MODE_CONTINUOUS);
-
-  digital_io_init();
-  analog_io_init();
 
   event_queue_init();
 

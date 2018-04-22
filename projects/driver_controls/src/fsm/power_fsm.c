@@ -5,6 +5,11 @@
 //      to transition from the off to the charging state, and vice versa
 //    - Pressing the power button while the mechanical brake is held down will cause the car
 //      to transition between the off and the on state.
+// Note that the additional "brake" states are to ensure that braking behavior is consistent
+// i.e. If the mechanical brake is held during a fault, it does not need to be released and
+// reapplied when pressing the power button to enter drive. If these states did not exist, the car
+// would enter charging instead as the mechanical brake state is lost.
+// The alternative would be to use guarded transitions and expose the mechanical brake state.
 
 #include "power_fsm.h"
 #include "drive_output.h"
@@ -19,7 +24,9 @@ FSM_DECLARE_STATE(state_off_brake);
 FSM_DECLARE_STATE(state_charging);
 FSM_DECLARE_STATE(state_charging_brake);
 FSM_DECLARE_STATE(state_on);
+FSM_DECLARE_STATE(state_on_brake);
 FSM_DECLARE_STATE(state_fault);
+FSM_DECLARE_STATE(state_fault_brake);
 
 // Power FSM transition table definitions
 
@@ -34,7 +41,7 @@ FSM_STATE_TRANSITION(state_off_brake) {
   FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_on);
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_off);
 
-  FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
+  FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault_brake);
 }
 
 FSM_STATE_TRANSITION(state_charging) {
@@ -45,30 +52,46 @@ FSM_STATE_TRANSITION(state_charging) {
 }
 
 FSM_STATE_TRANSITION(state_charging_brake) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_on);
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_on_brake);
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_charging);
 
-  FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
+  FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault_brake);
 }
 
 FSM_STATE_TRANSITION(state_on) {
   FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_off);
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_on_brake);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
 }
 
+FSM_STATE_TRANSITION(state_on_brake) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_off_brake);
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_on);
+
+  FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault_brake);
+}
+
 FSM_STATE_TRANSITION(state_fault) {
   FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_off);
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_fault_brake);
+}
+
+FSM_STATE_TRANSITION(state_fault_brake) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_off_brake);
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_fault);
 }
 
 // Power FSM arbiter functions
 static bool prv_guard_off(const Event *e) {
-  // The only valid events when the car isn't in drive are the power button and mechanical brake.
+  // The only valid events when the car isn't in drive are the power button, mechanical brake,
+  // and fault.
   // This also prevents lights, etc. from being turned on unless the unprotected rail is powered.
   switch (e->id) {
     case INPUT_EVENT_POWER:
     case INPUT_EVENT_MECHANICAL_BRAKE_RELEASED:
     case INPUT_EVENT_MECHANICAL_BRAKE_PRESSED:
+    case INPUT_EVENT_BPS_FAULT:
       return true;
     default:
       return false;
@@ -94,12 +117,15 @@ static void prv_off_output(FSM *fsm, const Event *e, void *context) {
 }
 
 StatusCode power_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
+  // TODO(ELEC_354): could use just a mechanical brake guard in state_off?
   fsm_state_init(state_off, prv_off_output);
-  fsm_state_init(state_off_brake, NULL);
+  fsm_state_init(state_off_brake, prv_off_output);
   fsm_state_init(state_charging, prv_off_output);
-  fsm_state_init(state_charging_brake, NULL);
+  fsm_state_init(state_charging_brake, prv_off_output);
   fsm_state_init(state_on, prv_on_output);
+  fsm_state_init(state_on_brake, prv_on_output);
   fsm_state_init(state_fault, prv_off_output);
+  fsm_state_init(state_fault_brake, prv_off_output);
 
   EventArbiterGuard *guard = event_arbiter_add_fsm(storage, fsm, prv_guard_off);
 

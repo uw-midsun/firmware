@@ -8,8 +8,7 @@
 // * Power FSM only allows power/mechanical braking when off
 // * Mechanical brake FSM prevents exiting braking state when engaged and only allows
 //   gear shifts while engaged
-// * Direction FSM prevents turning off the car when in drive or reverse and prevents
-//   drive/braking in neutral
+// * Direction FSM prevents cruise control in reverse
 // * Pedal FSM is at the bottom - after all operations are filtered, drive output updates
 //   occur in the FSM
 
