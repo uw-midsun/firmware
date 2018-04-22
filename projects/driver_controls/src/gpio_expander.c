@@ -1,44 +1,27 @@
 #include "gpio_expander.h"
-
 #include <stdbool.h>
-
+#include <string.h>
 #include "gpio_it.h"
 #include "i2c.h"
 #include "mcp23008.h"
 
-typedef struct GPIOExpanderInterrupt {
-  GPIOExpanderCallback callback;
-  void *context;
-} GPIOExpanderInterrupt;
-
-static GPIOAddress s_address;
-static I2CPort s_i2c_port;
-
-static GPIOExpanderInterrupt s_interrupts[NUM_GPIO_EXPANDER_PINS];
-
-// Check to see if the pin passed in has a correct value
-static StatusCode prv_pin_is_valid(GPIOExpanderPin pin) {
-  if (pin >= NUM_GPIO_EXPANDER_PINS) {
-    return status_code(STATUS_CODE_INVALID_ARGS);
-  }
-  return STATUS_CODE_OK;
-}
-
+// IO interrupt occurred
 static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
-  uint8_t intf = 0, intcap = 0;
+  GpioExpanderStorage *expander = context;
+  uint8_t intf = 0;
+  uint8_t gpio = 0;
 
-  // Read the contents of the interrupt flag and interrupt capture registers
-  i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_INTF, &intf, 1);
-  i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_INTCAP, &intcap, 1);
+  // Read the contents of the interrupt flag and GPIO registers - INTCAP may have missed a change
+  i2c_read_reg(expander->port, expander->addr, MCP23008_INTF, &intf, 1);
+  i2c_read_reg(expander->port, expander->addr, MCP23008_GPIO, &gpio, 1);
 
   // Identify all pins with a pending interrupt and execute their callbacks
-  GPIOExpanderPin current_pin;
   while (intf != 0) {
-    current_pin = (GPIOExpanderPin)(__builtin_ffs(intf) - 1);
+    GpioExpanderPin current_pin = (GpioExpanderPin)(__builtin_ffs(intf) - 1);
 
-    if (s_interrupts[current_pin].callback != NULL) {
-      s_interrupts[current_pin].callback(current_pin, (intcap >> current_pin) & 1,
-                                         s_interrupts[current_pin].context);
+    if (expander->callbacks[current_pin].func != NULL) {
+      expander->callbacks[current_pin].func(current_pin, (gpio >> current_pin) & 1,
+                                            expander->callbacks[current_pin].context);
     }
 
     intf &= ~(1 << current_pin);
@@ -46,97 +29,102 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
 }
 
 // Set a specific bit in a given register
-static void prv_set_bit(uint8_t reg, GPIOExpanderPin pin, bool bit) {
-  uint8_t data;
-  i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, reg, &data, 1);
+static void prv_set_bit(GpioExpanderStorage *expander, uint8_t reg, GpioExpanderPin pin, bool bit) {
+  uint8_t data = 0;
+  i2c_read_reg(expander->port, expander->addr, reg, &data, 1);
   if (bit) {
     data |= (1 << pin);
   } else {
     data &= ~(1 << pin);
   }
-  i2c_write_reg(s_i2c_port, MCP23008_ADDRESS, reg, &data, 1);
+  i2c_write_reg(expander->port, expander->addr, reg, &data, 1);
 }
 
-StatusCode gpio_expander_init(GPIOAddress address, I2CPort i2c_port) {
-  // Set the static variables
-  s_address = address;
-  s_i2c_port = i2c_port;
+StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioExpanderAddress addr,
+                              const GPIOAddress *interrupt_pin) {
+  if (addr >= NUM_GPIO_EXPANDER_ADDRESSES) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+
+  memset(expander, 0, sizeof(*expander));
+  expander->port = port;
+  expander->addr = MCP23008_ADDRESS + addr;
 
   // Configure the pin to receive interrupts from the MCP23008
   GPIOSettings gpio_settings = { .direction = GPIO_DIR_IN, .alt_function = GPIO_ALTFN_NONE };
   InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_NORMAL };
 
-  gpio_init_pin(&address, &gpio_settings);
-  gpio_it_register_interrupt(&address, &it_settings, INTERRUPT_EDGE_FALLING, prv_interrupt_handler,
-                             NULL);
+  gpio_init_pin(interrupt_pin, &gpio_settings);
+  gpio_it_register_interrupt(interrupt_pin, &it_settings, INTERRUPT_EDGE_FALLING,
+                             prv_interrupt_handler, expander);
 
-  // Initialize the interrupt callbacks to NULL
-  for (uint8_t i = 0; i < NUM_GPIO_EXPANDER_PINS; i++) {
-    s_interrupts[i].callback = NULL;
-  }
-
-  return STATUS_CODE_OK;
+  // Set default configuration: input, interrupt on change, active-low interrupt
+  uint8_t cfg[] = {
+    0xFF,  // IODIR
+    0x0,   // IPOL
+    0x0,   // GPINTEN
+    0x0,   // DEFVAL
+    0x0,   // INTCON
+    0x0,   // IOCON
+    0x0,   // GPPU
+  };
+  return i2c_write_reg(expander->port, expander->addr, MCP23008_IODIR, cfg, SIZEOF_ARRAY(cfg));
 }
 
-StatusCode gpio_expander_init_pin(GPIOExpanderPin pin, GPIOSettings *settings) {
-  StatusCode valid = prv_pin_is_valid(pin);
-  status_ok_or_return(valid);
+StatusCode gpio_expander_init_pin(GpioExpanderStorage *expander, GpioExpanderPin pin,
+                                  const GPIOSettings *settings) {
+  if (pin >= NUM_GPIO_EXPANDER_PINS) {
+    return status_code(STATUS_CODE_OUT_OF_RANGE);
+  }
 
   // Set the direction of the data I/O
-  prv_set_bit(MCP23008_IODIR, pin, (settings->direction == GPIO_DIR_IN));
+  prv_set_bit(expander, MCP23008_IODIR, pin, (settings->direction == GPIO_DIR_IN));
+  // Disable interrupt in case it was set before
+  prv_set_bit(expander, MCP23008_GPINTEN, pin, false);
 
-  if (settings->direction == GPIO_DIR_OUT) {
-    // Set the output state if the pin is an output
-    prv_set_bit(MCP23008_GPIO, pin, (settings->state == GPIO_STATE_HIGH));
-  } else {
-    // Enable interrupts if the pin is an input
-    prv_set_bit(MCP23008_GPINTEN, pin, true);
-
-    // Configure so that any change in value triggers an interrupt
-    prv_set_bit(MCP23008_INTCON, pin, false);
-  }
+  gpio_expander_set_state(expander, pin, settings->state);
 
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_expander_get_state(GPIOExpanderPin pin, GPIOState *state) {
-  StatusCode valid = prv_pin_is_valid(pin);
-  status_ok_or_return(valid);
+StatusCode gpio_expander_get_state(GpioExpanderStorage *expander, GpioExpanderPin pin,
+                                   GPIOState *state) {
+  if (pin >= NUM_GPIO_EXPANDER_PINS) {
+    return status_code(STATUS_CODE_OUT_OF_RANGE);
+  }
 
   // Update our GPIO register value and read the pin state
-  uint8_t data;
-  status_ok_or_return(i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_GPIO, &data, 1));
+  uint8_t data = 0;
+  status_ok_or_return(i2c_read_reg(expander->port, expander->addr, MCP23008_GPIO, &data, 1));
 
   *state = (data >> pin) & 1;
 
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_expander_set_state(GPIOExpanderPin pin, GPIOState new_state) {
-  StatusCode valid = prv_pin_is_valid(pin);
-  status_ok_or_return(valid);
-
-  // Return if the pin is configured as an input
-  uint8_t io_dir;
-  status_ok_or_return(i2c_read_reg(s_i2c_port, MCP23008_ADDRESS, MCP23008_IODIR, &io_dir, 1));
-
-  if ((io_dir >> pin) & 1) {
-    return status_code(STATUS_CODE_INVALID_ARGS);
+StatusCode gpio_expander_set_state(GpioExpanderStorage *expander, GpioExpanderPin pin,
+                                   GPIOState state) {
+  if (pin >= NUM_GPIO_EXPANDER_PINS) {
+    return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 
-  // Set the output latch to the new logical state
-  prv_set_bit(MCP23008_OLAT, pin, new_state);
+  // Write to the GPIO register - updates OLAT (ignored if set to input)
+  prv_set_bit(expander, MCP23008_GPIO, pin, state);
 
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_expander_register_callback(GPIOExpanderPin pin, GPIOExpanderCallback callback,
-                                           void *context) {
-  StatusCode valid = prv_pin_is_valid(pin);
-  status_ok_or_return(valid);
+StatusCode gpio_expander_register_callback(GpioExpanderStorage *expander, GpioExpanderPin pin,
+                                           GpioExpanderCallbackFn callback, void *context) {
+  if (pin >= NUM_GPIO_EXPANDER_PINS) {
+    return status_code(STATUS_CODE_OUT_OF_RANGE);
+  }
 
-  s_interrupts[pin].callback = callback;
-  s_interrupts[pin].context = context;
+  expander->callbacks[pin].func = callback;
+  expander->callbacks[pin].context = context;
+
+  // Enable interrupt
+  prv_set_bit(expander, MCP23008_GPINTEN, pin, true);
 
   return STATUS_CODE_OK;
 }
