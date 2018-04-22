@@ -24,9 +24,8 @@ typedef enum {
 } DriveOutputSource;
 
 typedef enum {
-  DRIVE_OUTPUT_DIRECTION_REVERSE = -1,
-  DRIVE_OUTPUT_DIRECTION_NEUTRAL = 0,
-  DRIVE_OUTPUT_DIRECTION_FORWARD = 1,
+  DRIVE_OUTPUT_DIRECTION_FORWARD = 0,
+  DRIVE_OUTPUT_DIRECTION_REVERSE,
   NUM_DRIVE_OUTPUT_DIRECTIONS
 } DriveOutputDirection;
 
@@ -49,7 +48,6 @@ StatusCode drive_output_init(DriveOutputStorage *storage, EventID fault_event,
 StatusCode drive_output_set_enabled(DriveOutputStorage *storage, bool enabled);
 
 // Throttle and steering angle expect sign-extended 12-bit values.
-// Direction counts negative values as reverse, positive as forward, and 0 as neutral.
 StatusCode drive_output_update(DriveOutputStorage *storage, DriveOutputSource source, int16_t data);
 
 // Returns a pointer to the global drive output storage.
