@@ -50,8 +50,7 @@ void setup_test(void) {
 
 void test_pedal_calibration(void) {
   Event e;
-  while (true) {
-    event_process(&e);
+  while (status_ok(event_process(&e))) {
     fsm_process_event(&s_fsm, &e);
   }
 }
