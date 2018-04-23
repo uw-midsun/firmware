@@ -4,12 +4,16 @@
 #include "throttle.h"
 // Initializes the calibration storage and configures ADC to start reading.
 StatusCode pedal_calibration_init(PedalCalibrationStorage *storage, Ads1015Storage *ads1015_storage,
-                                  Ads1015Channel channel_a, Ads1015Channel channel_b) {
+                                  Ads1015Channel channel_a, Ads1015Channel channel_b,
+                                  uint8_t brake_zone_percentage, uint8_t coast_zone_percentage,
+                                  uint8_t tolerance_safety_factor) {
   memset(storage, 0, sizeof(*storage));
   storage->ads1015_storage = ads1015_storage;
   storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_A] = channel_a;
   storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_B] = channel_b;
-
+  storage->brake_percentage = brake_zone_percentage;
+  storage->coast_percentage = coast_zone_percentage;
+  storage->safety_factor = tolerance_safety_factor;
   return STATUS_CODE_OK;
 }
 
@@ -86,9 +90,7 @@ StatusCode pedal_calibration_get_band(PedalCalibrationStorage *storage,
 // throttle calibration storage. Percentages determine the zone thresholds.
 // To be called only after pedal_calibration_get_band.
 StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
-                                       ThrottleCalibrationData *throttle_calibration,
-                                       uint8_t brake_zone_percentage, uint8_t coast_zone_percentage,
-                                       uint8_t tolerance_safety_factor) {
+                                       ThrottleCalibrationData *throttle_calibration) {
   // Compare the range of bands from channels and set the channel with bigger range to channel A.
   int16_t range_a =
       storage->band[PEDAL_CALIBRATION_CHANNEL_A][PEDAL_CALIBRATION_STATE_FULL_THROTTLE].max -
@@ -134,11 +136,11 @@ StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
 
   zone_thresholds[THROTTLE_ZONE_BRAKE].min = min_brake;
   zone_thresholds[THROTTLE_ZONE_BRAKE].max =
-      zone_thresholds[THROTTLE_ZONE_BRAKE].min + (brake_zone_percentage * range / 100);
+      zone_thresholds[THROTTLE_ZONE_BRAKE].min + (storage->brake_percentage * range / 100);
 
   zone_thresholds[THROTTLE_ZONE_COAST].min = zone_thresholds[THROTTLE_ZONE_BRAKE].max + 1;
   zone_thresholds[THROTTLE_ZONE_COAST].max =
-      zone_thresholds[THROTTLE_ZONE_COAST].min + (coast_zone_percentage * range / 100);
+      zone_thresholds[THROTTLE_ZONE_COAST].min + (storage->coast_percentage * range / 100);
 
   zone_thresholds[THROTTLE_ZONE_ACCEL].min = zone_thresholds[THROTTLE_ZONE_COAST].max + 1;
   zone_thresholds[THROTTLE_ZONE_ACCEL].max = max_accel;
@@ -160,7 +162,7 @@ StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
   // Tolerance should be half of the band's width assuming the width is constant.
   // In this case we take the maximum of widths at both ends multiplied by the given safety factor.
   throttle_calibration->tolerance =
-      MAX((max_brake - min_brake) / 2, (max_accel - min_accel) / 2) * tolerance_safety_factor;
+      MAX((max_brake - min_brake) / 2, (max_accel - min_accel) / 2) * storage->safety_factor;
 
   return STATUS_CODE_OK;
 }

@@ -46,13 +46,7 @@ StatusCode pedal_calibration_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_calculate, prv_calculate_output);
   fsm_state_init(state_validate, prv_validate_output);
 
-  EventArbiterGuard *guard = event_arbiter_add_fsm(storage, fsm, NULL);
-
-  if (guard == NULL) {
-    return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
-  }
-
-  fsm_init(fsm, "pedal_calibration_fsm", &state_start, guard);
+  fsm_init(fsm, "pedal_calibration_fsm", &state_start, NULL);
 
   return STATUS_CODE_OK;
 }

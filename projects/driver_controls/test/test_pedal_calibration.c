@@ -21,7 +21,6 @@ static PersistStorage s_persist;
 #define TEST_PEDAL_CALIBRATION_COAST_PERCENTAGE 10
 #define TEST_PEDAL_CALIBRATION_SAFETY_FACTOR 2
 
-static void prv_wait_for_button(void) {}
 
 void setup_test(void) {
   gpio_init();
@@ -41,22 +40,8 @@ void setup_test(void) {
   };
 
   ads1015_init(&s_ads1015_storage, TEST_ADS1015_I2C_PORT, TEST_ADS1015_ADDR, &ready_pin);
-  pedal_calibration_init(&s_storage, &s_ads1015_storage, TEST_PEDAL_CALIBRATION_ADC_CHANNEL_A,
-                         TEST_PEDAL_CALIBRATION_ADC_CHANNEL_B);
 }
 
-void test_pedal_calibration(void) {
-  prv_wait_for_button();
-
-  pedal_calibration_get_band(&s_storage, PEDAL_CALIBRATION_STATE_FULL_BRAKE);
-
-  prv_wait_for_button();
-
-  pedal_calibration_get_band(&s_storage, PEDAL_CALIBRATION_STATE_FULL_THROTTLE);
-
-  pedal_calibration_calculate(
-      &s_storage, &s_throttle_calibration_data, TEST_PEDAL_CALIBRATION_BRAKE_PERCENTAGE,
-      TEST_PEDAL_CALIBRATION_COAST_PERCENTAGE, TEST_PEDAL_CALIBRATION_SAFETY_FACTOR);
-}
+void test_pedal_calibration(void) {}
 
 void teardown_test(void) {}
