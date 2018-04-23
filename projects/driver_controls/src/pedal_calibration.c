@@ -2,7 +2,9 @@
 #include "string.h"
 #include "throttle.h"
 
-// Initializes the calibration storage and configures ADC to start reading.
+#define PEDAL_CALIBRATION_NUM_SAMPLES 100
+
+// Initializes the calibration storage. Requires initialized Ads1015storage.
 StatusCode pedal_calibration_init(PedalCalibrationStorage *storage, Ads1015Storage *ads1015_storage,
                                   Ads1015Channel channel_a, Ads1015Channel channel_b,
                                   uint8_t brake_zone_percentage, uint8_t coast_zone_percentage,
@@ -18,7 +20,7 @@ StatusCode pedal_calibration_init(PedalCalibrationStorage *storage, Ads1015Stora
 }
 
 // ADS1015 user callback: it is called after every new conversion and reads raw values and
-// updates the thresholds of the band for the state and channel.
+// updates the thresholds of the band for the current state and the calling channel.
 // It will be called PEDAL_CALIBRATION_NUM_SAMPLES number of times.
 void pedal_calibration_adc_callback(Ads1015Channel ads1015_channel, void *context) {
   PedalCalibrationStorage *storage = context;
@@ -50,9 +52,9 @@ void pedal_calibration_adc_callback(Ads1015Channel ads1015_channel, void *contex
 }
 
 // Given the state (full throttle/brake), it finds the min and max raw readings of each channel.
-// The function samples as many times as PEDAL_CALIBRATION_NUM_SAMPLES.
+// These points would become the vertices of the band we want to obtain around the data.
 StatusCode pedal_calibration_process_state(PedalCalibrationStorage *storage,
-                                      PedalCalibrationState state) {
+                                           PedalCalibrationState state) {
   storage->state = state;
   storage->sample_counter[PEDAL_CALIBRATION_CHANNEL_A] = 0;
   storage->sample_counter[PEDAL_CALIBRATION_CHANNEL_B] = 0;
@@ -86,11 +88,11 @@ StatusCode pedal_calibration_process_state(PedalCalibrationStorage *storage,
   return STATUS_CODE_OK;
 }
 
-// Based on the points initialized in the bands, it calculates the data needed to initialize
-// throttle calibration storage.
+// Based on the points initialized in the bands, it calculates and initiliazes the data in
+// ThrottleCalibrationData.
 StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
                                        ThrottleCalibrationData *throttle_calibration) {
-  // Compare the range of bands from channels and set the channel with bigger range to channel A.
+  // Compare the range of bands from channels and determine the channels as main or secondary.
   int16_t range_a =
       storage->band[PEDAL_CALIBRATION_CHANNEL_A][PEDAL_CALIBRATION_STATE_FULL_THROTTLE].max -
       storage->band[PEDAL_CALIBRATION_CHANNEL_A][PEDAL_CALIBRATION_STATE_FULL_BRAKE].min;
@@ -104,13 +106,10 @@ StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
   if (range_a < range_b) {
     main_channel = PEDAL_CALIBRATION_CHANNEL_B;
     secondary_channel = PEDAL_CALIBRATION_CHANNEL_A;
-    Ads1015Channel temp = storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_A];
-    storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_A] =
-        storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_B];
-    storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_B] = temp;
   }
-  throttle_calibration->channel_main = main_channel;
-  throttle_calibration->channel_secondary = secondary_channel;
+
+  throttle_calibration->channel_main = storage->adc_channel[main_channel];
+  throttle_calibration->channel_secondary = storage->adc_channel[secondary_channel];
 
   // Get the main band's vertices.
   int16_t min_brake = storage->band[main_channel][PEDAL_CALIBRATION_STATE_FULL_BRAKE].min;
@@ -167,18 +166,3 @@ StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
 
   return STATUS_CODE_OK;
 }
-
-// Returns main or secondary ADS1015 channels.
-// This prevents mixing the channels when calling throttle_init.
-// Should be called after calling pedal_calibration_calculate.
-Ads1015Channel pedal_calibration_get_channel(PedalCalibrationStorage *storage,
-                                             ThrottleChannel channel) {
-  if (channel == THROTTLE_CHANNEL_MAIN) {
-    return storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_A];
-  } else if (channel == THROTTLE_CHANNEL_SECONDARY) {
-    return storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_B];
-  } else {
-    return NUM_ADS1015_CHANNELS;
-  }
-}
-
