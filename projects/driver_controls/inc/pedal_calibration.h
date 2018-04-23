@@ -23,6 +23,7 @@ typedef struct PedalCalibrationRange {
 } PedalCalibrationRange;
 
 typedef struct PedalCalibrationStorage {
+  ThrottleCalibrationData *throttle_calibration_data;
   PedalCalibrationRange band[NUM_PEDAL_CALIBRATION_CHANNELS][NUM_PEDAL_CALIBRATION_STATES];
   Ads1015Storage *ads1015_storage;
   Ads1015Channel adc_channel[NUM_PEDAL_CALIBRATION_CHANNELS];
@@ -38,10 +39,8 @@ StatusCode pedal_calibration_init(PedalCalibrationStorage *storage, Ads1015Stora
                                   uint8_t brake_zone_percentage, uint8_t coast_zone_percentage,
                                   uint8_t tolerance_safety_factor);
 
-StatusCode pedal_calibration_get_band(PedalCalibrationStorage *storage,
+StatusCode pedal_calibration_process_state(PedalCalibrationStorage *storage,
                                       PedalCalibrationState state);
 
 StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
-                                       ThrottleCalibrationData *throttle_calibration);
-StatusCode pedal_calibration_validate(PedalCalibrationStorage *storage,
                                       ThrottleCalibrationData *throttle_calibration);

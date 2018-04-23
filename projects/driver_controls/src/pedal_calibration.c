@@ -1,7 +1,7 @@
 #include "pedal_calibration.h"
-#include "log.h"
 #include "string.h"
 #include "throttle.h"
+
 // Initializes the calibration storage and configures ADC to start reading.
 StatusCode pedal_calibration_init(PedalCalibrationStorage *storage, Ads1015Storage *ads1015_storage,
                                   Ads1015Channel channel_a, Ads1015Channel channel_b,
@@ -34,8 +34,8 @@ void pedal_calibration_adc_callback(Ads1015Channel ads1015_channel, void *contex
   }
   // Check if there are enough samples taken for the channel.
   if (storage->sample_counter[channel] >= PEDAL_CALIBRATION_NUM_SAMPLES) {
-    // If yes, stop sampling and turn off the channel.
-    ads1015_configure_channel(storage->ads1015_storage, ads1015_channel, false, NULL, NULL);
+    // If yes, stop sampling and remove the callback.
+    ads1015_configure_channel(storage->ads1015_storage, ads1015_channel, true, NULL, NULL);
   } else {
     // If not, continue reading.
     ads1015_read_raw(storage->ads1015_storage, ads1015_channel, &reading);
@@ -51,7 +51,7 @@ void pedal_calibration_adc_callback(Ads1015Channel ads1015_channel, void *contex
 
 // Given the state (full throttle/brake), it finds the min and max raw readings of each channel.
 // The function samples as many times as PEDAL_CALIBRATION_NUM_SAMPLES.
-StatusCode pedal_calibration_get_band(PedalCalibrationStorage *storage,
+StatusCode pedal_calibration_process_state(PedalCalibrationStorage *storage,
                                       PedalCalibrationState state) {
   storage->state = state;
   storage->sample_counter[PEDAL_CALIBRATION_CHANNEL_A] = 0;
@@ -87,8 +87,7 @@ StatusCode pedal_calibration_get_band(PedalCalibrationStorage *storage,
 }
 
 // Based on the points initialized in the bands, it calculates the data needed to initialize
-// throttle calibration storage. Percentages determine the zone thresholds.
-// To be called only after pedal_calibration_get_band.
+// throttle calibration storage.
 StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
                                        ThrottleCalibrationData *throttle_calibration) {
   // Compare the range of bands from channels and set the channel with bigger range to channel A.
@@ -110,6 +109,8 @@ StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
         storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_B];
     storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_B] = temp;
   }
+  throttle_calibration->channel_main = main_channel;
+  throttle_calibration->channel_secondary = secondary_channel;
 
   // Get the main band's vertices.
   int16_t min_brake = storage->band[main_channel][PEDAL_CALIBRATION_STATE_FULL_BRAKE].min;
@@ -181,17 +182,3 @@ Ads1015Channel pedal_calibration_get_channel(PedalCalibrationStorage *storage,
   }
 }
 
-StatusCode pedal_calibration_validate(PedalCalibrationStorage *storage,
-                                      ThrottleCalibrationData *throttle_calibration) {
-  ThrottleStorage throttle;
-  ThrottlePosition position;
-  status_ok_or_return(throttle_init(&throttle, throttle_calibration, storage->ads1015_storage));
-  while (true) {
-    status_ok_or_return(throttle_get_position(&throttle, &position));
-    char *zones[NUM_THROTTLE_ZONES] = { [THROTTLE_ZONE_BRAKE] = "Brake",
-                                        [THROTTLE_ZONE_COAST] = "Coast",
-                                        [THROTTLE_ZONE_ACCEL] = "Accel" };
-    LOG_DEBUG("%s zone: %d / %d OR %d percent\n", zones[position.zone], position.numerator,
-              THROTTLE_DENOMINATOR, position.numerator * 100 / THROTTLE_DENOMINATOR);
-  }
-}
