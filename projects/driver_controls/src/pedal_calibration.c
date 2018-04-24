@@ -1,6 +1,27 @@
+// The goal of calibration is to provide an initialized ThrottleCalibrationData storage for the
+// throttle module. This structure contains:
+//    1. A main and a secondary channel.
+//    2. Two lines that describe the voltage-position graph of the pedal for both channels.
+//    3. A tolerance around the secondary line.
+//    4. Zone thresholds that divide the pedal range of motion into 3 zones.
+// Calibration starts by pedal_calibration_init. 
+// The next phase is to collect data from the pedal.
+// Pedal is kept at a fixed position, full brake/throttle, for pedal_calibration_process_state
+// to find how much the readings could vary in the same position. 
+// pedal_calibration_calculate uses this info to initialize ThrottleCalibrationData. 
+// It first finds the main channel (hi-res) and secondary channel (lo-res). 
+// Note that varying of data creates a band rather than a line for each channel. For the main 
+// channel we need a line as our source that "maps" a voltage (coming from main channel) to a 
+// position. On the second channel we need a band that maps that position to a range of possible 
+// readings (on second channel) which hopefully contains the actual secondary reading.
+// That is how we make sure channel readings agree.
+// The lines are set as the midline of their bands, and the range (tolerance) is half the second 
+// band's width times a safety factor. The zone thresholds are also calculated by the input zone
+// percentages.
 #include "pedal_calibration.h"
 #include "string.h"
 #include "throttle.h"
+
 
 #define PEDAL_CALIBRATION_NUM_SAMPLES 100
 
