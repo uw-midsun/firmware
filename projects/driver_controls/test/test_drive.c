@@ -202,7 +202,6 @@ void test_drive_fault(void) {
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_BPS_FAULT, true);
 
   // Fault occurred - almost all events are disabled
-  // TODO: fault should probably have a new output state that resets things?
   LOG_DEBUG("Raising a bunch of events\n");
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, false);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_TURN_SIGNAL_LEFT, false);

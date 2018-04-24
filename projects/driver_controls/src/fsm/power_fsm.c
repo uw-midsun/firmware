@@ -117,13 +117,14 @@ static void prv_off_output(FSM *fsm, const Event *e, void *context) {
 }
 
 StatusCode power_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
-  // TODO(ELEC_354): could use just a mechanical brake guard in state_off?
+  // TODO(ELEC-354): could use just a mechanical brake guard in state_off?
   fsm_state_init(state_off, prv_off_output);
   fsm_state_init(state_off_brake, prv_off_output);
   fsm_state_init(state_charging, prv_off_output);
   fsm_state_init(state_charging_brake, prv_off_output);
   fsm_state_init(state_on, prv_on_output);
   fsm_state_init(state_on_brake, prv_on_output);
+  // TODO(ELEC-354): fault should probably have a new output state that resets things?
   fsm_state_init(state_fault, prv_off_output);
   fsm_state_init(state_fault_brake, prv_off_output);
 
