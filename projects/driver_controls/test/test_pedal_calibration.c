@@ -1,3 +1,7 @@
+// This is technically not a test but the actual calibration environment!
+// The program is constantly waiting on events that might or might not get processed
+// by the calibration fsm. The fsm calls the functions related to that stage of calibration after 
+// every transition.
 #include "ads1015_def.h"
 #include "crc32.h"
 #include "debouncer.h"
@@ -17,6 +21,7 @@ static Ads1015Storage s_ads1015_storage;
 static ThrottleCalibrationData s_throttle_calibration_data;
 static PersistStorage s_persist;
 
+// Inputs user might want to change:
 #define TEST_PEDAL_CALIBRATION_ADC_CHANNEL_A ADS1015_CHANNEL_0
 #define TEST_PEDAL_CALIBRATION_ADC_CHANNEL_B ADS1015_CHANNEL_1
 #define TEST_PEDAL_CALIBRATION_BRAKE_PERCENTAGE 30
