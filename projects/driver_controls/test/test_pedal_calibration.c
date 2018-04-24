@@ -1,7 +1,11 @@
 // This is technically not a test but the actual calibration environment!
+// There are 4 stages of calibration: start, full brake, full throttle, validation.
 // The program is constantly waiting on events that might or might not get processed
-// by the calibration fsm. The fsm calls the functions related to that stage of calibration after 
-// every transition.
+// by the calibration fsm. The fsm navigates through the stages and calls the functions related to
+// that stage of calibration after every transition. It also communicates with the user by logging
+// on the screen.
+// It is important that when moving on to the full brake or full throttle stages, the pedal is
+// placed in that position before entering that stage.
 #include "ads1015_def.h"
 #include "crc32.h"
 #include "debouncer.h"

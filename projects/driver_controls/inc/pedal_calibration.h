@@ -1,5 +1,5 @@
 #pragma once
-// This module provides the means for pedal calibration. 
+// This module provides the means for pedal calibration.
 // Throttle module takes in a structure, ThrottleCalibrationData, that is calibrated in this module.
 //
 // Calibration has basically 3 stages. First stage is about reading and recording pedal inputs from
@@ -13,7 +13,7 @@
 #include "ads1015.h"
 #include "throttle.h"
 
-// Pedal takes 2 ADC channels. 
+// Pedal takes 2 ADC channels.
 // Calibration determines the high and the low resolution channel.
 typedef enum {
   PEDAL_CALIBRATION_CHANNEL_A = 0,
@@ -23,8 +23,8 @@ typedef enum {
 
 // Pedal inputs are read in 2 positions: full throttle and full brake.
 typedef enum {
-  PEDAL_CALIBRATION_STATE_FULL_THROTTLE = 0, // Fully pressed.
-  PEDAL_CALIBRATION_STATE_FULL_BRAKE,        // Fully depressed. 
+  PEDAL_CALIBRATION_STATE_FULL_THROTTLE = 0,  // Fully pressed.
+  PEDAL_CALIBRATION_STATE_FULL_BRAKE,         // Fully depressed.
   NUM_PEDAL_CALIBRATION_STATES
 } PedalCalibrationState;
 
@@ -38,7 +38,7 @@ typedef struct PedalCalibrationRange {
 typedef struct PedalCalibrationStorage {
   // This structure is the final product of calibration ready to be used by throttle module.
   ThrottleCalibrationData *throttle_calibration_data;
-  // Obtained ranges from reading the pedal in the two states. On each channel, connecting the 
+  // Obtained ranges from reading the pedal in the two states. On each channel, connecting the
   // points form a band of data (on the position-voltage graph).
   PedalCalibrationRange band[NUM_PEDAL_CALIBRATION_CHANNELS][NUM_PEDAL_CALIBRATION_STATES];
   Ads1015Storage *ads1015_storage;
@@ -52,7 +52,7 @@ typedef struct PedalCalibrationStorage {
 
 // Initializes the pedal calibration storage. Ads1015Storage should be initialized.
 // The zone percentages divide the pedal's range of motion into three zones (brake, coast, accel).
-// Tolerance safety factor is to account for conditions not present during calibration. 
+// Tolerance safety factor is to account for conditions not present during calibration.
 StatusCode pedal_calibration_init(PedalCalibrationStorage *storage, Ads1015Storage *ads1015_storage,
                                   Ads1015Channel channel_a, Ads1015Channel channel_b,
                                   uint8_t brake_zone_percentage, uint8_t coast_zone_percentage,
@@ -65,7 +65,7 @@ StatusCode pedal_calibration_process_state(PedalCalibrationStorage *storage,
                                            PedalCalibrationState state);
 
 // This should be called only after calling pedal_calibration_process_state.
-// It initializes ThrottleCalibrationData based on the read data in PedalCalibrationStorage. 
+// It initializes ThrottleCalibrationData based on the read data in PedalCalibrationStorage.
 // This structure could then be passed to throttle module assuming calibration was successful.
 StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
                                        ThrottleCalibrationData *throttle_calibration);
