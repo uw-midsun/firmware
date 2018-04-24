@@ -73,7 +73,9 @@ StatusCode can_interval_disable(CanInterval *interval) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  soft_timer_cancel(interval->timer_id);
-  interval->timer_id = SOFT_TIMER_INVALID_TIMER;
+  if (interval->timer_id != SOFT_TIMER_INVALID_TIMER) {
+    soft_timer_cancel(interval->timer_id);
+    interval->timer_id = SOFT_TIMER_INVALID_TIMER;
+  }
   return STATUS_CODE_OK;
 }
