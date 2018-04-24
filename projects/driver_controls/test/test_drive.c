@@ -72,7 +72,7 @@ void test_drive_basic(void) {
   LOG_DEBUG("Raising events before power on\n");
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, false);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_TURN_SIGNAL_LEFT, false);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, false);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, false);
 
   // Send the correct sequence of events to enter power on
   LOG_DEBUG("Powering on\n");
@@ -98,14 +98,14 @@ void test_drive_basic(void) {
 
   LOG_DEBUG("Attempt to move forward with mechanical brake still held\n");
   // Go forward - fail due to mech brake still being held
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, false);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, false);
 
   LOG_DEBUG("Releasing mechanical brake\n");
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
 
   LOG_DEBUG("Moving forward\n");
   // Try again after releasing mech brake
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, true);
 
   delay_ms(DRIVE_OUTPUT_BROADCAST_MS);
   prv_clock_update_request();
@@ -143,7 +143,7 @@ void test_drive_charge(void) {
 
   // Make sure we don't allow any movement during charging
   LOG_DEBUG("Pressing the pedal should do nothing\n");
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, false);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, false);
 }
 
 void test_drive_cruise(void) {
@@ -160,7 +160,7 @@ void test_drive_cruise(void) {
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CRUISE_CONTROL, false);
 
   // Check cruise exits
@@ -168,7 +168,7 @@ void test_drive_cruise(void) {
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CRUISE_CONTROL, true);
 
   LOG_DEBUG("Exiting cruise and rentering\n");
@@ -180,7 +180,7 @@ void test_drive_cruise(void) {
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
   prv_dump_fsms();
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CRUISE_CONTROL, true);
 
   LOG_DEBUG("Exiting cruise through coast\n");
@@ -196,14 +196,14 @@ void test_drive_fault(void) {
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_POWER, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, true);
 
   LOG_DEBUG("Raising fault\n");
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_BPS_FAULT, true);
 
   // Fault occurred - almost all events are disabled
   LOG_DEBUG("Raising a bunch of events\n");
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_PRESSED, false);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, false);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_TURN_SIGNAL_LEFT, false);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, false);
 
