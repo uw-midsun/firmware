@@ -50,9 +50,15 @@ StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioE
   expander->port = port;
   expander->addr = MCP23008_ADDRESS + addr;
 
-  // Configure the pin to receive interrupts from the MCP23008
-  GPIOSettings gpio_settings = { .direction = GPIO_DIR_IN, .alt_function = GPIO_ALTFN_NONE };
-  InterruptSettings it_settings = { INTERRUPT_TYPE_INTERRUPT, INTERRUPT_PRIORITY_NORMAL };
+  // Configure the interrupt pin from the MCP23008 - active-low
+  GPIOSettings gpio_settings = {
+    .direction = GPIO_DIR_IN,        //
+    .alt_function = GPIO_ALTFN_NONE  //
+  };
+  InterruptSettings it_settings = {
+    .type = INTERRUPT_TYPE_INTERRUPT,      //
+    .priority = INTERRUPT_PRIORITY_NORMAL  //
+  };
 
   gpio_init_pin(interrupt_pin, &gpio_settings);
   gpio_it_register_interrupt(interrupt_pin, &it_settings, INTERRUPT_EDGE_FALLING,
