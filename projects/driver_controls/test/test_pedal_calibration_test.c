@@ -1,5 +1,4 @@
 #include "ads1015_def.h"
-#include "crc32.h"
 #include "debouncer.h"
 #include "delay.h"
 #include "gpio_it.h"
@@ -97,7 +96,6 @@ void setup_test(void) {
   interrupt_init();
   gpio_it_init();
   soft_timer_init();
-  crc32_init();
   I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,                    //
     .scl = { .port = GPIO_PORT_B, .pin = 10 },  //
