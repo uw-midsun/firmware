@@ -10,7 +10,6 @@
 #include "generic_can_helpers.h"
 #include "status.h"
 
-#include "log.h"
 static CanUart s_can_uart;
 static GenericCanInterface s_interface;
 
