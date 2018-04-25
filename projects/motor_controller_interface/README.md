@@ -19,8 +19,6 @@ Left/Right. Or isolating the Motor Controllers from traffic running on our bus.
 
 ## Detailed Design
 
-The WaveSculptor 20's take either Torque or Power commands. 
-
 Events are received from the Driver Controls board, which are then dumped into 
 a FIFO for processing. A FIFO event is raised when a new item is added:
 
@@ -95,6 +93,15 @@ digraph {
 
 ### Torque Control
 
+Torque Control is used for **Forward**, **Reverse**, and **Braking** states. 
+We set the velocity to an unobtainable value (we use +/- 100 m/s) and then set 
+the current to the proportion of total available torque.
+
 ### Cruise Control
 
-Cruise Control is a special mode where 
+Cruise Control is a special mode where the car aims to maintain speed, using 
+its internal controls magic to determine how much torque to drive.
+
+Instead of running both Controllers in Cruise Control mode, we only put one in 
+Cruise Control, and then drive the other in Torque Control, copying over the 
+current value from the other Controller via the Telemetry values.
