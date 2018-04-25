@@ -64,15 +64,24 @@ static volatile size_t num_reverse_messages[2] = { 0 };
 // Assertion functions
 static void prv_assert_braking_state(const GenericCanMsg *msg, void *context) {
   volatile size_t *value = (size_t *)context;
-  TEST_ASSERT_TRUE(
-      MOTOR_CONTROLLER_DRIVE_COMMAND_ID(MOTOR_CONTROLLER_INTERFACE_LEFT_ADDR) == msg->id ||
-      MOTOR_CONTROLLER_DRIVE_COMMAND_ID(MOTOR_CONTROLLER_INTERFACE_RIGHT_ADDR) == msg->id);
+  if (value[0] + value[1] < TEST_NUM_MESSAGES_RECEIVED) {
+    TEST_ASSERT_TRUE(
+        MOTOR_CONTROLLER_DRIVE_COMMAND_ID(MOTOR_CONTROLLER_INTERFACE_LEFT_ADDR) == msg->id ||
+        MOTOR_CONTROLLER_DRIVE_COMMAND_ID(MOTOR_CONTROLLER_INTERFACE_RIGHT_ADDR) == msg->id);
 
-  MotorControllerFsmTestUnion.data_u64 = msg->data;
-  // We should have 0 torque
-  TEST_ASSERT_EQUAL_FLOAT(MOTOR_CONTROLLER_FORWARD_VELOCITY_MPS,
-                          MotorControllerFsmTestUnion.mc_drive_cmd.velocity);
-  TEST_ASSERT_EQUAL_FLOAT(0, MotorControllerFsmTestUnion.mc_drive_cmd.current_percentage);
+    MotorControllerFsmTestUnion.data_u64 = msg->data;
+    // We should have 0 torque
+    TEST_ASSERT_EQUAL_FLOAT(MOTOR_CONTROLLER_FORWARD_VELOCITY_MPS,
+                            MotorControllerFsmTestUnion.mc_drive_cmd.velocity);
+    TEST_ASSERT_EQUAL_FLOAT(0, MotorControllerFsmTestUnion.mc_drive_cmd.current_percentage);
+
+    if (MOTOR_CONTROLLER_DRIVE_COMMAND_ID(MOTOR_CONTROLLER_INTERFACE_LEFT_ADDR) == msg->id) {
+      value[0]++;
+    } else if (MOTOR_CONTROLLER_DRIVE_COMMAND_ID(MOTOR_CONTROLLER_INTERFACE_RIGHT_ADDR) ==
+               msg->id) {
+      value[1]++;
+    }
+  }
 }
 
 static void prv_assert_reverse_state(const GenericCanMsg *msg, void *context) {
@@ -142,7 +151,7 @@ static void prv_assert_cruise_forward_state(const GenericCanMsg *msg, void *cont
 
     if (MOTOR_CONTROLLER_DRIVE_COMMAND_ID(MOTOR_CONTROLLER_INTERFACE_LEFT_ADDR) == msg->id) {
       value[0]++;
-    } else if (MOTOR_CONTROLLER_DRIVE_COMMAND_ID(MOTOR_CONTROLLER_INTERFACE_RIGHT_ADDR) ==
+    } else if (MOTOR_CONTROLLER_POWER_COMMAND_ID(MOTOR_CONTROLLER_INTERFACE_RIGHT_ADDR) ==
                msg->id) {
       value[1]++;
     }
@@ -188,6 +197,9 @@ static void prv_transition_to_cruise_control(void) {
   while (num_cruise_control_forward_messages[0] + num_cruise_control_forward_messages[1] <
          TEST_NUM_MESSAGES_RECEIVED) {
   }
+
+  TEST_ASSERT_TRUE(num_cruise_control_forward_messages[0] > 0);
+  TEST_ASSERT_TRUE(num_cruise_control_forward_messages[1] > 0);
 }
 
 static void prv_transition_to_forward(void) {
@@ -224,6 +236,9 @@ static void prv_transition_to_forward(void) {
                                          false, (void *)&num_forward_messages));
   while (num_forward_messages[0] + num_forward_messages[1] < TEST_NUM_MESSAGES_RECEIVED) {
   }
+
+  TEST_ASSERT_TRUE(num_forward_messages[0] > 0);
+  TEST_ASSERT_TRUE(num_forward_messages[1] > 0);
 }
 
 static void prv_transition_to_braking(void) {
@@ -255,6 +270,12 @@ static void prv_transition_to_braking(void) {
   delay_ms(50);
   TEST_ASSERT_OK(generic_can_register_rx((GenericCan *)&s_can, prv_assert_braking_state, 0x00, 0x00,
                                          false, (void *)&num_braking_messages));
+
+  while (num_braking_messages[0] + num_braking_messages[1] < TEST_NUM_MESSAGES_RECEIVED) {
+  }
+
+  TEST_ASSERT_TRUE(num_braking_messages[0] > 0);
+  TEST_ASSERT_TRUE(num_braking_messages[1] > 0);
 }
 
 static void prv_transition_to_reverse(void) {
@@ -291,6 +312,9 @@ static void prv_transition_to_reverse(void) {
                                          false, (void *)&num_reverse_messages));
   while (num_reverse_messages[0] + num_reverse_messages[1] < TEST_NUM_MESSAGES_RECEIVED) {
   }
+
+  TEST_ASSERT_TRUE(num_reverse_messages[0] > 0);
+  TEST_ASSERT_TRUE(num_reverse_messages[1] > 0);
 }
 
 void setup_test(void) {
