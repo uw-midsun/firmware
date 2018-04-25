@@ -4,7 +4,8 @@
 #define MOTOR_CONTROLLER_LEFT_ADDR 0x040
 #define MOTOR_CONTROLLER_RIGHT_ADDR 0x060
 
-// TODO: check these (for commands)
+// Motor controller interface addresses (for drive commands)
+// TODO(ELEC-388): Program these with the config tool
 #define MOTOR_CONTROLLER_INTERFACE_LEFT_ADDR 0x020
 #define MOTOR_CONTROLLER_INTERFACE_RIGHT_ADDR 0x000
 

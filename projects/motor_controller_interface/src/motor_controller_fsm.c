@@ -4,15 +4,12 @@
 
 #include "can.h"
 #include "can_interval.h"
-#include "can_uart.h"
 #include "can_unpack.h"
 #include "config.h"
 #include "exported_enums.h"
 #include "fifo.h"
-#include "log.h"
 #include "motor_controller.h"
 #include "motor_controller_interface_events.h"
-#include "soft_timer.h"
 
 static FSM s_fsm;
 static Fifo *s_fifo;
@@ -210,7 +207,6 @@ static void prv_torque_control_mode(FSM *fsm, const Event *e, void *context) {
 }
 
 static void prv_cruise_control_mode(FSM *fsm, const Event *e, void *context) {
-  // TODO: update the CAN message in the intervals
   DriverControlsData data = { 0 };
   fifo_pop(s_fifo, &data);
   float desired_speed = MOTOR_CONTOLLER_VELOCITY_CMPS_TO_MPS(data.cruise_control);
@@ -256,38 +252,41 @@ static void prv_cruise_control_mode(FSM *fsm, const Event *e, void *context) {
 }
 
 StatusCode motor_controller_fsm_init(const MotorControllerFsmStorage *storage) {
-  // TODO: Either bump # of handlers or do some clever masking
-  generic_can_register_rx(storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
-                          MOTOR_CONTROLLER_BUS_MEASUREMENT(MOTOR_CONTROLLER_LEFT_ADDR), false,
-                          (void *)&storage->measurement->bus_meas_left);
-  generic_can_register_rx(storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
-                          MOTOR_CONTROLLER_BUS_MEASUREMENT(MOTOR_CONTROLLER_RIGHT_ADDR), false,
-                          (void *)&storage->measurement->bus_meas_right);
+  status_ok_or_return(
+      generic_can_register_rx(storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
+                              MOTOR_CONTROLLER_BUS_MEASUREMENT(MOTOR_CONTROLLER_LEFT_ADDR), false,
+                              (void *)&storage->measurement->bus_meas_left));
+  status_ok_or_return(
+      generic_can_register_rx(storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
+                              MOTOR_CONTROLLER_BUS_MEASUREMENT(MOTOR_CONTROLLER_RIGHT_ADDR), false,
+                              (void *)&storage->measurement->bus_meas_right));
 
-  generic_can_register_rx(storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
-                          MOTOR_CONTROLLER_VELOCITY_MEASUREMENT(MOTOR_CONTROLLER_LEFT_ADDR), false,
-                          (void *)&storage->measurement->velocity_meas_left);
-  generic_can_register_rx(storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
-                          MOTOR_CONTROLLER_VELOCITY_MEASUREMENT(MOTOR_CONTROLLER_RIGHT_ADDR), false,
-                          (void *)&storage->measurement->velocity_meas_right);
+  status_ok_or_return(
+      generic_can_register_rx(storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
+                              MOTOR_CONTROLLER_VELOCITY_MEASUREMENT(MOTOR_CONTROLLER_LEFT_ADDR),
+                              false, (void *)&storage->measurement->velocity_meas_left));
+  status_ok_or_return(
+      generic_can_register_rx(storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
+                              MOTOR_CONTROLLER_VELOCITY_MEASUREMENT(MOTOR_CONTROLLER_RIGHT_ADDR),
+                              false, (void *)&storage->measurement->velocity_meas_right));
 
-  generic_can_register_rx(
+  status_ok_or_return(generic_can_register_rx(
       storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
       MOTOR_CONTROLLER_SINK_MOTOR_TEMPERATURE_MEASUREMENT(MOTOR_CONTROLLER_LEFT_ADDR), false,
-      (void *)&storage->measurement->sink_motor_meas_left);
-  generic_can_register_rx(
+      (void *)&storage->measurement->sink_motor_meas_left));
+  status_ok_or_return(generic_can_register_rx(
       storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
       MOTOR_CONTROLLER_SINK_MOTOR_TEMPERATURE_MEASUREMENT(MOTOR_CONTROLLER_RIGHT_ADDR), false,
-      (void *)&storage->measurement->sink_motor_meas_right);
+      (void *)&storage->measurement->sink_motor_meas_right));
 
-  generic_can_register_rx(
+  status_ok_or_return(generic_can_register_rx(
       storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
       MOTOR_CONTROLLER_ODOMETER_BUS_AMP_HOURS_MEASUREMENT(MOTOR_CONTROLLER_LEFT_ADDR), false,
-      (void *)&storage->measurement->odo_bus_meas_left);
-  generic_can_register_rx(
+      (void *)&storage->measurement->odo_bus_meas_left));
+  status_ok_or_return(generic_can_register_rx(
       storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
       MOTOR_CONTROLLER_ODOMETER_BUS_AMP_HOURS_MEASUREMENT(MOTOR_CONTROLLER_RIGHT_ADDR), false,
-      (void *)&storage->measurement->odo_bus_meas_right);
+      (void *)&storage->measurement->odo_bus_meas_right));
 
   // Start FIFO for processing events
   s_fifo = storage->fifo;

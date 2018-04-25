@@ -191,8 +191,6 @@ static void prv_transition_to_cruise_control(void) {
 }
 
 static void prv_transition_to_forward(void) {
-  static int calls = 0;
-  calls++;
   // Send a Driver Controls CAN message going forward
   DriverControlsData data = {
     .throttle = TEST_FORWARD_THROTTLE_VALUE,
@@ -260,9 +258,6 @@ static void prv_transition_to_braking(void) {
 }
 
 static void prv_transition_to_reverse(void) {
-  static int calls = 0;
-  calls++;
-
   DriverControlsData data = {
     .throttle = TEST_REVERSE_THROTTLE_VALUE,
     .direction = DRIVER_CONTROLS_REVERSE,

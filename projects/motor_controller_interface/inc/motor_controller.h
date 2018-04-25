@@ -19,7 +19,7 @@
 #define MOTOR_CONTROLLER_FORWARD_VELOCITY_MPS ((float)100)
 #define MOTOR_CONTROLLER_REVERSE_VELOCITY_MPS ((float)-100)
 
-// TODO change this denominator current
+// TODO(ELEC-388): change this denominator current
 #define MOTOR_CONTROLLER_CURRENT_LIMIT 100.0f
 
 #define MOTOR_CONTROLLER_CURRENT_TO_PERCENT(current) ((current) / MOTOR_CONTROLLER_CURRENT_LIMIT)

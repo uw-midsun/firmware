@@ -1,4 +1,6 @@
 #pragma once
+// Exported enums that are shared between boards
+// (e.g. for data transmitted over CAN)
 
 typedef enum {
   DRIVER_CONTROLS_FORWARD,

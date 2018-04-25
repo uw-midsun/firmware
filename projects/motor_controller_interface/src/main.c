@@ -21,12 +21,20 @@ static UARTStorage s_uart_storage;
 static CANStorage s_can_storage;
 static CANRxHandler s_rx_handlers[MOTOR_CONTROLLER_INTERFACE_CAN_RX_NUM_HANDLERS];
 
-static void prv_telemetry_callback(SoftTimerID timer_id, void *context) {}
+static void prv_telemetry_callback(SoftTimerID timer_id, void *context) {
+  // Send telemetry values
+}
 
 int main(void) {
+  event_queue_init();
   gpio_init();
   interrupt_init();
   soft_timer_init();
+
+  // Initialize FIFO
+  Fifo fifo;
+  DriverControlsData buffer[20];
+  fifo_init(&fifo, buffer);
 
   CANSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,
@@ -40,8 +48,8 @@ int main(void) {
   };
 
   can_init(&can_settings, &s_can_storage, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+  can_interval_init();
 
-  // Update the software timer
   MotorControllerMeasurement mc_measurements = { 0 };
 
   UARTSettings uart_settings = {
@@ -55,8 +63,6 @@ int main(void) {
   GenericCanUart can_uart = { 0 };
   generic_can_uart_init(&can_uart, UART_PORT_2);
 
-  can_interval_init();
-  Fifo fifo;
   MotorControllerFsmStorage mc_fsm_storage = {
     .generic_can = (GenericCan *)&can_uart,
     .measurement = &mc_measurements,
@@ -70,11 +76,10 @@ int main(void) {
 
   Event e = { 0 };
   while (true) {
-    // Process event messages sent from internal CAN bus and then pass through
-    // via CanUart can_uart_req_slave_tx
     while (status_ok(event_process(&e))) {
-      // We want to transition the state machine on each RX event
-      if (e.id == MOTOR_CONTROLLER_INTERFACE_EVENT_CAN_RX) {
+      // We want to transition the state machine on each FIFO event raised by
+      // the FSM
+      if (e.id == MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO) {
         motor_controller_fsm_process_event(&e);
       }
     }
