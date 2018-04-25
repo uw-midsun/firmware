@@ -79,7 +79,7 @@ void pedal_calibration_adc_callback(Ads1015Channel ads1015_channel, void *contex
 // These points would become the vertices of the band we want to obtain around the data.
 StatusCode pedal_calibration_process_state(PedalCalibrationStorage *storage,
                                            PedalCalibrationState state) {
-  if (storage == NULL || state >= NUM_PEDAL_CALIBRATION_STATES){
+  if (storage == NULL || state >= NUM_PEDAL_CALIBRATION_STATES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   storage->state = state;
@@ -119,7 +119,7 @@ StatusCode pedal_calibration_process_state(PedalCalibrationStorage *storage,
 // ThrottleCalibrationData.
 StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
                                        ThrottleCalibrationData *throttle_calibration) {
-  if (storage == NULL || throttle_calibration == NULL){
+  if (storage == NULL || throttle_calibration == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   // Compare the range of bands from channels and determine the channels as main or secondary.

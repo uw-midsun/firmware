@@ -23,8 +23,8 @@ typedef enum {
 
 // Pedal inputs are read in 2 positions: full throttle and full brake.
 typedef enum {
-  PEDAL_CALIBRATION_STATE_FULL_THROTTLE = 0,  // Fully pressed.
-  PEDAL_CALIBRATION_STATE_FULL_BRAKE,         // Fully depressed.
+  PEDAL_CALIBRATION_STATE_FULL_BRAKE = 0,  // Fully pressed.
+  PEDAL_CALIBRATION_STATE_FULL_THROTTLE,   // Fully depressed.
   NUM_PEDAL_CALIBRATION_STATES
 } PedalCalibrationState;
 
@@ -44,7 +44,7 @@ typedef struct PedalCalibrationStorage {
   Ads1015Storage *ads1015_storage;
   Ads1015Channel adc_channel[NUM_PEDAL_CALIBRATION_CHANNELS];
   PedalCalibrationState state;
-  uint8_t sample_counter[NUM_PEDAL_CALIBRATION_CHANNELS];
+  volatile uint8_t sample_counter[NUM_PEDAL_CALIBRATION_CHANNELS];
   uint8_t brake_percentage;
   uint8_t coast_percentage;
   uint8_t safety_factor;
@@ -64,7 +64,7 @@ StatusCode pedal_calibration_init(PedalCalibrationStorage *storage, Ads1015Stora
 StatusCode pedal_calibration_process_state(PedalCalibrationStorage *storage,
                                            PedalCalibrationState state);
 
-// This should be called only after calling pedal_calibration_process_state.
+// This should be called only after calling pedal_calibration_process_state for both states.
 // It initializes ThrottleCalibrationData based on the read data in PedalCalibrationStorage.
 // This structure could then be passed to throttle module assuming calibration was successful.
 StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,

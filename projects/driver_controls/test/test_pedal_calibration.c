@@ -23,7 +23,6 @@ static PedalCalibrationStorage s_storage;
 static FSM s_fsm;
 static Ads1015Storage s_ads1015_storage;
 static ThrottleCalibrationData s_throttle_calibration_data;
-static PersistStorage s_persist;
 
 // Inputs user might want to change:
 #define TEST_PEDAL_CALIBRATION_ADC_CHANNEL_A ADS1015_CHANNEL_0
