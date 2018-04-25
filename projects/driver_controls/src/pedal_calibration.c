@@ -29,6 +29,10 @@ StatusCode pedal_calibration_init(PedalCalibrationStorage *storage, Ads1015Stora
                                   Ads1015Channel channel_a, Ads1015Channel channel_b,
                                   uint8_t brake_zone_percentage, uint8_t coast_zone_percentage,
                                   uint8_t tolerance_safety_factor) {
+  if (storage == NULL || ads1015_storage == NULL || channel_a >= NUM_ADS1015_CHANNELS ||
+      channel_b >= NUM_ADS1015_CHANNELS || (brake_zone_percentage + coast_zone_percentage) >= 100) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
   memset(storage, 0, sizeof(*storage));
   storage->ads1015_storage = ads1015_storage;
   storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_A] = channel_a;
@@ -75,6 +79,9 @@ void pedal_calibration_adc_callback(Ads1015Channel ads1015_channel, void *contex
 // These points would become the vertices of the band we want to obtain around the data.
 StatusCode pedal_calibration_process_state(PedalCalibrationStorage *storage,
                                            PedalCalibrationState state) {
+  if (storage == NULL || state >= NUM_PEDAL_CALIBRATION_STATES){
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
   storage->state = state;
   storage->sample_counter[PEDAL_CALIBRATION_CHANNEL_A] = 0;
   storage->sample_counter[PEDAL_CALIBRATION_CHANNEL_B] = 0;
@@ -112,6 +119,9 @@ StatusCode pedal_calibration_process_state(PedalCalibrationStorage *storage,
 // ThrottleCalibrationData.
 StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
                                        ThrottleCalibrationData *throttle_calibration) {
+  if (storage == NULL || throttle_calibration == NULL){
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
   // Compare the range of bands from channels and determine the channels as main or secondary.
   int16_t range_a =
       storage->band[PEDAL_CALIBRATION_CHANNEL_A][PEDAL_CALIBRATION_STATE_FULL_THROTTLE].max -
