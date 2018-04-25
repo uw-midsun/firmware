@@ -3,6 +3,9 @@
 #include <assert.h>
 #include <stdint.h>
 
+// Messages should be sent at least 50ms
+#define MOTOR_CONTROLLER_MESSAGE_INTERVAL_US (40 * 1000)
+
 // Note: All CAN messages that are sent to/from the Motor Controllers have 8
 // bytes of payload.
 
@@ -23,7 +26,6 @@
 #define MOTOR_CONTROLLER_CURRENT_LIMIT 100.0f
 
 #define MOTOR_CONTROLLER_CURRENT_TO_PERCENT(current) ((current) / MOTOR_CONTROLLER_CURRENT_LIMIT)
-// 0001917
 
 // 3.1.1 Motor Drive Command
 #define MOTOR_CONTROLLER_DRIVE_COMMAND_ID(base_addr) ((base_addr) + 1)

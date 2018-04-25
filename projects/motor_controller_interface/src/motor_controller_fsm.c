@@ -308,10 +308,11 @@ StatusCode motor_controller_fsm_init(const MotorControllerFsmStorage *storage) {
   GenericCanMsg mc_left_msg = { 0 };
   GenericCanMsg mc_right_msg = { 0 };
 
-  status_ok_or_return(
-      can_interval_factory(storage->generic_can, &mc_left_msg, 50 * 1000, &s_left_interval));
-  status_ok_or_return(
-      can_interval_factory(storage->generic_can, &mc_right_msg, 50 * 1000, &s_right_interval));
+  status_ok_or_return(can_interval_factory(storage->generic_can, &mc_left_msg,
+                                           MOTOR_CONTROLLER_MESSAGE_INTERVAL_US, &s_left_interval));
+  status_ok_or_return(can_interval_factory(storage->generic_can, &mc_right_msg,
+                                           MOTOR_CONTROLLER_MESSAGE_INTERVAL_US,
+                                           &s_right_interval));
 
   return STATUS_CODE_OK;
 }
