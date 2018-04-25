@@ -1,9 +1,11 @@
 #pragma once
-
-// Requires the following to be initialized
-// - Event Queue
-// - FIFO
-// -
+// Motor Controller FSM
+//
+// Requires the following to be initialized:
+//  - CAN Interval
+//  - Event Queue
+//  - FIFO
+//  - Generic CAN
 #include "event_queue.h"
 #include "fifo.h"
 #include "fsm.h"
