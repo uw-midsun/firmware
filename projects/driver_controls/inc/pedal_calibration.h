@@ -49,7 +49,7 @@ typedef struct PedalCalibrationStorage {
   volatile uint8_t sample_counter[NUM_PEDAL_CALIBRATION_CHANNELS];
   uint8_t brake_percentage;
   uint8_t coast_percentage;
-  uint8_t safety_factor;
+  uint8_t tolerance_safety_factor;
 } PedalCalibrationStorage;
 
 // Initializes the pedal calibration storage. Ads1015Storage should be initialized.

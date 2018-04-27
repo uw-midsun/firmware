@@ -39,7 +39,7 @@ StatusCode pedal_calibration_init(PedalCalibrationStorage *storage, Ads1015Stora
   storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_B] = channel_b;
   storage->brake_percentage = brake_zone_percentage;
   storage->coast_percentage = coast_zone_percentage;
-  storage->safety_factor = tolerance_safety_factor;
+  storage->tolerance_safety_factor = tolerance_safety_factor;
   return STATUS_CODE_OK;
 }
 
@@ -192,7 +192,7 @@ StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
   // Tolerance should be half of the band's width assuming the width is constant.
   // In this case we take the maximum of widths at both ends multiplied by the given safety factor.
   throttle_calibration->tolerance =
-      MAX((max_brake - min_brake) / 2, (max_accel - min_accel) / 2) * storage->safety_factor;
+      MAX((max_brake - min_brake) / 2, (max_accel - min_accel) / 2) * storage->tolerance_safety_factor;
 
   return STATUS_CODE_OK;
 }
