@@ -38,6 +38,8 @@ typedef struct PedalCalibrationRange {
 typedef struct PedalCalibrationStorage {
   // This structure is the final product of calibration ready to be used by throttle module.
   ThrottleCalibrationData *throttle_calibration_data;
+  // A throttle storage used when validating calibration.
+  ThrottleStorage throttle;
   // Obtained ranges from reading the pedal in the two states. On each channel, connecting the
   // points form a band of data (on the position-voltage graph).
   PedalCalibrationRange band[NUM_PEDAL_CALIBRATION_CHANNELS][NUM_PEDAL_CALIBRATION_STATES];
