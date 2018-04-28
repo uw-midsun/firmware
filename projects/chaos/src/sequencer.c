@@ -206,6 +206,13 @@ static const SequencerEventPair s_drive_events[] = {
     .await = false },
 };
 
+static void prv_sequencer_storage_update(SequencerStorage *storage, SequencerEventPair *events,
+                                         size_t size) {
+  storage->event_idx = 0;
+  storage->num_events = size;
+  storage->events_arr = events;
+}
+
 // FSM Setup
 FSM_DECLARE_STATE(sequencer_state_emergency);
 FSM_DECLARE_STATE(sequencer_state_idle);
@@ -241,37 +248,30 @@ FSM_STATE_TRANSITION(sequencer_state_drive) {
 static void prv_sequencer_state_emergency(FSM *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
-  SequencerStorage *storage = context;
-  storage->event_idx = 0;
-  storage->num_events = SIZEOF_ARRAY(s_emergency_events);
-  storage->events_arr = (SequencerEventPair *)s_emergency_events;
+  prv_sequencer_storage_update((SequencerStorage *)context,
+                               (SequencerEventPair *)s_emergency_events,
+                               SIZEOF_ARRAY(s_emergency_events));
 }
 
 static void prv_sequencer_state_idle(FSM *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
-  SequencerStorage *storage = context;
-  storage->event_idx = 0;
-  storage->num_events = SIZEOF_ARRAY(s_idle_events);
-  storage->events_arr = (SequencerEventPair *)s_idle_events;
+  prv_sequencer_storage_update((SequencerStorage *)context, (SequencerEventPair *)s_idle_events,
+                               SIZEOF_ARRAY(s_idle_events));
 }
 
 static void prv_sequencer_state_charge(FSM *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
-  SequencerStorage *storage = context;
-  storage->event_idx = 0;
-  storage->num_events = SIZEOF_ARRAY(s_charge_events);
-  storage->events_arr = (SequencerEventPair *)s_charge_events;
+  prv_sequencer_storage_update((SequencerStorage *)context, (SequencerEventPair *)s_charge_events,
+                               SIZEOF_ARRAY(s_charge_events));
 }
 
 static void prv_sequencer_state_drive(FSM *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
-  SequencerStorage *storage = context;
-  storage->event_idx = 0;
-  storage->num_events = SIZEOF_ARRAY(s_drive_events);
-  storage->events_arr = (SequencerEventPair *)s_drive_events;
+  prv_sequencer_storage_update((SequencerStorage *)context, (SequencerEventPair *)s_drive_events,
+                               SIZEOF_ARRAY(s_drive_events));
 }
 
 // Public interface
