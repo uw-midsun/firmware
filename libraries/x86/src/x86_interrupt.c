@@ -27,7 +27,8 @@ typedef struct Interrupt {
   bool is_event;
 } Interrupt;
 
-X86InterruptState s_interrupt_state_update;
+static bool s_in_handler_flag = false;
+static X86InterruptState s_interrupt_state_update = X86_INTERRUPT_STATE_NONE;
 
 static pid_t s_pid = 0;
 
@@ -44,6 +45,7 @@ static x86InterruptHandler s_x86_interrupt_handlers[NUM_X86_INTERRUPT_HANDLERS];
 static void prv_sig_handler(int signum, siginfo_t *info, void *ptr) {
   (void)signum;
   (void)ptr;
+  s_in_handler_flag = true;
   if (info->si_value.sival_int < NUM_X86_INTERRUPT_INTERRUPTS) {
     // If the interrupt is an event don't run the handler as it is just a wake event.
     if (!s_x86_interrupt_interrupts_map[info->si_value.sival_int].is_event) {
@@ -53,6 +55,7 @@ static void prv_sig_handler(int signum, siginfo_t *info, void *ptr) {
           info->si_value.sival_int);
     }
   }
+  s_in_handler_flag = false;
 }
 
 // Blocks all interrupts (excluding signals to block/unblock interrupts) when triggered. Should use
@@ -114,6 +117,8 @@ void x86_interrupt_init(void) {
   sigaction(SIGRTMIN + NUM_INTERRUPT_PRIORITIES, &act, NULL);
 
   // Clear statics.
+  s_interrupt_state_update = X86_INTERRUPT_STATE_NONE;
+  s_in_handler_flag = false;
   s_x86_interrupt_next_interrupt_id = 0;
   s_x86_interrupt_next_handler_id = 0;
   memset(&s_x86_interrupt_interrupts_map, 0, sizeof(s_x86_interrupt_interrupts_map));
@@ -186,4 +191,8 @@ void x86_interrupt_unmask(void) {
   siginfo_t value_store;
   value_store.si_value.sival_int = X86_INTERRUPT_STATE_UNMASK;
   sigqueue(s_pid, SIGRTMIN + NUM_INTERRUPT_PRIORITIES, value_store.si_value);
+}
+
+bool x86_interrupt_in_handler(void) {
+  return s_in_handler_flag;
 }

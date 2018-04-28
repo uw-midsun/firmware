@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <sys/types.h>
 
@@ -29,3 +30,5 @@ void x86_interrupt_unmask(void);
 
 // Inits the correct signal mask on a pthread.
 void x86_interrupt_pthread_init(void);
+
+bool x86_interrupt_in_handler(void);
