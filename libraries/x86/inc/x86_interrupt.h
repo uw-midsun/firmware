@@ -26,3 +26,6 @@ StatusCode x86_interrupt_trigger(uint8_t interrupt_id);
 // Configures the block mask on the signal handler for critical sections.
 void x86_interrupt_mask(void);
 void x86_interrupt_unmask(void);
+
+// Inits the correct signal mask on a pthread.
+void x86_interrupt_pthread_init(void);

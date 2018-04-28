@@ -60,11 +60,26 @@ static void prv_sig_handler(int signum, siginfo_t *info, void *ptr) {
   }
 }
 
-// Signal handler thread. This catches all signals on this thread to ensure deadlocks and other
-// unsafe conditions are avoided.
-static void *prv_sig_handler_thread(void *arg) {
-  (void)arg;
-  LOG_DEBUG("Starting Signal Handler (id:%ld)\n", pthread_self());
+static void prv_sig_state_handler(int signum, siginfo_t *info, void *ptr) {
+  sigset_t block_mask;
+  sigemptyset(&block_mask);
+  sigaddset(&block_mask, SIGRTMIN + INTERRUPT_PRIORITY_LOW);
+  sigaddset(&block_mask, SIGRTMIN + INTERRUPT_PRIORITY_NORMAL);
+  sigaddset(&block_mask, SIGRTMIN + INTERRUPT_PRIORITY_HIGH);
+
+  if (info->si_value.sival_int == X86_INTERRUPT_STATE_MASK) {
+    pthread_sigmask(SIG_BLOCK, &block_mask, NULL);
+  } else if (info->si_value.sival_int == X86_INTERRUPT_STATE_UNMASK) {
+    pthread_sigmask(SIG_UNBLOCK, &block_mask, NULL);
+  }
+}
+
+void x86_interrupt_init(void) {
+  LOG_DEBUG("Main Thread (id:%ld)\n", pthread_self());
+  // Assign the s_pid to be the process "owning" the interrupts. This prevents
+  // subprocesses from sending a signal to itself instead.
+  s_pid = getpid();
+
   // Create a handler sigaction.
   struct sigaction act;
   act.sa_sigaction = prv_sig_handler;
@@ -89,61 +104,10 @@ static void *prv_sig_handler_thread(void *arg) {
   act.sa_mask = block_mask;
   sigaction(SIGRTMIN + INTERRUPT_PRIORITY_HIGH, &act, NULL);
 
-  // Unblock the relevant signals on this thread.
-  struct sched_param params;
-  params.sched_priority = sched_get_priority_max(SCHED_FIFO);
-  pthread_setschedparam(s_sig_handler_thread, SCHED_FIFO, &params);
-  pthread_sigmask(SIG_UNBLOCK, &block_mask, NULL);
-
-  // While in keep alive (i.e. not re-initing just run forever).
-  while (pthread_mutex_trylock(&s_keep_alive) != 0) {
-    // Use a condition variable to signal critical sections.
-    pthread_mutex_lock(&s_block_interrupts);
-    while (!s_interrupt_state_update) {
-      pthread_cond_wait(&s_block_mask_update, &s_block_interrupts);
-    }
-    // Handle the update by altering the mask accordingly.
-    if (s_interrupt_state_update == X86_INTERRUPT_STATE_MASK) {
-      pthread_sigmask(SIG_BLOCK, &block_mask, NULL);
-    } else if (s_interrupt_state_update == X86_INTERRUPT_STATE_UNMASK) {
-      pthread_sigmask(SIG_UNBLOCK, &block_mask, NULL);
-    }
-    s_interrupt_state_update = X86_INTERRUPT_STATE_NONE;
-    pthread_mutex_unlock(&s_block_interrupts);
-  }
-  return NULL;
-}
-
-void x86_interrupt_init(void) {
-  LOG_DEBUG("Main Thread (id:%ld)\n", pthread_self());
-  // If using interrupts block all signal on this thread and any spawned threads off of it.
-  sigset_t block_mask;
   sigemptyset(&block_mask);
-  sigaddset(&block_mask, SIGRTMIN + INTERRUPT_PRIORITY_LOW);
-  sigaddset(&block_mask, SIGRTMIN + INTERRUPT_PRIORITY_NORMAL);
-  sigaddset(&block_mask, SIGRTMIN + INTERRUPT_PRIORITY_HIGH);
-  pthread_sigmask(SIG_BLOCK, &block_mask, NULL);
-
-  // If the pid is set this function was called previously so cleanup the signal handler thread.
-  if (s_pid) {
-    pthread_mutex_unlock(&s_keep_alive);
-    pthread_cond_signal(&s_block_mask_update);
-    pthread_join(s_sig_handler_thread, NULL);
-  }
-
-  // Assign the s_pid to be the process "owning" the interrupts. This prevents
-  // subprocesses from sending a signal to itself instead.
-  s_pid = getpid();
-
-  // Async setup.
-  pthread_mutex_init(&s_keep_alive, NULL);
-  pthread_mutex_lock(&s_keep_alive);
-  pthread_mutex_init(&s_block_interrupts, NULL);
-  pthread_cond_init(&s_block_mask_update, NULL);
-  s_interrupt_state_update = X86_INTERRUPT_STATE_NONE;
-
-  // Spawn the signal handler.
-  pthread_create(&s_sig_handler_thread, NULL, prv_sig_handler_thread, NULL);
+  act.sa_mask = block_mask;
+  act.sa_sigaction = prv_sig_state_handler;
+  sigaction(SIGRTMIN + NUM_INTERRUPT_PRIORITIES, &act, NULL);
 
   // Clear statics.
   s_x86_interrupt_next_interrupt_id = 0;
@@ -198,16 +162,24 @@ StatusCode x86_interrupt_trigger(uint8_t interrupt_id) {
   return STATUS_CODE_OK;
 }
 
+void x86_interrupt_pthread_init(void) {
+  sigset_t block_mask;
+  sigemptyset(&block_mask);
+  sigaddset(&block_mask, SIGRTMIN + INTERRUPT_PRIORITY_LOW);
+  sigaddset(&block_mask, SIGRTMIN + INTERRUPT_PRIORITY_NORMAL);
+  sigaddset(&block_mask, SIGRTMIN + INTERRUPT_PRIORITY_HIGH);
+  sigaddset(&block_mask, SIGRTMIN + NUM_INTERRUPT_PRIORITIES);
+  pthread_sigmask(SIG_BLOCK, &block_mask, NULL);
+}
+
 void x86_interrupt_mask(void) {
-  pthread_mutex_lock(&s_block_interrupts);
-  s_interrupt_state_update = X86_INTERRUPT_STATE_MASK;
-  pthread_cond_signal(&s_block_mask_update);
-  pthread_mutex_unlock(&s_block_interrupts);
+  siginfo_t value_store;
+  value_store.si_value.sival_int = X86_INTERRUPT_STATE_MASK;
+  sigqueue(s_pid, SIGRTMIN + NUM_INTERRUPT_PRIORITIES, value_store.si_value);
 }
 
 void x86_interrupt_unmask(void) {
-  pthread_mutex_lock(&s_block_interrupts);
-  s_interrupt_state_update = X86_INTERRUPT_STATE_UNMASK;
-  pthread_cond_signal(&s_block_mask_update);
-  pthread_mutex_unlock(&s_block_interrupts);
+  siginfo_t value_store;
+  value_store.si_value.sival_int = X86_INTERRUPT_STATE_UNMASK;
+  sigqueue(s_pid, SIGRTMIN + NUM_INTERRUPT_PRIORITIES, value_store.si_value);
 }

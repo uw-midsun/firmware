@@ -17,6 +17,7 @@
 #include "fifo.h"
 #include "interrupt_def.h"
 #include "log.h"
+#include "x86_interrupt.h"
 
 #define CAN_HW_DEV_INTERFACE "vcan0"
 #define CAN_HW_MAX_FILTERS 14
@@ -62,6 +63,7 @@ static uint32_t prv_get_delay(CANHwBitrate bitrate) {
 }
 
 static void *prv_rx_thread(void *arg) {
+  x86_interrupt_pthread_init();
   LOG_DEBUG("CAN HW RX thread started\n");
 
   struct timeval timeout = { .tv_usec = CAN_HW_THREAD_EXIT_PERIOD_US };
@@ -95,6 +97,7 @@ static void *prv_rx_thread(void *arg) {
 }
 
 static void *prv_tx_thread(void *arg) {
+  x86_interrupt_pthread_init();
   LOG_DEBUG("CAN HW TX thread started\n");
   struct can_frame frame = { 0 };
 
