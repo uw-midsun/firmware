@@ -89,67 +89,67 @@ static bool prv_cruise_control_forward_guard(const FSM *fsm, const Event *e, voi
 // Motor Controller state definitions
 
 // Note: Cruise Control is invalid in reverse
-FSM_DECLARE_STATE(torque_control_forward);
-FSM_DECLARE_STATE(torque_control_reverse);
-FSM_DECLARE_STATE(cruise_control_forward);
-FSM_DECLARE_STATE(mechanical_braking);
+FSM_DECLARE_STATE(state_torque_control_forward);
+FSM_DECLARE_STATE(state_torque_control_reverse);
+FSM_DECLARE_STATE(state_cruise_control_forward);
+FSM_DECLARE_STATE(state_mechanical_braking);
 
 // Motor Controller transition table definitions
 
-FSM_STATE_TRANSITION(torque_control_forward) {
+FSM_STATE_TRANSITION(state_torque_control_forward) {
   FSM_ADD_GUARDED_TRANSITION(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO,
-                             prv_torque_control_forward_guard, torque_control_forward);
+                             prv_torque_control_forward_guard, state_torque_control_forward);
 
   FSM_ADD_GUARDED_TRANSITION(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO,
-                             prv_torque_control_reverse_guard, torque_control_reverse);
+                             prv_torque_control_reverse_guard, state_torque_control_reverse);
 
   FSM_ADD_GUARDED_TRANSITION(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO,
-                             prv_cruise_control_forward_guard, cruise_control_forward);
+                             prv_cruise_control_forward_guard, state_cruise_control_forward);
 
   FSM_ADD_GUARDED_TRANSITION(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO, prv_mechanical_braking_guard,
-                             mechanical_braking);
+                             state_mechanical_braking);
 }
 
-FSM_STATE_TRANSITION(torque_control_reverse) {
+FSM_STATE_TRANSITION(state_torque_control_reverse) {
   FSM_ADD_GUARDED_TRANSITION(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO,
-                             prv_torque_control_forward_guard, torque_control_forward);
+                             prv_torque_control_forward_guard, state_torque_control_forward);
 
   FSM_ADD_GUARDED_TRANSITION(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO,
-                             prv_torque_control_reverse_guard, torque_control_reverse);
+                             prv_torque_control_reverse_guard, state_torque_control_reverse);
 
   FSM_ADD_GUARDED_TRANSITION(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO,
-                             prv_cruise_control_forward_guard, cruise_control_forward);
+                             prv_cruise_control_forward_guard, state_cruise_control_forward);
 
   FSM_ADD_GUARDED_TRANSITION(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO, prv_mechanical_braking_guard,
-                             mechanical_braking);
+                             state_mechanical_braking);
 }
 
-FSM_STATE_TRANSITION(cruise_control_forward) {
+FSM_STATE_TRANSITION(state_cruise_control_forward) {
   FSM_ADD_GUARDED_TRANSITION(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO,
-                             prv_torque_control_forward_guard, torque_control_forward);
+                             prv_torque_control_forward_guard, state_torque_control_forward);
 
   FSM_ADD_GUARDED_TRANSITION(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO,
-                             prv_torque_control_reverse_guard, torque_control_reverse);
+                             prv_torque_control_reverse_guard, state_torque_control_reverse);
 
   FSM_ADD_GUARDED_TRANSITION(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO,
-                             prv_cruise_control_forward_guard, cruise_control_forward);
+                             prv_cruise_control_forward_guard, state_cruise_control_forward);
 
   FSM_ADD_GUARDED_TRANSITION(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO, prv_mechanical_braking_guard,
-                             mechanical_braking);
+                             state_mechanical_braking);
 }
 
-FSM_STATE_TRANSITION(mechanical_braking) {
+FSM_STATE_TRANSITION(state_mechanical_braking) {
   FSM_ADD_GUARDED_TRANSITION(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO,
-                             prv_torque_control_forward_guard, torque_control_forward);
+                             prv_torque_control_forward_guard, state_torque_control_forward);
 
   FSM_ADD_GUARDED_TRANSITION(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO,
-                             prv_torque_control_reverse_guard, torque_control_reverse);
+                             prv_torque_control_reverse_guard, state_torque_control_reverse);
 
   FSM_ADD_GUARDED_TRANSITION(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO,
-                             prv_cruise_control_forward_guard, cruise_control_forward);
+                             prv_cruise_control_forward_guard, state_cruise_control_forward);
 
   FSM_ADD_GUARDED_TRANSITION(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO, prv_mechanical_braking_guard,
-                             mechanical_braking);
+                             state_mechanical_braking);
 }
 
 // Output functions
@@ -297,12 +297,12 @@ StatusCode motor_controller_fsm_init(const MotorControllerFsmStorage *storage) {
 
   s_mc_measurements = storage->measurement;
 
-  fsm_init(&s_fsm, "Motor Controller FSM", &torque_control_forward, &s_fsm);
+  fsm_init(&s_fsm, "Motor Controller FSM", &state_torque_control_forward, &s_fsm);
 
-  fsm_state_init(torque_control_forward, prv_torque_control_mode);
-  fsm_state_init(torque_control_reverse, prv_torque_control_mode);
-  fsm_state_init(cruise_control_forward, prv_cruise_control_mode);
-  fsm_state_init(mechanical_braking, prv_torque_control_mode);
+  fsm_state_init(state_torque_control_forward, prv_torque_control_mode);
+  fsm_state_init(state_torque_control_reverse, prv_torque_control_mode);
+  fsm_state_init(state_cruise_control_forward, prv_cruise_control_mode);
+  fsm_state_init(state_mechanical_braking, prv_torque_control_mode);
 
   // Initialize the CAN Intervals
   GenericCanMsg mc_left_msg = { 0 };
