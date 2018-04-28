@@ -7,7 +7,6 @@
 #include <poll.h>
 #include <pthread.h>
 #include <semaphore.h>
-#include <signal.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/ioctl.h>
@@ -41,7 +40,6 @@ typedef struct CANHwSocketData {
   uint32_t delay_us;
 } CANHwSocketData;
 
-static sigset_t s_signal_mask;
 static pthread_t s_rx_pthread_id;
 static pthread_t s_tx_pthread_id;
 // Producer/Consumer semaphore
@@ -64,7 +62,6 @@ static uint32_t prv_get_delay(CANHwBitrate bitrate) {
 }
 
 static void *prv_rx_thread(void *arg) {
-  pthread_sigmask(SIG_BLOCK, &s_signal_mask, NULL);
   LOG_DEBUG("CAN HW RX thread started\n");
 
   struct timeval timeout = { .tv_usec = CAN_HW_THREAD_EXIT_PERIOD_US };
@@ -98,7 +95,6 @@ static void *prv_rx_thread(void *arg) {
 }
 
 static void *prv_tx_thread(void *arg) {
-  pthread_sigmask(SIG_BLOCK, &s_signal_mask, NULL);
   LOG_DEBUG("CAN HW TX thread started\n");
   struct can_frame frame = { 0 };
 
@@ -124,11 +120,6 @@ static void *prv_tx_thread(void *arg) {
 }
 
 StatusCode can_hw_init(const CANHwSettings *settings) {
-  sigemptyset(&s_signal_mask);
-  sigaddset(&s_signal_mask, SIGRTMIN + INTERRUPT_PRIORITY_LOW);
-  sigaddset(&s_signal_mask, SIGRTMIN + INTERRUPT_PRIORITY_NORMAL);
-  sigaddset(&s_signal_mask, SIGRTMIN + INTERRUPT_PRIORITY_HIGH);
-
   if (s_socket_data.can_fd != -1) {
     // Request threads to exit
     close(s_socket_data.can_fd);
