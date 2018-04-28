@@ -82,11 +82,11 @@
   })
 
 #define CAN_TRANSMIT_MOTOR_CONTROLS(throttle_u16, direction_u16, cruise_control_u16,     \
-                                    steering_angle_u16)                                  \
+                                    mechanical_brake_state_u16)                          \
   ({                                                                                     \
     CANMessage msg = { 0 };                                                              \
     CAN_PACK_MOTOR_CONTROLS(&msg, (throttle_u16), (direction_u16), (cruise_control_u16), \
-                            (steering_angle_u16));                                       \
+                            (mechanical_brake_state_u16));                               \
     StatusCode status = can_transmit(&msg, NULL);                                        \
     status;                                                                              \
   })
@@ -107,14 +107,6 @@
     status;                                       \
   })
 
-#define CAN_TRANSMIT_MECHANICAL_BRAKE(state_u8)   \
-  ({                                              \
-    CANMessage msg = { 0 };                       \
-    CAN_PACK_MECHANICAL_BRAKE(&msg, (state_u8));  \
-    StatusCode status = can_transmit(&msg, NULL); \
-    status;                                       \
-  })
-
 #define CAN_TRANSMIT_CHARGING_REQ()               \
   ({                                              \
     CANMessage msg = { 0 };                       \
@@ -129,6 +121,14 @@
     CAN_PACK_CHARGING_PERMISSION(&msg, (allowed_u8)); \
     StatusCode status = can_transmit(&msg, NULL);     \
     status;                                           \
+  })
+
+#define CAN_TRANSMIT_STEERING_ANGLE(steering_angle_u16)  \
+  ({                                                     \
+    CANMessage msg = { 0 };                              \
+    CAN_PACK_STEERING_ANGLE(&msg, (steering_angle_u16)); \
+    StatusCode status = can_transmit(&msg, NULL);        \
+    status;                                              \
   })
 
 #define CAN_TRANSMIT_BATTERY_SOC()                \
