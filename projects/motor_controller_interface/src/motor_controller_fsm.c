@@ -6,6 +6,7 @@
 #include "can_interval.h"
 #include "can_unpack.h"
 #include "config.h"
+#include "critical_section.h"
 #include "exported_enums.h"
 #include "fifo.h"
 #include "motor_controller.h"
@@ -189,7 +190,6 @@ static void prv_torque_control_mode(FSM *fsm, const Event *e, void *context) {
     .extended = false,
   };
   memcpy(&left_msg.data, &cmd, sizeof(cmd));
-  s_left_interval->msg = left_msg;
 
   // Update Right Motor Controller message
   GenericCanMsg right_msg = {
@@ -199,7 +199,12 @@ static void prv_torque_control_mode(FSM *fsm, const Event *e, void *context) {
     .extended = false,
   };
   memcpy(&right_msg.data, &cmd, sizeof(cmd));
+
+  // Copy the new messages and overwrite the existing CAN intervals
+  bool disabled = critical_section_start();
+  s_left_interval->msg = left_msg;
   s_right_interval->msg = right_msg;
+  critical_section_end(disabled);
 
   // Trigger a transmission
   can_interval_send_now(s_left_interval);
