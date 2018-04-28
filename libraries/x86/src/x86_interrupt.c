@@ -1,7 +1,6 @@
 #include "x86_interrupt.h"
 
 #include <pthread.h>
-#include <semaphore.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -28,12 +27,7 @@ typedef struct Interrupt {
   bool is_event;
 } Interrupt;
 
-static pthread_t s_sig_handler_thread;
-static pthread_mutex_t s_keep_alive = PTHREAD_MUTEX_INITIALIZER;
-
 X86InterruptState s_interrupt_state_update;
-static pthread_cond_t s_block_mask_update = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t s_block_interrupts = PTHREAD_MUTEX_INITIALIZER;
 
 static pid_t s_pid = 0;
 
@@ -48,7 +42,8 @@ static x86InterruptHandler s_x86_interrupt_handlers[NUM_X86_INTERRUPT_HANDLERS];
 // signals are stored in a pqueue and are executed in order of priority then arrival. Runs the
 // handler associated with the interrupt id it receives via the sival_int.
 static void prv_sig_handler(int signum, siginfo_t *info, void *ptr) {
-  LOG_DEBUG("%ld\n", pthread_self());
+  (void)signum;
+  (void)ptr;
   if (info->si_value.sival_int < NUM_X86_INTERRUPT_INTERRUPTS) {
     // If the interrupt is an event don't run the handler as it is just a wake event.
     if (!s_x86_interrupt_interrupts_map[info->si_value.sival_int].is_event) {
@@ -60,24 +55,33 @@ static void prv_sig_handler(int signum, siginfo_t *info, void *ptr) {
   }
 }
 
+// Blocks all interrupts (excluding signals to block/unblock interrupts) when triggered. Should use
+// signal number |SIGRTMIN + NUM_INTERRUPT_PRIORITIES| to trigger.
 static void prv_sig_state_handler(int signum, siginfo_t *info, void *ptr) {
-  sigset_t block_mask;
-  sigemptyset(&block_mask);
-  sigaddset(&block_mask, SIGRTMIN + INTERRUPT_PRIORITY_LOW);
-  sigaddset(&block_mask, SIGRTMIN + INTERRUPT_PRIORITY_NORMAL);
-  sigaddset(&block_mask, SIGRTMIN + INTERRUPT_PRIORITY_HIGH);
+  (void)signum;
+  // We actually need to manipulate the block mask of the context that is restored for this thread.
+  // So we alter |ctx| rather than directly calling |pthread_sigmask| as this gets overridden on
+  // context switch after exiting the handler.
+  ucontext_t *ctx = ptr;
 
+  // Based on the sival_int change the state of interrupts. If invalid number silently ignore.
   if (info->si_value.sival_int == X86_INTERRUPT_STATE_MASK) {
-    pthread_sigmask(SIG_BLOCK, &block_mask, NULL);
+    sigaddset(&ctx->uc_sigmask, SIGRTMIN + INTERRUPT_PRIORITY_LOW);
+    sigaddset(&ctx->uc_sigmask, SIGRTMIN + INTERRUPT_PRIORITY_NORMAL);
+    sigaddset(&ctx->uc_sigmask, SIGRTMIN + INTERRUPT_PRIORITY_HIGH);
   } else if (info->si_value.sival_int == X86_INTERRUPT_STATE_UNMASK) {
-    pthread_sigmask(SIG_UNBLOCK, &block_mask, NULL);
+    sigdelset(&ctx->uc_sigmask, SIGRTMIN + INTERRUPT_PRIORITY_LOW);
+    sigdelset(&ctx->uc_sigmask, SIGRTMIN + INTERRUPT_PRIORITY_NORMAL);
+    sigdelset(&ctx->uc_sigmask, SIGRTMIN + INTERRUPT_PRIORITY_HIGH);
   }
 }
 
 void x86_interrupt_init(void) {
+  // Log the main thread ID for debugging.
   LOG_DEBUG("Main Thread (id:%ld)\n", pthread_self());
-  // Assign the s_pid to be the process "owning" the interrupts. This prevents
-  // subprocesses from sending a signal to itself instead.
+
+  // Assign the s_pid to be the process id handling the interrupts. This prevents subprocesses from
+  // sending a signal to itself instead.
   s_pid = getpid();
 
   // Create a handler sigaction.
@@ -104,7 +108,7 @@ void x86_interrupt_init(void) {
   act.sa_mask = block_mask;
   sigaction(SIGRTMIN + INTERRUPT_PRIORITY_HIGH, &act, NULL);
 
-  sigemptyset(&block_mask);
+  // Add a rule for the masking (critical sectioning) of the signals.
   act.sa_mask = block_mask;
   act.sa_sigaction = prv_sig_state_handler;
   sigaction(SIGRTMIN + NUM_INTERRUPT_PRIORITIES, &act, NULL);

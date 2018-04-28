@@ -27,11 +27,11 @@ bool critical_section_start(void) {
 }
 
 void critical_section_end(bool disabled_in_scope) {
+  pthread_mutex_unlock(&s_mutex);
   if (s_interrupts_disabled && disabled_in_scope) {
     // Clear the block mask for this process to allow signals to be processed. (They will queue when
     // disabled).
     s_interrupts_disabled = false;
     x86_interrupt_unmask();
   }
-  pthread_mutex_unlock(&s_mutex);
 }
