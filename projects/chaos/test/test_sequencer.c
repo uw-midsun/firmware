@@ -26,6 +26,7 @@ void test_sequencer_run(void) {
   Event present_event = { 0 };
 
   for (uint16_t i = 0; i < SIZEOF_ARRAY(state_events); i++) {
+    LOG_DEBUG("State Event: %d\n", state_events[i].id);
     TEST_ASSERT_OK(event_raise(state_events[i].id, 0));
     StatusCode seq_status = STATUS_CODE_OK;
     StatusCode event_status = STATUS_CODE_OK;
@@ -42,12 +43,16 @@ void test_sequencer_run(void) {
         } else if (prev_event.id == CHAOS_EVENT_OPEN_RELAY) {
           present_event.id = CHAOS_EVENT_RELAY_OPENED;
           present_event.data = prev_event.data;
-        } else {
-          prev_event.id = CHAOS_EVENT_NO_OP;
         }
+        LOG_DEBUG("No event raised. Responding with: %d : %d\n", present_event.id,
+                  present_event.data);
+      } else {
+        LOG_DEBUG("Sequencer Raised Event: %d : %d\n", present_event.id, present_event.data);
       }
-      seq_status = sequencer_publish_next_event(&present_event);
+      // At this point |present_event| is considered to be |prev_event| as it has passed through all
+      // the other FSMs in the event loop.
       prev_event = present_event;
+      seq_status = sequencer_publish_next_event(&prev_event);
     }
   }
 }
@@ -159,7 +164,9 @@ void test_sequencer_reset(void) {
         present_event.data = prev_event.data;
       }
     }
-    seq_status = sequencer_publish_next_event(&present_event);
+    // At this point |present_event| is considered to be |prev_event| as it has passed through all
+    // the other FSMs in the event loop.
     prev_event = present_event;
+    seq_status = sequencer_publish_next_event(&present_event);
   }
 }
