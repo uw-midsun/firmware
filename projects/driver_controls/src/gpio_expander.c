@@ -103,7 +103,7 @@ StatusCode gpio_expander_get_state(GpioExpanderStorage *expander, GpioExpanderPi
   uint8_t data = 0;
   status_ok_or_return(i2c_read_reg(expander->port, expander->addr, MCP23008_GPIO, &data, 1));
 
-  *state = (data >> pin) & 1;
+  *state = (GPIOState)((data >> pin) & 1);
 
   return STATUS_CODE_OK;
 }

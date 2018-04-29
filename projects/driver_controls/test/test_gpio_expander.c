@@ -40,14 +40,16 @@ void test_gpio_expander_init_pin(void) {
     .direction = GPIO_DIR_OUT,  //
     .state = GPIO_STATE_HIGH,   //
   };
-  TEST_ASSERT_NOT_OK(gpio_expander_init_pin(&s_expander, NUM_GPIO_EXPANDER_PINS, &output_settings));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OUT_OF_RANGE,
+                    gpio_expander_init_pin(&s_expander, NUM_GPIO_EXPANDER_PINS, &output_settings));
 
   TEST_ASSERT_OK(gpio_expander_init_pin(&s_expander, GPIO_EXPANDER_PIN_0, &output_settings));
   TEST_ASSERT_OK(gpio_expander_init_pin(&s_expander, GPIO_EXPANDER_PIN_1, &input_settings));
 }
 
 void test_gpio_expander_register_callback(void) {
-  TEST_ASSERT_NOT_OK(
+  TEST_ASSERT_EQUAL(
+      STATUS_CODE_OUT_OF_RANGE,
       gpio_expander_register_callback(&s_expander, NUM_GPIO_EXPANDER_PINS, prv_callback, NULL));
 
   TEST_ASSERT_OK(
@@ -58,7 +60,8 @@ void test_gpio_expander_register_callback(void) {
 
 void test_gpio_expander_get_state(void) {
   GPIOState state = GPIO_STATE_LOW;
-  TEST_ASSERT_NOT_OK(gpio_expander_get_state(&s_expander, NUM_GPIO_EXPANDER_PINS, &state));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OUT_OF_RANGE,
+                    gpio_expander_get_state(&s_expander, NUM_GPIO_EXPANDER_PINS, &state));
   TEST_ASSERT_OK(gpio_expander_get_state(&s_expander, GPIO_EXPANDER_PIN_0, &state));
 }
 
@@ -75,8 +78,8 @@ void test_gpio_expander_set_state(void) {
   gpio_expander_init_pin(&s_expander, GPIO_EXPANDER_PIN_1, &output_settings);
   gpio_expander_init_pin(&s_expander, GPIO_EXPANDER_PIN_2, &output_settings);
 
-  TEST_ASSERT_NOT_OK(gpio_expander_set_state(&s_expander, NUM_GPIO_EXPANDER_PINS, GPIO_STATE_LOW));
-  TEST_ASSERT_NOT_OK(gpio_expander_set_state(&s_expander, GPIO_EXPANDER_PIN_0, GPIO_STATE_LOW));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OUT_OF_RANGE,
+                    gpio_expander_set_state(&s_expander, NUM_GPIO_EXPANDER_PINS, GPIO_STATE_LOW));
 
   TEST_ASSERT_OK(gpio_expander_set_state(&s_expander, GPIO_EXPANDER_PIN_1, GPIO_STATE_LOW));
   TEST_ASSERT_OK(gpio_expander_set_state(&s_expander, GPIO_EXPANDER_PIN_2, GPIO_STATE_HIGH));
