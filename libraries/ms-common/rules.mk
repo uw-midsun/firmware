@@ -10,3 +10,7 @@ $(T)_DEPS := $(PLATFORM_LIB) libcore
 ifeq (x86,$(PLATFORM))
 $(T)_EXCLUDE_TESTS := adc pwm
 endif
+
+ifeq (stm32f0xx,$(PLATFORM))
+$(T)_EXCLUDE_TESTS := gpio_extern
+endif

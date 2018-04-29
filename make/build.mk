@@ -39,7 +39,7 @@ $(T)_OBJ := $($(T)_OBJ:$($(T)_SRC_ROOT)/%.s=$($(T)_OBJ_ROOT)/%.o)
 # Static library link target
 $(STATIC_LIB_DIR)/lib$(T).a: $($(T)_OBJ) $(call dep_to_lib,$($(T)_DEPS)) | $(STATIC_LIB_DIR)
 	@echo "Linking $@"
-	@$(AR) -r $@ $^
+	@$(AR) -rcs $@ $^
 
 # Application target
 $(BIN_DIR)/$(T)$(PLATFORM_EXT): $($(T)_OBJ) $(call dep_to_lib,$($(T)_DEPS)) | $(T) $(BIN_DIR)
