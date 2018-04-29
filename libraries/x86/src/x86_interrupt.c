@@ -59,7 +59,10 @@ static void prv_sig_handler(int signum, siginfo_t *info, void *ptr) {
 }
 
 // Blocks all interrupts (excluding signals to block/unblock interrupts) when triggered. Should use
-// signal number |SIGRTMIN + NUM_INTERRUPT_PRIORITIES| to trigger.
+// signal number |SIGRTMIN + NUM_INTERRUPT_PRIORITIES| to trigger. This has to be run as a signal
+// handler since a thread can only manipulate its own signal mask or its children up until the point
+// they are spawned. As a result the signal handling thread MUST be interrupted in order to change
+// its signal mask in the event of a critical section.
 static void prv_sig_state_handler(int signum, siginfo_t *info, void *ptr) {
   (void)signum;
   // We actually need to manipulate the block mask of the context that is restored for this thread.
