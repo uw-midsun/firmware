@@ -12,6 +12,12 @@
 static bool s_interrupts_disabled = false;
 static pthread_mutex_t s_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
+// WARNING: due to skipping the pthread_mutex lock in a signal_handler it is possible that during a
+// signal handler's critical section a data race occurs due to another thread entering a critical
+// section successfully during the handler's execution. This is due to the signal handler not
+// locking the mutex however, this is to prevent deadlock. If this begins to be an issue we should
+// revisiting the mutex implementation here.
+
 bool critical_section_start(void) {
   if (!x86_interrupt_in_handler()) {
     pthread_mutex_lock(&s_mutex);
