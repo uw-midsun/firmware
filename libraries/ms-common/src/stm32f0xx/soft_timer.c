@@ -1,10 +1,7 @@
-// Timers are implemented as a doubly linked list, sorted in order of remaining
-// time until expiry.
-// Thus, the head of the list is always defined as the next timer to expire, so
-// we set the timer
+// Timers are implemented as a doubly linked list, sorted in order of remaining time until expiry.
+// Thus, the head of the list is always defined as the next timer to expire, so we set the timer
 // peripheral's compare register to the head's expiry time.
-// This gives us O(1) deletion, but we do have O(n) insertion due to the ordered
-// requirement.
+// This gives us O(1) deletion, but we do have O(n) insertion due to the ordered requirement.
 // This tradeoff is worth it for faster interrupts.
 #include "soft_timer.h"
 #include <string.h>
@@ -59,8 +56,7 @@ StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, vo
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "Out of software timers.");
   }
 
-  // Set the expected counter value for a expiry - if count + time_us < count,
-  // we overflowed
+  // Set the expected counter value for a expiry - if count + time_us < count, we overflowed
   const uint32_t count = TIM_GetCounter(TIM2);
   node->expiry_us = count + duration_us;
   node->expiry_rollover_count = s_timers.rollover_count + (node->expiry_us < count);
@@ -203,10 +199,8 @@ static void prv_update_timer(void) {
     active_timer = s_timers.head;
   }
 
-  // If there are still any unexpired timers, we set the next compare to the
-  // head's expiry time
-  // and reenable compares. In the case where there aren't any timers
-  // registered, the compare
+  // If there are still any unexpired timers, we set the next compare to the head's expiry time
+  // and reenable compares. In the case where there aren't any timers registered, the compare
   // channel is disabled until a new timer is added.
   if (s_timers.head != NULL) {
     TIM_SetCompare1(TIM2, s_timers.head->expiry_us);

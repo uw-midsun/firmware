@@ -2,8 +2,7 @@
 // General logging functions.
 // Logging is done via printf which retargets to UART by default on stm32f0xx.
 //
-// Best practice is to use log level WARNING for recoverable faults and CRITICAL
-// for irrecoverable
+// Best practice is to use log level WARNING for recoverable faults and CRITICAL for irrecoverable
 // faults. DEBUG can be used for anything.
 #include <stdio.h>
 

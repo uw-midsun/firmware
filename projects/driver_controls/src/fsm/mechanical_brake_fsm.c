@@ -23,8 +23,7 @@ FSM_STATE_TRANSITION(state_disengaged) {
 // Mechanical Brake FSM guard functions
 
 static bool prv_check_mechanical_brake_engaged(const Event *e) {
-  // While the brakes are engaged, the car should not accept any commands to
-  // move
+  // While the brakes are engaged, the car should not accept any commands to move
   switch (e->id) {
     case INPUT_EVENT_PEDAL_COAST:
     case INPUT_EVENT_PEDAL_ACCEL:

@@ -42,23 +42,20 @@ StatusCode gpio_it_register_interrupt(const GPIOAddress *address, const Interrup
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "Pin already used.");
   }
 
-  // Try to register on NVIC and EXTI. Both must succeed for the callback to be
-  // set.
+  // Try to register on NVIC and EXTI. Both must succeed for the callback to be set.
   s_gpio_it_interrupts[address->pin].address = *address;
   s_gpio_it_interrupts[address->pin].callback = callback;
   s_gpio_it_interrupts[address->pin].context = context;
 
   SYSCFG_EXTILineConfig(address->port, address->pin);
   StatusCode status = stm32f0xx_interrupt_exti_enable(address->pin, settings, edge);
-  // If the operation failed clean up by removing the callback and pass the
-  // error up the stack.
+  // If the operation failed clean up by removing the callback and pass the error up the stack.
   if (!status_ok(status)) {
     s_gpio_it_interrupts[address->pin].callback = NULL;
     return status;
   }
   status = stm32f0xx_interrupt_nvic_enable(prv_get_irq_channel(address->pin), settings->priority);
-  // If the operation failed clean up by removing the callback and pass the
-  // error up the stack.
+  // If the operation failed clean up by removing the callback and pass the error up the stack.
   if (!status_ok(status)) {
     s_gpio_it_interrupts[address->pin].callback = NULL;
     return status;
@@ -75,10 +72,8 @@ StatusCode gpio_it_trigger_interrupt(const GPIOAddress *address) {
   return stm32f0xx_interrupt_exti_trigger(address->pin);
 }
 
-// Callback runner for GPIO which runs callbacks based on which callbacks are
-// associated with an IRQ
-// channel. The function runs the callbacks which have a flag raised in the
-// range [lower_bound,
+// Callback runner for GPIO which runs callbacks based on which callbacks are associated with an IRQ
+// channel. The function runs the callbacks which have a flag raised in the range [lower_bound,
 // upperbound].
 static void prv_run_gpio_callbacks(uint8_t lower_bound, uint8_t upper_bound) {
   uint8_t pending = 0;

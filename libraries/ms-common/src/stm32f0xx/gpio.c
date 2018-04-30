@@ -29,8 +29,7 @@ StatusCode gpio_init_pin(const GPIOAddress *address, const GPIOSettings *setting
 
   RCC_AHBPeriphClockCmd(s_gpio_rcc_ahb_timer_map[address->port], ENABLE);
 
-  // Parse the GPIOAltFN settings which are used to modify the mode and Alt
-  // Function.
+  // Parse the GPIOAltFN settings which are used to modify the mode and Alt Function.
   if (settings->alt_function == GPIO_ALTFN_ANALOG) {
     init_struct.GPIO_Mode = GPIO_Mode_AN;
   } else if (settings->alt_function == GPIO_ALTFN_NONE) {
@@ -53,8 +52,8 @@ StatusCode gpio_init_pin(const GPIOAddress *address, const GPIOSettings *setting
   }
 
   // These are default values which are not intended to be changed.
-  init_struct.GPIO_Speed = GPIO_Speed_Level_3;  // Use fastest speed because the
-                                                // slew rate is quite slow.
+  init_struct.GPIO_Speed =
+      GPIO_Speed_Level_3;  // Use fastest speed because the slew rate is quite slow.
 
   if (init_struct.GPIO_Mode == GPIO_Mode_AF) {
     // Subtract 1 due to the offset of the enum from the ALTFN_NONE entry

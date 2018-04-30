@@ -24,7 +24,6 @@ StatusCode can_unpack_impl_u32(const CANMessage *msg, size_t expected_dlc, uint3
 // Unpacks a u64 from a CAN Msg
 StatusCode can_unpack_impl_u64(const CANMessage *msg, size_t expected_dlc, uint64_t *f1);
 
-// This doesn't do anything since there is no data to unpack. The purpose of
-// this is so that codegen
+// This doesn't do anything since there is no data to unpack. The purpose of this is so that codegen
 // doesn't require a special edge case and so every message has an unpack macro.
 #define can_unpack_impl_empty(msg_ptr)

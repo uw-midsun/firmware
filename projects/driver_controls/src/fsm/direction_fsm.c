@@ -41,15 +41,13 @@ static bool prv_check_neutral(const Event *e) {
 }
 
 static bool prv_check_forward(const Event *e) {
-  // Powering off while the car is moving can be dangerous. As a result,
-  // powering off is
+  // Powering off while the car is moving can be dangerous. As a result, powering off is
   // forbidden while in forward gear
   return (e->id != INPUT_EVENT_POWER);
 }
 
 static bool prv_check_reverse(const Event *e) {
-  // Same as forward, except that cruise control is forbidden in reverse for
-  // obvious reasons
+  // Same as forward, except that cruise control is forbidden in reverse for obvious reasons
   return !(e->id == INPUT_EVENT_POWER || e->id == INPUT_EVENT_CRUISE_CONTROL);
 }
 

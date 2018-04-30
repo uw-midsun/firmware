@@ -48,8 +48,7 @@ static void prv_handle_rx(FSM *fsm, const Event *e, void *context) {
 
   StatusCode result = can_fifo_pop(&can_storage->rx_fifo, &rx_msg);
   if (result != STATUS_CODE_OK) {
-    // We had a mismatch between number of events and number of messages, so
-    // return silently
+    // We had a mismatch between number of events and number of messages, so return silently
     // Alternatively, we could use the data value of the event.
     return;
   }

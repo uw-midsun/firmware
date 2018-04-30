@@ -4,13 +4,11 @@
 #include "log.h"
 #include "stm32f0xx.h"
 
-// TS_CAL addresses obtained from section 3.10.1 of the specific device
-// datasheet
+// TS_CAL addresses obtained from section 3.10.1 of the specific device datasheet
 #define TS_CAL1 0x1FFFF7b8
 #define TS_CAL2 0x1FFFF7c2
 
-// VREFINT_CAL address obtained from section 3.10.2 of the specific device
-// datasheet
+// VREFINT_CAL address obtained from section 3.10.2 of the specific device datasheet
 #define VREFINT_CAL 0x1FFFF7ba
 
 typedef struct ADCInterrupt {
@@ -27,8 +25,7 @@ typedef struct ADCStatus {
 static ADCInterrupt s_adc_interrupts[NUM_ADC_CHANNELS];
 static ADCStatus s_adc_status;
 
-// Formula obtained from section 13.9 of the reference manual. Returns reading
-// in kelvin
+// Formula obtained from section 13.9 of the reference manual. Returns reading in kelvin
 static uint16_t prv_get_temp(uint16_t reading) {
   uint16_t ts_cal1 = *(uint16_t *)TS_CAL1;
   uint16_t ts_cal2 = *(uint16_t *)TS_CAL2;
@@ -38,8 +35,7 @@ static uint16_t prv_get_temp(uint16_t reading) {
   return reading + 273;
 }
 
-// Formula obtained from section 13.9 of the reference manual. Returns Vdda in
-// mV
+// Formula obtained from section 13.9 of the reference manual. Returns Vdda in mV
 static uint16_t prv_get_vdda(uint16_t reading) {
   uint16_t vrefint_cal = *(uint16_t *)VREFINT_CAL;
   reading = (3300 * vrefint_cal) / reading;
@@ -91,8 +87,7 @@ void adc_init(ADCMode adc_mode) {
     ADC_StartOfConversion(ADC1);
   }
 
-  // Configure internal reference channel to run by default for voltage
-  // conversions
+  // Configure internal reference channel to run by default for voltage conversions
   adc_set_channel(ADC_CHANNEL_REF, true);
 }
 
@@ -129,10 +124,8 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
   return STATUS_CODE_OK;
 }
 
-// ADC Channel to GPIO Address mapping found in table 13 of the specific device
-// datasheet.
-// Channels 0 to 7 are occupied by port A, 8 to 9 by prt B, and 10 to 15 by port
-// C
+// ADC Channel to GPIO Address mapping found in table 13 of the specific device datasheet.
+// Channels 0 to 7 are occupied by port A, 8 to 9 by prt B, and 10 to 15 by port C
 StatusCode adc_get_channel(GPIOAddress address, ADCChannel *adc_channel) {
   *adc_channel = address.pin;
 

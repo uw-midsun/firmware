@@ -14,8 +14,7 @@ typedef struct {
   size_t elem_size;
 } Fifo;
 
-// Convenience macros - these can only be used if the element or array are
-// preserved.
+// Convenience macros - these can only be used if the element or array are preserved.
 // i.e. The type must persist and arrays must keep their size information.
 
 // Initialize a FIFO object with the given buffer.
@@ -31,13 +30,11 @@ typedef struct {
 // Pop a single element off of the FIFO.
 #define fifo_pop(fifo, dest) fifo_pop_impl((fifo), (dest), sizeof(*VOID_PTR_UINT8(dest)))
 
-// Push an array of elements onto the FIFO. Note that the FIFO will only be
-// modified on success.
+// Push an array of elements onto the FIFO. Note that the FIFO will only be modified on success.
 #define fifo_push_arr(fifo, source_arr, len) \
   fifo_push_arr_impl((fifo), (source_arr), sizeof((source_arr)[0]), (len))
 
-// Pop an array of elements off of the FIFO. Note that the FIFO will only be
-// modified on success.
+// Pop an array of elements off of the FIFO. Note that the FIFO will only be modified on success.
 // This is essentially a memmove from the FIFO to the destination array.
 #define fifo_pop_arr(fifo, dest_arr, len) \
   fifo_pop_arr_impl((fifo), (dest_arr), sizeof(VOID_PTR_UINT8((dest_arr))[0]), (len))

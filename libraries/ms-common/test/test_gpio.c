@@ -14,8 +14,7 @@ void teardown_test(void) {}
 #define INVALID_PIN (GPIO_PINS_PER_PORT)
 #define INVALID_PORT (NUM_GPIO_PORTS)
 
-// Used to impose a delay to due to the 12 MHz max slew rate of the GPIO on the
-// stm32f0xx.
+// Used to impose a delay to due to the 12 MHz max slew rate of the GPIO on the stm32f0xx.
 void delay(void) {
   for (volatile int16_t i = 0; i < 1000; i++) {
   }
@@ -23,8 +22,7 @@ void delay(void) {
 
 // gpio_init
 
-// Tests that the GPIO init works. This should simply return true
-// INVALID_PORT_PIN% of time unless
+// Tests that the GPIO init works. This should simply return true INVALID_PORT_PIN% of time unless
 // the test is on
 // x86 and the configuration is incorrect in which case fix it!
 void test_gpio_init_valid(void) {
@@ -100,8 +98,7 @@ void test_gpio_init_pin_invalid_settings(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_init_pin(&address, &settings));
 }
 
-// Tests that if the pin is set to direction out a high state will be picked up
-// in the input
+// Tests that if the pin is set to direction out a high state will be picked up in the input
 // register.
 void test_gpio_init_pin_valid_output(void) {
   // Default high settings for a pin.
@@ -230,8 +227,7 @@ void test_gpio_toggle_state_invalid_address(void) {
 
 // gpio_get_state
 
-// Test that a valid get value will work. This doubles as a test to verify that
-// the state setting on
+// Test that a valid get value will work. This doubles as a test to verify that the state setting on
 // gpio_init_pin works.
 void test_gpio_get_state_valid(void) {
   // Default output settings for a pin.

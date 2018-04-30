@@ -11,16 +11,13 @@
 // critical_section_end(disabled);
 // // ...
 //
-// This will also protect nested attempts from enabling and disabling interrupts
-// from prematurely
+// This will also protect nested attempts from enabling and disabling interrupts from prematurely
 // ending the critical section.
 
-// Disables all interrupts across all lines/inputs. Returns true if the function
-// disabled
+// Disables all interrupts across all lines/inputs. Returns true if the function disabled
 // interrupts.
 bool critical_section_start(void);
 
-// Enables all registered interrupts on all lines/inputs. Passing true to this
-// function can be used
+// Enables all registered interrupts on all lines/inputs. Passing true to this function can be used
 // to forcibly end all critical sections.
 void critical_section_end(bool disabled_in_scope);

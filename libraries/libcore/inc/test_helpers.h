@@ -1,6 +1,5 @@
 #pragma once
-// Test helper functions. These should only ever be called within a file in the
-// test folder.
+// Test helper functions. These should only ever be called within a file in the test folder.
 
 #include "status.h"
 #include "unity.h"

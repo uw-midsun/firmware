@@ -50,8 +50,7 @@ void test_ltc_afe_adc_conversion_initiated(void) {
 }
 
 void test_ltc_afe_read_all_voltage_repeated_within_tolerances(void) {
-  // the idea here is that we repeatedly take samples and verify that the values
-  // being read
+  // the idea here is that we repeatedly take samples and verify that the values being read
   // are within an acceptable tolerance
   uint16_t samples[LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN * AFE_TEST_SAMPLES] = {
     0
@@ -81,8 +80,7 @@ void test_ltc_afe_read_all_voltage_wrong_size(void) {
 }
 
 void test_ltc_afe_read_all_aux_repeated_within_tolerances(void) {
-  // the idea here is that we repeatedly take samples and verify that the values
-  // being read
+  // the idea here is that we repeatedly take samples and verify that the values being read
   // are within an acceptable tolerance
   uint16_t samples[LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN * AFE_TEST_SAMPLES] = {
     0

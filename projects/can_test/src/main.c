@@ -1,6 +1,5 @@
 // CAN driver bus flooding test
-// Attempts to flood the CAN bus - would like to ensure that the main thread
-// doesn't starve
+// Attempts to flood the CAN bus - would like to ensure that the main thread doesn't starve
 // and figure out how quickly we can realistically send messages
 #include "can.h"
 #include "gpio.h"

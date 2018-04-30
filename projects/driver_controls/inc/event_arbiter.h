@@ -2,12 +2,9 @@
 
 // Interface for managing raised events
 
-// Each time an event is popped from the event queue, the event will be checked
-// against
-// the current states of all active FSMs to determine whether it will be
-// processed or
-// discarded. This is to prevent situations like processing a gear shift while
-// the brake is
+// Each time an event is popped from the event queue, the event will be checked against
+// the current states of all active FSMs to determine whether it will be processed or
+// discarded. This is to prevent situations like processing a gear shift while the brake is
 // not pressed, which would be dangerous for the driver.
 
 #include "fsm.h"
@@ -30,16 +27,6 @@ typedef struct EventArbiterStorage {
   EventArbiterGuard arbiters[EVENT_ARBITER_MAX_FSMS];
 } EventArbiterStorage;
 
-<<<<<<< HEAD
-// Initializes the event arbiter to the default state with a given output
-// function
-StatusCode event_arbiter_init(EventArbiterOutput output);
-
-// Registers an FSM and sets the context pointer to point to the given event
-// check function
-// NULL pointers are treated as no-ops that return true
-EventArbiterCheck *event_arbiter_add_fsm(FSM *fsm, EventArbiterCheck default_checker);
-=======
 // Initializes the event arbiter to the default state with a given output function
 StatusCode event_arbiter_init(EventArbiterStorage *storage);
 
@@ -47,7 +34,6 @@ StatusCode event_arbiter_init(EventArbiterStorage *storage);
 // A NULL event check allows all events by default.
 EventArbiterGuard *event_arbiter_add_fsm(EventArbiterStorage *storage, FSM *fsm,
                                          EventArbiterGuardFn guard_fn);
->>>>>>> b086f57650b8370417cf9e31ce8ed4ac84a0db83
 
 StatusCode event_arbiter_set_guard_fn(EventArbiterGuard *guard, EventArbiterGuardFn guard_fn);
 

@@ -1,5 +1,4 @@
-// Uses an object pool to track the storage for ack requests, but the actual
-// requests are handled
+// Uses an object pool to track the storage for ack requests, but the actual requests are handled
 // through an array of request pointers to minimize copying
 // ACK requests currently ordered as they were created
 #include "can_ack.h"
@@ -57,12 +56,9 @@ static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
   size_t index = 0;
 
   // Requests should be in the order that they were made, and there's a higher
-  // chance that requests made first will be serviced first. In the case where
-  // we're
-  // searching for a message ID, we'd like to pick the ACK request closest to
-  // expiry,
-  // which should be the first one we encounter because we keep them in the
-  // order they were made.
+  // chance that requests made first will be serviced first. In the case where we're
+  // searching for a message ID, we'd like to pick the ACK request closest to expiry,
+  // which should be the first one we encounter because we keep them in the order they were made.
 
   // Essentially checks if an ACK has been received from the device already and
   // * The message ID matches given an invalid timer
@@ -85,15 +81,13 @@ static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
     return status_code(STATUS_CODE_UNKNOWN);
   }
 
-  // We use a bitset to keep track of which devices we've received an ACK for
-  // this message from
+  // We use a bitset to keep track of which devices we've received an ACK for this message from
   if (device != CAN_MSG_INVALID_DEVICE) {
     found_request->response_bitset |= ((uint32_t)1 << device);
   }
 
   if (found_request->callback != NULL) {
-    // Since we always check if a device was expected, we don't need to actually
-    // mask it
+    // Since we always check if a device was expected, we don't need to actually mask it
     uint16_t num_remaining =
         __builtin_popcount(found_request->response_bitset ^ found_request->expected_bitset);
     StatusCode ret = found_request->callback(found_request->msg_id, device, status, num_remaining,
@@ -105,8 +99,7 @@ static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
     }
   }
 
-  // The response bitset should only ever be set by devices in the expected
-  // bitset, so we don't
+  // The response bitset should only ever be set by devices in the expected bitset, so we don't
   // need to mask the value here.
   if (found_request->response_bitset == found_request->expected_bitset ||
       status == CAN_ACK_STATUS_TIMEOUT) {

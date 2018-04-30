@@ -1,8 +1,7 @@
 #pragma once
 // Object Pool Interface
 //
-// Manages a pre-allocated array of objects. We use this instead of a heap so we
-// don't need to deal
+// Manages a pre-allocated array of objects. We use this instead of a heap so we don't need to deal
 // with memory fragmentation.
 #include <stdbool.h>
 #include <stdint.h>
@@ -30,8 +29,7 @@ typedef struct ObjectPool {
   objpool_init_verbose((pool), (nodes), sizeof((nodes)[0]), SIZEOF_ARRAY((nodes)), (init_fn), \
                        (context))
 
-// Initializes an object pool. The specified context is provided for node
-// initialization.
+// Initializes an object pool. The specified context is provided for node initialization.
 StatusCode objpool_init_verbose(ObjectPool *pool, void *nodes, size_t node_size, size_t num_nodes,
                                 ObjpoolNodeInitFn init_node, void *context);
 

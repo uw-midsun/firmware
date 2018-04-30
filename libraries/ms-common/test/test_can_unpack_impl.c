@@ -77,8 +77,8 @@ void test_can_unpack_impl_u64(void) {
   uint64_t f = 0;
   TEST_ASSERT_OK(can_unpack_impl_u64(&s_msg, TEST_CAN_UNPACK_IMPL_DLC, &f));
   TEST_ASSERT_EQUAL_UINT64(s_msg.data, f);
-  TEST_ASSERT_OK(can_unpack_impl_u64(&s_msg, TEST_CAN_UNPACK_IMPL_DLC,
-                                     NULL));  // Ensure it doesn't segfault.
+  TEST_ASSERT_OK(
+      can_unpack_impl_u64(&s_msg, TEST_CAN_UNPACK_IMPL_DLC, NULL));  // Ensure it doesn't segfault.
 
   TEST_ASSERT_EQUAL(STATUS_CODE_INTERNAL_ERROR,
                     can_unpack_impl_u64(&s_msg, TEST_CAN_UNPACK_IMPL_DLC - 1, NULL));

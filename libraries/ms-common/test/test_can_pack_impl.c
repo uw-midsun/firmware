@@ -12,10 +12,8 @@
 #define TEST_CAN_PACK_SOURCE_ID 1
 #define TEST_CAN_PACK_TYPE CAN_MSG_TYPE_DATA
 
-// Since all the methods use the same test framework just define it as a macro
-// to reduce redundant
-// code. It is a bit magic but it is relatively understandable if you realize
-// macros are just
+// Since all the methods use the same test framework just define it as a macro to reduce redundant
+// code. It is a bit magic but it is relatively understandable if you realize macros are just
 // replaced with what they represent at compile time.
 #define TEST_CAN_PACK_IMPL_FRAMEWORK(pack_call)                  \
   do {                                                           \
