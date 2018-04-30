@@ -8,6 +8,12 @@
 # Specify the device library you want to include
 $(T)_DEPS := ms-common
 
+$(T)_INC_DIRS := $($(T)_INC_DIRS) $($(T)_DIR)/inc/fsm
+$(T)_SRC_DIRS := $($(T)_SRC_ROOT) $($(T)_SRC_ROOT)/$(PLATFORM) $($(T)_SRC_ROOT)/fsm
+$(T)_SRC := $(call find_in,$($(T)_SRC_DIRS),*.c)
+
 ifeq (x86,$(PLATFORM))
-$(T)_EXCLUDE_TESTS := gpio_expander magnetic_sensor ads1015 	
+$(T)_EXCLUDE_TESTS := gpio_expander magnetic_sensor
 endif
+
+$(T)_test_throttle_MOCKS := ads1015_read_raw

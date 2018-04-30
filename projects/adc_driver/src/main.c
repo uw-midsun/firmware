@@ -7,8 +7,8 @@
 #include "interrupt.h"
 #include "log.h"
 
-void test_callback(ADCChannel adc_channel, void* context) {
-  uint16_t* adc_reading = (uint16_t*)context;
+void test_callback(ADCChannel adc_channel, void *context) {
+  uint16_t *adc_reading = (uint16_t *)context;
   adc_read_converted(adc_channel, adc_reading);
 }
 

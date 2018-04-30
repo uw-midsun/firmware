@@ -55,10 +55,10 @@
                     CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_MOTOR_CONTROLS(msg_ptr, throttle_u16, direction_u16, cruise_control_u16,  \
-                                steering_angle_u16)                                        \
+                                mechanical_brake_state_u16)                                \
   can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,                          \
                     SYSTEM_CAN_MESSAGE_MOTOR_CONTROLS, 8, (throttle_u16), (direction_u16), \
-                    (cruise_control_u16), (steering_angle_u16))
+                    (cruise_control_u16), (mechanical_brake_state_u16))
 
 #define CAN_PACK_LIGHTS_STATES(msg_ptr, light_id_u8, light_state_u8)                               \
   can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, SYSTEM_CAN_MESSAGE_LIGHTS_STATES, \
@@ -72,12 +72,6 @@
                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,             \
                    CAN_PACK_IMPL_EMPTY)
 
-#define CAN_PACK_MECHANICAL_BRAKE(msg_ptr, state_u8)                                        \
-  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,                            \
-                   SYSTEM_CAN_MESSAGE_MECHANICAL_BRAKE, 1, (state_u8), CAN_PACK_IMPL_EMPTY, \
-                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,           \
-                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
-
 #define CAN_PACK_CHARGING_REQ(msg_ptr) \
   can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_CHARGER, SYSTEM_CAN_MESSAGE_CHARGING_REQ)
 
@@ -86,6 +80,11 @@
                    (allowed_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,   \
                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                 \
                    CAN_PACK_IMPL_EMPTY)
+
+#define CAN_PACK_STEERING_ANGLE(msg_ptr, steering_angle_u16)                    \
+  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,               \
+                    SYSTEM_CAN_MESSAGE_STEERING_ANGLE, 2, (steering_angle_u16), \
+                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_BATTERY_SOC(msg_ptr) \
   can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_PLUTUS, SYSTEM_CAN_MESSAGE_BATTERY_SOC)
@@ -100,15 +99,15 @@
                     SYSTEM_CAN_MESSAGE_MOTOR_CONTROLLER_VC, 8, (mc_voltage_1_u16), \
                     (mc_current_1_u16), (mc_voltage_2_u16), (mc_current_2_u16))
 
-#define CAN_PACK_MOTOR_VELOCITY_L(msg_ptr, vehicle_velocity_u32, angular_freq_u32)  \
-  can_pack_impl_u32((msg_ptr), SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,                  \
-                    SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY_L, 8, (vehicle_velocity_u32), \
-                    (angular_freq_u32))
+#define CAN_PACK_MOTOR_VELOCITY(msg_ptr, vehicle_velocity_left_u32, vehicle_velocity_right_u32) \
+  can_pack_impl_u32((msg_ptr), SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,                              \
+                    SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY, 8, (vehicle_velocity_left_u32),          \
+                    (vehicle_velocity_right_u32))
 
-#define CAN_PACK_MOTOR_VELOCITY_R(msg_ptr, vehicle_velocity_u32, angular_freq_u32)  \
-  can_pack_impl_u32((msg_ptr), SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,                  \
-                    SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY_R, 8, (vehicle_velocity_u32), \
-                    (angular_freq_u32))
+#define CAN_PACK_MOTOR_ANGULAR_FREQUENCY(msg_ptr, angular_freq_left_u32, angular_freq_right_u32) \
+  can_pack_impl_u32((msg_ptr), SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,                               \
+                    SYSTEM_CAN_MESSAGE_MOTOR_ANGULAR_FREQUENCY, 8, (angular_freq_left_u32),      \
+                    (angular_freq_right_u32))
 
 #define CAN_PACK_MOTOR_TEMPS(msg_ptr, motor_temp_l_u32, motor_temp_r_u32)                          \
   can_pack_impl_u32((msg_ptr), SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER, SYSTEM_CAN_MESSAGE_MOTOR_TEMPS, \
