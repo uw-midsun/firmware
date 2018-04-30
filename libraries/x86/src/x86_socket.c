@@ -1,14 +1,14 @@
 #include "x86_socket.h"
 #include <errno.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
-#include <stdio.h>
-#include "misc.h"
-#include <stdlib.h>
 #include "log.h"
+#include "misc.h"
 
 #define X86_SOCKET_INVALID_FD -1
 #define X86_SOCKET_BUFFER_LEN 1024
@@ -23,13 +23,13 @@ static StatusCode prv_setup_socket(X86SocketThread *thread, int *server_fd) {
     return status_msg(STATUS_CODE_INTERNAL_ERROR, "Failed to create socket");
   }
 
-  struct sockaddr_un addr = {
-    .sun_family = AF_UNIX
-  };
+  struct sockaddr_un addr = { .sun_family = AF_UNIX };
   // First character is \0 to signal abstract domain socket
-  snprintf(addr.sun_path + 1, sizeof(addr.sun_path) - 1, "%d/%s/%s", getpid(), program_invocation_short_name, thread->module_name);
+  snprintf(addr.sun_path + 1, sizeof(addr.sun_path) - 1, "%d/%s/%s", getpid(),
+           program_invocation_short_name, thread->module_name);
 
-  if (bind(*server_fd, (struct sockaddr *)&addr, offsetof(struct sockaddr_un, sun_path) + 1 + strlen(addr.sun_path + 1)) < 0) {
+  if (bind(*server_fd, (struct sockaddr *)&addr,
+           offsetof(struct sockaddr_un, sun_path) + 1 + strlen(addr.sun_path + 1)) < 0) {
     return status_msg(STATUS_CODE_INTERNAL_ERROR, "Failed to bind socket");
   }
 
@@ -104,7 +104,8 @@ static void *prv_server_thread(void *context) {
   return NULL;
 }
 
-StatusCode x86_socket_init(X86SocketThread *thread, char *module_name, X86SocketHandler handler, void *context) {
+StatusCode x86_socket_init(X86SocketThread *thread, char *module_name, X86SocketHandler handler,
+                           void *context) {
   // TODO(ELEC-395): need to handle reinit
   memset(thread, 0, sizeof(*thread));
   thread->module_name = module_name;

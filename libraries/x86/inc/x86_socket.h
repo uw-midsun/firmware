@@ -10,7 +10,8 @@
 
 // client_fd provided to allow reply to specific client
 struct X86SocketThread;
-typedef void (*X86SocketHandler)(struct X86SocketThread *thread, int client_fd, const char *rx_data, size_t rx_len, void *context);
+typedef void (*X86SocketHandler)(struct X86SocketThread *thread, int client_fd, const char *rx_data,
+                                 size_t rx_len, void *context);
 
 typedef struct X86SocketThread {
   pthread_t thread;
@@ -24,7 +25,8 @@ typedef struct X86SocketThread {
 
 // Initializes server thread on @[pid]/[progname]/module_name
 // Registered handler is called when client data is received
-StatusCode x86_socket_init(X86SocketThread *thread, char *module_name, X86SocketHandler handler, void *context);
+StatusCode x86_socket_init(X86SocketThread *thread, char *module_name, X86SocketHandler handler,
+                           void *context);
 
 // Write to all connected clients
 StatusCode x86_socket_broadcast(X86SocketThread *thread, const char *tx_data, size_t tx_len);
