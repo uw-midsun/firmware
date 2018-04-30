@@ -14,7 +14,7 @@ void prv_int_to_hex(uint8_t checksum, char* out) {
 }
 
 // out must be a pointer to at least 3 chars
-void evm_gps_compute_checksum(char *message, char *out) {
+void evm_gps_compute_checksum(char* message, char* out) {
   uint8_t sum = 0;
   uint8_t message_len = strlen(message);
   for (uint8_t i = 1; message[i] != '*' && i < message_len; i++) {

@@ -6,10 +6,10 @@
 
 // This enum contains the list of NMEA sentences (not all of then are supported yet)
 
+// because they do not contain useful information
 typedef enum {
   EVM_GPS_UNKNOWN = 0,
-  EVM_GPS_GGA,  // These are the number of data fields in each message type,
-                    // excluding the message id
+  EVM_GPS_GGA,
   EVM_GPS_GLL,
   EVM_GPS_GSA,
   EVM_GPS_GSV,
@@ -18,7 +18,8 @@ typedef enum {
   EVM_GPS_NUM_MESSAGE_IDS
 } EVM_GPS_NMEA_MESSAGE_ID;
 
-static const int s_nmea_message_num_fields[] = { 15, 8, 10, 12, 13, 10 };
+// This is to get the number of fields in a sentence for array allocation
+static const int s_nmea_message_num_fields[] = { 0, 16, 9, 11, 13, 14, 14, 10 };
 
 typedef struct {
   uint32_t hh;   // Hours
@@ -27,11 +28,13 @@ typedef struct {
   uint32_t sss;  // Milliseconds
 } evm_gps_utc_time;
 
+// Representation of longtitude or latitude
+// https://en.wikipedia.org/wiki/Longitude
 typedef struct {
   uint32_t degrees;
   uint32_t minutes;
   uint32_t fraction;
-} evm_gps_coord;  // Valid representation of longtitude or latitude
+} evm_gps_coord;
 // Info passed from the GPS chip should be dropped into this struct (more fields
 // coming soon)
 
@@ -57,7 +60,17 @@ typedef struct {
   EVM_GPS_NMEA_MESSAGE_ID message_id;
 } evm_gps_gga_sentence;
 
+typedef struct {
+  uint32_t degrees_1;    // Whole number of degrees
+  uint32_t degrees_2;    // Decimal part of degrees
+  uint32_t speed_kmh_1;  // Speed in km/h
+  uint32_t speed_kmh_2;  // Speed in km/h, fractional part
+  uint8_t checksum[3];
+} evm_gps_vtg_sentence;
+
 // Parsing function for gga sentence
-void evm_gps_parse_nmea_gga_sentence(const uint8_t *nmea_input, size_t len);
+evm_gps_gga_sentence evm_gps_parse_nmea_gga_sentence(const uint8_t *nmea_input, size_t len);
+evm_gps_vtg_sentence evm_gps_parse_nmea_vtg_sentence(const uint8_t *nmea_input, size_t len);
 StatusCode evm_gps_is_valid_nmea(const uint8_t *to_check, size_t len);
-StatusCode evm_gps_get_nmea_sentence_type(const uint8_t *rx_arr, size_t len, EVM_GPS_NMEA_MESSAGE_ID *result);
+StatusCode evm_gps_get_nmea_sentence_type(const uint8_t *rx_arr, size_t len,
+                                          EVM_GPS_NMEA_MESSAGE_ID *result);

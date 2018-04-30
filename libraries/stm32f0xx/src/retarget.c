@@ -36,6 +36,8 @@ void retarget_init(void) {
 
 int _write(int fd, char *ptr, int len) {
   uint32_t primask = __get_PRIMASK();
+
+  // TODO: refactor so that disabling the interrupt handler is not necessary
   __disable_irq();
 
   for (int i = 0; i < len; i++) {

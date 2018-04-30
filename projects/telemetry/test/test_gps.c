@@ -1,12 +1,12 @@
 #include <stddef.h>
 #include <stdint.h>
+#include "gps.h"
 #include "interrupt.h"
 #include "log.h"
 #include "nmea.h"
 #include "test_helpers.h"
 #include "unity.h"
 #include "util.h"
-#include "gps.h"
 
 void setup_test(void) {}
 void teardown_test(void) {}
@@ -54,8 +54,13 @@ void test_gps_nmea_gga(void) {
   TEST_ASSERT_TRUE(evm_gps_compare_checksum((char *)input));
 }
 
-void test_disable(void) {
-  char message[24];
-  disable_message_type(5, message);
-  TEST_ASSERT_EQUAL_STRING("$PSRF103,05,00,00,01*21", message);
+void test_gps_nmea_vtg(void) {
+  const uint8_t input[] = "$GPVTG,79.65,T,,M,2.69,N,5.0,K,A*38";
+
+  evm_gps_vtg_sentence vtg = evm_gps_parse_nmea_vtg_sentence(input, SIZEOF_ARRAY(input));
+
+  TEST_ASSERT_TRUE(vtg.degrees_1 == 79);
+  TEST_ASSERT_TRUE(vtg.degrees_2 == 65);
+  TEST_ASSERT_TRUE(vtg.speed_kmh_1 == 5);
+  TEST_ASSERT_TRUE(vtg.speed_kmh_2 == 0);
 }
