@@ -17,7 +17,7 @@
 extern char *program_invocation_short_name;
 
 static StatusCode prv_setup_socket(X86SocketThread *thread, int *server_fd) {
-  // Create local socket
+  // Create local socket - SEQPACKET preserves message boundaries
   *server_fd = socket(AF_UNIX, SOCK_SEQPACKET, 0);
   if (*server_fd < 0) {
     return status_msg(STATUS_CODE_INTERNAL_ERROR, "Failed to create socket");
@@ -27,7 +27,7 @@ static StatusCode prv_setup_socket(X86SocketThread *thread, int *server_fd) {
     .sun_family = AF_UNIX
   };
   // First character is \0 to signal abstract domain socket
-  snprintf(addr.sun_path + 1, sizeof(addr.sun_path) - 1, "%d/%s/%s", 0 /* getpid() */, program_invocation_short_name, thread->module_name);
+  snprintf(addr.sun_path + 1, sizeof(addr.sun_path) - 1, "%d/%s/%s", getpid(), program_invocation_short_name, thread->module_name);
 
   if (bind(*server_fd, (struct sockaddr *)&addr, offsetof(struct sockaddr_un, sun_path) + 1 + strlen(addr.sun_path + 1)) < 0) {
     return status_msg(STATUS_CODE_INTERNAL_ERROR, "Failed to bind socket");
@@ -48,7 +48,7 @@ static void *prv_server_thread(void *context) {
     return NULL;
   }
 
-  LOG_DEBUG("Started RX server for %s\n", thread->module_name);
+  LOG_DEBUG("Started RX server for %s (PID %d)\n", thread->module_name, getpid());
 
   // Mutex unlocked when thread should exit
   while (pthread_mutex_trylock(&thread->keep_alive) != 0) {
@@ -83,8 +83,7 @@ static void *prv_server_thread(void *context) {
       }
     }
 
-    // Handle client reads - expect packets prefixed with a 32-bit unsigned integer representing
-    // packet size
+    // Handle client reads
     for (size_t i = 0; i < X86_SOCKET_MAX_CLIENTS; i++) {
       int client_fd = thread->client_fds[i];
       if (client_fd != X86_SOCKET_INVALID_FD && FD_ISSET(client_fd, &read_fds)) {

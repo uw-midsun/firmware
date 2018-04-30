@@ -1,5 +1,5 @@
 #pragma once
-// Creates abstract unix domain socket on @pid/progname/module_name
+// Creates server thread for abstract unix domain socket on @pid/progname/module_name
 #include <pthread.h>
 #include <stddef.h>
 #include "status.h"
@@ -22,6 +22,8 @@ typedef struct X86SocketThread {
   int client_fds[X86_SOCKET_MAX_CLIENTS];
 } X86SocketThread;
 
+// Initializes server thread on @[pid]/[progname]/module_name
+// Registered handler is called when client data is received
 StatusCode x86_socket_init(X86SocketThread *thread, char *module_name, X86SocketHandler handler, void *context);
 
 // Write to all connected clients
