@@ -10,22 +10,14 @@
 #include "soft_timer.h"  // Software timers for scheduling future events.
 #include "uart.h"
 
-// As far as I can tell we just made up the values below
-static const GPIOAddress pins[] = {
+static const GPIOAddress s_pins[] = {
   { .port = GPIO_PORT_B, .pin = 3 },  // Pin power
   { .port = GPIO_PORT_B, .pin = 4 },  // Pin on_off
 };
 
-void gga_handler(evm_gps_gga_sentence result) {
-  // printf("r.north_south: %c\n", result.north_south);
-}
-
-// For GPS
-static const UARTPort s_port = UART_PORT_3;
+static const UARTPort s_port = UART_PORT_2;
 
 int main(void) {
-  printf("Starting main\n");
-  // Enable various peripherals
   interrupt_init();
   gpio_init();
   soft_timer_init();
@@ -33,9 +25,9 @@ int main(void) {
   UARTSettings s_settings = {
     .baudrate = 9600,
 
-    .tx = { .port = GPIO_PORT_A, .pin = 10 },
-    .rx = { .port = GPIO_PORT_A, .pin = 10 },
-    .alt_fn = GPIO_ALTFN_4,
+    .tx = { .port = GPIO_PORT_A, .pin = 2 },
+    .rx = { .port = GPIO_PORT_A, .pin = 3 },
+    .alt_fn = GPIO_ALTFN_1,
   };
 
   const GPIOSettings settings_power = {
@@ -52,18 +44,13 @@ int main(void) {
 
   evm_gps_settings settings = { .settings_power = &settings_power,
                                 .settings_on_off = &settings_on_off,
-                                .pin_power = &pins[0],
-                                .pin_on_off = &pins[1],
+                                .pin_power = &s_pins[0],
+                                .pin_on_off = &s_pins[1],
                                 .uart_settings = &s_settings,
                                 .port = s_port };
   StatusCode ret = evm_gps_init(&settings);
-  // printf("evm_gps_init returned with StatusCode: %d\n", ret);
-  // ret = evm_gps_add_gga_handler(gga_handler, NULL);
-  // printf("evm_gps_add_gga_handler returned with StatusCode: %d\n", ret);
 
   while (true) {
-    // printf("%s","");
-    // delay_s(1);
   }
   evm_gps_clean_up(&settings);
   return 0;
