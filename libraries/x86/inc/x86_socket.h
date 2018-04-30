@@ -1,0 +1,29 @@
+#pragma once
+// Creates abstract unix domain socket on @pid/progname/module_name
+#include <pthread.h>
+#include <stddef.h>
+#include "status.h"
+
+#define X86_SOCKET_MAX_CLIENTS 5
+#define X86_SOCKET_MAX_PENDING_CONNECTIONS 3
+#define X86_SOCKET_RX_BUFFER_LEN 1024
+
+// client_fd provided to allow reply to specific client
+struct X86SocketThread;
+typedef void (*X86SocketHandler)(struct X86SocketThread *thread, int client_fd, const char *rx_data, size_t rx_len, void *context);
+
+typedef struct X86SocketThread {
+  pthread_t thread;
+  const char *module_name;
+  X86SocketHandler handler;
+  void *context;
+
+  int client_fds[X86_SOCKET_MAX_CLIENTS];
+  pthread_mutex_t client_lock;
+  pthread_mutex_t keep_alive;
+} X86SocketThread;
+
+StatusCode x86_socket_init(X86SocketThread *thread, char *module_name, X86SocketHandler handler, void *context);
+
+// Write to all connected clients
+StatusCode x86_socket_broadcast(X86SocketThread *thread, const char *tx_data, size_t tx_len);
