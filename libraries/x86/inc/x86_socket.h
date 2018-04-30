@@ -14,16 +14,18 @@ typedef void (*X86SocketHandler)(struct X86SocketThread *thread, int client_fd, 
 
 typedef struct X86SocketThread {
   pthread_t thread;
+  pthread_mutex_t keep_alive;
   const char *module_name;
   X86SocketHandler handler;
   void *context;
 
   int client_fds[X86_SOCKET_MAX_CLIENTS];
-  pthread_mutex_t client_lock;
-  pthread_mutex_t keep_alive;
 } X86SocketThread;
 
 StatusCode x86_socket_init(X86SocketThread *thread, char *module_name, X86SocketHandler handler, void *context);
 
 // Write to all connected clients
 StatusCode x86_socket_broadcast(X86SocketThread *thread, const char *tx_data, size_t tx_len);
+
+// Write to specific client
+StatusCode x86_socket_write(int client_fd, const char *tx_data, size_t tx_len);

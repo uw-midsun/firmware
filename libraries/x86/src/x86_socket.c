@@ -106,6 +106,7 @@ static void *prv_server_thread(void *context) {
 }
 
 StatusCode x86_socket_init(X86SocketThread *thread, char *module_name, X86SocketHandler handler, void *context) {
+  // TODO(ELEC-395): need to handle reinit
   memset(thread, 0, sizeof(*thread));
   thread->module_name = module_name;
   thread->handler = handler;
@@ -115,7 +116,6 @@ StatusCode x86_socket_init(X86SocketThread *thread, char *module_name, X86Socket
     thread->client_fds[i] = X86_SOCKET_INVALID_FD;
   }
 
-  pthread_mutex_init(&thread->client_lock, NULL);
   // Mutex is used as cancellation point for thread - locked = keep alive
   pthread_mutex_init(&thread->keep_alive, NULL);
   pthread_mutex_lock(&thread->keep_alive);
@@ -126,14 +126,22 @@ StatusCode x86_socket_init(X86SocketThread *thread, char *module_name, X86Socket
 }
 
 StatusCode x86_socket_broadcast(X86SocketThread *thread, const char *tx_data, size_t tx_len) {
-  // TODO: does this need to be protected?
-  pthread_mutex_lock(&thread->client_lock);
+  // TODO(ELEC-395): should the client list be protected?
   for (size_t i = 0; i < X86_SOCKET_MAX_CLIENTS; i++) {
     if (thread->client_fds[i] != X86_SOCKET_INVALID_FD) {
-      ssize_t write_len = write(thread->client_fds[i], tx_data, tx_len);
+      status_ok_or_return(x86_socket_write(thread->client_fds[i], tx_data, tx_len));
     }
   }
-  pthread_mutex_unlock(&thread->client_lock);
+
+  return STATUS_CODE_OK;
+}
+
+StatusCode x86_socket_write(int client_fd, const char *tx_data, size_t tx_len) {
+  ssize_t write_len = write(client_fd, tx_data, tx_len);
+
+  if (write_len < 0) {
+    return status_code(STATUS_CODE_INTERNAL_ERROR);
+  }
 
   return STATUS_CODE_OK;
 }
