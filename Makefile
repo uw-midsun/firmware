@@ -66,6 +66,7 @@ GDB_TARGET = $(BIN_DIR)/test/$(LIBRARY)$(PROJECT)/test_$(TEST)_runner$(PLATFORM_
 endif
 
 DIRS := $(BUILD_DIR) $(BIN_DIR) $(STATIC_LIB_DIR) $(OBJ_CACHE)
+COMMA := ,
 
 # Please don't touch anything below this line
 ###################################################################################################
@@ -133,9 +134,10 @@ FIND := find $(PROJ_DIR) $(LIB_DIR) \
 				-iname "*.[ch]" -print
 
 # Lints libraries and projects, excludes IGNORE_CLEANUP_LIBS
+# Disable import error
 lint:
 	@$(FIND) | xargs -r python2 lint.py
-	@find $(MAKE_DIR) $(PROJ_DIR) -iname "*.py" -print | xargs -r pylint
+	@find $(MAKE_DIR) $(PROJ_DIR) -iname "*.py" -print | xargs -r pylint --disable=F0401
 
 # Formats libraries and projects, excludes IGNORE_CLEANUP_LIBS
 format:
@@ -169,7 +171,7 @@ $(BIN_DIR)/%.bin: $(BIN_DIR)/%$(PLATFORM_EXT)
 
 # clean and remake rules, use reallyclean to clean everything
 
-.PHONY: clean reallyclean remake new socketcan
+.PHONY: clean reallyclean remake new socketcan update_codegen
 
 new:
 	@python3 $(MAKE_DIR)/new_target.py $(NEW_TYPE) $(PROJECT)$(LIBRARY)
@@ -190,3 +192,6 @@ socketcan:
 	@sudo ip link add dev vcan0 type vcan || true
 	@sudo ip link set up vcan0 || true
 	@ip link show vcan0
+
+update_codegen:
+	@python make/git_fetch.py -folder=libraries/codegen-tooling -user=uw-midsun -repo=codegen-tooling -tag=latest -file=codegen-tooling-out.zip

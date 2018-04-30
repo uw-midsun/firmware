@@ -67,7 +67,7 @@ typedef struct Status {
   const char *message;
 } Status;
 
-typedef void (*status_callback)(const Status *status);
+typedef void (*StatusCallback)(const Status *status);
 
 // Updates a status struct containing an error code and optionally a message.
 // This should only be
@@ -79,7 +79,7 @@ StatusCode status_impl_update(StatusCode code, const char *source, const char *c
 Status status_get(void);
 
 // Set a callback that is run whenever the status is changed.
-void status_register_callback(status_callback callback);
+void status_register_callback(StatusCallback callback);
 
 // Macros for convenience.
 #define status_code(code) \

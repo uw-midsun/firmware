@@ -83,6 +83,13 @@ StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage
   return STATUS_CODE_OK;
 }
 
+StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *context) {
+  s_port[uart].storage->rx_handler = rx_handler;
+  s_port[uart].storage->context = context;
+
+  return STATUS_CODE_OK;
+}
+
 StatusCode uart_tx(UARTPort uart, uint8_t *tx_data, size_t len) {
   status_ok_or_return(fifo_push_arr(&s_port[uart].storage->tx_fifo, tx_data, len));
 

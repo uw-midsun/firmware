@@ -28,6 +28,22 @@ static CANHwTiming s_timing[NUM_CAN_HW_BITRATES] = {  // For 48MHz clock
 static CANHwEventHandler s_handlers[NUM_CAN_HW_EVENTS];
 static uint8_t s_num_filters;
 
+static void prv_add_filter(uint8_t filter_num, uint32_t mask, uint32_t filter) {
+  CAN_FilterInitTypeDef filter_cfg = {
+    .CAN_FilterNumber = filter_num,
+    .CAN_FilterMode = CAN_FilterMode_IdMask,
+    .CAN_FilterScale = CAN_FilterScale_32bit,
+    .CAN_FilterIdHigh = filter >> 16,
+    .CAN_FilterIdLow = filter,
+    .CAN_FilterMaskIdHigh = mask >> 16,
+    .CAN_FilterMaskIdLow = mask,
+    .CAN_FilterFIFOAssignment = (filter_num % 2),
+    .CAN_FilterActivation = ENABLE,
+  };
+
+  CAN_FilterInit(&filter_cfg);
+}
+
 StatusCode can_hw_init(const CANHwSettings *settings) {
   memset(s_handlers, 0, sizeof(s_handlers));
   s_num_filters = 0;
@@ -60,10 +76,9 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
   CAN_ITConfig(CAN_HW_BASE, CAN_IT_ERR, ENABLE);
   stm32f0xx_interrupt_nvic_enable(CEC_CAN_IRQn, INTERRUPT_PRIORITY_HIGH);
 
-  // Allow all messages by default, but reset the filter count so it's
-  // overwritten on the first
+  // Allow all messages by default, but reset the filter count so it's overwritten on the first
   // filter
-  can_hw_add_filter(0, 0, false);
+  prv_add_filter(0, 0, 0);
   s_num_filters = 0;
 
   return STATUS_CODE_OK;
@@ -87,27 +102,14 @@ StatusCode can_hw_add_filter(uint32_t mask, uint32_t filter, bool extended) {
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN HW: Ran out of filter banks.");
   }
 
-
   // 32-bit Filter - Identifer Mask
   // STID[10:3] | STID[2:0] EXID[17:13] | EXID[12:5] | EXID[4:0] [IDE] [RTR] 0
   size_t offset = extended ? 3 : 21;
   // We always set the IDE bit for the mask so we distinguish between standard and extended
   uint32_t mask_val = (mask << offset) | (1 << 2);
   uint32_t filter_val = (filter << offset) | ((uint32_t)extended << 2);
-  CAN_FilterInitTypeDef filter_cfg = {
-    .CAN_FilterNumber = s_num_filters,
-    .CAN_FilterMode = CAN_FilterMode_IdMask,
-    .CAN_FilterScale = CAN_FilterScale_32bit,
-    .CAN_FilterIdHigh = filter_val >> 16,
-    .CAN_FilterIdLow = filter_val,
-    .CAN_FilterMaskIdHigh = mask_val >> 16,
-    .CAN_FilterMaskIdLow = mask_val,
-    .CAN_FilterFIFOAssignment = (s_num_filters % 2),
-    .CAN_FilterActivation = ENABLE,
-  };
 
-  CAN_FilterInit(&filter_cfg);
-
+  prv_add_filter(s_num_filters, mask_val, filter_val);
   s_num_filters++;
   return STATUS_CODE_OK;
 }
@@ -128,7 +130,7 @@ StatusCode can_hw_transmit(uint32_t id, bool extended, const uint8_t *data, size
   CanTxMsg tx_msg = {
     .StdId = id,                                          //
     .ExtId = id,                                          //
-    .IDE = extended ? CAN_Id_Standard : CAN_Id_Extended,  //
+    .IDE = extended ? CAN_Id_Extended : CAN_Id_Standard,  //
     .DLC = len,                                           //
   };
 

@@ -22,7 +22,7 @@ LDSCRIPT_DIR := $(PLATFORM_DIR)/ldscripts
 SCRIPT_DIR := $(PLATFORM_DIR)/scripts
 
 # Build flags for the device
-CDEFINES := USE_STDPERIPH_DRIVER STM32F072
+CDEFINES := USE_STDPERIPH_DRIVER STM32F072 HSE_VALUE=32000000
 CFLAGS := -Wall -Wextra -Werror -g3 -Os -std=c11 -Wno-discarded-qualifiers \
 					-Wno-unused-variable -Wno-unused-parameter -Wsign-conversion -Wpointer-arith \
 					-ffunction-sections -fdata-sections -fno-builtin -flto \
@@ -41,20 +41,20 @@ OPENOCD_CFG := -s $(OPENOCD_SCRIPT_DIR) \
                -f $(SCRIPT_DIR)/stm32f0-openocd.cfg
 
 # Platform targets
-.PHONY: program gdb
+.PHONY: program gdb target
 
 program: $(GDB_TARGET:$(PLATFORM_EXT)=.bin)
 	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash $<" -c shutdown
 
 gdb: $(GDB_TARGET)
-	@pkill openocd || true
+	@pkill $(OPENOCD) || true
 	@setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
 	@$(GDB) $< -x "$(SCRIPT_DIR)/gdb_flash"
-	@pkill openocd
+	@pkill $(OPENOCD)
 
 define session_wrapper
 setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
-$1; pkill openocd
+$1; pkill $(OPENOCD)
 endef
 
 # Defines command to run for unit testing

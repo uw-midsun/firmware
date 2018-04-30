@@ -4,7 +4,7 @@ UNITY_SCRIPT_DIR := $(UNITY_ROOT)/auto
 UNITY_GEN_RUNNER := ruby $(UNITY_SCRIPT_DIR)/generate_test_runner.rb --setup_name=setup_test --teardown_name=teardown_test
 
 # Test directories
-$(T)_GEN_DIR := $(BUILD_DIR)/gen/$(PLATFORM)
+$(T)_GEN_DIR := $(BUILD_DIR)/gen/$(PLATFORM)/$(T)
 $(T)_TEST_BIN_DIR := $(BIN_DIR)/test/$(T)
 $(T)_TEST_OBJ_DIR := $($(T)_OBJ_ROOT)/test
 $(T)_TEST_ROOT := $($(T)_DIR)/test
@@ -52,9 +52,10 @@ $($(T)_TESTS): $($(T)_TEST_BIN_DIR)/%_runner$(PLATFORM_EXT): \
                  $($(T)_TEST_OBJ_DIR)/%.o $($(T)_TEST_OBJ_DIR)/%_runner.o \
                  $(call dep_to_lib,$($(T)_TEST_DEPS)) | $(T) $($(T)_TEST_BIN_DIR)
 	@echo "Building test $(notdir $@) for $(PLATFORM)"
-	@$(CC) $($(firstword $|)_CFLAGS) -Wl,-Map=$(lastword $|)/$(notdir $(@:%$(PLATFORM_EXT)=%.map)) $^ -o $@ \
-		-L$(STATIC_LIB_DIR) $(addprefix -l,$(foreach lib,$($(firstword $|)_TEST_DEPS),$($(lib)_DEPS))) \
-		$(LDFLAGS) $(addprefix -I,$($(firstword $|)_INC_DIRS) $(unity_INC_DIRS))
+	@$(CC) $($(firstword $|)_CFLAGS) -Wl,-Map=$(lastword $|)/$(notdir $(@:%$(PLATFORM_EXT)=%.map)) \
+    $(addprefix -Wl$(COMMA)-wrap$(COMMA),$($(firstword $|)_$(notdir $(@:%_runner=%))_MOCKS)) $^ -o $@ \
+    -L$(STATIC_LIB_DIR) $(addprefix -l,$(foreach lib,$($(firstword $|)_TEST_DEPS),$($(lib)_DEPS))) \
+    $(LDFLAGS) $(addprefix -I,$($(firstword $|)_INC_DIRS) $(unity_INC_DIRS))
 
 .PHONY: test test_ test_$(T)
 
