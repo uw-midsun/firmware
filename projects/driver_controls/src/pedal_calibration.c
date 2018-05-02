@@ -141,9 +141,10 @@ StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage) {
 
   // Get the main band's vertices.
   prv_calc_midline(storage, main_channel, THROTTLE_CHANNEL_MAIN);
+  // Get the secondary band's vertices.
+  prv_calc_midline(storage, secondary_channel, THROTTLE_CHANNEL_SECONDARY);
 
-  // Get the full range for main channel. Range is useful since when multiplied by zone percentages,
-  // it will give the size of each zone.
+  // Get the full range for main channel so we can calculate the size of each zone.
   int16_t range = prv_calc_range(storage->band[main_channel]);
 
   // Use the percentages to calculate the thresholds of each zone.
@@ -153,8 +154,6 @@ StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage) {
   zone_thresholds[THROTTLE_ZONE_BRAKE].min = calib_range[PEDAL_CALIBRATION_STATE_FULL_BRAKE].min;
   zone_thresholds[THROTTLE_ZONE_BRAKE].max =
       zone_thresholds[THROTTLE_ZONE_BRAKE].min + (storage->settings.brake_zone_percentage * range / 100);
-  int16_t brake_tolerance = (zone_thresholds[THROTTLE_ZONE_BRAKE].max - zone_thresholds[THROTTLE_ZONE_BRAKE].min) * storage->settings.bounds_tolerance / 100;
-  zone_thresholds[THROTTLE_ZONE_BRAKE].min = MAX(0, zone_thresholds[THROTTLE_ZONE_BRAKE].min - brake_tolerance);
 
   zone_thresholds[THROTTLE_ZONE_COAST].min = zone_thresholds[THROTTLE_ZONE_BRAKE].max + 1;
   zone_thresholds[THROTTLE_ZONE_COAST].max =
@@ -162,11 +161,6 @@ StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage) {
 
   zone_thresholds[THROTTLE_ZONE_ACCEL].min = zone_thresholds[THROTTLE_ZONE_COAST].max + 1;
   zone_thresholds[THROTTLE_ZONE_ACCEL].max = calib_range[PEDAL_CALIBRATION_STATE_FULL_THROTTLE].max;
-  int16_t accel_tolerance = (zone_thresholds[THROTTLE_ZONE_ACCEL].max - zone_thresholds[THROTTLE_ZONE_ACCEL].min) * storage->settings.bounds_tolerance / 100;
-  zone_thresholds[THROTTLE_ZONE_ACCEL].max = MIN(THROTTLE_DENOMINATOR, zone_thresholds[THROTTLE_ZONE_ACCEL].max + brake_tolerance);
-
-  // Get the secondary band's vertices.
-  prv_calc_midline(storage, secondary_channel, THROTTLE_CHANNEL_SECONDARY);
 
   // Tolerance should be half of the band's width assuming the width is constant.
   // In this case we take the maximum of widths at both ends multiplied by the given safety factor.

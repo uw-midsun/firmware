@@ -61,7 +61,6 @@ void setup_test(void) {
     .adc_channel = { TEST_PEDAL_CALIBRATION_ADC_CHANNEL_A, TEST_PEDAL_CALIBRATION_ADC_CHANNEL_B },
     .brake_zone_percentage = TEST_PEDAL_CALIBRATION_BRAKE_PERCENTAGE,
     .coast_zone_percentage = TEST_PEDAL_CALIBRATION_COAST_PERCENTAGE,
-    .bounds_tolerance = 1
   };
 
   ads1015_init(&s_ads1015_storage, TEST_ADS1015_I2C_PORT, TEST_ADS1015_ADDR, &ready_pin);
