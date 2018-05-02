@@ -1,5 +1,6 @@
 #include "drive_output.h"
 #include <string.h>
+#include "can_transmit.h"
 #include "log.h"
 
 #define DRIVE_OUTPUT_VALID_WATCHDOG ((1 << NUM_DRIVE_OUTPUT_SOURCES) - 1)
@@ -34,9 +35,10 @@ static void prv_broadcast_cb(SoftTimerID timer_id, void *context) {
             storage->data[DRIVE_OUTPUT_SOURCE_DIRECTION],
             storage->data[DRIVE_OUTPUT_SOURCE_MECH_BRAKE]);
 
-  CAN_TRANSMIT_MOTOR_CONTROLS(
-      storage->data[DRIVE_OUTPUT_SOURCE_THROTTLE], storage->data[DRIVE_OUTPUT_SOURCE_CRUISE],
-      storage->data[DRIVE_OUTPUT_SOURCE_DIRECTION], storage->data[DRIVE_OUTPUT_SOURCE_MECH_BRAKE]);
+  CAN_TRANSMIT_MOTOR_CONTROLS((uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_THROTTLE],
+                              (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_CRUISE],
+                              (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_DIRECTION],
+                              (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_MECH_BRAKE]);
 
   soft_timer_start_millis(DRIVE_OUTPUT_BROADCAST_MS, prv_broadcast_cb, context,
                           &storage->output_timer);
