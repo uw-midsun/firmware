@@ -1,4 +1,5 @@
 #include "can.h"
+#include "can_transmit.h"
 #include "cruise.h"
 #include "event_queue.h"
 #include "input_event.h"
@@ -12,6 +13,13 @@
 
 static CANStorage s_can_storage;
 static CANRxHandler s_rx_handlers[TEST_CRUISE_NUM_RX_HANDLERS];
+
+static void prv_clock_event(FSM *fsm) {
+  Event e = { 0 };
+  while (!status_ok(event_process(&e))) {
+  }
+  fsm_process_event(fsm, &e);
+}
 
 void setup_test(void) {
   event_queue_init();
@@ -63,6 +71,31 @@ void test_cruise_basic(void) {
 }
 
 void test_cruise_can(void) {
-  // Send motor velocity messages
-  // Also make sure that if the motor velocity is negative, we limit to 0
+  Event e = { 0 };
+  CruiseStorage *cruise = cruise_global();
+  cruise_set_source(cruise, CRUISE_SOURCE_MOTOR_CONTROLLER);
+
+  // Send motor velocity messages - observe target speed
+  CAN_TRANSMIT_MOTOR_VELOCITY(20, 10);
+  // CAN TX
+  prv_clock_event(CAN_FSM);
+  // CAN RX
+  prv_clock_event(CAN_FSM);
+  TEST_ASSERT_EQUAL((20 + 10) / 2, cruise_get_target_cms(cruise));
+
+  // Handle negative velocity properly
+  CAN_TRANSMIT_MOTOR_VELOCITY((uint32_t)-10, 20);
+  // CAN TX
+  prv_clock_event(CAN_FSM);
+  // CAN RX
+  prv_clock_event(CAN_FSM);
+  TEST_ASSERT_EQUAL((-10 + 20) / 2, cruise_get_target_cms(cruise));
+
+  // If average velocity is negative, cap to 0 (ex. reversing)
+  CAN_TRANSMIT_MOTOR_VELOCITY((uint32_t)-40, (uint32_t)-40);
+  // CAN TX
+  prv_clock_event(CAN_FSM);
+  // CAN RX
+  prv_clock_event(CAN_FSM);
+  TEST_ASSERT_EQUAL(0, cruise_get_target_cms(cruise));
 }

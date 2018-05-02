@@ -6,21 +6,23 @@
 
 static CruiseStorage s_cruise_storage;
 
-static void prv_handle_motor_velocity(const CANMessage *msg, void *context,
-                                      CANAckStatus *ack_reply) {
+static StatusCode prv_handle_motor_velocity(const CANMessage *msg, void *context,
+                                            CANAckStatus *ack_reply) {
   CruiseStorage *cruise = context;
 
-  // TODO(ELEC-354): store motor velocity - probably an average of >0
-  // CAN_UNPACK_MOTOR_VELOCITY(msg);
-  // cruise->target_speed_ms = ;
+  int32_t left = 0, right = 0;
+  CAN_UNPACK_MOTOR_VELOCITY(msg, (uint32_t *)&left, (uint32_t *)&right);
+  // If we ever overflow we have bigger problems
+  cruise->target_speed_cms = MAX((left + right) / 2, 0);
+
+  return STATUS_CODE_OK;
 }
 
 StatusCode cruise_init(CruiseStorage *cruise) {
   cruise->source = CRUISE_SOURCE_MOTOR_CONTROLLER;
   cruise->target_speed_cms = 0;
 
-  (void)prv_handle_motor_velocity;
-  // can_register_rx_handler(CAN_MESSAGE_MOTOR_VELOCITY, prv_handle_motor_velocity, cruise);
+  can_register_rx_handler(SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY, prv_handle_motor_velocity, cruise);
 
   return STATUS_CODE_OK;
 }

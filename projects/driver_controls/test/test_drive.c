@@ -126,7 +126,6 @@ void test_drive_basic(void) {
 }
 
 void test_drive_charge(void) {
-  // TODO(ELEC-354): Handle charging request
   Event e = { 0 };
 
   // Move to charging
