@@ -19,6 +19,7 @@
 
 // Power FSM state definitions
 
+// TODO(ELEC-234): Remove extra _brake states
 FSM_DECLARE_STATE(state_off);
 FSM_DECLARE_STATE(state_off_brake);
 FSM_DECLARE_STATE(state_charging);
