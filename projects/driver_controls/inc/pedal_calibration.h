@@ -56,6 +56,7 @@ typedef struct PedalCalibrationStorage {
 // The zone percentages divide the pedal's range of motion into three zones (brake, coast, accel).
 // Tolerance safety factor is to account for conditions not present during calibration.
 StatusCode pedal_calibration_init(PedalCalibrationStorage *storage, Ads1015Storage *ads1015_storage,
+                                  ThrottleCalibrationData *throttle_calibration_data,
                                   Ads1015Channel channel_a, Ads1015Channel channel_b,
                                   uint8_t brake_zone_percentage, uint8_t coast_zone_percentage,
                                   uint8_t tolerance_safety_factor);

@@ -26,6 +26,7 @@
 
 // Initializes the calibration storage. Requires initialized Ads1015storage.
 StatusCode pedal_calibration_init(PedalCalibrationStorage *storage, Ads1015Storage *ads1015_storage,
+                                  ThrottleCalibrationData *throttle_calibration_data,
                                   Ads1015Channel channel_a, Ads1015Channel channel_b,
                                   uint8_t brake_zone_percentage, uint8_t coast_zone_percentage,
                                   uint8_t tolerance_safety_factor) {
@@ -35,6 +36,7 @@ StatusCode pedal_calibration_init(PedalCalibrationStorage *storage, Ads1015Stora
   }
   memset(storage, 0, sizeof(*storage));
   storage->ads1015_storage = ads1015_storage;
+  storage->throttle_calibration_data = throttle_calibration_data;
   storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_A] = channel_a;
   storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_B] = channel_b;
   storage->brake_percentage = brake_zone_percentage;
@@ -92,14 +94,12 @@ StatusCode pedal_calibration_process_state(PedalCalibrationStorage *storage,
   status_ok_or_return(ads1015_configure_channel(storage->ads1015_storage,
                                                 storage->adc_channel[PEDAL_CALIBRATION_CHANNEL_B],
                                                 true, NULL, NULL));
+
   int16_t reading;
   for (PedalCalibrationChannel channel = PEDAL_CALIBRATION_CHANNEL_A;
        channel < NUM_PEDAL_CALIBRATION_CHANNELS; channel++) {
-    // Read once first to initialize the max and min.
-    status_ok_or_return(
-        ads1015_read_raw(storage->ads1015_storage, storage->adc_channel[channel], &reading));
-    storage->band[channel][state].min = reading;
-    storage->band[channel][state].max = reading;
+    storage->band[channel][state].min = INT16_MAX;
+    storage->band[channel][state].max = INT16_MIN;
   }
   // Set up callback on channels which would read new values after each conversion.
   status_ok_or_return(ads1015_configure_channel(storage->ads1015_storage,
@@ -112,6 +112,7 @@ StatusCode pedal_calibration_process_state(PedalCalibrationStorage *storage,
   while (storage->sample_counter[PEDAL_CALIBRATION_CHANNEL_A] < PEDAL_CALIBRATION_NUM_SAMPLES ||
          storage->sample_counter[PEDAL_CALIBRATION_CHANNEL_B] < PEDAL_CALIBRATION_NUM_SAMPLES) {
   }
+
   return STATUS_CODE_OK;
 }
 
@@ -191,8 +192,9 @@ StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage,
       (min_accel + max_accel) / 2;
   // Tolerance should be half of the band's width assuming the width is constant.
   // In this case we take the maximum of widths at both ends multiplied by the given safety factor.
-  throttle_calibration->tolerance =
-      MAX((max_brake - min_brake) / 2, (max_accel - min_accel) / 2) * storage->tolerance_safety_factor;
+  // TODO: this math is wrong
+  throttle_calibration->tolerance = 20;
+      // MAX((max_brake - min_brake) / 2, (max_accel - min_accel) / 2) * storage->tolerance_safety_factor;
 
   return STATUS_CODE_OK;
 }

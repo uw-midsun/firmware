@@ -18,6 +18,7 @@
 #include "persist.h"
 #include "test_helpers.h"
 #include "unity.h"
+#include "log.h"
 
 static PedalCalibrationStorage s_storage;
 static FSM s_fsm;
@@ -31,12 +32,17 @@ static ThrottleCalibrationData s_throttle_calibration_data;
 #define TEST_PEDAL_CALIBRATION_COAST_PERCENTAGE 10
 #define TEST_PEDAL_CALIBRATION_TOLERANCE_SAFETY_FACTOR 2
 
+static void prv_step_event(EventID event_id) {
+  Event e = { .id = event_id };
+  fsm_process_event(&s_fsm, &e);
+}
+
 void setup_test(void) {
   gpio_init();
   interrupt_init();
   gpio_it_init();
   soft_timer_init();
-  crc32_init();
+
   I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,                    //
     .scl = { .port = GPIO_PORT_B, .pin = 10 },  //
@@ -48,9 +54,12 @@ void setup_test(void) {
     .pin = 2,             //
   };
   event_queue_init();
+
+  s_storage.throttle_calibration_data = &s_throttle_calibration_data;
+
   ads1015_init(&s_ads1015_storage, TEST_ADS1015_I2C_PORT, TEST_ADS1015_ADDR, &ready_pin);
   pedal_calibration_init(
-      &s_storage, &s_ads1015_storage, TEST_PEDAL_CALIBRATION_ADC_CHANNEL_A,
+      &s_storage, &s_ads1015_storage, &s_throttle_calibration_data, TEST_PEDAL_CALIBRATION_ADC_CHANNEL_A,
       TEST_PEDAL_CALIBRATION_ADC_CHANNEL_B, TEST_PEDAL_CALIBRATION_BRAKE_PERCENTAGE,
       TEST_PEDAL_CALIBRATION_COAST_PERCENTAGE, TEST_PEDAL_CALIBRATION_TOLERANCE_SAFETY_FACTOR);
   pedal_calibration_fsm_init(&s_fsm, &s_storage);
@@ -60,7 +69,16 @@ void teardown_test(void) {}
 
 void test_pedal_calibration(void) {
   Event e;
-  while (status_ok(event_process(&e))) {
-    fsm_process_event(&s_fsm, &e);
+  LOG_DEBUG("Starting calibration\n");
+  prv_step_event(INPUT_EVENT_PEDAL_CALIBRATION_FULL_BRAKE);
+  delay_s(5);
+  prv_step_event(INPUT_EVENT_PEDAL_CALIBRATION_FULL_THROTTLE);
+  delay_s(5);
+  prv_step_event(INPUT_EVENT_PEDAL_CALIBRATION_ENTER_VALIDATION);
+
+  while (true) {
+    if (status_ok(event_process(&e))) {
+      fsm_process_event(&s_fsm, &e);
+    }
   }
 }

@@ -71,12 +71,13 @@ static void prv_full_throttle_output(FSM *fsm, const Event *e, void *context) {
 static void prv_continue_validation_output(FSM *fsm, const Event *e, void *context) {
   PedalCalibrationStorage *storage = context;
 
-  ThrottlePosition position = { .zone = THROTTLE_ZONE_BRAKE, .numerator = 0 };
+  ThrottlePosition position = { .zone = 3, .numerator = 0 };
   throttle_get_position(&storage->throttle, &position);
 
-  char *zones[NUM_THROTTLE_ZONES] = { [THROTTLE_ZONE_BRAKE] = "Brake",
+  char *zones[NUM_THROTTLE_ZONES + 1] = { [THROTTLE_ZONE_BRAKE] = "Brake",
                                       [THROTTLE_ZONE_COAST] = "Coast",
-                                      [THROTTLE_ZONE_ACCEL] = "Accel" };
+                                      [THROTTLE_ZONE_ACCEL] = "Accel",
+                                      [3] = "invalid" };
 
   LOG_DEBUG("%s zone: %d / %d OR %d percent\n", zones[position.zone], position.numerator,
             THROTTLE_DENOMINATOR, position.numerator * 100 / THROTTLE_DENOMINATOR);
