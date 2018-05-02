@@ -43,23 +43,23 @@ void test_cruise_basic(void) {
 
   // Make sure trying to change the cruise target doesn't work if we're aren't currently in cruise
   cruise_set_source(cruise, CRUISE_SOURCE_MOTOR_CONTROLLER);
-  int16_t target = cruise_get_target(cruise);
+  int16_t target = cruise_get_target_cms(cruise);
   Event e = { .id = INPUT_EVENT_CRUISE_CONTROL_INC };
   cruise_handle_event(cruise, &e);
-  TEST_ASSERT_EQUAL(target, cruise_get_target(cruise));
+  TEST_ASSERT_EQUAL(target, cruise_get_target_cms(cruise));
 
   // Target should now be higher
   cruise_set_source(cruise, CRUISE_SOURCE_STORED_VALUE);
   e.id = INPUT_EVENT_CRUISE_CONTROL_INC;
   cruise_handle_event(cruise, &e);
-  TEST_ASSERT(target < cruise_get_target(cruise));
+  TEST_ASSERT(target < cruise_get_target_cms(cruise));
 
   // We should never have a negative cruise target
   e.id = INPUT_EVENT_CRUISE_CONTROL_DEC;
   cruise_handle_event(cruise, &e);
   cruise_handle_event(cruise, &e);
   cruise_handle_event(cruise, &e);
-  TEST_ASSERT_EQUAL(0, cruise_get_target(cruise));
+  TEST_ASSERT_EQUAL(0, cruise_get_target_cms(cruise));
 }
 
 void test_cruise_can(void) {

@@ -122,7 +122,7 @@ static void prv_cruise_output(FSM *fsm, const Event *e, void *context) {
 
   // Cruise is enabled - since we're using the stored source, the target can now be modified
   // by the INC/DEC inputs
-  drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, cruise_get_target(cruise));
+  drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, cruise_get_target_cms(cruise));
   // TODO(ELEC-350): get throttle state
   drive_output_update(storage, DRIVE_OUTPUT_SOURCE_THROTTLE, 0);
   // TODO(ELEC-350): Implement mech brake

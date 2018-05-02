@@ -1,6 +1,7 @@
 // Responds to drive output update requests by updating the associated data
 // Note that this is accomplished by transitioning back to the current state.
 #include "direction_fsm.h"
+#include <stddef.h>
 #include "drive_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"

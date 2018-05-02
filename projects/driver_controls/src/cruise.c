@@ -45,7 +45,7 @@ StatusCode cruise_offset(CruiseStorage *cruise, int16_t offset) {
   return STATUS_CODE_OK;
 }
 
-int16_t cruise_get_target(CruiseStorage *cruise) {
+int16_t cruise_get_target_cms(CruiseStorage *cruise) {
   return cruise->target_speed_cms;
 }
 

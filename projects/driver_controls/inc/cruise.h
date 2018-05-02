@@ -35,7 +35,7 @@ StatusCode cruise_set_source(CruiseStorage *cruise, CruiseSource source);
 // Only takes effect if the source is a stored value - will always be >= 0
 StatusCode cruise_offset(CruiseStorage *cruise, int16_t offset);
 
-int16_t cruise_get_target(CruiseStorage *cruise);
+int16_t cruise_get_target_cms(CruiseStorage *cruise);
 
 // Returns whether the cruise module handled the event
 // Handles cruise increment/decrement
