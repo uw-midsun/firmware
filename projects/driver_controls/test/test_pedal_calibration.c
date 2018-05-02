@@ -55,13 +55,17 @@ void setup_test(void) {
   };
   event_queue_init();
 
-  s_storage.throttle_calibration_data = &s_throttle_calibration_data;
+  PedalCalibrationSettings calib_settings = {
+    .ads1015_storage = &s_ads1015_storage,
+    .throttle_calibration_data = &s_throttle_calibration_data,
+    .adc_channel = { TEST_PEDAL_CALIBRATION_ADC_CHANNEL_A, TEST_PEDAL_CALIBRATION_ADC_CHANNEL_B },
+    .brake_zone_percentage = TEST_PEDAL_CALIBRATION_BRAKE_PERCENTAGE,
+    .coast_zone_percentage = TEST_PEDAL_CALIBRATION_COAST_PERCENTAGE,
+    .bounds_tolerance = 1
+  };
 
   ads1015_init(&s_ads1015_storage, TEST_ADS1015_I2C_PORT, TEST_ADS1015_ADDR, &ready_pin);
-  pedal_calibration_init(
-      &s_storage, &s_ads1015_storage, &s_throttle_calibration_data, TEST_PEDAL_CALIBRATION_ADC_CHANNEL_A,
-      TEST_PEDAL_CALIBRATION_ADC_CHANNEL_B, TEST_PEDAL_CALIBRATION_BRAKE_PERCENTAGE,
-      TEST_PEDAL_CALIBRATION_COAST_PERCENTAGE, TEST_PEDAL_CALIBRATION_TOLERANCE_SAFETY_FACTOR);
+  pedal_calibration_init(&s_storage, &calib_settings);
   pedal_calibration_fsm_init(&s_fsm, &s_storage);
 }
 

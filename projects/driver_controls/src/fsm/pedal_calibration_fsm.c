@@ -89,12 +89,12 @@ static void prv_continue_validation_output(FSM *fsm, const Event *e, void *conte
 // Note that the calculations on the collected data takes place here.
 static void prv_enter_validation_output(FSM *fsm, const Event *e, void *context) {
   PedalCalibrationStorage *storage = context;
-  pedal_calibration_calculate(storage, storage->throttle_calibration_data);
+  pedal_calibration_calculate(storage);
 
   LOG_DEBUG("Use the pedal to validate the calibration.\n");
 
   // Start the throttle for validation.
-  throttle_init(&storage->throttle, storage->throttle_calibration_data, storage->ads1015_storage);
+  throttle_init(&storage->throttle, storage->settings.throttle_calibration_data, storage->settings.ads1015_storage);
 
   // Raise an event to continue staying in validation.
   event_raise(INPUT_EVENT_PEDAL_CALIBRATION_CONTINUE_VALIDATION, 0);
