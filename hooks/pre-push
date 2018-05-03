@@ -13,7 +13,9 @@ else
   vagrant ssh -c 'cd shared/firmware; make test_format'
 fi
 
-[[ $? -ne 0 ]] && echo "Formatting applied - please commit local changes" && exit 1
-
-echo "Always blocking push for development"
-exit 1
+if [[ $? -ne 0 ]]; then
+  echo "Formatting applied - adding new commit"
+  git add .
+  git commit -m "Formatting (Automated commit)"
+  git push --no-verify
+fi
