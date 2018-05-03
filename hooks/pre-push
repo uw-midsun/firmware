@@ -17,8 +17,5 @@ if [[ $? -ne 0 ]]; then
   echo "Formatting applied - adding new commit"
   git add .
   git commit -m "Formatting (Automated commit)"
-#  git push --no-verify
+  git push --no-verify
 fi
-
-echo "blocking push"
-exit 1
