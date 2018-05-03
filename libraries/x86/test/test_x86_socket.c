@@ -19,6 +19,8 @@ static size_t s_rx_len;
 
 static void prv_handler(X86SocketThread *thread, int client_fd, const char *rx_data, size_t rx_len,
                         void *context) {
+  bool *received = context;
+
   // Write response to client
   const char *response = TEST_X86_EXPECTED_RESPONSE;
   x86_socket_write(client_fd, response, strlen(response));
@@ -27,11 +29,10 @@ static void prv_handler(X86SocketThread *thread, int client_fd, const char *rx_d
   LOG_DEBUG("handling RX (%ld bytes)\n", rx_len);
   fwrite(rx_data, sizeof(char), rx_len, stdout);
 
-  bool *received = context;
-  *received = true;
 
   s_rx_data = rx_data;
   s_rx_len = rx_len;
+  *received = true;
 }
 
 void setup_test(void) {
