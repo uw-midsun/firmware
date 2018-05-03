@@ -16,12 +16,18 @@
 #define DRIVE_OUTPUT_BROADCAST_MS 100
 
 typedef enum {
-  DRIVE_OUTPUT_SOURCE_THROTTLE,
+  DRIVE_OUTPUT_SOURCE_THROTTLE = 0,
   DRIVE_OUTPUT_SOURCE_CRUISE,
   DRIVE_OUTPUT_SOURCE_DIRECTION,
-  DRIVE_OUTPUT_SOURCE_STEERING_ANGLE,
+  DRIVE_OUTPUT_SOURCE_MECH_BRAKE,
   NUM_DRIVE_OUTPUT_SOURCES
 } DriveOutputSource;
+
+typedef enum {
+  DRIVE_OUTPUT_DIRECTION_FORWARD = 0,
+  DRIVE_OUTPUT_DIRECTION_REVERSE,
+  NUM_DRIVE_OUTPUT_DIRECTIONS
+} DriveOutputDirection;
 
 typedef struct DriveOutputStorage {
   int16_t data[NUM_DRIVE_OUTPUT_SOURCES];
@@ -42,7 +48,6 @@ StatusCode drive_output_init(DriveOutputStorage *storage, EventID fault_event,
 StatusCode drive_output_set_enabled(DriveOutputStorage *storage, bool enabled);
 
 // Throttle and steering angle expect sign-extended 12-bit values.
-// Direction counts negative values as reverse, positive as forward, and 0 as neutral.
 StatusCode drive_output_update(DriveOutputStorage *storage, DriveOutputSource source, int16_t data);
 
 // Returns a pointer to the global drive output storage.

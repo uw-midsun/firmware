@@ -8,11 +8,4 @@
 #include "event_arbiter.h"
 #include "fsm.h"
 
-typedef enum {
-  POWER_FSM_STATE_OFF,
-  POWER_FSM_STATE_OFF_BRAKE,
-  POWER_FSM_STATE_CHARGING,
-  POWER_FSM_STATE_ON,
-} PowerFSMState;
-
 StatusCode power_fsm_init(FSM *fsm, EventArbiterStorage *storage);
