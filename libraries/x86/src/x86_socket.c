@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include "log.h"
 #include "misc.h"
+#include "x86_interrupt.h"
 
 #define X86_SOCKET_INVALID_FD -1
 #define X86_SOCKET_BUFFER_LEN 1024
@@ -42,7 +43,9 @@ static StatusCode prv_setup_socket(X86SocketThread *thread, int *server_fd) {
 
 static void *prv_server_thread(void *context) {
   X86SocketThread *thread = context;
-  int server_fd = -1;
+
+  x86_interrupt_pthread_init();
+  int server_fd = X86_SOCKET_INVALID_FD;
   if (!status_ok(prv_setup_socket(thread, &server_fd))) {
     LOG_DEBUG("Socket setup failed\n");
     return NULL;
@@ -126,7 +129,6 @@ StatusCode x86_socket_init(X86SocketThread *thread, char *module_name, X86Socket
 }
 
 StatusCode x86_socket_broadcast(X86SocketThread *thread, const char *tx_data, size_t tx_len) {
-  // TODO(ELEC-395): should the client list be protected?
   for (size_t i = 0; i < X86_SOCKET_MAX_CLIENTS; i++) {
     if (thread->client_fds[i] != X86_SOCKET_INVALID_FD) {
       status_ok_or_return(x86_socket_write(thread->client_fds[i], tx_data, tx_len));
