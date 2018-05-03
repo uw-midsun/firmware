@@ -138,7 +138,7 @@ FIND := find $(PROJ_DIR) $(LIB_DIR) \
 lint:
 	@echo "Linting *.[ch] in $(PROJ_DIR), $(LIB_DIR)"
 	@echo "Excluding libraries: $(IGNORE_CLEANUP_LIBS)"
-	@python2 lint.py `$(FIND)` 2>&1 | grep -v 'Done processing'
+	@$(FIND) | xargs -r python2 lint.py
 	@echo "Linting *.py in $(MAKE_DIR), $(PROJ_DIR)"
 	@find $(MAKE_DIR) $(PROJ_DIR) -iname "*.py" -print | xargs -r pylint --disable=F0401
 
