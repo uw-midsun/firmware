@@ -10,7 +10,7 @@ fi
 if [[ $(whoami) == 'vagrant' ]]; then
   make test_format || exit 1
 else
-  vagrant ssh -c 'cd shared/firmware; make test_format || exit 1' || (echo "??" && exit 1)
+  vagrant ssh -c 'cd shared/firmware; make test_format' || (echo "??" && exit 1)
 fi
 
 echo "Always blocking push for development"
