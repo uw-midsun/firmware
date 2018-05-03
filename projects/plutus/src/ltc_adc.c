@@ -17,7 +17,7 @@ uint8_t s_filter_modes[NUM_LTC_ADC_FILTER_MODES] = {
 
 static void prv_toggle_pin_altfn(GPIOAddress addr, bool enable) {
   GPIOSettings settings = {
-    .direction = GPIO_DIR_IN,      //
+    .direction = GPIO_DIR_IN,     //
     .state = GPIO_STATE_HIGH,      //
     .resistor = GPIO_RES_NONE,     //
     .alt_function = GPIO_ALTFN_0,  //
