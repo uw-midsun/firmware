@@ -136,7 +136,7 @@ FIND := find $(PROJ_DIR) $(LIB_DIR) \
 # Lints libraries and projects, excludes IGNORE_CLEANUP_LIBS
 # Disable import error
 lint:
-	@$(FIND) | xargs -r python2 lint.py
+	@$(FIND) | python2 lint.py
 	@find $(MAKE_DIR) $(PROJ_DIR) -iname "*.py" -print | xargs -r pylint --disable=F0401
 
 # Formats libraries and projects, excludes IGNORE_CLEANUP_LIBS
