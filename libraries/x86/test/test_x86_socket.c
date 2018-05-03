@@ -29,7 +29,6 @@ static void prv_handler(X86SocketThread *thread, int client_fd, const char *rx_d
   LOG_DEBUG("handling RX (%ld bytes)\n", rx_len);
   fwrite(rx_data, sizeof(char), rx_len, stdout);
 
-
   s_rx_data = rx_data;
   s_rx_len = rx_len;
   *received = true;
