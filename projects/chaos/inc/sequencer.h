@@ -1,59 +1,44 @@
 #pragma once
-// Sequencer:
-// A hierarchical FSM for Chaos. The concept is that the other FSMs in Chaos (other than CAN) act as
-// a series of micro services which are controlled by the sequencer. The sequencer holds the overall
-// state of the car and will retry "transitioning" to a state. If it encounters anything unexpected
-// it will retry that transition until successful. In the event a transition fails it will enter
-// the emergency state as some component is likely failing.
 
-// Requires that event_queue is initialized.
+#include <stdbool.h>
+#include <stdint.h>
 
+#include "chaos_events.h"
 #include "event_queue.h"
+#include "status.h"
 
-void sequencer_init(void);
+// Sequencer module for sequencing events.
+//
+// Expects event_queue to be initialized.
+//
+// A Sequencer is initialized with an array of SequencerEventPairs containing |raise|, |response|
+// pairs. |sequencer_init()| acts by raising the first |raise| event in the array and henceforth
+// |sequencer_advance()| is to be called with the previously raised event until the array is
+// consumed. If a |response| is event not |SEQUENCER_NO_OP| then once the previously raised event
+// is received it awaits |response|.
 
-// Publishes the next event in the sequence and transitions to a new sequence if needed. Errors if
-// provided event was unexpected and will attempt to restart the current sequence.
-//
-// |previous_event| is the event that was just processed by the main event loop. It will be handled
-// by this module if it is either a sequence transition. If it is an expected FSM event then it will
-// be handled, if it is not an FSM event it will be skipped. If it is an unexpected FSM event the
-// sequence will restart.
-//
-// NOTE: this implicitly means any events in the range
-// (NUM_CHAOS_EVENTS_CAN, NUM_CHAOS_EVENTS_FSM) must originate from the sequencer!!! This is to
-// ensure redundancy and allow retry attempts. If this fails 3 times consecutively then a serious
-// fault has occurred with Chaos. We enter the emergency state as something terrible has happened.
-// Realistically this is almost impossible and would only be triggered by relays repeatedly
-// failing to transition.
-//
-// Example flow:
-//
-// ----------------------
-// | Transition request |
-// ----------------------
-//           |       ______________
-//           |       |            |
-//           V       V            |
-// ----------------------         |
-// | event_process(&e); |         |
-// ----------------------         |
-//           |       ________     |
-//           |       |      |     |
-//           V       V      |     |
-// ----------------------   |     |
-// | Pass to other FSMs |   |     |
-// ----------------------   |     |
-//           |       |______|     |
-//           |                    |
-//           V                    |
-// -------------------------------------
-// | sequencer_publish_next_event(&e); |
-// -------------------------------------
-//           |
-//           |
-//           V
-// -----------------------------
-// | Finished state transition |
-// -----------------------------
-StatusCode sequencer_publish_next_event(const Event *previous_event);
+#define SEQUENCER_EMPTY_DATA 0
+#define SEQUENCER_NO_OP \
+  { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA }
+
+typedef struct SequencerEventPair {
+  Event raise;
+  Event response;
+} SequencerEventPair;
+
+typedef struct SequencerStorage {
+  const SequencerEventPair *events_it;
+  const SequencerEventPair *events_end;
+  bool awaiting_response;
+} SequencerStorage;
+
+// Initializes |storage| with the |event_array| of |size|.
+StatusCode sequencer_init(SequencerStorage *storage, const SequencerEventPair *event_array,
+                          size_t size);
+
+// Advances the sequence in |storage| if |last_event| matches the previous |raise| or the awaited
+// |response|.
+StatusCode sequencer_advance(SequencerStorage *storage, const Event *last_event);
+
+// Returns true if the sequence in |storage| is finished.
+bool sequencer_complete(const SequencerStorage *storage);
