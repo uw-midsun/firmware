@@ -8,10 +8,12 @@ if [[ -n $(git status --porcelain) ]]; then
 fi
 
 if [[ $(whoami) == 'vagrant' ]]; then
-  make test_format || exit 1
+  make test_format
 else
-  vagrant ssh -c 'cd shared/firmware; make test_format' || (echo "??" && exit 1)
+  vagrant ssh -c 'cd shared/firmware; make test_format'
 fi
+
+[[ $? -ne 0 ]] && echo "Formatting applied - please commit local changes" && exit 1
 
 echo "Always blocking push for development"
 exit 1
