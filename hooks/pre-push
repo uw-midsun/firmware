@@ -17,4 +17,17 @@ if [[ $? -ne 0 ]]; then
   echo "Formatting applied - adding new commit"
   git add .
   git commit -m "Formatting (Automated commit)"
+  echo "Please push again to include formatting commit."
+  exit 1
+fi
+
+if [[ $(whoami) == 'vagrant' ]]; then
+  make lint
+else
+  vagrant ssh -c 'cd shared/firmware; make lint'
+fi
+
+if [[ $? -ne 0 ]]; then
+  echo "Failed lint"
+  exit 1
 fi
