@@ -194,9 +194,6 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event) {
     // Not in the range of handled events. This isn't necessarily invalid but won't be handled so
     // return unknown.
     return status_code(STATUS_CODE_UNKNOWN);
-  } else if (previous_event->id == CHAOS_EVENT_NO_OP) {
-    // Skip no-op messages.
-    return STATUS_CODE_OK;
   }
 
   // Try to transition if the event is a sequence transition.
