@@ -65,4 +65,3 @@ StatusCode lights_blinker_sync_on(LightsBlinker *blinker) {
   return soft_timer_start_millis(blinker->duration_ms, prv_timer_callback, (void *)blinker,
                                  &blinker->timer_id);
 }
-

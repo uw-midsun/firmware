@@ -120,8 +120,8 @@ void test_lights_blinker_sync_update(void) {
   while (event_process(&e) != STATUS_CODE_OK) {
   }
   TEST_ASSERT_EQUAL(e.id, LIGHTS_BLINKER_TEST_EVENT_1);
-  // Raised event must be on again. If we didn't call lights_blinker_sync_on, this would have been an off blink
-  // event.
+  // Raised event must be on again. If we didn't call lights_blinker_sync_on, this would have been
+  // an off blink event.
   TEST_ASSERT_EQUAL(e.data, LIGHTS_BLINKER_STATE_ON);
 }
 
@@ -148,4 +148,3 @@ void test_lights_blinker_sync_on_while_deactivated(void) {
   TEST_ASSERT_OK(lights_blinker_deactivate(&blinker));
   TEST_ASSERT_NOT_OK(lights_blinker_sync_on(&blinker));
 }
-
