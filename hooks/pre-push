@@ -7,7 +7,7 @@ if [[ -n $(git status --porcelain) ]]; then
   exit 1
 fi
 
-if [[ $(whoami) == 'vagrant' ]]; then
+if [[ $(whoami) == 'vagrant' || MS_RUN_NATIVE ]]; then
   make test_format
 else
   vagrant ssh -c 'cd shared/firmware; make test_format'
@@ -21,7 +21,7 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-if [[ $(whoami) == 'vagrant' ]]; then
+if [[ $(whoami) == 'vagrant' || MS_RUN_NATIVE ]]; then
   make lint
 else
   vagrant ssh -c 'cd shared/firmware; make lint'
