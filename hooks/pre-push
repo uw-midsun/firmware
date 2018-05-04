@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Add MS_RUN_NATIVE=1 to your environment variables to run format and lint natively.
+
 # Check for any changes
 if [[ -n $(git status --porcelain) ]]; then
   echo "Uncommitted changes detected! Cannot test for formatting."
@@ -7,7 +9,7 @@ if [[ -n $(git status --porcelain) ]]; then
   exit 1
 fi
 
-if [[ $(whoami) == 'vagrant' || MS_RUN_NATIVE ]]; then
+if [[ $(whoami) == 'vagrant' || $MS_RUN_NATIVE ]]; then
   make test_format
 else
   vagrant ssh -c 'cd shared/firmware; make test_format'
@@ -21,7 +23,7 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-if [[ $(whoami) == 'vagrant' || MS_RUN_NATIVE ]]; then
+if [[ $(whoami) == 'vagrant' || $MS_RUN_NATIVE ]]; then
   make lint
 else
   vagrant ssh -c 'cd shared/firmware; make lint'
