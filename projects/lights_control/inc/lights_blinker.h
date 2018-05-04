@@ -9,8 +9,8 @@
 
 // State definitions for blinker.
 typedef enum {
-  LIGHTS_BLINKER_STATE_OFF = 0,
-  LIGHTS_BLINKER_STATE_ON,
+  LIGHTS_BLINKER_STATE_OFF = 0, // When the corresponding light is OFF
+  LIGHTS_BLINKER_STATE_ON, // When the corresponding light is ON
   NUM_LIGHTS_BLINKER_STATES
 } LightsBlinkerState;
 
@@ -25,16 +25,14 @@ typedef struct LightsBlinker {
 } LightsBlinker;
 
 // Initializes the blinker.
-StatusCode lights_blinker_init(LightsBlinker *blinker);
+StatusCode lights_blinker_init(LightsBlinker *blinker, LightsBlinkerDuration duration_ms);
 
-// Starts generating events.
-StatusCode lights_blinker_on(LightsBlinker *blinker, LightsBlinkerDuration duration_ms, EventID id);
+// Starts generating events. Activates the blinker.
+StatusCode lights_blinker_activate(LightsBlinker *blinker, EventID id);
 
-// Raises an event with OFF state (aka. data 0), cancels the scheduled timer.
-StatusCode lights_blinker_off(LightsBlinker *blinker);
+// Raises an event with OFF state (aka. data 0), cancels the scheduled timer. Deactivates blinker.
+StatusCode lights_blinker_deactivate(LightsBlinker *blinker);
 
-// Resets the blinker, scheduling a new timer, and setting it state to ON.
-StatusCode lights_blinker_reset(LightsBlinker *blinker);
+// Only used for syncing purposes. Reschedules the timer, sets the state to ON. 
+StatusCode lights_blinker_sync_on(LightsBlinker *blinker);
 
-// Returns if the current blinker has active timers.
-bool lights_blinker_inuse(LightsBlinker *blinker);
