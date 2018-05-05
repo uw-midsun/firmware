@@ -14,11 +14,11 @@
 // A Sequencer is initialized with an array of SequencerEventPairs containing |raise|, |response|
 // pairs. |sequencer_init()| acts by raising the first |raise| event in the array and henceforth
 // |sequencer_advance()| is to be called with the previously raised event until the array is
-// consumed. If a |response| is event not |SEQUENCER_NO_OP| then once the previously raised event
+// consumed. If a |response| is event not |SEQUENCER_NO_RESPONSE| then once the previously raised event
 // is received it awaits |response|.
 
 #define SEQUENCER_EMPTY_DATA 0
-#define SEQUENCER_NO_OP \
+#define SEQUENCER_NO_RESPONSE \
   { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA }
 
 typedef struct SequencerEventPair {

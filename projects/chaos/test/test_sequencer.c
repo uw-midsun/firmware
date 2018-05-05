@@ -27,11 +27,11 @@ void teardown_test(void) {}
 void test_sequencer_simple(void) {
   const SequencerEventPair events[] = {
     { .raise = { .id = TEST_SEQUENCER_EVENT_A, .data = TEST_SEQUENCER_EVENT_B },
-      .response = SEQUENCER_NO_OP },
+      .response = SEQUENCER_NO_RESPONSE },
     { .raise = { .id = TEST_SEQUENCER_EVENT_B, .data = TEST_SEQUENCER_EVENT_C },
-      .response = SEQUENCER_NO_OP },
+      .response = SEQUENCER_NO_RESPONSE },
     { .raise = { .id = TEST_SEQUENCER_EVENT_C, .data = TEST_SEQUENCER_EVENT_A },
-      .response = SEQUENCER_NO_OP }
+      .response = SEQUENCER_NO_RESPONSE }
   };
 
   SequencerStorage storage;
@@ -63,9 +63,9 @@ void test_sequencer_complex_start(void) {
     { .raise = { .id = TEST_SEQUENCER_EVENT_A, .data = TEST_SEQUENCER_EVENT_B },
       .response = { .id = TEST_SEQUENCER_EVENT_C, .data = TEST_SEQUENCER_EVENT_C } },
     { .raise = { .id = TEST_SEQUENCER_EVENT_B, .data = TEST_SEQUENCER_EVENT_C },
-      .response = SEQUENCER_NO_OP },
+      .response = SEQUENCER_NO_RESPONSE },
     { .raise = { .id = TEST_SEQUENCER_EVENT_C, .data = TEST_SEQUENCER_EVENT_A },
-      .response = SEQUENCER_NO_OP }
+      .response = SEQUENCER_NO_RESPONSE }
   };
 
   SequencerStorage storage;
@@ -100,9 +100,9 @@ void test_sequencer_complex_start(void) {
 void test_sequencer_complex_end(void) {
   const SequencerEventPair events[] = {
     { .raise = { .id = TEST_SEQUENCER_EVENT_A, .data = TEST_SEQUENCER_EVENT_B },
-      .response = SEQUENCER_NO_OP },
+      .response = SEQUENCER_NO_RESPONSE },
     { .raise = { .id = TEST_SEQUENCER_EVENT_B, .data = TEST_SEQUENCER_EVENT_C },
-      .response = SEQUENCER_NO_OP },
+      .response = SEQUENCER_NO_RESPONSE },
     { .raise = { .id = TEST_SEQUENCER_EVENT_C, .data = TEST_SEQUENCER_EVENT_A },
       .response = { .id = TEST_SEQUENCER_EVENT_C, .data = TEST_SEQUENCER_EVENT_C } }
   };
@@ -139,11 +139,11 @@ void test_sequencer_complex_end(void) {
 void test_sequencer_bad_args(void) {
   const SequencerEventPair events[] = {
     { .raise = { .id = TEST_SEQUENCER_EVENT_A, .data = TEST_SEQUENCER_EVENT_B },
-      .response = SEQUENCER_NO_OP },
+      .response = SEQUENCER_NO_RESPONSE },
     { .raise = { .id = TEST_SEQUENCER_EVENT_B, .data = TEST_SEQUENCER_EVENT_C },
-      .response = SEQUENCER_NO_OP },
+      .response = SEQUENCER_NO_RESPONSE },
     { .raise = { .id = TEST_SEQUENCER_EVENT_C, .data = TEST_SEQUENCER_EVENT_A },
-      .response = SEQUENCER_NO_OP }
+      .response = SEQUENCER_NO_RESPONSE }
   };
   SequencerStorage storage;
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, sequencer_init(&storage, events, 0));

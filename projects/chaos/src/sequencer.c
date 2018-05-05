@@ -8,7 +8,7 @@
 #include "log.h"
 #include "status.h"
 
-static const Event s_sequencer_no_op_event = SEQUENCER_NO_OP;
+static const Event s_sequencer_no_op_event = SEQUENCER_NO_RESPONSE;
 
 StatusCode sequencer_init(SequencerStorage *storage, const SequencerEventPair *event_array,
                           size_t size) {
@@ -42,7 +42,7 @@ StatusCode sequencer_advance(SequencerStorage *storage, const Event *last_event)
       return status_code(STATUS_CODE_INTERNAL_ERROR);
     }
     // Check if |response| is empty (|s_sequencer_no_op_event|).
-    if (memcmp(&storage->events_it->response, &s_sequencer_no_op_event, sizeof(Event)) != 0) {
+    if (storage->events_it->response.id != s_sequencer_no_op_event.id) {
       storage->awaiting_response = true;
       return STATUS_CODE_OK;
     }

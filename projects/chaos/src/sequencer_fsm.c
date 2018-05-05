@@ -27,7 +27,7 @@ static SequencerStorage s_storage;
 // - Disable all unnecessary GPIO pins
 static const SequencerEventPair s_emergency_events[] = {
   { .raise = { .id = CHAOS_EVENT_MONITOR_DISABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
-    .response = SEQUENCER_NO_OP },
+    .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MAIN_POWER },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MAIN_POWER } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
@@ -37,9 +37,9 @@ static const SequencerEventPair s_emergency_events[] = {
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY } },
   { .raise = { .id = CHAOS_EVENT_GPIO_EMERGENCY, .data = SEQUENCER_EMPTY_DATA },
-    .response = SEQUENCER_NO_OP },
+    .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_SEQUENCE_EMERGENCY_DONE, .data = SEQUENCER_EMPTY_DATA },
-    .response = SEQUENCER_NO_OP },
+    .response = SEQUENCER_NO_RESPONSE },
 };
 
 // Idle State Order:
@@ -51,7 +51,7 @@ static const SequencerEventPair s_emergency_events[] = {
 // - Disable all unnecessary GPIO pins
 static const SequencerEventPair s_idle_events[] = {
   { .raise = { .id = CHAOS_EVENT_MONITOR_DISABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
-    .response = SEQUENCER_NO_OP },
+    .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MAIN_POWER },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MAIN_POWER } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
@@ -61,9 +61,9 @@ static const SequencerEventPair s_idle_events[] = {
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY } },
   { .raise = { .id = CHAOS_EVENT_GPIO_IDLE, .data = SEQUENCER_EMPTY_DATA },
-    .response = SEQUENCER_NO_OP },
+    .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_SEQUENCE_IDLE_DONE, .data = SEQUENCER_EMPTY_DATA },
-    .response = SEQUENCER_NO_OP },
+    .response = SEQUENCER_NO_RESPONSE },
 };
 
 // Charge State Order:
@@ -75,7 +75,7 @@ static const SequencerEventPair s_idle_events[] = {
 // - Enable DCDC monitoring
 static const SequencerEventPair s_charge_events[] = {
   { .raise = { .id = CHAOS_EVENT_GPIO_CHARGE, .data = SEQUENCER_EMPTY_DATA },
-    .response = SEQUENCER_NO_OP },
+    .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
@@ -85,9 +85,9 @@ static const SequencerEventPair s_charge_events[] = {
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MAIN_POWER },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MAIN_POWER } },
   { .raise = { .id = CHAOS_EVENT_MONITOR_ENABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
-    .response = SEQUENCER_NO_OP },
+    .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_SEQUENCE_CHARGE_DONE, .data = SEQUENCER_EMPTY_DATA },
-    .response = SEQUENCER_NO_OP },
+    .response = SEQUENCER_NO_RESPONSE },
 };
 
 // Drive State Order:
@@ -99,7 +99,7 @@ static const SequencerEventPair s_charge_events[] = {
 // - Enable DCDC monitoring
 static const SequencerEventPair s_drive_events[] = {
   { .raise = { .id = CHAOS_EVENT_GPIO_DRIVE, .data = SEQUENCER_EMPTY_DATA },
-    .response = SEQUENCER_NO_OP },
+    .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
@@ -109,9 +109,9 @@ static const SequencerEventPair s_drive_events[] = {
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MAIN_POWER },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MAIN_POWER } },
   { .raise = { .id = CHAOS_EVENT_MONITOR_ENABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
-    .response = SEQUENCER_NO_OP },
+    .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE, .data = SEQUENCER_EMPTY_DATA },
-    .response = SEQUENCER_NO_OP },
+    .response = SEQUENCER_NO_RESPONSE },
 };
 
 // FSM Setup
