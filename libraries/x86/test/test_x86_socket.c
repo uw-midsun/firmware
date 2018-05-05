@@ -49,13 +49,7 @@ void test_x86_socket_connect(void) {
   for (volatile uint32_t i = 0; i < 100000000; i++) {
   }
 
-  // Set up connection to abstract domain socket @[pid]/[prog]/test_x86_socket
-  int client_fd = socket(AF_UNIX, SOCK_SEQPACKET, 0);
-  struct sockaddr_un addr = { .sun_family = AF_UNIX };
-  snprintf(addr.sun_path + 1, sizeof(addr.sun_path) - 1, "%d/%s/" TEST_X86_SOCKET_NAME, getpid(),
-           program_invocation_short_name);
-  connect(client_fd, (struct sockaddr_un *)&addr,
-          offsetof(struct sockaddr_un, sun_path) + 1 + strlen(addr.sun_path + 1));
+  int client_fd = test_x86_socket_client_init(TEST_X86_SOCKET_NAME);
 
   // Sending message to socket and block until the handler is run
   const char *msg = "This is a test!\n";

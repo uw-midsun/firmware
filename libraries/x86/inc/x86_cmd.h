@@ -22,7 +22,7 @@ typedef struct X86CmdThread {
   size_t num_handlers;
 } X86CmdThread;
 
-StatusCode x86_cmd_init(X86CmdThread *thread, const char *name);
+StatusCode x86_cmd_init(X86CmdThread *thread);
 
 StatusCode x86_cmd_register_handler(X86CmdThread *thread, const char *cmd, X86CmdHandlerFn fn, void *context);
 

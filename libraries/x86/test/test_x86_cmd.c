@@ -4,7 +4,11 @@
 #include "log.h"
 #include "x86_cmd.h"
 
+static const char *s_cmd;
+static size_t s_num_args;
+
 static void prv_handler(int client_fd, const char *cmd, const char *args[], size_t num_args, void *context) {
+  bool *received = context;
   LOG_DEBUG("Handling cmd %s (%d args) from %d\n", cmd, num_args, client_fd);
   for (size_t i = 0; i < num_args; i++) {
     LOG_DEBUG("Arg %d: %s\n", i, args[i]);
@@ -12,10 +16,15 @@ static void prv_handler(int client_fd, const char *cmd, const char *args[], size
 
   const char *msg = "Response\n";
   x86_socket_write(client_fd, msg, strlen(msg));
+
+  s_cmd = cmd;
+  s_num_args = num_args;
+  *received = true;
 }
 
 void setup_test(void) {
-
+  s_cmd = NULL;
+  s_num_args = 0;
 }
 
 void teardown_test(void) {
@@ -23,9 +32,22 @@ void teardown_test(void) {
 }
 
 void test_x86_cmd_client(void) {
+  volatile bool received = false;
   X86CmdThread thread;
   x86_cmd_init(&thread);
-  x86_cmd_register_handler(&thread, "test", prv_handler, NULL);
+  x86_cmd_register_handler(&thread, "test", prv_handler, &received);
 
-  while (true);
+  LOG_DEBUG("Hopefully delaying a bit for the RX server to start\n");
+  for (volatile uint32_t i = 0; i < 100000000; i++) {
+  }
+  int client_fd = test_x86_socket_client_init(X86_CMD_SOCKET_NAME);
+
+  const char *cmd = "test a b c d";
+  LOG_DEBUG("Sending command: \"%s\"\n", cmd);
+  x86_socket_write(client_fd, cmd, strlen(cmd));
+
+  while (!received);
+
+  TEST_ASSERT_EQUAL_STRING("test", s_cmd);
+  TEST_ASSERT_EQUAL(4, s_num_args);
 }

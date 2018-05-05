@@ -147,3 +147,15 @@ StatusCode x86_socket_write(int client_fd, const char *tx_data, size_t tx_len) {
 
   return STATUS_CODE_OK;
 }
+
+int test_x86_socket_client_init(const char *module_name) {
+  // Set up connection to abstract domain socket @[pid]/[prog]/test_x86_socket
+  int client_fd = socket(AF_UNIX, SOCK_SEQPACKET, 0);
+  struct sockaddr_un addr = { .sun_family = AF_UNIX };
+  snprintf(addr.sun_path + 1, sizeof(addr.sun_path) - 1, "%d/%s/%s", getpid(),
+           program_invocation_short_name, module_name);
+  connect(client_fd, (struct sockaddr_un *)&addr,
+          offsetof(struct sockaddr_un, sun_path) + 1 + strlen(addr.sun_path + 1));
+
+  return client_fd;
+}
