@@ -3,8 +3,9 @@
 ## Summary
 
 This implements a **motor controller interface** that translates CAN messages 
-sent from our CAN network to the private CAN network that the motor controllers
-run on, allowing us to direct the NuGen Mobility SCM-150 motors.
+sent from our CAN network to the private CAN network that the Tritum 
+WaveSculptor 20 motor controllers run on, allowing us to direct the NuGen 
+Mobility SCM-150 motors.
 
 ## Motivation
 
