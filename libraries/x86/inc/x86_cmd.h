@@ -10,21 +10,8 @@
 
 typedef void (*X86CmdHandlerFn)(int client_fd, const char *cmd, const char *args[], size_t num_args, void *context);
 
-typedef struct X86CmdHandler {
-  const char *cmd;
-  X86CmdHandlerFn fn;
-  void *context;
-} X86CmdHandler;
+// GCC constructor attribute used to start command thread without explicitly calling init
+// Note that unless a module is linked in that registers a command, the constructor will not run.
+void x86_cmd_init(void) __attribute__((constructor));
 
-typedef struct X86CmdThread {
-  X86SocketThread socket;
-  X86CmdHandler handlers[X86_CMD_MAX_HANDLERS];
-  size_t num_handlers;
-} X86CmdThread;
-
-StatusCode x86_cmd_init(X86CmdThread *thread);
-
-StatusCode x86_cmd_register_handler(X86CmdThread *thread, const char *cmd, X86CmdHandlerFn fn, void *context);
-
-// Main command handler
-X86CmdThread *x86_cmd_thread(void);
+StatusCode x86_cmd_register_handler(const char *cmd, X86CmdHandlerFn fn, void *context);

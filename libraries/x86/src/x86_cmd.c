@@ -3,6 +3,20 @@
 #include <string.h>
 #include "log.h"
 
+typedef struct X86CmdHandler {
+  const char *cmd;
+  X86CmdHandlerFn fn;
+  void *context;
+} X86CmdHandler;
+
+typedef struct X86CmdThread {
+  X86SocketThread socket;
+  X86CmdHandler handlers[X86_CMD_MAX_HANDLERS];
+  size_t num_handlers;
+} X86CmdThread;
+
+static X86CmdThread s_cmd_thread;
+
 static void prv_socket_handler(struct X86SocketThread *thread, int client_fd, const char *rx_data,
                                size_t rx_len, void *context) {
   X86CmdThread *cmd_thread = context;
@@ -31,12 +45,13 @@ static void prv_socket_handler(struct X86SocketThread *thread, int client_fd, co
   }
 }
 
-StatusCode x86_cmd_init(X86CmdThread *thread) {
-  memset(thread, 0, sizeof(*thread));
-  return x86_socket_init(&thread->socket, X86_CMD_SOCKET_NAME, prv_socket_handler, thread);
+void x86_cmd_init(void) {
+  x86_socket_init(&s_cmd_thread.socket, X86_CMD_SOCKET_NAME, prv_socket_handler, &s_cmd_thread);
 }
 
-StatusCode x86_cmd_register_handler(X86CmdThread *thread, const char *cmd, X86CmdHandlerFn fn, void *context) {
+StatusCode x86_cmd_register_handler(const char *cmd, X86CmdHandlerFn fn, void *context) {
+  X86CmdThread *thread = &s_cmd_thread;
+
   if (thread->num_handlers >= X86_CMD_MAX_HANDLERS) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }

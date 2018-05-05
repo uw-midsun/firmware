@@ -153,8 +153,8 @@ test_format: format
 	@! git diff --name-only --diff-filter=ACMRT | xargs -n1 clang-format -style=file -output-replacements-xml | grep '<replacements' > /dev/null; if [ $$? -ne 0 ] ; then git --no-pager diff && exit 1 ; fi
 
 # Builds the project or library
-ifneq (,$(PROJECT))
-build: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+ifneq (,$(PROJECT)$(TEST))
+build: $(GDB_TARGET)
 else
 build: $(STATIC_LIB_DIR)/lib$(LIBRARY).a
 endif

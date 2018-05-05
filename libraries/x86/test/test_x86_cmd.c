@@ -33,9 +33,7 @@ void teardown_test(void) {
 
 void test_x86_cmd_client(void) {
   volatile bool received = false;
-  X86CmdThread thread;
-  x86_cmd_init(&thread);
-  x86_cmd_register_handler(&thread, "test", prv_handler, &received);
+  x86_cmd_register_handler("test", prv_handler, &received);
 
   LOG_DEBUG("Hopefully delaying a bit for the RX server to start\n");
   for (volatile uint32_t i = 0; i < 100000000; i++) {
