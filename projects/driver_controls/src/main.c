@@ -5,7 +5,11 @@
 #include "gpio_it.h"
 #include "i2c.h"
 #include "interrupt.h"
-
+#include "ads1015.h"
+#include "ads1015_def.h"
+#include "delay.h"
+#include "log.h"
+#include "unity.h"
 #include "analog_io.h"
 #include "digital_io.h"
 #include "event_arbiter.h"
@@ -21,40 +25,30 @@
 #include "soft_timer.h"
 #include "turn_signal_fsm.h"
 
-// Struct of FSMs to be used in the program
-typedef struct FSMGroup {
-  FSM power;
-  FSM pedal;
-  FSM direction;
-  FSM turn_signal;
-  FSM hazard_light;
-  FSM mechanical_brake;
-  FSM horn;
-  FSM push_to_talk;
-} FSMGroup;
+static Ads1015Storage s_storage;
 
+static bool s_callback_called[NUM_ADS1015_CHANNELS];
+
+static void prv_callback_channel(Ads1015Channel channel, void *context) {
+  bool *s_callback_called = context;
+  *s_callback_called = true;
+}
+
+
+static bool prv_channel_reading_void(int16_t reading){
+ return (reading < (ADS1015_CURRENTFSR /2)) && ( reading >= 0);
+
+}
 int main() {
-  FSMGroup fsm_group;
-  Event e;
-
-  // Initialize the various driver control devices
-  gpio_init();
-  interrupt_init();
-  gpio_it_init();
-
-  soft_timer_init();
-
-  adc_init(ADC_MODE_CONTINUOUS);
-
-  digital_io_init();
-
-  event_queue_init();
-
-  // Initialize FSMs
-
-  for (;;) {
-    if (status_ok(event_process(&e))) {
-      // Process the event with the input FSMs
-    }
-  }
+ gpio_init();
+ interrupt_init();
+ gpio_it_init();
+ soft_timer_init();
+ I2CSettings i2c_settings ={ 
+   .speed = I2C_SPEED_FAST,
+   .scl =  {.port = GPIO_PORT_B, .pin = 10  },
+   .sda =  {.port = GPIO_PORT_B, .pin = 11 },
+};
+ 
+ 
 }
