@@ -33,7 +33,7 @@ static StatusCode prv_handle_uvov(const CANMessage *msg, void *context, CANAckSt
   uint8_t aux_ov = 0;
   uint8_t aux_uv = 0;
   CAN_UNPACK_OVUV_DCDC_AUX(msg, &dcdc_ov, &dcdc_uv, &aux_ov, &aux_uv);
-  LOG_DEBUG("Caught UVOV Message | AUX - UV: %d OV: %d. | DCDC - UV: %d OV: %d\n", aux_uv, aux_ov,
+  LOG_DEBUG("Caught UVOV Message | AUX - UV: %d OV: %d | DCDC - UV: %d OV: %d\n", aux_uv, aux_ov,
             dcdc_uv, dcdc_ov);
   return STATUS_CODE_OK;
 }

@@ -1,27 +1,65 @@
 #include "chaos_config.h"
 
+#include <inttypes.h>
+
 #include "gpio_mcu.h"
 #include "log.h"
 #include "soft_timer.h"
 
-static uint16_t prv_convert_aux_bat_current(uint16_t value) {
-  LOG_DEBUG("Aux Bat Current: %d\n", value);
-  return value;
-}
+// ##### Voltage Conversion #####
+// 12 Bit ADC from 0 V to 3 V
+#define CHAOS_CONFIG_VALUE_TO_MILLIVOLTS(val) ((val)*3000 / (((uint16_t)1 << 12) - 1))
+#define CHAOS_CONFIG_VALUE_TO_MICROVOLTS(val) \
+  (((uint32_t)(val)) * 3000000 / (((uint16_t)1 << 12) - 1))
 
-static uint16_t prv_convert_aux_bat_voltage(uint16_t value) {
-  LOG_DEBUG("Aux Bat Voltage: %d\n", value);
-  return value;
+// ##### Current Equation #####
+// I = V / (Gain * R)
+
+// DCDC:
+// - R = 0.003 Ohms
+// - Gain = 50
+#define CHAOS_CONFIG_DCDC_CURRENT_CONVERT(val) (((uint32_t)(val)) * 20 / 3)
+
+// AUX BAT:
+// - R = 0.006 Ohms
+// - Gain = 50
+#define CHAOS_CONFIG_AUX_BAT_CURRENT_CONVERT(val) (((uint32_t)(val)) * 20 / 6)
+
+// ##### Voltage Equation #####
+// V_out = V_in * (R_1 + R_2) / R_1
+
+// DCDC:
+// - R_1 = 140 kOhm
+// - R_2 = 470 kOhm
+#define CHAOS_CONFIG_DCDC_VOLTAGE_CONVERT(val) (((uint32_t)(val)) * (470 + 140) / 140)
+
+// AUX BAT:
+// - R_1 = 140 kOhm
+// - R_2 = 470 kOhm
+#define CHAOS_CONFIG_AUX_BAT_VOLTAGE_CONVERT(val) (((uint32_t)(val)) * (470 + 140) / 140)
+
+static uint16_t prv_convert_aux_bat_current(uint16_t value) {
+  LOG_DEBUG("Aux Bat Current: %ld\n",
+            CHAOS_CONFIG_AUX_BAT_CURRENT_CONVERT(CHAOS_CONFIG_VALUE_TO_MICROVOLTS(value)));
+  return CHAOS_CONFIG_AUX_BAT_CURRENT_CONVERT(CHAOS_CONFIG_VALUE_TO_MICROVOLTS(value));
 }
 
 static uint16_t prv_convert_dcdc_current(uint16_t value) {
-  LOG_DEBUG("DCDC Current: %d\n", value);
-  return value;
+  LOG_DEBUG("DCDC Current: %ld\n",
+            CHAOS_CONFIG_DCDC_CURRENT_CONVERT(CHAOS_CONFIG_VALUE_TO_MICROVOLTS(value)));
+  return CHAOS_CONFIG_DCDC_CURRENT_CONVERT(CHAOS_CONFIG_VALUE_TO_MICROVOLTS(value));
+}
+
+static uint16_t prv_convert_aux_bat_voltage(uint16_t value) {
+  LOG_DEBUG("Aux Bat Voltage: %ld\n",
+            CHAOS_CONFIG_AUX_BAT_VOLTAGE_CONVERT(CHAOS_CONFIG_VALUE_TO_MILLIVOLTS(value)));
+  return CHAOS_CONFIG_AUX_BAT_VOLTAGE_CONVERT(CHAOS_CONFIG_VALUE_TO_MILLIVOLTS(value));
 }
 
 static uint16_t prv_convert_dcdc_voltage(uint16_t value) {
-  LOG_DEBUG("DCDC Voltage: %d\n", value);
-  return value;
+  LOG_DEBUG("DCDC Voltage: %ld\n",
+            CHAOS_CONFIG_DCDC_VOLTAGE_CONVERT(CHAOS_CONFIG_VALUE_TO_MILLIVOLTS(value)));
+  return CHAOS_CONFIG_DCDC_VOLTAGE_CONVERT(CHAOS_CONFIG_VALUE_TO_MILLIVOLTS(value));
 }
 
 static ChaosConfig s_config = {
