@@ -31,7 +31,6 @@ int main(void) {
   interrupt_init();
   soft_timer_init();
 
-
   CANSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,
     .bitrate = CAN_HW_BITRATE_125KBPS,

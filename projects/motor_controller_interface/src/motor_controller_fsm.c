@@ -16,10 +16,8 @@
 #define NUM_CAN_INTERVALS 2
 static FSM s_fsm;
 
-static uint32_t s_base_address[NUM_CAN_INTERVALS] = {
-  MOTOR_CONTROLLER_INTERFACE_LEFT_ADDR,
-  MOTOR_CONTROLLER_INTERFACE_RIGHT_ADDR
-};
+static uint32_t s_base_address[NUM_CAN_INTERVALS] = { MOTOR_CONTROLLER_INTERFACE_LEFT_ADDR,
+                                                      MOTOR_CONTROLLER_INTERFACE_RIGHT_ADDR };
 static CanInterval *s_intervals[NUM_CAN_INTERVALS] = { 0 };
 
 static CanInterval *s_left_interval = NULL;
@@ -245,7 +243,8 @@ static void prv_cruise_control_mode(FSM *fsm, const Event *e, void *context) {
   // Read the current setpoint from the left Motor Controller and send it to
   // the Right Motor Controller
   MotorControllerPowerCmd cmd_right = {
-    .current_percentage = storage->measurement.bus_meas_left.current / MOTOR_CONTROLLER_CURRENT_LIMIT,
+    .current_percentage =
+        storage->measurement.bus_meas_left.current / MOTOR_CONTROLLER_CURRENT_LIMIT,
   };
   GenericCanMsg right_msg = {
     .id = MOTOR_CONTROLLER_POWER_COMMAND_ID(MOTOR_CONTROLLER_INTERFACE_RIGHT_ADDR),
@@ -318,8 +317,7 @@ StatusCode motor_controller_fsm_init(const MotorControllerFsmStorage *storage) {
   status_ok_or_return(can_interval_factory(storage->generic_can, &msg,
                                            MOTOR_CONTROLLER_MESSAGE_INTERVAL_US, &s_intervals[0]));
   status_ok_or_return(can_interval_factory(storage->generic_can, &msg,
-                                           MOTOR_CONTROLLER_MESSAGE_INTERVAL_US,
-                                           &s_intervals[1]));
+                                           MOTOR_CONTROLLER_MESSAGE_INTERVAL_US, &s_intervals[1]));
 
   return STATUS_CODE_OK;
 }
