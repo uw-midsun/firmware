@@ -44,9 +44,11 @@ typedef struct {
 } MotorControllerMeasurement;
 
 typedef struct {
+  MotorControllerMeasurement measurement;
+  FSM fsm;
+  DriverControlsData fifo_data[20];
+  Fifo fifo;
   GenericCan *generic_can;
-  MotorControllerMeasurement *measurement;
-  Fifo *fifo;
 } MotorControllerFsmStorage;
 
 // Initializes the FSM

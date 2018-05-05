@@ -12,9 +12,16 @@
 #include "motor_controller.h"
 #include "motor_controller_interface_events.h"
 
+#include "log.h"
+#define NUM_CAN_INTERVALS 2
 static FSM s_fsm;
-static Fifo *s_fifo;
-static MotorControllerMeasurement *s_mc_measurements;
+
+static uint32_t s_base_address[NUM_CAN_INTERVALS] = {
+  MOTOR_CONTROLLER_INTERFACE_LEFT_ADDR,
+  MOTOR_CONTROLLER_INTERFACE_RIGHT_ADDR
+};
+static CanInterval *s_intervals[NUM_CAN_INTERVALS] = { 0 };
+
 static CanInterval *s_left_interval = NULL;
 static CanInterval *s_right_interval = NULL;
 
@@ -24,20 +31,22 @@ static void prv_handle_slave_msg(const GenericCanMsg *msg, void *context) {
 }
 
 static StatusCode prv_push_drive(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+  MotorControllerFsmStorage *storage = (MotorControllerFsmStorage *)context;
   DriverControlsData data = { 0 };
 
   CAN_UNPACK_MOTOR_CONTROLS(msg, &data.throttle, &data.direction, &data.cruise_control,
                             &data.brake_state);
 
-  status_ok_or_return(fifo_push(s_fifo, &data));
+  status_ok_or_return(fifo_push(&storage->fifo, &data));
 
   return event_raise(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO, 0);
 }
 
 static bool prv_mechanical_braking_guard(const FSM *fsm, const Event *e, void *context) {
+  MotorControllerFsmStorage *storage = (MotorControllerFsmStorage *)context;
   DriverControlsData data = { 0 };
 
-  fifo_peek(s_fifo, &data);
+  fifo_peek(&storage->fifo, &data);
   if (data.brake_state != DRIVER_CONTROLS_BRAKE_DISENGAGED) {
     // The pop will happen in the output function
     return true;
@@ -48,9 +57,10 @@ static bool prv_mechanical_braking_guard(const FSM *fsm, const Event *e, void *c
 static bool prv_torque_control_forward_guard(const FSM *fsm, const Event *e, void *context) {
   // We can only go forward if the direction selector is set to Forward and the
   // Current is a valid value
+  MotorControllerFsmStorage *storage = (MotorControllerFsmStorage *)context;
   DriverControlsData data = { 0 };
 
-  fifo_peek(s_fifo, &data);
+  fifo_peek(&storage->fifo, &data);
   if (data.brake_state == DRIVER_CONTROLS_BRAKE_DISENGAGED &&
       data.direction == DRIVER_CONTROLS_FORWARD && data.cruise_control == 0) {
     // The pop will happen in the output function
@@ -62,9 +72,10 @@ static bool prv_torque_control_forward_guard(const FSM *fsm, const Event *e, voi
 static bool prv_torque_control_reverse_guard(const FSM *fsm, const Event *e, void *context) {
   // We can only go reverse if the direction selector is set to Reverse and the
   // Current is a valid value, and cruise control is disabled
+  MotorControllerFsmStorage *storage = (MotorControllerFsmStorage *)context;
   DriverControlsData data = { 0 };
 
-  fifo_peek(s_fifo, &data);
+  fifo_peek(&storage->fifo, &data);
   if (data.brake_state == DRIVER_CONTROLS_BRAKE_DISENGAGED &&
       data.direction == DRIVER_CONTROLS_REVERSE && data.cruise_control == 0) {
     // The pop will happen in the output function
@@ -76,9 +87,10 @@ static bool prv_torque_control_reverse_guard(const FSM *fsm, const Event *e, voi
 static bool prv_cruise_control_forward_guard(const FSM *fsm, const Event *e, void *context) {
   // We can only go Cruise Control if the direction selector is set to Forward
   // and the Current is a valid value
+  MotorControllerFsmStorage *storage = (MotorControllerFsmStorage *)context;
   DriverControlsData data = { 0 };
 
-  fifo_peek(s_fifo, &data);
+  fifo_peek(&storage->fifo, &data);
   if (data.brake_state == DRIVER_CONTROLS_BRAKE_DISENGAGED &&
       data.direction == DRIVER_CONTROLS_FORWARD && data.cruise_control != 0) {
     // The pop will happen in the output function
@@ -155,8 +167,9 @@ FSM_STATE_TRANSITION(state_mechanical_braking) {
 
 // Output functions
 static void prv_torque_control_mode(FSM *fsm, const Event *e, void *context) {
+  volatile MotorControllerFsmStorage *storage = (volatile MotorControllerFsmStorage *)context;
   DriverControlsData data = { 0 };
-  fifo_pop(s_fifo, &data);
+  StatusCode status = fifo_pop(&storage->fifo, &data);
 
   float desired_torque = CONVERT_THROTTLE_READING_TO_PERCENTAGE((float)data.throttle);
 
@@ -182,38 +195,30 @@ static void prv_torque_control_mode(FSM *fsm, const Event *e, void *context) {
     .velocity = desired_direction,
   };
 
-  // Update Left Motor Controller message
-  GenericCanMsg left_msg = {
-    .id = MOTOR_CONTROLLER_DRIVE_COMMAND_ID(MOTOR_CONTROLLER_INTERFACE_LEFT_ADDR),
-    .data = 0,
-    .dlc = sizeof(cmd),
-    .extended = false,
-  };
-  memcpy(&left_msg.data, &cmd, sizeof(cmd));
-
-  // Update Right Motor Controller message
-  GenericCanMsg right_msg = {
-    .id = MOTOR_CONTROLLER_DRIVE_COMMAND_ID(MOTOR_CONTROLLER_INTERFACE_RIGHT_ADDR),
-    .data = 0,
-    .dlc = sizeof(cmd),
-    .extended = false,
-  };
-  memcpy(&right_msg.data, &cmd, sizeof(cmd));
-
-  // Copy the new messages and overwrite the existing CAN intervals
   bool disabled = critical_section_start();
-  s_left_interval->msg = left_msg;
-  s_right_interval->msg = right_msg;
-  critical_section_end(disabled);
+  for (size_t i = 0; i < NUM_CAN_INTERVALS; ++i) {
+    GenericCanMsg msg = {
+      .id = MOTOR_CONTROLLER_DRIVE_COMMAND_ID(s_base_address[i]),
+      .data = 0,
+      .dlc = sizeof(cmd),
+      .extended = false,
+    };
+    memcpy(&msg.data, &cmd, sizeof(cmd));
 
-  // Trigger a transmission
-  can_interval_send_now(s_left_interval);
-  can_interval_send_now(s_right_interval);
+    // Copy the new messages and overwrite the existing CAN intervals
+    s_intervals[i]->msg = msg;
+
+    // Trigger a transmission
+    can_interval_send_now(s_intervals[i]);
+  }
+  critical_section_end(disabled);
 }
 
 static void prv_cruise_control_mode(FSM *fsm, const Event *e, void *context) {
+  MotorControllerFsmStorage *storage = (MotorControllerFsmStorage *)context;
   DriverControlsData data = { 0 };
-  fifo_pop(s_fifo, &data);
+
+  fifo_pop(&storage->fifo, &data);
   float desired_speed = MOTOR_CONTOLLER_VELOCITY_CMPS_TO_MPS(data.cruise_control);
 
   // We perform cruise control by setting velocity mode on one motor, then
@@ -235,12 +240,12 @@ static void prv_cruise_control_mode(FSM *fsm, const Event *e, void *context) {
     .extended = false,
   };
   memcpy(&left_msg.data, &cmd_left, sizeof(cmd_left));
-  s_left_interval->msg = left_msg;
+  s_intervals[0]->msg = left_msg;
 
   // Read the current setpoint from the left Motor Controller and send it to
   // the Right Motor Controller
   MotorControllerPowerCmd cmd_right = {
-    .current_percentage = s_mc_measurements->bus_meas_left.current / MOTOR_CONTROLLER_CURRENT_LIMIT,
+    .current_percentage = storage->measurement.bus_meas_left.current / MOTOR_CONTROLLER_CURRENT_LIMIT,
   };
   GenericCanMsg right_msg = {
     .id = MOTOR_CONTROLLER_POWER_COMMAND_ID(MOTOR_CONTROLLER_INTERFACE_RIGHT_ADDR),
@@ -249,60 +254,57 @@ static void prv_cruise_control_mode(FSM *fsm, const Event *e, void *context) {
     .extended = false,
   };
   memcpy(&right_msg.data, &cmd_right, sizeof(cmd_right));
-  s_right_interval->msg = right_msg;
+  s_intervals[1]->msg = right_msg;
 
   // Trigger a transmission
-  can_interval_send_now(s_left_interval);
-  can_interval_send_now(s_right_interval);
+  can_interval_send_now(s_intervals[0]);
+  can_interval_send_now(s_intervals[1]);
 }
 
 StatusCode motor_controller_fsm_init(const MotorControllerFsmStorage *storage) {
   status_ok_or_return(
       generic_can_register_rx(storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
                               MOTOR_CONTROLLER_BUS_MEASUREMENT(MOTOR_CONTROLLER_LEFT_ADDR), false,
-                              (void *)&storage->measurement->bus_meas_left));
+                              (void *)&storage->measurement.bus_meas_left));
   status_ok_or_return(
       generic_can_register_rx(storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
                               MOTOR_CONTROLLER_BUS_MEASUREMENT(MOTOR_CONTROLLER_RIGHT_ADDR), false,
-                              (void *)&storage->measurement->bus_meas_right));
+                              (void *)&storage->measurement.bus_meas_right));
 
   status_ok_or_return(
       generic_can_register_rx(storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
                               MOTOR_CONTROLLER_VELOCITY_MEASUREMENT(MOTOR_CONTROLLER_LEFT_ADDR),
-                              false, (void *)&storage->measurement->velocity_meas_left));
+                              false, (void *)&storage->measurement.velocity_meas_left));
   status_ok_or_return(
       generic_can_register_rx(storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
                               MOTOR_CONTROLLER_VELOCITY_MEASUREMENT(MOTOR_CONTROLLER_RIGHT_ADDR),
-                              false, (void *)&storage->measurement->velocity_meas_right));
+                              false, (void *)&storage->measurement.velocity_meas_right));
 
   status_ok_or_return(generic_can_register_rx(
       storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
       MOTOR_CONTROLLER_SINK_MOTOR_TEMPERATURE_MEASUREMENT(MOTOR_CONTROLLER_LEFT_ADDR), false,
-      (void *)&storage->measurement->sink_motor_meas_left));
+      (void *)&storage->measurement.sink_motor_meas_left));
   status_ok_or_return(generic_can_register_rx(
       storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
       MOTOR_CONTROLLER_SINK_MOTOR_TEMPERATURE_MEASUREMENT(MOTOR_CONTROLLER_RIGHT_ADDR), false,
-      (void *)&storage->measurement->sink_motor_meas_right));
+      (void *)&storage->measurement.sink_motor_meas_right));
 
   status_ok_or_return(generic_can_register_rx(
       storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
       MOTOR_CONTROLLER_ODOMETER_BUS_AMP_HOURS_MEASUREMENT(MOTOR_CONTROLLER_LEFT_ADDR), false,
-      (void *)&storage->measurement->odo_bus_meas_left));
+      (void *)&storage->measurement.odo_bus_meas_left));
   status_ok_or_return(generic_can_register_rx(
       storage->generic_can, prv_handle_slave_msg, GENERIC_CAN_EMPTY_MASK,
       MOTOR_CONTROLLER_ODOMETER_BUS_AMP_HOURS_MEASUREMENT(MOTOR_CONTROLLER_RIGHT_ADDR), false,
-      (void *)&storage->measurement->odo_bus_meas_right));
-
-  // Start FIFO for processing events
-  s_fifo = storage->fifo;
+      (void *)&storage->measurement.odo_bus_meas_right));
 
   // Register CAN handlers for the driver controls messages
   status_ok_or_return(
-      can_register_rx_handler(SYSTEM_CAN_MESSAGE_MOTOR_CONTROLS, prv_push_drive, s_fifo));
+      can_register_rx_handler(SYSTEM_CAN_MESSAGE_MOTOR_CONTROLS, prv_push_drive, storage));
 
-  s_mc_measurements = storage->measurement;
+  fifo_init(&storage->fifo, storage->fifo_data);
 
-  fsm_init(&s_fsm, "Motor Controller FSM", &state_torque_control_forward, &s_fsm);
+  fsm_init(&storage->fsm, "Motor Controller FSM", &state_torque_control_forward, storage);
 
   fsm_state_init(state_torque_control_forward, prv_torque_control_mode);
   fsm_state_init(state_torque_control_reverse, prv_torque_control_mode);
@@ -310,14 +312,14 @@ StatusCode motor_controller_fsm_init(const MotorControllerFsmStorage *storage) {
   fsm_state_init(state_mechanical_braking, prv_torque_control_mode);
 
   // Initialize the CAN Intervals
-  GenericCanMsg mc_left_msg = { 0 };
-  GenericCanMsg mc_right_msg = { 0 };
+  memset((void *)&s_intervals, 0, sizeof(s_intervals[0]) * SIZEOF_ARRAY(s_intervals));
+  GenericCanMsg msg = { 0 };
 
-  status_ok_or_return(can_interval_factory(storage->generic_can, &mc_left_msg,
-                                           MOTOR_CONTROLLER_MESSAGE_INTERVAL_US, &s_left_interval));
-  status_ok_or_return(can_interval_factory(storage->generic_can, &mc_right_msg,
+  status_ok_or_return(can_interval_factory(storage->generic_can, &msg,
+                                           MOTOR_CONTROLLER_MESSAGE_INTERVAL_US, &s_intervals[0]));
+  status_ok_or_return(can_interval_factory(storage->generic_can, &msg,
                                            MOTOR_CONTROLLER_MESSAGE_INTERVAL_US,
-                                           &s_right_interval));
+                                           &s_intervals[1]));
 
   return STATUS_CODE_OK;
 }

@@ -41,10 +41,6 @@ static CANRxHandler s_rx_handlers[TEST_MOTOR_CONTROLLER_INTERFACE_NUM_RX_HANDLER
 
 static GenericCanHw s_can = { 0 };
 
-// FIFO storage
-static Fifo s_fifo;
-static DriverControlsData s_buffer[20];
-
 // Motor Controller FSM storage
 static MotorControllerFsmStorage s_mc_fsm_storage;
 MotorControllerMeasurement s_mc_measurements = { 0 };
@@ -159,6 +155,8 @@ static void prv_assert_cruise_forward_state(const GenericCanMsg *msg, void *cont
 }
 
 static void prv_transition_to_cruise_control(void) {
+  LOG_DEBUG("Transitioning to cruise control\n");
+
   // Set the left Motor Controller telemetry values to a known value
   s_mc_measurements.bus_meas_left.current = 100;
   s_mc_measurements.bus_meas_left.voltage = 1;
@@ -170,7 +168,7 @@ static void prv_transition_to_cruise_control(void) {
     .cruise_control = TEST_CRUISE_CONTROL_VALUE,
     .brake_state = DRIVER_CONTROLS_BRAKE_DISENGAGED,
   };
-  fifo_push(&s_fifo, &data);
+  fifo_push(&s_mc_fsm_storage.fifo, &data);
   event_raise(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO, 0);
 
   // Run the FSM
@@ -183,7 +181,7 @@ static void prv_transition_to_cruise_control(void) {
         e.id == MOTOR_CONTROLLER_INTERFACE_EVENT_CAN_FAULT) {
       TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
     } else {
-      TEST_ASSERT_EQUAL(true, motor_controller_fsm_process_event(&e));
+      TEST_ASSERT_EQUAL(true, fsm_process_event(&s_mc_fsm_storage.fsm, &e));
     }
   } while (status != STATUS_CODE_OK);
 
@@ -191,6 +189,7 @@ static void prv_transition_to_cruise_control(void) {
 
   num_cruise_control_forward_messages[0] = 0;
   num_cruise_control_forward_messages[1] = 0;
+  delay_ms(100);
   TEST_ASSERT_OK(generic_can_register_rx((GenericCan *)&s_can, prv_assert_cruise_forward_state,
                                          0x00, 0x00, false,
                                          (void *)&num_cruise_control_forward_messages));
@@ -203,6 +202,8 @@ static void prv_transition_to_cruise_control(void) {
 }
 
 static void prv_transition_to_forward(void) {
+  LOG_DEBUG("Transitioning to forward\n");
+
   // Send a Driver Controls CAN message going forward
   DriverControlsData data = {
     .throttle = TEST_FORWARD_THROTTLE_VALUE,
@@ -210,7 +211,7 @@ static void prv_transition_to_forward(void) {
     .cruise_control = 0,
     .brake_state = DRIVER_CONTROLS_BRAKE_DISENGAGED,
   };
-  fifo_push(&s_fifo, &data);
+  fifo_push(&s_mc_fsm_storage.fifo, &data);
   event_raise(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO, 0);
 
   // Run the FSM
@@ -223,7 +224,7 @@ static void prv_transition_to_forward(void) {
         e.id == MOTOR_CONTROLLER_INTERFACE_EVENT_CAN_FAULT) {
       TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
     } else {
-      TEST_ASSERT_EQUAL(true, motor_controller_fsm_process_event(&e));
+      TEST_ASSERT_EQUAL(true, fsm_process_event(&s_mc_fsm_storage.fsm, &e));
     }
   } while (status != STATUS_CODE_OK);
 
@@ -242,6 +243,8 @@ static void prv_transition_to_forward(void) {
 }
 
 static void prv_transition_to_braking(void) {
+  LOG_DEBUG("Transitioning to braking\n");
+
   const CANMessage msg = { 0 };
 
   // Send a Driver Controls CAN message to enter braking state
@@ -251,7 +254,7 @@ static void prv_transition_to_braking(void) {
     .cruise_control = 0,
     .brake_state = DRIVER_CONTROLS_BRAKE_ENGAGED,
   };
-  fifo_push(&s_fifo, &data);
+  fifo_push(&s_mc_fsm_storage.fifo, &data);
   event_raise(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO, 0);
 
   Event e = { 0 };
@@ -263,7 +266,7 @@ static void prv_transition_to_braking(void) {
         e.id == MOTOR_CONTROLLER_INTERFACE_EVENT_CAN_FAULT) {
       TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
     } else {
-      TEST_ASSERT_EQUAL(true, motor_controller_fsm_process_event(&e));
+      TEST_ASSERT_EQUAL(true, fsm_process_event(&s_mc_fsm_storage.fsm, &e));
     }
   } while (status != STATUS_CODE_OK);
 
@@ -279,13 +282,15 @@ static void prv_transition_to_braking(void) {
 }
 
 static void prv_transition_to_reverse(void) {
+  LOG_DEBUG("Transitioning to reverse\n");
+
   DriverControlsData data = {
     .throttle = TEST_REVERSE_THROTTLE_VALUE,
     .direction = DRIVER_CONTROLS_REVERSE,
     .cruise_control = 0,
     .brake_state = DRIVER_CONTROLS_BRAKE_DISENGAGED,
   };
-  fifo_push(&s_fifo, &data);
+  fifo_push(&s_mc_fsm_storage.fifo, &data);
   event_raise(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO, 0);
 
   // Run the FSM
@@ -298,7 +303,7 @@ static void prv_transition_to_reverse(void) {
         e.id == MOTOR_CONTROLLER_INTERFACE_EVENT_CAN_FAULT) {
       TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
     } else {
-      TEST_ASSERT_EQUAL(true, motor_controller_fsm_process_event(&e));
+      TEST_ASSERT_EQUAL(true, fsm_process_event(&s_mc_fsm_storage.fsm, &e));
     }
   } while (status != STATUS_CODE_OK);
 
@@ -321,7 +326,6 @@ void setup_test(void) {
   event_queue_init();
   interrupt_init();
   soft_timer_init();
-  fifo_init(&s_fifo, s_buffer);
 
   CANSettings settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
@@ -347,9 +351,8 @@ void setup_test(void) {
   memset(&s_can, 0x00, sizeof(s_can));
   TEST_ASSERT_OK(generic_can_hw_init(&s_can, &can_hw_settings, 0));
 
+  memset(&s_mc_fsm_storage, 0x0, sizeof(s_mc_fsm_storage));
   s_mc_fsm_storage.generic_can = (GenericCan *)&s_can;
-  s_mc_fsm_storage.measurement = &s_mc_measurements;
-  s_mc_fsm_storage.fifo = &s_fifo;
 
   TEST_ASSERT_OK(motor_controller_fsm_init(&s_mc_fsm_storage));
 

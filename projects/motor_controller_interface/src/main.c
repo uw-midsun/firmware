@@ -31,10 +31,6 @@ int main(void) {
   interrupt_init();
   soft_timer_init();
 
-  // Initialize FIFO
-  Fifo fifo;
-  DriverControlsData buffer[20];
-  fifo_init(&fifo, buffer);
 
   CANSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,
@@ -65,8 +61,6 @@ int main(void) {
 
   MotorControllerFsmStorage mc_fsm_storage = {
     .generic_can = (GenericCan *)&can_uart,
-    .measurement = &mc_measurements,
-    .fifo = &fifo,
   };
   motor_controller_fsm_init(&mc_fsm_storage);
 
