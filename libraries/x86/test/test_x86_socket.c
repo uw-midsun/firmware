@@ -14,7 +14,7 @@
 
 extern char *program_invocation_short_name;
 static X86SocketThread s_thread;
-static const char *s_rx_data;
+static char s_rx_data[30];
 static size_t s_rx_len;
 
 static void prv_handler(X86SocketThread *thread, int client_fd, const char *rx_data, size_t rx_len,
@@ -29,13 +29,13 @@ static void prv_handler(X86SocketThread *thread, int client_fd, const char *rx_d
   LOG_DEBUG("handling RX (%ld bytes)\n", rx_len);
   fwrite(rx_data, sizeof(char), rx_len, stdout);
 
-  s_rx_data = rx_data;
+  strncpy(s_rx_data, rx_data, sizeof(s_rx_data));
   s_rx_len = rx_len;
   *received = true;
 }
 
 void setup_test(void) {
-  s_rx_data = NULL;
+  memset(s_rx_data, 0, sizeof(s_rx_data));
   s_rx_len = 0;
 }
 

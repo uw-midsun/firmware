@@ -4,7 +4,7 @@
 #include "unity.h"
 #include "x86_cmd.h"
 
-static const char *s_cmd;
+static const char s_cmd[30];
 static size_t s_num_args;
 
 static void prv_handler(int client_fd, const char *cmd, const char *args[], size_t num_args,
@@ -18,13 +18,13 @@ static void prv_handler(int client_fd, const char *cmd, const char *args[], size
   const char *msg = "Response\n";
   x86_socket_write(client_fd, msg, strlen(msg));
 
-  s_cmd = cmd;
+  strncpy(s_cmd, cmd, sizeof(s_cmd));
   s_num_args = num_args;
   *received = true;
 }
 
 void setup_test(void) {
-  s_cmd = NULL;
+  memset(s_cmd, 0, sizeof(s_cmd));
   s_num_args = 0;
 }
 

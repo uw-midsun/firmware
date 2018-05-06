@@ -1,5 +1,6 @@
 #include "x86_cmd.h"
 #include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
 #include "log.h"
 
@@ -24,16 +25,18 @@ static void prv_socket_handler(struct X86SocketThread *thread, int client_fd, co
   LOG_DEBUG("Received command %s\n", rx_data);
 
   // Data will be mangled by strtok - make sure we always end with a null terminator
-  char buf[rx_len + 1];
+  char *buf = malloc(rx_len + 1);
   buf[rx_len] = '\0';
 
   const char *args[X86_CMD_MAX_ARGS] = { 0 };
   strncpy(buf, rx_data, rx_len);
 
   // Don't support more than one command per packet
-  const char *cmd_word = strtok(buf, " \n");
+  char *save_ptr = NULL;
+  const char *cmd_word = strtok_r(buf, " \n", &save_ptr);
   size_t num_args = 0;
-  while (num_args < X86_CMD_MAX_ARGS && (args[num_args] = strtok(NULL, " \n")) != NULL) {
+  while (num_args < X86_CMD_MAX_ARGS &&
+         (args[num_args] = strtok_r(NULL, " \n", &save_ptr)) != NULL) {
     num_args++;
   }
 
@@ -44,6 +47,8 @@ static void prv_socket_handler(struct X86SocketThread *thread, int client_fd, co
       break;
     }
   }
+
+  free(buf);
 }
 
 void x86_cmd_init(void) {
