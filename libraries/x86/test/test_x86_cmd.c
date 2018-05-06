@@ -43,8 +43,8 @@ void test_x86_cmd_client(void) {
   LOG_DEBUG("Sending command: \"%s\"\n", cmd);
   x86_socket_write(client_fd, cmd, strlen(cmd));
 
-  while (!received)
-    ;
+  while (!received) {
+  }
 
   TEST_ASSERT_EQUAL_STRING("test", s_cmd);
   TEST_ASSERT_EQUAL(4, s_num_args);

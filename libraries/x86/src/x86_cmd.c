@@ -57,8 +57,11 @@ StatusCode x86_cmd_register_handler(const char *cmd, X86CmdHandlerFn fn, void *c
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  thread->handlers[thread->num_handlers] =
-      (X86CmdHandler){ .cmd = cmd, .fn = fn, .context = context };
+  thread->handlers[thread->num_handlers] = (X86CmdHandler){
+    .cmd = cmd,         //
+    .fn = fn,           //
+    .context = context  //
+  };
   thread->num_handlers++;
 
   return STATUS_CODE_OK;
