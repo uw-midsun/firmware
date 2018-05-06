@@ -148,25 +148,28 @@ StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage) {
   int16_t range = prv_calc_range(storage->band[main_channel]);
 
   // Use the percentages to calculate the thresholds of each zone.
-  ThrottleZoneThreshold *zone_thresholds = throttle_calibration->zone_thresholds_main;
+  ThrottleZoneThreshold *brake_threshold = &throttle_calibration->zone_thresholds_main[THROTTLE_ZONE_BRAKE],
+                        *coast_threshold = &throttle_calibration->zone_thresholds_main[THROTTLE_ZONE_COAST],
+                        *accel_threshold = &throttle_calibration->zone_thresholds_main[THROTTLE_ZONE_ACCEL];
   PedalCalibrationRange *calib_range = storage->band[main_channel];
 
-  zone_thresholds[THROTTLE_ZONE_BRAKE].min = calib_range[PEDAL_CALIBRATION_STATE_FULL_BRAKE].min;
-  zone_thresholds[THROTTLE_ZONE_BRAKE].max =
-      zone_thresholds[THROTTLE_ZONE_BRAKE].min + (storage->settings.brake_zone_percentage * range / 100);
+  brake_threshold->min = calib_range[PEDAL_CALIBRATION_STATE_FULL_BRAKE].min;
+  brake_threshold->max = brake_threshold->min + (storage->settings.brake_zone_percentage * range / 100);
+  int16_t brake_tolerance = (brake_threshold->max - brake_threshold->min) * storage->settings.bounds_tolerance / 100;
+  brake_threshold->min -= brake_tolerance;
 
-  zone_thresholds[THROTTLE_ZONE_COAST].min = zone_thresholds[THROTTLE_ZONE_BRAKE].max + 1;
-  zone_thresholds[THROTTLE_ZONE_COAST].max =
-      zone_thresholds[THROTTLE_ZONE_COAST].min + (storage->settings.coast_zone_percentage * range / 100);
+  coast_threshold->min = brake_threshold->max + 1;
+  coast_threshold->max = coast_threshold->min + (storage->settings.coast_zone_percentage * range / 100);
 
-  zone_thresholds[THROTTLE_ZONE_ACCEL].min = zone_thresholds[THROTTLE_ZONE_COAST].max + 1;
-  zone_thresholds[THROTTLE_ZONE_ACCEL].max = calib_range[PEDAL_CALIBRATION_STATE_FULL_THROTTLE].max;
+  accel_threshold->min = coast_threshold->max + 1;
+  accel_threshold->max = calib_range[PEDAL_CALIBRATION_STATE_FULL_THROTTLE].max;
+  int16_t accel_tolerance = (accel_threshold->max - accel_threshold->min) * storage->settings.bounds_tolerance / 100;
+  accel_threshold->max += accel_tolerance;
 
   // Tolerance should be half of the band's width assuming the width is constant.
   // In this case we take the maximum of widths at both ends multiplied by the given safety factor.
-  // TODO: this math is wrong
+  // TODO: this math is wrong - hardcoded value for now
   throttle_calibration->tolerance = 20;
-      // MAX((max_brake - min_brake) / 2, (max_accel - min_accel) / 2) * storage->tolerance_safety_factor;
 
   return STATUS_CODE_OK;
 }

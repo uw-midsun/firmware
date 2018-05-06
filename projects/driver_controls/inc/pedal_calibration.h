@@ -43,6 +43,7 @@ typedef struct PedalCalibrationSettings {
   uint8_t brake_zone_percentage; // [0, x]
   uint8_t coast_zone_percentage; // (x, y]
   uint8_t sync_safety_factor; // difference between primary/secondary channels - multiplier
+  uint8_t bounds_tolerance; // percentage tolerance for min/max bounds
 } PedalCalibrationSettings;
 
 typedef struct PedalCalibrationStorage {
