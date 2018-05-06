@@ -40,10 +40,10 @@ typedef struct PedalCalibrationSettings {
   // This should be the final product of calibration ready to be used by throttle module.
   ThrottleCalibrationData *throttle_calibration_data;
   Ads1015Channel adc_channel[NUM_PEDAL_CALIBRATION_CHANNELS];
-  uint8_t brake_zone_percentage; // [0, x]
-  uint8_t coast_zone_percentage; // (x, y]
-  uint8_t sync_safety_factor; // difference between primary/secondary channels - multiplier
-  uint8_t bounds_tolerance; // percentage tolerance for min/max bounds
+  uint8_t brake_zone_percentage;  // [0, x]
+  uint8_t coast_zone_percentage;  // (x, y]
+  uint8_t sync_safety_factor;     // difference between primary/secondary channels - multiplier
+  uint8_t bounds_tolerance;       // percentage tolerance for min/max bounds
 } PedalCalibrationSettings;
 
 typedef struct PedalCalibrationStorage {
@@ -60,7 +60,8 @@ typedef struct PedalCalibrationStorage {
 // Initializes the pedal calibration storage. Ads1015Storage should be initialized.
 // The zone percentages divide the pedal's range of motion into three zones (brake, coast, accel).
 // Tolerance safety factor is to account for conditions not present during calibration.
-StatusCode pedal_calibration_init(PedalCalibrationStorage *storage, PedalCalibrationSettings *settings);
+StatusCode pedal_calibration_init(PedalCalibrationStorage *storage,
+                                  PedalCalibrationSettings *settings);
 
 // Finds and stores max and min readings from pedal in a given state for both channels.
 // The pedal should be kept at the given state until the function finishes sampling.

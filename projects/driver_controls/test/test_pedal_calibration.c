@@ -13,12 +13,12 @@
 #include "gpio_it.h"
 #include "input_event.h"
 #include "interrupt.h"
+#include "log.h"
 #include "pedal_calibration.h"
 #include "pedal_calibration_fsm.h"
 #include "persist.h"
 #include "test_helpers.h"
 #include "unity.h"
-#include "log.h"
 
 static PedalCalibrationStorage s_storage;
 static FSM s_fsm;

@@ -19,9 +19,9 @@
 // band's width times a safety factor. The zone thresholds are also calculated by the input zone
 // percentages.
 #include "pedal_calibration.h"
+#include "critical_section.h"
 #include "string.h"
 #include "throttle.h"
-#include "critical_section.h"
 
 #define PEDAL_CALIBRATION_NUM_SAMPLES 1000
 
@@ -44,7 +44,8 @@ static void prv_adc_callback(Ads1015Channel ads1015_channel, void *context) {
   // Check if there are enough samples taken for the channel.
   if (storage->sample_counter[channel] >= PEDAL_CALIBRATION_NUM_SAMPLES) {
     // If yes, stop sampling and remove the callback.
-    ads1015_configure_channel(storage->settings.ads1015_storage, ads1015_channel, false, NULL, NULL);
+    ads1015_configure_channel(storage->settings.ads1015_storage, ads1015_channel, false, NULL,
+                              NULL);
   } else {
     // If not, continue reading.
     ads1015_read_raw(storage->settings.ads1015_storage, ads1015_channel, &reading);
@@ -57,7 +58,8 @@ static void prv_adc_callback(Ads1015Channel ads1015_channel, void *context) {
 }
 
 // Initializes the calibration storage. Requires initialized Ads1015storage.
-StatusCode pedal_calibration_init(PedalCalibrationStorage *storage, PedalCalibrationSettings *settings) {
+StatusCode pedal_calibration_init(PedalCalibrationStorage *storage,
+                                  PedalCalibrationSettings *settings) {
   // TODO: validate inputs
   memset(storage, 0, sizeof(*storage));
   storage->settings = *settings;
@@ -87,13 +89,14 @@ StatusCode pedal_calibration_process_state(PedalCalibrationStorage *storage,
   critical_section_end(disabled);
 
   // Set up callback on channels which would read new values after each conversion.
-  // Since we disable the channel reads as we obtain enough samples, they need to be reconfigured for the new stage.
-  status_ok_or_return(ads1015_configure_channel(storage->settings.ads1015_storage,
-                                                storage->settings.adc_channel[PEDAL_CALIBRATION_CHANNEL_A],
-                                                true, prv_adc_callback, storage));
-  status_ok_or_return(ads1015_configure_channel(storage->settings.ads1015_storage,
-                                                storage->settings.adc_channel[PEDAL_CALIBRATION_CHANNEL_B],
-                                                true, prv_adc_callback, storage));
+  // Since we disable the channel reads as we obtain enough samples, they need to be reconfigured
+  // for the new stage.
+  status_ok_or_return(ads1015_configure_channel(
+      storage->settings.ads1015_storage, storage->settings.adc_channel[PEDAL_CALIBRATION_CHANNEL_A],
+      true, prv_adc_callback, storage));
+  status_ok_or_return(ads1015_configure_channel(
+      storage->settings.ads1015_storage, storage->settings.adc_channel[PEDAL_CALIBRATION_CHANNEL_B],
+      true, prv_adc_callback, storage));
 
   // Wait until both channels finish sampling.
   while (storage->sample_counter[PEDAL_CALIBRATION_CHANNEL_A] < PEDAL_CALIBRATION_NUM_SAMPLES &&
@@ -103,16 +106,23 @@ StatusCode pedal_calibration_process_state(PedalCalibrationStorage *storage,
   return STATUS_CODE_OK;
 }
 
-static void prv_calc_midline(PedalCalibrationStorage *storage, PedalCalibrationChannel calib_channel, ThrottleChannel throttle_channel) {
+static void prv_calc_midline(PedalCalibrationStorage *storage,
+                             PedalCalibrationChannel calib_channel,
+                             ThrottleChannel throttle_channel) {
   PedalCalibrationRange *range = storage->band[calib_channel];
-  storage->settings.throttle_calibration_data->line[throttle_channel] = (ThrottleLine) {
-    .full_brake_reading = (range[PEDAL_CALIBRATION_STATE_FULL_BRAKE].max + range[PEDAL_CALIBRATION_STATE_FULL_BRAKE].min) / 2,
-    .full_throttle_reading = (range[PEDAL_CALIBRATION_STATE_FULL_THROTTLE].max + range[PEDAL_CALIBRATION_STATE_FULL_THROTTLE].min) / 2,
+  storage->settings.throttle_calibration_data->line[throttle_channel] = (ThrottleLine){
+    .full_brake_reading = (range[PEDAL_CALIBRATION_STATE_FULL_BRAKE].max +
+                           range[PEDAL_CALIBRATION_STATE_FULL_BRAKE].min) /
+                          2,
+    .full_throttle_reading = (range[PEDAL_CALIBRATION_STATE_FULL_THROTTLE].max +
+                              range[PEDAL_CALIBRATION_STATE_FULL_THROTTLE].min) /
+                             2,
   };
 }
 
 static int16_t prv_calc_range(PedalCalibrationRange *range) {
-  return range[PEDAL_CALIBRATION_STATE_FULL_THROTTLE].max - range[PEDAL_CALIBRATION_STATE_FULL_BRAKE].min;
+  return range[PEDAL_CALIBRATION_STATE_FULL_THROTTLE].max -
+         range[PEDAL_CALIBRATION_STATE_FULL_BRAKE].min;
 }
 
 // Based on the points initialized in the bands, it calculates and initializes the data in
@@ -148,22 +158,29 @@ StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage) {
   int16_t range = prv_calc_range(storage->band[main_channel]);
 
   // Use the percentages to calculate the thresholds of each zone.
-  ThrottleZoneThreshold *brake_threshold = &throttle_calibration->zone_thresholds_main[THROTTLE_ZONE_BRAKE],
-                        *coast_threshold = &throttle_calibration->zone_thresholds_main[THROTTLE_ZONE_COAST],
-                        *accel_threshold = &throttle_calibration->zone_thresholds_main[THROTTLE_ZONE_ACCEL];
+  ThrottleZoneThreshold *brake_threshold =
+                            &throttle_calibration->zone_thresholds_main[THROTTLE_ZONE_BRAKE],
+                        *coast_threshold =
+                            &throttle_calibration->zone_thresholds_main[THROTTLE_ZONE_COAST],
+                        *accel_threshold =
+                            &throttle_calibration->zone_thresholds_main[THROTTLE_ZONE_ACCEL];
   PedalCalibrationRange *calib_range = storage->band[main_channel];
 
   brake_threshold->min = calib_range[PEDAL_CALIBRATION_STATE_FULL_BRAKE].min;
-  brake_threshold->max = brake_threshold->min + (storage->settings.brake_zone_percentage * range / 100);
-  int16_t brake_tolerance = (brake_threshold->max - brake_threshold->min) * storage->settings.bounds_tolerance / 100;
+  brake_threshold->max =
+      brake_threshold->min + (storage->settings.brake_zone_percentage * range / 100);
+  int16_t brake_tolerance =
+      (brake_threshold->max - brake_threshold->min) * storage->settings.bounds_tolerance / 100;
   brake_threshold->min -= brake_tolerance;
 
   coast_threshold->min = brake_threshold->max + 1;
-  coast_threshold->max = coast_threshold->min + (storage->settings.coast_zone_percentage * range / 100);
+  coast_threshold->max =
+      coast_threshold->min + (storage->settings.coast_zone_percentage * range / 100);
 
   accel_threshold->min = coast_threshold->max + 1;
   accel_threshold->max = calib_range[PEDAL_CALIBRATION_STATE_FULL_THROTTLE].max;
-  int16_t accel_tolerance = (accel_threshold->max - accel_threshold->min) * storage->settings.bounds_tolerance / 100;
+  int16_t accel_tolerance =
+      (accel_threshold->max - accel_threshold->min) * storage->settings.bounds_tolerance / 100;
   accel_threshold->max += accel_tolerance;
 
   // Tolerance should be half of the band's width assuming the width is constant.

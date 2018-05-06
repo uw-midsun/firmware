@@ -75,9 +75,9 @@ static void prv_continue_validation_output(FSM *fsm, const Event *e, void *conte
   throttle_get_position(&storage->throttle, &position);
 
   char *zones[NUM_THROTTLE_ZONES + 1] = { [THROTTLE_ZONE_BRAKE] = "Brake",
-                                      [THROTTLE_ZONE_COAST] = "Coast",
-                                      [THROTTLE_ZONE_ACCEL] = "Accel",
-                                      [3] = "invalid" };
+                                          [THROTTLE_ZONE_COAST] = "Coast",
+                                          [THROTTLE_ZONE_ACCEL] = "Accel",
+                                          [3] = "invalid" };
 
   LOG_DEBUG("%s zone: %d / %d OR %d percent\n", zones[position.zone], position.numerator,
             THROTTLE_DENOMINATOR, position.numerator * 100 / THROTTLE_DENOMINATOR);
@@ -95,7 +95,8 @@ static void prv_enter_validation_output(FSM *fsm, const Event *e, void *context)
   LOG_DEBUG("Use the pedal to validate the calibration.\n");
 
   // Start the throttle for validation.
-  throttle_init(&storage->throttle, storage->settings.throttle_calibration_data, storage->settings.ads1015_storage);
+  throttle_init(&storage->throttle, storage->settings.throttle_calibration_data,
+                storage->settings.ads1015_storage);
 
   // Raise an event to continue staying in validation.
   event_raise(INPUT_EVENT_PEDAL_CALIBRATION_CONTINUE_VALIDATION, 0);
