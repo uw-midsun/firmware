@@ -20,14 +20,14 @@ void setup_test(void) {
 
   I2CSettings settings = {
     .speed = I2C_SPEED_FAST,    //
-    .sda = { GPIO_PORT_B, 9 },  //
-    .scl = { GPIO_PORT_B, 8 },  //
+    .sda = { GPIO_PORT_B, 11 },  //
+    .scl = { GPIO_PORT_B, 10 },  //
   };
 
-  i2c_init(I2C_PORT_1, &settings);
+  i2c_init(I2C_PORT_2, &settings);
 
-  GPIOAddress int_pin = { GPIO_PORT_A, 0 };
-  TEST_ASSERT_OK(gpio_expander_init(&s_expander, I2C_PORT_1, GPIO_EXPANDER_ADDRESS_0, &int_pin));
+  GPIOAddress int_pin = { GPIO_PORT_A, 8 };
+  TEST_ASSERT_OK(gpio_expander_init(&s_expander, I2C_PORT_2, GPIO_EXPANDER_ADDRESS_0, &int_pin));
 }
 
 void teardown_test(void) {}

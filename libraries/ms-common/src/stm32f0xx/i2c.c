@@ -99,7 +99,7 @@ StatusCode i2c_read(I2CPort i2c, I2CAddress addr, uint8_t *rx_data, size_t rx_le
   }
   I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET);
 
-  prv_transfer(i2c, addr, true, rx_data, rx_len, I2C_AutoEnd_Mode);
+  status_ok_or_return(prv_transfer(i2c, addr, true, rx_data, rx_len, I2C_AutoEnd_Mode));
 
   I2C_STOP(s_port[i2c].base);
 
@@ -112,7 +112,7 @@ StatusCode i2c_write(I2CPort i2c, I2CAddress addr, uint8_t *tx_data, size_t tx_l
   }
   I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET);
 
-  prv_transfer(i2c, addr, false, tx_data, tx_len, I2C_AutoEnd_Mode);
+  status_ok_or_return(prv_transfer(i2c, addr, false, tx_data, tx_len, I2C_AutoEnd_Mode));
 
   I2C_STOP(s_port[i2c].base);
 
@@ -126,8 +126,8 @@ StatusCode i2c_read_reg(I2CPort i2c, I2CAddress addr, uint8_t reg, uint8_t *rx_d
   }
   I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET);
 
-  prv_transfer(i2c, addr, false, &reg, sizeof(reg), I2C_SoftEnd_Mode);
-  prv_transfer(i2c, addr, true, rx_data, rx_len, I2C_AutoEnd_Mode);
+  status_ok_or_return(prv_transfer(i2c, addr, false, &reg, sizeof(reg), I2C_SoftEnd_Mode));
+  status_ok_or_return(prv_transfer(i2c, addr, true, rx_data, rx_len, I2C_AutoEnd_Mode));
 
   I2C_STOP(s_port[i2c].base);
 
@@ -141,8 +141,8 @@ StatusCode i2c_write_reg(I2CPort i2c, I2CAddress addr, uint8_t reg, uint8_t *tx_
   }
   I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET);
 
-  prv_transfer(i2c, addr, false, &reg, sizeof(reg), I2C_SoftEnd_Mode);
-  prv_transfer(i2c, addr, false, tx_data, tx_len, I2C_AutoEnd_Mode);
+  status_ok_or_return(prv_transfer(i2c, addr, false, &reg, sizeof(reg), I2C_SoftEnd_Mode));
+  status_ok_or_return(prv_transfer(i2c, addr, false, tx_data, tx_len, I2C_AutoEnd_Mode));
 
   I2C_STOP(s_port[i2c].base);
 
