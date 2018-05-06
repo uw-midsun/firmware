@@ -39,7 +39,8 @@ static void prv_socket_handler(struct X86SocketThread *thread, int client_fd, co
 
   for (size_t i = 0; i < cmd_thread->num_handlers; i++) {
     if (strcmp(cmd_thread->handlers[i].cmd, cmd_word) == 0) {
-      cmd_thread->handlers[i].fn(client_fd, cmd_word, args, num_args, cmd_thread->handlers[i].context);
+      cmd_thread->handlers[i].fn(client_fd, cmd_word, args, num_args,
+                                 cmd_thread->handlers[i].context);
       break;
     }
   }
@@ -56,11 +57,8 @@ StatusCode x86_cmd_register_handler(const char *cmd, X86CmdHandlerFn fn, void *c
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  thread->handlers[thread->num_handlers] = (X86CmdHandler) {
-    .cmd = cmd,
-    .fn = fn,
-    .context = context
-  };
+  thread->handlers[thread->num_handlers] =
+      (X86CmdHandler){ .cmd = cmd, .fn = fn, .context = context };
   thread->num_handlers++;
 
   return STATUS_CODE_OK;
