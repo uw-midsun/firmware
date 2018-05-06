@@ -75,6 +75,7 @@ void test_pedal_calibration(void) {
   Event e;
   LOG_DEBUG("Starting calibration\n");
   prv_step_event(INPUT_EVENT_PEDAL_CALIBRATION_FULL_BRAKE);
+  LOG_DEBUG("Moving to full throttle stage.\n");
   delay_s(5);
   prv_step_event(INPUT_EVENT_PEDAL_CALIBRATION_FULL_THROTTLE);
   delay_s(5);

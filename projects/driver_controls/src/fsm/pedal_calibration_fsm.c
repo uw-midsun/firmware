@@ -81,6 +81,7 @@ static void prv_continue_validation_output(FSM *fsm, const Event *e, void *conte
 
   LOG_DEBUG("%s zone: %d / %d OR %d percent\n", zones[position.zone], position.numerator,
             THROTTLE_DENOMINATOR, position.numerator * 100 / THROTTLE_DENOMINATOR);
+
   // Raise an event to continue staying in validation.
   event_raise(INPUT_EVENT_PEDAL_CALIBRATION_CONTINUE_VALIDATION, 0);
 }

@@ -108,20 +108,30 @@ static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) 
 
   InputEvent pedal_events[NUM_THROTTLE_ZONES] = { INPUT_EVENT_PEDAL_BRAKE, INPUT_EVENT_PEDAL_COAST,
                                                   INPUT_EVENT_PEDAL_ACCEL };
+
   bool fault = true;
-  if (storage->reading_updated_flag &&
-      prv_channels_synced(reading_main, reading_secondary, storage)) {
-    for (ThrottleZone zone = THROTTLE_ZONE_BRAKE; zone < NUM_THROTTLE_ZONES; zone++) {
-      if (prv_reading_within_zone(reading_main, zone, storage)) {
-        fault = false;
-        storage->position.zone = zone;
-        storage->position.numerator = prv_get_numerator_zone(reading_main, zone, storage);
-        storage->reading_ok_flag = true;
-        event_raise(pedal_events[zone], storage->position.numerator);
-        break;
+
+  if (storage->reading_updated_flag) {
+    if (prv_channels_synced(reading_main, reading_secondary, storage)) {
+      storage->desync_counter = 0;
+    } else {
+      storage->desync_counter++;
+    }
+
+    if (storage->desync_counter < THROTTLE_MAX_DESYNC_COUNT) {
+      for (ThrottleZone zone = THROTTLE_ZONE_BRAKE; zone < NUM_THROTTLE_ZONES; zone++) {
+        if (prv_reading_within_zone(reading_main, zone, storage)) {
+          fault = false;
+          storage->position.zone = zone;
+          storage->position.numerator = prv_get_numerator_zone(reading_main, zone, storage);
+          storage->reading_ok_flag = true;
+          event_raise(pedal_events[zone], storage->position.numerator);
+          break;
+        }
       }
     }
   }
+
   if (fault) {
     storage->reading_ok_flag = false;
     storage->position.zone = NUM_THROTTLE_ZONES;
