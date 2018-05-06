@@ -84,11 +84,16 @@ program gdb:
 	@echo "Running command through SSH"
 	@$(SSH_CMD)
 
+ifneq (,$(TEST))
 run_ssh:
 	@echo "Running command through SSH"
 	@$(SSH_CMD:make=make -o $(GDB_TARGET))
+else
+run_ssh: unsupported
+endif
 
 unsupported:
-	@echo "STM32F0xx test_all not supported on macOS host" && false
+	@echo "Please specify a single test to run."
+	@echo "Consecutive tests for STM32F0xx are not supported on a macOS host." && false
 
 endif
