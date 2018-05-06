@@ -47,7 +47,7 @@ typedef struct PedalCalibrationSettings {
 } PedalCalibrationSettings;
 
 typedef struct PedalCalibrationStorage {
-  // TODO: remove from this
+  // TODO(ELEC-382): remove from this
   ThrottleStorage throttle;
   PedalCalibrationSettings settings;
   // Obtained ranges from reading the pedal in the two states. On each channel, connecting the

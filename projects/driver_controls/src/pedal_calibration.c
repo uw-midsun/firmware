@@ -60,7 +60,7 @@ static void prv_adc_callback(Ads1015Channel ads1015_channel, void *context) {
 // Initializes the calibration storage. Requires initialized Ads1015storage.
 StatusCode pedal_calibration_init(PedalCalibrationStorage *storage,
                                   PedalCalibrationSettings *settings) {
-  // TODO: validate inputs
+  // TODO(ELEC-382): validate inputs
   memset(storage, 0, sizeof(*storage));
   storage->settings = *settings;
 
@@ -185,7 +185,7 @@ StatusCode pedal_calibration_calculate(PedalCalibrationStorage *storage) {
 
   // Tolerance should be half of the band's width assuming the width is constant.
   // In this case we take the maximum of widths at both ends multiplied by the given safety factor.
-  // TODO: this math is wrong - hardcoded value for now
+  // TODO(ELEC-382): this math is wrong - hardcoded value for now
   throttle_calibration->tolerance = 20;
 
   return STATUS_CODE_OK;
