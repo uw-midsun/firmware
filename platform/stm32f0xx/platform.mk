@@ -80,9 +80,13 @@ test_all: unsupported
 test: run_ssh
 
 # Host is macOS so we can't pass the programmer through - do it all through SSH
-program gdb run_ssh:
+program gdb:
 	@echo "Running command through SSH"
 	@$(SSH_CMD)
+
+run_ssh:
+	@echo "Running command through SSH"
+	@$(SSH_CMD:make=make -o $(GDB_TARGET))
 
 unsupported:
 	@echo "STM32F0xx test_all not supported on macOS host" && false
