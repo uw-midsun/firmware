@@ -1,5 +1,6 @@
 #pragma once
 
+#include "lights_gpio.h"
 // This module holds the storage for lights_gpio when operating on the front board.
 
 // All the front board peripherals.
