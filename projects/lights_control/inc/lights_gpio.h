@@ -1,8 +1,8 @@
 #pragma once
 
 #include "event_queue.h"
-#include "status.h"
 #include "gpio.h"
+#include "status.h"
 
 // lights_gpio requires lights_gpio_config to be initialized first.
 
@@ -21,7 +21,7 @@ typedef enum {
 typedef enum {
   LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
-  NUM_LIGHTS_GPIO_POLARITIES 
+  NUM_LIGHTS_GPIO_POLARITIES
 } LightsGPIOPolarity;
 
 // Bitset where every bit maps to a peripheral.
@@ -39,8 +39,8 @@ typedef struct LightsGPIOEventMapping {
 } LightsGPIOEventMapping;
 
 typedef struct LightsGPIO {
-  LightsGPIOPeripheral *peripherals; 
-  uint8_t num_peripherals; // Number of peripherals
+  LightsGPIOPeripheral *peripherals;
+  uint8_t num_peripherals;  // Number of peripherals
   LightsGPIOEventMapping *event_mappings;
   uint8_t num_event_mappings;
 } LightsGPIO;
@@ -51,4 +51,3 @@ StatusCode lights_gpio_init(const LightsGPIO *lights_gpio);
 // Sets the state of every peripheral related to a specific event. Turns off the peripheral light
 // if event's data is 0, and on if event's data is anything else.
 StatusCode lights_gpio_process_event(const LightsGPIO *lights_gpio, const Event *e);
-
