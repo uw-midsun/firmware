@@ -4,9 +4,9 @@
 
 static char s_hex[] = "0123456789ABCDEF";
 
-// out must be a pointer to at least 3 chars
+// Out must be a pointer to at least 3 chars
 void prv_int_to_hex(uint8_t checksum, char *out) {
-  // we know that it'll be a 2 digit hex number since the checksum is 8-bit
+  // We know that it'll be a 2 digit hex number since the checksum is 8-bit
   out[0] = s_hex[checksum >> 0x4];
   out[1] = s_hex[checksum & 0xF];
   out[2] = '\0';
@@ -29,6 +29,9 @@ bool nmea_compare_checksum(char *message, size_t message_len) {
   // We expect the last 2 characters in the message to be the sent checksum
   // Hence, the 3rd last character should be '*' (we subtract 3 instead of 2 to
   // account for \0)
+  if (message_len < 3) {
+    return false;
+  }
   char *received = message + message_len - 3;
   if (*(received - 1) != '*') {
     // return false if there's no checksum in the message
