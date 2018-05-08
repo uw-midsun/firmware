@@ -12,7 +12,6 @@ void prv_int_to_hex(uint8_t checksum, char *out) {
   out[2] = '\0';
 }
 
-
 // The checksum is calculated by taking the XOR of all characters between
 // (but not including) the '$' and '*' character
 // An example NMEA message is "$GPGLL,2503.6319,N,12136.0099,E,053740.000,A,A*52"
