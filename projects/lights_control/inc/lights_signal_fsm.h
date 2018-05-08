@@ -11,9 +11,9 @@
 
 // Command definitions to turn ON and OFF signal lights.
 typedef enum {
-  LIGHTS_SIGNAL_CMD_OFF = 0,
-  LIGHTS_SIGNAL_CMD_ON,
-  NUM_LIGHTS_SIGNAL_CMDS
+  LIGHTS_SIGNAL_FSM_CMD_OFF = 0,
+  LIGHTS_SIGNAL_FSM_CMD_ON,
+  NUM_LIGHTS_SIGNAL_FSM_CMDS
 } LightsSignalFSMCmd;
 
 // Instance of lights signal.
