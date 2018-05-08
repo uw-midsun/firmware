@@ -1,10 +1,7 @@
 // # The NMEA message format
 // A given NMEA message starts with $, then contains various comma-seperated values,
-// followed by a *, and then the message checksum (which is a 2-digit hex number)
-// The checksum is calculated by taking the XOR of all characters between
-// (but not including) the '$' and '*' character
-// An example NMEA message is "$GPGLL,2503.6319,N,12136.0099,E,053740.000,A,A*52"
-// In the message above, the checksum would be 52
+// followed by a *, and then the message checksum (which is a 2-digit hex number).
+// This header will aid in parsing the NMEA messages sent by the GPS.
 
 #pragma once
 #include <stdbool.h>
