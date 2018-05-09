@@ -45,10 +45,10 @@ OPENOCD_CFG := -s $(OPENOCD_SCRIPT_DIR) \
 
 ifeq (,$(MACOS_SSH_USERNAME))
 
-program: $(GDB_TARGET:$(PLATFORM_EXT)=.bin)
+program: $(TARGET_BINARY:$(PLATFORM_EXT)=.bin)
 	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash $<" -c shutdown
 
-gdb: $(GDB_TARGET)
+gdb: $(TARGET_BINARY)
 	@pkill $(OPENOCD) || true
 	@setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
 	@$(GDB) $< -x "$(SCRIPT_DIR)/gdb_flash"
