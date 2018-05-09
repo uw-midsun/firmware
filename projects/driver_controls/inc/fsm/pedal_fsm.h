@@ -8,11 +8,4 @@
 #include "event_arbiter.h"
 #include "fsm.h"
 
-typedef enum {
-  PEDAL_FSM_STATE_BRAKE,
-  PEDAL_FSM_STATE_COAST,
-  PEDAL_FSM_STATE_DRIVING,
-  PEDAL_FSM_STATE_CRUISE_CONTROL
-} PedalFSMState;
-
 StatusCode pedal_fsm_init(FSM *fsm, EventArbiterStorage *storage);
