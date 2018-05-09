@@ -6,71 +6,52 @@
 
 // Peripheral definitions
 static const LightsGPIOPeripheral s_front_peripherals[] = {
-  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_HORN] =
-      {
-          //
-          .address = { .port = GPIO_PORT_B, .pin = 11 },  //
-          .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,    //
-      },                                                  //
-  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_HIGH_BEAMS_RIGHT] =
-      {
-          //
-          .address = { .port = GPIO_PORT_B, .pin = 1 },  //
-          .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,   //
-      },                                                 //
-  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_HIGH_BEAMS_LEFT] =
-      {
-          //
-          .address = { .port = GPIO_PORT_B, .pin = 15 },  //
-          .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,    //
-      },                                                  //
-  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_LOW_BEAMS_RIGHT] =
-      {
-          //
-          .address = { .port = GPIO_PORT_B, .pin = 2 },  //
-          .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,   //
-      },                                                 //
-  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_LOW_BEAMS_LEFT] =
-      {
-          //
-          .address = { .port = GPIO_PORT_A, .pin = 8 },  //
-          .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,   //
-      },                                                 //
-  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_DRL_RIGHT] =
-      {
-          //
-          .address = { .port = GPIO_PORT_B, .pin = 0 },  //
-          .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,   //
-      },                                                 //
-  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_DRL_LEFT] =
-      {
-          //
-          .address = { .port = GPIO_PORT_A, .pin = 10 },  //
-          .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,    //
-      },                                                  //
-  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_SIDE_LEFT_INDICATOR] =
-      {
-          .address = { .port = GPIO_PORT_B, .pin = 14 },  //
-          .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,    //
-      },                                                  //
-  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_LEFT_TURN] =
-      {
-          //
-          .address = { .port = GPIO_PORT_A, .pin = 9 },  //
-          .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,   //
-      },                                                 //
-  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_SIDE_RIGHT_INDICATOR] =
-      {
-          //
-          .address = { .port = GPIO_PORT_B, .pin = 12 },  //
-          .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,    //
-      },                                                  //
-  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_RIGHT_TURN] =
-      {
-          //
-          .address = { .port = GPIO_PORT_A, .pin = 10 },  //
-          .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,    //
-      },                                                  //
+  // clang-format off
+  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_HORN] = {
+    .address = { .port = GPIO_PORT_B, .pin = 11 },
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+  },
+  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_HIGH_BEAMS_RIGHT] = {
+    .address = { .port = GPIO_PORT_B, .pin = 1 },
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+  },
+  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_HIGH_BEAMS_LEFT] = {
+    .address = { .port = GPIO_PORT_B, .pin = 15 },
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+  },
+  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_LOW_BEAMS_RIGHT] = {
+    .address = { .port = GPIO_PORT_B, .pin = 2 },
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+  },
+  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_LOW_BEAMS_LEFT] = {
+    .address = { .port = GPIO_PORT_A, .pin = 8 },
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+  },
+  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_DRL_RIGHT] = {
+    .address = { .port = GPIO_PORT_B, .pin = 0 },
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+  },
+  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_DRL_LEFT] = {
+    .address = { .port = GPIO_PORT_A, .pin = 10 },
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+  },
+  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_SIDE_LEFT_INDICATOR] = {
+    .address = { .port = GPIO_PORT_B, .pin = 14 },
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+  },
+  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_LEFT_TURN] = {
+    .address = { .port = GPIO_PORT_A, .pin = 9 },
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+  },
+  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_SIDE_RIGHT_INDICATOR] = {
+    .address = { .port = GPIO_PORT_B, .pin = 12 },
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+  },
+  [LIGHTS_GPIO_CONFIG_FRONT_PERIPHERAL_RIGHT_TURN] = {
+    .address = { .port = GPIO_PORT_A, .pin = 10 },
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+  },
+  // clang-format off
 };
 
 // An array containing event-to-peripheral-set mappings.

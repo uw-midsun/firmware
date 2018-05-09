@@ -33,36 +33,31 @@ typedef enum {
 
 // Mock peripheral gpio peripheral definitions.
 static const LightsGPIOPeripheral s_mock_peripherals[] = {
-  [TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_1] =
-      {
-          //
-          .address = { .port = GPIO_PORT_A, .pin = 0 },  //
-          .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,   //
-      },                                                 //
-  [TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_2] =
-      {
-          //
-          .address = { .port = GPIO_PORT_B, .pin = 0 },  //
-          .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,   //
-      },                                                 //
-  [TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_3] =
-      {
-          //
-          .address = { .port = GPIO_PORT_A, .pin = 4 },  //
-          .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,  //
-      },                                                 //
-  [TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_4] =
-      {
-          //
-          .address = { .port = GPIO_PORT_B, .pin = 1 },  //
-          .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,  //
-      },                                                 //
-  [TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_5] =
-      {
-          //
-          .address = { .port = GPIO_PORT_A, .pin = 3 },  //
-          .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,   //
-      },                                                 //
+  // clang-format and lint are inconsistent here. clang-format puts a line break before the { in
+  // every entry, while lint does not allow that, and requires that { be put in the end of the
+  // last line.
+  // clang-format off
+  [TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_1] = {
+    .address = { .port = GPIO_PORT_A, .pin = 0 },
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+  },
+  [TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_2] = {
+    .address = { .port = GPIO_PORT_B, .pin = 0 },
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+  },
+  [TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_3] = {
+    .address = { .port = GPIO_PORT_A, .pin = 4 },
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
+  },
+  [TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_4] = {
+    .address = { .port = GPIO_PORT_B, .pin = 1 },
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
+  },
+  [TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_5] = {
+    .address = { .port = GPIO_PORT_A, .pin = 3 },
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+  },
+  // clang-format on
 };
 
 // Array of event-to-peripheral-set mappings.
