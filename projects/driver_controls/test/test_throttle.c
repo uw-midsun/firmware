@@ -27,8 +27,8 @@ static const ThrottleZoneThreshold s_threshes_main[NUM_THROTTLE_ZONES] = {
   { .min = 1065, .max = 1410 }  // Accel zone
 };
 static const ThrottleLine s_line[NUM_THROTTLE_CHANNELS] = {
-  { .full_brake_reading = 325, .full_throttle_reading = 1405 },  // Main channel
-  { .full_brake_reading = 160, .full_throttle_reading = 710 }    //  Secondary channel
+  { .full_brake_reading = 325, .full_accel_reading = 1405 },  // Main channel
+  { .full_brake_reading = 160, .full_accel_reading = 710 }    //  Secondary channel
 };
 #define TEST_THROTTLE_TOLERANCE 10
 
@@ -49,6 +49,8 @@ static void prv_set_calibration_data(ThrottleCalibrationData *data) {
          NUM_THROTTLE_ZONES * sizeof(ThrottleZoneThreshold));
   memcpy(data->line, s_line, NUM_THROTTLE_CHANNELS * sizeof(ThrottleLine));
   data->tolerance = TEST_THROTTLE_TOLERANCE;
+  data->channel_main = TEST_THROTTLE_ADC_CHANNEL_MAIN;
+  data->channel_secondary = TEST_THROTTLE_ADC_CHANNEL_SECONDARY;
 }
 
 void setup_test(void) {
@@ -69,38 +71,22 @@ void setup_test(void) {
   event_queue_init();
   ads1015_init(&s_ads1015_storage, TEST_ADS1015_I2C_PORT, TEST_ADS1015_ADDR, &ready_pin);
   prv_set_calibration_data(&s_calibration_data);
-  throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                TEST_THROTTLE_ADC_CHANNEL_MAIN, TEST_THROTTLE_ADC_CHANNEL_SECONDARY);
+  throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage);
 }
 
 void teardown_test(void) {}
 
 void test_throttle_init_invalid_args(void) {
   // Test with valid arguments.
-  TEST_ASSERT_EQUAL(
-      STATUS_CODE_OK,
-      throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                    TEST_THROTTLE_ADC_CHANNEL_MAIN, TEST_THROTTLE_ADC_CHANNEL_SECONDARY));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK,
+                    throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage));
   // Check for null pointers.
-  TEST_ASSERT_EQUAL(
-      STATUS_CODE_INVALID_ARGS,
-      throttle_init(NULL, &s_calibration_data, &s_ads1015_storage, TEST_THROTTLE_ADC_CHANNEL_MAIN,
-                    TEST_THROTTLE_ADC_CHANNEL_SECONDARY));
-  TEST_ASSERT_EQUAL(
-      STATUS_CODE_INVALID_ARGS,
-      throttle_init(&s_throttle_storage, NULL, &s_ads1015_storage, TEST_THROTTLE_ADC_CHANNEL_MAIN,
-                    TEST_THROTTLE_ADC_CHANNEL_SECONDARY));
-  TEST_ASSERT_EQUAL(
-      STATUS_CODE_INVALID_ARGS,
-      throttle_init(&s_throttle_storage, &s_calibration_data, NULL, TEST_THROTTLE_ADC_CHANNEL_MAIN,
-                    TEST_THROTTLE_ADC_CHANNEL_SECONDARY));
-  // Check for invalid channels.
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
-                    throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                                  NUM_ADS1015_CHANNELS, TEST_THROTTLE_ADC_CHANNEL_SECONDARY));
+                    throttle_init(NULL, &s_calibration_data, &s_ads1015_storage));
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
-                    throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                                  TEST_THROTTLE_ADC_CHANNEL_MAIN, NUM_ADS1015_CHANNELS));
+                    throttle_init(&s_throttle_storage, NULL, &s_ads1015_storage));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
+                    throttle_init(&s_throttle_storage, &s_calibration_data, NULL));
 }
 
 void test_throttle_get_pos_invalid_args(void) {
@@ -217,10 +203,10 @@ void test_throttle_secondary_reading_on_edge_valid(void) {
   // This position happens to be in coast zone.
 
   // Secondary reading exactly on the upper edge.
-  s_mocked_reading_main = (s_line[THROTTLE_CHANNEL_MAIN].full_throttle_reading +
+  s_mocked_reading_main = (s_line[THROTTLE_CHANNEL_MAIN].full_accel_reading +
                            s_line[THROTTLE_CHANNEL_MAIN].full_brake_reading) /
                           2;
-  s_mocked_reading_secondary = (s_line[THROTTLE_CHANNEL_SECONDARY].full_throttle_reading +
+  s_mocked_reading_secondary = (s_line[THROTTLE_CHANNEL_SECONDARY].full_accel_reading +
                                 s_line[THROTTLE_CHANNEL_SECONDARY].full_brake_reading) /
                                    2 +
                                TEST_THROTTLE_TOLERANCE;
@@ -231,10 +217,10 @@ void test_throttle_secondary_reading_on_edge_valid(void) {
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_COAST, e.id);
 
   // Secondary reading exactly on the lower edge.
-  s_mocked_reading_main = (s_line[THROTTLE_CHANNEL_MAIN].full_throttle_reading +
+  s_mocked_reading_main = (s_line[THROTTLE_CHANNEL_MAIN].full_accel_reading +
                            s_line[THROTTLE_CHANNEL_MAIN].full_brake_reading) /
                           2;
-  s_mocked_reading_secondary = (s_line[THROTTLE_CHANNEL_SECONDARY].full_throttle_reading +
+  s_mocked_reading_secondary = (s_line[THROTTLE_CHANNEL_SECONDARY].full_accel_reading +
                                 s_line[THROTTLE_CHANNEL_SECONDARY].full_brake_reading) /
                                    2 -
                                TEST_THROTTLE_TOLERANCE;
@@ -254,10 +240,10 @@ void test_throttle_secondary_reading_on_edge_invalid(void) {
   // This position happens to be in coast zone.
 
   // Secondary reading one unit above the upper edge.
-  s_mocked_reading_main = (s_line[THROTTLE_CHANNEL_MAIN].full_throttle_reading +
+  s_mocked_reading_main = (s_line[THROTTLE_CHANNEL_MAIN].full_accel_reading +
                            s_line[THROTTLE_CHANNEL_MAIN].full_brake_reading) /
                           2;
-  s_mocked_reading_secondary = (s_line[THROTTLE_CHANNEL_SECONDARY].full_throttle_reading +
+  s_mocked_reading_secondary = (s_line[THROTTLE_CHANNEL_SECONDARY].full_accel_reading +
                                 s_line[THROTTLE_CHANNEL_SECONDARY].full_brake_reading) /
                                    2 +
                                TEST_THROTTLE_TOLERANCE + 1;
@@ -267,10 +253,10 @@ void test_throttle_secondary_reading_on_edge_invalid(void) {
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_FAULT, e.id);
 
   // Secondary reading one unit below the lower edge.
-  s_mocked_reading_main = (s_line[THROTTLE_CHANNEL_MAIN].full_throttle_reading +
+  s_mocked_reading_main = (s_line[THROTTLE_CHANNEL_MAIN].full_accel_reading +
                            s_line[THROTTLE_CHANNEL_MAIN].full_brake_reading) /
                           2;
-  s_mocked_reading_secondary = (s_line[THROTTLE_CHANNEL_SECONDARY].full_throttle_reading +
+  s_mocked_reading_secondary = (s_line[THROTTLE_CHANNEL_SECONDARY].full_accel_reading +
                                 s_line[THROTTLE_CHANNEL_SECONDARY].full_brake_reading) /
                                    2 -
                                TEST_THROTTLE_TOLERANCE - 1;

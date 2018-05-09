@@ -9,9 +9,9 @@
 // The module also detects faulty events such as disconnections or ADS1015 malfunctioning which
 // could result in reading invalid numbers. INPUT_EVENT_PEDAL_FAULT would be raised in such cases.
 //
-// To use the module, init the ADS1015 for the pedal and pass its Ads1015Storage to throttle_init,
-// along with the two channels the pedal is connected to. Also pass a ThrottleCalibrationData that
-// has been calibrated. This structure holds zone thresholds for determining the state of the pedal
+// To use the module, init the ADS1015 for the pedal and pass its Ads1015Storage to throttle_init.
+// Also pass a ThrottleCalibrationData that has been calibrated.
+// This structure holds zone thresholds for determining the state of the pedal
 // based on the reading from main channel, and two lines that approximate the voltage-position
 // graph for each channel. The main line is the main source for obtaining the position, and the
 // second line along with a tolerance is used to check if the readings agree. It is assumed that
@@ -28,6 +28,9 @@
 
 // The time period between every update of the pedal readings.
 #define THROTTLE_UPDATE_PERIOD_MS 10
+// Arbitrary maximum desync counter - this is used to handle rapid changes in pedal position
+// Currently ~100ms
+#define THROTTLE_MAX_DESYNC_COUNT 10
 
 // The range used for pedal's position in within a zone or the whole range.
 #define THROTTLE_DENOMINATOR (1 << 12)
@@ -62,7 +65,7 @@ typedef struct ThrottleZoneThreshold {
 // Models a voltage-position line using the readings at extreme ends.
 typedef struct ThrottleLine {
   int16_t full_brake_reading;     // Reading for pedal not pressed.
-  int16_t full_throttle_reading;  // Reading for pedal fully pressed.
+  int16_t full_accel_reading;  // Reading for pedal fully pressed.
 } ThrottleLine;
 
 // Data that needs to be calibrated.
@@ -74,23 +77,23 @@ typedef struct ThrottleCalibrationData {
   // Tolerance can be thought of as 1/2 of width of a band around the secondary line,
   // which describes a range of possible "secondary readings" for every single "main reading".
   int16_t tolerance;
+  Ads1015Channel channel_main;
+  Ads1015Channel channel_secondary;
 } ThrottleCalibrationData;
 
 typedef struct ThrottleStorage {
   Ads1015Storage *pedal_ads1015_storage;
+  ThrottleCalibrationData *calibration_data;
+  ThrottlePosition position;
+  uint32_t desync_counter;
   bool reading_updated_flag;
   bool reading_ok_flag;
-  Ads1015Channel channel_main;
-  Ads1015Channel channel_secondary;
-  ThrottlePosition position;
-  ThrottleCalibrationData *calibration_data;
 } ThrottleStorage;
 
 // Initializes the throttle and sets calibration data.
 // Ads1015Storage *pedal_ads1015_storage should be initialized in ads1015_init beforehand.
 StatusCode throttle_init(ThrottleStorage *storage, ThrottleCalibrationData *calibration_data,
-                         Ads1015Storage *pedal_ads1015_storage, Ads1015Channel channel_main,
-                         Ads1015Channel channel_secondary);
+                         Ads1015Storage *pedal_ads1015_storage);
 
 // Gets the current position of the pedal (writes to ThrottlePosition *position).
 StatusCode throttle_get_position(ThrottleStorage *storage, ThrottlePosition *position);
