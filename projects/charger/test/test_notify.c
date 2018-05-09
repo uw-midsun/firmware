@@ -30,9 +30,10 @@ static CANRxHandler s_rx_handlers[TEST_NOTIFY_NUM_CAN_RX_HANDLERS];
 // GenericCanRxCb
 static void prv_callback(const GenericCanMsg *msg, void *context) {
   (void)msg;
-  uint8_t *allowed = context;
-  if (*allowed < 2) {
-    CAN_TRANSMIT_CHARGING_PERMISSION(*allowed);
+  uint8_t *state = context;
+  if (*state < 2) {
+    // TODO(ELEC-355): Convert to set state message when codegen-tooling is updated.
+    CAN_TRANSMIT_CHARGING_PERMISSION(*state);
   }
 }
 
@@ -145,7 +146,21 @@ void test_permissions(void) {
   } while (status != STATUS_CODE_OK);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_START_CHARGING, e.id);
 
+  // Send a singular disconnect message.
+  s_response = 3;
   notify_cease();
+  // TX
+  do {
+    status = event_process(&e);
+  } while (status != STATUS_CODE_OK);
+  TEST_ASSERT_EQUAL(CHARGER_EVENT_CAN_TX, e.id);
+  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  // RX
+  do {
+    status = event_process(&e);
+  } while (status != STATUS_CODE_OK);
+  TEST_ASSERT_EQUAL(CHARGER_EVENT_CAN_RX, e.id);
+  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
 
   delay_ms(1100);
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));

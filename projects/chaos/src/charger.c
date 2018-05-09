@@ -8,42 +8,37 @@
 #include "can_unpack.h"
 #include "status.h"
 
-typedef enum {
-  CHARGER_STATUS_DISCONNECTED = 0,
-  CHARGER_STATUS_CONNECTED,
-  NUM_CHARGER_STATUSES,
-} ChargerStatus;
-
 typedef struct ChargerStorage {
-  ChargerState state;
-  ChargerStatus status;
+  EEChargerSetRelayState relay_state;
+  EEChargerConnState conn_state;
 } ChargerStorage;
 
 static ChargerStorage s_storage;
 
 // CanRxHandlerCb
-static StatusCode prv_handle_charger_status(const CANMessage *msg, void *context,
-                                            CANAckStatus *ack_reply) {
+static StatusCode prv_handle_charger_conn_state(const CANMessage *msg, void *context,
+                                                CANAckStatus *ack_reply) {
   (void)context;
   (void)ack_reply;
-  CAN_UNPACK_CHARGING_REQ(msg);
-  charger_set_state(s_storage.state);
+  CAN_UNPACK_CHARGER_CONN_STATE(msg, &s_storage.conn_state);
+  charger_set_state(s_storage.relay_state);
 }
 
 StatusCode charger_init(void) {
-  s_storage.state = CHARGER_STATE_DISABLED;
-  s_storage.status = CHARGER_STATUS_DISCONNECTED;
+  s_storage.relay_state = EE_CHARGER_SET_RELAY_STATE_DISABLED;
+  s_storage.conn_state = EE_CHARGER_CONN_STATE_DISCONNECTED;
 
-  return can_register_rx_handler(SYSTEM_CAN_MESSAGE_CHARGING_REQ, prv_handle_charger_status, NULL);
+  return can_register_rx_handler(SYSTEM_CAN_MESSAGE_CHARGER_CONN_STATE,
+                                 prv_handle_charger_conn_state, NULL);
 }
 
-StatusCode charger_set_state(ChargerState state) {
-  if (state >= NUM_CHARGER_STATUSES) {
+StatusCode charger_set_state(EEChargerSetRelayState state) {
+  if (state >= NUM_EE_CHARGER_SET_RELAY_STATES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
-  s_storage.state = state;
-  if (s_storage.status == CHARGER_STATUS_CONNECTED) {
-    return CAN_TRANSMIT_CHARGING_PERMISSION(state);
+  s_storage.relay_state = state;
+  if (s_storage.conn_state == EE_CHARGER_CONN_STATE_CONNECTED) {
+    return CAN_TRANSMIT_CHARGER_SET_RELAY_STATE(state);
   }
   return STATUS_CODE_OK;
 }
