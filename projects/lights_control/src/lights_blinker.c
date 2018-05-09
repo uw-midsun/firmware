@@ -65,9 +65,9 @@ StatusCode lights_blinker_deactivate(LightsBlinker *blinker) {
   if (!prv_lights_blinker_is_active(blinker)) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Blinker already inactive");
   }
+  soft_timer_cancel(blinker->timer_id);
   blinker->state = LIGHTS_BLINKER_STATE_OFF;
   // Cancel the scheduled timer.
-  soft_timer_cancel(blinker->timer_id);
   blinker->timer_id = SOFT_TIMER_INVALID_TIMER;
   status_ok_or_return(prv_raise_blink_event(blinker->event_id, LIGHTS_BLINKER_STATE_OFF));
   return STATUS_CODE_OK;
