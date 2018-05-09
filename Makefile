@@ -20,6 +20,7 @@
 #   make test [PL] [PR|LI] [TE] - Builds and runs the specified unit test, assuming all tests if TE is not defined
 #   make format - Formats all non-vendor code
 #   make gdb [PL] [PR|LI] [TE] - Builds and runs the specified unit test and connects an instance of GDB
+#   make update_codegen - Update the codegen-tooling release
 # Platform specific:
 #   make program [PL=stm32f0xx] [PR] [PB] - Programs and runs the project through OpenOCD
 #   make gdb [PL=stm32f0xx] [PL] [PR] [PB]
