@@ -45,6 +45,7 @@ void test_x86_socket_connect(void) {
   volatile bool received = false;
   TEST_ASSERT_OK(x86_socket_init(&s_thread, TEST_X86_SOCKET_NAME, prv_handler, &received));
 
+  // Delay so we hopefully start the client after the RX server thread has actually initialized.
   LOG_DEBUG("Hopefully delaying a bit for the RX server to start\n");
   for (volatile uint32_t i = 0; i < 100000000; i++) {
   }
