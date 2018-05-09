@@ -1,5 +1,4 @@
 #include "lights_signal_fsm.h"
-#include <stdio.h>
 
 // No signals are active.
 FSM_DECLARE_STATE(state_none);
