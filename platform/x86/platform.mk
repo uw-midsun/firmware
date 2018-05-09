@@ -68,7 +68,7 @@ endif
 run: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT) socketcan
 	@$(ENV_VARS) $<
 
-gdb: $(GDB_TARGET) socketcan
+gdb: $(TARGET_BINARY) socketcan
 	@$(ENV_VARS) $(GDB) $<
 
 test_all: socketcan
