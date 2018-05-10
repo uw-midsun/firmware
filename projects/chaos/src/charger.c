@@ -20,12 +20,13 @@ static StatusCode prv_handle_charger_conn_state(const CANMessage *msg, void *con
                                                 CANAckStatus *ack_reply) {
   (void)context;
   (void)ack_reply;
-  CAN_UNPACK_CHARGER_CONN_STATE(msg, &s_storage.conn_state);
+  CAN_UNPACK_CHARGER_CONN_STATE(msg, (uint8_t *)&s_storage.conn_state);
   charger_set_state(s_storage.relay_state);
+  return STATUS_CODE_OK;
 }
 
 StatusCode charger_init(void) {
-  s_storage.relay_state = EE_CHARGER_SET_RELAY_STATE_DISABLED;
+  s_storage.relay_state = EE_CHARGER_SET_RELAY_STATE_OPEN;
   s_storage.conn_state = EE_CHARGER_CONN_STATE_DISCONNECTED;
 
   return can_register_rx_handler(SYSTEM_CAN_MESSAGE_CHARGER_CONN_STATE,
@@ -38,7 +39,7 @@ StatusCode charger_set_state(EEChargerSetRelayState state) {
   }
   s_storage.relay_state = state;
   if (s_storage.conn_state == EE_CHARGER_CONN_STATE_CONNECTED) {
-    return CAN_TRANSMIT_CHARGER_SET_RELAY_STATE(state);
+    return CAN_TRANSMIT_CHARGER_SET_RELAY_STATE((uint8_t)state);
   }
   return STATUS_CODE_OK;
 }

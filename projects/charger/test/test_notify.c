@@ -10,6 +10,7 @@
 #include "charger_events.h"
 #include "delay.h"
 #include "event_queue.h"
+#include "exported_enums.h"
 #include "generic_can.h"
 #include "generic_can_msg.h"
 #include "generic_can_network.h"
@@ -22,7 +23,7 @@
 #define TEST_NOTIFY_WATCHDOG_PERIOD_S 2
 #define TEST_NOTIFY_NUM_CAN_RX_HANDLERS 4
 
-static uint8_t s_response;
+static EEChargerSetRelayState s_response;
 static GenericCanNetwork s_generic_can;
 static CANStorage s_can_storage;
 static CANRxHandler s_rx_handlers[TEST_NOTIFY_NUM_CAN_RX_HANDLERS];
@@ -30,10 +31,9 @@ static CANRxHandler s_rx_handlers[TEST_NOTIFY_NUM_CAN_RX_HANDLERS];
 // GenericCanRxCb
 static void prv_callback(const GenericCanMsg *msg, void *context) {
   (void)msg;
-  uint8_t *state = context;
-  if (*state < 2) {
-    // TODO(ELEC-355): Convert to set state message when codegen-tooling is updated.
-    CAN_TRANSMIT_CHARGING_PERMISSION(*state);
+  EEChargerSetRelayState *state = context;
+  if (*state < NUM_EE_CHARGER_SET_RELAY_STATES) {
+    CAN_TRANSMIT_CHARGER_SET_RELAY_STATE(*state);
   }
 }
 
@@ -86,15 +86,15 @@ void setup_test(void) {
   TEST_ASSERT_OK(
       can_init(&can_settings, &s_can_storage, s_rx_handlers, TEST_NOTIFY_NUM_CAN_RX_HANDLERS));
   TEST_ASSERT_OK(generic_can_network_init(&s_generic_can));
-  TEST_ASSERT_OK(generic_can_register_rx((GenericCan *)&s_generic_can, prv_callback,
-                                         GENERIC_CAN_EMPTY_MASK, SYSTEM_CAN_MESSAGE_CHARGING_REQ,
-                                         false, &s_response));
+  TEST_ASSERT_OK(
+      generic_can_register_rx((GenericCan *)&s_generic_can, prv_callback, GENERIC_CAN_EMPTY_MASK,
+                              SYSTEM_CAN_MESSAGE_CHARGER_CONN_STATE, false, &s_response));
   can_interval_init();
 }
 
 void teardown_test(void) {}
 
-void test_permissions(void) {
+void test_notify(void) {
   TEST_ASSERT_OK(notify_init((GenericCan *)&s_generic_can, TEST_NOTIFY_PERIOD_S,
                              TEST_NOTIFY_WATCHDOG_PERIOD_S));
 
@@ -102,7 +102,7 @@ void test_permissions(void) {
   StatusCode status = NUM_STATUS_CODES;
 
   // Charge
-  s_response = true;
+  s_response = EE_CHARGER_SET_RELAY_STATE_CLOSE;
   notify_post();
   // Do twice to ensure the watchdog doesn't get triggered
   prv_transmit(1);
@@ -118,7 +118,7 @@ void test_permissions(void) {
   TEST_ASSERT_EQUAL(CHARGER_EVENT_START_CHARGING, e.id);
 
   // Don't charge
-  s_response = false;
+  s_response = EE_CHARGER_SET_RELAY_STATE_OPEN;
   prv_transmit(1);
   do {
     status = event_process(&e);
@@ -126,7 +126,7 @@ void test_permissions(void) {
   TEST_ASSERT_EQUAL(CHARGER_EVENT_STOP_CHARGING, e.id);
 
   // Watchdog
-  s_response = UINT8_MAX;
+  s_response = NUM_EE_CHARGER_SET_RELAY_STATES;
   e.id = UINT16_MAX;
   while (e.id != CHARGER_EVENT_STOP_CHARGING) {
     do {
@@ -139,7 +139,7 @@ void test_permissions(void) {
 
   // Check still running
   // Charge
-  s_response = true;
+  s_response = EE_CHARGER_SET_RELAY_STATE_CLOSE;
   prv_transmit(1);
   do {
     status = event_process(&e);
@@ -147,7 +147,7 @@ void test_permissions(void) {
   TEST_ASSERT_EQUAL(CHARGER_EVENT_START_CHARGING, e.id);
 
   // Send a singular disconnect message.
-  s_response = 3;
+  s_response = NUM_EE_CHARGER_SET_RELAY_STATES;  // Don't respond.
   notify_cease();
   // TX
   do {

@@ -15,21 +15,21 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#define TEST_CHARGER_NUM_CAN_RX_HANDLERS 1
+#define TEST_CHARGER_NUM_CAN_RX_HANDLERS 2
 
 static CANStorage s_storage;
 static CANRxHandler s_rx_handlers[TEST_CHARGER_NUM_CAN_RX_HANDLERS];
 static EEChargerSetRelayState s_expected_state = NUM_EE_CHARGER_SET_RELAY_STATES;
 
-static void prv_charger_can_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_charger_can_handler(const CANMessage *msg, void *context,
+                                          CANAckStatus *ack_reply) {
   (void)context;
   (void)ack_reply;
   EEChargerSetRelayState state;
-  CAN_UNPACK_CHARGER_SET_RELAY_STATE(msg, &state);
+  CAN_UNPACK_CHARGER_SET_RELAY_STATE(msg, (uint8_t *)&state);
   TEST_ASSERT_EQUAL(s_expected_state, state);
+  return STATUS_CODE_OK;
 }
-
-static void prv_transmit() {}
 
 void setup_test(void) {
   interrupt_init();
@@ -48,6 +48,8 @@ void setup_test(void) {
   };
 
   can_init(&settings, &s_storage, s_rx_handlers, TEST_CHARGER_NUM_CAN_RX_HANDLERS);
+  can_register_rx_handler(SYSTEM_CAN_MESSAGE_CHARGER_SET_RELAY_STATE, prv_charger_can_handler,
+                          NULL);
   TEST_ASSERT_OK(charger_init());
 }
 
@@ -84,10 +86,10 @@ void test_charger_state(void) {
     status = event_process(&e);
   } while (status != STATUS_CODE_OK);
   TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
 
   s_expected_state = EE_CHARGER_SET_RELAY_STATE_CLOSE;
   TEST_ASSERT_OK(charger_set_state(s_expected_state));
-  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
   // TX and RX for the command.
   do {
     status = event_process(&e);

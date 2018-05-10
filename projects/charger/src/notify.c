@@ -38,8 +38,7 @@ static void prv_command_rx(const GenericCanMsg *msg, void *context) {
   CANMessage can_msg = { 0 };
   generic_can_msg_to_can_message(msg, &can_msg);
   EEChargerSetRelayState relay_state = 0;
-  // TODO(ELEC-355): Convert to set state message when codegen-tooling is updated.
-  CAN_UNPACK_CHARGER_SET_RELAY_STATE(&can_msg, &relay_state);
+  CAN_UNPACK_CHARGER_SET_RELAY_STATE(&can_msg, (uint8_t *)&relay_state);
   if (relay_state == EE_CHARGER_SET_RELAY_STATE_CLOSE) {
     event_raise(CHARGER_EVENT_START_CHARGING, 0);
     prv_kick_watchdog();
@@ -51,7 +50,7 @@ static void prv_command_rx(const GenericCanMsg *msg, void *context) {
 static StatusCode prv_pack_generic_notify_msg(EEChargerConnState conn_status,
                                               GenericCanMsg *generic_msg) {
   CANMessage msg = { 0 };
-  CAN_PACK_CHARGER_CONN_STATE(&msg, conn_status);
+  CAN_PACK_CHARGER_CONN_STATE(&msg, (uint8_t)conn_status);
   return can_message_to_generic_can_message(&msg, generic_msg);
 }
 
@@ -64,7 +63,7 @@ StatusCode notify_init(GenericCan *can, uint32_t send_period_s, uint32_t watchdo
   status_ok_or_return(prv_pack_generic_notify_msg(EE_CHARGER_CONN_STATE_DISCONNECTED, &msg));
   status_ok_or_return(can_interval_factory(can, &msg, send_period_s * 1000000, &s_interval));
   return generic_can_register_rx(can, prv_command_rx, GENERIC_CAN_EMPTY_MASK,
-                                 SYSTEM_CAN_MESSAGE_CHARGING_PERMISSION, false, NULL);
+                                 SYSTEM_CAN_MESSAGE_CHARGER_SET_RELAY_STATE, false, NULL);
 }
 
 void notify_post(void) {
