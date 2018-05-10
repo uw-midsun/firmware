@@ -1,5 +1,7 @@
 #pragma once
 // Charger module for interacting with the charger board over CAN.
+//
+// Requires CAN to be enabled.
 
 #include "exported_enums.h"
 #include "status.h"

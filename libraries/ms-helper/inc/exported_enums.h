@@ -8,9 +8,9 @@
 //
 // Example:
 // typedef enum {
-//   EE_<MY_CAN_MESSAGE_NAME><FIELD_NAME><VALUE> = 0,
+//   EE_<MY_CAN_MESSAGE_NAME>_<FIELD_NAME>_<VALUE> = 0,
 //   // ...
-//   NUM_EE_<MY_CAN_MESSAGE_NAME><FIELD_NAME><PLURAL>,
+//   NUM_EE_<MY_CAN_MESSAGE_NAME>_<FIELD_NAME>_<PLURAL>,
 // } EE<MyCanMessageName><FieldName>
 
 typedef enum {
