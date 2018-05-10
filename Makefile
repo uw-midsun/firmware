@@ -20,6 +20,7 @@
 #   make test [PL] [PR|LI] [TE] - Builds and runs the specified unit test, assuming all tests if TE is not defined
 #   make format - Formats all non-vendor code
 #   make gdb [PL] [PR|LI] [TE] - Builds and runs the specified unit test and connects an instance of GDB
+#   make update_codegen - Update the codegen-tooling release
 # Platform specific:
 #   make program [PL=stm32f0xx] [PR] [PB] - Programs and runs the project through OpenOCD
 #   make gdb [PL=stm32f0xx] [PL] [PR] [PB]
@@ -58,11 +59,11 @@ STATIC_LIB_DIR := $(BUILD_DIR)/lib/$(PLATFORM)
 # Object cache
 OBJ_CACHE := $(BUILD_DIR)/obj/$(PLATFORM)
 
-# Set GDB target
+# Set target binary - invalid for targets with more than one binary
 ifeq (,$(TEST))
-GDB_TARGET = $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+TARGET_BINARY = $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
 else
-GDB_TARGET = $(BIN_DIR)/test/$(LIBRARY)$(PROJECT)/test_$(TEST)_runner$(PLATFORM_EXT)
+TARGET_BINARY = $(BIN_DIR)/test/$(LIBRARY)$(PROJECT)/test_$(TEST)_runner$(PLATFORM_EXT)
 endif
 
 DIRS := $(BUILD_DIR) $(BIN_DIR) $(STATIC_LIB_DIR) $(OBJ_CACHE)
@@ -153,8 +154,8 @@ test_format: format
 	@! git diff --name-only --diff-filter=ACMRT | xargs -n1 clang-format -style=file -output-replacements-xml | grep '<replacements' > /dev/null; if [ $$? -ne 0 ] ; then git --no-pager diff && exit 1 ; fi
 
 # Builds the project or library
-ifneq (,$(PROJECT))
-build: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT)
+ifneq (,$(PROJECT)$(TEST))
+build: $(TARGET_BINARY)
 else
 build: $(STATIC_LIB_DIR)/lib$(LIBRARY).a
 endif

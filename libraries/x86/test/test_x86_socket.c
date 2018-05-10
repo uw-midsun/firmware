@@ -14,7 +14,7 @@
 
 extern char *program_invocation_short_name;
 static X86SocketThread s_thread;
-static const char *s_rx_data;
+static char s_rx_data[30];
 static size_t s_rx_len;
 
 static void prv_handler(X86SocketThread *thread, int client_fd, const char *rx_data, size_t rx_len,
@@ -29,13 +29,13 @@ static void prv_handler(X86SocketThread *thread, int client_fd, const char *rx_d
   LOG_DEBUG("handling RX (%ld bytes)\n", rx_len);
   fwrite(rx_data, sizeof(char), rx_len, stdout);
 
-  s_rx_data = rx_data;
+  strncpy(s_rx_data, rx_data, sizeof(s_rx_data));
   s_rx_len = rx_len;
   *received = true;
 }
 
 void setup_test(void) {
-  s_rx_data = NULL;
+  memset(s_rx_data, 0, sizeof(s_rx_data));
   s_rx_len = 0;
 }
 
@@ -45,17 +45,12 @@ void test_x86_socket_connect(void) {
   volatile bool received = false;
   TEST_ASSERT_OK(x86_socket_init(&s_thread, TEST_X86_SOCKET_NAME, prv_handler, &received));
 
+  // Delay so we hopefully start the client after the RX server thread has actually initialized.
   LOG_DEBUG("Hopefully delaying a bit for the RX server to start\n");
   for (volatile uint32_t i = 0; i < 100000000; i++) {
   }
 
-  // Set up connection to abstract domain socket @[pid]/[prog]/test_x86_socket
-  int client_fd = socket(AF_UNIX, SOCK_SEQPACKET, 0);
-  struct sockaddr_un addr = { .sun_family = AF_UNIX };
-  snprintf(addr.sun_path + 1, sizeof(addr.sun_path) - 1, "%d/%s/" TEST_X86_SOCKET_NAME, getpid(),
-           program_invocation_short_name);
-  connect(client_fd, (struct sockaddr_un *)&addr,
-          offsetof(struct sockaddr_un, sun_path) + 1 + strlen(addr.sun_path + 1));
+  int client_fd = test_x86_socket_client_init(TEST_X86_SOCKET_NAME);
 
   // Sending message to socket and block until the handler is run
   const char *msg = "This is a test!\n";
