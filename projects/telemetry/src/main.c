@@ -3,10 +3,5 @@
 #include "soft_timer.h"  // Software timers for scheduling future events.
 
 int main(void) {
-  // Enable various peripherals
-  interrupt_init();
-  soft_timer_init();
-  gpio_init();
-
   return 0;
 }

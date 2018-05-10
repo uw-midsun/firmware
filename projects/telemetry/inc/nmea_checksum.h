@@ -1,9 +1,9 @@
-// # The NMEA message format
+#pragma once
+// # Details about the NMEA checksum
 // A given NMEA message starts with $, then contains various comma-seperated values,
 // followed by a *, and then the message checksum (which is a 2-digit hex number).
-// This header will aid in parsing the NMEA messages sent by the GPS.
+// This header will help verify this checksum and the message integrity.
 
-#pragma once
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -13,9 +13,7 @@
 // Starts at the second characer of `message`,
 // and continues until the `*` character, or until `message_len` characters
 // are processed, whichever comes first.
-// * message_len is byte size of message
-// `out` must be a pointer to at least 3 `char`s.
-StatusCode nmea_compute_checksum(char *message, size_t message_len, char *out, size_t out_len);
+StatusCode nmea_compute_checksum(char *message, size_t message_len, uint8_t *out);
 
 // Computes the checksum for a given NMEA message, and compares the computed
 // checksum against the checksum in the message.
