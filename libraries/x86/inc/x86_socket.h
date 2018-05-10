@@ -33,3 +33,6 @@ StatusCode x86_socket_broadcast(X86SocketThread *thread, const char *tx_data, si
 
 // Write to specific client
 StatusCode x86_socket_write(int client_fd, const char *tx_data, size_t tx_len);
+
+// Creates a client that connects to the specified module socket, returning the file descriptor
+int test_x86_socket_client_init(const char *module_name);
