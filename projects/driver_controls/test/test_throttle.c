@@ -63,13 +63,13 @@ void setup_test(void) {
     .scl = { .port = GPIO_PORT_B, .pin = 10 },  //
     .sda = { .port = GPIO_PORT_B, .pin = 11 },  //
   };
-  i2c_init(TEST_ADS1015_I2C_PORT, &i2c_settings);
+  i2c_init(I2C_PORT_2, &i2c_settings);
   GPIOAddress ready_pin = {
     .port = GPIO_PORT_B,  //
     .pin = 2,             //
   };
   event_queue_init();
-  ads1015_init(&s_ads1015_storage, TEST_ADS1015_I2C_PORT, TEST_ADS1015_ADDR, &ready_pin);
+  ads1015_init(&s_ads1015_storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
   prv_set_calibration_data(&s_calibration_data);
   throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage);
 }
