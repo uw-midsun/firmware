@@ -10,21 +10,39 @@
 #include "lights_can.h"
 #include "lights_events.h"
 
-#define NUM_TEST_MESSAGES_FRONT 6
-#define NUM_TEST_MESSAGES_REAR 6
-#define LIGHT_STATE_ON 6
-#define LIGHT_STATE_OFF 6
+#define TEST_LIGHTS_CAN_DEVICE_ID 0
 
-#define CAN_RX_ADDR \
-  { 0, 11 }
+typedef enum {
+  TEST_LIGHTS_CAN_CMD_OFF = 0,
+  TEST_LIGHTS_CAN_CMD_ON,
+  NUM_TEST_LIGHTS_CAN_CMDS
+} TestLightsCanCmd;
 
-#define CAN_TX_ADDR \
-  { 0, 12 }
+LightsCanStorage s_test_storage;
 
-static CANMessageID s_msg_id = 0x1;
+
+const LightsCanSettings s_test_settings = {
+  .loopback = true,
+  // TODO(ELEC-372):  figure these out
+  .rx_addr = { .port = 1, .pin = 1},
+  .tx_addr = { .port = 1, .pin = 1},
+  .event_lookup = {
+    [LIGHTS_CAN_ACTION_SIGNAL_RIGHT] = LIGHTS_EVENT_SIGNAL_RIGHT,
+    [LIGHTS_CAN_ACTION_SIGNAL_LEFT] = LIGHTS_EVENT_SIGNAL_LEFT,
+    [LIGHTS_CAN_ACTION_SIGNAL_HAZARD] = LIGHTS_EVENT_SIGNAL_HAZARD,
+    [LIGHTS_CAN_ACTION_HORN] = LIGHTS_EVENT_HORN,
+    [LIGHTS_CAN_ACTION_HIGH_BEAMS] = LIGHTS_EVENT_HIGH_BEAMS,
+    [LIGHTS_CAN_ACTION_LOW_BEAMS] = LIGHTS_EVENT_LOW_BEAMS,
+    [LIGHTS_CAN_ACTION_DRL] = LIGHTS_EVENT_DRL,
+    [LIGHTS_CAN_ACTION_BRAKES] = LIGHTS_EVENT_BRAKES,
+    [LIGHTS_CAN_ACTION_STROBE] = LIGHTS_EVENT_STROBE,
+    [LIGHTS_CAN_ACTION_SYNC] = LIGHTS_EVENT_SYNC,
+  },
+  .device_id = TEST_LIGHTS_CAN_DEVICE_ID
+};
 
 // Waits for the internal RX/TX events to be sent and processes those events so that the next event
-// is one raised by lights_can.c
+// is one raised by lights_can module.
 static void prv_wait_tx_rx(Event *e) {
   int ret = NUM_STATUS_CODES;  // invalid status code
   while (ret != STATUS_CODE_OK) {
@@ -53,41 +71,32 @@ void teardown_test(void) {}
 
 // sends messages to the front board using the loopback interface asserts that the correct event
 // has been raised with the correct data.
-void test_lights_rx_front(void) {
-  const CANSettings can_settings_front = { .bitrate = CAN_HW_BITRATE_125KBPS,
-                                           .rx_event = LIGHTS_EVENT_CAN_RX,
-                                           .tx_event = LIGHTS_EVENT_CAN_TX,
-                                           .fault_event = LIGHTS_EVENT_CAN_FAULT,
-                                           .tx = CAN_TX_ADDR,
-                                           .rx = CAN_RX_ADDR,
-                                           .device_id = SYSTEM_CAN_DEVICE_LIGHTS_FRONT,
-                                           .loopback = true };
+void test_lights_rx(void) {
+  TEST_ASSERT_OK(lights_can_init(&s_test_settings, &s_test_storage));
 
-  TEST_ASSERT_OK(lights_can_init(&can_settings_front));
+  uint8_t num_test_messages = 5;
 
-  uint16_t test_messages_front[NUM_TEST_MESSAGES_FRONT][2] = {
-    { LIGHTS_ACTION_SIGNAL_RIGHT, LIGHT_STATE_ON },   //
-    { LIGHTS_ACTION_SIGNAL_LEFT, LIGHT_STATE_OFF },   //
-    { LIGHTS_ACTION_SIGNAL_HAZARD, LIGHT_STATE_ON },  //
-    { LIGHTS_ACTION_HORN, LIGHT_STATE_ON },           //
-    { LIGHTS_ACTION_HEADLIGHTS, LIGHT_STATE_OFF },    //
-    { LIGHTS_ACTION_SYNC, LIGHT_STATE_ON },           //
+  uint16_t test_messages[][2] = {
+    { LIGHTS_CAN_ACTION_SIGNAL_RIGHT, TEST_LIGHTS_CAN_CMD_ON },   //
+    { LIGHTS_CAN_ACTION_SIGNAL_LEFT, TEST_LIGHTS_CAN_CMD_OFF },   //
+    { LIGHTS_CAN_ACTION_SIGNAL_HAZARD, TEST_LIGHTS_CAN_CMD_ON },  //
+    { LIGHTS_CAN_ACTION_HORN, TEST_LIGHTS_CAN_CMD_ON },           //
+    { LIGHTS_CAN_ACTION_SYNC, TEST_LIGHTS_CAN_CMD_ON },           //
   };
 
-  uint16_t assertion_values_front[NUM_TEST_MESSAGES_FRONT][2] = {
-    { LIGHTS_EVENT_SIGNAL_RIGHT, LIGHT_STATE_ON },   //
-    { LIGHTS_EVENT_SIGNAL_LEFT, LIGHT_STATE_OFF },   //
-    { LIGHTS_EVENT_SIGNAL_HAZARD, LIGHT_STATE_ON },  //
-    { LIGHTS_EVENT_HORN, LIGHT_STATE_ON },           //
-    { LIGHTS_EVENT_HEADLIGHTS, LIGHT_STATE_OFF },    //
-    { LIGHTS_EVENT_SYNC, LIGHT_STATE_ON }            //
+  uint16_t assertion_values[][2] = {
+    { LIGHTS_EVENT_SIGNAL_RIGHT, TEST_LIGHTS_CAN_CMD_ON },   //
+    { LIGHTS_EVENT_SIGNAL_LEFT, TEST_LIGHTS_CAN_CMD_OFF },   //
+    { LIGHTS_EVENT_SIGNAL_HAZARD, TEST_LIGHTS_CAN_CMD_ON },  //
+    { LIGHTS_EVENT_HORN, TEST_LIGHTS_CAN_CMD_ON },           //
+    { LIGHTS_EVENT_SYNC, TEST_LIGHTS_CAN_CMD_ON }            //
   };
 
   CANMessage msg = { 0 };
 
-  for (uint8_t i = 0; i < NUM_TEST_MESSAGES_FRONT; i++) {
+  for (uint8_t i = 0; i < num_test_messages; i++) {
     TEST_ASSERT_OK(
-        CAN_PACK_LIGHTS_STATES(&msg, test_messages_front[i][0], test_messages_front[i][1]));
+        CAN_PACK_LIGHTS_STATES(&msg, test_messages[i][0], test_messages[i][1]));
     TEST_ASSERT_OK(can_transmit(&msg, NULL));
     Event e = { 0 };
     prv_wait_tx_rx(&e);
@@ -96,56 +105,8 @@ void test_lights_rx_front(void) {
       ret = event_process(&e);
       // wait
     }
-    TEST_ASSERT_EQUAL(assertion_values_front[i][0], e.id);
-    TEST_ASSERT_EQUAL(assertion_values_front[i][1], e.data);
+    TEST_ASSERT_EQUAL(assertion_values[i][0], e.id);
+    TEST_ASSERT_EQUAL(assertion_values[i][1], e.data);
   }
 }
 
-// same as test_lights_rx_front, but for the rear board.
-void test_lights_rx_rear(void) {
-  const CANSettings can_settings_rear = { .bitrate = CAN_HW_BITRATE_125KBPS,
-                                          .rx_event = LIGHTS_EVENT_CAN_RX,
-                                          .tx_event = LIGHTS_EVENT_CAN_TX,
-                                          .fault_event = LIGHTS_EVENT_CAN_FAULT,
-                                          .tx = CAN_TX_ADDR,
-                                          .rx = CAN_RX_ADDR,
-                                          .device_id = SYSTEM_CAN_DEVICE_LIGHTS_REAR,
-                                          .loopback = true };
-
-  TEST_ASSERT_OK(lights_can_init(&can_settings_rear));
-
-  uint16_t test_messages_rear[NUM_TEST_MESSAGES_REAR][2] = {
-    { LIGHTS_ACTION_SIGNAL_RIGHT, LIGHT_STATE_OFF },  //
-    { LIGHTS_ACTION_SIGNAL_LEFT, LIGHT_STATE_OFF },   //
-    { LIGHTS_ACTION_SIGNAL_HAZARD, LIGHT_STATE_ON },  //
-    { LIGHTS_ACTION_BRAKES, LIGHT_STATE_OFF },        //
-    { LIGHTS_ACTION_STROBE, LIGHT_STATE_ON },         //
-    { LIGHTS_ACTION_SYNC, LIGHT_STATE_ON },           //
-  };
-
-  uint16_t assertion_values_rear[NUM_TEST_MESSAGES_REAR][2] = {
-    { LIGHTS_EVENT_SIGNAL_RIGHT, LIGHT_STATE_OFF },  //
-    { LIGHTS_EVENT_SIGNAL_LEFT, LIGHT_STATE_OFF },   //
-    { LIGHTS_EVENT_SIGNAL_HAZARD, LIGHT_STATE_ON },  //
-    { LIGHTS_EVENT_BRAKES, LIGHT_STATE_OFF },        //
-    { LIGHTS_EVENT_STROBE, LIGHT_STATE_ON },         //
-    { LIGHTS_EVENT_SYNC, LIGHT_STATE_ON }            //
-  };
-
-  CANMessage msg = { 0 };
-
-  for (uint8_t i = 0; i < NUM_TEST_MESSAGES_REAR; i++) {
-    TEST_ASSERT_OK(
-        CAN_PACK_LIGHTS_STATES(&msg, test_messages_rear[i][0], test_messages_rear[i][1]));
-    TEST_ASSERT_OK(can_transmit(&msg, NULL));
-    Event e = { 0 };
-    prv_wait_tx_rx(&e);
-    int ret = NUM_STATUS_CODES;
-    while (ret != STATUS_CODE_OK) {
-      ret = event_process(&e);
-      // wait
-    }
-    TEST_ASSERT_EQUAL(assertion_values_rear[i][0], e.id);
-    TEST_ASSERT_EQUAL(assertion_values_rear[i][1], e.data);
-  }
-}
