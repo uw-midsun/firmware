@@ -1,7 +1,7 @@
 #include "throttle_calibration.h"
 #include <string.h>
-#include "wait.h"
 #include "log.h"
+#include "wait.h"
 
 static void prv_adc_callback(Ads1015Channel ads1015_channel, void *context) {
   ThrottleCalibrationStorage *storage = context;
@@ -28,7 +28,8 @@ static void prv_adc_callback(Ads1015Channel ads1015_channel, void *context) {
   }
 }
 
-StatusCode throttle_calibration_init(ThrottleCalibrationStorage *storage, ThrottleCalibrationSettings *settings) {
+StatusCode throttle_calibration_init(ThrottleCalibrationStorage *storage,
+                                     ThrottleCalibrationSettings *settings) {
   uint32_t total_percentage = 0;
   for (size_t i = 0; i < NUM_THROTTLE_ZONES; i++) {
     total_percentage += settings->zone_percentage[i];
@@ -44,14 +45,16 @@ StatusCode throttle_calibration_init(ThrottleCalibrationStorage *storage, Thrott
 }
 
 // Samples at the specified point - blocks until completion
-StatusCode throttle_calibration_sample(ThrottleCalibrationStorage *storage, ThrottleCalibrationPoint point) {
+StatusCode throttle_calibration_sample(ThrottleCalibrationStorage *storage,
+                                       ThrottleCalibrationPoint point) {
   // Disable channels
   for (size_t i = 0; i < NUM_THROTTLE_CALIBRATION_CHANNELS; i++) {
-    ads1015_configure_channel(storage->settings.ads1015, storage->settings.adc_channel[i], false, NULL, NULL);
+    ads1015_configure_channel(storage->settings.ads1015, storage->settings.adc_channel[i], false,
+                              NULL, NULL);
   }
 
   for (size_t i = 0; i < NUM_THROTTLE_CALIBRATION_CHANNELS; i++) {
-    storage->data[i][point] = (ThrottleCalibrationPointData) {
+    storage->data[i][point] = (ThrottleCalibrationPointData){
       .sample_counter = 0,
       .min_reading = INT16_MAX,
       .max_reading = INT16_MIN,
@@ -61,7 +64,8 @@ StatusCode throttle_calibration_sample(ThrottleCalibrationStorage *storage, Thro
 
   // Enable channels with new point data context
   for (size_t i = 0; i < NUM_THROTTLE_CALIBRATION_CHANNELS; i++) {
-    ads1015_configure_channel(storage->settings.ads1015, storage->settings.adc_channel[i], true, prv_adc_callback, storage);
+    ads1015_configure_channel(storage->settings.ads1015, storage->settings.adc_channel[i], true,
+                              prv_adc_callback, storage);
   }
 
   bool samples_completed = false;
@@ -69,20 +73,24 @@ StatusCode throttle_calibration_sample(ThrottleCalibrationStorage *storage, Thro
     wait();
     samples_completed = true;
     for (size_t i = 0; i < NUM_THROTTLE_CALIBRATION_CHANNELS; i++) {
-      samples_completed &= (storage->data[i][point].sample_counter >= THROTTLE_CALIBRATION_NUM_SAMPLES);
+      samples_completed &=
+          (storage->data[i][point].sample_counter >= THROTTLE_CALIBRATION_NUM_SAMPLES);
     }
   } while (!samples_completed);
 
   LOG_DEBUG("Point %d done\n", point);
-  for (ThrottleCalibrationChannel channel = 0; channel < NUM_THROTTLE_CALIBRATION_CHANNELS; channel++) {
-    LOG_DEBUG("Channel %d: min %d, max %d\n", channel, storage->data[channel][point].min_reading, storage->data[channel][point].max_reading);
+  for (ThrottleCalibrationChannel channel = 0; channel < NUM_THROTTLE_CALIBRATION_CHANNELS;
+       channel++) {
+    LOG_DEBUG("Channel %d: min %d, max %d\n", channel, storage->data[channel][point].min_reading,
+              storage->data[channel][point].max_reading);
   }
 
   return STATUS_CODE_OK;
 }
 
 static int16_t prv_calc_range(ThrottleCalibrationPointData *channel_data) {
-  return channel_data[THROTTLE_CALIBRATION_POINT_FULL_ACCEL].max_reading - channel_data[THROTTLE_CALIBRATION_POINT_FULL_BRAKE].min_reading;
+  return channel_data[THROTTLE_CALIBRATION_POINT_FULL_ACCEL].max_reading -
+         channel_data[THROTTLE_CALIBRATION_POINT_FULL_BRAKE].min_reading;
 }
 
 static int16_t prv_calc_midpoint(ThrottleCalibrationPointData *point_data) {
@@ -91,13 +99,17 @@ static int16_t prv_calc_midpoint(ThrottleCalibrationPointData *point_data) {
 }
 
 static void prv_calc_line(ThrottleLine *line, ThrottleCalibrationPointData *channel_data) {
-  line->full_brake_reading = prv_calc_midpoint(&channel_data[THROTTLE_CALIBRATION_POINT_FULL_BRAKE]);
-  line->full_accel_reading = prv_calc_midpoint(&channel_data[THROTTLE_CALIBRATION_POINT_FULL_ACCEL]);
-  printf("line calculation: full brake %d, full accel %d\n", line->full_brake_reading, line->full_accel_reading);
+  line->full_brake_reading =
+      prv_calc_midpoint(&channel_data[THROTTLE_CALIBRATION_POINT_FULL_BRAKE]);
+  line->full_accel_reading =
+      prv_calc_midpoint(&channel_data[THROTTLE_CALIBRATION_POINT_FULL_ACCEL]);
+  printf("line calculation: full brake %d, full accel %d\n", line->full_brake_reading,
+         line->full_accel_reading);
 }
 
 // Calculates and stores calibration settings
-StatusCode throttle_calibration_result(ThrottleCalibrationStorage *storage, ThrottleCalibrationData *calib_data) {
+StatusCode throttle_calibration_result(ThrottleCalibrationStorage *storage,
+                                       ThrottleCalibrationData *calib_data) {
   memset(calib_data, 0, sizeof(*calib_data));
 
   int16_t range_a = prv_calc_range(storage->data[THROTTLE_CALIBRATION_CHANNEL_A]),
@@ -111,9 +123,11 @@ StatusCode throttle_calibration_result(ThrottleCalibrationStorage *storage, Thro
   }
 
   for (ThrottleCalibrationPoint point = 0; point < NUM_THROTTLE_CALIBRATION_POINTS; point++) {
-    for (ThrottleCalibrationChannel channel = 0; channel < NUM_THROTTLE_CALIBRATION_CHANNELS; channel++) {
+    for (ThrottleCalibrationChannel channel = 0; channel < NUM_THROTTLE_CALIBRATION_CHANNELS;
+         channel++) {
       ThrottleCalibrationPointData *data = &storage->data[channel][point];
-      printf("point %d ch %d min %d max %d\n", point, channel, data->min_reading, data->max_reading);
+      printf("point %d ch %d min %d max %d\n", point, channel, data->min_reading,
+             data->max_reading);
     }
   }
 
@@ -127,7 +141,7 @@ StatusCode throttle_calibration_result(ThrottleCalibrationStorage *storage, Thro
   int16_t range = prv_calc_range(storage->data[main_channel]);
   int16_t range_tolerance = range * storage->settings.bounds_tolerance_percentage / 100;
   printf("full range: %d (additional +/-%d)\n", range, range_tolerance);
-  range += range_tolerance * 2;
+  range += range_tolerance;
   // Increase range? - bounds tolerance
 
   // Use the percentages to calculate the thresholds of each zone.
@@ -136,7 +150,8 @@ StatusCode throttle_calibration_result(ThrottleCalibrationStorage *storage, Thro
                         *accel_threshold = &calib_data->zone_thresholds_main[THROTTLE_ZONE_ACCEL];
 
   ThrottleCalibrationPointData *main_data = storage->data[main_channel];
-  brake_threshold->min = main_data[THROTTLE_CALIBRATION_POINT_FULL_BRAKE].min_reading - range_tolerance;
+  brake_threshold->min =
+      main_data[THROTTLE_CALIBRATION_POINT_FULL_BRAKE].min_reading - range_tolerance;
   brake_threshold->max =
       brake_threshold->min + (storage->settings.zone_percentage[THROTTLE_ZONE_BRAKE] * range / 100);
 
@@ -145,7 +160,8 @@ StatusCode throttle_calibration_result(ThrottleCalibrationStorage *storage, Thro
       coast_threshold->min + (storage->settings.zone_percentage[THROTTLE_ZONE_COAST] * range / 100);
 
   accel_threshold->min = coast_threshold->max + 1;
-  accel_threshold->max = main_data[THROTTLE_CALIBRATION_POINT_FULL_ACCEL].max_reading + range_tolerance;
+  accel_threshold->max =
+      main_data[THROTTLE_CALIBRATION_POINT_FULL_ACCEL].max_reading + range_tolerance;
 
   // TODO: tolerance
   calib_data->tolerance = 5;

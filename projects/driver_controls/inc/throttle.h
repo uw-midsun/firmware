@@ -64,7 +64,7 @@ typedef struct ThrottleZoneThreshold {
 
 // Models a voltage-position line using the readings at extreme ends.
 typedef struct ThrottleLine {
-  int16_t full_brake_reading;     // Reading for pedal not pressed.
+  int16_t full_brake_reading;  // Reading for pedal not pressed.
   int16_t full_accel_reading;  // Reading for pedal fully pressed.
 } ThrottleLine;
 

@@ -33,8 +33,8 @@ typedef enum {
 
 // We use the endpoints to find our two-point equations
 typedef enum {
-  THROTTLE_CALIBRATION_POINT_FULL_BRAKE = 0, // Fully released
-  THROTTLE_CALIBRATION_POINT_FULL_ACCEL, // Fully depressed
+  THROTTLE_CALIBRATION_POINT_FULL_BRAKE = 0,  // Fully released
+  THROTTLE_CALIBRATION_POINT_FULL_ACCEL,      // Fully depressed
   NUM_THROTTLE_CALIBRATION_POINTS
 } ThrottleCalibrationPoint;
 
@@ -62,7 +62,8 @@ typedef struct ThrottleCalibrationSettings {
 
 typedef struct ThrottleCalibrationStorage {
   // Channels have points
-  ThrottleCalibrationPointData data[NUM_THROTTLE_CALIBRATION_CHANNELS][NUM_THROTTLE_CALIBRATION_POINTS];
+  ThrottleCalibrationPointData data[NUM_THROTTLE_CALIBRATION_CHANNELS]
+                                   [NUM_THROTTLE_CALIBRATION_POINTS];
   ThrottleCalibrationSettings settings;
   // Point currently being sampled
   ThrottleCalibrationPoint sample_point;
@@ -70,10 +71,13 @@ typedef struct ThrottleCalibrationStorage {
 
 // Expects |ads1015| to be initialized. |settings| does not need to persist.
 // |zone_percentage| should add up to 100.
-StatusCode throttle_calibration_init(ThrottleCalibrationStorage *storage, ThrottleCalibrationSettings *settings);
+StatusCode throttle_calibration_init(ThrottleCalibrationStorage *storage,
+                                     ThrottleCalibrationSettings *settings);
 
 // Samples at the specified point - blocks until completion
-StatusCode throttle_calibration_sample(ThrottleCalibrationStorage *storage, ThrottleCalibrationPoint point);
+StatusCode throttle_calibration_sample(ThrottleCalibrationStorage *storage,
+                                       ThrottleCalibrationPoint point);
 
 // Calculates and stores calibration settings
-StatusCode throttle_calibration_result(ThrottleCalibrationStorage *storage, ThrottleCalibrationData *calib_data);
+StatusCode throttle_calibration_result(ThrottleCalibrationStorage *storage,
+                                       ThrottleCalibrationData *calib_data);
