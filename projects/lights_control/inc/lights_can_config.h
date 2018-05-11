@@ -18,5 +18,4 @@ typedef enum {
 void lights_can_config_init(LightsCanConfigBoardType can_board);
 
 // Loads config blob for lights_can.
-LightsCanSettings* lights_can_config_load();
-
+LightsCanSettings *lights_can_config_load();

@@ -20,24 +20,24 @@ typedef enum {
 
 LightsCanStorage s_test_storage;
 
-
 const LightsCanSettings s_test_settings = {
   .loopback = true,
   // TODO(ELEC-372):  figure these out
-  .rx_addr = { .port = 1, .pin = 1},
-  .tx_addr = { .port = 1, .pin = 1},
-  .event_lookup = {
-    [LIGHTS_CAN_ACTION_SIGNAL_RIGHT] = LIGHTS_EVENT_SIGNAL_RIGHT,
-    [LIGHTS_CAN_ACTION_SIGNAL_LEFT] = LIGHTS_EVENT_SIGNAL_LEFT,
-    [LIGHTS_CAN_ACTION_SIGNAL_HAZARD] = LIGHTS_EVENT_SIGNAL_HAZARD,
-    [LIGHTS_CAN_ACTION_HORN] = LIGHTS_EVENT_HORN,
-    [LIGHTS_CAN_ACTION_HIGH_BEAMS] = LIGHTS_EVENT_HIGH_BEAMS,
-    [LIGHTS_CAN_ACTION_LOW_BEAMS] = LIGHTS_EVENT_LOW_BEAMS,
-    [LIGHTS_CAN_ACTION_DRL] = LIGHTS_EVENT_DRL,
-    [LIGHTS_CAN_ACTION_BRAKES] = LIGHTS_EVENT_BRAKES,
-    [LIGHTS_CAN_ACTION_STROBE] = LIGHTS_EVENT_STROBE,
-    [LIGHTS_CAN_ACTION_SYNC] = LIGHTS_EVENT_SYNC,
-  },
+  .rx_addr = { .port = 1, .pin = 1 },
+  .tx_addr = { .port = 1, .pin = 1 },
+  .event_lookup =
+      {
+          [LIGHTS_CAN_ACTION_SIGNAL_RIGHT] = LIGHTS_EVENT_SIGNAL_RIGHT,
+          [LIGHTS_CAN_ACTION_SIGNAL_LEFT] = LIGHTS_EVENT_SIGNAL_LEFT,
+          [LIGHTS_CAN_ACTION_SIGNAL_HAZARD] = LIGHTS_EVENT_SIGNAL_HAZARD,
+          [LIGHTS_CAN_ACTION_HORN] = LIGHTS_EVENT_HORN,
+          [LIGHTS_CAN_ACTION_HIGH_BEAMS] = LIGHTS_EVENT_HIGH_BEAMS,
+          [LIGHTS_CAN_ACTION_LOW_BEAMS] = LIGHTS_EVENT_LOW_BEAMS,
+          [LIGHTS_CAN_ACTION_DRL] = LIGHTS_EVENT_DRL,
+          [LIGHTS_CAN_ACTION_BRAKES] = LIGHTS_EVENT_BRAKES,
+          [LIGHTS_CAN_ACTION_STROBE] = LIGHTS_EVENT_STROBE,
+          [LIGHTS_CAN_ACTION_SYNC] = LIGHTS_EVENT_SYNC,
+      },
   .device_id = TEST_LIGHTS_CAN_DEVICE_ID
 };
 
@@ -95,8 +95,7 @@ void test_lights_rx(void) {
   CANMessage msg = { 0 };
 
   for (uint8_t i = 0; i < num_test_messages; i++) {
-    TEST_ASSERT_OK(
-        CAN_PACK_LIGHTS_STATES(&msg, test_messages[i][0], test_messages[i][1]));
+    TEST_ASSERT_OK(CAN_PACK_LIGHTS_STATES(&msg, test_messages[i][0], test_messages[i][1]));
     TEST_ASSERT_OK(can_transmit(&msg, NULL));
     Event e = { 0 };
     prv_wait_tx_rx(&e);
@@ -109,4 +108,3 @@ void test_lights_rx(void) {
     TEST_ASSERT_EQUAL(assertion_values[i][1], e.data);
   }
 }
-

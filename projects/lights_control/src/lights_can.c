@@ -9,8 +9,7 @@
 #include "lights_events.h"
 
 // RX handler function.
-static StatusCode prv_rx_handler(const CANMessage *msg, void *context,
-                CANAckStatus *ack_reply) {
+static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   const LightsCanSettings *settings = (const LightsCanSettings *)context;
 
   // Unpacks the message, and raises events.
@@ -38,10 +37,9 @@ StatusCode lights_can_init(const LightsCanSettings *settings, LightsCanStorage *
   };
   // Initialize CAN.
   status_ok_or_return(can_init(&can_settings, &storage->can_storage, storage->rx_handlers,
-                          LIGHTS_CAN_NUM_RX_HANDLERS));
+                               LIGHTS_CAN_NUM_RX_HANDLERS));
 
   // Initialize CAN RX handler.
-  status_ok_or_return(can_register_rx_handler(msg_id, prv_rx_handler, (void*)settings));
+  status_ok_or_return(can_register_rx_handler(msg_id, prv_rx_handler, (void *)settings));
   return STATUS_CODE_OK;
 }
-

@@ -35,4 +35,3 @@ typedef enum {
 StatusCode lights_events_get_blink_on_event(LightsEvent event, LightsEvent *blink_event);
 
 StatusCode lights_events_get_blink_off_event(LightsEvent event, LightsEvent *blink_event);
-

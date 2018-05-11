@@ -20,4 +20,3 @@ StatusCode lights_events_get_blink_off_event(LightsEvent event, LightsEvent *bli
   *blink_event = event - LIGHTS_EVENTS_BLINK_OFF_OFFSET;
   return STATUS_CODE_OK;
 }
-
