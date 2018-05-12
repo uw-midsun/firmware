@@ -39,6 +39,8 @@ static bool prv_channel_reading_void(int16_t reading){
  return (reading < (ADS1015_CURRENTFSR /2)) && ( reading >= 0);
 
 }
+
+
 int main() {
  gpio_init();
  interrupt_init();
@@ -49,6 +51,18 @@ int main() {
    .scl =  {.port = GPIO_PORT_B, .pin = 10  },
    .sda =  {.port = GPIO_PORT_B, .pin = 11 },
 };
- 
+ i2c_init(I2C_PORT_2,&i2c_settings);
+ GPIOAddress ready_pin = {
+    .port = GPIO_PORT_B,
+    .pin = 2
+ };
+ ads1015_init(&s_storage, I2C_PORT_2, Ads1015Address, &ready_pin); 
+
+ ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true, prv_callback_channel, &s_callback_called[ADS1015_CHANNEL_0])
+
+ int16_t reading = 0;
+
+ ads1015_read_raw(&s_storage, ADS1015_CHANNEL_0, &reading);
  
 }
+
