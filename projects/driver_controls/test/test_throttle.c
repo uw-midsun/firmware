@@ -49,6 +49,8 @@ static void prv_set_calibration_data(ThrottleCalibrationData *data) {
          NUM_THROTTLE_ZONES * sizeof(ThrottleZoneThreshold));
   memcpy(data->line, s_line, NUM_THROTTLE_CHANNELS * sizeof(ThrottleLine));
   data->tolerance = TEST_THROTTLE_TOLERANCE;
+  data->channel_main = TEST_THROTTLE_ADC_CHANNEL_MAIN;
+  data->channel_secondary = TEST_THROTTLE_ADC_CHANNEL_SECONDARY;
 }
 
 void setup_test(void) {
@@ -69,38 +71,22 @@ void setup_test(void) {
   event_queue_init();
   ads1015_init(&s_ads1015_storage, TEST_ADS1015_I2C_PORT, TEST_ADS1015_ADDR, &ready_pin);
   prv_set_calibration_data(&s_calibration_data);
-  throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                TEST_THROTTLE_ADC_CHANNEL_MAIN, TEST_THROTTLE_ADC_CHANNEL_SECONDARY);
+  throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage);
 }
 
 void teardown_test(void) {}
 
 void test_throttle_init_invalid_args(void) {
   // Test with valid arguments.
-  TEST_ASSERT_EQUAL(
-      STATUS_CODE_OK,
-      throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                    TEST_THROTTLE_ADC_CHANNEL_MAIN, TEST_THROTTLE_ADC_CHANNEL_SECONDARY));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK,
+                    throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage));
   // Check for null pointers.
-  TEST_ASSERT_EQUAL(
-      STATUS_CODE_INVALID_ARGS,
-      throttle_init(NULL, &s_calibration_data, &s_ads1015_storage, TEST_THROTTLE_ADC_CHANNEL_MAIN,
-                    TEST_THROTTLE_ADC_CHANNEL_SECONDARY));
-  TEST_ASSERT_EQUAL(
-      STATUS_CODE_INVALID_ARGS,
-      throttle_init(&s_throttle_storage, NULL, &s_ads1015_storage, TEST_THROTTLE_ADC_CHANNEL_MAIN,
-                    TEST_THROTTLE_ADC_CHANNEL_SECONDARY));
-  TEST_ASSERT_EQUAL(
-      STATUS_CODE_INVALID_ARGS,
-      throttle_init(&s_throttle_storage, &s_calibration_data, NULL, TEST_THROTTLE_ADC_CHANNEL_MAIN,
-                    TEST_THROTTLE_ADC_CHANNEL_SECONDARY));
-  // Check for invalid channels.
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
-                    throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                                  NUM_ADS1015_CHANNELS, TEST_THROTTLE_ADC_CHANNEL_SECONDARY));
+                    throttle_init(NULL, &s_calibration_data, &s_ads1015_storage));
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
-                    throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage,
-                                  TEST_THROTTLE_ADC_CHANNEL_MAIN, NUM_ADS1015_CHANNELS));
+                    throttle_init(&s_throttle_storage, NULL, &s_ads1015_storage));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
+                    throttle_init(&s_throttle_storage, &s_calibration_data, NULL));
 }
 
 void test_throttle_get_pos_invalid_args(void) {

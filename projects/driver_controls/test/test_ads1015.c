@@ -183,6 +183,7 @@ void test_ads1015_all_channels_enabled(void) {
   delay_ms(50);
   for (Ads1015Channel channel = 0; channel < NUM_ADS1015_CHANNELS; channel++) {
     ads1015_read_converted(&s_storage, channel, &reading);
+    LOG_DEBUG("channel %d: %d\n", channel, reading);
     TEST_ASSERT_TRUE(prv_channel_reading_valid(reading));
     TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_read_converted(&s_storage, channel, &reading));
   }
