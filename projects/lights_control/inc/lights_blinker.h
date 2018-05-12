@@ -4,7 +4,8 @@
 // Requires soft_timers and event_queue to be initialized.
 
 // An instance of this module is used to periodically raise LIGHTS_EVENT_GPIO_OFF and
-// LIGHTS_EVENT_GPIO_ON events corresponding to different peripherals.
+// LIGHTS_EVENT_GPIO_ON events with the data field set to different peripherals. Events are to be
+// processed by the lights_gpio module.
 
 #include "event_queue.h"
 #include "lights_events.h"
@@ -30,7 +31,8 @@ typedef struct LightsBlinker {
 // Initializes the blinker.
 StatusCode lights_blinker_init(LightsBlinker *blinker, LightsBlinkerDuration duration_ms);
 
-// Starts generating events. Activates the blinker.
+// Starts generating LIGHTS_EVENT_GPIO_OFF and LIGHTS_EVENT_GPIO_ON events with data field set to
+// the passed-in peripheral. First event generated is an LIGHTS_EVENT_GPIO_ON event.
 StatusCode lights_blinker_activate(LightsBlinker *blinker, LightsEventGPIOPeripheral peripheral);
 
 // Raises an LIGHTS_EVENT_GPIO_OFF event with the existing blinker's peripheral as event data,

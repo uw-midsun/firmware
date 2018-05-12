@@ -36,7 +36,7 @@ StatusCode lights_blinker_init(LightsBlinker *blinker, LightsBlinkerDuration dur
 
 StatusCode lights_blinker_activate(LightsBlinker *blinker, LightsEventGPIOPeripheral peripheral) {
   // Check if we require a behaviour change. i.e. new event is for a different peripheral.
-  // e.g. If signal-left and hazard are both on at the same time, turning singal-left off shouldn't
+  // e.g. If signal-left and hazard are both on at the same time, turning signal-left off shouldn't
   // do anything.
   if (blinker->peripheral != peripheral) {
     if (prv_lights_blinker_is_active(blinker)) {
@@ -49,7 +49,7 @@ StatusCode lights_blinker_activate(LightsBlinker *blinker, LightsEventGPIOPeriph
     return soft_timer_start_millis(blinker->duration_ms, prv_timer_callback, (void *)blinker,
                                    &blinker->timer_id);
   }
-  // No behaviour change requried. Do nothing.
+  // No behaviour change required. Do nothing.
   return STATUS_CODE_OK;
 }
 
