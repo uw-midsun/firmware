@@ -43,6 +43,8 @@ OPENOCD_CFG := -s $(OPENOCD_SCRIPT_DIR) \
 # Platform targets
 .PHONY: program gdb target
 
+ifeq (,$(MACOS_SSH_USERNAME))
+
 program: $(TARGET_BINARY:$(PLATFORM_EXT)=.bin)
 	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash $<" -c shutdown
 
@@ -61,3 +63,37 @@ endef
 define test_run
 clear && $(GDB) $1 -x "$(SCRIPT_DIR)/gdb_flash" -ex "b LoopForever" -ex "c" -ex "set confirm off" -ex "q"
 endef
+
+else
+
+# VirtualBox default NAT IP
+MACOS_SSH_IP := 10.0.2.2
+MAKE_ARGS := TEST PROJECT LIBRARY PLATFORM PROBE
+MAKE_PARAMS := $(foreach arg,$(MAKE_ARGS),$(arg)=$($(arg)))
+SSH_CMD := ssh -t $(MACOS_SSH_USERNAME)@$(MACOS_SSH_IP) "cd $(MACOS_SSH_BOX_PATH)/shared/firmware && make $(MAKECMDGOALS) $(MAKE_PARAMS)"
+
+.PHONY: unsupported run_ssh
+
+# Use additional dependencies - hopefully they run first, otherwise we'll build unnecessarily
+# Unfortunately this only works part of the time
+test_all: unsupported
+test: run_ssh
+
+# Host is macOS so we can't pass the programmer through - do it all through SSH
+program gdb:
+	@echo "Running command through SSH"
+	@$(SSH_CMD)
+
+ifneq (,$(TEST))
+run_ssh:
+	@echo "Running command through SSH"
+	@$(SSH_CMD:make=make -o $(GDB_TARGET))
+else
+run_ssh: unsupported
+endif
+
+unsupported:
+	@echo "Please specify a single test to run."
+	@echo "Consecutive tests for STM32F0xx are not supported on a macOS host." && false
+
+endif
