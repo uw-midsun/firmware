@@ -1,9 +1,6 @@
-#include "ltc_calibration.h"
+#include "ltc_adc_calibration.h"
 
-// TODO: Remove stdio.h
-#include <stdio.h>
-
-#define LTC2484_OFFSET_MICROVOLTS 100000
+#define LTC2484_OFFSET_MICROVOLTS 1000000
 #define LTC2484_SHUNT_RESISTOR 100
 
 static void prv_callback(int32_t *value, void *context) {
