@@ -1,6 +1,6 @@
 #pragma once
 // Module for the throttle.
-// Requires ADS1015, and soft timer to be initialized.
+// Requires ADS1015 and soft timers to be initialized.
 //
 // The module periodically reads pedal inputs from ADS1015, translates and stores them as positions.
 // At the same time, it raises events, INPUT_EVENT_PEDAL_BRAKE, _COAST, and _ACCEL which would

@@ -1,6 +1,6 @@
 #pragma once
 // Calibrates the throttle through user-controlled procedure.
-// Requires ??? to be initialized. TODO: fill this out
+// Requires ADS1015 and soft timers to be initialized.
 //
 // This module is expected to be driven through a calibration FSM.
 //
@@ -56,7 +56,7 @@ typedef struct ThrottleCalibrationSettings {
   // Multiplier for the sync tolerance
   uint8_t sync_safety_factor;
   // Percentage (0-100) to increase the brake/accel zones outside the measured range
-  // TODO: the proper fix is actually to change the throttle module
+  // TODO(ELEC-382): the proper fix is actually to change the throttle module
   uint8_t bounds_tolerance_percentage;
 } ThrottleCalibrationSettings;
 

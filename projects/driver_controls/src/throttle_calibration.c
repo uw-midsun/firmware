@@ -78,13 +78,6 @@ StatusCode throttle_calibration_sample(ThrottleCalibrationStorage *storage,
     }
   } while (!samples_completed);
 
-  LOG_DEBUG("Point %d done\n", point);
-  for (ThrottleCalibrationChannel channel = 0; channel < NUM_THROTTLE_CALIBRATION_CHANNELS;
-       channel++) {
-    LOG_DEBUG("Channel %d: min %d, max %d\n", channel, storage->data[channel][point].min_reading,
-              storage->data[channel][point].max_reading);
-  }
-
   return STATUS_CODE_OK;
 }
 
@@ -94,7 +87,6 @@ static int16_t prv_calc_range(ThrottleCalibrationPointData *channel_data) {
 }
 
 static int16_t prv_calc_midpoint(ThrottleCalibrationPointData *point_data) {
-  LOG_DEBUG("point data max %d min %d\n", point_data->max_reading, point_data->min_reading);
   return (point_data->max_reading + point_data->min_reading) / 2;
 }
 
@@ -103,8 +95,6 @@ static void prv_calc_line(ThrottleLine *line, ThrottleCalibrationPointData *chan
       prv_calc_midpoint(&channel_data[THROTTLE_CALIBRATION_POINT_FULL_BRAKE]);
   line->full_accel_reading =
       prv_calc_midpoint(&channel_data[THROTTLE_CALIBRATION_POINT_FULL_ACCEL]);
-  printf("line calculation: full brake %d, full accel %d\n", line->full_brake_reading,
-         line->full_accel_reading);
 }
 
 // Calculates and stores calibration settings
@@ -122,15 +112,6 @@ StatusCode throttle_calibration_result(ThrottleCalibrationStorage *storage,
     secondary_channel = THROTTLE_CALIBRATION_CHANNEL_A;
   }
 
-  for (ThrottleCalibrationPoint point = 0; point < NUM_THROTTLE_CALIBRATION_POINTS; point++) {
-    for (ThrottleCalibrationChannel channel = 0; channel < NUM_THROTTLE_CALIBRATION_CHANNELS;
-         channel++) {
-      ThrottleCalibrationPointData *data = &storage->data[channel][point];
-      printf("point %d ch %d min %d max %d\n", point, channel, data->min_reading,
-             data->max_reading);
-    }
-  }
-
   prv_calc_line(&calib_data->line[THROTTLE_CHANNEL_MAIN], storage->data[main_channel]);
   prv_calc_line(&calib_data->line[THROTTLE_CHANNEL_SECONDARY], storage->data[secondary_channel]);
 
@@ -140,7 +121,6 @@ StatusCode throttle_calibration_result(ThrottleCalibrationStorage *storage,
   // Get the full range for main channel so we can calculate the size of each zone.
   int16_t range = prv_calc_range(storage->data[main_channel]);
   int16_t range_tolerance = range * storage->settings.bounds_tolerance_percentage / 100;
-  printf("full range: %d (additional +/-%d)\n", range, range_tolerance);
   range += range_tolerance;
   // Increase range? - bounds tolerance
 
@@ -163,8 +143,8 @@ StatusCode throttle_calibration_result(ThrottleCalibrationStorage *storage,
   accel_threshold->max =
       main_data[THROTTLE_CALIBRATION_POINT_FULL_ACCEL].max_reading + range_tolerance;
 
-  // TODO: tolerance
-  calib_data->tolerance = 5;
+  // TODO(ELEC-382): Need to figure out tolerance calculation
+  calib_data->tolerance = 20;
 
   printf("brake: %d - %d\n", brake_threshold->min, brake_threshold->max);
   printf("coast: %d - %d\n", coast_threshold->min, coast_threshold->max);
