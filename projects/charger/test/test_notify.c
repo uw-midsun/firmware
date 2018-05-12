@@ -15,6 +15,7 @@
 #include "generic_can_msg.h"
 #include "generic_can_network.h"
 #include "interrupt.h"
+#include "ms_test_helpers.h"
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
@@ -23,6 +24,8 @@
 #define TEST_NOTIFY_WATCHDOG_PERIOD_S 2
 #define TEST_NOTIFY_NUM_CAN_RX_HANDLERS 4
 
+static const Event s_tx_event = { CHARGER_EVENT_CAN_TX, 0 };
+static const Event s_rx_event = { CHARGER_EVENT_CAN_RX, 0 };
 static EEChargerSetRelayState s_response;
 static GenericCanNetwork s_generic_can;
 static CANStorage s_can_storage;
@@ -34,39 +37,6 @@ static void prv_callback(const GenericCanMsg *msg, void *context) {
   EEChargerSetRelayState *state = context;
   if (*state < NUM_EE_CHARGER_SET_RELAY_STATES) {
     CAN_TRANSMIT_CHARGER_SET_RELAY_STATE(*state);
-  }
-}
-
-static void prv_check_state_from_fsm(uint16_t id) {
-  Event e;
-  StatusCode status;
-  do {
-    status = event_process(&e);
-  } while (status != STATUS_CODE_OK);
-  TEST_ASSERT_EQUAL(id, e.id);
-}
-
-static void prv_transmit_half() {
-  Event e = { 0, 0 };
-  StatusCode status = NUM_STATUS_CODES;
-  // TX
-  do {
-    status = event_process(&e);
-  } while (status != STATUS_CODE_OK);
-  TEST_ASSERT_EQUAL(CHARGER_EVENT_CAN_TX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-  // RX
-  do {
-    status = event_process(&e);
-  } while (status != STATUS_CODE_OK);
-  TEST_ASSERT_EQUAL(CHARGER_EVENT_CAN_RX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-}
-
-static void prv_transmit_full(uint8_t times) {
-  for (uint8_t i = 0; i < times; i++) {
-    prv_transmit_half();
-    prv_transmit_half();
   }
 }
 
@@ -107,16 +77,19 @@ void test_notify(void) {
   s_response = EE_CHARGER_SET_RELAY_STATE_CLOSE;
   notify_post();
   // Do twice to ensure the watchdog doesn't get triggered
-  prv_transmit_full(1);
-  prv_check_state_from_fsm(CHARGER_EVENT_START_CHARGING);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_AWAIT_EVENT(e);
+  TEST_ASSERT_EQUAL(CHARGER_EVENT_START_CHARGING, e.id);
 
-  prv_transmit_full(1);
-  prv_check_state_from_fsm(CHARGER_EVENT_START_CHARGING);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_AWAIT_EVENT(e);
+  TEST_ASSERT_EQUAL(CHARGER_EVENT_START_CHARGING, e.id);
 
   // Don't charge
   s_response = EE_CHARGER_SET_RELAY_STATE_OPEN;
-  prv_transmit_full(1);
-  prv_check_state_from_fsm(CHARGER_EVENT_STOP_CHARGING);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_AWAIT_EVENT(e);
+  TEST_ASSERT_EQUAL(CHARGER_EVENT_STOP_CHARGING, e.id);
 
   // Watchdog
   s_response = NUM_EE_CHARGER_SET_RELAY_STATES;
@@ -133,13 +106,14 @@ void test_notify(void) {
   // Check still running
   // Charge
   s_response = EE_CHARGER_SET_RELAY_STATE_CLOSE;
-  prv_transmit_full(1);
-  prv_check_state_from_fsm(CHARGER_EVENT_START_CHARGING);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_AWAIT_EVENT(e);
+  TEST_ASSERT_EQUAL(CHARGER_EVENT_START_CHARGING, e.id);
 
   // Send a singular disconnect message.
   s_response = NUM_EE_CHARGER_SET_RELAY_STATES;  // Don't respond.
   notify_cease();
-  prv_transmit_half();
+  MS_TEST_HELPER_CAN_TX_RX(s_tx_event, s_rx_event);
 
   delay_ms(1100);
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
