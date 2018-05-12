@@ -25,7 +25,7 @@ static StatusCode prv_charger_can_handler(const CANMessage *msg, void *context,
                                           CANAckStatus *ack_reply) {
   (void)context;
   (void)ack_reply;
-  EEChargerSetRelayState state;
+  EEChargerSetRelayState state = NUM_EE_CHARGER_SET_RELAY_STATES;
   CAN_UNPACK_CHARGER_SET_RELAY_STATE(msg, (uint8_t *)&state);
   TEST_ASSERT_EQUAL(s_expected_state, state);
   return STATUS_CODE_OK;
