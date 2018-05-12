@@ -6,7 +6,6 @@
 static void prv_callback(int32_t *value, void *context) {
   LTCCalibrationStorage *storage = (LTCCalibrationStorage *)context;
 
-  // TODO: Calibrate voltage here
   storage->value.voltage = *value - LTC2484_OFFSET_MILLIVOLTS;
 
   // TODO: Calculate current here
