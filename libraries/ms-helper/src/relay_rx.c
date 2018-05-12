@@ -27,9 +27,8 @@ static StatusCode prv_relay_rx_can_handler(const CANMessage *msg, void *context,
   if (state >= NUM_EE_CHAOS_CMD_RELAY_STATES) {
     *ack_reply = CAN_ACK_STATUS_INVALID;
   } else {
-    storage->state = state;
-    gpio_set_state(&storage->relay_addr,
-                   state == EE_CHAOS_CMD_RELAY_STATE_OPEN ? GPIO_STATE_LOW : GPIO_STATE_HIGH);
+    storage->curr_state = state;
+    status_ok_or_return(storage->handler(storage->msg_id, storage->curr_state, storage->context));
   }
   return STATUS_CODE_OK;
 }
@@ -45,7 +44,8 @@ StatusCode relay_rx_init(RelayRxStorage *relay_storage, size_t size) {
   return STATUS_CODE_OK;
 }
 
-StatusCode relay_rx_configure_handler(GPIOAddress relay_addr, SystemCanMessage msg_id) {
+StatusCode relay_rx_configure_handler(SystemCanMessage msg_id, RelayRxHandler handler,
+                                      void *context) {
   if (s_storage_idx >= s_storage_size) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
@@ -53,13 +53,6 @@ StatusCode relay_rx_configure_handler(GPIOAddress relay_addr, SystemCanMessage m
   // defined for one of the relays in codegen-tooling. But in theory this module could be used for
   // any CAN controlled GPIO. Also note that the storage is also extensible for this reason.
 
-  const GPIOSettings settings = {
-    .direction = GPIO_DIR_OUT,
-    .state = GPIO_STATE_LOW,
-    .resistor = GPIO_RES_NONE,
-    .alt_function = GPIO_ALTFN_NONE,
-  };
-  status_ok_or_return(gpio_init_pin(&relay_addr, &settings));
   bool disabled_in_scope = critical_section_start();
   StatusCode status = can_register_rx_handler(msg_id, prv_relay_rx_can_handler, &s_storage);
   if (!status_ok(status)) {
@@ -67,9 +60,10 @@ StatusCode relay_rx_configure_handler(GPIOAddress relay_addr, SystemCanMessage m
     return status;
   }
 
-  s_storage[s_storage_idx].relay_addr = relay_addr;
+  s_storage[s_storage_idx].handler = handler;
   s_storage[s_storage_idx].msg_id = msg_id;
-  s_storage[s_storage_idx].state = EE_CHAOS_CMD_RELAY_STATE_OPEN;
+  s_storage[s_storage_idx].curr_state = EE_CHAOS_CMD_RELAY_STATE_OPEN;
+  s_storage[s_storage_idx].context = context;
   s_storage_idx++;
   critical_section_end(disabled_in_scope);
   return STATUS_CODE_OK;
