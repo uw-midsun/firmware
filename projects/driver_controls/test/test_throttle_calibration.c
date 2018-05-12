@@ -33,12 +33,13 @@ void setup_test(void) {
   event_queue_init();
   ads1015_init(&s_ads1015_storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
 
-  ThrottleCalibrationSettings calib_settings = { .ads1015 = &s_ads1015_storage,
-                                                 .adc_channel = { ADS1015_CHANNEL_0,
-                                                                  ADS1015_CHANNEL_1 },
-                                                 .zone_percentage = { 40, 10, 50 },
-                                                 .sync_safety_factor = 2,
-                                                 .bounds_tolerance_percentage = 1 };
+  ThrottleCalibrationSettings calib_settings = {
+    .ads1015 = &s_ads1015_storage,
+    .adc_channel = { ADS1015_CHANNEL_0, ADS1015_CHANNEL_1 },
+    .zone_percentage = { 40, 10, 50 },
+    .sync_safety_factor = 2,
+    .bounds_tolerance_percentage = 1,
+  };
   throttle_calibration_init(&s_calibration_storage, &calib_settings);
 }
 
