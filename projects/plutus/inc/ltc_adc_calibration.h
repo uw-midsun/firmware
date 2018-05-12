@@ -3,13 +3,12 @@
 // Calibration module for the LTC2484 ADC.
 // Requires the ltc_adc to be initialized
 
-// TODO: Rename module
 #include "ltc_adc.h"
 #include "status.h"
 
 typedef struct {
-  int32_t voltage;
-  int32_t current;
+  int32_t voltage;  // Voltage in microvolts
+  int32_t current;  // Voltage in amps
 } LTCCalibrationValue;
 
 typedef struct {
@@ -17,5 +16,5 @@ typedef struct {
   LTCCalibrationValue value;
 } LTCCalibrationStorage;
 
-// Initialize the calibration module 
+// Initialize the calibration module
 StatusCode ltc_adc_calibration_init(LTCCalibrationStorage *storage);

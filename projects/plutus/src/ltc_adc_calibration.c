@@ -1,18 +1,22 @@
-#include "calibration.h"
+#include "ltc_calibration.h"
 
-#define LTC2484_OFFSET_MILLIVOLTS 100
-#define LTC2484_SHUNT_RESISTOR ???
+// TODO: Remove stdio.h
+#include <stdio.h>
+
+#define LTC2484_OFFSET_MICROVOLTS 100000
+#define LTC2484_SHUNT_RESISTOR 100
 
 static void prv_callback(int32_t *value, void *context) {
   LTCCalibrationStorage *storage = (LTCCalibrationStorage *)context;
 
-  storage->value.voltage = *value - LTC2484_OFFSET_MILLIVOLTS;
+  // Correct for voltage offset
+  storage->value.voltage = *value - LTC2484_OFFSET_MICROVOLTS;
 
-  // TODO: Calculate current here
+  // Use calibrated voltage value to obtain current calibration_value
   storage->value.current = storage->value.voltage / LTC2484_SHUNT_RESISTOR;
 }
 
-StatusCode calibration_value(LTCCalibrationStorage *storage) {
+StatusCode ltc_adc_calibration_init(LTCCalibrationStorage *storage) {
   if (storage == NULL) {
     return status_code(STATUS_CODE_UNINITIALIZED);
   }
