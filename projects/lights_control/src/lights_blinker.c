@@ -14,8 +14,8 @@ static void prv_timer_callback(SoftTimerID timer_id, void *context) {
   LightsBlinker *blinker = (LightsBlinker *)context;
   blinker->state = !blinker->state;
   // Choose whether to raise an ON or OFF event.
-  LightsEvent event = (blinker->state == LIGHTS_BLINKER_STATE_OFF) ?
-      LIGHTS_EVENT_GPIO_OFF : LIGHTS_EVENT_GPIO_ON;
+  LightsEvent event =
+      (blinker->state == LIGHTS_BLINKER_STATE_OFF) ? LIGHTS_EVENT_GPIO_OFF : LIGHTS_EVENT_GPIO_ON;
   event_raise(event, blinker->event_data);
   soft_timer_start_millis(blinker->duration_ms, prv_timer_callback, (void *)blinker,
                           &blinker->timer_id);
@@ -77,4 +77,3 @@ StatusCode lights_blinker_sync_on(LightsBlinker *blinker) {
   return soft_timer_start_millis(blinker->duration_ms, prv_timer_callback, (void *)blinker,
                                  &blinker->timer_id);
 }
-

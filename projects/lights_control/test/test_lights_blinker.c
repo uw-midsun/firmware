@@ -74,7 +74,7 @@ void test_lights_blinker_activate_already_active(void) {
   TEST_ASSERT_EQUAL(e.id, LIGHTS_EVENT_GPIO_ON);
   TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_DATA_SIGNAL_RIGHT));
   TEST_ASSERT_OK(event_process(&e));
-  // Since two events (ON, and OFF) are raised at the same time, we need to make sure the OFF event 
+  // Since two events (ON, and OFF) are raised at the same time, we need to make sure the OFF event
   // takes precedence over the ON event.
   TEST_ASSERT_EQUAL(e.data, LIGHTS_EVENT_GPIO_DATA_SIGNAL_LEFT);
   TEST_ASSERT_EQUAL(e.id, LIGHTS_EVENT_GPIO_OFF);

@@ -36,4 +36,3 @@ typedef enum {
   LIGHTS_EVENT_SIGNAL_DATA_RIGHT,
   LIGHTS_EVENT_SIGNAL_DATA_HAZARD
 } LightsEventSignalData;
-
