@@ -8,8 +8,8 @@
 #include "status.h"
 
 typedef struct {
-  int32_t voltage;
-  int32_t current;
+  int32_t voltage;      // Voltage in microvolts
+  int32_t current;      // Voltage in amps
 } LTCCalibrationValue;
 
 typedef struct {
