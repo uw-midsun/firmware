@@ -9,7 +9,7 @@
 #include "status.h"
 #include "unity.h"
 
-// Awaits event |e|.
+// Awaits an event and populates |e| with that event.
 #define MS_TEST_HELPER_AWAIT_EVENT(e)     \
   ({                                      \
     StatusCode status = NUM_STATUS_CODES; \
