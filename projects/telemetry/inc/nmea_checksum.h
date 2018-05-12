@@ -13,11 +13,11 @@
 // Starts at the second characer of `message`,
 // and continues until the `*` character, or until `message_len` characters
 // are processed, whichever comes first.
-StatusCode nmea_compute_checksum(char *message, size_t message_len, uint8_t *out);
+StatusCode nmea_checksum_compute(char *message, size_t message_len, uint8_t *checksum);
 
 // Computes the checksum for a given NMEA message, and compares the computed
 // checksum against the checksum in the message.
 // * message_len is byte size of message
 // * Returns false if the given message does not have a checksum included or if the
 //   checksums do not match.
-bool nmea_compare_checksum(char *message, size_t message_len);
+bool nmea_checksum_validate(char *message, size_t message_len);
