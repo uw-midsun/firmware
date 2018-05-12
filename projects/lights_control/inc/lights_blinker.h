@@ -1,12 +1,14 @@
 #pragma once
-#include "event_queue.h"
-#include "soft_timer.h"
 
 // lights_Blinker aids with the blinking functionality that some lights require such as signals.
 // Requires soft_timers and event_queue to be initialized.
 
-// An instance of this module is used to periodically raise ON and OFF GPIO events corresponding to
-// different peripherals.
+// An instance of this module is used to periodically raise LIGHTS_EVENT_GPIO_OFF and
+// LIGHTS_EVENT_GPIO_ON events corresponding to different peripherals.
+
+#include "event_queue.h"
+#include "lights_events.h"
+#include "soft_timer.h"
 
 // State definitions for blinker.
 typedef enum {
@@ -19,7 +21,7 @@ typedef uint32_t LightsBlinkerDuration;
 
 // Blinker members.
 typedef struct LightsBlinker {
-  uint16_t event_data;
+  LightsEventGPIOPeripheral peripheral;
   SoftTimerID timer_id;
   LightsBlinkerState state;
   LightsBlinkerDuration duration_ms;  // Duration, in milliseconds
@@ -29,10 +31,10 @@ typedef struct LightsBlinker {
 StatusCode lights_blinker_init(LightsBlinker *blinker, LightsBlinkerDuration duration_ms);
 
 // Starts generating events. Activates the blinker.
-StatusCode lights_blinker_activate(LightsBlinker *blinker, EventID id);
+StatusCode lights_blinker_activate(LightsBlinker *blinker, LightsEventGPIOPeripheral peripheral);
 
-// Raises an OFF event with the existing blinker's peripheral as event data, cancels the scheduled
-// timer. Deactivates blinker.
+// Raises an LIGHTS_EVENT_GPIO_OFF event with the existing blinker's peripheral as event data,
+// cancels the scheduled timer. Deactivates blinker.
 StatusCode lights_blinker_deactivate(LightsBlinker *blinker);
 
 // Only used for syncing purposes. Reschedules the timer, sets the state to ON.
