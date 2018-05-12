@@ -6,6 +6,7 @@
 #include "can_msg_defs.h"
 #include "can_transmit.h"
 #include "can_unpack.h"
+#include "chaos_events.h"
 #include "status.h"
 
 typedef struct ChargerStorage {
@@ -42,4 +43,17 @@ StatusCode charger_set_state(EEChargerSetRelayState state) {
     return CAN_TRANSMIT_CHARGER_SET_RELAY_STATE((uint8_t)state);
   }
   return STATUS_CODE_OK;
+}
+
+bool charger_process_event(const Event *e) {
+  if (e->id != CHAOS_EVENT_CHARGER_OPEN || e->id != CHAOS_EVENT_CHARGER_CLOSE) {
+    return false;
+  }
+
+  if (e->id == CHAOS_EVENT_CHARGER_OPEN) {
+    charger_set_state(EE_CHARGER_SET_RELAY_STATE_OPEN);
+  } else {
+    charger_set_state(EE_CHARGER_SET_RELAY_STATE_CLOSE);
+  }
+  return true;
 }

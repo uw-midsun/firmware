@@ -1,6 +1,14 @@
 #pragma once
 // Module for notifying Power Distribution about charging over CAN and handling commands.
+//
 // Requires a generic CAN module, event queue and soft timers to be running.
+//
+// Communication Flow:
+// The charger periodically notifies Chaos whether or not it is connected. Whenever Chaos receives a
+// "connected" message it is expected to respond with whether or not to proceed with charging.
+//
+// The charger board expects to receive periodic responses and if it doesn't hear a response a
+// watchdog will cease charging as a safety precaution. E.g. in the event of a CAN bus fault.
 
 #include "generic_can.h"
 #include "status.h"
