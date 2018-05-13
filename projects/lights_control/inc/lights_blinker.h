@@ -1,6 +1,6 @@
 #pragma once
 
-// lights_Blinker aids with the blinking functionality that some lights require such as signals.
+// lights_blinker aids with the blinking functionality that some lights require such as signals.
 // Requires soft_timers and event_queue to be initialized.
 
 // An instance of this module is used to periodically raise LIGHTS_EVENT_GPIO_OFF and
