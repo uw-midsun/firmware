@@ -3,6 +3,8 @@
 #include "gpio.h"
 #include "lights_events.h"
 #include "lights_gpio_config.h"
+#include "lights_gpio_config_front.h"
+#include "lights_gpio_config_rear.h"
 
 static const LightsGPIO *s_lights_gpio;
 

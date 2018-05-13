@@ -6,36 +6,35 @@
 #include "lights_gpio_config.h"
 #include "status.h"
 
-// Searches the event-to-peripheral-set mapping table for a mapping matching event e.
+// Searches the event-mappings table for a mapping matching event's peripheral.
 static StatusCode prv_search_mappings_table(const LightsGPIO *lights_gpio, const Event *e,
-                                            LightsGPIOPeripheralMapping *mapping) {
+                                            LightsGPIOOutputBitset *mapping) {
   for (uint8_t i = 0; i < lights_gpio->num_event_mappings; i++) {
-    if (e->id == lights_gpio->event_mappings[i].event_id) {
-      *mapping = lights_gpio->event_mappings[i].peripheral_mapping;
+    if (e->data == lights_gpio->event_mappings[i].peripheral) {
+      *mapping = lights_gpio->event_mappings[i].output_mapping;
       return STATUS_CODE_OK;
     }
   }
-  return status_msg(STATUS_CODE_INVALID_ARGS, "Unsupported event");
+  return status_msg(STATUS_CODE_INVALID_ARGS, "Unsupported peripheral.");
 }
 
-// Sets the state of all of the peripherals in the peripheral mapping
-static StatusCode prv_set_peripherals(LightsGPIO *lights_gpio, uint16_t mapping,
-                                      LightsGPIOState state) {
+// Sets the state of all of the outputs in the output mapping.
+static StatusCode prv_set_outputs(LightsGPIO *lights_gpio, LightsGPIOOutputBitset mapping,
+                                  LightsGPIOState state) {
   while (mapping) {
     uint8_t i = __builtin_ffs(mapping) - 1;  // index of first 1 bit
-    LightsGPIOPeripheral peripheral = lights_gpio->peripherals[i];
-    // Based on the polarity of the peripheral, and the desired state, decide the gpio pin state.
+    LightsGPIOOutput output = lights_gpio->outputs[i];
+    // Based on the polarity of the output, and the desired state, decide the gpio pin state.
     GPIOState gpio_state =
-        (peripheral.polarity == LIGHTS_GPIO_POLARITY_ACTIVE_HIGH)
+        (output.polarity == LIGHTS_GPIO_POLARITY_ACTIVE_HIGH)
             ? ((state == LIGHTS_GPIO_STATE_ON) ? GPIO_STATE_HIGH : GPIO_STATE_LOW)
             : ((state == LIGHTS_GPIO_STATE_ON) ? GPIO_STATE_LOW : GPIO_STATE_HIGH);
-    status_ok_or_return(gpio_set_state(&peripheral.address, gpio_state));
-    mapping &= ~(1 << i);  // Bit is read, so we clear it
+    status_ok_or_return(gpio_set_state(&output.address, gpio_state));
+    mapping &= ~(1 << i);  // Bit is read, so we clear it.
   }
   return STATUS_CODE_OK;
 }
 
-// Initializes all the GPIO pins.
 StatusCode lights_gpio_init(const LightsGPIO *lights_gpio) {
   GPIOSettings settings = {
     .direction = GPIO_DIR_OUT,       //
@@ -43,20 +42,29 @@ StatusCode lights_gpio_init(const LightsGPIO *lights_gpio) {
     .resistor = GPIO_RES_NONE,       //
     .alt_function = GPIO_ALTFN_NONE  //
   };
+  // Initializes gpio pins.
+  for (uint8_t i = 0; i < lights_gpio->num_outputs; i++) {
+    status_ok_or_return(gpio_init_pin(&(lights_gpio->outputs[i].address), &settings));
+  }
+  // Makes sure all lights are initialized to be turned off.
+  for (uint8_t i = 0; i < lights_gpio->num_outputs; i++) {
+    LightsGPIOOutput output = lights_gpio->outputs[i];
+    GPIOState gpio_state =
+        (output.polarity == LIGHTS_GPIO_POLARITY_ACTIVE_HIGH) ? GPIO_STATE_LOW : GPIO_STATE_HIGH;
 
-  for (uint8_t i = 0; i < lights_gpio->num_peripherals; i++) {
-    status_ok_or_return(gpio_init_pin(&(lights_gpio->peripherals[i].address), &settings));
+    status_ok_or_return(gpio_set_state(&(lights_gpio->outputs[i].address), gpio_state));
   }
   return STATUS_CODE_OK;
 }
 
-// Processes events by turning ON/OFF corresponding gpio pins.
 StatusCode lights_gpio_process_event(const LightsGPIO *lights_gpio, const Event *e) {
-  if (e->data >= NUM_LIGHTS_GPIO_STATES) {
-    return status_code(STATUS_CODE_INVALID_ARGS);
+  // If event doesn't belong to lights_gpio, it ignores the event.
+  if ((e->id != LIGHTS_EVENT_GPIO_OFF) && (e->id != LIGHTS_EVENT_GPIO_ON)) {
+    return STATUS_CODE_OK;
   }
-  uint16_t bitset_map = 0;
-  status_ok_or_return(prv_search_mappings_table(lights_gpio, e, &bitset_map));
-  LightsGPIOState state = (LightsGPIOState)e->data;
-  return prv_set_peripherals(lights_gpio, bitset_map, state);
+  LightsGPIOOutputBitset output_bitset = 0;
+  status_ok_or_return(prv_search_mappings_table(lights_gpio, e, &output_bitset));
+  LightsGPIOState state =
+      (e->id == LIGHTS_EVENT_GPIO_OFF) ? LIGHTS_GPIO_STATE_OFF : LIGHTS_GPIO_STATE_ON;
+  return prv_set_outputs(lights_gpio, output_bitset, state);
 }

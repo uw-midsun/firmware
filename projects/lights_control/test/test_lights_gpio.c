@@ -12,84 +12,64 @@
 
 // Creating a mock lights_gpio config.
 
+#define TEST_LIGHTS_GPIO_DUMMY_DATA 0
+
 // Mock events.
 typedef enum {
-  TEST_LIGHTS_GPIO_MOCK_EVENT_1 = 0,          //
-  TEST_LIGHTS_GPIO_MOCK_EVENT_2,              //
-  TEST_LIGHTS_GPIO_MOCK_EVENT_3,              //
-  TEST_LIGHTS_GPIO_MOCK_EVENT_4_UNSUPPORTED,  //
-  NUM_TEST_LIGHTS_GPIO_MOCK_EVENTS            //
-} TestLightsGPIOMockEvent;
+  TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERAL_1 = 0,  //
+  TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERAL_2,      //
+  NUM_TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERALS    //
+} TestLightsGPIOMockEventPeripheral;
 
-// Mock peripheral definitions.
+// Mock output definitions.
 typedef enum {
-  TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_1 = 0,  //
-  TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_2,      //
-  TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_3,      //
-  TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_4,      //
-  TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_5,      //
-  NUM_TEST_LIGHTS_GPIO_MOCK_PERIPHERALS    //
-} TestLightsGPIOMockPeripheral;
+  TEST_LIGHTS_GPIO_MOCK_OUTPUT_1 = 0,  //
+  TEST_LIGHTS_GPIO_MOCK_OUTPUT_2,      //
+  TEST_LIGHTS_GPIO_MOCK_OUTPUT_3,      //
+  TEST_LIGHTS_GPIO_MOCK_OUTPUT_4,      //
+  NUM_TEST_LIGHTS_GPIO_MOCK_OUTPUTS    //
+} TestLightsGPIOMockOutput;
 
-// Mock peripheral gpio peripheral definitions.
-static const LightsGPIOPeripheral s_mock_peripherals[] = {
-  // clang-format and lint are inconsistent here. clang-format puts a line break before the { in
-  // every entry, while lint does not allow that, and requires that { be put in the end of the
-  // last line.
+// Mock gpio output definitions.
+static const LightsGPIOOutput s_mock_outputs[] = {
   // clang-format off
-  [TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_1] = {
+  [TEST_LIGHTS_GPIO_MOCK_OUTPUT_1] = {
     .address = { .port = GPIO_PORT_A, .pin = 0 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
-  [TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_2] = {
+  [TEST_LIGHTS_GPIO_MOCK_OUTPUT_2] = {
     .address = { .port = GPIO_PORT_B, .pin = 0 },
     .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
   },
-  [TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_3] = {
+  [TEST_LIGHTS_GPIO_MOCK_OUTPUT_3] = {
     .address = { .port = GPIO_PORT_A, .pin = 4 },
     .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
-  [TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_4] = {
+  [TEST_LIGHTS_GPIO_MOCK_OUTPUT_4] = {
     .address = { .port = GPIO_PORT_B, .pin = 1 },
     .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
-  },
-  [TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_5] = {
-    .address = { .port = GPIO_PORT_A, .pin = 3 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
-  },
+  }
   // clang-format on
 };
 
 // Array of event-to-peripheral-set mappings.
 static const LightsGPIOEventMapping s_mock_event_mappings[] = {
-  { .event_id = TEST_LIGHTS_GPIO_MOCK_EVENT_1,  //
-    .peripheral_mapping =                       //
-    LIGHTS_GPIO_PERIPHERAL_BIT(TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_1) |
-    LIGHTS_GPIO_PERIPHERAL_BIT(TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_3) },
-  { .event_id = TEST_LIGHTS_GPIO_MOCK_EVENT_2,                         //
-    .peripheral_mapping =                                              //
-    LIGHTS_GPIO_PERIPHERAL_BIT(TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_2) },  //
-  { .event_id = TEST_LIGHTS_GPIO_MOCK_EVENT_3,                         //
-    .peripheral_mapping =                                              //
-    LIGHTS_GPIO_PERIPHERAL_BIT(TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_4) |
-    LIGHTS_GPIO_PERIPHERAL_BIT(TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_5) }  //
+  { .peripheral = TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERAL_1,  //
+    .output_mapping =                                        //
+    LIGHTS_GPIO_OUTPUT_BIT(TEST_LIGHTS_GPIO_MOCK_OUTPUT_1) |
+    LIGHTS_GPIO_OUTPUT_BIT(TEST_LIGHTS_GPIO_MOCK_OUTPUT_3) },
+  { .peripheral = TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERAL_2,  //
+    .output_mapping =                                        //
+    LIGHTS_GPIO_OUTPUT_BIT(TEST_LIGHTS_GPIO_MOCK_OUTPUT_2) |
+    LIGHTS_GPIO_OUTPUT_BIT(TEST_LIGHTS_GPIO_MOCK_OUTPUT_4) }
 };
 
 static const LightsGPIO s_mock_config = {
-  .peripherals = s_mock_peripherals,                          //
-  .num_peripherals = SIZEOF_ARRAY(s_mock_peripherals),        //
+  .outputs = s_mock_outputs,                                  //
+  .num_outputs = SIZEOF_ARRAY(s_mock_outputs),                //
   .event_mappings = s_mock_event_mappings,                    //
   .num_event_mappings = SIZEOF_ARRAY(s_mock_event_mappings),  //
 };
-
-// Asserts that the gpio state for all peripherals is initialized to high.
-static void prv_gpio_initialized_high(const LightsGPIOPeripheral *peripherals, uint8_t size) {
-  GPIOState state;
-  for (uint8_t i = 0; i < size; i++) {
-    TEST_ASSERT_OK(gpio_get_state(&peripherals[i].address, &state));
-    TEST_ASSERT_EQUAL(state, GPIO_STATE_HIGH);
-  }
-}
 
 void setup_test(void) {
   TEST_ASSERT_OK(gpio_init());
@@ -98,49 +78,57 @@ void setup_test(void) {
 
 void teardown_test(void) {}
 
+// Tests that all lights are initialized to be turned off.
 void test_lights_gpio_init(void) {
-  prv_gpio_initialized_high(s_mock_peripherals, SIZEOF_ARRAY(s_mock_peripherals));
+  GPIOState state;
+  for (uint8_t i = 0; i < s_mock_config.num_outputs; i++) {
+    TEST_ASSERT_OK(gpio_get_state(&s_mock_config.outputs[i].address, &state));
+    TEST_ASSERT_EQUAL(state, (s_mock_config.outputs[i].polarity == LIGHTS_GPIO_POLARITY_ACTIVE_HIGH)
+                                 ? GPIO_STATE_LOW
+                                 : GPIO_STATE_HIGH);
+  }
+}
+void test_lights_gpio_ignore_unsupported_event(void) {
+  // Unsupported event.
+  const Event unsupported_event = { .id = LIGHTS_EVENT_CAN_RX,
+                                    .data = TEST_LIGHTS_GPIO_DUMMY_DATA };
+  // Ignore it with a STATUS_CODE_OK.
+  TEST_ASSERT_OK(lights_gpio_process_event(&s_mock_config, &unsupported_event));
 }
 
-void test_lights_gpio_set_invalid_unsupported_event(void) {
-  const Event invalid_event = { .id = NUM_TEST_LIGHTS_GPIO_MOCK_EVENTS, .data = 0 };
+void test_lights_gpio_unsupported_peripheral(void) {
+  // Event with an invalid (unsupported) data field.
+  const Event invalid_event = { .id = LIGHTS_EVENT_GPIO_ON,
+                                .data = NUM_TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERALS };
   TEST_ASSERT_NOT_OK(lights_gpio_process_event(&s_mock_config, &invalid_event));
-  const Event unsupported_event = { .id = TEST_LIGHTS_GPIO_MOCK_EVENT_4_UNSUPPORTED, .data = 1 };
-  TEST_ASSERT_NOT_OK(lights_gpio_process_event(&s_mock_config, &unsupported_event));
 }
 
-void test_lights_gpio_process_event_1(void) {
-  // As can be seen in s_mock_event_mappings, event 1 is associated with peripherals 1 and 3.
-  const Event test_event = { .id = TEST_LIGHTS_GPIO_MOCK_EVENT_1, .data = LIGHTS_GPIO_STATE_ON };
+// Testing that event with peripheral 1 is correctly mapped to outputs 1 and 3.
+void test_lights_gpio_output_mapping(void) {
+  const Event test_event = { .id = LIGHTS_EVENT_GPIO_ON,
+                             .data = TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERAL_1 };
   TEST_ASSERT_OK(lights_gpio_process_event(&s_mock_config, &test_event));
   GPIOState gpio_state;
   TEST_ASSERT_OK(
-      gpio_get_state(&s_mock_peripherals[TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_1].address, &gpio_state));
-  TEST_ASSERT_EQUAL(gpio_state, GPIO_STATE_LOW);
+      gpio_get_state(&s_mock_outputs[TEST_LIGHTS_GPIO_MOCK_OUTPUT_1].address, &gpio_state));
+  TEST_ASSERT_EQUAL(gpio_state, GPIO_STATE_HIGH);
   TEST_ASSERT_OK(
-      gpio_get_state(&s_mock_peripherals[TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_3].address, &gpio_state));
+      gpio_get_state(&s_mock_outputs[TEST_LIGHTS_GPIO_MOCK_OUTPUT_3].address, &gpio_state));
   TEST_ASSERT_EQUAL(gpio_state, GPIO_STATE_HIGH);
 }
 
-void test_lights_gpio_process_event_2(void) {
-  // As in s_mock_event_mappings, event 2 is associated with peripheral 2.
-  const Event test_event = { .id = TEST_LIGHTS_GPIO_MOCK_EVENT_1, .data = LIGHTS_GPIO_STATE_OFF };
+// Testing that outputs are set with the correct corresponding polarity.
+void test_lights_gpio_polarity_check(void) {
+  const Event test_event = { .id = LIGHTS_EVENT_GPIO_ON,
+                             .data = TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERAL_2 };
   TEST_ASSERT_OK(lights_gpio_process_event(&s_mock_config, &test_event));
   GPIOState gpio_state;
+  // First output has polarity active low, we expect it to be low when turned ON.
   TEST_ASSERT_OK(
-      gpio_get_state(&s_mock_peripherals[TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_2].address, &gpio_state));
-  TEST_ASSERT_EQUAL(gpio_state, GPIO_STATE_HIGH);
-}
-
-void test_lights_gpio_process_event_3(void) {
-  // As can be seen in s_mock_event_mappings, event 1 is associated with peripherals 1 and 3.
-  const Event test_event = { .id = TEST_LIGHTS_GPIO_MOCK_EVENT_3, .data = LIGHTS_GPIO_STATE_OFF };
-  TEST_ASSERT_OK(lights_gpio_process_event(&s_mock_config, &test_event));
-  GPIOState gpio_state;
-  TEST_ASSERT_OK(
-      gpio_get_state(&s_mock_peripherals[TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_4].address, &gpio_state));
+      gpio_get_state(&s_mock_outputs[TEST_LIGHTS_GPIO_MOCK_OUTPUT_2].address, &gpio_state));
   TEST_ASSERT_EQUAL(gpio_state, GPIO_STATE_LOW);
+  // First output has polarity active high, we expect it to be high when turned ON.
   TEST_ASSERT_OK(
-      gpio_get_state(&s_mock_peripherals[TEST_LIGHTS_GPIO_MOCK_PERIPHERAL_5].address, &gpio_state));
+      gpio_get_state(&s_mock_outputs[TEST_LIGHTS_GPIO_MOCK_OUTPUT_4].address, &gpio_state));
   TEST_ASSERT_EQUAL(gpio_state, GPIO_STATE_HIGH);
 }
