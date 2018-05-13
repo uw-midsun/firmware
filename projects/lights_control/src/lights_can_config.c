@@ -4,7 +4,7 @@
 
 const LightsCanSettings s_settings_rear = {
   // clang-format off
-  .event_lookup = {
+  .peripheral_lookup = {
     [LIGHTS_CAN_ACTION_SIGNAL_RIGHT] = LIGHTS_EVENT_SIGNAL_RIGHT,
     [LIGHTS_CAN_ACTION_SIGNAL_LEFT] = LIGHTS_EVENT_SIGNAL_LEFT,
     [LIGHTS_CAN_ACTION_SIGNAL_HAZARD] = LIGHTS_EVENT_SIGNAL_HAZARD,

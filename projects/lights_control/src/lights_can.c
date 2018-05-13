@@ -11,7 +11,6 @@
 // RX handler function.
 static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   const LightsCanSettings *settings = (const LightsCanSettings *)context;
-
   // Unpacks the message, and raises events.
   uint8_t action_id = 0;
   uint8_t data = 0;
