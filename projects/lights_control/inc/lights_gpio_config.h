@@ -13,10 +13,10 @@ typedef enum {
   LIGHTS_GPIO_CONFIG_BOARD_TYPE_FRONT = 0,  //
   LIGHTS_GPIO_CONFIG_BOARD_TYPE_REAR,       //
   NUM_LIGHTS_GPIO_CONFIG_BOARD_TYPES,       //
-} LightsGPIOConfigBoardType;
+} LightsGpioConfigBoardType;
 
 // Initializes the configuration based on the board type.
-StatusCode lights_config_init(LightsGPIOConfigBoardType board_type);
+StatusCode lights_config_init(LightsGpioConfigBoardType board_type);
 
 // Loads configuration for lights_gpio. Configuration includes mappings of peripherals to outputs.
-LightsGPIO *lights_config_load(void);
+LightsGpio *lights_config_load(void);

@@ -16,7 +16,7 @@ typedef enum {
   LIGHTS_GPIO_CONFIG_REAR_OUTPUT_RIGHT_OUTER_TURN,
   LIGHTS_GPIO_CONFIG_REAR_OUTPUT_RIGHT_TURN,
   NUM_LIGHTS_GPIO_CONFIG_REAR_OUTPUTS,
-} LightsGPIOConfigRearOutputs;
+} LightsGpioConfigRearOutputs;
 
 // Loads configuration for rear board.
-LightsGPIO *lights_config_rear_load(void);
+LightsGpio *lights_config_rear_load(void);

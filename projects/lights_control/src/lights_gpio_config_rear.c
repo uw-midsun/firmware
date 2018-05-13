@@ -7,7 +7,7 @@
 #include "lights_gpio_config_rear.h"
 
 // Output definitions.
-static const LightsGPIOOutput s_rear_outputs[] = {
+static const LightsGpioOutput s_rear_outputs[] = {
   // clang-format off
   [LIGHTS_GPIO_CONFIG_REAR_OUTPUT_STROBE] = {
     .address = { .port = GPIO_PORT_B, .pin = 11 },
@@ -52,7 +52,7 @@ static const LightsGPIOOutput s_rear_outputs[] = {
   // clang-format off
 };
 
-static LightsGPIOEventMapping s_rear_event_mappings[] = {
+static LightsGpioEventMapping s_rear_event_mappings[] = {
   { .peripheral = LIGHTS_EVENT_GPIO_PERIPHERAL_STROBE,  //
     .output_mapping = LIGHTS_GPIO_OUTPUT_BIT(LIGHTS_GPIO_CONFIG_REAR_OUTPUT_STROBE) },
   { .peripheral = LIGHTS_EVENT_GPIO_PERIPHERAL_BRAKES,  //
@@ -78,13 +78,13 @@ static LightsGPIOEventMapping s_rear_event_mappings[] = {
     LIGHTS_GPIO_OUTPUT_BIT(LIGHTS_GPIO_CONFIG_REAR_OUTPUT_RIGHT_TURN) },
 };
 
-static const LightsGPIO s_lights_gpio_rear = {
+static const LightsGpio s_lights_gpio_rear = {
   .outputs = s_rear_outputs,                          //
   .num_outputs = SIZEOF_ARRAY(s_rear_outputs),        //
   .event_mappings = s_rear_event_mappings,                    //
   .num_event_mappings = SIZEOF_ARRAY(s_rear_event_mappings),  //
 };
 
-LightsGPIO *lights_config_rear_load(void) {
+LightsGpio *lights_config_rear_load(void) {
   return &s_lights_gpio_rear;
 }

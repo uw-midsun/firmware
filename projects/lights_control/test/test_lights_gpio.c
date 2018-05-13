@@ -19,7 +19,7 @@ typedef enum {
   TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERAL_1 = 0,  //
   TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERAL_2,      //
   NUM_TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERALS    //
-} TestLightsGPIOMockEventPeripheral;
+} TestLightsGpioMockEventPeripheral;
 
 // Mock output definitions.
 typedef enum {
@@ -28,10 +28,10 @@ typedef enum {
   TEST_LIGHTS_GPIO_MOCK_OUTPUT_3,      //
   TEST_LIGHTS_GPIO_MOCK_OUTPUT_4,      //
   NUM_TEST_LIGHTS_GPIO_MOCK_OUTPUTS    //
-} TestLightsGPIOMockOutput;
+} TestLightsGpioMockOutput;
 
 // Mock gpio output definitions.
-static const LightsGPIOOutput s_mock_outputs[] = {
+static const LightsGpioOutput s_mock_outputs[] = {
   // clang-format off
   [TEST_LIGHTS_GPIO_MOCK_OUTPUT_1] = {
     .address = { .port = GPIO_PORT_A, .pin = 0 },
@@ -53,7 +53,7 @@ static const LightsGPIOOutput s_mock_outputs[] = {
 };
 
 // Array of event-to-peripheral-set mappings.
-static const LightsGPIOEventMapping s_mock_event_mappings[] = {
+static const LightsGpioEventMapping s_mock_event_mappings[] = {
   { .peripheral = TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERAL_1,  //
     .output_mapping =                                        //
     LIGHTS_GPIO_OUTPUT_BIT(TEST_LIGHTS_GPIO_MOCK_OUTPUT_1) |
@@ -64,7 +64,7 @@ static const LightsGPIOEventMapping s_mock_event_mappings[] = {
     LIGHTS_GPIO_OUTPUT_BIT(TEST_LIGHTS_GPIO_MOCK_OUTPUT_4) }
 };
 
-static const LightsGPIO s_mock_config = {
+static const LightsGpio s_mock_config = {
   .outputs = s_mock_outputs,                                  //
   .num_outputs = SIZEOF_ARRAY(s_mock_outputs),                //
   .event_mappings = s_mock_event_mappings,                    //

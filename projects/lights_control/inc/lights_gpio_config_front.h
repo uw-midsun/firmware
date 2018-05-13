@@ -17,7 +17,7 @@ typedef enum {
   LIGHTS_GPIO_CONFIG_FRONT_OUTPUT_SIDE_RIGHT_INDICATOR,
   LIGHTS_GPIO_CONFIG_FRONT_OUTPUT_RIGHT_TURN,
   NUM_LIGHTS_GPIO_CONFIG_FRONT_OUTPUTS,
-} LightsGPIOConfigFrontOutput;
+} LightsGpioConfigFrontOutput;
 
 // Loads configuration for front board.
-LightsGPIO *lights_config_front_load(void);
+LightsGpio *lights_config_front_load(void);

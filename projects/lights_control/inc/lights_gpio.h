@@ -17,39 +17,39 @@ typedef enum {
   LIGHTS_GPIO_STATE_OFF = 0,
   LIGHTS_GPIO_STATE_ON,
   NUM_LIGHTS_GPIO_STATES
-} LightsGPIOState;
+} LightsGpioState;
 
 // Polarity definitions.
 typedef enum {
   LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
   NUM_LIGHTS_GPIO_POLARITIES
-} LightsGPIOPolarity;
+} LightsGpioPolarity;
 
 // Bit-set where every bit maps to an output.
-typedef uint16_t LightsGPIOOutputBitset;
+typedef uint16_t LightsGpioOutputBitset;
 
-typedef struct LightsGPIOOutput {
+typedef struct LightsGpioOutput {
   GPIOAddress address;
-  LightsGPIOPolarity polarity;
-} LightsGPIOOutput;
+  LightsGpioPolarity polarity;
+} LightsGpioOutput;
 
 // Mapping from an event to a set of outputs.
-typedef struct LightsGPIOEventMapping {
+typedef struct LightsGpioEventMapping {
   LightsEventGPIOPeripheral peripheral;
-  LightsGPIOOutputBitset output_mapping;
-} LightsGPIOEventMapping;
+  LightsGpioOutputBitset output_mapping;
+} LightsGpioEventMapping;
 
-typedef struct LightsGPIO {
-  LightsGPIOOutput *outputs;
+typedef struct LightsGpio {
+  LightsGpioOutput *outputs;
   uint8_t num_outputs;  // Number of outputs
-  LightsGPIOEventMapping *event_mappings;
+  LightsGpioEventMapping *event_mappings;
   uint8_t num_event_mappings;
-} LightsGPIO;
+} LightsGpio;
 
 // Initializes all the GPIO pins. All lights are initialized to off.
-StatusCode lights_gpio_init(const LightsGPIO *lights_gpio);
+StatusCode lights_gpio_init(const LightsGpio *lights_gpio);
 
 // Processes LIGHTS_EVENT_GPIO_* events. Sets the GPIO states of all the outputs corresponding to
 // the peripheral shown in the data field of the event.
-StatusCode lights_gpio_process_event(const LightsGPIO *lights_gpio, const Event *e);
+StatusCode lights_gpio_process_event(const LightsGpio *lights_gpio, const Event *e);
