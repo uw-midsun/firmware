@@ -114,9 +114,8 @@ void test_lights_blinker_deactivate_already_inactive(void) {
   TEST_ASSERT_OK(lights_blinker_init(&blinker, TEST_LIGHTS_BLINKER_DURATION_SHORT));
   TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
   TEST_ASSERT_OK(lights_blinker_deactivate(&blinker));
-  TEST_ASSERT_NOT_OK(lights_blinker_deactivate(&blinker));
-  Status s = status_get();
-  TEST_ASSERT_EQUAL(s.message, "Blinker already inactive");
+  StatusCode s = lights_blinker_deactivate(&blinker);
+  TEST_ASSERT_EQUAL(s, STATUS_CODE_INVALID_ARGS);
 }
 
 void test_lights_blinker_sync_update(void) {
@@ -142,9 +141,8 @@ void test_lights_blinker_sync_on_initialized_not_activated(void) {
   // Initialized blinkers are inactive by default. They cannot be synced to ON state.
   LightsBlinker blinker = { 0 };
   TEST_ASSERT_OK(lights_blinker_init(&blinker, TEST_LIGHTS_BLINKER_DURATION_SHORT));
-  TEST_ASSERT_NOT_OK(lights_blinker_sync_on(&blinker));
-  Status s = status_get();
-  TEST_ASSERT_EQUAL(s.message, "Can't sync a deactivated blinker.");
+  StatusCode s = lights_blinker_sync_on(&blinker);
+  TEST_ASSERT_EQUAL(s, STATUS_CODE_INVALID_ARGS);
 }
 
 void test_lights_blinker_sync_on_while_deactivated(void) {
@@ -163,7 +161,6 @@ void test_lights_blinker_sync_on_while_deactivated(void) {
   TEST_ASSERT_EQUAL(e.id, LIGHTS_EVENT_GPIO_OFF);
 
   TEST_ASSERT_OK(lights_blinker_deactivate(&blinker));
-  TEST_ASSERT_NOT_OK(lights_blinker_sync_on(&blinker));
-  Status s = status_get();
-  TEST_ASSERT_EQUAL(s.message, "Can't sync a deactivated blinker.");
+  StatusCode s = lights_blinker_sync_on(&blinker);
+  TEST_ASSERT_EQUAL(s, STATUS_CODE_INVALID_ARGS);
 }
