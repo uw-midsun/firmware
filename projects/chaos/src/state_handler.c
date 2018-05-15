@@ -17,7 +17,7 @@ static StatusCode prv_handle_power_state_msg(const CANMessage *msg, void *contex
   (void)context;
   EEPowerState power_state = NUM_EE_POWER_STATES;
   CAN_UNPACK_POWER_STATE(msg, (uint8_t *)&power_state);
-  // Handler the power state.
+  // Handle the power state.
   switch (power_state) {
     case EE_POWER_STATE_IDLE:
       event_raise(CHAOS_EVENT_SEQUENCE_IDLE, STATE_HANDLER_EMPTY_DATA);

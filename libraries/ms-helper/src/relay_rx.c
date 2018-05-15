@@ -1,6 +1,7 @@
 #include "relay_rx.h"
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <string.h>
 
 #include "can.h"
@@ -28,7 +29,9 @@ static StatusCode prv_relay_rx_can_handler(const CANMessage *msg, void *context,
     *ack_reply = CAN_ACK_STATUS_INVALID;
   } else {
     storage->curr_state = state;
-    status_ok_or_return(storage->handler(storage->msg_id, storage->curr_state, storage->context));
+    if (!status_ok(storage->handler(storage->msg_id, storage->curr_state, storage->context))) {
+      *ack_reply = CAN_ACK_STATUS_INVALID;
+    }
   }
   return STATUS_CODE_OK;
 }
@@ -48,13 +51,16 @@ StatusCode relay_rx_configure_handler(SystemCanMessage msg_id, RelayRxHandler ha
                                       void *context) {
   if (s_storage_idx >= s_storage_size) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
+  } else if (handler == NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
   }
   // NOTE: we explicitly don't constrain |msg_id|. In theory we could force this to be a value
   // defined for one of the relays in codegen-tooling. But in theory this module could be used for
   // any CAN controlled GPIO. Also note that the storage is also extensible for this reason.
 
   bool disabled_in_scope = critical_section_start();
-  StatusCode status = can_register_rx_handler(msg_id, prv_relay_rx_can_handler, &s_storage);
+  StatusCode status =
+      can_register_rx_handler(msg_id, prv_relay_rx_can_handler, &s_storage[s_storage_idx]);
   if (!status_ok(status)) {
     critical_section_end(disabled_in_scope);
     return status;

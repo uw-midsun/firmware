@@ -3,20 +3,23 @@
 #include <stdbool.h>
 
 #include "can.h"
+#include "can_ack.h"
 #include "can_msg_defs.h"
 #include "can_transmit.h"
 #include "exported_enums.h"
 #include "gpio.h"
 #include "gpio_mcu.h"
 #include "interrupt.h"
+#include "log.h"
+#include "ms_test_helpers.h"
 #include "soft_timer.h"
 #include "status.h"
 #include "test_helpers.h"
 #include "unity.h"
 
 #define TEST_RELAY_CAN_DEVICE_ID 10
-#define NUM_TEST_RELAY_RX_CAN_HANDLERS 2
-#define NUM_TEST_RELAY_RX_STORAGE_HANDLERS 3
+#define NUM_TEST_RELAY_RX_CAN_HANDLERS 3
+#define NUM_TEST_RELAY_RX_STORAGE_HANDLERS 2
 
 typedef enum {
   TEST_RELAY_RX_CAN_RX = 10,
@@ -31,10 +34,25 @@ typedef struct TestRelayRxHandlerCtx {
   bool executed;
 } TestRelayRxHandlerCtx;
 
+static const Event s_tx_event = { TEST_RELAY_RX_CAN_TX, 0 };
+static const Event s_rx_event = { TEST_RELAY_RX_CAN_RX, 0 };
 static RelayRxStorage s_relay_storage[NUM_TEST_RELAY_RX_STORAGE_HANDLERS];
 static CANStorage s_can_storage;
+static CANAckRequests s_can_ack_requests;
 static CANRxHandler s_rx_handlers[NUM_TEST_RELAY_RX_STORAGE_HANDLERS];
 
+// CANAckRequestCb
+static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+                                   uint16_t num_remaining, void *context) {
+  (void)num_remaining;
+  CANAckStatus *expected_status = context;
+  TEST_ASSERT_EQUAL(SYSTEM_CAN_MESSAGE_BATTERY_RELAY, msg_id);
+  TEST_ASSERT_EQUAL(TEST_RELAY_CAN_DEVICE_ID, device);
+  TEST_ASSERT_EQUAL(*expected_status, status);
+  return STATUS_CODE_OK;
+}
+
+// RelayRxHandler
 static StatusCode prv_relay_rx_handler(SystemCanMessage msg_id, EEChaosCmdRelayState state,
                                        void *context) {
   TestRelayRxHandlerCtx *data = context;
@@ -60,7 +78,8 @@ void setup_test(void) {
     .loopback = true,
   };
   TEST_ASSERT_OK(
-      can_init(&can_settings, &s_can_storage, s_rx_handlers, NUM_TEST_RELAY_RX_STORAGE_HANDLERS));
+      can_init(&can_settings, &s_can_storage, s_rx_handlers, NUM_TEST_RELAY_RX_CAN_HANDLERS));
+  can_ack_init(&s_can_ack_requests);
 }
 
 void teardown_test(void) {}
@@ -100,5 +119,36 @@ void test_relay_rx(void) {
   };
   TEST_ASSERT_OK(
       relay_rx_configure_handler(SYSTEM_CAN_MESSAGE_BATTERY_RELAY, prv_relay_rx_handler, &context));
-  CAN_TRANSMIT
+
+  CANAckStatus expected_status = CAN_ACK_STATUS_OK;
+  CANAckRequest req = {
+    .callback = prv_ack_callback,
+    .context = &expected_status,
+    .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_RELAY_CAN_DEVICE_ID),
+  };
+
+  // Open.
+  CAN_TRANSMIT_BATTERY_RELAY(&req, EE_CHAOS_CMD_RELAY_STATE_OPEN);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  TEST_ASSERT_TRUE(context.executed);
+  context.executed = false;
+
+  // Close.
+  context.expected_state = EE_CHAOS_CMD_RELAY_STATE_CLOSE;
+  CAN_TRANSMIT_BATTERY_RELAY(&req, EE_CHAOS_CMD_RELAY_STATE_CLOSE);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  TEST_ASSERT_TRUE(context.executed);
+  context.executed = false;
+
+  // Invalid.
+  expected_status = CAN_ACK_STATUS_INVALID;
+  CAN_TRANSMIT_BATTERY_RELAY(&req, NUM_EE_CHAOS_CMD_RELAY_STATES);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  TEST_ASSERT_FALSE(context.executed);
+
+  // Fail to update relay.
+  context.ret_code = STATUS_CODE_INTERNAL_ERROR;
+  CAN_TRANSMIT_BATTERY_RELAY(&req, EE_CHAOS_CMD_RELAY_STATE_CLOSE);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  TEST_ASSERT_TRUE(context.executed);
 }
