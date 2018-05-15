@@ -87,7 +87,7 @@ program gdb:
 ifneq (,$(TEST))
 run_ssh:
 	@echo "Running command through SSH"
-	@$(SSH_CMD:make=make -o $(GDB_TARGET))
+	@$(SSH_CMD:make=make -o $(TARGET_BINARY))
 else
 run_ssh: unsupported
 endif
