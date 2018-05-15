@@ -24,7 +24,7 @@ void teardown_test(void) {}
 void test_lights_blinker_init(void) {
   LightsBlinker blinker = { 0 };
   lights_blinker_init(&blinker, TEST_LIGHTS_BLINKER_DURATION_SHORT);
-  TEST_ASSERT_EQUAL(blinker.timer_id, SOFT_TIMER_INVALID_TIMER);
+  TEST_ASSERT_EQUAL(SOFT_TIMER_INVALID_TIMER, blinker.timer_id);
 }
 
 void test_lights_blinker_activate(void) {
@@ -36,30 +36,30 @@ void test_lights_blinker_activate(void) {
   TEST_ASSERT_OK(lights_blinker_init(&blinker_2, TEST_LIGHTS_BLINKER_DURATION_LONG));
 
   TEST_ASSERT_OK(lights_blinker_activate(&blinker_1, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_HAZARD));
-  TEST_ASSERT_EQUAL(blinker_1.duration_ms, TEST_LIGHTS_BLINKER_DURATION_SHORT);
+  TEST_ASSERT_EQUAL(TEST_LIGHTS_BLINKER_DURATION_SHORT, blinker_1.duration_ms);
   TEST_ASSERT_EQUAL(LIGHTS_BLINKER_STATE_ON, blinker_1.state);
-  TEST_ASSERT_NOT_EQUAL(blinker_1.timer_id, SOFT_TIMER_INVALID_TIMER);
+  TEST_ASSERT_NOT_EQUAL(SOFT_TIMER_INVALID_TIMER, blinker_1.timer_id);
   Event e = { 0 };
   TEST_ASSERT_OK(event_process(&e));
-  TEST_ASSERT_EQUAL(e.id, LIGHTS_EVENT_GPIO_ON);
-  TEST_ASSERT_EQUAL(e.data, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_HAZARD);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_ON, e.id);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_HAZARD, e.data);
 
   TEST_ASSERT_OK(lights_blinker_activate(&blinker_2, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
   TEST_ASSERT_OK(event_process(&e));
-  TEST_ASSERT_EQUAL(e.id, LIGHTS_EVENT_GPIO_ON);
-  TEST_ASSERT_EQUAL(e.data, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_ON, e.id);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT, e.data);
 
   // Now we make sure blinker 1 timer goes off before blinker 2
   while (event_process(&e) != STATUS_CODE_OK) {
   }
-  TEST_ASSERT_EQUAL(e.id, LIGHTS_EVENT_GPIO_OFF);
-  TEST_ASSERT_EQUAL(e.data, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_HAZARD);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_OFF, e.id);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_HAZARD, e.data);
 
   // Wait for the second blinker
   while (event_process(&e) != STATUS_CODE_OK) {
   }
-  TEST_ASSERT_EQUAL(e.id, LIGHTS_EVENT_GPIO_OFF);
-  TEST_ASSERT_EQUAL(e.data, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_OFF, e.id);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT, e.data);
 }
 
 void test_lights_blinker_activate_already_active(void) {
@@ -70,17 +70,17 @@ void test_lights_blinker_activate_already_active(void) {
   TEST_ASSERT_OK(lights_blinker_init(&blinker, TEST_LIGHTS_BLINKER_DURATION_SHORT));
   TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
   TEST_ASSERT_OK(event_process(&e));
-  TEST_ASSERT_EQUAL(e.data, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
-  TEST_ASSERT_EQUAL(e.id, LIGHTS_EVENT_GPIO_ON);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT, e.data);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_ON, e.id);
   TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_RIGHT));
   TEST_ASSERT_OK(event_process(&e));
   // Since two events (ON, and OFF) are raised at the same time, we need to make sure the OFF event
   // takes precedence over the ON event.
-  TEST_ASSERT_EQUAL(e.data, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
-  TEST_ASSERT_EQUAL(e.id, LIGHTS_EVENT_GPIO_OFF);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT, e.data);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_OFF, e.id);
   TEST_ASSERT_OK(event_process(&e));
-  TEST_ASSERT_EQUAL(e.data, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_RIGHT);
-  TEST_ASSERT_EQUAL(e.id, LIGHTS_EVENT_GPIO_ON);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_RIGHT, e.data);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_ON, e.id);
 }
 
 void test_lights_blinker_activate_with_existing_peripheral(void) {
@@ -91,8 +91,8 @@ void test_lights_blinker_activate_with_existing_peripheral(void) {
   TEST_ASSERT_OK(lights_blinker_init(&blinker, TEST_LIGHTS_BLINKER_DURATION_SHORT));
   TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
   TEST_ASSERT_OK(event_process(&e));
-  TEST_ASSERT_EQUAL(e.data, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
-  TEST_ASSERT_EQUAL(e.id, LIGHTS_EVENT_GPIO_ON);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT, e.data);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_ON, e.id);
   TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
   TEST_ASSERT_NOT_OK(event_process(&e));
 }
@@ -104,7 +104,7 @@ void test_lights_blinker_deactivate_timer_cancelled(void) {
   TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
   TEST_ASSERT_TRUE(soft_timer_inuse());
   TEST_ASSERT_OK(lights_blinker_deactivate(&blinker));
-  TEST_ASSERT_EQUAL(blinker.timer_id, SOFT_TIMER_INVALID_TIMER);
+  TEST_ASSERT_EQUAL(SOFT_TIMER_INVALID_TIMER, blinker.timer_id);
   TEST_ASSERT_FALSE(soft_timer_inuse());
 }
 
@@ -115,7 +115,7 @@ void test_lights_blinker_deactivate_already_inactive(void) {
   TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
   TEST_ASSERT_OK(lights_blinker_deactivate(&blinker));
   StatusCode s = lights_blinker_deactivate(&blinker);
-  TEST_ASSERT_EQUAL(s, STATUS_CODE_INVALID_ARGS);
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, s);
 }
 
 void test_lights_blinker_sync_update(void) {
@@ -125,16 +125,16 @@ void test_lights_blinker_sync_update(void) {
   TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
   Event e = { 0 };
   TEST_ASSERT_OK(event_process(&e));
-  TEST_ASSERT_EQUAL(e.data, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
-  TEST_ASSERT_EQUAL(e.id, LIGHTS_EVENT_GPIO_ON);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT, e.data);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_ON, e.id);
 
   // Syncing blinker.
   TEST_ASSERT_OK(lights_blinker_sync_on(&blinker));
   TEST_ASSERT_OK(event_process(&e));
   // Raised event must be on again. If we didn't call lights_blinker_sync_on, event would not get
   // raised immediately, and would have been an off blink event.
-  TEST_ASSERT_EQUAL(e.data, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
-  TEST_ASSERT_EQUAL(e.id, LIGHTS_EVENT_GPIO_ON);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT, e.data);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_ON, e.id);
 }
 
 void test_lights_blinker_sync_on_initialized_not_activated(void) {
@@ -142,7 +142,7 @@ void test_lights_blinker_sync_on_initialized_not_activated(void) {
   LightsBlinker blinker = { 0 };
   TEST_ASSERT_OK(lights_blinker_init(&blinker, TEST_LIGHTS_BLINKER_DURATION_SHORT));
   StatusCode s = lights_blinker_sync_on(&blinker);
-  TEST_ASSERT_EQUAL(s, STATUS_CODE_INVALID_ARGS);
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, s);
 }
 
 void test_lights_blinker_sync_on_while_deactivated(void) {
@@ -152,15 +152,15 @@ void test_lights_blinker_sync_on_while_deactivated(void) {
   TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
   Event e = { 0 };
   TEST_ASSERT_OK(event_process(&e));
-  TEST_ASSERT_EQUAL(e.data, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
-  TEST_ASSERT_EQUAL(e.id, LIGHTS_EVENT_GPIO_ON);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT, e.data);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_ON, e.id);
   // Wait for a full blink cycle.
   while (event_process(&e) != STATUS_CODE_OK) {
   }
-  TEST_ASSERT_EQUAL(e.data, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
-  TEST_ASSERT_EQUAL(e.id, LIGHTS_EVENT_GPIO_OFF);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT, e.data);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_OFF, e.id);
 
   TEST_ASSERT_OK(lights_blinker_deactivate(&blinker));
   StatusCode s = lights_blinker_sync_on(&blinker);
-  TEST_ASSERT_EQUAL(s, STATUS_CODE_INVALID_ARGS);
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, s);
 }
