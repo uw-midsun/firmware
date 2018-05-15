@@ -83,9 +83,10 @@ void test_lights_gpio_init(void) {
   GPIOState state;
   for (uint8_t i = 0; i < s_mock_config.num_outputs; i++) {
     TEST_ASSERT_OK(gpio_get_state(&s_mock_config.outputs[i].address, &state));
-    TEST_ASSERT_EQUAL(state, (s_mock_config.outputs[i].polarity == LIGHTS_GPIO_POLARITY_ACTIVE_HIGH)
-                                 ? GPIO_STATE_LOW
-                                 : GPIO_STATE_HIGH);
+    TEST_ASSERT_EQUAL((s_mock_config.outputs[i].polarity == LIGHTS_GPIO_POLARITY_ACTIVE_HIGH)
+                          ? GPIO_STATE_LOW
+                          : GPIO_STATE_HIGH,
+                      state);
   }
 }
 void test_lights_gpio_ignore_unsupported_event(void) {
@@ -111,10 +112,10 @@ void test_lights_gpio_output_mapping(void) {
   GPIOState gpio_state;
   TEST_ASSERT_OK(
       gpio_get_state(&s_mock_outputs[TEST_LIGHTS_GPIO_MOCK_OUTPUT_1].address, &gpio_state));
-  TEST_ASSERT_EQUAL(gpio_state, GPIO_STATE_HIGH);
+  TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, gpio_state);
   TEST_ASSERT_OK(
       gpio_get_state(&s_mock_outputs[TEST_LIGHTS_GPIO_MOCK_OUTPUT_3].address, &gpio_state));
-  TEST_ASSERT_EQUAL(gpio_state, GPIO_STATE_HIGH);
+  TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, gpio_state);
 }
 
 // Testing that outputs are set with the correct corresponding polarity.
@@ -126,9 +127,9 @@ void test_lights_gpio_polarity_check(void) {
   // First output has polarity active low, we expect it to be low when turned ON.
   TEST_ASSERT_OK(
       gpio_get_state(&s_mock_outputs[TEST_LIGHTS_GPIO_MOCK_OUTPUT_2].address, &gpio_state));
-  TEST_ASSERT_EQUAL(gpio_state, GPIO_STATE_LOW);
+  TEST_ASSERT_EQUAL(GPIO_STATE_LOW, gpio_state);
   // First output has polarity active high, we expect it to be high when turned ON.
   TEST_ASSERT_OK(
       gpio_get_state(&s_mock_outputs[TEST_LIGHTS_GPIO_MOCK_OUTPUT_4].address, &gpio_state));
-  TEST_ASSERT_EQUAL(gpio_state, GPIO_STATE_HIGH);
+  TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, gpio_state);
 }
