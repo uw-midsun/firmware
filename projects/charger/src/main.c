@@ -34,18 +34,22 @@ int main(void) {
   UARTStorage uart_storage;
   uart_init(charger_cfg_load_uart_port(), uart_settings, &uart_storage);
 
-  // Charger
+  // Charger Cfg
   charger_cfg_init_settings();
 
+  // Charger Pin
   const GPIOAddress pin_addr = charger_cfg_load_charger_pin();
   charger_pin_init(&pin_addr);
 
+  // Charger Controller
   ChargerSettings *charger_settings = charger_cfg_load_settings();
   ChargerCanStatus charger_status;
   charger_controller_init(charger_settings, &charger_status);
 
+  // Notify/Command
   notify_init(charger_settings->can, CHARGER_CFG_SEND_PERIOD_S, CHARGER_CFG_WATCHDOG_PERIOD_S);
 
+  // FSM
   charger_fsm_init(&charger_status);
 
   StatusCode status = NUM_STATUS_CODES;
@@ -55,6 +59,8 @@ int main(void) {
       status = event_process(&e);
 
       // All events are interrupt driven so it is safe to wait while the event_queue is empty.
+      // TODO(ELEC-355): This may change based on what happens with the charger pin work as it may
+      // be on an ADC/PWM Signal.
       if (status == STATUS_CODE_EMPTY) {
         wait();
         // TODO(ELEC-355): Validate nothing gets stuck here.

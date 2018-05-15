@@ -1,21 +1,39 @@
 #pragma once
-
-#include <stdbool.h>
-
-#include "charger_can.h"
-#include "event_queue.h"
-
+// FSM for the charger
+//
+// Requires
+// - notify
+// - charger_pin
+// - charger_controller
+// To be initialized.
+//
 // Charger design:
 //
 // Charger Disconnected:
 // - Do nothing
 //
 // Charger Connected:
-// - Request permission periodically
+// - Notify of connection periodically
 //
 // Charger Charging:
-// - Request permission periodically
-// - Charge while permission is granted and periodically publish data
+// - Notify of connection periodically
+// - Charge while command is not expired and periodically publish data
+// - Exits immediately in case of fault
+//
+// Transition Table:
+// | From \ To    | Disconnected | Connected | Charging |
+// | Disconnected |              |     Y     |     N    |
+// | Connected    |       Y      |           |   G(Y)   |
+// | Charging     |       Y      |           |          |
+//
+// Y - Allowed
+// N - Not Allowed
+// G(Y) - Guarded but Allowed
+
+#include <stdbool.h>
+
+#include "charger_can.h"
+#include "event_queue.h"
 
 // Initializes the FSM |charger_can_status| is used to guard against faults.
 void charger_fsm_init(ChargerCanStatus *charger_can_status);
