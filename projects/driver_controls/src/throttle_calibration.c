@@ -143,7 +143,7 @@ StatusCode throttle_calibration_result(ThrottleCalibrationStorage *storage,
   accel_threshold->max =
       main_data[THROTTLE_CALIBRATION_POINT_FULL_ACCEL].max_reading + range_tolerance;
 
-  // TODO(ELEC-382): Need to figure out tolerance calculation
+  // TODO(ELEC-414): Need to figure out tolerance calculation
   calib_data->tolerance = 20;
 
   printf("brake: %d - %d\n", brake_threshold->min, brake_threshold->max);

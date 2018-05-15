@@ -69,8 +69,8 @@ typedef struct ThrottleCalibrationStorage {
   ThrottleCalibrationPoint sample_point;
 } ThrottleCalibrationStorage;
 
-// Expects |ads1015| to be initialized. |settings| does not need to persist.
-// |zone_percentage| should add up to 100.
+// Expects |settings.ads1015| to be initialized. |settings| does not need to persist.
+// |settings.zone_percentage| should add up to 100.
 StatusCode throttle_calibration_init(ThrottleCalibrationStorage *storage,
                                      ThrottleCalibrationSettings *settings);
 
