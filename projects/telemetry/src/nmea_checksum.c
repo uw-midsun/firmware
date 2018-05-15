@@ -16,7 +16,7 @@ static uint8_t prv_hex_to_int(char h) {
   return 16;
 }
 
-static StatusCode prv_checksum_to_int(char tens, char ones, uint8_t * computed) {
+static StatusCode prv_checksum_to_int(char tens, char ones, uint8_t *computed) {
   uint8_t int_tens = prv_hex_to_int(tens);
   uint8_t int_ones = prv_hex_to_int(ones);
 
@@ -25,7 +25,7 @@ static StatusCode prv_checksum_to_int(char tens, char ones, uint8_t * computed) 
     return STATUS_CODE_INVALID_ARGS;
   }
   if (computed != NULL) {
-    *computed =  int_tens * 16 + int_ones;
+    *computed = int_tens * 16 + int_ones;
   }
   return STATUS_CODE_OK;
 }
