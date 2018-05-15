@@ -11,14 +11,13 @@
 #include "lights_events.h"
 
 #define TEST_LIGHTS_CAN_DEVICE_ID 0
+LightsCanStorage s_test_storage;
 
 typedef enum {
   TEST_LIGHTS_CAN_CMD_OFF = 0,
   TEST_LIGHTS_CAN_CMD_ON,
   NUM_TEST_LIGHTS_CAN_CMDS
 } TestLightsCanCmd;
-
-LightsCanStorage s_test_storage;
 
 const LightsCanSettings s_test_settings = {
   .loopback = true,
@@ -47,7 +46,7 @@ const LightsCanSettings s_test_settings = {
     [LIGHTS_CAN_ACTION_LOW_BEAMS] = LIGHTS_EVENT_GPIO_PERIPHERAL_LOW_BEAMS,
     [LIGHTS_CAN_ACTION_DRL] = LIGHTS_EVENT_GPIO_PERIPHERAL_DRL,
     [LIGHTS_CAN_ACTION_BRAKES] = LIGHTS_EVENT_GPIO_PERIPHERAL_BRAKES,
-    [LIGHTS_CAN_ACTION_STROBE] = LIGHTS_EVENT_GPIO_PERIPHERAL_STROBE,
+    [LIGHTS_CAN_ACTION_STROBE] = 0,
     [LIGHTS_CAN_ACTION_SYNC] = 0,
   },
   // clang-format on
@@ -82,27 +81,30 @@ void setup_test(void) {
 
 void teardown_test(void) {}
 
-// sends messages to the front board using the loopback interface asserts that the correct event
-// has been raised with the correct data.
+// Transmit a CAN message to the module and make sure the correct events get raised
 void test_lights_rx(void) {
   TEST_ASSERT_OK(lights_can_init(&s_test_settings, &s_test_storage));
 
-  uint8_t num_test_messages = 5;
+  uint8_t num_test_messages = 7;
 
   uint16_t test_messages[][2] = {
-    { LIGHTS_CAN_ACTION_SIGNAL_RIGHT, TEST_LIGHTS_CAN_CMD_ON },   //
-    { LIGHTS_CAN_ACTION_SIGNAL_LEFT, TEST_LIGHTS_CAN_CMD_OFF },   //
-    { LIGHTS_CAN_ACTION_SIGNAL_HAZARD, TEST_LIGHTS_CAN_CMD_ON },  //
-    { LIGHTS_CAN_ACTION_HIGH_BEAMS, TEST_LIGHTS_CAN_CMD_ON },           //
-    { LIGHTS_CAN_ACTION_SYNC, TEST_LIGHTS_CAN_CMD_ON },           //
+    { LIGHTS_CAN_ACTION_SIGNAL_RIGHT, TEST_LIGHTS_CAN_CMD_ON },
+    { LIGHTS_CAN_ACTION_SIGNAL_HAZARD, TEST_LIGHTS_CAN_CMD_OFF },
+    { LIGHTS_CAN_ACTION_HIGH_BEAMS, TEST_LIGHTS_CAN_CMD_ON },
+    { LIGHTS_CAN_ACTION_BRAKES, TEST_LIGHTS_CAN_CMD_OFF },
+    { LIGHTS_CAN_ACTION_STROBE, TEST_LIGHTS_CAN_CMD_ON },
+    { LIGHTS_CAN_ACTION_STROBE, TEST_LIGHTS_CAN_CMD_OFF },
+    { LIGHTS_CAN_ACTION_SYNC, 0 },
   };
 
   uint16_t assertion_values[][2] = {
-    { LIGHTS_EVENT_SIGNAL_ON, LIGHTS_EVENT_SIGNAL_MODE_RIGHT },   //
-    { LIGHTS_EVENT_SIGNAL_OFF, LIGHTS_EVENT_SIGNAL_MODE_LEFT },   //
-    { LIGHTS_EVENT_SIGNAL_ON, LIGHTS_EVENT_SIGNAL_MODE_HAZARD },  //
-    { LIGHTS_EVENT_HORN, TEST_LIGHTS_CAN_CMD_ON },           //
-    { LIGHTS_EVENT_SYNC, TEST_LIGHTS_CAN_CMD_ON }            //
+    { LIGHTS_EVENT_SIGNAL_ON, LIGHTS_EVENT_SIGNAL_MODE_RIGHT },
+    { LIGHTS_EVENT_SIGNAL_OFF, LIGHTS_EVENT_SIGNAL_MODE_HAZARD },
+    { LIGHTS_EVENT_GPIO_ON, LIGHTS_EVENT_GPIO_PERIPHERAL_HIGH_BEAMS },
+    { LIGHTS_EVENT_GPIO_OFF, LIGHTS_EVENT_GPIO_PERIPHERAL_BRAKES },
+    { LIGHTS_EVENT_STROBE_ON, 0 },
+    { LIGHTS_EVENT_STROBE_OFF, 0 },
+    { LIGHTS_EVENT_SYNC, 0 },
   };
 
   CANMessage msg = { 0 };

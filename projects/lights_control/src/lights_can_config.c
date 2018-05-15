@@ -25,7 +25,7 @@ const LightsCanSettings s_settings_rear = {
     [LIGHTS_CAN_ACTION_LOW_BEAMS] = LIGHTS_EVENT_GPIO_PERIPHERAL_LOW_BEAMS,
     [LIGHTS_CAN_ACTION_DRL] = LIGHTS_EVENT_GPIO_PERIPHERAL_DRL,
     [LIGHTS_CAN_ACTION_BRAKES] = LIGHTS_EVENT_GPIO_PERIPHERAL_BRAKES,
-    [LIGHTS_CAN_ACTION_STROBE] = LIGHTS_EVENT_GPIO_PERIPHERAL_STROBE,
+    [LIGHTS_CAN_ACTION_STROBE] = 0,
     [LIGHTS_CAN_ACTION_SYNC] = 0,
   },
   // clang-format on
@@ -59,7 +59,7 @@ const LightsCanSettings s_settings_front = {
     [LIGHTS_CAN_ACTION_LOW_BEAMS] = LIGHTS_EVENT_GPIO_PERIPHERAL_LOW_BEAMS,
     [LIGHTS_CAN_ACTION_DRL] = LIGHTS_EVENT_GPIO_PERIPHERAL_DRL,
     [LIGHTS_CAN_ACTION_BRAKES] = LIGHTS_EVENT_GPIO_PERIPHERAL_BRAKES,
-    [LIGHTS_CAN_ACTION_STROBE] = LIGHTS_EVENT_GPIO_PERIPHERAL_STROBE,
+    [LIGHTS_CAN_ACTION_STROBE] = 0,
     [LIGHTS_CAN_ACTION_SYNC] = 0,
   },
   // clang-format on
@@ -73,8 +73,8 @@ const LightsCanSettings s_settings_front = {
 const LightsCanSettings *s_settings;
 
 void lights_can_config_init(LightsCanConfigBoardType can_board) {
-  s_settings = (can_board == LIGHTS_CAN_CONFIG_BOARD_TYPE_FRONT) ?
-          &s_settings_front : &s_settings_rear;
+  s_settings =
+      (can_board == LIGHTS_CAN_CONFIG_BOARD_TYPE_FRONT) ? &s_settings_front : &s_settings_rear;
 }
 
 LightsCanSettings *lights_can_config_load() {
