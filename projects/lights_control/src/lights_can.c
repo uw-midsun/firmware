@@ -12,13 +12,14 @@
 static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   const LightsCanSettings *settings = (const LightsCanSettings *)context;
   // Unpacks the message, and raises events.
-  uint8_t action_id = 0;
+  LightsCanActionID action_id = 0;
   uint8_t data = 0;
   CAN_UNPACK_LIGHTS_STATES(msg, &action_id, &data);
   if (action_id >= NUM_LIGHTS_CAN_ACTIONS_ID) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Unsupported lights action.");
   }
-  status_ok_or_return(event_raise(settings->event_lookup[action_id], data));
+  status_ok_or_return(event_raise(settings->event_lookup[action_id][data],
+                          settings->event_data_lookup[action_id]));
   return STATUS_CODE_OK;
 }
 

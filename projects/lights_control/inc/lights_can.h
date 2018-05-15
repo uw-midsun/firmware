@@ -29,7 +29,8 @@ typedef struct LightsCanStorage {
 typedef struct LightsCanSettings {
   uint16_t device_id;
   bool loopback;
-  LightsEvent event_lookup[NUM_LIGHTS_CAN_ACTIONS_ID];
+  uint8_t event_data_lookup[NUM_LIGHTS_CAN_ACTIONS_ID];
+  LightsEvent event_lookup[NUM_LIGHTS_CAN_ACTIONS_ID][2];
   GPIOAddress rx_addr;
   GPIOAddress tx_addr;
 } LightsCanSettings;

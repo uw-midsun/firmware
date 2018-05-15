@@ -1,7 +1,7 @@
 #pragma once
 
 // Every event is post-fixed by the module that processes it.
-// i.e. LIGHTS_EVENT_GPIO* is used by the lights_gpio module.
+// i.e. LIGHTS_EVENT_GPIO_* is used by the lights_gpio module.
 
 typedef enum {
   // Used internally by the can module.
@@ -14,6 +14,11 @@ typedef enum {
   // Events processed by lights_signal module.
   LIGHTS_EVENT_SIGNAL_OFF,
   LIGHTS_EVENT_SIGNAL_ON,
+  // Events processed by lights_strobe module.
+  LIGHTS_EVENT_STROBE_OFF,
+  LIGHTS_EVENT_STROBE_ON,
+  // Event processed by lights_sync module.
+  LIGHTS_EVENT_SYNC,
   NUM_LIGHTS_EVENTS
 } LightsEvent;
 
@@ -30,7 +35,7 @@ typedef enum {
   LIGHTS_EVENT_GPIO_PERIPHERAL_BRAKES,
   LIGHTS_EVENT_GPIO_PERIPHERAL_SYNC,
   NUM_LIGHTS_EVENT_GPIO_PERIPHERALS
-} LightsEventGPIOPeripheral;
+} LightsEventGpioPeripheral;
 
 // Possible data fields to be used with a LIGHTS_EVENT_SIGNAL_* event.
 typedef enum {
