@@ -62,7 +62,7 @@ static ChargerSettings s_charger_settings = {
 
 StatusCode charger_cfg_init_settings(void) {
   status_ok_or_return(generic_can_network_init(&s_can_storage));
-  return generic_can_uart_init(charger_cfg_load_uart_port(), &s_can_uart_storage);
+  return generic_can_uart_init(&s_can_uart_storage, charger_cfg_load_uart_port());
 }
 
 ChargerSettings *charger_cfg_load_settings(void) {

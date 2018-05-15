@@ -35,7 +35,7 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  TEST_ASSERT_OK(generic_can_hw_init(&can_hw_settings, CHARGER_EVENT_CAN_FAULT, &s_can));
+  TEST_ASSERT_OK(generic_can_hw_init(&s_can, &can_hw_settings, CHARGER_EVENT_CAN_FAULT));
 }
 
 void teardown_test(void) {}
