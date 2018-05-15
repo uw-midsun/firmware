@@ -104,4 +104,4 @@ void test_charger_fsm_transitions(void) {
   TEST_ASSERT_TRUE(charger_fsm_process_event(&e));
 }
 
-// TODO(ELEC-355); Add full integration test.
+// TODO(ELEC-355): Add full integration test.
