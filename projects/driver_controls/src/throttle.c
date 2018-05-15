@@ -60,10 +60,10 @@ static bool prv_channels_synced(int16_t reading_main, int16_t reading_secondary,
 
   ThrottleLine *line = storage->calibration_data->line;
 
-  int16_t max_main = line[THROTTLE_CHANNEL_MAIN].full_throttle_reading;
+  int16_t max_main = line[THROTTLE_CHANNEL_MAIN].full_accel_reading;
   int16_t min_main = line[THROTTLE_CHANNEL_MAIN].full_brake_reading;
 
-  int16_t max_secondary = line[THROTTLE_CHANNEL_SECONDARY].full_throttle_reading;
+  int16_t max_secondary = line[THROTTLE_CHANNEL_SECONDARY].full_accel_reading;
   int16_t min_secondary = line[THROTTLE_CHANNEL_SECONDARY].full_brake_reading;
 
   int16_t tolerance = storage->calibration_data->tolerance;
@@ -101,25 +101,37 @@ static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) 
   int16_t reading_main = INT16_MIN;
   int16_t reading_secondary = INT16_MIN;
 
-  ads1015_read_raw(storage->pedal_ads1015_storage, storage->channel_main, &reading_main);
-  ads1015_read_raw(storage->pedal_ads1015_storage, storage->channel_secondary, &reading_secondary);
+  ads1015_read_raw(storage->pedal_ads1015_storage, storage->calibration_data->channel_main,
+                   &reading_main);
+  ads1015_read_raw(storage->pedal_ads1015_storage, storage->calibration_data->channel_secondary,
+                   &reading_secondary);
 
   InputEvent pedal_events[NUM_THROTTLE_ZONES] = { INPUT_EVENT_PEDAL_BRAKE, INPUT_EVENT_PEDAL_COAST,
                                                   INPUT_EVENT_PEDAL_ACCEL };
+
   bool fault = true;
-  if (storage->reading_updated_flag &&
-      prv_channels_synced(reading_main, reading_secondary, storage)) {
-    for (ThrottleZone zone = THROTTLE_ZONE_BRAKE; zone < NUM_THROTTLE_ZONES; zone++) {
-      if (prv_reading_within_zone(reading_main, zone, storage)) {
-        fault = false;
-        storage->position.zone = zone;
-        storage->position.numerator = prv_get_numerator_zone(reading_main, zone, storage);
-        storage->reading_ok_flag = true;
-        event_raise(pedal_events[zone], storage->position.numerator);
-        break;
+
+  if (storage->reading_updated_flag) {
+    if (prv_channels_synced(reading_main, reading_secondary, storage)) {
+      storage->desync_counter = 0;
+    } else {
+      storage->desync_counter++;
+    }
+
+    if (storage->desync_counter < THROTTLE_MAX_DESYNC_COUNT) {
+      for (ThrottleZone zone = THROTTLE_ZONE_BRAKE; zone < NUM_THROTTLE_ZONES; zone++) {
+        if (prv_reading_within_zone(reading_main, zone, storage)) {
+          fault = false;
+          storage->position.zone = zone;
+          storage->position.numerator = prv_get_numerator_zone(reading_main, zone, storage);
+          storage->reading_ok_flag = true;
+          event_raise(pedal_events[zone], storage->position.numerator);
+          break;
+        }
       }
     }
   }
+
   if (fault) {
     storage->reading_ok_flag = false;
     storage->position.zone = NUM_THROTTLE_ZONES;
@@ -133,10 +145,8 @@ static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) 
 // Initializes the throttle by configuring the ADS1015 channels and
 // setting the periodic safety check callback.
 StatusCode throttle_init(ThrottleStorage *storage, ThrottleCalibrationData *calibration_data,
-                         Ads1015Storage *pedal_ads1015_storage, Ads1015Channel channel_main,
-                         Ads1015Channel channel_secondary) {
-  if (storage == NULL || calibration_data == NULL || pedal_ads1015_storage == NULL ||
-      channel_main >= NUM_ADS1015_CHANNELS || channel_secondary >= NUM_ADS1015_CHANNELS) {
+                         Ads1015Storage *pedal_ads1015_storage) {
+  if (storage == NULL || calibration_data == NULL || pedal_ads1015_storage == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   memset(storage, 0, sizeof(*storage));
@@ -145,14 +155,14 @@ StatusCode throttle_init(ThrottleStorage *storage, ThrottleCalibrationData *cali
 
   // The callback for updating flags is only set on the main channel.
   // Verifying later if the second channel is in sync with the main channel is sufficient.
-  status_ok_or_return(ads1015_configure_channel(pedal_ads1015_storage, channel_main, true,
+  status_ok_or_return(ads1015_configure_channel(pedal_ads1015_storage,
+                                                calibration_data->channel_main, true,
                                                 prv_flag_update_callback, storage));
-  status_ok_or_return(
-      ads1015_configure_channel(pedal_ads1015_storage, channel_secondary, true, NULL, NULL));
+  status_ok_or_return(ads1015_configure_channel(
+      pedal_ads1015_storage, calibration_data->channel_secondary, true, NULL, NULL));
 
   storage->pedal_ads1015_storage = pedal_ads1015_storage;
-  storage->channel_main = channel_main;
-  storage->channel_secondary = channel_secondary;
+
   return soft_timer_start_millis(THROTTLE_UPDATE_PERIOD_MS, prv_raise_event_timer_callback, storage,
                                  NULL);
 }
