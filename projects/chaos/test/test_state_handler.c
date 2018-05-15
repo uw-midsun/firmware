@@ -8,12 +8,13 @@
 #include "exported_enums.h"
 #include "gpio.h"
 #include "interrupt.h"
+#include "log.h"
 #include "ms_test_helpers.h"
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
 
-#define NUM_TEST_STATE_HANDLER_CAN_HANDLERS 2
+#define NUM_TEST_STATE_HANDLER_CAN_HANDLERS 3
 
 static const Event s_tx_event = { CHAOS_EVENT_CAN_TX, 0 };
 static const Event s_rx_event = { CHAOS_EVENT_CAN_RX, 0 };
@@ -24,10 +25,10 @@ static CANRxHandler s_rx_handlers[NUM_TEST_STATE_HANDLER_CAN_HANDLERS];
 // CANAckRequestCb
 static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
                                    uint16_t num_remaining, void *context) {
+  (void)device;
   (void)num_remaining;
   CANAckStatus *expected_status = context;
   TEST_ASSERT_EQUAL(SYSTEM_CAN_MESSAGE_POWER_STATE, msg_id);
-  TEST_ASSERT_EQUAL(SYSTEM_CAN_DEVICE_CHAOS, device);
   TEST_ASSERT_EQUAL(*expected_status, status);
   return STATUS_CODE_OK;
 }
@@ -39,7 +40,7 @@ void setup_test(void) {
 
   CANSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
-    .bitrate = CAN_HW_BITRATE_125KBPS,
+    .bitrate = CAN_HW_BITRATE_250KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,
     .tx_event = CHAOS_EVENT_CAN_TX,
     .fault_event = CHAOS_EVENT_CAN_FAULT,

@@ -28,7 +28,7 @@
     MS_TEST_HELPER_AWAIT_EVENT(e);                             \
     TEST_ASSERT_EQUAL((tx_event).id, e.id);                    \
     TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &(tx_event))); \
-    delay_ms(1);                                               \
+    delay_us(750);                                             \
     MS_TEST_HELPER_AWAIT_EVENT(e);                             \
     TEST_ASSERT_EQUAL((rx_event).id, e.id);                    \
     TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &(rx_event))); \
@@ -38,7 +38,7 @@
 #define MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(tx_event, rx_event) \
   ({                                                          \
     MS_TEST_HELPER_CAN_TX_RX((tx_event), (rx_event));         \
-    delay_ms(1);                                              \
+    delay_us(750);                                            \
     MS_TEST_HELPER_CAN_TX_RX((tx_event), (rx_event));         \
-    delay_ms(1);                                              \
+    delay_us(750);                                            \
   })

@@ -8,6 +8,7 @@
 #include "chaos_events.h"
 #include "event_queue.h"
 #include "exported_enums.h"
+#include "log.h"
 
 #define STATE_HANDLER_EMPTY_DATA 0
 
