@@ -1,33 +1,28 @@
 #include "lights_blinker.h"
 #include "lights_events.h"
 
-static LightsEvent s_blinker_event = NUM_LIGHTS_EVENTS;
+static LightsEventGpioPeripheral s_blinker_peripheral = NUM_LIGHTS_EVENT_GPIO_PERIPHERALS;
 
 // Mocking lights_blinker's behaviour.
 StatusCode lights_blinker_init(LightsBlinker *blinker, LightsBlinkerDuration duration_ms) {
   return STATUS_CODE_OK;
 }
 
-StatusCode lights_blinker_activate(LightsBlinker *blinker, EventID id) {
-  LightsEvent blink_event;
-  if (s_blinker_event != id) {
-    if (s_blinker_event != NUM_LIGHTS_EVENTS) {
+StatusCode lights_blinker_activate(LightsBlinker *blinker, LightsEventGpioPeripheral peripheral) {
+  if (s_blinker_peripheral != peripheral) {
+    if (s_blinker_peripheral != NUM_LIGHTS_EVENT_GPIO_PERIPHERALS) {
       // If the blinker is already active, cancel the old one.
-      status_ok_or_return(lights_events_get_blink_off_event(s_blinker_event, &blink_event));
-      status_ok_or_return(event_raise(blink_event, LIGHTS_BLINKER_STATE_OFF));
+      status_ok_or_return(event_raise(LIGHTS_EVENT_GPIO_OFF, s_blinker_peripheral));
     }
-    s_blinker_event = id;
-    status_ok_or_return(lights_events_get_blink_on_event(s_blinker_event, &blink_event));
-    return event_raise(blink_event, LIGHTS_BLINKER_STATE_ON);
+    s_blinker_peripheral = peripheral;
+    return event_raise(LIGHTS_EVENT_GPIO_ON, s_blinker_peripheral);
   }
   return STATUS_CODE_OK;
 }
 
 StatusCode lights_blinker_deactivate(LightsBlinker *blinker) {
-  LightsEvent blink_event = 0;
-  status_ok_or_return(lights_events_get_blink_off_event(s_blinker_event, &blink_event));
-  event_raise(blink_event, LIGHTS_BLINKER_STATE_OFF);
-  s_blinker_event = NUM_LIGHTS_EVENTS;
+  event_raise(LIGHTS_EVENT_GPIO_OFF, s_blinker_peripheral);
+  s_blinker_peripheral = NUM_LIGHTS_EVENT_GPIO_PERIPHERALS;
   return STATUS_CODE_OK;
 }
 

@@ -1,6 +1,8 @@
 #pragma once
 #include "event_queue.h"
+#include "lights_events.h"
 #include "soft_timer.h"
+
 // Blinking requires soft_timers and event_queue to be initialized.
 
 // This module aids with the blinking functionality that some lights require such as signal lights.
@@ -28,7 +30,7 @@ typedef struct LightsBlinker {
 StatusCode lights_blinker_init(LightsBlinker *blinker, LightsBlinkerDuration duration_ms);
 
 // Starts generating events. Activates the blinker.
-StatusCode lights_blinker_activate(LightsBlinker *blinker, EventID id);
+StatusCode lights_blinker_activate(LightsBlinker *blinker, LightsEventGpioPeripheral peripheral);
 
 // Raises an event with OFF state (aka. data 0), cancels the scheduled timer. Deactivates blinker.
 StatusCode lights_blinker_deactivate(LightsBlinker *blinker);
