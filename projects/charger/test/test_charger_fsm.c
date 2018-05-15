@@ -12,7 +12,7 @@
 #include "gpio.h"
 #include "interrupt.h"
 #include "log.h"
-#include "permissions.h"
+#include "notify.h"
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
@@ -44,7 +44,7 @@ void teardown_test(void) {}
 // fully testing the behavior would require a massive test. :w
 void test_charger_fsm_transitions(void) {
   GenericCan *can = (GenericCan *)&s_can;
-  ChargerStatus status = { 0 };
+  ChargerCanStatus status = { 0 };
   charger_fsm_init(&status);
 
   ChargerSettings settings = {
@@ -55,7 +55,7 @@ void test_charger_fsm_transitions(void) {
   };
   // Init these because they need to be not because they will be used.
   TEST_ASSERT_OK(charger_controller_init(&settings, &status));
-  TEST_ASSERT_OK(permissions_init(can, UINT32_MAX, UINT32_MAX));
+  TEST_ASSERT_OK(notify_init(can, UINT32_MAX, UINT32_MAX));
 
   // Check ban transitions fro Disconnected
   Event e = { CHARGER_EVENT_DISCONNECTED, 0 };
