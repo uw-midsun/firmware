@@ -85,6 +85,6 @@ static const LightsGpio s_lights_gpio_rear = {
   .num_event_mappings = SIZEOF_ARRAY(s_rear_event_mappings),  //
 };
 
-LightsGpio *lights_config_rear_load(void) {
+LightsGpio *lights_gpio_config_rear_load(void) {
   return &s_lights_gpio_rear;
 }

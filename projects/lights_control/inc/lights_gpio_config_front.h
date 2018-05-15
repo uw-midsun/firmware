@@ -20,4 +20,4 @@ typedef enum {
 } LightsGpioConfigFrontOutput;
 
 // Loads configuration for front board.
-LightsGpio *lights_config_front_load(void);
+LightsGpio *lights_gpio_config_front_load(void);

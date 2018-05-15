@@ -97,6 +97,6 @@ static const LightsGpio s_lights_gpio_front = {
   .num_event_mappings = SIZEOF_ARRAY(s_front_event_mappings),  //
 };
 
-LightsGpio *lights_config_front_load(void) {
+LightsGpio *lights_gpio_config_front_load(void) {
   return &s_lights_gpio_front;
 }
