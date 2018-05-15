@@ -34,7 +34,7 @@ StatusCode lights_blinker_init(LightsBlinker *blinker, LightsBlinkerDuration dur
   return STATUS_CODE_OK;
 }
 
-StatusCode lights_blinker_activate(LightsBlinker *blinker, LightsEventGPIOPeripheral peripheral) {
+StatusCode lights_blinker_activate(LightsBlinker *blinker, LightsEventGpioPeripheral peripheral) {
   // Check if we require a behaviour change. i.e. new event is for a different peripheral.
   // e.g. If signal-left and hazard are both on at the same time, turning signal-left off shouldn't
   // do anything.

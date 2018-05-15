@@ -22,7 +22,7 @@ typedef uint32_t LightsBlinkerDuration;
 
 // Blinker members.
 typedef struct LightsBlinker {
-  LightsEventGPIOPeripheral peripheral;
+  LightsEventGpioPeripheral peripheral;
   SoftTimerID timer_id;
   LightsBlinkerState state;
   LightsBlinkerDuration duration_ms;  // Duration, in milliseconds
@@ -33,7 +33,7 @@ StatusCode lights_blinker_init(LightsBlinker *blinker, LightsBlinkerDuration dur
 
 // Starts generating LIGHTS_EVENT_GPIO_OFF and LIGHTS_EVENT_GPIO_ON events with data field set to
 // the passed-in peripheral. First event generated is an LIGHTS_EVENT_GPIO_ON event.
-StatusCode lights_blinker_activate(LightsBlinker *blinker, LightsEventGPIOPeripheral peripheral);
+StatusCode lights_blinker_activate(LightsBlinker *blinker, LightsEventGpioPeripheral peripheral);
 
 // Raises an LIGHTS_EVENT_GPIO_OFF event with the existing blinker's peripheral as event data,
 // cancels the scheduled timer. Deactivates blinker.
