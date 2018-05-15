@@ -7,7 +7,7 @@
 void setup_test(void) {}
 void teardown_test(void) {}
 
-void test_checksum_compute(void) {
+void test_nmea_checksum_compute(void) {
   char *message;
   size_t message_len;
   uint8_t computed_checksum = 0;
@@ -45,7 +45,7 @@ void test_checksum_compute(void) {
   TEST_ASSERT(nmea_checksum_compute(message, message_len, NULL) == STATUS_CODE_INVALID_ARGS);
 }
 
-void test_checksum_validate(void) {
+void test_nmea_checksum_validate(void) {
   char *input;
   size_t message_len = 0;
 

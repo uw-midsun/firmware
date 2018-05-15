@@ -4,6 +4,32 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Private method to convert hex char to int
+static uint8_t prv_hex_to_int(char h) {
+  if ('0' <= h && h <= '9') {
+    return h - '0';
+  } else if ('A' <= h && h <= 'F') {
+    // We only care about uppercase because the NMEA messages are all caps
+    return h - 'A' + 10;
+  }
+  // Just to make the checksum fail
+  return 16;
+}
+
+static StatusCode prv_checksum_to_int(char tens, char ones, uint8_t * computed) {
+  uint8_t int_tens = prv_hex_to_int(tens);
+  uint8_t int_ones = prv_hex_to_int(ones);
+
+  // Checks for the 16 because it is the result sent in case of error
+  if (ones == 16 || tens == 16) {
+    return STATUS_CODE_INVALID_ARGS;
+  }
+  if (computed != NULL) {
+    *computed =  int_tens * 16 + int_ones;
+  }
+  return STATUS_CODE_OK;
+}
+
 // The checksum is calculated by taking the XOR of all characters between
 // (but not including) the '$' and '*' character
 // An example NMEA message is "$GPGLL,2503.6319,N,12136.0099,E,053740.000,A,A*52"
@@ -39,12 +65,13 @@ bool nmea_checksum_validate(char *message, size_t message_len) {
   }
 
   // Extracts the received checksum
-  uint32_t received_checksum = (uint32_t)strtol(received, NULL, 16);
+  uint8_t received_checksum = 0;
+  StatusCode status_extracted = prv_checksum_to_int(*received, *(received + 1), &received_checksum);
 
   // Computes the checksum
   uint8_t computed = 0;
-  StatusCode status = nmea_checksum_compute(message, message_len, &computed);
-  if (status != STATUS_CODE_OK) {
+  StatusCode status_computed = nmea_checksum_compute(message, message_len, &computed);
+  if (status_computed != STATUS_CODE_OK || status_extracted != STATUS_CODE_OK) {
     // return false if nmea_compute_checksum fails
     return false;
   }
