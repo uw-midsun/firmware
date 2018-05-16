@@ -12,6 +12,7 @@
 #include "gpio.h"
 #include "interrupt.h"
 #include "ms_test_helpers.h"
+#include "soft_timer.h"
 #include "status.h"
 #include "test_helpers.h"
 #include "unity.h"
@@ -38,6 +39,7 @@ void setup_test(void) {
   interrupt_init();
   gpio_init();
   event_queue_init();
+  soft_timer_init();
 
   const CANSettings settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
