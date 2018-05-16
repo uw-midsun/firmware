@@ -27,8 +27,7 @@ static StatusCode prv_checksum_to_int(char tens, char ones, uint8_t *computed) {
     return STATUS_CODE_INVALID_ARGS;
   }
   if (computed != NULL) {
-    // Bitwise operation is equivilent to "int_tens * 16 + int_ones" with both
-    // variables truncated to 4 least significant bits
+    // Bitwise operation is equivilent to "int_tens * 16 + int_ones"
     *computed = ((int_tens & 0xF) << 4) | (int_ones & 0xF);
   }
   return STATUS_CODE_OK;
