@@ -20,4 +20,5 @@ StatusCode nmea_checksum_compute(char *message, size_t message_len, uint8_t *che
 // * message_len is byte size of message
 // * Returns false if the given message does not have a checksum included or if the
 //   checksums do not match.
+// * message should NOT be null terminated. The last two bytes should be the checksum.
 bool nmea_checksum_validate(char *message, size_t message_len);
