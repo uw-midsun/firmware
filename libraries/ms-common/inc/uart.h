@@ -3,13 +3,20 @@
 // Requires GPIO and interrupts to be initialized.
 
 // Uses internal FIFOs to buffer RX and TX.
+#include <fcntl.h>
 #include <stdint.h>
+#include <string.h>
+#include <termios.h>
+#include <unistd.h>
 #include "fifo.h"
 #include "gpio.h"
+#include "log.h"
 #include "status.h"
 #include "uart_mcu.h"
 
 #define UART_MAX_BUFFER_LEN 256
+
+#define BAUDRATE 115200
 
 typedef void (*UARTRxHandler)(const uint8_t *rx_arr, size_t len, void *context);
 
@@ -34,7 +41,8 @@ typedef struct {
 } UARTSettings;
 
 // Assumes standard 8 N 1
-// Registers a handler to be called when a newline is encountered or the buffer is full.
+// Registers a handler to be called when a newline is encountered or the buffer
+// is full.
 // Storage should be persistent through the program.
 StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage);
 
@@ -43,3 +51,7 @@ StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *co
 
 // Non-blocking TX
 StatusCode uart_tx(UARTPort uart, uint8_t *tx_data, size_t len);
+
+// Interrupt handlers
+void USART1_IRQHandler(void);
+void USART2_IRQHandler(void);
