@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "gpio.h"
+#include "soft_timer.h"
 #include "spi.h"
 #include "status.h"
 
@@ -16,20 +17,36 @@ typedef enum {
 } LtcAdcFilterMode;
 
 typedef struct {
-  GPIOAddress cs;
-  GPIOAddress mosi;
-  GPIOAddress miso;
-  GPIOAddress sclk;
+  StatusCode status;
+  int32_t value;
+
+  SoftTimerID timer_id;
+} LtcAdcStorageBuffer;
+
+typedef void (*LtcAdcCallback)(int32_t *value, void *context);
+
+typedef struct {
+  // Storage buffer managed by the driver
+  LtcAdcStorageBuffer buffer;
+  // Callback that is run whenever new data is available
+  LtcAdcCallback callback;
+  void *context;
+
+  const GPIOAddress cs;
+  const GPIOAddress mosi;
+  const GPIOAddress miso;
+  const GPIOAddress sclk;
 
   const SPIPort spi_port;
-  uint32_t spi_baudrate;
+  const uint32_t spi_baudrate;
 
-  LtcAdcFilterMode filter_mode;
-} LtcAdcSettings;
+  const LtcAdcFilterMode filter_mode;
+} LtcAdcStorage;
 
 // Initializes the ADC by setting up the GPIO pins and configuring the ADC with
 // the selected settings
-StatusCode ltc_adc_init(const LtcAdcSettings *config);
+StatusCode ltc_adc_init(LtcAdcStorage *storage);
 
-// Read the voltage (in uV) reported by the ADC
-StatusCode ltc_adc_read(const LtcAdcSettings *config, int32_t *value);
+// Register a callback to be run whenever there is new data
+StatusCode ltc_adc_register_callback(LtcAdcStorage *storage, LtcAdcCallback callback,
+                                     void *context);
