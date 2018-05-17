@@ -9,3 +9,7 @@ $(T)_DEPS := libcore
 
 # Specifies library specific build flags
 $(T)_CFLAGS += -ffreestanding
+
+ifneq (x86,$(PLATFORM))
+  $(T)_EXCLUDE_TESTS := x86_socket x86_cmd
+endif

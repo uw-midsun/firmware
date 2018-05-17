@@ -51,9 +51,15 @@ endif
 LDFLAGS := -lrt
 
 # Shell environment variables
-ENV_VARS := MIDSUN_X86_FLASH_FILE=$(BIN_DIR)/$(PROJECT)$(LIBRARY)_flash
-ifneq (,$(TEST))
-  ENV_VARS := $(ENV_VARS)_test_$(TEST)
+FLASH_VAR := MIDSUN_X86_FLASH_FILE
+ifneq (,$(filter test test_all,$(MAKECMDGOALS)))
+ifeq (,$(TEST))
+  ENV_VARS = $(FLASH_VAR)=$(test)_flash
+else
+  ENV_VARS = $(FLASH_VAR)=$<_flash
+endif
+else
+  ENV_VARS := $(FLASH_VAR)=$(BIN_DIR)/$(PROJECT)$(LIBRARY)_flash
 endif
 
 # Platform targets
@@ -62,7 +68,7 @@ endif
 run: $(BIN_DIR)/$(PROJECT)$(PLATFORM_EXT) socketcan
 	@$(ENV_VARS) $<
 
-gdb: $(GDB_TARGET) socketcan
+gdb: $(TARGET_BINARY) socketcan
 	@$(ENV_VARS) $(GDB) $<
 
 test_all: socketcan
