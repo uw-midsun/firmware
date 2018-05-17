@@ -45,7 +45,7 @@ static bool prv_mechanical_braking_guard(const FSM *fsm, const Event *e, void *c
   DriverControlsData data = { 0 };
 
   fifo_peek(&storage->fifo, &data);
-  if (data.brake_state != DRIVER_CONTROLS_BRAKE_DISENGAGED) {
+  if (data.brake_state != EE_DRIVER_CONTROLS_BRAKE_DISENGAGED) {
     // The pop will happen in the output function
     return true;
   }
@@ -59,8 +59,8 @@ static bool prv_torque_control_forward_guard(const FSM *fsm, const Event *e, voi
   DriverControlsData data = { 0 };
 
   fifo_peek(&storage->fifo, &data);
-  if (data.brake_state == DRIVER_CONTROLS_BRAKE_DISENGAGED &&
-      data.direction == DRIVER_CONTROLS_FORWARD && data.cruise_control == 0) {
+  if (data.brake_state == EE_DRIVER_CONTROLS_BRAKE_DISENGAGED &&
+      data.direction == EE_DRIVER_CONTROLS_FORWARD && data.cruise_control == 0) {
     // The pop will happen in the output function
     return true;
   }
@@ -74,8 +74,8 @@ static bool prv_torque_control_reverse_guard(const FSM *fsm, const Event *e, voi
   DriverControlsData data = { 0 };
 
   fifo_peek(&storage->fifo, &data);
-  if (data.brake_state == DRIVER_CONTROLS_BRAKE_DISENGAGED &&
-      data.direction == DRIVER_CONTROLS_REVERSE && data.cruise_control == 0) {
+  if (data.brake_state == EE_DRIVER_CONTROLS_BRAKE_DISENGAGED &&
+      data.direction == EE_DRIVER_CONTROLS_REVERSE && data.cruise_control == 0) {
     // The pop will happen in the output function
     return true;
   }
@@ -89,8 +89,8 @@ static bool prv_cruise_control_forward_guard(const FSM *fsm, const Event *e, voi
   DriverControlsData data = { 0 };
 
   fifo_peek(&storage->fifo, &data);
-  if (data.brake_state == DRIVER_CONTROLS_BRAKE_DISENGAGED &&
-      data.direction == DRIVER_CONTROLS_FORWARD && data.cruise_control != 0) {
+  if (data.brake_state == EE_DRIVER_CONTROLS_BRAKE_DISENGAGED &&
+      data.direction == EE_DRIVER_CONTROLS_FORWARD && data.cruise_control != 0) {
     // The pop will happen in the output function
     return true;
   }
@@ -169,15 +169,15 @@ static void prv_torque_control_mode(FSM *fsm, const Event *e, void *context) {
   DriverControlsData data = { 0 };
   StatusCode status = fifo_pop(&storage->fifo, &data);
 
-  float desired_torque = CONVERT_THROTTLE_READING_TO_PERCENTAGE((float)data.throttle);
+  float desired_torque = EE_CONVERT_THROTTLE_READING_TO_PERCENTAGE((float)data.throttle);
 
-  if (data.brake_state == DRIVER_CONTROLS_BRAKE_ENGAGED) {
+  if (data.brake_state == EE_DRIVER_CONTROLS_BRAKE_ENGAGED) {
     // If the brake is enaged, then ensure that we send 0 torque
     desired_torque = 0;
   }
 
   float desired_direction = 0;
-  if (data.direction == DRIVER_CONTROLS_REVERSE) {
+  if (data.direction == EE_DRIVER_CONTROLS_REVERSE) {
     desired_direction = MOTOR_CONTROLLER_REVERSE_VELOCITY_MPS;
   } else {
     // In case we receive an invalid direction, it's probably safer to go forward

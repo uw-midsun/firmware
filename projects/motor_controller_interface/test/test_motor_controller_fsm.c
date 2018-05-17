@@ -52,10 +52,10 @@ union {
   uint64_t data_u64;
 } MotorControllerFsmTestUnion;
 
-static volatile size_t num_braking_messages[2] = { 0 };
-static volatile size_t num_cruise_control_forward_messages[2] = { 0 };
-static volatile size_t num_forward_messages[2] = { 0 };
-static volatile size_t num_reverse_messages[2] = { 0 };
+static volatile size_t s_num_braking_messages[2] = { 0 };
+static volatile size_t s_num_cruise_control_forward_messages[2] = { 0 };
+static volatile size_t s_num_forward_messages[2] = { 0 };
+static volatile size_t s_num_reverse_messages[2] = { 0 };
 
 // Assertion functions
 static void prv_assert_braking_state(const GenericCanMsg *msg, void *context) {
@@ -92,7 +92,7 @@ static void prv_assert_reverse_state(const GenericCanMsg *msg, void *context) {
     // We set an impossible velocity in drive mode
     TEST_ASSERT_EQUAL_FLOAT(MOTOR_CONTROLLER_REVERSE_VELOCITY_MPS,
                             MotorControllerFsmTestUnion.mc_drive_cmd.velocity);
-    TEST_ASSERT_EQUAL_FLOAT(TEST_REVERSE_THROTTLE_VALUE / DRIVER_CONTROLS_PEDAL_DENOMINATOR,
+    TEST_ASSERT_EQUAL_FLOAT(TEST_REVERSE_THROTTLE_VALUE / EE_DRIVER_CONTROLS_PEDAL_DENOMINATOR,
                             MotorControllerFsmTestUnion.mc_drive_cmd.current_percentage);
 
     if (MOTOR_CONTROLLER_DRIVE_COMMAND_ID(MOTOR_CONTROLLER_INTERFACE_LEFT_ADDR) == msg->id) {
@@ -116,7 +116,7 @@ static void prv_assert_forward_state(const GenericCanMsg *msg, void *context) {
 
     TEST_ASSERT_EQUAL_FLOAT(MOTOR_CONTROLLER_FORWARD_VELOCITY_MPS,
                             MotorControllerFsmTestUnion.mc_drive_cmd.velocity);
-    TEST_ASSERT_EQUAL_FLOAT(TEST_FORWARD_THROTTLE_VALUE / DRIVER_CONTROLS_PEDAL_DENOMINATOR,
+    TEST_ASSERT_EQUAL_FLOAT(TEST_FORWARD_THROTTLE_VALUE / EE_DRIVER_CONTROLS_PEDAL_DENOMINATOR,
                             MotorControllerFsmTestUnion.mc_drive_cmd.current_percentage);
 
     if (MOTOR_CONTROLLER_DRIVE_COMMAND_ID(MOTOR_CONTROLLER_INTERFACE_LEFT_ADDR) == msg->id) {
@@ -164,9 +164,9 @@ static void prv_transition_to_cruise_control(void) {
   // Send a Driver Controls CAN message going forward
   DriverControlsData data = {
     .throttle = 0,
-    .direction = DRIVER_CONTROLS_FORWARD,
+    .direction = EE_DRIVER_CONTROLS_FORWARD,
     .cruise_control = TEST_CRUISE_CONTROL_VALUE,
-    .brake_state = DRIVER_CONTROLS_BRAKE_DISENGAGED,
+    .brake_state = EE_DRIVER_CONTROLS_BRAKE_DISENGAGED,
   };
   fifo_push(&s_mc_fsm_storage.fifo, &data);
   event_raise(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO, 0);
@@ -187,18 +187,18 @@ static void prv_transition_to_cruise_control(void) {
 
   delay_ms(100);
 
-  num_cruise_control_forward_messages[0] = 0;
-  num_cruise_control_forward_messages[1] = 0;
+  s_num_cruise_control_forward_messages[0] = 0;
+  s_num_cruise_control_forward_messages[1] = 0;
   delay_ms(100);
   TEST_ASSERT_OK(generic_can_register_rx((GenericCan *)&s_can, prv_assert_cruise_forward_state,
                                          0x00, 0x00, false,
-                                         (void *)&num_cruise_control_forward_messages));
-  while (num_cruise_control_forward_messages[0] + num_cruise_control_forward_messages[1] <
+                                         (void *)&s_num_cruise_control_forward_messages));
+  while (s_num_cruise_control_forward_messages[0] + s_num_cruise_control_forward_messages[1] <
          TEST_NUM_MESSAGES_RECEIVED) {
   }
 
-  TEST_ASSERT_TRUE(num_cruise_control_forward_messages[0] > 0);
-  TEST_ASSERT_TRUE(num_cruise_control_forward_messages[1] > 0);
+  TEST_ASSERT_TRUE(s_num_cruise_control_forward_messages[0] > 0);
+  TEST_ASSERT_TRUE(s_num_cruise_control_forward_messages[1] > 0);
 }
 
 static void prv_transition_to_forward(void) {
@@ -207,9 +207,9 @@ static void prv_transition_to_forward(void) {
   // Send a Driver Controls CAN message going forward
   DriverControlsData data = {
     .throttle = TEST_FORWARD_THROTTLE_VALUE,
-    .direction = DRIVER_CONTROLS_FORWARD,
+    .direction = EE_DRIVER_CONTROLS_FORWARD,
     .cruise_control = 0,
-    .brake_state = DRIVER_CONTROLS_BRAKE_DISENGAGED,
+    .brake_state = EE_DRIVER_CONTROLS_BRAKE_DISENGAGED,
   };
   fifo_push(&s_mc_fsm_storage.fifo, &data);
   event_raise(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO, 0);
@@ -231,15 +231,15 @@ static void prv_transition_to_forward(void) {
   delay_ms(100);
 
   // Assert that we're still receiving torque mode messages
-  num_forward_messages[0] = 0;
-  num_forward_messages[1] = 0;
+  s_num_forward_messages[0] = 0;
+  s_num_forward_messages[1] = 0;
   TEST_ASSERT_OK(generic_can_register_rx((GenericCan *)&s_can, prv_assert_forward_state, 0x00, 0x00,
-                                         false, (void *)&num_forward_messages));
-  while (num_forward_messages[0] + num_forward_messages[1] < TEST_NUM_MESSAGES_RECEIVED) {
+                                         false, (void *)&s_num_forward_messages));
+  while (s_num_forward_messages[0] + s_num_forward_messages[1] < TEST_NUM_MESSAGES_RECEIVED) {
   }
 
-  TEST_ASSERT_TRUE(num_forward_messages[0] > 0);
-  TEST_ASSERT_TRUE(num_forward_messages[1] > 0);
+  TEST_ASSERT_TRUE(s_num_forward_messages[0] > 0);
+  TEST_ASSERT_TRUE(s_num_forward_messages[1] > 0);
 }
 
 static void prv_transition_to_braking(void) {
@@ -250,9 +250,9 @@ static void prv_transition_to_braking(void) {
   // Send a Driver Controls CAN message to enter braking state
   DriverControlsData data = {
     .throttle = 0,
-    .direction = DRIVER_CONTROLS_FORWARD,
+    .direction = EE_DRIVER_CONTROLS_FORWARD,
     .cruise_control = 0,
-    .brake_state = DRIVER_CONTROLS_BRAKE_ENGAGED,
+    .brake_state = EE_DRIVER_CONTROLS_BRAKE_ENGAGED,
   };
   fifo_push(&s_mc_fsm_storage.fifo, &data);
   event_raise(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO, 0);
@@ -272,13 +272,13 @@ static void prv_transition_to_braking(void) {
 
   delay_ms(50);
   TEST_ASSERT_OK(generic_can_register_rx((GenericCan *)&s_can, prv_assert_braking_state, 0x00, 0x00,
-                                         false, (void *)&num_braking_messages));
+                                         false, (void *)&s_num_braking_messages));
 
-  while (num_braking_messages[0] + num_braking_messages[1] < TEST_NUM_MESSAGES_RECEIVED) {
+  while (s_num_braking_messages[0] + s_num_braking_messages[1] < TEST_NUM_MESSAGES_RECEIVED) {
   }
 
-  TEST_ASSERT_TRUE(num_braking_messages[0] > 0);
-  TEST_ASSERT_TRUE(num_braking_messages[1] > 0);
+  TEST_ASSERT_TRUE(s_num_braking_messages[0] > 0);
+  TEST_ASSERT_TRUE(s_num_braking_messages[1] > 0);
 }
 
 static void prv_transition_to_reverse(void) {
@@ -286,9 +286,9 @@ static void prv_transition_to_reverse(void) {
 
   DriverControlsData data = {
     .throttle = TEST_REVERSE_THROTTLE_VALUE,
-    .direction = DRIVER_CONTROLS_REVERSE,
+    .direction = EE_DRIVER_CONTROLS_REVERSE,
     .cruise_control = 0,
-    .brake_state = DRIVER_CONTROLS_BRAKE_DISENGAGED,
+    .brake_state = EE_DRIVER_CONTROLS_BRAKE_DISENGAGED,
   };
   fifo_push(&s_mc_fsm_storage.fifo, &data);
   event_raise(MOTOR_CONTROLLER_INTERFACE_EVENT_FIFO, 0);
@@ -311,15 +311,15 @@ static void prv_transition_to_reverse(void) {
 
   // Assert that the values we are reading are from the initial state still
   // (because we didn't transition)
-  num_reverse_messages[0] = 0;
-  num_reverse_messages[1] = 0;
+  s_num_reverse_messages[0] = 0;
+  s_num_reverse_messages[1] = 0;
   TEST_ASSERT_OK(generic_can_register_rx((GenericCan *)&s_can, prv_assert_reverse_state, 0x00, 0x00,
-                                         false, (void *)&num_reverse_messages));
-  while (num_reverse_messages[0] + num_reverse_messages[1] < TEST_NUM_MESSAGES_RECEIVED) {
+                                         false, (void *)&s_num_reverse_messages));
+  while (s_num_reverse_messages[0] + s_num_reverse_messages[1] < TEST_NUM_MESSAGES_RECEIVED) {
   }
 
-  TEST_ASSERT_TRUE(num_reverse_messages[0] > 0);
-  TEST_ASSERT_TRUE(num_reverse_messages[1] > 0);
+  TEST_ASSERT_TRUE(s_num_reverse_messages[0] > 0);
+  TEST_ASSERT_TRUE(s_num_reverse_messages[1] > 0);
 }
 
 void setup_test(void) {
