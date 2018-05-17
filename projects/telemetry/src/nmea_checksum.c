@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const int HEX_ERROR = 16;
+#define NMEA_CHECKSUM_HEX_ERROR 16
 
 // Private method to convert hex char to int
 static uint8_t prv_hex_to_int(char h) {
@@ -15,7 +15,7 @@ static uint8_t prv_hex_to_int(char h) {
     return h - 'A' + 10;
   }
   // Just to make the checksum fail
-  return HEX_ERROR;
+  return NMEA_CHECKSUM_HEX_ERROR;
 }
 
 static StatusCode prv_checksum_to_int(char tens, char ones, uint8_t *computed) {
@@ -23,11 +23,11 @@ static StatusCode prv_checksum_to_int(char tens, char ones, uint8_t *computed) {
   uint8_t int_ones = prv_hex_to_int(ones);
 
   // Checks for the 16 because it is the result sent in case of error
-  if (ones == HEX_ERROR || tens == HEX_ERROR) {
-    return STATUS_CODE_INVALID_ARGS;
+  if (ones == NMEA_CHECKSUM_HEX_ERROR || tens == NMEA_CHECKSUM_HEX_ERROR) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Could not convert hex chars to ints\n");
   }
   if (computed != NULL) {
-    // Bitwise operation is equivilent to "int_tens * 16 + int_ones"
+    // Bitwise operation is equivalent to "int_tens * 16 + int_ones"
     *computed = ((int_tens & 0xF) << 4) | (int_ones & 0xF);
   }
   return STATUS_CODE_OK;
