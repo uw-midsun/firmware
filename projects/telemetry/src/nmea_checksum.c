@@ -4,7 +4,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NMEA_CHECKSUM_HEX_ERROR 16
+// This error code makes sense because it is used in the function which
+// converts a single char (which represents a hex digit). Therefore the bounds
+// on its result is [0, 15]. 0x00 = 16 in base 10, therefore it can be
+// used as an error result because it should never occur
+#define NMEA_CHECKSUM_HEX_ERROR 0x00
 
 // Private method to convert hex char to int
 static uint8_t prv_hex_to_int(char h) {
@@ -28,6 +32,7 @@ static StatusCode prv_checksum_to_int(char tens, char ones, uint8_t *computed) {
   }
   if (computed != NULL) {
     // Bitwise operation is equivalent to "int_tens * 16 + int_ones"
+    // since both inputs are guaranteed to be [0, 15]
     *computed = ((int_tens & 0xF) << 4) | (int_ones & 0xF);
   }
   return STATUS_CODE_OK;
