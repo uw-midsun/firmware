@@ -6,7 +6,6 @@
 #include <fcntl.h>
 #include <stdint.h>
 #include <string.h>
-#include <termios.h>
 #include <unistd.h>
 #include "fifo.h"
 #include "gpio.h"
@@ -51,7 +50,3 @@ StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *co
 
 // Non-blocking TX
 StatusCode uart_tx(UARTPort uart, uint8_t *tx_data, size_t len);
-
-// Interrupt handlers
-void USART1_IRQHandler(void);
-void USART2_IRQHandler(void);

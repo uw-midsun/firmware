@@ -61,7 +61,6 @@ class Socket:
         while (self.m_connected):
             data = self.m_sock.recv(25)
             if len(data) > 0:
-                print data
                 self.m_partner.write(data)
 
     # write tx_data to the server socket
@@ -124,17 +123,16 @@ class Connection:
 
 #####DECLARE CONNECTIONS BELOW#####
 
-conn1 = Connection("uart_test", "0", "uart_test2", "1")
+conn1 = Connection("uart_test", "1", "uart_test2", "2")
 
 conns = [conn1]
 #####DECLARE CONNECTIONS ABOVE#####
 
+for conn in conns:
+    conn.connect()
+
 done = False    # fix this later
 
-
 while not done:
-    for conn in conns:
-        conn.connect()
-
     # keep this program alive so that it can handle communication
     time.sleep(1)
