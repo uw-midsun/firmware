@@ -9,6 +9,7 @@
 #include "event_queue.h"
 #include "exported_enums.h"
 #include "log.h"
+#include "sequencer_fsm.h"
 
 #define STATE_HANDLER_EMPTY_DATA 0
 
@@ -18,16 +19,26 @@ static StatusCode prv_handle_power_state_msg(const CANMessage *msg, void *contex
   (void)context;
   EEPowerState power_state = NUM_EE_POWER_STATES;
   CAN_UNPACK_POWER_STATE(msg, (uint8_t *)&power_state);
+
   // Handle the power state.
   switch (power_state) {
     case EE_POWER_STATE_IDLE:
-      event_raise(CHAOS_EVENT_SEQUENCE_IDLE, STATE_HANDLER_EMPTY_DATA);
+      if (!sequencer_fsm_event_raise(CHAOS_EVENT_SEQUENCE_IDLE)) {
+        // Raise an error if the power state is invalid.
+        *ack_reply = CAN_ACK_STATUS_INVALID;
+      }
       break;
     case EE_POWER_STATE_CHARGE:
-      event_raise(CHAOS_EVENT_SEQUENCE_CHARGE, STATE_HANDLER_EMPTY_DATA);
+      if (!sequencer_fsm_event_raise(CHAOS_EVENT_SEQUENCE_CHARGE)) {
+        // Raise an error if the power state is invalid.
+        *ack_reply = CAN_ACK_STATUS_INVALID;
+      }
       break;
     case EE_POWER_STATE_DRIVE:
-      event_raise(CHAOS_EVENT_SEQUENCE_DRIVE, STATE_HANDLER_EMPTY_DATA);
+      if (!sequencer_fsm_event_raise(CHAOS_EVENT_SEQUENCE_DRIVE)) {
+        // Raise an error if the power state is invalid.
+        *ack_reply = CAN_ACK_STATUS_INVALID;
+      }
       break;
     case NUM_EE_POWER_STATES:  // Falls through.
     default:

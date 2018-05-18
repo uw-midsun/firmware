@@ -16,6 +16,16 @@
 
 #define NUM_TEST_STATE_HANDLER_CAN_HANDLERS 3
 
+static bool s_mock_return = true;
+
+// Skip the sequencer protection of the event queue since it would overly complicate the test.
+bool TEST_MOCK(sequencer_fsm_event_raise)(ChaosEventSequence sequence) {
+  if (s_mock_return) {
+    event_raise(sequence, 0);
+  }
+  return s_mock_return;
+}
+
 static const Event s_tx_event = { CHAOS_EVENT_CAN_TX, 0 };
 static const Event s_rx_event = { CHAOS_EVENT_CAN_RX, 0 };
 static CANStorage s_can_storage;
@@ -65,6 +75,9 @@ void test_state_handler(void) {
   };
 
   Event e = { 0, 0 };
+  // Successful sends (valid transition).
+  s_mock_return = true;
+
   // IDLE
   CAN_TRANSMIT_POWER_STATE(&req, EE_POWER_STATE_IDLE);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
@@ -83,8 +96,26 @@ void test_state_handler(void) {
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHAOS_EVENT_SEQUENCE_DRIVE, e.id);
 
-  // Invalid
+  // Invalid sends (invalid transition).
+  s_mock_return = false;
   expected_status = CAN_ACK_STATUS_INVALID;
+
+  // IDLE
+  CAN_TRANSMIT_POWER_STATE(&req, EE_POWER_STATE_IDLE);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
+
+  // CHARGE
+  CAN_TRANSMIT_POWER_STATE(&req, EE_POWER_STATE_CHARGE);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
+
+  // DRIVE
+  CAN_TRANSMIT_POWER_STATE(&req, EE_POWER_STATE_DRIVE);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
+
+  // Invalid
   CAN_TRANSMIT_POWER_STATE(&req, NUM_EE_POWER_STATES);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));

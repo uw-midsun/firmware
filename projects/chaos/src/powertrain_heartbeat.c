@@ -9,6 +9,7 @@
 #include "can_transmit.h"
 #include "chaos_events.h"
 #include "event_queue.h"
+#include "sequencer_fsm.h"
 #include "soft_timer.h"
 #include "status.h"
 
@@ -31,7 +32,7 @@ static void prv_hb_watchdog(SoftTimerID timer_id, void *context) {
   (void)timer_id;
   (void)context;
   s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
-  event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, 0);
+  sequencer_fsm_event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY);
   if (s_interval_id != SOFT_TIMER_INVALID_TIMER) {
     soft_timer_cancel(s_interval_id);
     s_interval_id = SOFT_TIMER_INVALID_TIMER;

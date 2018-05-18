@@ -7,6 +7,7 @@
 #include "can_unpack.h"
 #include "chaos_events.h"
 #include "event_queue.h"
+#include "sequencer_fsm.h"
 #include "soft_timer.h"
 #include "status.h"
 
@@ -35,7 +36,7 @@ static StatusCode prv_bps_rx(const CANMessage *msg, void *context, CANAckStatus 
   uint8_t state = 0;
   CAN_UNPACK_BPS_HEARTBEAT(msg, &state);
   if (state == BPS_HEARTBEAT_STATE_ERROR) {
-    event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, 0);
+    sequencer_fsm_event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY);
   } else {
     prv_kick_watchdog();
   }

@@ -11,3 +11,7 @@ $(T)_DEPS := ms-common
 ifeq (x86,$(PLATFORM))
 $(T)_EXCLUDE_TESTS := power_path
 endif
+
+$(T)_test_bps_heartbeat_MOCKS := sequencer_fsm_event_raise
+$(T)_test_powertrain_heartbeat_MOCKS := sequencer_fsm_event_raise
+$(T)_test_state_handler_MOCKS := sequencer_fsm_event_raise
