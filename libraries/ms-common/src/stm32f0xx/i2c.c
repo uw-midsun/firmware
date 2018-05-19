@@ -2,24 +2,26 @@
 #include <stdbool.h>
 #include "log.h"
 #include "stm32f0xx.h"
+#include "critical_section.h"
 
 // Arbitrary timeout
 #define I2C_TIMEOUT 1000000
-#define I2C_TIMEOUT_WHILE_FLAG(i2c, flag, status)                           \
+#define I2C_TIMEOUT_WHILE_FLAG(i2c, flag, status, critical_section)                           \
   do {                                                                      \
     uint32_t timeout = (I2C_TIMEOUT);                                       \
     while (I2C_GetFlagStatus(i2c, flag) == status) {                        \
       timeout--;                                                            \
       if (timeout == 0) {                                                   \
         LOG_DEBUG("Timeout: %lu waiting for %d to change\n", flag, status); \
-        return STATUS_CODE_TIMEOUT;                                         \
+        critical_section_end(critical_section); \
+        return status_code(STATUS_CODE_TIMEOUT);                                         \
       }                                                                     \
     }                                                                       \
   } while (0)
 
-#define I2C_STOP(i2c)                                   \
+#define I2C_STOP(i2c, critical_section)                                   \
   do {                                                  \
-    I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_STOPF, RESET); \
+    I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_STOPF, RESET, (critical_section)); \
     I2C_ClearFlag(i2c, I2C_FLAG_STOPF);                 \
   } while (0)
 
@@ -40,7 +42,7 @@ static const uint32_t s_i2c_timing[] = {
 };
 
 static StatusCode prv_transfer(I2CPort port, uint8_t addr, bool read, uint8_t *data, size_t len,
-                               uint32_t end_mode) {
+                               uint32_t end_mode, bool critical_section) {
   I2C_TypeDef *i2c = s_port[port].base;
 
   I2C_TransferHandling(i2c, addr << 1, len, end_mode,
@@ -48,16 +50,16 @@ static StatusCode prv_transfer(I2CPort port, uint8_t addr, bool read, uint8_t *d
 
   if (read) {
     for (size_t i = 0; i < len; i++) {
-      I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_RXNE, RESET);
+      I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_RXNE, RESET, critical_section);
       data[i] = I2C_ReceiveData(i2c);
     }
   } else {
     for (size_t i = 0; i < len; i++) {
-      I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_TXIS, RESET);
+      I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_TXIS, RESET, critical_section);
       I2C_SendData(i2c, data[i]);
     }
     if (end_mode == I2C_SoftEnd_Mode) {
-      I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_TC, RESET);
+      I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_TC, RESET, critical_section);
     }
   }
 
@@ -97,11 +99,14 @@ StatusCode i2c_read(I2CPort i2c, I2CAddress addr, uint8_t *rx_data, size_t rx_le
   if (i2c >= NUM_I2C_PORTS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid I2C port.");
   }
-  I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET);
 
-  status_ok_or_return(prv_transfer(i2c, addr, true, rx_data, rx_len, I2C_AutoEnd_Mode));
+  bool disabled = critical_section_start();
+  I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET, disabled);
 
-  I2C_STOP(s_port[i2c].base);
+  status_ok_or_return(prv_transfer(i2c, addr, true, rx_data, rx_len, I2C_AutoEnd_Mode, disabled));
+
+  I2C_STOP(s_port[i2c].base, disabled);
+  critical_section_end(disabled);
 
   return STATUS_CODE_OK;
 }
@@ -110,11 +115,14 @@ StatusCode i2c_write(I2CPort i2c, I2CAddress addr, uint8_t *tx_data, size_t tx_l
   if (i2c >= NUM_I2C_PORTS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid I2C port.");
   }
-  I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET);
 
-  status_ok_or_return(prv_transfer(i2c, addr, false, tx_data, tx_len, I2C_AutoEnd_Mode));
+  bool disabled = critical_section_start();
+  I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET, disabled);
 
-  I2C_STOP(s_port[i2c].base);
+  status_ok_or_return(prv_transfer(i2c, addr, false, tx_data, tx_len, I2C_AutoEnd_Mode, disabled));
+
+  I2C_STOP(s_port[i2c].base, disabled);
+  critical_section_end(disabled);
 
   return STATUS_CODE_OK;
 }
@@ -124,12 +132,15 @@ StatusCode i2c_read_reg(I2CPort i2c, I2CAddress addr, uint8_t reg, uint8_t *rx_d
   if (i2c >= NUM_I2C_PORTS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid I2C port.");
   }
-  I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET);
 
-  status_ok_or_return(prv_transfer(i2c, addr, false, &reg, sizeof(reg), I2C_SoftEnd_Mode));
-  status_ok_or_return(prv_transfer(i2c, addr, true, rx_data, rx_len, I2C_AutoEnd_Mode));
+  bool disabled = critical_section_start();
+  I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET, disabled);
 
-  I2C_STOP(s_port[i2c].base);
+  status_ok_or_return(prv_transfer(i2c, addr, false, &reg, sizeof(reg), I2C_SoftEnd_Mode, disabled));
+  status_ok_or_return(prv_transfer(i2c, addr, true, rx_data, rx_len, I2C_AutoEnd_Mode, disabled));
+
+  I2C_STOP(s_port[i2c].base, disabled);
+  critical_section_end(disabled);
 
   return STATUS_CODE_OK;
 }
@@ -139,12 +150,15 @@ StatusCode i2c_write_reg(I2CPort i2c, I2CAddress addr, uint8_t reg, uint8_t *tx_
   if (i2c >= NUM_I2C_PORTS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid I2C port.");
   }
-  I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET);
 
-  status_ok_or_return(prv_transfer(i2c, addr, false, &reg, sizeof(reg), I2C_SoftEnd_Mode));
-  status_ok_or_return(prv_transfer(i2c, addr, false, tx_data, tx_len, I2C_AutoEnd_Mode));
+  bool disabled = critical_section_start();
+  I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET, disabled);
 
-  I2C_STOP(s_port[i2c].base);
+  status_ok_or_return(prv_transfer(i2c, addr, false, &reg, sizeof(reg), I2C_SoftEnd_Mode, disabled));
+  status_ok_or_return(prv_transfer(i2c, addr, false, tx_data, tx_len, I2C_AutoEnd_Mode, disabled));
+
+  I2C_STOP(s_port[i2c].base, disabled);
+  critical_section_end(disabled);
 
   return STATUS_CODE_OK;
 }
