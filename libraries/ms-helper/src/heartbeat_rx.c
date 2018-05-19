@@ -23,3 +23,9 @@ StatusCode heartbeat_rx_register_handler(HeartbeatRxHandlerStorage *storage, CAN
   storage->context = context;
   return can_register_rx_handler(msg_id, prv_heartbeat_handler, storage);
 }
+
+bool heartbeat_rx_auto_ack(CANMessageID msg_id, void *context) {
+  (void)msg_id;
+  (void)context;
+  return true;
+}

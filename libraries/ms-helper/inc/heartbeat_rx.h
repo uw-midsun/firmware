@@ -25,3 +25,7 @@ typedef struct HeartbeatRxHandlerStorage {
 // is NULL the heartbeat will automatically be acknowledged in the affirmative.
 StatusCode heartbeat_rx_register_handler(HeartbeatRxHandlerStorage *storage, CANMessageID msg_id,
                                          HeartbeatRxHandler handler, void *context);
+
+// An instance of HeartbeatRxHandler that can be used to automatically ack and return true with no
+// other behavior.
+bool heartbeat_rx_auto_ack(CANMessageID msg_id, void *context);
