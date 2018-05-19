@@ -9,6 +9,10 @@
 // Splits individual message components into a 2D array
 static void s_split_nmea_into_array(uint8_t *rx_arr, size_t rx_len, size_t temp_buf_w,
                                     size_t temp_buf_h, char temp_buf[][temp_buf_h]) {
+  if (rx_arr == NULL || temp_buf == NULL) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Cannot pass NULL pointer as parameter\n");
+  }
+
   int16_t char_in_message_index = 0;
   uint16_t message_index = 0;
 
@@ -33,6 +37,9 @@ static void s_split_nmea_into_array(uint8_t *rx_arr, size_t rx_len, size_t temp_
 
 // Just a function to loosely validate if a sentence is valid
 StatusCode nmea_valid(const uint8_t *to_check, size_t len) {
+  if (to_check == NULL) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Cannot pass NULL pointer as parameter\n");
+  }
   if (len < 3) {
     return status_msg(STATUS_CODE_UNKNOWN,
                       "The length is too short to contain useful information!\n");
@@ -51,6 +58,10 @@ StatusCode nmea_valid(const uint8_t *to_check, size_t len) {
 
 // Returns the NMEA sentence type
 StatusCode nmea_sentence_type(const uint8_t *rx_arr, size_t len, NMEA_MESSAGE_ID *result) {
+  if (result == NULL || rx_arr == NULL) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Cannot pass NULL pointers to this function\n");
+  }
+
   // Array index 3 should be 0, so that it is a null terminated string
   uint8_t message_id[4] = { 0 };
   for (uint16_t i = 3; i < len && i < 6; i++) {
@@ -89,6 +100,9 @@ StatusCode nmea_sentence_type(const uint8_t *rx_arr, size_t len, NMEA_MESSAGE_ID
 }
 
 StatusCode nmea_get_gga_sentence(const uint8_t *rx_arr, size_t len, nmea_gga_sentence *result) {
+  if (result == NULL || rx_arr == NULL) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Cannot pass NULL pointers to this function\n");
+  }
   status_ok_or_return(nmea_valid(rx_arr, len));
 
   // m_id will keep track of which sentence type we are currently operating on
@@ -138,6 +152,9 @@ StatusCode nmea_get_gga_sentence(const uint8_t *rx_arr, size_t len, nmea_gga_sen
 }
 
 StatusCode nmea_get_vtg_sentence(const uint8_t *rx_arr, size_t len, nmea_vtg_sentence *result) {
+  if (result == NULL || rx_arr == NULL) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Cannot pass NULL pointers to function\n");
+  }
   status_ok_or_return(nmea_valid(rx_arr, len));
 
   // m_id will keep track of which sentence type we are currently operating on
