@@ -1,5 +1,8 @@
 #include "power_distribution_controller.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "can_ack.h"
 #include "can_msg_defs.h"
 #include "can_transmit.h"
@@ -16,30 +19,19 @@ static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckS
   (void)num_remaining;
   (void)context;
   if (status != CAN_ACK_STATUS_OK) {
-    // TODO(ELEC-105): Raise some kind of retry event.
+    // TODO(ELEC-105): Raise some kind of retry event?
   }
   return STATUS_CODE_OK;
 }
 
 StatusCode power_distribution_controller_send_update(EEPowerState power_state) {
+  if (power_state >= NUM_EE_POWER_STATES) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
   CANAckRequest req = {
     .callback = prv_ack_callback,
+    .context = NULL,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_CHAOS),
   };
-  switch (power_state) {
-    case EE_POWER_STATE_IDLE:
-      CAN_TRANSMIT_POWER_STATE(&req, EE_POWER_STATE_IDLE);
-      return STATUS_CODE_OK;
-    case EE_POWER_STATE_CHARGE:
-      CAN_TRANSMIT_POWER_STATE(&req, EE_POWER_STATE_CHARGE);
-      return STATUS_CODE_OK;
-    case EE_POWER_STATE_DRIVE:
-      CAN_TRANSMIT_POWER_STATE(&req, EE_POWER_STATE_DRIVE);
-      return STATUS_CODE_OK;
-    case NUM_EE_POWER_STATES:  // Falls through.
-    default:
-      return status_code(STATUS_CODE_INVALID_ARGS);
-  }
+  return CAN_TRANSMIT_POWER_STATE(&req, power_state);
 }
-
-bool power_distribution_controller_process_event(const Event *e);
