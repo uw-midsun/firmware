@@ -1,6 +1,7 @@
 #include "relay_rx.h"
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "can.h"
 #include "can_ack.h"
@@ -22,6 +23,12 @@
 #define NUM_TEST_RELAY_RX_STORAGE_HANDLERS 2
 
 typedef enum {
+  TEST_RELAY_RX_STATE_OPEN = 0,
+  TEST_RELAY_RX_STATE_CLOSE,
+  NUM_TEST_RELAY_RX_STATES,
+} TestRelayStates;
+
+typedef enum {
   TEST_RELAY_RX_CAN_RX = 10,
   TEST_RELAY_RX_CAN_TX,
   TEST_RELAY_RX_CAN_FAULT,
@@ -30,7 +37,7 @@ typedef enum {
 typedef struct TestRelayRxHandlerCtx {
   StatusCode ret_code;
   SystemCanMessage expected_msg_id;
-  EEChaosCmdRelayState expected_state;
+  uint8_t expected_state;
   bool executed;
 } TestRelayRxHandlerCtx;
 
@@ -53,8 +60,7 @@ static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckS
 }
 
 // RelayRxHandler
-static StatusCode prv_relay_rx_handler(SystemCanMessage msg_id, EEChaosCmdRelayState state,
-                                       void *context) {
+static StatusCode prv_relay_rx_handler(SystemCanMessage msg_id, uint8_t state, void *context) {
   TestRelayRxHandlerCtx *data = context;
   TEST_ASSERT_EQUAL(data->expected_msg_id, msg_id);
   TEST_ASSERT_EQUAL(data->expected_state, state);
@@ -69,7 +75,7 @@ void setup_test(void) {
 
   CANSettings can_settings = {
     .device_id = TEST_RELAY_CAN_DEVICE_ID,
-    .bitrate = CAN_HW_BITRATE_125KBPS,
+    .bitrate = CAN_HW_BITRATE_250KBPS,
     .rx_event = TEST_RELAY_RX_CAN_RX,
     .tx_event = TEST_RELAY_RX_CAN_TX,
     .fault_event = TEST_RELAY_RX_CAN_FAULT,
@@ -91,22 +97,24 @@ void test_relay_rx_guards(void) {
   TestRelayRxHandlerCtx context = {
     .ret_code = STATUS_CODE_OK,
     .expected_msg_id = SYSTEM_CAN_MESSAGE_BATTERY_RELAY,
-    .expected_state = EE_CHAOS_CMD_RELAY_STATE_OPEN,
+    .expected_state = TEST_RELAY_RX_STATE_OPEN,
     .executed = false,
   };
-  TEST_ASSERT_OK(
-      relay_rx_configure_handler(SYSTEM_CAN_MESSAGE_BATTERY_RELAY, prv_relay_rx_handler, &context));
+  TEST_ASSERT_OK(relay_rx_configure_handler(
+      SYSTEM_CAN_MESSAGE_BATTERY_RELAY, NUM_TEST_RELAY_RX_STATES, prv_relay_rx_handler, &context));
   // Fail to register duplicates.
   TEST_ASSERT_EQUAL(
       STATUS_CODE_RESOURCE_EXHAUSTED,
-      relay_rx_configure_handler(SYSTEM_CAN_MESSAGE_BATTERY_RELAY, prv_relay_rx_handler, &context));
-  TEST_ASSERT_OK(
-      relay_rx_configure_handler(SYSTEM_CAN_MESSAGE_MAIN_RELAY, prv_relay_rx_handler, &context));
+      relay_rx_configure_handler(SYSTEM_CAN_MESSAGE_BATTERY_RELAY, NUM_TEST_RELAY_RX_STATES,
+                                 prv_relay_rx_handler, &context));
+  TEST_ASSERT_OK(relay_rx_configure_handler(SYSTEM_CAN_MESSAGE_MAIN_RELAY, NUM_TEST_RELAY_RX_STATES,
+                                            prv_relay_rx_handler, &context));
 
   // Fail to register too many.
   TEST_ASSERT_EQUAL(
       STATUS_CODE_RESOURCE_EXHAUSTED,
-      relay_rx_configure_handler(SYSTEM_CAN_MESSAGE_MAIN_RELAY, prv_relay_rx_handler, &context));
+      relay_rx_configure_handler(SYSTEM_CAN_MESSAGE_MAIN_RELAY, NUM_TEST_RELAY_RX_STATES,
+                                 prv_relay_rx_handler, &context));
 }
 
 void test_relay_rx(void) {
@@ -114,11 +122,11 @@ void test_relay_rx(void) {
   TestRelayRxHandlerCtx context = {
     .ret_code = STATUS_CODE_OK,
     .expected_msg_id = SYSTEM_CAN_MESSAGE_BATTERY_RELAY,
-    .expected_state = EE_CHAOS_CMD_RELAY_STATE_OPEN,
+    .expected_state = TEST_RELAY_RX_STATE_OPEN,
     .executed = false,
   };
-  TEST_ASSERT_OK(
-      relay_rx_configure_handler(SYSTEM_CAN_MESSAGE_BATTERY_RELAY, prv_relay_rx_handler, &context));
+  TEST_ASSERT_OK(relay_rx_configure_handler(
+      SYSTEM_CAN_MESSAGE_BATTERY_RELAY, NUM_TEST_RELAY_RX_STATES, prv_relay_rx_handler, &context));
 
   CANAckStatus expected_status = CAN_ACK_STATUS_OK;
   CANAckRequest req = {
@@ -128,27 +136,27 @@ void test_relay_rx(void) {
   };
 
   // Open.
-  CAN_TRANSMIT_BATTERY_RELAY(&req, EE_CHAOS_CMD_RELAY_STATE_OPEN);
+  CAN_TRANSMIT_BATTERY_RELAY(&req, TEST_RELAY_RX_STATE_OPEN);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
   TEST_ASSERT_TRUE(context.executed);
   context.executed = false;
 
   // Close.
-  context.expected_state = EE_CHAOS_CMD_RELAY_STATE_CLOSE;
-  CAN_TRANSMIT_BATTERY_RELAY(&req, EE_CHAOS_CMD_RELAY_STATE_CLOSE);
+  context.expected_state = TEST_RELAY_RX_STATE_CLOSE;
+  CAN_TRANSMIT_BATTERY_RELAY(&req, TEST_RELAY_RX_STATE_CLOSE);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
   TEST_ASSERT_TRUE(context.executed);
   context.executed = false;
 
   // Invalid.
   expected_status = CAN_ACK_STATUS_INVALID;
-  CAN_TRANSMIT_BATTERY_RELAY(&req, NUM_EE_CHAOS_CMD_RELAY_STATES);
+  CAN_TRANSMIT_BATTERY_RELAY(&req, NUM_TEST_RELAY_RX_STATES);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
   TEST_ASSERT_FALSE(context.executed);
 
   // Fail to update relay.
   context.ret_code = STATUS_CODE_INTERNAL_ERROR;
-  CAN_TRANSMIT_BATTERY_RELAY(&req, EE_CHAOS_CMD_RELAY_STATE_CLOSE);
+  CAN_TRANSMIT_BATTERY_RELAY(&req, TEST_RELAY_RX_STATE_CLOSE);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
   TEST_ASSERT_TRUE(context.executed);
 }

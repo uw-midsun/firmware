@@ -2,13 +2,13 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "can.h"
 #include "can_msg_defs.h"
 #include "can_unpack.h"
 #include "critical_section.h"
-#include "exported_enums.h"
 #include "gpio.h"
 #include "status.h"
 
@@ -20,12 +20,12 @@ static size_t s_storage_idx;
 static StatusCode prv_relay_rx_can_handler(const CANMessage *msg, void *context,
                                            CANAckStatus *ack_reply) {
   RelayRxStorage *storage = context;
-  EEChaosCmdRelayState state = NUM_EE_CHAOS_CMD_RELAY_STATES;
+  uint8_t state = storage->state_bound;
   // NOTE: This is a bit of a hack that exploits the fact all the relay control messages are the
   // same. The aim here is to not necessarily force a constraint based on message id/name. Instead
   // all single field u8 messages will succeed in unpacking but the contents must be valid.
   CAN_UNPACK_BATTERY_RELAY(msg, (uint8_t *)&state);
-  if (state >= NUM_EE_CHAOS_CMD_RELAY_STATES) {
+  if (state >= storage->state_bound) {
     *ack_reply = CAN_ACK_STATUS_INVALID;
   } else {
     storage->curr_state = state;
@@ -47,8 +47,8 @@ StatusCode relay_rx_init(RelayRxStorage *relay_storage, size_t size) {
   return STATUS_CODE_OK;
 }
 
-StatusCode relay_rx_configure_handler(SystemCanMessage msg_id, RelayRxHandler handler,
-                                      void *context) {
+StatusCode relay_rx_configure_handler(SystemCanMessage msg_id, uint8_t state_bound,
+                                      RelayRxHandler handler, void *context) {
   if (s_storage_idx >= s_storage_size) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   } else if (handler == NULL) {
@@ -68,7 +68,8 @@ StatusCode relay_rx_configure_handler(SystemCanMessage msg_id, RelayRxHandler ha
 
   s_storage[s_storage_idx].handler = handler;
   s_storage[s_storage_idx].msg_id = msg_id;
-  s_storage[s_storage_idx].curr_state = EE_CHAOS_CMD_RELAY_STATE_OPEN;
+  s_storage[s_storage_idx].curr_state = state_bound;
+  s_storage[s_storage_idx].state_bound = state_bound;
   s_storage[s_storage_idx].context = context;
   s_storage_idx++;
   critical_section_end(disabled_in_scope);
