@@ -53,5 +53,6 @@ int main(void) {
   while (true) {
   }
   evm_gps_clean_up(&settings);
+
   return 0;
 }
