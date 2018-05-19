@@ -2,21 +2,11 @@
 
 #include <string.h>
 
-#define LTC2484_OFFSET_MICROVOLTS 1000000
-#define LTC2484_SHUNT_RESISTOR 100
+#define LTC2484_OFFSET_MICROVOLTS   1000000
 
-// Use a running average to correct the value for resistance. Because resistance is directly
-// proportional to voltage, we can observe errors in the measured value and apply the corrections
-// to the known resisitance.
-static void prv_running_average(LTCCalibrationStorage *storage) {
-  // Add the latest measurement to the average buffer and update the average
-  storage->buffer[storage->index] +=
-      (int32_t)((float)storage->value.voltage / LTC2484_AVERAGE_WINDOW);
-  storage->average += storage->buffer[storage->index];
-
-  // Remove the earliest measurement from the buffer
-  storage->average -= storage->buffer[(storage->index + 1) % LTC2484_AVERAGE_WINDOW];
-}
+// Start with values obtained from datasheet and update for each sample
+static uint8_t s_current_sense_gain = 100;
+static uint8_t s_shunt_resistance = 100;
 
 static void prv_callback(int32_t *value, void *context) {
   LTCCalibrationStorage *storage = (LTCCalibrationStorage *)context;
@@ -24,15 +14,14 @@ static void prv_callback(int32_t *value, void *context) {
   // Correct for voltage offset
   storage->value.voltage = *value - LTC2484_OFFSET_MICROVOLTS;
 
-  // Update average
-  prv_running_average(storage);
-
-  // Calculate the percent error of the voltage reading and apply it to LTC2484_SHUNT_RESISTOR
-  float error = (float)(storage->value.voltage - storage->average) / storage->average;
-  int32_t resistance = (int32_t)(LTC2484_SHUNT_RESISTOR * (1 + error));
-
   // Use calibrated voltage value to obtain current calibration_value
-  storage->value.current = (int32_t)((float)storage->value.voltage / resistance);
+  storage->value.current = storage->value.voltage / (s_current_sense_gain * s_shunt_resistance);
+
+  // Update constants based on calculated values
+  uint8_t temp = s_current_sense_gain;
+
+  s_current_sense_gain = storage->value.voltage / (storage->value.current * s_shunt_resistance);
+  s_shunt_resistance = storage->value.voltage / (storage->value.current * temp);
 }
 
 StatusCode ltc_adc_calibration_init(LTCCalibrationStorage *storage) {
