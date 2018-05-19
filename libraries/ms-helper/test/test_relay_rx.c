@@ -20,7 +20,6 @@
 
 #define TEST_RELAY_CAN_DEVICE_ID 10
 #define NUM_TEST_RELAY_RX_CAN_HANDLERS 3
-#define NUM_TEST_RELAY_RX_STORAGE_HANDLERS 2
 
 typedef enum {
   TEST_RELAY_RX_STATE_OPEN = 0,
@@ -43,10 +42,9 @@ typedef struct TestRelayRxHandlerCtx {
 
 static const Event s_tx_event = { TEST_RELAY_RX_CAN_TX, 0 };
 static const Event s_rx_event = { TEST_RELAY_RX_CAN_RX, 0 };
-static RelayRxStorage s_relay_storage[NUM_TEST_RELAY_RX_STORAGE_HANDLERS];
 static CANStorage s_can_storage;
 static CANAckRequests s_can_ack_requests;
-static CANRxHandler s_rx_handlers[NUM_TEST_RELAY_RX_STORAGE_HANDLERS];
+static CANRxHandler s_rx_handlers[NUM_TEST_RELAY_RX_CAN_HANDLERS];
 
 // CANAckRequestCb
 static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
@@ -91,42 +89,35 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_relay_rx_guards(void) {
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, relay_rx_init(s_relay_storage, 0));
-  TEST_ASSERT_OK(relay_rx_init(s_relay_storage, NUM_TEST_RELAY_RX_STORAGE_HANDLERS));
-
   TestRelayRxHandlerCtx context = {
     .ret_code = STATUS_CODE_OK,
     .expected_msg_id = SYSTEM_CAN_MESSAGE_BATTERY_RELAY,
     .expected_state = TEST_RELAY_RX_STATE_OPEN,
     .executed = false,
   };
-  TEST_ASSERT_OK(relay_rx_configure_handler(
-      SYSTEM_CAN_MESSAGE_BATTERY_RELAY, NUM_TEST_RELAY_RX_STATES, prv_relay_rx_handler, &context));
+  RelayRxStorage relay_storage_a = {};
+  TEST_ASSERT_OK(relay_rx_configure_handler(&relay_storage_a, SYSTEM_CAN_MESSAGE_BATTERY_RELAY,
+                                            NUM_TEST_RELAY_RX_STATES, prv_relay_rx_handler,
+                                            &context));
   // Fail to register duplicates.
+  RelayRxStorage relay_storage_b = {};
   TEST_ASSERT_EQUAL(
       STATUS_CODE_RESOURCE_EXHAUSTED,
-      relay_rx_configure_handler(SYSTEM_CAN_MESSAGE_BATTERY_RELAY, NUM_TEST_RELAY_RX_STATES,
-                                 prv_relay_rx_handler, &context));
-  TEST_ASSERT_OK(relay_rx_configure_handler(SYSTEM_CAN_MESSAGE_MAIN_RELAY, NUM_TEST_RELAY_RX_STATES,
-                                            prv_relay_rx_handler, &context));
-
-  // Fail to register too many.
-  TEST_ASSERT_EQUAL(
-      STATUS_CODE_RESOURCE_EXHAUSTED,
-      relay_rx_configure_handler(SYSTEM_CAN_MESSAGE_MAIN_RELAY, NUM_TEST_RELAY_RX_STATES,
-                                 prv_relay_rx_handler, &context));
+      relay_rx_configure_handler(&relay_storage_b, SYSTEM_CAN_MESSAGE_BATTERY_RELAY,
+                                 NUM_TEST_RELAY_RX_STATES, prv_relay_rx_handler, &context));
 }
 
 void test_relay_rx(void) {
-  TEST_ASSERT_OK(relay_rx_init(s_relay_storage, NUM_TEST_RELAY_RX_STORAGE_HANDLERS));
   TestRelayRxHandlerCtx context = {
     .ret_code = STATUS_CODE_OK,
     .expected_msg_id = SYSTEM_CAN_MESSAGE_BATTERY_RELAY,
     .expected_state = TEST_RELAY_RX_STATE_OPEN,
     .executed = false,
   };
-  TEST_ASSERT_OK(relay_rx_configure_handler(
-      SYSTEM_CAN_MESSAGE_BATTERY_RELAY, NUM_TEST_RELAY_RX_STATES, prv_relay_rx_handler, &context));
+  RelayRxStorage relay_storage = {};
+  TEST_ASSERT_OK(relay_rx_configure_handler(&relay_storage, SYSTEM_CAN_MESSAGE_BATTERY_RELAY,
+                                            NUM_TEST_RELAY_RX_STATES, prv_relay_rx_handler,
+                                            &context));
 
   CANAckStatus expected_status = CAN_ACK_STATUS_OK;
   CANAckRequest req = {

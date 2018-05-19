@@ -3,7 +3,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <string.h>
 
 #include "can.h"
 #include "can_msg_defs.h"
@@ -11,10 +10,6 @@
 #include "critical_section.h"
 #include "gpio.h"
 #include "status.h"
-
-static RelayRxStorage *s_storage;
-static size_t s_storage_size;
-static size_t s_storage_idx;
 
 // CANRxHandler
 static StatusCode prv_relay_rx_can_handler(const CANMessage *msg, void *context,
@@ -24,7 +19,7 @@ static StatusCode prv_relay_rx_can_handler(const CANMessage *msg, void *context,
   // NOTE: This is a bit of a hack that exploits the fact all the relay control messages are the
   // same. The aim here is to not necessarily force a constraint based on message id/name. Instead
   // all single field u8 messages will succeed in unpacking but the contents must be valid.
-  CAN_UNPACK_BATTERY_RELAY(msg, (uint8_t *)&state);
+  CAN_UNPACK_BATTERY_RELAY(msg, &state);
   if (state >= storage->state_bound) {
     *ack_reply = CAN_ACK_STATUS_INVALID;
   } else {
@@ -36,22 +31,9 @@ static StatusCode prv_relay_rx_can_handler(const CANMessage *msg, void *context,
   return STATUS_CODE_OK;
 }
 
-StatusCode relay_rx_init(RelayRxStorage *relay_storage, size_t size) {
-  if (size == 0) {
-    return status_code(STATUS_CODE_INVALID_ARGS);
-  }
-  s_storage = relay_storage;
-  memset(relay_storage, 0, size);
-  s_storage_size = size;
-  s_storage_idx = 0;
-  return STATUS_CODE_OK;
-}
-
-StatusCode relay_rx_configure_handler(SystemCanMessage msg_id, uint8_t state_bound,
-                                      RelayRxHandler handler, void *context) {
-  if (s_storage_idx >= s_storage_size) {
-    return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
-  } else if (handler == NULL) {
+StatusCode relay_rx_configure_handler(RelayRxStorage *storage, SystemCanMessage msg_id,
+                                      uint8_t state_bound, RelayRxHandler handler, void *context) {
+  if (handler == NULL || storage == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   // NOTE: we explicitly don't constrain |msg_id|. In theory we could force this to be a value
@@ -59,19 +41,17 @@ StatusCode relay_rx_configure_handler(SystemCanMessage msg_id, uint8_t state_bou
   // any CAN controlled GPIO. Also note that the storage is also extensible for this reason.
 
   bool disabled_in_scope = critical_section_start();
-  StatusCode status =
-      can_register_rx_handler(msg_id, prv_relay_rx_can_handler, &s_storage[s_storage_idx]);
+  StatusCode status = can_register_rx_handler(msg_id, prv_relay_rx_can_handler, storage);
   if (!status_ok(status)) {
     critical_section_end(disabled_in_scope);
     return status;
   }
 
-  s_storage[s_storage_idx].handler = handler;
-  s_storage[s_storage_idx].msg_id = msg_id;
-  s_storage[s_storage_idx].curr_state = state_bound;
-  s_storage[s_storage_idx].state_bound = state_bound;
-  s_storage[s_storage_idx].context = context;
-  s_storage_idx++;
+  storage->handler = handler;
+  storage->msg_id = msg_id;
+  storage->curr_state = state_bound;
+  storage->state_bound = state_bound;
+  storage->context = context;
   critical_section_end(disabled_in_scope);
   return STATUS_CODE_OK;
 }

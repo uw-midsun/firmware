@@ -23,18 +23,15 @@ typedef struct RelayRxStorage {
   void *context;
 } RelayRxStorage;
 
-// Initialize the relay module to use the supplied |relay_storage| of |size| to hold relay
-// configurations.
-StatusCode relay_rx_init(RelayRxStorage *relay_storage, size_t size);
-
 // Relay RX init configures |RelayRxHandler| to be triggered when |msg_id| is received. This handler
 // should alter a relay or relays to be in-keeping with the expected state. In the event of a
 // failure the status code should propagate back to the CANRxHandler. |state_bound| is the
-// non-inclusive upper bound on the values the returned uint8_t can be.
+// non-inclusive upper bound on the values the returned uint8_t can be. The configuration is stored
+// in |storage|.
 //
 // NOTE: we explicitly don't constrain |msg_id|. In theory we could force this to be a value
 // defined for one of the relays in codegen-tooling. But this module could be used for any CAN
 // controlled element that uses a message format of a single uint8_t. Also note that the
 // |relay_storage| is also extensible for this reason.
-StatusCode relay_rx_configure_handler(SystemCanMessage msg_id, uint8_t state_bound,
-                                      RelayRxHandler handler, void *context);
+StatusCode relay_rx_configure_handler(RelayRxStorage *storage, SystemCanMessage msg_id,
+                                      uint8_t state_bound, RelayRxHandler handler, void *context);
