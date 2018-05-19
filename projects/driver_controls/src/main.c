@@ -15,15 +15,6 @@
 #include "log.h"
 #include "unity.h"
 
-#include "direction_fsm.h"
-#include "hazard_light_fsm.h"
-#include "horn_fsm.h"
-#include "mechanical_brake_fsm.h"
-#include "pedal_fsm.h"
-#include "power_fsm.h"
-#include "push_to_talk_fsm.h"
-#include "soft_timer.h"
-#include "turn_signal_fsm.h"
 
 static Ads1015Storage s_storage;
 
@@ -35,10 +26,11 @@ static void prv_callback_channel(Ads1015Channel channel, void *context) {
 }
 
 static bool prv_channel_reading_void(int16_t reading) {
-  return (reading < (ADS1015_CURRENTFSR / 2)) && (reading >= 0);
+  return (reading < (ADS1015_CURRENT_FSR / 2)) && (reading >= 0);
 }
 
 int main() {
+
   gpio_init();
   interrupt_init();
   gpio_it_init();
@@ -49,11 +41,12 @@ int main() {
     .sda = { .port = GPIO_PORT_B, .pin = 11 },
   };
   i2c_init(I2C_PORT_2, &i2c_settings);
-  GPIOAddress ready_pin = { .port = GPIO_PORT_B, .pin = 2 };
-  ads1015_init(&s_storage, I2C_PORT_2, Ads1015Address, &ready_pin);
-
-  ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true, prv_callback_channel,
-                            &s_callback_called[ADS1015_CHANNEL_0])
+  GPIOAddress ready_pin = { .port = GPIO_PORT_A, .pin = 9 };
+ 
+ ads1015_init(&s_storage, I2C_PORT_2, ADS1015_ADDRESS_VDD, &ready_pin);
+ 
+ ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true, prv_callback_channel,
+                            &s_callback_called[ADS1015_CHANNEL_0]);
 
       int16_t reading = 0;
 
