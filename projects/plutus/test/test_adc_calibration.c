@@ -1,0 +1,47 @@
+#include "ltc_adc_calibration.h"
+
+#include "gpio.h"
+#include "interrupt.h"
+#include "soft_timer.h"
+#include "delay.h"
+#include "test_helpers.h"
+#include "unity.h"
+#include "log.h"
+
+// Arbitrary duration
+#define TEST_ADC_CALIBRATION_DURATION       10
+#define TEST_ADC_CALIBRATION_CYCLE_DURATION 200
+
+static LTCCalibrationStorage s_storage = {
+  .storage = {
+    .mosi = { GPIO_PORT_B, 15 },
+    .miso = { GPIO_PORT_B, 14 },
+    .sclk = { GPIO_PORT_B, 13 },
+    .cs = { GPIO_PORT_B, 12 },
+
+    .spi_port = SPI_PORT_2,
+    .spi_baudrate = 750000,
+    .filter_mode = LTC_ADC_FILTER_50HZ_60HZ
+  },
+
+  .value = { 0 }
+};
+
+void setup_test(void) {
+  gpio_init();
+  interrupt_init();
+  soft_timer_init();
+}
+
+void teardown_test(void) {}
+
+void test_adc_calibration(void) {
+  TEST_ASSERT_OK(ltc_adc_calibration_init(&s_storage));
+
+  // Wait for samples to accumulate
+  for (uint8_t i = 0; i < TEST_ADC_CALIBRATION_DURATION; i++) {
+    LOG_DEBUG("[%d / %d] Voltage = %d, Current = %d\n", i, TEST_ADC_CALIBRATION_DURATION,
+              s_storage.value.voltage, s_storage.value.current);
+    delay_ms(TEST_ADC_CALIBRATION_CYCLE_DURATION);
+  }
+}

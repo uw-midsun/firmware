@@ -10,7 +10,8 @@
 // to the known resisitance.
 static void prv_running_average(LTCCalibrationStorage *storage) {
     // Add the latest measurement to the average buffer and update the average
-    storage->buffer[storage->index] += (int32_t)((float)storage->value.voltage / LTC2484_AVERAGE_CAP);
+    storage->buffer[storage->index] += (int32_t)((float)storage->value.voltage /
+                                                 LTC2484_AVERAGE_WINDOW);
     storage->average += storage->buffer[storage->index];
 
     // Remove the earliest measurement from the buffer
@@ -24,15 +25,14 @@ static void prv_callback(int32_t *value, void *context) {
   storage->value.voltage = *value - LTC2484_OFFSET_MICROVOLTS;
 
   // Update average
-  prv_running_average(storage, storage->value.voltage);
+  prv_running_average(storage);
 
   // Calculate the percent error of the voltage reading and apply it to LTC2484_SHUNT_RESISTOR
-  float error = (float)(voltage - storage->average) / storage->average;
+  float error = (float)(storage->value.voltage - storage->average) / storage->average;
   int32_t resistance = (int32_t)(LTC2484_SHUNT_RESISTOR * (1 + error));
 
   // Use calibrated voltage value to obtain current calibration_value
-  storage->value.current = (int32_t)((float)storage->value.voltage /
-                                      prv_resistance_corrected(storage->value.voltage));
+  storage->value.current = (int32_t)((float)storage->value.voltage / resistance);
 }
 
 StatusCode ltc_adc_calibration_init(LTCCalibrationStorage *storage) {
@@ -44,7 +44,7 @@ StatusCode ltc_adc_calibration_init(LTCCalibrationStorage *storage) {
   status_ok_or_return(ltc_adc_init(&(storage->storage)));
   status_ok_or_return(ltc_adc_register_callback(&(storage->storage), prv_callback, storage));
 
-  memset (storage->buffer, 0, LTC2484_AVERAGE_WINDOW);
+  memset(storage->buffer, 0, LTC2484_AVERAGE_WINDOW);
   storage->index = 0;
   storage->average = 0;
 
