@@ -40,7 +40,6 @@ static bool prv_channel_reading_void(int16_t reading){
 
 }
 
-
 int main() {
  gpio_init();
  interrupt_init();

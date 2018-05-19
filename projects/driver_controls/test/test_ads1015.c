@@ -10,6 +10,9 @@
 #include "soft_timer.h"
 #include "unity.h"
 
+#define TEST_ADS1015_I2C_PORT I2C_PORT_2
+#define TEST_ADS1015_ADDR ADS1015_ADDRESS_GND
+
 static Ads1015Storage s_storage;
 
 // The elements of this array are used as contexts for channel callbacks.
