@@ -1,6 +1,6 @@
 #include "control_stalk.h"
-#include "log.h"
 #include <string.h>
+#include "log.h"
 
 #define CONTROL_STALK_THRESHOLD(ohms) ((1 << 12) / 2 * (ohms) / ((CONTROL_STALK_RESISTOR) + (ohms)))
 
@@ -35,12 +35,14 @@ void prv_digital_cb(GpioExpanderPin pin, GPIOState state, void *context) {
   LOG_DEBUG("Pin %d changed state: %d\n", pin, state);
 }
 
-StatusCode control_stalk_init(ControlStalk *stalk, Ads1015Storage *ads1015, GpioExpanderStorage *expander) {
+StatusCode control_stalk_init(ControlStalk *stalk, Ads1015Storage *ads1015,
+                              GpioExpanderStorage *expander) {
   memset(stalk, 0, sizeof(*stalk));
   stalk->ads1015 = ads1015;
   stalk->expander = expander;
 
-  printf("681 thresh: %d\n2181 thresh: %d\n", CONTROL_STALK_681_OHMS_THRESHOLD, CONTROL_STALK_2181_OHMS_THRESHOLD);
+  printf("681 thresh: %d\n2181 thresh: %d\n", CONTROL_STALK_681_OHMS_THRESHOLD,
+         CONTROL_STALK_2181_OHMS_THRESHOLD);
 
   for (Ads1015Channel channel = 0; channel < CONTROL_STALK_ANALOG_INPUTS; channel++) {
     ads1015_configure_channel(stalk->ads1015, channel, true, prv_analog_cb, stalk);

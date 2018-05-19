@@ -1,12 +1,12 @@
-#include "unity.h"
 #include "control_stalk.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "interrupt.h"
-#include "soft_timer.h"
 #include "log.h"
-#include "wait.h"
+#include "soft_timer.h"
 #include "test_helpers.h"
+#include "unity.h"
+#include "wait.h"
 
 #define TEST_CONTROL_STALK_I2C_PORT I2C_PORT_2
 
@@ -33,8 +33,8 @@ void setup_test(void) {
   ads1015_init(&s_ads1015, TEST_CONTROL_STALK_I2C_PORT, ADS1015_ADDRESS_GND, &ready_pin);
 
   GPIOAddress int_pin = {
-    .port = GPIO_PORT_A, //
-    .pin = 8, //
+    .port = GPIO_PORT_A,  //
+    .pin = 8,             //
   };
   gpio_expander_init(&s_expander, TEST_CONTROL_STALK_I2C_PORT, GPIO_EXPANDER_ADDRESS_0, &int_pin);
 

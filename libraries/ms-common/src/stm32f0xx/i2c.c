@@ -1,28 +1,28 @@
 #include "i2c.h"
 #include <stdbool.h>
+#include "critical_section.h"
 #include "log.h"
 #include "stm32f0xx.h"
-#include "critical_section.h"
 
 // Arbitrary timeout
 #define I2C_TIMEOUT 1000000
-#define I2C_TIMEOUT_WHILE_FLAG(i2c, flag, status, critical_section)                           \
+#define I2C_TIMEOUT_WHILE_FLAG(i2c, flag, status, critical_section)         \
   do {                                                                      \
     uint32_t timeout = (I2C_TIMEOUT);                                       \
     while (I2C_GetFlagStatus(i2c, flag) == status) {                        \
       timeout--;                                                            \
       if (timeout == 0) {                                                   \
         LOG_DEBUG("Timeout: %lu waiting for %d to change\n", flag, status); \
-        critical_section_end(critical_section); \
-        return status_code(STATUS_CODE_TIMEOUT);                                         \
+        critical_section_end(critical_section);                             \
+        return status_code(STATUS_CODE_TIMEOUT);                            \
       }                                                                     \
     }                                                                       \
   } while (0)
 
-#define I2C_STOP(i2c, critical_section)                                   \
-  do {                                                  \
+#define I2C_STOP(i2c, critical_section)                                     \
+  do {                                                                      \
     I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_STOPF, RESET, (critical_section)); \
-    I2C_ClearFlag(i2c, I2C_FLAG_STOPF);                 \
+    I2C_ClearFlag(i2c, I2C_FLAG_STOPF);                                     \
   } while (0)
 
 typedef struct {
@@ -136,7 +136,8 @@ StatusCode i2c_read_reg(I2CPort i2c, I2CAddress addr, uint8_t reg, uint8_t *rx_d
   bool disabled = critical_section_start();
   I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET, disabled);
 
-  status_ok_or_return(prv_transfer(i2c, addr, false, &reg, sizeof(reg), I2C_SoftEnd_Mode, disabled));
+  status_ok_or_return(
+      prv_transfer(i2c, addr, false, &reg, sizeof(reg), I2C_SoftEnd_Mode, disabled));
   status_ok_or_return(prv_transfer(i2c, addr, true, rx_data, rx_len, I2C_AutoEnd_Mode, disabled));
 
   I2C_STOP(s_port[i2c].base, disabled);
@@ -154,7 +155,8 @@ StatusCode i2c_write_reg(I2CPort i2c, I2CAddress addr, uint8_t reg, uint8_t *tx_
   bool disabled = critical_section_start();
   I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET, disabled);
 
-  status_ok_or_return(prv_transfer(i2c, addr, false, &reg, sizeof(reg), I2C_SoftEnd_Mode, disabled));
+  status_ok_or_return(
+      prv_transfer(i2c, addr, false, &reg, sizeof(reg), I2C_SoftEnd_Mode, disabled));
   status_ok_or_return(prv_transfer(i2c, addr, false, tx_data, tx_len, I2C_AutoEnd_Mode, disabled));
 
   I2C_STOP(s_port[i2c].base, disabled);

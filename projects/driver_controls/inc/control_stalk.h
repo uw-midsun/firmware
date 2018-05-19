@@ -14,9 +14,9 @@
 // * A2: Lane Assist
 // * A3: Headlight (forward)
 // * A4: Headlight (back)
+#include <assert.h>
 #include "ads1015.h"
 #include "gpio_expander.h"
-#include <assert.h>
 
 // Resistor divider value in ohms
 #define CONTROL_STALK_RESISTOR 3800
@@ -42,4 +42,5 @@ typedef struct ControlStalk {
   ControlStalkState states[CONTROL_STALK_ANALOG_INPUTS];
 } ControlStalk;
 
-StatusCode control_stalk_init(ControlStalk *stalk, Ads1015Storage *ads1015, GpioExpanderStorage *expander);
+StatusCode control_stalk_init(ControlStalk *stalk, Ads1015Storage *ads1015,
+                              GpioExpanderStorage *expander);
