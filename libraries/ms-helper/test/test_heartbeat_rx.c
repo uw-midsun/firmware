@@ -1,0 +1,110 @@
+#include "heartbeat_rx.h"
+
+#include "can.h"
+
+#include "can.h"
+#include "can_ack.h"
+#include "can_msg_defs.h"
+#include "can_transmit.h"
+#include "exported_enums.h"
+#include "gpio.h"
+#include "gpio_mcu.h"
+#include "interrupt.h"
+#include "log.h"
+#include "ms_test_helpers.h"
+#include "soft_timer.h"
+#include "status.h"
+#include "test_helpers.h"
+#include "unity.h"
+
+#define TEST_HEARTBEAT_RX_CAN_DEVICE_ID 10
+#define NUM_TEST_HEARTBEAT_RX_RX_CAN_HANDLERS 3
+#define NUM_TEST_HEARTBEAT_RX_RX_STORAGE_HANDLERS 2
+
+typedef enum {
+  TEST_HEARTBEAT_RX_RX_CAN_RX = 10,
+  TEST_HEARTBEAT_RX_RX_CAN_TX,
+  TEST_HEARTBEAT_RX_RX_CAN_FAULT,
+} TestCanEvent;
+
+typedef struct TestHeartbeatRxHandlerCtx {
+  SystemCanMessage expected_msg_id;
+  bool ret_code;
+  bool executed;
+} TestHeartbeatRxHandlerCtx;
+
+static const Event s_tx_event = { TEST_HEARTBEAT_RX_RX_CAN_TX, 0 };
+static const Event s_rx_event = { TEST_HEARTBEAT_RX_RX_CAN_RX, 0 };
+static HeartbeatRxHandlerStorage s_hb_storage;
+static CANStorage s_can_storage;
+static CANAckRequests s_can_ack_requests;
+static CANRxHandler s_rx_handlers[NUM_TEST_HEARTBEAT_RX_RX_STORAGE_HANDLERS];
+
+// CANAckRequestCb
+static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+                                   uint16_t num_remaining, void *context) {
+  (void)num_remaining;
+  CANAckStatus *expected_status = context;
+  TEST_ASSERT_EQUAL(SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT, msg_id);
+  TEST_ASSERT_EQUAL(TEST_HEARTBEAT_RX_CAN_DEVICE_ID, device);
+  TEST_ASSERT_EQUAL(*expected_status, status);
+  return STATUS_CODE_OK;
+}
+
+// HeartbeatRxHandler
+static bool prv_heartbeat_rx_handler(CANMessageID msg_id, void *context) {
+  TestHeartbeatRxHandlerCtx *data = context;
+  TEST_ASSERT_EQUAL(data->expected_msg_id, msg_id);
+  data->executed = true;
+  return data->ret_code;
+}
+
+void setup_test(void) {
+  event_queue_init();
+  interrupt_init();
+  soft_timer_init();
+
+  CANSettings can_settings = {
+    .device_id = TEST_HEARTBEAT_RX_CAN_DEVICE_ID,
+    .bitrate = CAN_HW_BITRATE_125KBPS,
+    .rx_event = TEST_HEARTBEAT_RX_RX_CAN_RX,
+    .tx_event = TEST_HEARTBEAT_RX_RX_CAN_TX,
+    .fault_event = TEST_HEARTBEAT_RX_RX_CAN_FAULT,
+    .tx = { GPIO_PORT_A, 12 },
+    .rx = { GPIO_PORT_A, 11 },
+    .loopback = true,
+  };
+  TEST_ASSERT_OK(can_init(&can_settings, &s_can_storage, s_rx_handlers,
+                          NUM_TEST_HEARTBEAT_RX_RX_CAN_HANDLERS));
+  can_ack_init(&s_can_ack_requests);
+}
+
+void teardown_test(void) {}
+
+void test_heartbeat_rx(void) {
+  TestHeartbeatRxHandlerCtx context = {
+    .expected_msg_id = SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
+    .ret_code = true,
+    .executed = false,
+  };
+
+  HeartbeatRxHandlerStorage hb_storage = {};
+  TEST_ASSERT_OK(heartbeat_rx_register_handler(&hb_storage, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
+                                               prv_heartbeat_rx_handler, (void *)&context));
+  CANAckStatus expected_status = CAN_ACK_STATUS_OK;
+  CANAckRequest req = {
+    .callback = prv_ack_callback,
+    .context = &expected_status,
+    .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_HEARTBEAT_RX_CAN_DEVICE_ID),
+  };
+
+  CAN_TRANSMIT_POWERTRAIN_HEARTBEAT(&req);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  TEST_ASSERT_TRUE(context.executed);
+
+  expected_status = CAN_ACK_STATUS_INVALID;
+  context.ret_code = false;
+  CAN_TRANSMIT_POWERTRAIN_HEARTBEAT(&req);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  TEST_ASSERT_TRUE(context.executed);
+}
