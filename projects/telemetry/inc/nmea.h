@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "status.h"
-#include "uart_mcu.h"
 
 // This enum contains the list of NMEA sentences (not all of then are supported yet)
 

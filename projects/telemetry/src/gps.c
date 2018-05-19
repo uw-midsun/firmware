@@ -11,7 +11,6 @@
 #include "soft_timer.h"  // Software timers for scheduling future events.
 #include "status.h"
 #include "uart_mcu.h"
-#include "util.h"
 
 // Static variables for GPS chip utilities below
 

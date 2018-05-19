@@ -1,12 +1,13 @@
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 #include "gps.h"
 #include "interrupt.h"
 #include "log.h"
 #include "nmea.h"
+#include "nmea_checksum.h"
 #include "test_helpers.h"
 #include "unity.h"
-#include "util.h"
 
 void setup_test(void) {}
 void teardown_test(void) {}
@@ -15,7 +16,7 @@ void test_gps_nmea_gga(void) {
   const uint8_t input[] =
       "$GPGGA,053740.000,2503.6319,N,12136.0099,E,1,08,1.1,63.8,"
       "M,15.2,M,,0000*64";
-  evm_gps_gga_sentence r = evm_gps_parse_nmea_gga_sentence(input, SIZEOF_ARRAY(input));
+  evm_gps_gga_sentence r = evm_gps_parse_nmea_gga_sentence(input, strlen((char *)input));
   // Just chose a random thing to test. Not extensive yet
   TEST_ASSERT_TRUE(r.time.hh == 5);
   TEST_ASSERT_TRUE(r.time.mm == 37);
@@ -51,13 +52,13 @@ void test_gps_nmea_gga(void) {
 
   TEST_ASSERT_TRUE(r.units_geoid_seperation == (uint8_t)'M');
 
-  TEST_ASSERT_TRUE(evm_gps_compare_checksum((char *)input));
+  TEST_ASSERT_TRUE(nmea_checksum_validate((char *)input, strlen((char *)input)));
 }
 
 void test_gps_nmea_vtg(void) {
   const uint8_t input[] = "$GPVTG,79.65,T,,M,2.69,N,5.0,K,A*38";
 
-  evm_gps_vtg_sentence vtg = evm_gps_parse_nmea_vtg_sentence(input, SIZEOF_ARRAY(input));
+  evm_gps_vtg_sentence vtg = evm_gps_parse_nmea_vtg_sentence(input, strlen((char *) input));
 
   TEST_ASSERT_TRUE(vtg.degrees_1 == 79);
   TEST_ASSERT_TRUE(vtg.degrees_2 == 65);

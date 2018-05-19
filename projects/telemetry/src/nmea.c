@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <string.h>
 #include "log.h"
+#include "nmea_checksum.h"
 #include "status.h"
-#include "util.h"
 
 // Just a function to loosely validate if a sentence is valid
 StatusCode evm_gps_is_valid_nmea(const uint8_t *to_check, size_t len) {
@@ -85,7 +85,7 @@ evm_gps_gga_sentence evm_gps_parse_nmea_gga_sentence(const uint8_t *rx_arr, size
   r.message_id = m_id;
 
   // Do checksum right here
-  if (!evm_gps_compare_checksum((char *)rx_arr)) {
+  if (!nmea_checksum_validate((char *)rx_arr, len)) {
     LOG_WARN("Checksums do not match\n");
   } else {
     LOG_DEBUG("Checksums match\n");
@@ -158,7 +158,7 @@ evm_gps_vtg_sentence evm_gps_parse_nmea_vtg_sentence(const uint8_t *rx_arr, size
   }
 
   // Do checksum right here
-  if (!evm_gps_compare_checksum((char *)rx_arr)) {
+  if (!nmea_checksum_validate((char *)rx_arr, len)) {
     LOG_WARN("Checksums do not match\n");
   } else {
     LOG_DEBUG("Checksums match\n");
