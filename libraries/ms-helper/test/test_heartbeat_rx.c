@@ -1,6 +1,7 @@
 #include "heartbeat_rx.h"
 
-#include "can.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 #include "can.h"
 #include "can_ack.h"
