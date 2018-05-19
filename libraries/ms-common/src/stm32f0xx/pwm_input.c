@@ -7,7 +7,6 @@
 #include "stm32f0xx_tim.h"
 
 StatusCode pwm_input_init() {
-
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);
 
   TIM_ICInitTypeDef tim_icinit = {
@@ -17,7 +16,7 @@ StatusCode pwm_input_init() {
     .TIM_ICPrescaler = TIM_ICPSC_DIV1,
     .TIM_ICFilter = 0x0,
   };
-  
+
   TIM_PWMIConfig(TIM1, &tim_icinit);
   TIM_SelectInputTrigger(TIM1, TIM_TS_TI2FP2);
   TIM_SelectSlaveMode(TIM1, TIM_SlaveMode_Reset);
