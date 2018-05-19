@@ -41,11 +41,12 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 // No need to validate anything other than transitions as the underlying modules are tested and
-// fully testing the behavior would require a massive test. :w
+// fully testing the behavior would require a massive test.
 void test_charger_fsm_transitions(void) {
+  FSM fsm;
   GenericCan *can = (GenericCan *)&s_can;
   ChargerCanStatus status = { 0 };
-  charger_fsm_init(&status);
+  charger_fsm_init(&fsm);
 
   ChargerSettings settings = {
     .max_voltage = TEST_CHARGER_MAX_VOLTAGE,
@@ -57,51 +58,51 @@ void test_charger_fsm_transitions(void) {
   TEST_ASSERT_OK(charger_controller_init(&settings, &status));
   TEST_ASSERT_OK(notify_init(can, UINT32_MAX, UINT32_MAX));
 
-  // Check ban transitions fro Disconnected
+  // Check ban transitions from Disconnected
   Event e = { CHARGER_EVENT_DISCONNECTED, 0 };
-  TEST_ASSERT_FALSE(charger_fsm_process_event(&e));
+  TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
   e.id = CHARGER_EVENT_START_CHARGING;
-  TEST_ASSERT_FALSE(charger_fsm_process_event(&e));
+  TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
   e.id = CHARGER_EVENT_STOP_CHARGING;
-  TEST_ASSERT_FALSE(charger_fsm_process_event(&e));
+  TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
 
   // Transition to connected and blocked transitions
   e.id = CHARGER_EVENT_CONNECTED;
-  TEST_ASSERT_TRUE(charger_fsm_process_event(&e));
-  TEST_ASSERT_FALSE(charger_fsm_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&fsm, &e));
+  TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
   e.id = CHARGER_EVENT_STOP_CHARGING;
-  TEST_ASSERT_FALSE(charger_fsm_process_event(&e));
+  TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
 
   // Prevent transition to charging
   status.hw_fault = true;
   e.id = CHARGER_EVENT_START_CHARGING;
-  TEST_ASSERT_FALSE(charger_fsm_process_event(&e));
+  TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
 
   // Allow transition to charging
   status.hw_fault = false;
-  TEST_ASSERT_TRUE(charger_fsm_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&fsm, &e));
 
   // Invalid transitions
   e.id = CHARGER_EVENT_CONNECTED;
-  TEST_ASSERT_FALSE(charger_fsm_process_event(&e));
+  TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
   e.id = CHARGER_EVENT_START_CHARGING;
-  TEST_ASSERT_FALSE(charger_fsm_process_event(&e));
+  TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
 
   // Transition back to disconnected
   e.id = CHARGER_EVENT_STOP_CHARGING;
-  TEST_ASSERT_TRUE(charger_fsm_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&fsm, &e));
   e.id = CHARGER_EVENT_DISCONNECTED;
-  TEST_ASSERT_TRUE(charger_fsm_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&fsm, &e));
 
   // Go back to charging
   e.id = CHARGER_EVENT_CONNECTED;
-  TEST_ASSERT_TRUE(charger_fsm_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&fsm, &e));
   e.id = CHARGER_EVENT_START_CHARGING;
-  TEST_ASSERT_TRUE(charger_fsm_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&fsm, &e));
 
   // Finally go to not charging directly
   e.id = CHARGER_EVENT_DISCONNECTED;
-  TEST_ASSERT_TRUE(charger_fsm_process_event(&e));
+  TEST_ASSERT_TRUE(fsm_process_event(&fsm, &e));
 }
 
 // TODO(ELEC-355): Add full integration test.

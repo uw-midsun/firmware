@@ -22,21 +22,16 @@
 //
 // Transition Table:
 // | From \ To    | Disconnected | Connected | Charging |
-// | Disconnected |              |     Y     |     N    |
-// | Connected    |       Y      |           |   G(Y)   |
-// | Charging     |       Y      |           |          |
+// | Disconnected |       \      |     Y     |     N    |
+// | Connected    |       Y      |     \     |   G(Y)   |
+// | Charging     |       Y      |     Y     |     \    |
 //
-// Y - Allowed
-// N - Not Allowed
-// G(Y) - Guarded but Allowed
+// \ - Self-edge not allowed.
+// Y - Allowed.
+// N - Not allowed.
+// G(Y) - Guarded but allowed.
 
-#include <stdbool.h>
+#include "fsm.h"
 
-#include "charger_can.h"
-#include "event_queue.h"
-
-// Initializes the FSM |charger_can_status| is used to guard against faults.
-void charger_fsm_init(ChargerCanStatus *charger_can_status);
-
-// Attempts the transition based on the event in |e|.
-bool charger_fsm_process_event(const Event *e);
+// Initializes |fsm| as a charger FSM.
+void charger_fsm_init(FSM *fsm);

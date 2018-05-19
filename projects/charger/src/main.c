@@ -7,6 +7,7 @@
 #include "charger_fsm.h"
 #include "charger_pin.h"
 #include "event_queue.h"
+#include "fsm.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "interrupt.h"
@@ -50,7 +51,8 @@ int main(void) {
   notify_init(charger_settings->can, CHARGER_CFG_SEND_PERIOD_S, CHARGER_CFG_WATCHDOG_PERIOD_S);
 
   // FSM
-  charger_fsm_init(&charger_status);
+  FSM charger_fsm;
+  charger_fsm_init(&charger_fsm);
 
   StatusCode status = NUM_STATUS_CODES;
   Event e = { 0 };
@@ -67,7 +69,7 @@ int main(void) {
       }
     } while (status != STATUS_CODE_OK);
 
-    charger_fsm_process_event(&e);
+    fsm_process_event(&charger_fsm, &e);
     fsm_process_event(CAN_FSM, &e);
   }
 

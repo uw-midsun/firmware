@@ -1,17 +1,17 @@
 #include "charger_fsm.h"
 
+#include <stddef.h>
+
 #include "charger_controller.h"
 #include "charger_events.h"
 #include "fsm.h"
 #include "notify.h"
 
-static FSM s_charger_fsm;
-
 static bool prv_safe_charging_guard(const FSM *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
-  ChargerCanStatus *status = context;
-  return charger_controller_is_safe(*status);
+  (void)context;
+  return charger_controller_is_safe();
 }
 
 FSM_DECLARE_STATE(state_disconnected);
@@ -67,13 +67,9 @@ static void prv_state_charging(FSM *fsm, const Event *e, void *context) {
   charger_controller_set_state(CHARGER_STATE_START);
 }
 
-void charger_fsm_init(ChargerCanStatus *charger_status) {
+void charger_fsm_init(FSM *fsm) {
   fsm_state_init(state_disconnected, prv_state_disconnected);
   fsm_state_init(state_connected, prv_state_connected);
   fsm_state_init(state_charging, prv_state_charging);
-  fsm_init(&s_charger_fsm, "ChargerFSM", &state_disconnected, (void *)charger_status);
-}
-
-bool charger_fsm_process_event(const Event *e) {
-  return fsm_process_event(&s_charger_fsm, e);
+  fsm_init(fsm, "ChargerFSM", &state_disconnected, NULL);
 }

@@ -101,6 +101,7 @@ void test_charger_controller(void) {
     .can = can,  // Use pure HW can for both CAN and CAN UART since Extended support is needed while
                  // mocking.
     .can_uart = can,
+    .relay_control_pin = { GPIO_PORT_A, 8 },
   };
 
   Event e = { 0, 0 };
@@ -148,18 +149,31 @@ void test_charger_controller(void) {
 }
 
 void test_charger_controller_status(void) {
+  GenericCan *can = (GenericCan *)&s_can;
+
   ChargerCanStatus status = {
     .hw_fault = false,
     .over_temp = false,
     .input_voltage = false,
   };
 
-  TEST_ASSERT_TRUE(charger_controller_is_safe(status));
+  ChargerSettings settings = {
+    .max_voltage = TEST_CHARGER_MAX_VOLTAGE,
+    .max_current = TEST_CHARGER_MAX_CURRENT,
+    .can = can,  // Use pure HW can for both CAN and CAN UART since Extended support is needed while
+                 // mocking.
+    .can_uart = can,
+    .relay_control_pin = { GPIO_PORT_A, 8 },
+  };
+  TEST_ASSERT_OK(charger_controller_init(&settings, &status));
+
+  TEST_ASSERT_TRUE(charger_controller_is_safe());
+
   // Check all combinations of the first 3 flags return false;
   for (uint8_t i = 1; i < (1U << 3U); i++) {
     LOG_DEBUG("%u\n", i);
     status.raw = i;
-    TEST_ASSERT_FALSE(charger_controller_is_safe(status));
+    TEST_ASSERT_FALSE(charger_controller_is_safe());
   }
 }
 

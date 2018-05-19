@@ -30,7 +30,7 @@ CANSettings *charger_cfg_load_can_settings(void) {
 }
 
 static UARTSettings s_uart_settings = {
-  .baudrate = 12500,
+  .baudrate = 115200,
   .rx_handler = NULL,
   .context = NULL,
   .tx = { 0, 0 },

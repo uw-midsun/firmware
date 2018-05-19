@@ -1,7 +1,7 @@
 #include "charger_controller.h"
 
-#include <assert.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include "can_interval.h"
@@ -18,6 +18,7 @@
 #define CHARGER_EXPECTED_RX_DLC 5
 #define CHARGER_EXPECTED_TX_DLC 5
 
+static ChargerSettings *s_settings;
 static CanInterval *s_interval;
 static ChargerCanStatus *s_charger_status;
 
@@ -50,7 +51,7 @@ static void prv_rx_handler(const GenericCanMsg *msg, void *context) {
   *s_charger_status = data.data_impl.status_flags;
 
   // Check for statuses
-  if (!charger_controller_is_safe(data.data_impl.status_flags)) {
+  if (!charger_controller_is_safe()) {
     // If unsafe immediately stop charging and force the FSM to transition to the unsafe state.
     charger_controller_set_state(CHARGER_STATE_STOP);
     event_raise(CHARGER_EVENT_STOP_CHARGING, 0);
@@ -58,7 +59,19 @@ static void prv_rx_handler(const GenericCanMsg *msg, void *context) {
 }
 
 StatusCode charger_controller_init(ChargerSettings *settings, ChargerCanStatus *status) {
+  if (status == NULL || settings == NULL) {
+    return STATUS_CODE_INVALID_ARGS;
+  }
   s_charger_status = status;
+  s_settings = settings;
+
+  const GPIOSettings gpio_settings = {
+    .state = GPIO_STATE_LOW,
+    .alt_function = GPIO_ALTFN_NONE,
+    .direction = GPIO_DIR_OUT,
+    .resistor = GPIO_RES_NONE,
+  };
+  status_ok_or_return(gpio_init_pin(&s_settings->relay_control_pin, &gpio_settings));
 
   const ChargerCanTxData tx_data = { .data_impl = {
                                          .max_voltage = settings->max_voltage,
@@ -73,18 +86,18 @@ StatusCode charger_controller_init(ChargerSettings *settings, ChargerCanStatus *
   };
 
   status_ok_or_return(
-      can_interval_factory(settings->can_uart, &tx_msg, CHARGER_PERIOD_US, &s_interval));
+      can_interval_factory(s_settings->can_uart, &tx_msg, CHARGER_PERIOD_US, &s_interval));
 
-  status_ok_or_return(generic_can_register_rx(settings->can_uart, prv_rx_handler,
+  status_ok_or_return(generic_can_register_rx(s_settings->can_uart, prv_rx_handler,
                                               GENERIC_CAN_EMPTY_MASK, s_rx_id.raw_id, true,
-                                              settings->can));
+                                              s_settings->can));
   return STATUS_CODE_OK;
 }
 
 StatusCode charger_controller_set_state(ChargerCanState state) {
   if (state >= NUM_CHARGER_STATES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
-  } else if (s_charger_status == NULL || !charger_controller_is_safe(*s_charger_status)) {
+  } else if (s_charger_status == NULL || !charger_controller_is_safe()) {
     // Unsafe to start
     return status_code(STATUS_CODE_INTERNAL_ERROR);
   }
@@ -96,6 +109,12 @@ StatusCode charger_controller_set_state(ChargerCanState state) {
   tx_data.data_impl.charging = state ? CHARGER_STATE_STOP : CHARGER_STATE_START;
   s_interval->msg.data = tx_data.raw_data;
 
+  if (state == CHARGER_STATE_START) {
+    gpio_set_state(&s_settings->relay_control_pin, GPIO_STATE_HIGH);
+  } else {
+    gpio_set_state(&s_settings->relay_control_pin, GPIO_STATE_LOW);
+  }
+
   if (state == CHARGER_STATE_OFF) {
     status_ok_or_return(can_interval_send_now(s_interval));
     return can_interval_disable(s_interval);
@@ -103,12 +122,13 @@ StatusCode charger_controller_set_state(ChargerCanState state) {
   return can_interval_send_now(s_interval);
 }
 
-bool charger_controller_is_safe(ChargerCanStatus status) {
+bool charger_controller_is_safe(void) {
   // - Input voltage is an indication the charger is lower voltage the battery so don't charge.
   // - Over Temp is an indication of a heat issue with the charger, it is possible to resume
   //   charging after a break.
   // - HW fault is an indeterminate hardware failure which should be addressed.
   //
   // Implicitly forgives communication issues.
-  return !(status.input_voltage || status.over_temp || status.hw_fault);
+  return !(s_charger_status->input_voltage || s_charger_status->over_temp ||
+           s_charger_status->hw_fault);
 }
