@@ -4,7 +4,7 @@
 // Requires the ltc_adc to be initialized
 
 // Arbitrary limit on values to track (Maybe keep this small so that it doesn't deviate)
-#define LTC2484_AVERAGE_WINDOW      5
+#define LTC2484_AVERAGE_WINDOW 5
 
 #include "ltc_adc.h"
 #include "status.h"

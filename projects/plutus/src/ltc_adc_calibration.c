@@ -2,20 +2,20 @@
 
 #include <string.h>
 
-#define LTC2484_OFFSET_MICROVOLTS   1000000
-#define LTC2484_SHUNT_RESISTOR      100
+#define LTC2484_OFFSET_MICROVOLTS 1000000
+#define LTC2484_SHUNT_RESISTOR 100
 
 // Use a running average to correct the value for resistance. Because resistance is directly
 // proportional to voltage, we can observe errors in the measured value and apply the corrections
 // to the known resisitance.
 static void prv_running_average(LTCCalibrationStorage *storage) {
-    // Add the latest measurement to the average buffer and update the average
-    storage->buffer[storage->index] += (int32_t)((float)storage->value.voltage /
-                                                 LTC2484_AVERAGE_WINDOW);
-    storage->average += storage->buffer[storage->index];
+  // Add the latest measurement to the average buffer and update the average
+  storage->buffer[storage->index] +=
+      (int32_t)((float)storage->value.voltage / LTC2484_AVERAGE_WINDOW);
+  storage->average += storage->buffer[storage->index];
 
-    // Remove the earliest measurement from the buffer
-    storage->average -= storage->buffer[(storage->index + 1) % LTC2484_AVERAGE_WINDOW];
+  // Remove the earliest measurement from the buffer
+  storage->average -= storage->buffer[(storage->index + 1) % LTC2484_AVERAGE_WINDOW];
 }
 
 static void prv_callback(int32_t *value, void *context) {
