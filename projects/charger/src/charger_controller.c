@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "can_interval.h"
 #include "can_transmit.h"
@@ -18,7 +19,7 @@
 #define CHARGER_EXPECTED_RX_DLC 5
 #define CHARGER_EXPECTED_TX_DLC 5
 
-static ChargerSettings *s_settings;
+static ChargerStorage *s_storage;
 static CanInterval *s_interval;
 static ChargerCanStatus *s_charger_status;
 
@@ -58,12 +59,14 @@ static void prv_rx_handler(const GenericCanMsg *msg, void *context) {
   }
 }
 
-StatusCode charger_controller_init(ChargerSettings *settings, ChargerCanStatus *status) {
+StatusCode charger_controller_init(ChargerStorage *storage, const ChargerSettings *settings,
+                                   ChargerCanStatus *status) {
   if (status == NULL || settings == NULL) {
     return STATUS_CODE_INVALID_ARGS;
   }
   s_charger_status = status;
-  s_settings = settings;
+  s_storage = storage;
+  memcpy(&s_storage->relay_control_pin, &settings->relay_control_pin, sizeof(GPIOAddress));
 
   const GPIOSettings gpio_settings = {
     .state = GPIO_STATE_LOW,
@@ -71,7 +74,7 @@ StatusCode charger_controller_init(ChargerSettings *settings, ChargerCanStatus *
     .direction = GPIO_DIR_OUT,
     .resistor = GPIO_RES_NONE,
   };
-  status_ok_or_return(gpio_init_pin(&s_settings->relay_control_pin, &gpio_settings));
+  status_ok_or_return(gpio_init_pin(&settings->relay_control_pin, &gpio_settings));
 
   const ChargerCanTxData tx_data = { .data_impl = {
                                          .max_voltage = settings->max_voltage,
@@ -86,11 +89,11 @@ StatusCode charger_controller_init(ChargerSettings *settings, ChargerCanStatus *
   };
 
   status_ok_or_return(
-      can_interval_factory(s_settings->can_uart, &tx_msg, CHARGER_PERIOD_US, &s_interval));
+      can_interval_factory(settings->can_uart, &tx_msg, CHARGER_PERIOD_US, &s_interval));
 
-  status_ok_or_return(generic_can_register_rx(s_settings->can_uart, prv_rx_handler,
+  status_ok_or_return(generic_can_register_rx(settings->can_uart, prv_rx_handler,
                                               GENERIC_CAN_EMPTY_MASK, s_rx_id.raw_id, true,
-                                              s_settings->can));
+                                              settings->can));
   return STATUS_CODE_OK;
 }
 
@@ -110,9 +113,9 @@ StatusCode charger_controller_set_state(ChargerCanState state) {
   s_interval->msg.data = tx_data.raw_data;
 
   if (state == CHARGER_STATE_START) {
-    gpio_set_state(&s_settings->relay_control_pin, GPIO_STATE_HIGH);
+    gpio_set_state(&s_storage->relay_control_pin, GPIO_STATE_HIGH);
   } else {
-    gpio_set_state(&s_settings->relay_control_pin, GPIO_STATE_LOW);
+    gpio_set_state(&s_storage->relay_control_pin, GPIO_STATE_LOW);
   }
 
   if (state == CHARGER_STATE_OFF) {

@@ -106,9 +106,10 @@ void test_charger_controller(void) {
 
   Event e = { 0, 0 };
   ChargerCanStatus status = { 0 };
+  ChargerStorage storage = { 0 };
 
   // Starts in off.
-  TEST_ASSERT_OK(charger_controller_init(&settings, &status));
+  TEST_ASSERT_OK(charger_controller_init(&storage, &settings, &status));
 
   // Start the charger
   s_expected_state = CHARGER_STATE_START;
@@ -165,7 +166,8 @@ void test_charger_controller_status(void) {
     .can_uart = can,
     .relay_control_pin = { GPIO_PORT_A, 8 },
   };
-  TEST_ASSERT_OK(charger_controller_init(&settings, &status));
+  ChargerStorage storage = { 0 };
+  TEST_ASSERT_OK(charger_controller_init(&storage, &settings, &status));
 
   TEST_ASSERT_TRUE(charger_controller_is_safe());
 
@@ -194,9 +196,10 @@ void test_charger_controller_off(void) {
 
   Event e = { 0, 0 };
   ChargerCanStatus status = { 0 };
+  ChargerStorage storage = { 0 };
 
   // Starts in off.
-  TEST_ASSERT_OK(charger_controller_init(&settings, &status));
+  TEST_ASSERT_OK(charger_controller_init(&storage, &settings, &status));
 
   // Start the charger in stop
   s_expected_state = CHARGER_STATE_STOP;

@@ -43,9 +43,10 @@ int main(void) {
   charger_pin_init(&pin_addr);
 
   // Charger Controller
-  ChargerSettings *charger_settings = charger_cfg_load_settings();
+  const ChargerSettings *charger_settings = charger_cfg_load_settings();
   ChargerCanStatus charger_status;
-  charger_controller_init(charger_settings, &charger_status);
+  ChargerStorage charger_storage;
+  charger_controller_init(&charger_storage, charger_settings, &charger_status);
 
   // Notify/Command
   notify_init(charger_settings->can, CHARGER_CFG_SEND_PERIOD_S, CHARGER_CFG_WATCHDOG_PERIOD_S);

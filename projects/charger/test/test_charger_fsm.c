@@ -54,8 +54,9 @@ void test_charger_fsm_transitions(void) {
     .can = can,  // Use pure HW can for both CAN and CAN UART since Extended support is needed.
     .can_uart = can,
   };
+  ChargerStorage storage;
   // Init these because they need to be not because they will be used.
-  TEST_ASSERT_OK(charger_controller_init(&settings, &status));
+  TEST_ASSERT_OK(charger_controller_init(&storage, &settings, &status));
   TEST_ASSERT_OK(notify_init(can, UINT32_MAX, UINT32_MAX));
 
   // Check ban transitions from Disconnected
