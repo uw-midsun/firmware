@@ -7,7 +7,7 @@
 #include "status.h"
 
 // Splits individual message components into a 2D array
-static void s_split_nmea_into_array(uint8_t *rx_arr, size_t rx_len, size_t temp_buf_w,
+static void prv_split_nmea_into_array(uint8_t *rx_arr, size_t rx_len, size_t temp_buf_w,
                                     size_t temp_buf_h, char temp_buf[][temp_buf_h]) {
   if (rx_arr == NULL || temp_buf == NULL) {
     LOG_CRITICAL("Cannot pass in NULL parameters!");
@@ -117,7 +117,7 @@ StatusCode nmea_get_gga_sentence(const uint8_t *rx_arr, size_t len, nmea_gga_sen
 
   char temp_buf[s_nmea_message_num_fields[NMEA_GGA]][10];
 
-  s_split_nmea_into_array(rx_arr, len, s_nmea_message_num_fields[NMEA_GGA], 10, temp_buf);
+  prv_split_nmea_into_array(rx_arr, len, s_nmea_message_num_fields[NMEA_GGA], 10, temp_buf);
 
   if (m_id == NMEA_GGA) {
     // Example message:
@@ -165,7 +165,7 @@ StatusCode nmea_get_vtg_sentence(const uint8_t *rx_arr, size_t len, nmea_vtg_sen
 
   char temp_buf[s_nmea_message_num_fields[NMEA_VTG]][10];
 
-  s_split_nmea_into_array(rx_arr, len, s_nmea_message_num_fields[NMEA_VTG], 10, temp_buf);
+  prv_split_nmea_into_array(rx_arr, len, s_nmea_message_num_fields[NMEA_VTG], 10, temp_buf);
 
   if (m_id == NMEA_VTG) {
     // Example message:
