@@ -8,7 +8,7 @@
 
 // Splits individual message components into a 2D array
 static void prv_split_nmea_into_array(uint8_t *rx_arr, size_t rx_len, size_t temp_buf_w,
-                                    size_t temp_buf_h, char temp_buf[][temp_buf_h]) {
+                                      size_t temp_buf_h, char temp_buf[][temp_buf_h]) {
   if (rx_arr == NULL || temp_buf == NULL) {
     LOG_CRITICAL("Cannot pass in NULL parameters!");
     return;
