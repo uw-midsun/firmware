@@ -33,8 +33,8 @@ static ChaosEventSequence s_next_sequence;
 static const SequencerEventPair s_emergency_events[] = {
   { .raise = { .id = CHAOS_EVENT_CHARGER_OPEN, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
-  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MAIN_POWER },
-    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_MAIN_POWER } },
+  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MOTOR_POWER },
+    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_MOTOR_POWER } },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
     .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
@@ -60,8 +60,8 @@ static const SequencerEventPair s_emergency_events[] = {
 static const SequencerEventPair s_idle_events[] = {
   { .raise = { .id = CHAOS_EVENT_CHARGER_OPEN, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
-  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MAIN_POWER },
-    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_MAIN_POWER } },
+  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MOTOR_POWER },
+    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_MOTOR_POWER } },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
     .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
@@ -121,8 +121,8 @@ static const SequencerEventPair s_drive_events[] = {
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MAIN_POWER },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MAIN_POWER } },
+  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MOTOR_POWER },
+    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MOTOR_POWER } },
   { .raise = { .id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
 };

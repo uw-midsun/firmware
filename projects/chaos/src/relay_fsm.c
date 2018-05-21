@@ -93,7 +93,7 @@ static void prv_relay_transmit(RelayId id, EEChaosCmdRelayState state,
     case RELAY_ID_BATTERY:
       CAN_TRANSMIT_BATTERY_RELAY(ack_request, state);
       return;
-    case RELAY_ID_MAIN_POWER:
+    case RELAY_ID_MOTOR_POWER:
       CAN_TRANSMIT_MAIN_RELAY(ack_request, state);
       return;
     case NUM_RELAY_IDS:

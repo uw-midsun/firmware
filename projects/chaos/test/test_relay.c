@@ -76,7 +76,7 @@ void test_relay_cycle(void) {
 
   // RelayID being tested and in which conditions (close, open) to fail.
   const TestRelayParams params[] = {
-    { .id = RELAY_ID_MAIN_POWER, .retry = { true, true } },
+    { .id = RELAY_ID_MOTOR_POWER, .retry = { true, true } },
     { .id = RELAY_ID_BATTERY, .retry = { true, false } },
     { .id = RELAY_ID_SOLAR_MASTER_REAR, .retry = { false, false } },
     { .id = RELAY_ID_SOLAR_MASTER_FRONT, .retry = { false, true } }
@@ -210,10 +210,10 @@ void test_relay_concurrent(void) {
   }
 
   // Close the main power relay.
-  TEST_ASSERT_OK(relay_fsm_close_event(RELAY_ID_MAIN_POWER, &e));
+  TEST_ASSERT_OK(relay_fsm_close_event(RELAY_ID_MOTOR_POWER, &e));
   TEST_ASSERT_TRUE(relay_process_event(&e));
 
-  while (!(e.id == CHAOS_EVENT_RELAY_CLOSED && e.data == RELAY_ID_MAIN_POWER)) {
+  while (!(e.id == CHAOS_EVENT_RELAY_CLOSED && e.data == RELAY_ID_MOTOR_POWER)) {
     do {
       status = event_process(&e);
     } while (status != STATUS_CODE_OK);
@@ -225,10 +225,10 @@ void test_relay_concurrent(void) {
   }
 
   // Open the main power relay.
-  TEST_ASSERT_OK(relay_fsm_open_event(RELAY_ID_MAIN_POWER, &e));
+  TEST_ASSERT_OK(relay_fsm_open_event(RELAY_ID_MOTOR_POWER, &e));
   TEST_ASSERT_TRUE(relay_process_event(&e));
 
-  while (!(e.id == CHAOS_EVENT_RELAY_OPENED && e.data == RELAY_ID_MAIN_POWER)) {
+  while (!(e.id == CHAOS_EVENT_RELAY_OPENED && e.data == RELAY_ID_MOTOR_POWER)) {
     do {
       status = event_process(&e);
     } while (status != STATUS_CODE_OK);

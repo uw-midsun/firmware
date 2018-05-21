@@ -35,7 +35,7 @@ void relay_init(bool loopback) {
                    "SolarRearRelay", solar_rear_bitset);
   relay_fsm_create(&s_relay_fsms[RELAY_ID_BATTERY], RELAY_ID_BATTERY, "BatteryRelay",
                    battery_bitset);
-  relay_fsm_create(&s_relay_fsms[RELAY_ID_MAIN_POWER], RELAY_ID_MAIN_POWER, "MainRelay",
+  relay_fsm_create(&s_relay_fsms[RELAY_ID_MOTOR_POWER], RELAY_ID_MOTOR_POWER, "MainRelay",
                    main_bitset);
 }
 
