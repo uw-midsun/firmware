@@ -63,4 +63,4 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event);
 // has received as soon as a sequence is completed. This is to allow pre-emption by the Emergency
 // state. Returns true if the submitted event will be raised next. Has knowledge of the present
 // state so will also reject invalid transitions.
-bool sequencer_fsm_event_raise(ChaosEventSequence sequence);
+bool sequencer_fsm_enqueue(ChaosEventSequence sequence);

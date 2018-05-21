@@ -27,7 +27,7 @@ static CANRxHandler s_rx_handlers[NUM_CAN_RX_HANDLERS];
 static CANAckRequests s_can_ack_requests;
 
 // Skip the sequencer protection of the event queue since it would overly complicate the test.
-bool TEST_MOCK(sequencer_fsm_event_raise)(ChaosEventSequence sequence) {
+bool TEST_MOCK(sequencer_fsm_enqueue)(ChaosEventSequence sequence) {
   event_raise(sequence, 0);
   return true;
 }

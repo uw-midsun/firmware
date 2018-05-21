@@ -66,11 +66,11 @@ void test_sequencer_fsm_run(void) {
     { .id = CHAOS_EVENT_SEQUENCE_EMERGENCY },
   };
 
-  TEST_ASSERT_TRUE(sequencer_fsm_event_raise(state_events[0].id));
+  TEST_ASSERT_TRUE(sequencer_fsm_enqueue(state_events[0].id));
   for (uint16_t i = 0; i < SIZEOF_ARRAY(state_events); i++) {
     LOG_DEBUG("State Event: %d\n", state_events[i].id);
     if (i < SIZEOF_ARRAY(state_events) - 1) {
-      TEST_ASSERT_TRUE(sequencer_fsm_event_raise(state_events[i + 1].id));
+      TEST_ASSERT_TRUE(sequencer_fsm_enqueue(state_events[i + 1].id));
     }
     prv_consume_events(state_events[i].id, true);
   }
@@ -191,10 +191,10 @@ void test_sequencer_fsm_reset(void) {
 }
 
 // Tests that the protected event enqueueing works.
-void test_sequencer_fsm_event_raise(void) {
-  TEST_ASSERT_TRUE(sequencer_fsm_event_raise(CHAOS_EVENT_SEQUENCE_DRIVE));
-  TEST_ASSERT_FALSE(sequencer_fsm_event_raise(CHAOS_EVENT_SEQUENCE_CHARGE));
-  TEST_ASSERT_TRUE(sequencer_fsm_event_raise(CHAOS_EVENT_SEQUENCE_IDLE));
-  TEST_ASSERT_TRUE(sequencer_fsm_event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY));
-  TEST_ASSERT_FALSE(sequencer_fsm_event_raise(CHAOS_EVENT_SEQUENCE_IDLE));
+void test_sequencer_fsm_enqueue(void) {
+  TEST_ASSERT_TRUE(sequencer_fsm_enqueue(CHAOS_EVENT_SEQUENCE_DRIVE));
+  TEST_ASSERT_FALSE(sequencer_fsm_enqueue(CHAOS_EVENT_SEQUENCE_CHARGE));
+  TEST_ASSERT_TRUE(sequencer_fsm_enqueue(CHAOS_EVENT_SEQUENCE_IDLE));
+  TEST_ASSERT_TRUE(sequencer_fsm_enqueue(CHAOS_EVENT_SEQUENCE_EMERGENCY));
+  TEST_ASSERT_FALSE(sequencer_fsm_enqueue(CHAOS_EVENT_SEQUENCE_IDLE));
 }

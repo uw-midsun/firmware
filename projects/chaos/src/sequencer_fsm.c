@@ -258,7 +258,7 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event) {
   return STATUS_CODE_OK;
 }
 
-bool sequencer_fsm_event_raise(ChaosEventSequence sequence) {
+bool sequencer_fsm_enqueue(ChaosEventSequence sequence) {
   if (sequence >= NUM_CHAOS_EVENT_SEQUENCES || sequence < CHAOS_EVENT_SEQUENCE_EMERGENCY) {
     return false;
   }

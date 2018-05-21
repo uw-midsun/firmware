@@ -19,7 +19,7 @@
 static bool s_mock_return = true;
 
 // Skip the sequencer protection of the event queue since it would overly complicate the test.
-bool TEST_MOCK(sequencer_fsm_event_raise)(ChaosEventSequence sequence) {
+bool TEST_MOCK(sequencer_fsm_enqueue)(ChaosEventSequence sequence) {
   if (s_mock_return) {
     event_raise(sequence, 0);
   }
