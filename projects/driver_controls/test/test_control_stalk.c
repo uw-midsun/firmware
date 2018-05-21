@@ -1,4 +1,5 @@
 #include "control_stalk.h"
+#include "event_queue.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "input_event.h"
@@ -8,7 +9,6 @@
 #include "test_helpers.h"
 #include "unity.h"
 #include "wait.h"
-#include "event_queue.h"
 
 #define TEST_CONTROL_STALK_I2C_PORT I2C_PORT_2
 
