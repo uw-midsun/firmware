@@ -2,6 +2,17 @@
 // Global event queue
 //
 // Uses an array of FIFOs to prioritize events of lower priority. Only one global instance exists.
+//
+// Implementation:
+// - Event Queue consists of five FIFOs each of which correspond to a priority.
+// - Raised events are put into the corresponding FIFO.
+// - A processed event will come from the highest priority queue that has elements.
+//
+// For legacy purposes and simplicity for smaller projects |event_raise()| allows events to be
+// raised at the NORMAL (default) priority. In cases where this is prevalent high priority events
+// will preempt most ms-common and ms-helper functionality as well as any board behavior.
+// Additionally, low priority message will effectively become best effort as many events may be
+// raised.
 #include <stdint.h>
 
 #include "objpool.h"
