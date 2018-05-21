@@ -43,7 +43,7 @@ void setup_test(void) {
 
   const CANSettings settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
-    .bitrate = CAN_HW_BITRATE_250KBPS,
+    .bitrate = CAN_HW_BITRATE_500KBPS,
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },
     .rx_event = CHAOS_EVENT_CAN_RX,
