@@ -11,7 +11,7 @@
 static StatusCode prv_heartbeat_handler(const CANMessage *msg, void *context,
                                         CANAckStatus *ack_reply) {
   HeartbeatRxHandlerStorage *storage = context;
-  if (storage->handler != NULL && !storage->handler(msg->msg_id, storage->context)) {
+  if (!storage->handler(msg->msg_id, storage->context)) {
     *ack_reply = CAN_ACK_STATUS_INVALID;
   }
   return STATUS_CODE_OK;
@@ -19,12 +19,15 @@ static StatusCode prv_heartbeat_handler(const CANMessage *msg, void *context,
 
 StatusCode heartbeat_rx_register_handler(HeartbeatRxHandlerStorage *storage, CANMessageID msg_id,
                                          HeartbeatRxHandler handler, void *context) {
+  if (handler == NULL || storage == NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
   storage->handler = handler;
   storage->context = context;
   return can_register_rx_handler(msg_id, prv_heartbeat_handler, storage);
 }
 
-bool heartbeat_rx_auto_ack(CANMessageID msg_id, void *context) {
+bool heartbeat_rx_auto_ack_handler(CANMessageID msg_id, void *context) {
   (void)msg_id;
   (void)context;
   return true;

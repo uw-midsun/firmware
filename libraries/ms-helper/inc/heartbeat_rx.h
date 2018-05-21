@@ -3,16 +3,27 @@
 //
 // Requires CAN to be initialized.
 //
-// The concept is to simplify registering a CANRxHandler such that it automatically replies in the
-// affirmative to the message unless a callback specifies otherwise. If no handler is specified
-// |NULL| it will always return success.
+// Simplifies registering a CANRxHandler such that it automatically replies in the affirmative to
+// the message unless the registered callback returns false. Register
+// |heartbeat_rx_auto_ack_handler| to always successfully ACK.
+//
+// The flow control is a follows:
+// - A heartbeat master sends a critical CAN message periodically with no data expecting certain
+//   devices to respond.
+// - Each device that is expected to respond should use this module to register a handler for that
+//   message. Normally this should just involve registering |heartbeat_rx_auto_ack_handler| although
+//   in special cases where a device may enter a fault mode a custom handler can be supplied which
+//   will intentionally fail to ack if some condition is met.
+// - Once the heartbeat master receives all the acks there are two possibilities
+//   - The ACK failed: the master will perform some form of fault handling.
+//   - The ACK succeeded: the master will send another heartbeat at the next period.
 
 #include <stdbool.h>
 
 #include "can.h"
 #include "status.h"
 
-// Return true to respond in the affirmative. False to fail the ACK.
+// Return true to respond in the affirmative. Returning false will fail the ACK.
 typedef bool (*HeartbeatRxHandler)(CANMessageID msg_id, void *context);
 
 typedef struct HeartbeatRxHandlerStorage {
@@ -20,12 +31,12 @@ typedef struct HeartbeatRxHandlerStorage {
   void *context;
 } HeartbeatRxHandlerStorage;
 
-// Registers the heartbeat handler (|handler|) to run for |msg_id|. |handler| takes |context| as an
-// argument. This configuration is stored in |storage| which must persist indefinitely. If |handler|
-// is NULL the heartbeat will automatically be acknowledged in the affirmative.
+// Registers a heartbeat handler (|handler|) to run for |msg_id|. |handler| takes |context| as an
+// argument. This configuration is stored in |storage| which must persist indefinitely. To
+// automatically respond in the affirmative register |heartbeat_rx_auto_ack_handler|.
 StatusCode heartbeat_rx_register_handler(HeartbeatRxHandlerStorage *storage, CANMessageID msg_id,
                                          HeartbeatRxHandler handler, void *context);
 
 // An instance of HeartbeatRxHandler that can be used to automatically ack and return true with no
 // other behavior.
-bool heartbeat_rx_auto_ack(CANMessageID msg_id, void *context);
+bool heartbeat_rx_auto_ack_handler(CANMessageID msg_id, void *context);
