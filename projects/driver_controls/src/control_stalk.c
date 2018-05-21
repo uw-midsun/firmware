@@ -1,15 +1,62 @@
 #include "control_stalk.h"
 #include <string.h>
+#include "input_event.h"
 #include "log.h"
 
+// 4096 codes for +/-4.096V -> LSB = 2mV
 #define CONTROL_STALK_THRESHOLD(ohms) ((1 << 12) / 2 * (ohms) / ((CONTROL_STALK_RESISTOR) + (ohms)))
-
-// actual recorded: 604
 // 2k181 +10% resistor = ~2k4, -10% = 1k963
 #define CONTROL_STALK_2181_OHMS_THRESHOLD CONTROL_STALK_THRESHOLD(2400)
 // 681 +10% resistor = ~750, -10% = 613
-// actual recorded: 254
 #define CONTROL_STALK_681_OHMS_THRESHOLD CONTROL_STALK_THRESHOLD(750)
+
+// ADC channel to Event ID
+static const EventID s_analog_mapping[][NUM_CONTROL_STALK_STATES] = {
+  {
+      INPUT_EVENT_CONTROL_STALK_ANALOG_DISTANCE_NEUTRAL,
+      INPUT_EVENT_CONTROL_STALK_ANALOG_DISTANCE_MINUS,
+      INPUT_EVENT_CONTROL_STALK_ANALOG_DISTANCE_PLUS,
+  },
+  {
+      INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_NEUTRAL,
+      INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_MINUS,
+      INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_PLUS,
+  },
+  {
+      INPUT_EVENT_CONTROL_STALK_ANALOG_CC_DIGITAL,
+      INPUT_EVENT_CONTROL_STALK_ANALOG_CC_CANCEL,
+      INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME,
+  },
+  {
+      INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_NONE,
+      INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_RIGHT,
+      INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_LEFT,
+  },
+};
+
+// Active-low
+static const EventID s_digital_mapping[][NUM_GPIO_STATES] = {
+  {
+      INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED,
+      INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_RELEASED,
+  },
+  {
+      INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_ON,
+      INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_OFF,
+  },
+  {
+      INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_LANE_ASSIST_PRESSED,
+      INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_LANE_ASSIST_RELEASED,
+  },
+  {
+      INPUT_EVENT_CONTROL_STALK_DIGITAL_HEADLIGHT_FWD_PRESSED,
+      INPUT_EVENT_CONTROL_STALK_DIGITAL_HEADLIGHT_FWD_RELEASED,
+  },
+  {
+      INPUT_EVENT_CONTROL_STALK_DIGITAL_HEADLIGHT_BACK_PRESSED,
+      INPUT_EVENT_CONTROL_STALK_DIGITAL_HEADLIGHT_BACK_RELEASED,
+  }
+};
 
 static void prv_analog_cb(Ads1015Channel channel, void *context) {
   ControlStalk *stalk = context;
@@ -24,15 +71,20 @@ static void prv_analog_cb(Ads1015Channel channel, void *context) {
   }
 
   if (stalk->states[channel] != state) {
-    const char *states[] = { "floating", "681 ohms", "2182 ohms" };
+    stalk->debounce_counter[channel] = 0;
     stalk->states[channel] = state;
-    printf("C%d changed state: %s (reading %d)\n", channel, states[state], reading);
+  } else {
+    stalk->debounce_counter[channel]++;
+  }
+
+  if (stalk->debounce_counter[channel] == CONTROL_STALK_DEBOUNCE_COUNTER) {
+    event_raise(s_analog_mapping[channel][state], 0);
   }
 }
 
 void prv_digital_cb(GpioExpanderPin pin, GPIOState state, void *context) {
   ControlStalk *stalk = context;
-  LOG_DEBUG("Pin %d changed state: %d\n", pin, state);
+  event_raise(s_digital_mapping[pin][state], 0);
 }
 
 StatusCode control_stalk_init(ControlStalk *stalk, Ads1015Storage *ads1015,
@@ -41,10 +93,8 @@ StatusCode control_stalk_init(ControlStalk *stalk, Ads1015Storage *ads1015,
   stalk->ads1015 = ads1015;
   stalk->expander = expander;
 
-  printf("681 thresh: %d\n2181 thresh: %d\n", CONTROL_STALK_681_OHMS_THRESHOLD,
-         CONTROL_STALK_2181_OHMS_THRESHOLD);
-
   for (Ads1015Channel channel = 0; channel < CONTROL_STALK_ANALOG_INPUTS; channel++) {
+    stalk->states[channel] = NUM_CONTROL_STALK_STATES;
     ads1015_configure_channel(stalk->ads1015, channel, true, prv_analog_cb, stalk);
   }
 

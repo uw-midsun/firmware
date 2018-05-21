@@ -1,12 +1,14 @@
 #include "control_stalk.h"
 #include "gpio.h"
 #include "gpio_it.h"
+#include "input_event.h"
 #include "interrupt.h"
 #include "log.h"
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
 #include "wait.h"
+#include "event_queue.h"
 
 #define TEST_CONTROL_STALK_I2C_PORT I2C_PORT_2
 
@@ -19,6 +21,7 @@ void setup_test(void) {
   interrupt_init();
   gpio_it_init();
   soft_timer_init();
+  event_queue_init();
   I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,                    //
     .scl = { .port = GPIO_PORT_B, .pin = 10 },  //
@@ -44,8 +47,62 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_control_stalks_readback(void) {
+  Event e;
   LOG_DEBUG("hello\n");
+
+  const GPIOAddress leds[] = {
+    { .port = GPIO_PORT_B, .pin = 5 },   //
+    { .port = GPIO_PORT_B, .pin = 4 },   //
+    { .port = GPIO_PORT_B, .pin = 3 },   //
+    { .port = GPIO_PORT_A, .pin = 15 },  //
+  };
+
+  GPIOSettings led_settings = {
+    .direction = GPIO_DIR_OUT,
+    .state = GPIO_STATE_HIGH,
+    .alt_function = GPIO_ALTFN_NONE,
+    .resistor = GPIO_RES_NONE,
+  };
+
+  // Init all of the LED pins
+  for (size_t i = 0; i < SIZEOF_ARRAY(leds); i++) {
+    gpio_init_pin(&leds[i], &led_settings);
+  }
+
   while (true) {
     wait();
+    while (status_ok(event_process(&e))) {
+      printf("processing event %d, data %d\n", e.id, e.data);
+
+      switch (e.id) {
+        case INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_NONE:
+          gpio_set_state(&leds[0], GPIO_STATE_HIGH);
+          gpio_set_state(&leds[1], GPIO_STATE_HIGH);
+          break;
+        case INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_RIGHT:
+          gpio_set_state(&leds[0], GPIO_STATE_LOW);
+          gpio_set_state(&leds[1], GPIO_STATE_HIGH);
+          break;
+        case INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_LEFT:
+          gpio_set_state(&leds[0], GPIO_STATE_HIGH);
+          gpio_set_state(&leds[1], GPIO_STATE_LOW);
+          break;
+        case INPUT_EVENT_CONTROL_STALK_ANALOG_DISTANCE_NEUTRAL:
+          gpio_set_state(&leds[2], GPIO_STATE_HIGH);
+          break;
+        case INPUT_EVENT_CONTROL_STALK_ANALOG_DISTANCE_MINUS:
+        case INPUT_EVENT_CONTROL_STALK_ANALOG_DISTANCE_PLUS:
+          gpio_set_state(&leds[2], GPIO_STATE_LOW);
+          break;
+        case INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_LANE_ASSIST_RELEASED:
+          gpio_set_state(&leds[3], GPIO_STATE_HIGH);
+          break;
+        case INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_LANE_ASSIST_PRESSED:
+          gpio_set_state(&leds[3], GPIO_STATE_LOW);
+          break;
+        default:
+          break;
+      }
+    }
   }
 }
