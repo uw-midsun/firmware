@@ -4,6 +4,11 @@
 
 #include "unity.h"
 
+static void prv_cleanup_section(void) {
+  CRITICAL_SECTION_AUTOEND;
+  TEST_ASSERT_TRUE(_disabled);
+}
+
 void setup_test(void) {}
 
 void teardown_test(void) {
@@ -13,7 +18,7 @@ void teardown_test(void) {
 
 // Verifies the logic of critical sections. The validation of internal behavior needs to be
 // performed at an interrupt module level ie in test_gpio_it.c.
-void test_interrupt_disable_enable(void) {
+void test_critical_section_disable_enable(void) {
   bool disabled = critical_section_start();
   TEST_ASSERT_TRUE(disabled);
   bool also_disabled = critical_section_start();
@@ -22,4 +27,14 @@ void test_interrupt_disable_enable(void) {
   TEST_ASSERT_FALSE(critical_section_start());
   critical_section_end(disabled);
   TEST_ASSERT_TRUE(critical_section_start());
+}
+
+void test_critical_section_cleanup(void) {
+  // Starts critical section but does not explicitly end it
+  prv_cleanup_section();
+
+  // Attempt to start a new critical section
+  bool disabled = critical_section_start();
+  TEST_ASSERT_TRUE(disabled);
+  critical_section_end(disabled);
 }
