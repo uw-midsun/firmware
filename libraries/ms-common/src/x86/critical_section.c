@@ -47,8 +47,8 @@ void critical_section_end(CriticalSection *section) {
       pthread_mutex_unlock(&s_mutex);
     }
     if (s_interrupts_disabled && section->disabled_in_scope) {
-      // Clear the block mask for this process to allow signals to be processed. (They will queue when
-      // disabled).
+      // Clear the block mask for this process to allow signals to be processed. (They will queue
+      // when disabled).
       s_interrupts_disabled = false;
       x86_interrupt_unmask();
     }

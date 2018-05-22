@@ -30,7 +30,9 @@ typedef struct CriticalSection {
   bool requires_cleanup;
 } CriticalSection;
 
-#define CRITICAL_SECTION_AUTOEND __attribute__((cleanup(critical_section_end))) CriticalSection _section = critical_section_start();
+#define CRITICAL_SECTION_AUTOEND                                            \
+  __attribute__((cleanup(critical_section_end))) CriticalSection _section = \
+      critical_section_start();
 
 // Disables all interrupts across all lines/inputs.
 // Returns |CriticalSection.disabled_in_scope| = true if the function disabled interrupts.
