@@ -18,7 +18,12 @@ static pthread_mutex_t s_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 // locking the mutex however, this is to prevent deadlock. If this begins to be an issue we should
 // revisiting the mutex implementation here.
 
-bool critical_section_start(void) {
+CriticalSection critical_section_start(void) {
+  CriticalSection section = {
+    .disabled_in_scope = false,
+    .requires_cleanup = true,
+  };
+
   if (!x86_interrupt_in_handler()) {
     pthread_mutex_lock(&s_mutex);
   }
@@ -28,20 +33,24 @@ bool critical_section_start(void) {
     x86_interrupt_mask();
     s_interrupts_disabled = true;
     // Interrupts got disabled.
-    return true;
+    section.disabled_in_scope = true;
   }
-  // Interrupts did not get disabled.
-  return false;
+
+  return section;
 }
 
-void critical_section_end(bool disabled_in_scope) {
-  if (!x86_interrupt_in_handler()) {
-    pthread_mutex_unlock(&s_mutex);
-  }
-  if (s_interrupts_disabled && disabled_in_scope) {
-    // Clear the block mask for this process to allow signals to be processed. (They will queue when
-    // disabled).
-    s_interrupts_disabled = false;
-    x86_interrupt_unmask();
+void critical_section_end(CriticalSection *section) {
+  if (section->requires_cleanup) {
+    section->requires_cleanup = false;
+
+    if (!x86_interrupt_in_handler()) {
+      pthread_mutex_unlock(&s_mutex);
+    }
+    if (s_interrupts_disabled && section->disabled_in_scope) {
+      // Clear the block mask for this process to allow signals to be processed. (They will queue when
+      // disabled).
+      s_interrupts_disabled = false;
+      x86_interrupt_unmask();
+    }
   }
 }

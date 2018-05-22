@@ -41,27 +41,27 @@ StatusCode objpool_init_verbose(ObjectPool *pool, void *nodes, size_t node_size,
 }
 
 void *objpool_get_node(ObjectPool *pool) {
-  bool disabled = critical_section_start();
+  CriticalSection section = critical_section_start();
 
   // Find first set bit - returns 0 if no bits are set, 1-indexed
   size_t index = (size_t)__builtin_ffsll((int32_t)pool->free_bitset);
   if (index == 0) {
-    critical_section_end(disabled);
+    critical_section_end(&section);
     return NULL;
   }
 
   pool->free_bitset &= ~((uint64_t)1 << (index - 1));
 
-  critical_section_end(disabled);
+  critical_section_end(&section);
 
   return OBJPOOL_GET(pool, index - 1);
 }
 
 StatusCode objpool_free_node(ObjectPool *pool, void *node) {
-  bool disabled = critical_section_start();
+  CriticalSection section = critical_section_start();
 
   if (node == NULL || OBJPOOL_NODE_INVALID(pool, node)) {
-    critical_section_end(disabled);
+    critical_section_end(&section);
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
@@ -72,7 +72,7 @@ StatusCode objpool_free_node(ObjectPool *pool, void *node) {
 
   pool->free_bitset |= ((uint64_t)1 << OBJPOOL_GET_INDEX(pool, node));
 
-  critical_section_end(disabled);
+  critical_section_end(&section);
 
   return STATUS_CODE_OK;
 }

@@ -4,18 +4,26 @@
 
 #include "stm32f0xx_misc.h"
 
-bool critical_section_start(void) {
+CriticalSection critical_section_start(void) {
+  CriticalSection section = {
+    .disabled_in_scope = false,
+    .requires_cleanup = true,
+  };
+
   if (!__get_PRIMASK()) {
     __disable_irq();
     // Interrupts got disabled.
-    return true;
+    section.disabled_in_scope = true;
   }
-  // Interrupts did not get disabled.
-  return false;
+
+  return section;
 }
 
-void critical_section_end(bool disabled_in_scope) {
-  if (__get_PRIMASK() && disabled_in_scope) {
-    __enable_irq();
+void critical_section_end(CriticalSection *section) {
+  if (section->requires_cleanup) {
+    section->requires_cleanup = false;
+    if (__get_PRIMASK() && section->disabled_in_scope) {
+      __enable_irq();
+    }
   }
 }

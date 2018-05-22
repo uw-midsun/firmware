@@ -30,7 +30,7 @@ StatusCode flash_write(uintptr_t address, uint8_t *buffer, size_t buffer_len) {
   uint32_t *data = (uint32_t *)buffer;
   size_t data_len = buffer_len / FLASH_WRITE_BYTES;
 
-  bool disabled = critical_section_start();
+  CriticalSection section = critical_section_start();
 
   FLASH_Unlock();
   FLASH_Status status = FLASH_COMPLETE;
@@ -39,7 +39,7 @@ StatusCode flash_write(uintptr_t address, uint8_t *buffer, size_t buffer_len) {
   }
   FLASH_Lock();
 
-  critical_section_end(disabled);
+  critical_section_end(&section);
 
   if (status != FLASH_COMPLETE) {
     return status_code(STATUS_CODE_INTERNAL_ERROR);
@@ -53,13 +53,13 @@ StatusCode flash_erase(FlashPage page) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 
-  bool disabled = critical_section_start();
+  CriticalSection section = critical_section_start();
 
   FLASH_Unlock();
   FLASH_Status status = FLASH_ErasePage(FLASH_PAGE_TO_ADDR(page));
   FLASH_Lock();
 
-  critical_section_end(disabled);
+  critical_section_end(&section);
 
   if (status != FLASH_COMPLETE) {
     return status_code(STATUS_CODE_INTERNAL_ERROR);

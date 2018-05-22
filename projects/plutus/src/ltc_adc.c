@@ -70,9 +70,9 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
 
     // Invoke callback with the new data
     if (storage->callback != NULL) {
-      bool disabled = critical_section_start();
+      CriticalSection section = critical_section_start();
       storage->callback(&storage->buffer.value, storage->context);
-      critical_section_end(disabled);
+      critical_section_end(&section);
     }
   }
 
