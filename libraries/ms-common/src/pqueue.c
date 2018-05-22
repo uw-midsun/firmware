@@ -8,19 +8,19 @@
 #include "status.h"
 
 void pqueue_init(PQueue *queue, PQueueNode *nodes, size_t num_nodes) {
-  CriticalSection section = critical_section_start();
+  bool disabled = critical_section_start();
   memset(queue, 0, sizeof(*queue));
 
   queue->nodes = nodes;
   queue->max_nodes = num_nodes - 1;  // 1-indexed heap - throw away one node
-  critical_section_end(&section);
+  critical_section_end(disabled);
 }
 
 StatusCode pqueue_push(PQueue *queue, void *data, uint16_t prio) {
-  CriticalSection section = critical_section_start();
+  bool disabled = critical_section_start();
 
   if (queue->size == queue->max_nodes) {
-    critical_section_end(&section);
+    critical_section_end(disabled);
 
     // Ran out of space.
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
@@ -36,16 +36,16 @@ StatusCode pqueue_push(PQueue *queue, void *data, uint16_t prio) {
   queue->nodes[i].prio = prio;
   queue->nodes[i].data = data;
 
-  critical_section_end(&section);
+  critical_section_end(disabled);
 
   return STATUS_CODE_OK;
 }
 
 void *pqueue_pop(PQueue *queue) {
-  CriticalSection section = critical_section_start();
+  bool disabled = critical_section_start();
 
   if (queue->size == 0) {
-    critical_section_end(&section);
+    critical_section_end(disabled);
     return NULL;
   }
 
@@ -73,17 +73,17 @@ void *pqueue_pop(PQueue *queue) {
 
   queue->nodes[i] = queue->nodes[last_elem];
 
-  critical_section_end(&section);
+  critical_section_end(disabled);
 
   return data;
 }
 
 void *pqueue_peek(PQueue *queue) {
-  CriticalSection section = critical_section_start();
+  bool disabled = critical_section_start();
 
   void *ret = (queue->size == 0) ? NULL : queue->nodes[1].data;
 
-  critical_section_end(&section);
+  critical_section_end(disabled);
 
   return ret;
 }

@@ -51,11 +51,11 @@ void test_gpio_it_interrupt_critical(void) {
                                             INTERRUPT_EDGE_RISING, prv_test_callback, NULL));
 
   // Run the interrupt in critical section.
-  CriticalSection section = critical_section_start();
+  bool disabled = critical_section_start();
   TEST_ASSERT_TRUE(disabled);
   TEST_ASSERT_OK(gpio_it_trigger_interrupt(&s_interrupt_address));
   TEST_ASSERT_FALSE(s_interrupt_ran);
-  critical_section_end(&section);
+  critical_section_end(disabled);
 
   TEST_ASSERT_TRUE(s_interrupt_ran);
   TEST_ASSERT_TRUE(s_correct_port);
