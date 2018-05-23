@@ -6,6 +6,9 @@ FSM_DECLARE_STATE(cruise_off);
 // Retains target speed
 FSM_DECLARE_STATE(cruise_idle);
 FSM_DECLARE_STATE(cruise_on);
+// Throttle is in brake zone - assume the throttle is released
+// Used to allow pressing the throttle to cancel cruise
+FSM_DECLARE_STATE(cruise_on_brake);
 
 FSM_STATE_TRANSITION(cruise_off) {
   FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, cruise_off);
@@ -17,6 +20,7 @@ FSM_STATE_TRANSITION(cruise_off) {
 FSM_STATE_TRANSITION(cruise_idle) {
   FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, cruise_idle);
 
+  // TODO: guard transition if target speed is 0 or below minimum?
   FSM_ADD_TRANSITION(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME, cruise_on);
   FSM_ADD_TRANSITION(INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_OFF, cruise_off);
 }
@@ -26,8 +30,24 @@ FSM_STATE_TRANSITION(cruise_on) {
   FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, cruise_on);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_CANCEL, cruise_idle);
+  // Exit cruise if the mechanical brake is pressed.
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, cruise_idle);
-  // TODO: handle throttle press to deactivate cruise
+  // If the throttle enters the brake zone, consider the throttle as released
+  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_BRAKE, cruise_on_brake);
+
+  FSM_ADD_TRANSITION(INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_OFF, cruise_off);
+}
+
+FSM_DECLARE_STATE(cruise_on_brake) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, cruise_on);
+
+  FSM_ADD_TRANSITION(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_CANCEL, cruise_idle);
+  // Exit cruise if the mechanical brake is pressed or the throttle is pressed to
+  // the accel zone after entering the brake zone.
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, cruise_idle);
+  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_ACCEL, cruise_idle);
+
+  FSM_ADD_TRANSITION(INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_OFF, cruise_off);
 }
 
 static void prv_cruise_off_output(FSM *fsm, const Event *e, void *context) {

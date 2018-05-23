@@ -48,6 +48,7 @@ int16_t cruise_get_target_cms(CruiseStorage *cruise) {
 }
 
 bool cruise_handle_event(CruiseStorage *cruise, const Event *e) {
+  // TODO: support hold?
   if (e->id == INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_PLUS) {
     prv_offset_target(cruise, CRUISE_OFFSET_CMS);
   } else if (e->id == INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_MINUS) {
