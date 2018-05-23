@@ -19,7 +19,7 @@ static StatusCode prv_relay_rx_can_handler(const CANMessage *msg, void *context,
   // NOTE: This is a bit of a hack that exploits the fact all the relay control messages are the
   // same. The aim here is to not necessarily force a constraint based on message id/name. Instead
   // all single field u8 messages will succeed in unpacking but the contents must be valid.
-  CAN_UNPACK_BATTERY_RELAY(msg, &state);
+  CAN_UNPACK_BATTERY_RELAY_MAIN(msg, &state);
   if (state >= storage->state_bound) {
     *ack_reply = CAN_ACK_STATUS_INVALID;
   } else {
