@@ -25,11 +25,11 @@
   ({                                                           \
     Event e = { 0, 0 };                                        \
     MS_TEST_HELPER_AWAIT_EVENT(e);                             \
-    TEST_ASSERT_EQUAL((tx_event).id, e.id);                    \
-    TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &(tx_event))); \
+    TEST_ASSERT_EQUAL((tx_event), e.id);                    \
+    TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e)); \
     MS_TEST_HELPER_AWAIT_EVENT(e);                             \
-    TEST_ASSERT_EQUAL((rx_event).id, e.id);                    \
-    TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &(rx_event))); \
+    TEST_ASSERT_EQUAL((rx_event), e.id);                    \
+    TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e)); \
   })
 
 // Send a TX message over CAN and RX it, then respond with an ACK.

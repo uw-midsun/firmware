@@ -14,23 +14,13 @@
 // Arbitrary default of ~1mph
 #define CRUISE_OFFSET_CMS 45
 
-typedef enum {
-  CRUISE_SOURCE_MOTOR_CONTROLLER = 0,
-  CRUISE_SOURCE_STORED_VALUE,
-  NUM_CRUISE_SOURCES
-} CruiseSource;
-
 typedef struct CruiseStorage {
   int16_t target_speed_cms;  // m/s * 100
-  CruiseSource source;
+  int16_t current_speed_cms; // From motor controllers
 } CruiseStorage;
 
 // Registers a CAN handler for motor controller speed
 StatusCode cruise_init(CruiseStorage *cruise);
-
-// Sets the target cruise source
-// If stored, motor controller speed updates will not change the target speed
-StatusCode cruise_set_source(CruiseStorage *cruise, CruiseSource source);
 
 // Only takes effect if the source is a stored value - will always be >= 0
 StatusCode cruise_offset(CruiseStorage *cruise, int16_t offset);

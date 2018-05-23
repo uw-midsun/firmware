@@ -13,13 +13,12 @@ static StatusCode prv_handle_motor_velocity(const CANMessage *msg, void *context
   int32_t left = 0, right = 0;
   CAN_UNPACK_MOTOR_VELOCITY(msg, (uint32_t *)&left, (uint32_t *)&right);
   // If we ever overflow we have bigger problems
-  cruise->target_speed_cms = MAX((left + right) / 2, 0);
+  cruise->current_speed_cms = MAX((left + right) / 2, 0);
 
   return STATUS_CODE_OK;
 }
 
 StatusCode cruise_init(CruiseStorage *cruise) {
-  cruise->source = CRUISE_SOURCE_MOTOR_CONTROLLER;
   cruise->target_speed_cms = 0;
 
   can_register_rx_handler(SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY, prv_handle_motor_velocity, cruise);
@@ -27,17 +26,7 @@ StatusCode cruise_init(CruiseStorage *cruise) {
   return STATUS_CODE_OK;
 }
 
-StatusCode cruise_set_source(CruiseStorage *cruise, CruiseSource source) {
-  cruise->source = source;
-
-  return STATUS_CODE_OK;
-}
-
 StatusCode cruise_offset(CruiseStorage *cruise, int16_t offset) {
-  if (cruise->source != CRUISE_SOURCE_STORED_VALUE) {
-    return status_code(STATUS_CODE_INVALID_ARGS);
-  }
-
   cruise->target_speed_cms += offset;
   if (cruise->target_speed_cms < 0) {
     // Don't allow a negative cruise speed
@@ -52,10 +41,12 @@ int16_t cruise_get_target_cms(CruiseStorage *cruise) {
 }
 
 bool cruise_handle_event(CruiseStorage *cruise, const Event *e) {
-  if (e->id == INPUT_EVENT_CRUISE_CONTROL_INC) {
+  if (e->id == INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_PLUS) {
     cruise_offset(cruise, CRUISE_OFFSET_CMS);
-  } else if (e->id == INPUT_EVENT_CRUISE_CONTROL_DEC) {
+  } else if (e->id == INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_MINUS) {
     cruise_offset(cruise, -CRUISE_OFFSET_CMS);
+  } else if (e->id == INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED) {
+    cruise->target_speed_cms = cruise->current_speed_cms;
   } else {
     return false;
   }

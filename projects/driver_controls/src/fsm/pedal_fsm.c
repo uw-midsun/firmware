@@ -100,9 +100,6 @@ FSM_STATE_TRANSITION(state_cruise_braking) {
 // Pedal FSM output functions
 static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   DriveOutputStorage *storage = drive_output_global();
-  CruiseStorage *cruise = cruise_global();
-
-  cruise_set_source(cruise, CRUISE_SOURCE_MOTOR_CONTROLLER);
 
   // TODO(ELEC-354): handle brake signal lights somewhere
   // Make sure cruise is disabled
@@ -117,8 +114,6 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
 static void prv_cruise_output(FSM *fsm, const Event *e, void *context) {
   DriveOutputStorage *storage = drive_output_global();
   CruiseStorage *cruise = cruise_global();
-
-  cruise_set_source(cruise, CRUISE_SOURCE_STORED_VALUE);
 
   // Cruise is enabled - since we're using the stored source, the target can now be modified
   // by the INC/DEC inputs
