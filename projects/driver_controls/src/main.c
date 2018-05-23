@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <stdbool.h>
 #include "adc.h"
 #include "ads1015.h"
 #include "ads1015_def.h"
@@ -13,9 +14,6 @@
 #include "log.h"
 #include "soft_timer.h"
 #include "unity.h"
-#include <stdbool.h>
-
-
 
 static void prv_callback_channel(Ads1015Channel channel, void *context) {
   Ads1015Storage *storage = context;
@@ -38,13 +36,11 @@ int main(void) {
   };
   i2c_init(I2C_PORT_2, &i2c_settings);
   GPIOAddress ready_pin = { .port = GPIO_PORT_A, .pin = 9 };
- 
-  ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
- 
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, prv_callback_channel,
-                            &storage);
 
-  
+  ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
+
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, prv_callback_channel, &storage);
+
   while (true) {
   }
 
