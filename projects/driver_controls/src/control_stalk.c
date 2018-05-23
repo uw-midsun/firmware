@@ -21,6 +21,7 @@
 // * A2: Lane Assist
 // * A3: Headlight (forward)
 // * A4: Headlight (back)
+// * A5: Horn
 
 // 4096 codes for +/-4.096V -> LSB = 2mV
 #define CONTROL_STALK_THRESHOLD(ohms) ((1 << 12) / 2 * (ohms) / ((CONTROL_STALK_RESISTOR) + (ohms)))
@@ -74,6 +75,10 @@ static const EventID s_digital_mapping[CONTROL_STALK_DIGITAL_INPUTS][NUM_GPIO_ST
   {
       INPUT_EVENT_CONTROL_STALK_DIGITAL_HEADLIGHT_BACK_PRESSED,
       INPUT_EVENT_CONTROL_STALK_DIGITAL_HEADLIGHT_BACK_RELEASED,
+  },
+  {
+      INPUT_EVENT_CONTROL_STALK_DIGITAL_HORN_PRESSED,
+      INPUT_EVENT_CONTROL_STALK_DIGITAL_HORN_RELEASED,
   }
 };
 

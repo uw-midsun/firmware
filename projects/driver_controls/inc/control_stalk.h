@@ -21,7 +21,7 @@
 #define CONTROL_STALK_ANALOG_INPUTS 4
 static_assert(CONTROL_STALK_ANALOG_INPUTS <= NUM_ADS1015_CHANNELS,
               "Control stalk analog inputs larger than number of ADS1015 channels!");
-#define CONTROL_STALK_DIGITAL_INPUTS 5
+#define CONTROL_STALK_DIGITAL_INPUTS 6
 static_assert(CONTROL_STALK_DIGITAL_INPUTS <= NUM_GPIO_EXPANDER_PINS,
               "Control stalk digital inputs larger than number of MCP23008 pins!");
 
