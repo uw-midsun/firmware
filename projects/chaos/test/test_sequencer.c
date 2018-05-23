@@ -54,10 +54,8 @@ void test_sequencer_simple(void) {
   TEST_ASSERT_EQUAL(TEST_SEQUENCER_EVENT_C, raised_event.id);
   TEST_ASSERT_EQUAL(TEST_SEQUENCER_EVENT_A, raised_event.data);
   TEST_ASSERT_FALSE(sequencer_complete(&storage));
-  TEST_ASSERT_OK(sequencer_advance(&storage, &raised_event));
-
-  TEST_ASSERT_TRUE(sequencer_complete(&storage));
   TEST_ASSERT_EQUAL(STATUS_CODE_RESOURCE_EXHAUSTED, sequencer_advance(&storage, &raised_event));
+  TEST_ASSERT_TRUE(sequencer_complete(&storage));
 }
 
 void test_sequencer_complex_start(void) {
@@ -95,10 +93,8 @@ void test_sequencer_complex_start(void) {
   TEST_ASSERT_EQUAL(TEST_SEQUENCER_EVENT_C, raised_event.id);
   TEST_ASSERT_EQUAL(TEST_SEQUENCER_EVENT_A, raised_event.data);
   TEST_ASSERT_FALSE(sequencer_complete(&storage));
-  TEST_ASSERT_OK(sequencer_advance(&storage, &raised_event));
-
-  TEST_ASSERT_TRUE(sequencer_complete(&storage));
   TEST_ASSERT_EQUAL(STATUS_CODE_RESOURCE_EXHAUSTED, sequencer_advance(&storage, &raised_event));
+  TEST_ASSERT_TRUE(sequencer_complete(&storage));
 }
 
 void test_sequencer_complex_end(void) {
@@ -136,10 +132,8 @@ void test_sequencer_complex_end(void) {
   raised_event.id = TEST_SEQUENCER_EVENT_C;
   raised_event.data = TEST_SEQUENCER_EVENT_C;
   TEST_ASSERT_FALSE(sequencer_complete(&storage));
-  TEST_ASSERT_OK(sequencer_advance(&storage, &raised_event));
-
-  TEST_ASSERT_TRUE(sequencer_complete(&storage));
   TEST_ASSERT_EQUAL(STATUS_CODE_RESOURCE_EXHAUSTED, sequencer_advance(&storage, &raised_event));
+  TEST_ASSERT_TRUE(sequencer_complete(&storage));
 }
 
 void test_sequencer_bad_args(void) {

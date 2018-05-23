@@ -53,7 +53,7 @@ StatusCode sequencer_advance(SequencerStorage *storage, const Event *last_event)
   storage->events_it++;
 
   if (sequencer_complete(storage)) {
-    return STATUS_CODE_OK;
+    return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
   return event_raise(storage->events_it->raise.id, storage->events_it->raise.data);
 }

@@ -7,52 +7,9 @@
 #include "log.h"
 #include "test_helpers.h"
 
-static void prv_consume_events(ChaosEventSequence expected_sequence, bool debug_log) {
-  Event prev_event = { 0 };
-  Event present_event = { 0 };
-  StatusCode seq_status = STATUS_CODE_OK;
-  StatusCode event_status = STATUS_CODE_OK;
-
-  // While there are still events to emit iterate and mock relay responses. Otherwise just
-  // feedback the events.
-  while (seq_status != STATUS_CODE_RESOURCE_EXHAUSTED) {
-    TEST_ASSERT_OK(seq_status);
-    event_status = event_process(&present_event);
-    if (event_status != STATUS_CODE_OK) {
-      if (prev_event.id == CHAOS_EVENT_CLOSE_RELAY) {
-        present_event.id = CHAOS_EVENT_RELAY_CLOSED;
-        present_event.data = prev_event.data;
-      } else if (prev_event.id == CHAOS_EVENT_OPEN_RELAY) {
-        present_event.id = CHAOS_EVENT_RELAY_OPENED;
-        present_event.data = prev_event.data;
-      }
-      if (debug_log) {
-        LOG_DEBUG("No event raised. Responding with: %d : %d\n", present_event.id,
-                  present_event.data);
-      }
-    } else if (present_event.id < NUM_CHAOS_EVENT_SEQUENCES &&
-               present_event.id >= CHAOS_EVENT_SEQUENCE_EMERGENCY &&
-               present_event.id != expected_sequence) {
-      // We reached a new sequence (i.e. one was queued) exit this consumption and re-raise the
-      // event for the next state.
-      LOG_DEBUG("Next sequence reached %d\n", present_event.id);
-      event_raise(present_event.id, present_event.data);
-      return;
-    } else if (debug_log) {
-      LOG_DEBUG("Sequencer Raised Event: %d : %d\n", present_event.id, present_event.data);
-    }
-    // At this point |present_event| is considered to be |prev_event| as it has passed through all
-    // the other FSMs in the event loop.
-    prev_event = present_event;
-    seq_status = sequencer_fsm_publish_next_event(&prev_event);
-  }
-}
-
 void setup_test(void) {
   event_queue_init();
   sequencer_fsm_init();
-  // Consume the initially raised Idle sequence.
-  prv_consume_events(CHAOS_EVENT_SEQUENCE_IDLE, false);
 }
 
 void teardown_test(void) {}
@@ -65,14 +22,38 @@ void test_sequencer_fsm_run(void) {
     { .id = CHAOS_EVENT_SEQUENCE_CHARGE },
     { .id = CHAOS_EVENT_SEQUENCE_EMERGENCY },
   };
+  Event prev_event = { 0 };
+  Event present_event = { 0 };
 
-  TEST_ASSERT_TRUE(sequencer_fsm_enqueue(state_events[0].id));
   for (uint16_t i = 0; i < SIZEOF_ARRAY(state_events); i++) {
     LOG_DEBUG("State Event: %d\n", state_events[i].id);
-    if (i < SIZEOF_ARRAY(state_events) - 1) {
-      TEST_ASSERT_TRUE(sequencer_fsm_enqueue(state_events[i + 1].id));
+    TEST_ASSERT_OK(event_raise(state_events[i].id, 0));
+    StatusCode seq_status = STATUS_CODE_OK;
+    StatusCode event_status = STATUS_CODE_OK;
+
+    // While there are still events to emit iterate and mock relay responses. Otherwise just
+    // feedback the events.
+    while (seq_status != STATUS_CODE_RESOURCE_EXHAUSTED) {
+      TEST_ASSERT_OK(seq_status);
+      event_status = event_process(&present_event);
+      if (event_status != STATUS_CODE_OK) {
+        if (prev_event.id == CHAOS_EVENT_CLOSE_RELAY) {
+          present_event.id = CHAOS_EVENT_RELAY_CLOSED;
+          present_event.data = prev_event.data;
+        } else if (prev_event.id == CHAOS_EVENT_OPEN_RELAY) {
+          present_event.id = CHAOS_EVENT_RELAY_OPENED;
+          present_event.data = prev_event.data;
+        }
+        LOG_DEBUG("No event raised. Responding with: %d : %d\n", present_event.id,
+                  present_event.data);
+      } else {
+        LOG_DEBUG("Sequencer Raised Event: %d : %d\n", present_event.id, present_event.data);
+      }
+      // At this point |present_event| is considered to be |prev_event| as it has passed through all
+      // the other FSMs in the event loop.
+      prev_event = present_event;
+      seq_status = sequencer_fsm_publish_next_event(&prev_event);
     }
-    prv_consume_events(state_events[i].id, true);
   }
 }
 
@@ -188,13 +169,4 @@ void test_sequencer_fsm_reset(void) {
     prev_event = present_event;
     seq_status = sequencer_fsm_publish_next_event(&present_event);
   }
-}
-
-// Tests that the protected event enqueueing works.
-void test_sequencer_fsm_enqueue(void) {
-  TEST_ASSERT_TRUE(sequencer_fsm_enqueue(CHAOS_EVENT_SEQUENCE_DRIVE));
-  TEST_ASSERT_FALSE(sequencer_fsm_enqueue(CHAOS_EVENT_SEQUENCE_CHARGE));
-  TEST_ASSERT_TRUE(sequencer_fsm_enqueue(CHAOS_EVENT_SEQUENCE_IDLE));
-  TEST_ASSERT_TRUE(sequencer_fsm_enqueue(CHAOS_EVENT_SEQUENCE_EMERGENCY));
-  TEST_ASSERT_FALSE(sequencer_fsm_enqueue(CHAOS_EVENT_SEQUENCE_IDLE));
 }

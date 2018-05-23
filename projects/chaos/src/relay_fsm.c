@@ -81,8 +81,7 @@ FSM_STATE_TRANSITION(relay_opening) {
   FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_RETRY_RELAY, prv_guard_select_relay, relay_opening);
 }
 
-static void prv_relay_transmit(RelayId id, EEChaosCmdRelayState state,
-                               const CANAckRequest *ack_request) {
+static void prv_relay_transmit(RelayId id, RelayState state, const CANAckRequest *ack_request) {
   switch (id) {
     case RELAY_ID_SOLAR_MASTER_FRONT:
       CAN_TRANSMIT_SOLAR_RELAY_FRONT(ack_request, state);
@@ -90,13 +89,16 @@ static void prv_relay_transmit(RelayId id, EEChaosCmdRelayState state,
     case RELAY_ID_SOLAR_MASTER_REAR:
       CAN_TRANSMIT_SOLAR_RELAY_REAR(ack_request, state);
       return;
-    case RELAY_ID_BATTERY:
-      CAN_TRANSMIT_BATTERY_RELAY(ack_request, state);
+    case RELAY_ID_BATTERY_MAIN:
+      CAN_TRANSMIT_BATTERY_RELAY_MAIN(ack_request, state);
       return;
-    case RELAY_ID_MOTOR_POWER:
-      CAN_TRANSMIT_MAIN_RELAY(ack_request, state);
+    case RELAY_ID_BATTERY_SLAVE:
+      CAN_TRANSMIT_BATTERY_RELAY_SLAVE(ack_request, state);
       return;
-    case NUM_RELAY_IDS:
+    case RELAY_ID_MOTORS:
+      CAN_TRANSMIT_MOTOR_RELAY(ack_request, state);
+      return;
+    case NUM_RELAY_IDS:  // Falls through.
     default:
       return;
   }

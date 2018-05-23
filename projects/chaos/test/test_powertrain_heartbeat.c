@@ -27,12 +27,6 @@
 
 #define NUM_CAN_RX_HANDLERS 4
 
-// Skip the sequencer protection of the event queue since it would overly complicate the test.
-bool TEST_MOCK(sequencer_fsm_enqueue)(ChaosEventSequence sequence) {
-  event_raise(sequence, 0);
-  return true;
-}
-
 static CANStorage s_storage;
 static CANRxHandler s_rx_handlers[NUM_CAN_RX_HANDLERS];
 static Event s_tx_event = { CHAOS_EVENT_CAN_TX, 0 };

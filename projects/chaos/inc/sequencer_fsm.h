@@ -8,7 +8,6 @@
 
 // Requires that event_queue is initialized.
 
-#include "chaos_events.h"
 #include "event_queue.h"
 
 void sequencer_fsm_init(void);
@@ -58,9 +57,3 @@ void sequencer_fsm_init(void);
 // | Finished state transition |
 // -----------------------------
 StatusCode sequencer_fsm_publish_next_event(const Event *previous_event);
-
-// Delayed variant of event_raise. This version enqueues the highest priority sequence transition it
-// has received as soon as a sequence is completed. This is to allow pre-emption by the Emergency
-// state. Returns true if the submitted event will be raised next. Has knowledge of the present
-// state so will also reject invalid transitions.
-bool sequencer_fsm_enqueue(ChaosEventSequence sequence);

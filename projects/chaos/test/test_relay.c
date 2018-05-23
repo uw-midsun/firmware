@@ -76,8 +76,9 @@ void test_relay_cycle(void) {
 
   // RelayID being tested and in which conditions (close, open) to fail.
   const TestRelayParams params[] = {
-    { .id = RELAY_ID_MOTOR_POWER, .retry = { true, true } },
-    { .id = RELAY_ID_BATTERY, .retry = { true, false } },
+    { .id = RELAY_ID_MOTORS, .retry = { true, true } },
+    { .id = RELAY_ID_BATTERY_MAIN, .retry = { true, false } },
+    { .id = RELAY_ID_BATTERY_SLAVE, .retry = { true, false } },
     { .id = RELAY_ID_SOLAR_MASTER_REAR, .retry = { false, false } },
     { .id = RELAY_ID_SOLAR_MASTER_FRONT, .retry = { false, true } }
   };
@@ -155,7 +156,7 @@ void test_relay_retry_limit(void) {
 
   // Start the FSM.
   Event e = { 0 };
-  TEST_ASSERT_OK(relay_fsm_close_event(RELAY_ID_BATTERY, &e));
+  TEST_ASSERT_OK(relay_fsm_close_event(RELAY_ID_BATTERY_MAIN, &e));
   TEST_ASSERT_TRUE(relay_process_event(&e));
 
   // Track the number of retries.
@@ -181,7 +182,7 @@ void test_relay_retry_limit(void) {
 
   // Assert the correct event and number of retries occurred.
   TEST_ASSERT_EQUAL(CHAOS_EVENT_RELAY_ERROR, e.id);
-  TEST_ASSERT_EQUAL(RELAY_ID_BATTERY, e.data);
+  TEST_ASSERT_EQUAL(RELAY_ID_BATTERY_MAIN, e.data);
   TEST_ASSERT_EQUAL(RELAY_FSM_MAX_RETRIES, retries);
 }
 
@@ -191,14 +192,27 @@ void test_relay_concurrent(void) {
 
   can_register_rx_default_handler(prv_rx_handler, &ack_status);
 
-  // Close the battery relay using the same harness as the previous test.
+  // Close the battery relays using the same harness as the previous test.
   Event e = { 0 };
-  TEST_ASSERT_OK(relay_fsm_close_event(RELAY_ID_BATTERY, &e));
+  TEST_ASSERT_OK(relay_fsm_close_event(RELAY_ID_BATTERY_SLAVE, &e));
   TEST_ASSERT_TRUE(relay_process_event(&e));
 
   StatusCode status = NUM_STATUS_CODES;
 
-  while (!(e.id == CHAOS_EVENT_RELAY_CLOSED && e.data == RELAY_ID_BATTERY)) {
+  while (!(e.id == CHAOS_EVENT_RELAY_CLOSED && e.data == RELAY_ID_BATTERY_SLAVE)) {
+    do {
+      status = event_process(&e);
+    } while (status != STATUS_CODE_OK);
+    if (e.id == CHAOS_EVENT_CAN_RX || e.id == CHAOS_EVENT_CAN_TX || e.id == CHAOS_EVENT_CAN_FAULT) {
+      TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+    } else {
+      TEST_ASSERT_TRUE(relay_process_event(&e));
+    }
+  }
+  TEST_ASSERT_OK(relay_fsm_close_event(RELAY_ID_BATTERY_MAIN, &e));
+  TEST_ASSERT_TRUE(relay_process_event(&e));
+
+  while (!(e.id == CHAOS_EVENT_RELAY_CLOSED && e.data == RELAY_ID_BATTERY_MAIN)) {
     do {
       status = event_process(&e);
     } while (status != STATUS_CODE_OK);
@@ -210,10 +224,10 @@ void test_relay_concurrent(void) {
   }
 
   // Close the main power relay.
-  TEST_ASSERT_OK(relay_fsm_close_event(RELAY_ID_MOTOR_POWER, &e));
+  TEST_ASSERT_OK(relay_fsm_close_event(RELAY_ID_MOTORS, &e));
   TEST_ASSERT_TRUE(relay_process_event(&e));
 
-  while (!(e.id == CHAOS_EVENT_RELAY_CLOSED && e.data == RELAY_ID_MOTOR_POWER)) {
+  while (!(e.id == CHAOS_EVENT_RELAY_CLOSED && e.data == RELAY_ID_MOTORS)) {
     do {
       status = event_process(&e);
     } while (status != STATUS_CODE_OK);
@@ -225,10 +239,10 @@ void test_relay_concurrent(void) {
   }
 
   // Open the main power relay.
-  TEST_ASSERT_OK(relay_fsm_open_event(RELAY_ID_MOTOR_POWER, &e));
+  TEST_ASSERT_OK(relay_fsm_open_event(RELAY_ID_MOTORS, &e));
   TEST_ASSERT_TRUE(relay_process_event(&e));
 
-  while (!(e.id == CHAOS_EVENT_RELAY_OPENED && e.data == RELAY_ID_MOTOR_POWER)) {
+  while (!(e.id == CHAOS_EVENT_RELAY_OPENED && e.data == RELAY_ID_MOTORS)) {
     do {
       status = event_process(&e);
     } while (status != STATUS_CODE_OK);
@@ -239,11 +253,24 @@ void test_relay_concurrent(void) {
     }
   }
 
-  // Open the battery relay.
-  TEST_ASSERT_OK(relay_fsm_open_event(RELAY_ID_BATTERY, &e));
+  // Open the battery relays.
+  TEST_ASSERT_OK(relay_fsm_open_event(RELAY_ID_BATTERY_MAIN, &e));
   TEST_ASSERT_TRUE(relay_process_event(&e));
 
-  while (!(e.id == CHAOS_EVENT_RELAY_OPENED && e.data == RELAY_ID_BATTERY)) {
+  while (!(e.id == CHAOS_EVENT_RELAY_OPENED && e.data == RELAY_ID_BATTERY_MAIN)) {
+    do {
+      status = event_process(&e);
+    } while (status != STATUS_CODE_OK);
+    if (e.id == CHAOS_EVENT_CAN_RX || e.id == CHAOS_EVENT_CAN_TX || e.id == CHAOS_EVENT_CAN_FAULT) {
+      TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+    } else {
+      TEST_ASSERT_TRUE(relay_process_event(&e));
+    }
+  }
+  TEST_ASSERT_OK(relay_fsm_open_event(RELAY_ID_BATTERY_SLAVE, &e));
+  TEST_ASSERT_TRUE(relay_process_event(&e));
+
+  while (!(e.id == CHAOS_EVENT_RELAY_OPENED && e.data == RELAY_ID_BATTERY_SLAVE)) {
     do {
       status = event_process(&e);
     } while (status != STATUS_CODE_OK);
