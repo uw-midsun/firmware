@@ -23,20 +23,20 @@ static StatusCode prv_handle_power_state_msg(const CANMessage *msg, void *contex
   // Handle the power state.
   switch (power_state) {
     case EE_POWER_STATE_IDLE:
-      if (!sequencer_fsm_enqueue(CHAOS_EVENT_SEQUENCE_IDLE)) {
-        // Raise an error if the power state is invalid.
+      if (!status_ok(event_raise_priority(EVENT_PRIORITY_LOW, CHAOS_EVENT_SEQUENCE_IDLE, 0))) {
+        // Raise an error if the event queue won't process the event.
         *ack_reply = CAN_ACK_STATUS_INVALID;
       }
       break;
     case EE_POWER_STATE_CHARGE:
-      if (!sequencer_fsm_enqueue(CHAOS_EVENT_SEQUENCE_CHARGE)) {
-        // Raise an error if the power state is invalid.
+      if (!status_ok(event_raise_priority(EVENT_PRIORITY_LOW, CHAOS_EVENT_SEQUENCE_CHARGE, 0))) {
+        // Raise an error if the event queue won't process the event.
         *ack_reply = CAN_ACK_STATUS_INVALID;
       }
       break;
     case EE_POWER_STATE_DRIVE:
-      if (!sequencer_fsm_enqueue(CHAOS_EVENT_SEQUENCE_DRIVE)) {
-        // Raise an error if the power state is invalid.
+      if (!status_ok(event_raise_priority(EVENT_PRIORITY_LOW, CHAOS_EVENT_SEQUENCE_DRIVE, 0))) {
+        // Raise an error if the event queue won't process the event.
         *ack_reply = CAN_ACK_STATUS_INVALID;
       }
       break;
