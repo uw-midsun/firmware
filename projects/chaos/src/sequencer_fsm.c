@@ -27,6 +27,8 @@ static SequencerStorage s_storage;
 // - Disable DCDC Monitoring
 // - Open battery relay (DCDC)
 static const SequencerEventPair s_emergency_events[] = {
+  { .raise = { .id = CHAOS_EVENT_SEQUENCE_EMERGENCY_START, .data = SEQUENCER_EMPTY_DATA },
+    .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_CHARGER_OPEN, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MOTORS },
@@ -56,6 +58,8 @@ static const SequencerEventPair s_emergency_events[] = {
 // - Disable DCDC Monitoring
 // - Open battery relay (DCDC)
 static const SequencerEventPair s_idle_events[] = {
+  { .raise = { .id = CHAOS_EVENT_SEQUENCE_IDLE_START, .data = SEQUENCER_EMPTY_DATA },
+    .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_CHARGER_OPEN, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MOTORS },
@@ -86,6 +90,8 @@ static const SequencerEventPair s_idle_events[] = {
 // NOTE: No need to manipulate the main relay since it turns on the motors and will be open by
 // default before reaching this state.
 static const SequencerEventPair s_charge_events[] = {
+  { .raise = { .id = CHAOS_EVENT_SEQUENCE_CHARGE_START, .data = SEQUENCER_EMPTY_DATA },
+    .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY_MAIN },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY_MAIN } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY_SLAVE },
@@ -113,6 +119,8 @@ static const SequencerEventPair s_charge_events[] = {
 // - Close main power relay
 // NOTE: No need to manipulate the charger since you can't reach Drive from Charge.
 static const SequencerEventPair s_drive_events[] = {
+  { .raise = { .id = CHAOS_EVENT_SEQUENCE_DRIVE_START, .data = SEQUENCER_EMPTY_DATA },
+    .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY_MAIN },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY_MAIN } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY_SLAVE },
@@ -226,5 +234,11 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event) {
     return STATUS_CODE_OK;
   }
 
-  return sequencer_advance(&s_storage, previous_event);
+  StatusCode status = sequencer_advance(&s_storage, previous_event);
+  // An unexpected event occurred we should reset.
+  if (status == STATUS_CODE_INTERNAL_ERROR) {
+    return event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_RESET,
+                                SEQUENCER_EMPTY_DATA);
+  }
+  return status;
 }
