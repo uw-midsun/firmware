@@ -1,3 +1,8 @@
+// Functional test for control stalks - switches debug LEDs as follows:
+// - Left turn signal: Blue LED (A)
+// - Right turn signal: Blue LED (B)
+// - CC Distance +/-: Yellow LED
+// - Lane Assist: Red LED
 #include "control_stalk.h"
 #include "event_queue.h"
 #include "gpio.h"
@@ -48,7 +53,6 @@ void teardown_test(void) {}
 
 void test_control_stalks_readback(void) {
   Event e;
-  LOG_DEBUG("hello\n");
 
   const GPIOAddress leds[] = {
     { .port = GPIO_PORT_B, .pin = 5 },   //
@@ -72,7 +76,7 @@ void test_control_stalks_readback(void) {
   while (true) {
     wait();
     while (status_ok(event_process(&e))) {
-      printf("processing event %d, data %d\n", e.id, e.data);
+      LOG_DEBUG("Processing event %d, data %d\n", e.id, e.data);
 
       switch (e.id) {
         case INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_NONE:

@@ -3,6 +3,25 @@
 #include "input_event.h"
 #include "log.h"
 
+// The A6 control stalks have two types of inputs: analog and digital.
+// Analog inputs are either floating, 2.1818 kOhms to GND, or 681 Ohms to GND. We tie a resistor
+//  to 3V to create a resistor divider and observe the voltage for state changes.
+// Digital inputs are either floating or connected to GND. We use a pull-up resistor to make it an
+//  active-low digital input.
+//
+// We map the inputs as follows:
+// ADS1015 (analog)
+// * A0: Distance
+// * A1: CC Speed
+// * A2: CC Cancel/Resume (Soft)
+// * A3: Turn Signals
+// MCP23008 (digital, active-low)
+// * A0: CC Set
+// * A1: CC On/Off (Hard)
+// * A2: Lane Assist
+// * A3: Headlight (forward)
+// * A4: Headlight (back)
+
 // 4096 codes for +/-4.096V -> LSB = 2mV
 #define CONTROL_STALK_THRESHOLD(ohms) ((1 << 12) / 2 * (ohms) / ((CONTROL_STALK_RESISTOR) + (ohms)))
 // 2k181 +10% resistor = ~2k4, -10% = 1k963
@@ -11,7 +30,7 @@
 #define CONTROL_STALK_681_OHMS_THRESHOLD CONTROL_STALK_THRESHOLD(750)
 
 // ADC channel to Event ID
-static const EventID s_analog_mapping[][NUM_CONTROL_STALK_STATES] = {
+static const EventID s_analog_mapping[CONTROL_STALK_ANALOG_INPUTS][NUM_CONTROL_STALK_STATES] = {
   {
       INPUT_EVENT_CONTROL_STALK_ANALOG_DISTANCE_NEUTRAL,
       INPUT_EVENT_CONTROL_STALK_ANALOG_DISTANCE_MINUS,
@@ -35,7 +54,7 @@ static const EventID s_analog_mapping[][NUM_CONTROL_STALK_STATES] = {
 };
 
 // Active-low
-static const EventID s_digital_mapping[][NUM_GPIO_STATES] = {
+static const EventID s_digital_mapping[CONTROL_STALK_DIGITAL_INPUTS][NUM_GPIO_STATES] = {
   {
       INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED,
       INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_RELEASED,
@@ -77,7 +96,7 @@ static void prv_analog_cb(Ads1015Channel channel, void *context) {
     stalk->debounce_counter[channel]++;
   }
 
-  if (stalk->debounce_counter[channel] == CONTROL_STALK_DEBOUNCE_COUNTER) {
+  if (stalk->debounce_counter[channel] == CONTROL_STALK_DEBOUNCE_COUNTER_THRESHOLD) {
     event_raise(s_analog_mapping[channel][state], 0);
   }
 }
