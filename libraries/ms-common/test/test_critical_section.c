@@ -4,11 +4,6 @@
 
 #include "unity.h"
 
-static void prv_cleanup_section(void) {
-  CRITICAL_SECTION_AUTOEND;
-  TEST_ASSERT_TRUE(_disabled);
-}
-
 void setup_test(void) {}
 
 void teardown_test(void) {
@@ -30,8 +25,11 @@ void test_critical_section_disable_enable(void) {
 }
 
 void test_critical_section_cleanup(void) {
-  // Starts critical section but does not explicitly end it
-  prv_cleanup_section();
+  {
+    // Starts critical section in scope block but does not explicitly end it
+    CRITICAL_SECTION_AUTOEND;
+    TEST_ASSERT_TRUE(_disabled);
+  }
 
   // Attempt to start a new critical section
   bool disabled = critical_section_start();
