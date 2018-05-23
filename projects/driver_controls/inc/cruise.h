@@ -1,10 +1,11 @@
 #pragma once
 // Cruise control target speed module
 // Requires CAN to be initialized
-// Stores updates to target cruise speed, reads motor speed from the motor controllers
-// Set the source to motor controller to record the current speed when driving normally.
-// Set the source to stored value to start cruise with the current speed and offset it to change the
-// target speed.
+// Stores updates to target cruise speed and reads motor speed from the motor controllers.
+// On events:
+// * INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED: Sets the target speed to the current speed
+// * INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_PLUS: Offsets the target speed by +CRUISE_OFFSET_CMS
+// * INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_MINUS: Offsets the target speed by -CRUISE_OFFSET_CMS
 #include <stdbool.h>
 #include <stdint.h>
 #include "event_queue.h"
@@ -22,13 +23,14 @@ typedef struct CruiseStorage {
 // Registers a CAN handler for motor controller speed
 StatusCode cruise_init(CruiseStorage *cruise);
 
-// Only takes effect if the source is a stored value - will always be >= 0
-StatusCode cruise_offset(CruiseStorage *cruise, int16_t offset);
+// Sets the target speed in cm/s - must be >= 0 (0 is considered disabled)
+StatusCode cruise_set_target_cms(CruiseStorage *cruise, int16_t target);
 
+// Returns the current target speed in cm/s.
 int16_t cruise_get_target_cms(CruiseStorage *cruise);
 
 // Returns whether the cruise module handled the event
-// Handles cruise increment/decrement
+// Handles cruise increment/decrement, set based on current speed
 // Note that this function should be called before the FSMs
 bool cruise_handle_event(CruiseStorage *cruise, const Event *e);
 

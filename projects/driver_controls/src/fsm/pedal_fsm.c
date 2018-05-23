@@ -13,7 +13,6 @@
 //   occur in the FSM
 
 #include "pedal_fsm.h"
-#include "cruise.h"
 #include "drive_output.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
@@ -25,9 +24,6 @@
 FSM_DECLARE_STATE(state_brake);
 FSM_DECLARE_STATE(state_coast);
 FSM_DECLARE_STATE(state_driving);
-FSM_DECLARE_STATE(state_cruise_control);
-// Entered braking state while in cruise
-FSM_DECLARE_STATE(state_cruise_braking);
 
 // Pedal FSM transition table definitions
 
@@ -47,7 +43,6 @@ FSM_STATE_TRANSITION(state_coast) {
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_BRAKE, state_brake);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_ACCEL, state_driving);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_cruise_control);
 }
 
 FSM_STATE_TRANSITION(state_driving) {
@@ -58,43 +53,6 @@ FSM_STATE_TRANSITION(state_driving) {
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_BRAKE, state_brake);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_COAST, state_coast);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_cruise_control);
-}
-
-FSM_STATE_TRANSITION(state_cruise_control) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_cruise_control);
-
-  // Since the cruise control increase/decrease events have information that needs to be output to
-  // CAN, they will cause repeat transitions
-  FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL_INC, state_cruise_control);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL_DEC, state_cruise_control);
-
-  // Cruise control exits either through hitting the cruise control switch or by engaging the
-  // mechanical brake
-  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_brake);
-  // We enter coast as a safe default, but the next throttle command should update the proper state.
-  FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_coast);
-  // If we enter the brake state, we'll still be in cruise but we want to allow exit through coast
-  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_BRAKE, state_cruise_braking);
-}
-
-FSM_STATE_TRANSITION(state_cruise_braking) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_cruise_control);
-
-  // Since the cruise control increase/decrease events have information that needs to be output to
-  // CAN, they will cause repeat transitions
-  FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL_INC, state_cruise_control);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL_DEC, state_cruise_control);
-
-  // Cruise control exits either through hitting the cruise control switch or by engaging the
-  // mechanical brake
-  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_brake);
-  // We enter coast as a safe default, but the next throttle command should update the proper state.
-  FSM_ADD_TRANSITION(INPUT_EVENT_CRUISE_CONTROL, state_coast);
-  // We allow exiting cruise control by entering coast mode after we've released the pedal
-  // We do not allow exiting directly into brake to prevent extremely strong braking on cruise
-  // disable
-  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_COAST, state_coast);
 }
 
 // Pedal FSM output functions
@@ -102,24 +60,9 @@ static void prv_state_output(FSM *fsm, const Event *e, void *context) {
   DriveOutputStorage *storage = drive_output_global();
 
   // TODO(ELEC-354): handle brake signal lights somewhere
-  // Make sure cruise is disabled
-  drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, DRIVE_OUTPUT_CRUISE_DISABLED_SPEED);
   // TODO(ELEC-350): Actually get throttle percentage - this will not depend on the current state
   drive_output_update(storage, DRIVE_OUTPUT_SOURCE_THROTTLE,
                       (fsm->current_state == &state_brake) ? -1234 : 1234);
-  // TODO(ELEC-350): Implement mech brake
-  drive_output_update(storage, DRIVE_OUTPUT_SOURCE_MECH_BRAKE, 0);
-}
-
-static void prv_cruise_output(FSM *fsm, const Event *e, void *context) {
-  DriveOutputStorage *storage = drive_output_global();
-  CruiseStorage *cruise = cruise_global();
-
-  // Cruise is enabled - since we're using the stored source, the target can now be modified
-  // by the INC/DEC inputs
-  drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, cruise_get_target_cms(cruise));
-  // TODO(ELEC-350): get throttle state
-  drive_output_update(storage, DRIVE_OUTPUT_SOURCE_THROTTLE, 0);
   // TODO(ELEC-350): Implement mech brake
   drive_output_update(storage, DRIVE_OUTPUT_SOURCE_MECH_BRAKE, 0);
 }
@@ -128,8 +71,6 @@ StatusCode pedal_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_brake, prv_state_output);
   fsm_state_init(state_coast, prv_state_output);
   fsm_state_init(state_driving, prv_state_output);
-  fsm_state_init(state_cruise_control, prv_cruise_output);
-  fsm_state_init(state_cruise_braking, prv_cruise_output);
 
   EventArbiterGuard *guard = event_arbiter_add_fsm(storage, fsm, NULL);
 

@@ -30,7 +30,7 @@ FSM_STATE_TRANSITION(state_reverse) {
 
 static bool prv_guard_reverse(const Event *e) {
   // Cruise control is forbidden in reverse for obvious reasons
-  return e->id != INPUT_EVENT_CRUISE_CONTROL;
+  return e->id != INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME;
 }
 
 // Direction selector FSM output functions
