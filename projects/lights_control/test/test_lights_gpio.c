@@ -55,11 +55,11 @@ static const LightsGpioOutput s_mock_outputs[] = {
 // Array of event-to-peripheral-set mappings.
 static const LightsGpioEventMapping s_mock_event_mappings[] = {
   { .peripheral = (LightsEventGPIOPeripheral)TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERAL_1,  //
-    .output_mapping =                                        //
+    .output_mapping =                                                                   //
     LIGHTS_GPIO_OUTPUT_BIT(TEST_LIGHTS_GPIO_MOCK_OUTPUT_1) |
     LIGHTS_GPIO_OUTPUT_BIT(TEST_LIGHTS_GPIO_MOCK_OUTPUT_3) },
   { .peripheral = (LightsEventGPIOPeripheral)TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERAL_2,  //
-    .output_mapping =                                        //
+    .output_mapping =                                                                   //
     LIGHTS_GPIO_OUTPUT_BIT(TEST_LIGHTS_GPIO_MOCK_OUTPUT_2) |
     LIGHTS_GPIO_OUTPUT_BIT(TEST_LIGHTS_GPIO_MOCK_OUTPUT_4) }
 };
