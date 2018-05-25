@@ -18,16 +18,23 @@ static StatusCode prv_handle_motor_velocity(const CANMessage *msg, void *context
   return STATUS_CODE_OK;
 }
 
-static void prv_offset_target(CruiseStorage *cruise, int16_t offset) {
-  cruise->target_speed_cms += offset;
+static void prv_timer_cb(SoftTimerID timer_id, void *context) {
+  CruiseStorage *cruise = context;
+
+  cruise->target_speed_cms += cruise->offset_cms;
   if (cruise->target_speed_cms < 0) {
     // Don't allow a negative cruise speed
     cruise->target_speed_cms = 0;
   }
+
+  // TODO: don't hardcode the period
+  soft_timer_start_millis(5000, prv_timer_cb, cruise, &cruise->repeat_timer);
 }
 
 StatusCode cruise_init(CruiseStorage *cruise) {
   cruise->target_speed_cms = 0;
+  cruise->current_speed_cms = 0;
+  cruise->repeat_timer = SOFT_TIMER_INVALID_TIMER;
 
   can_register_rx_handler(SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY, prv_handle_motor_velocity, cruise);
 
@@ -48,15 +55,26 @@ int16_t cruise_get_target_cms(CruiseStorage *cruise) {
 }
 
 bool cruise_handle_event(CruiseStorage *cruise, const Event *e) {
-  // TODO: support hold?
-  if (e->id == INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_PLUS) {
-    prv_offset_target(cruise, CRUISE_OFFSET_CMS);
-  } else if (e->id == INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_MINUS) {
-    prv_offset_target(cruise, -CRUISE_OFFSET_CMS);
-  } else if (e->id == INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED) {
-    cruise->target_speed_cms = cruise->current_speed_cms;
-  } else {
-    return false;
+  switch (e->id) {
+    case INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_NEUTRAL:
+      soft_timer_cancel(cruise->repeat_timer);
+      cruise->repeat_timer = SOFT_TIMER_INVALID_TIMER;
+      break;
+    case INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_PLUS:
+    case INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_MINUS:
+      // Run callback immediately
+      soft_timer_cancel(cruise->repeat_timer);
+      cruise->offset_cms = CRUISE_OFFSET_CMS;
+      if (e->id == INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_MINUS) {
+        cruise->offset_cms = -CRUISE_OFFSET_CMS;
+      }
+      soft_timer_start(0, prv_timer_cb, cruise, &cruise->repeat_timer);
+      break;
+    case INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED:
+      cruise->target_speed_cms = cruise->current_speed_cms;
+      break;
+    default:
+      return false;
   }
 
   return true;

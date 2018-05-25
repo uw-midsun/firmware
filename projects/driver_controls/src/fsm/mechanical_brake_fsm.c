@@ -27,7 +27,7 @@ static bool prv_guard_engaged(const Event *e) {
   switch (e->id) {
     case INPUT_EVENT_PEDAL_COAST:
     case INPUT_EVENT_PEDAL_ACCEL:
-    case INPUT_EVENT_CRUISE_CONTROL:
+    case INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME:
       return false;
     default:
       return true;
@@ -67,7 +67,7 @@ StatusCode mechanical_brake_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  fsm_init(fsm, "mechanical_brake_fsm", &state_disengaged, guard);
+  fsm_init(fsm, "Mechanical Brake FSM", &state_disengaged, guard);
 
   return STATUS_CODE_OK;
 }

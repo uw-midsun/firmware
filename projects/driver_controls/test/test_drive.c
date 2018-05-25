@@ -1,5 +1,6 @@
 #include "can.h"
 #include "delay.h"
+#include "cruise_fsm.h"
 #include "direction_fsm.h"
 #include "drive_output.h"
 #include "event_arbiter.h"
@@ -24,6 +25,7 @@
 
 typedef enum {
   TEST_DRIVE_FSM_POWER = 0,
+  TEST_DRIVE_FSM_CRUISE,
   TEST_DRIVE_FSM_PEDAL,
   TEST_DRIVE_FSM_DIRECTION,
   TEST_DRIVE_FSM_MECH_BRAKE,
@@ -44,7 +46,7 @@ static void prv_clock_update_request(void) {
 
 static void prv_dump_fsms(void) {
   for (size_t i = 0; i < NUM_TEST_DRIVE_FSMS; i++) {
-    LOG_DEBUG("%s: %s\n", s_fsms[i].name, s_fsms[i].current_state->name);
+    printf("> %-30s%s\n", s_fsms[i].name, s_fsms[i].current_state->name);
   }
 }
 
@@ -57,6 +59,7 @@ void setup_test(void) {
                     INPUT_EVENT_DRIVE_UPDATE_REQUESTED);
   event_arbiter_init(&s_arbiter_storage);
   power_fsm_init(&s_fsms[TEST_DRIVE_FSM_POWER], &s_arbiter_storage);
+  cruise_fsm_init(&s_fsms[TEST_DRIVE_FSM_CRUISE], &s_arbiter_storage);
   pedal_fsm_init(&s_fsms[TEST_DRIVE_FSM_PEDAL], &s_arbiter_storage);
   direction_fsm_init(&s_fsms[TEST_DRIVE_FSM_DIRECTION], &s_arbiter_storage);
   mechanical_brake_fsm_init(&s_fsms[TEST_DRIVE_FSM_MECH_BRAKE], &s_arbiter_storage);
@@ -112,7 +115,7 @@ void test_drive_basic(void) {
 
   LOG_DEBUG("Entering cruise control\n");
   // Enter cruise
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CRUISE_CONTROL, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME, true);
 
   delay_ms(DRIVE_OUTPUT_BROADCAST_MS);
   prv_clock_update_request();
@@ -120,6 +123,9 @@ void test_drive_basic(void) {
   LOG_DEBUG("Exiting cruise control through mechanical brake\n");
   // Exit using brake - should be in brake state
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
+  prv_dump_fsms();
+
+  // TODO: verify current states?
 
   delay_ms(DRIVE_OUTPUT_BROADCAST_MS);
   prv_clock_update_request();
@@ -152,7 +158,8 @@ void test_drive_cruise(void) {
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
 
   LOG_DEBUG("Attempting to enter cruise from braking state\n");
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CRUISE_CONTROL, false);
+  prv_dump_fsms();
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME, false);
 
   // The cruise module will never support cruising in the negative velocity
   LOG_DEBUG("Attempt to enter cruise from reverse\n");
@@ -160,7 +167,7 @@ void test_drive_cruise(void) {
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CRUISE_CONTROL, false);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME, false);
 
   // Check cruise exits
   LOG_DEBUG("Entering cruise\n");
@@ -168,23 +175,24 @@ void test_drive_cruise(void) {
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CRUISE_CONTROL, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME, true);
 
   LOG_DEBUG("Exiting cruise and rentering\n");
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CRUISE_CONTROL, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_CANCEL, true);
   prv_dump_fsms();
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CRUISE_CONTROL, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME, true);
 
   LOG_DEBUG("Exiting cruise through mechanical brake and reentering\n");
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
   prv_dump_fsms();
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CRUISE_CONTROL, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME, true);
 
-  LOG_DEBUG("Exiting cruise through coast\n");
+  LOG_DEBUG("Exiting cruise through accel\n");
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_BRAKE, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_COAST, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, true);
   prv_dump_fsms();
 }
 

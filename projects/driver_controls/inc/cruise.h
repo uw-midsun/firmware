@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include "event_queue.h"
 #include "status.h"
+#include "soft_timer.h"
 
 // How to much to increment/decrement in cm/s (m/s * 100)
 // Arbitrary default of ~1mph
@@ -18,6 +19,9 @@
 typedef struct CruiseStorage {
   int16_t target_speed_cms;  // m/s * 100
   int16_t current_speed_cms; // From motor controllers
+  int16_t offset_cms;
+  SoftTimerID repeat_timer; // Repeats offset while increment/decrement is held
+  size_t repeat_counter;
 } CruiseStorage;
 
 // Registers a CAN handler for motor controller speed

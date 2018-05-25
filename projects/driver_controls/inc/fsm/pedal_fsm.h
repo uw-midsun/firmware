@@ -1,10 +1,10 @@
 #pragma once
-// Monitors the current state of the gas pedal
-
-// Brake State: The pedal is depressed, causing the car to brake
-// Coast State: The pedal is partially pressed, causing the car to move at a constant speed
-// Driving State: The pedal is fully pressed, causing the car to accelerate
-// Cruise Control State: Activates cruise control and causes the car to move without the pedal
+// Monitors the current state of the throttle pedal
+// Sets throttle drive output state in response to drive output update events
+//
+// Brake State: Proportional regen braking should be applied
+// Coast State: No motor torque should be applied
+// Accel State: Proportional positive motor torque should be applied
 #include "event_arbiter.h"
 #include "fsm.h"
 

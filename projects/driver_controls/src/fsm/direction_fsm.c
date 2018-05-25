@@ -59,7 +59,7 @@ StatusCode direction_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  fsm_init(fsm, "direction_fsm", &state_forward, guard);
+  fsm_init(fsm, "Direction FSM", &state_forward, guard);
 
   return STATUS_CODE_OK;
 }
