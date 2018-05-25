@@ -16,61 +16,80 @@ typedef enum {
   NMEA_GSV,
   NMEA_RMC,
   NMEA_VTG,
-  NMEA_NUM_MESSAGE_IDS
-} NMEA_MESSAGE_ID;
+  NUM_NMEA_MESSAGE_ID_TYPES
+} NmeaMessageID;
 
-// This is to get the number of fields in a sentence for array allocation
-static const size_t s_nmea_message_num_fields[] = { 0, 16, 9, 11, 13, 14, 14, 10 };
+// An enum to represent a position fix's validity (defined by 1, 2, or 6 as described in
+// https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
+// on page 14)
+
+typedef enum {
+  NMEA_PF_INVALID = 0,
+  NMEA_PF_GPS_SPS = 1,
+  NMEA_PF_DIFFERENTIAL_GPS_SPS = 2,
+  NMEA_PF_DEAD_RECKONING_MODE = 6,
+  NUM_NMEA_POSITION_FIX_TYPES = 4
+} NmeaPositionFix;
 
 typedef struct {
-  uint32_t hh;   // Hours
-  uint32_t mm;   // Minutes
-  uint32_t ss;   // Seconds
-  uint32_t sss;  // Milliseconds
+  uint8_t hh;   // Hours
+  uint8_t mm;   // Minutes
+  uint8_t ss;   // Seconds
+  uint8_t sss;  // Milliseconds
 } nmea_utc_time;
 
 // Representation of longitude or latitude
 // https://en.wikipedia.org/wiki/Longitude
 typedef struct {
-  uint32_t degrees;
-  uint32_t minutes;
-  uint32_t fraction;
+  uint16_t degrees;
+  uint16_t minutes;
+  uint16_t fraction;
 } nmea_coord;
+
 // Info passed from the GPS chip should be dropped into this struct (more fields
 // coming soon)
 
 typedef struct {
-  uint32_t position_fix;  // 0 = invalid, (1,2,6) = valid, all else is undefined
-  uint32_t satellites_used;
-  uint32_t adc;                 // Age of diff. corr. in seconds
-  uint32_t drs;                 // Diff. Ref. Station. Not sure what it is yet
-  uint32_t hdop_1;              // Horizontal dilution of precision, characteristic
-  uint32_t hdop_2;              // Horizontal dilution of precision, mantissa
-  uint32_t msl_altitude_1;      // In meters, characteristic
-  uint32_t msl_altitude_2;      // In meters, mantissa
-  uint32_t geoid_seperation_1;  // In meters, characteristic
-  uint32_t geoid_seperation_2;  // In meters, mantissa
+  NmeaPositionFix position_fix;  // True if this struct has valid data
+  uint8_t satellites_used;
+  uint8_t adc;                  // Age of diff. corr. in seconds
+  uint8_t drs;                  // Diff. Ref. Station. Not sure what it is yet
+  uint8_t hdop_1;               // Horizontal dilution of precision, characteristic
+  uint8_t hdop_2;               // Horizontal dilution of precision, mantissa
+  uint16_t msl_altitude_1;      // In meters, characteristic
+  uint16_t msl_altitude_2;      // In meters, mantissa
+  uint16_t geoid_seperation_1;  // In meters, characteristic
+  uint16_t geoid_seperation_2;  // In meters, mantissa
   nmea_coord latitude;
   nmea_coord longitude;
   nmea_utc_time time;
-  uint8_t east_west;               // East or West. E for East, W for West, treat as char
-  uint8_t north_south;             // North or South. N for North, S for South, treat as char
+  char east_west;                  // East or West. E for East, W for West
+  char north_south;                // North or South. N for North, S for South
   uint8_t units_msl_altitude;      // Indicated units of above, should be M for meters.
   uint8_t units_geoid_seperation;  // Indicates units of above, should be M for meters.
   uint8_t checksum[3];             // Should be * followed by two integers
-  NMEA_MESSAGE_ID message_id;
+  NmeaMessageID message_id;
 } nmea_gga_sentence;
 
 typedef struct {
-  uint32_t degrees_1;    // Whole number of degrees
-  uint32_t degrees_2;    // Decimal part of degrees
-  uint32_t speed_kmh_1;  // Speed in km/h
-  uint32_t speed_kmh_2;  // Speed in km/h, fractional part
+  uint16_t measure_heading_degrees_1;  // Whole number of degrees representing the heading
+  uint16_t measure_heading_degrees_2;  // Decimal part of degrees representing the heading
+  uint16_t speed_kmh_1;                // Speed in km/h
+  uint16_t speed_kmh_2;                // Speed in km/h, fractional part (after the decimal)
   uint8_t checksum[3];
 } nmea_vtg_sentence;
 
-// Parsing function for gga sentence
-StatusCode nmea_get_gga_sentence(const uint8_t *nmea_input, size_t len, nmea_gga_sentence *result);
-StatusCode nmea_get_vtg_sentence(const uint8_t *nmea_input, size_t len, nmea_vtg_sentence *result);
-StatusCode nmea_valid(const uint8_t *to_check, size_t len);
-StatusCode nmea_sentence_type(const uint8_t *rx_arr, size_t len, NMEA_MESSAGE_ID *result);
+// Parsing functions for NMEA sentences
+
+// Tests if the given string is a valid NMEA message. Must be null terminated, will return
+// STATUS_CODE_OK if the message is valid.
+StatusCode nmea_valid(const char *to_check);
+
+// Returns the NMEA sentence type. The result will be stored in the second parameter.
+// The function will return a StatusCode indicating success or failure.
+StatusCode nmea_sentence_type(const char *nmea_input, NmeaMessageID *result);
+
+// These functions parse NMEA sentences. The result will be stored in the second parameter.
+// The function will return a StatusCode indicating success or failure.
+StatusCode nmea_get_gga_sentence(const char *nmea_input, nmea_gga_sentence *result);
+StatusCode nmea_get_vtg_sentence(const char *nmea_input, nmea_vtg_sentence *result);
