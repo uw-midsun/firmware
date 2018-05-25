@@ -42,7 +42,7 @@ void test_event_queue_raise(void) {
 void test_event_queue_raise_priority(void) {
   // Test each priority.
   for (int i = NUM_EVENT_PRIORITIES - 1; i >= 0; i--) {
-    TEST_ASSERT_OK(event_raise_priority(i, i * 10, i * 100));
+    TEST_ASSERT_OK(event_raise_priority((EventPriority)i, i * 10, i * 100));
   }
 
   Event e;
