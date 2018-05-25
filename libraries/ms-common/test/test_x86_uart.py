@@ -1,24 +1,24 @@
-import os
-import sys
+import subprocess
 import socket
-import thread
+import _thread
 import time
 
 # return the sun_path of the most recently started program
 def get_sun_path(prog, port):
 
     latest_path = ""
-    pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
+    res = subprocess.run(["pgrep", "-l", prog], stdout = subprocess.PIPE)
+    # decode pgrep output from bytes and get the pids and program names
+    res_arr = res.stdout.decode("utf-8").split("\n")
 
-    for pid in pids:
-        try:
-            full_prog = open(os.path.join('/proc', pid, 'cmdline'), 'rb').read()
-            # get the progam short name without the ^@ char at the end
-            tmp_prog = full_prog.split("/")[-1][:-1]
-            if tmp_prog == prog:
-                latest_path = "%s/%s/%s" % (pid,prog,port)
-        except IOError: # proc has already terminated
-            continue
+    for proc in res_arr:
+        if proc:
+            try:
+                tmp_arr = proc.split(" ")
+                if tmp_arr[1] == prog:
+                    latest_path = "%s/%s/%s" % (tmp_arr[0],prog,port)
+            except:
+                continue
 
     return latest_path
 
@@ -52,9 +52,9 @@ class Socket:
 
     def setup_sock(self):
         try:
-            thread.start_new_thread(self.read, ())
+            _thread.start_new_thread(self.read, ())
         except:
-            print "Error: unable to start read thread for %s." % (self.m_prog)
+            print("Error: unable to start read thread for %s." % (self.m_prog))
 
     # read data from the c server socket and send to partner
     def read(self):
@@ -68,7 +68,7 @@ class Socket:
         if self.m_connected:
             self.m_sock.sendall(tx_data)
         else:
-            print "Socket not connected to %s, could not send data." % (self.m_prog)
+            print("Socket not connected to %s, could not send data." % (self.m_prog))
 
     # getters
     def get_prog(self):
@@ -86,7 +86,9 @@ class Socket:
 class Connection:
 
     def __init__(self, prog1, port1, prog2, port2):
-        # create socket objects
+        # create socket objects and add the prefix "uart"
+        port1 = "uart" + port1
+        port2 = "uart" + port2
         self.m_sock1 = Socket(prog1, port1)
         self.m_sock2 = Socket(prog2, port2)
 
@@ -102,18 +104,18 @@ class Connection:
         if not self.m_sock1.is_connected():
             if self.m_sock1.connect():
                 self.m_num_connected += 1
-                print "%s connected to %s!" % (self.m_sock1.get_prog(), self.m_sock1.get_path())
+                print("%s connected to %s!" % (self.m_sock1.get_prog(), self.m_sock1.get_path()))
             else:
                 if not self.m_first_attempt:
-                    print "%s did not connect." % (self.m_sock1.get_prog())
+                    print("%s did not connect." % (self.m_sock1.get_prog()))
 
         if not self.m_sock2.is_connected():
             if self.m_sock2.connect():
                 self.m_num_connected += 1
-                print "%s connected to %s!" % (self.m_sock2.get_prog(), self.m_sock2.get_path())
+                print("%s connected to %s!" % (self.m_sock2.get_prog(), self.m_sock2.get_path()))
             else:
                 if not self.m_first_attempt:
-                    print "%s did not connect." % (self.m_sock2.get_prog())
+                    print("%s did not connect." % (self.m_sock2.get_prog()))
 
         # don't spam did not connect messages
         self.m_first_attempt = True
