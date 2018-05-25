@@ -26,7 +26,7 @@ void receiver_wrapper(struct X86SocketThread *thread, int client_fd, const char 
 StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage) {
   // create module name from UART_PORT number
   char *module_name = malloc(6 * sizeof(char));
-  snprintf(module_name, 6, "%s%d", "uart", ((int)uart + 1));
+  snprintf(module_name, sizeof(module_name), "%s%d", "uart", ((int)uart + 1));
 
   s_sock[uart].port = uart;
   s_sock[uart].storage = storage;
