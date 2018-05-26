@@ -76,8 +76,8 @@ bool cruise_handle_event(CruiseStorage *cruise, const Event *e) {
         cruise->offset_cms = -CRUISE_OFFSET_CMS;
       }
 
-      // Immediately run callback - note that we require a small delay or else the callback might not run
-      soft_timer_start(100, prv_timer_cb, cruise, &cruise->repeat_timer);
+      // Immediately run callback - note that we require a delay > 0 or it might not run
+      soft_timer_start(1, prv_timer_cb, cruise, &cruise->repeat_timer);
       break;
     case INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED:
       cruise->target_speed_cms = cruise->current_speed_cms;
