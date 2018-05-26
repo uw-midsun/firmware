@@ -20,7 +20,7 @@ typedef enum {
   INPUT_EVENT_PEDAL_ACCEL,
   INPUT_EVENT_PEDAL_FAULT,
 
-  // TODO(ELEC-406): Need to rework cruise control system - currently does not function as expected
+  // TODO(ELEC-431): Use new events in FSMs
   INPUT_EVENT_CRUISE_CONTROL,
   INPUT_EVENT_CRUISE_CONTROL_INC,
   INPUT_EVENT_CRUISE_CONTROL_DEC,
