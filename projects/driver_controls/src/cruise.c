@@ -5,16 +5,7 @@
 #include "misc.h"
 #include "input_event.h"
 
-typedef struct CruiseRepeatMapping {
-  size_t min_threshold;
-  uint32_t delay_ms;
-} CruiseRepeatMapping;
-
 static CruiseStorage s_cruise_storage;
-static const CruiseRepeatMapping s_mapping[] = {
-  { .min_threshold = 2, .delay_ms = 500 },
-  { .min_threshold = 4, .delay_ms = 250 },
-};
 
 static StatusCode prv_handle_motor_velocity(const CANMessage *msg, void *context,
                                             CANAckStatus *ack_reply) {
