@@ -1,11 +1,12 @@
-#include "test_helpers.h"
-#include "unity.h"
+// This tests the signal FSM and makes sure the state transitions are properly being done.
+// NOTE: The assertions work based on the raised event immediately after turning on a blinker.
+// It is assumed that the soft-timer interrupt is not being triggered before the event assertion.
 
 #include "lights_blinker.h"
 #include "lights_events.h"
 #include "lights_signal_fsm.h"
-
-#define TEST_LIGHTS_SIGNAL_FSM_DURATION 300
+#include "test_helpers.h"
+#include "unity.h"
 
 typedef enum {
   TEST_LIGHTS_SIGNAL_FSM_CMD_OFF = 0,
@@ -13,7 +14,7 @@ typedef enum {
   NUM_TEST_LIGHTS_SIGNAL_FSM_CMDS
 } TestLightsSignalFsmCmd;
 
-static LightsBlinkerDuration s_duration_ms = TEST_LIGHTS_SIGNAL_FSM_DURATION;
+static LightsBlinkerDuration s_duration_ms = 300;
 
 static LightsSignalFsm s_signal_fsm = { 0 };
 
@@ -21,6 +22,8 @@ void setup_test(void) {
   event_queue_init();
   lights_signal_fsm_init(&s_signal_fsm, s_duration_ms);
 }
+
+void teardown_test(void) {}
 
 static void prv_assert_raised_event(LightsEvent event, LightsEventGpioPeripheral peripheral) {
   const Event raised_event = { 0 };
@@ -118,5 +121,3 @@ void test_lights_signal_fsm_process_event_left_hazard_left(void) {
   TEST_ASSERT_OK(lights_signal_fsm_process_event(&s_signal_fsm, &e3));
   prv_assert_no_event_raised();
 }
-
-void teardown_test(void) {}
