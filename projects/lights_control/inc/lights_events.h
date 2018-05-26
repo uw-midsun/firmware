@@ -8,9 +8,17 @@ typedef enum {
   LIGHTS_EVENT_CAN_RX = 0,
   LIGHTS_EVENT_CAN_TX,
   LIGHTS_EVENT_CAN_FAULT,
-  // Events processed by the lights_gpio module.
+  // Events processed by lights_gpio module.
   LIGHTS_EVENT_GPIO_OFF,
   LIGHTS_EVENT_GPIO_ON,
+  // Events processed by lights_signal module.
+  LIGHTS_EVENT_SIGNAL_OFF,
+  LIGHTS_EVENT_SIGNAL_ON,
+  // Events processed by lights_strobe module.
+  LIGHTS_EVENT_STROBE_OFF,
+  LIGHTS_EVENT_STROBE_ON,
+  // Event processed by lights_sync module.
+  LIGHTS_EVENT_SYNC,
   NUM_LIGHTS_EVENTS
 } LightsEvent;
 
@@ -28,3 +36,11 @@ typedef enum {
   LIGHTS_EVENT_GPIO_PERIPHERAL_SYNC,
   NUM_LIGHTS_EVENT_GPIO_PERIPHERALS
 } LightsEventGpioPeripheral;
+
+// Possible data fields to be used with a LIGHTS_EVENT_SIGNAL_* event.
+typedef enum {
+  LIGHTS_EVENT_SIGNAL_MODE_LEFT = 0,
+  LIGHTS_EVENT_SIGNAL_MODE_RIGHT,
+  LIGHTS_EVENT_SIGNAL_MODE_HAZARD,
+  NUM_LIGHTS_EVENT_SIGNAL_MODES
+} LightsEventSignalMode;
