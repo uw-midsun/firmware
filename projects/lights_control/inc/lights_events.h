@@ -1,7 +1,7 @@
 #pragma once
 
 // Every event is post-fixed by the module that processes it.
-// i.e. LIGHTS_EVENT_GPIO_* is used by the lights_gpio module.
+// i.e. LIGHTS_EVENT_GPIO* is used by the lights_gpio module.
 
 typedef enum {
   // Used internally by the can module.
@@ -44,3 +44,4 @@ typedef enum {
   LIGHTS_EVENT_SIGNAL_MODE_HAZARD,
   NUM_LIGHTS_EVENT_SIGNAL_MODES
 } LightsEventSignalMode;
+

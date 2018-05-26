@@ -14,7 +14,7 @@ static void prv_watchdog_cb(SoftTimerID timer_id, void *context) {
   if (storage->watchdog != DRIVE_OUTPUT_VALID_WATCHDOG) {
     // Error - raise a warning, disable periodic drive storage
     soft_timer_cancel(storage->output_timer);
-    event_raise(storage->fault_event, 0);
+    event_raise_priority(EVENT_PRIORITY_HIGHEST, storage->fault_event, 0);
   }
 
   // Reset watchdog
