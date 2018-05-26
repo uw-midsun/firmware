@@ -11,7 +11,7 @@
 #include "unity.h"
 
 // Arbitrary number of testing samples
-#define TEST_ADC_CALIBRATION_DURATION 10
+#define TEST_ADC_CALIBRATION_DURATION 25
 
 // Delay period
 #define TEST_ADC_CALIBRATION_CYCLE_DURATION 200
@@ -36,11 +36,14 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_adc_calibration(void) {
-  TEST_ASSERT_OK(ltc_adc_calibration_init(&s_storage));
+  // Arbitrary calibration parameters
+  LTCCalibrationLineData line = { .zero_point = { 100, 0 }, .max_point = { 20000, 200 } };
+
+  TEST_ASSERT_OK(ltc_adc_calibration_init(&s_storage, &line));
 
   // Wait for samples to accumulate
   for (uint8_t i = 0; i < TEST_ADC_CALIBRATION_DURATION; i++) {
-    LOG_DEBUG("[%d / %d] Voltage = %" PRId32 ", Current = %" PRId32 "\n", i,
+    LOG_DEBUG("[%d / %d] | Voltage =  %" PRId32 ", Current =  %" PRId32 "\n", i + 1,
               TEST_ADC_CALIBRATION_DURATION, s_storage.value.voltage, s_storage.value.current);
     delay_ms(TEST_ADC_CALIBRATION_CYCLE_DURATION);
   }
