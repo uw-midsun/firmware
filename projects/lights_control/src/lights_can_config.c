@@ -30,9 +30,8 @@ const LightsCanSettings s_settings_rear = {
   },
   // clang-format on
   .loopback = false,
-  // TODO(ELEC-372):  figure these out
-  .rx_addr = { .port = 1, .pin = 1 },
-  .tx_addr = { .port = 1, .pin = 1 },
+  .rx_addr = { .port = GPIO_PORT_A, .pin = 11 },
+  .tx_addr = { .port = GPIO_PORT_A, .pin = 12 },
   .device_id = SYSTEM_CAN_DEVICE_LIGHTS_REAR
 };
 
@@ -64,9 +63,8 @@ const LightsCanSettings s_settings_front = {
   },
   // clang-format on
   .loopback = false,
-  // TODO(ELEC-372):  figure these out
-  .rx_addr = { .port = 1, .pin = 1 },
-  .tx_addr = { .port = 1, .pin = 1 },
+  .rx_addr = { .port = GPIO_PORT_A, .pin = 11 },
+  .tx_addr = { .port = GPIO_PORT_A, .pin = 12 },
   .device_id = SYSTEM_CAN_DEVICE_LIGHTS_FRONT
 };
 

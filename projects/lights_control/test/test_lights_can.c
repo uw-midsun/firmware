@@ -11,6 +11,12 @@
 #include "lights_events.h"
 
 #define TEST_LIGHTS_CAN_DEVICE_ID 0
+
+#define TEST_LIGHTS_CAN_RX_ADDR \
+  { .port = 0, .pin = 0 }
+#define TEST_LIGHTS_CAN_TX_ADDR \
+  { .port = 0, .pin = 1 }
+
 LightsCanStorage s_test_storage;
 
 typedef enum {
@@ -21,9 +27,8 @@ typedef enum {
 
 const LightsCanSettings s_test_settings = {
   .loopback = true,
-  // TODO(ELEC-372):  figure these out
-  .rx_addr = { .port = 1, .pin = 1 },
-  .tx_addr = { .port = 1, .pin = 1 },
+  .rx_addr = TEST_LIGHTS_CAN_RX_ADDR,
+  .tx_addr = TEST_LIGHTS_CAN_TX_ADDR,
   // clang-format off
   .event_lookup = {
     [LIGHTS_CAN_ACTION_SIGNAL_RIGHT] = { LIGHTS_EVENT_SIGNAL_OFF, LIGHTS_EVENT_SIGNAL_ON },
