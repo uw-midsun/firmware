@@ -34,9 +34,9 @@ typedef struct LightsGpioOutput {
   LightsGpioPolarity polarity;
 } LightsGpioOutput;
 
-// Mapping from an event to a set of outputs.
+// Mapping from an peripheral to a set of outputs.
 typedef struct LightsGpioEventMapping {
-  LightsEventGPIOPeripheral peripheral;
+  LightsEventGpioPeripheral peripheral;
   LightsGpioOutputBitset output_mapping;
 } LightsGpioEventMapping;
 
