@@ -1,6 +1,9 @@
+// Updates to the drive output module are driven by the update requested events
+
 #include "mechanical_brake_fsm.h"
 #include "event_arbiter.h"
 #include "input_event.h"
+#include "drive_output.h"
 #include "log.h"
 
 // Mechanical Brake FSM state definitions
@@ -11,11 +14,15 @@ FSM_DECLARE_STATE(state_disengaged);
 // Mechanical Brake FSM transition table definitions
 
 FSM_STATE_TRANSITION(state_engaged) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_engaged);
+
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_engaged);
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_disengaged);
 }
 
 FSM_STATE_TRANSITION(state_disengaged) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_disengaged);
+
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_engaged);
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_disengaged);
 }
@@ -23,10 +30,9 @@ FSM_STATE_TRANSITION(state_disengaged) {
 // Mechanical Brake FSM arbiter functions
 
 static bool prv_guard_engaged(const Event *e) {
-  // While the brakes are engaged, the car should not accept any commands to exit braking state.
+  // While the brakes are engaged, the car shouldn't allow the car to enter cruise control.
+  // Motor controller interface should ignore throttle state if mechanical brake is engaged.
   switch (e->id) {
-    case INPUT_EVENT_PEDAL_COAST:
-    case INPUT_EVENT_PEDAL_ACCEL:
     case INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME:
       return false;
     default:
@@ -50,11 +56,16 @@ static bool prv_guard_disengaged(const Event *e) {
 static void prv_engaged_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   event_arbiter_set_guard_fn(guard, prv_guard_engaged);
+
+  drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_MECH_BRAKE, 0);
 }
 
 static void prv_disengaged_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   event_arbiter_set_guard_fn(guard, prv_guard_disengaged);
+
+  // TODO(ELEC-350): Implement mech brake
+  drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_MECH_BRAKE, 0);
 }
 
 StatusCode mechanical_brake_fsm_init(FSM *fsm, EventArbiterStorage *storage) {

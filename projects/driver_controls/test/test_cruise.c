@@ -8,6 +8,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 #include "ms_test_helpers.h"
+#include "log.h"
 
 #define TEST_CRUISE_DEVICE_ID 1
 #define TEST_CRUISE_NUM_RX_HANDLERS 3
@@ -78,4 +79,30 @@ void test_cruise_can(void) {
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
   cruise_handle_event(cruise, &e);
   TEST_ASSERT_EQUAL(0, cruise_get_target_cms(cruise));
+}
+
+void test_cruise_target(void) {
+  CruiseStorage *cruise = cruise_global();
+  TEST_ASSERT_OK(cruise_set_target_cms(cruise, 30 * 45)); // Set to some arbitrary initial value
+  int16_t prev_target = cruise_get_target_cms(cruise);
+
+  Event e = { .id = INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_PLUS };
+  cruise_handle_event(cruise, &e);
+
+  while (true) {
+    if (cruise_get_target_cms(cruise) != prev_target) {
+      prev_target = cruise_get_target_cms(cruise);
+      LOG_DEBUG("target cruise %d cm/s (%d mph)\n", prev_target, prev_target / CRUISE_OFFSET_CMS);
+    }
+
+    if (prev_target == CRUISE_MAX_TARGET_CMS) {
+      e.id = INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_MINUS;
+      cruise_handle_event(cruise, &e);
+    }
+
+    if (prev_target == 0) {
+      e.id = INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_PLUS;
+      cruise_handle_event(cruise, &e);
+    }
+  }
 }

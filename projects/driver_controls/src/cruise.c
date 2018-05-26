@@ -2,9 +2,19 @@
 #include "can.h"
 #include "can_msg_defs.h"
 #include "can_unpack.h"
+#include "misc.h"
 #include "input_event.h"
 
+typedef struct CruiseRepeatMapping {
+  size_t min_threshold;
+  uint32_t delay_ms;
+} CruiseRepeatMapping;
+
 static CruiseStorage s_cruise_storage;
+static const CruiseRepeatMapping s_mapping[] = {
+  { .min_threshold = 2, .delay_ms = 500 },
+  { .min_threshold = 4, .delay_ms = 250 },
+};
 
 static StatusCode prv_handle_motor_velocity(const CANMessage *msg, void *context,
                                             CANAckStatus *ack_reply) {
@@ -22,18 +32,22 @@ static void prv_timer_cb(SoftTimerID timer_id, void *context) {
   CruiseStorage *cruise = context;
 
   cruise->target_speed_cms += cruise->offset_cms;
-  if (cruise->target_speed_cms < 0) {
-    // Don't allow a negative cruise speed
-    cruise->target_speed_cms = 0;
-  }
+  // We could cancel the timer if either limit was hit
+  cruise->target_speed_cms = MAX(0, cruise->target_speed_cms);
+  cruise->target_speed_cms = MIN(CRUISE_MAX_TARGET_CMS, cruise->target_speed_cms);
 
-  // TODO: don't hardcode the period
-  soft_timer_start_millis(5000, prv_timer_cb, cruise, &cruise->repeat_timer);
+  // __builtin_clz(0) has undefined behavior, so we increment first
+  size_t index = 32 - (size_t)__builtin_clz(++cruise->repeat_counter);
+  // Always require at least 1ms delay
+  uint32_t timeout_ms = MAX((uint32_t)1, 1000 / index);
+
+  soft_timer_start_millis(timeout_ms, prv_timer_cb, cruise, &cruise->repeat_timer);
 }
 
 StatusCode cruise_init(CruiseStorage *cruise) {
   cruise->target_speed_cms = 0;
   cruise->current_speed_cms = 0;
+  cruise->repeat_counter = 0;
   cruise->repeat_timer = SOFT_TIMER_INVALID_TIMER;
 
   can_register_rx_handler(SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY, prv_handle_motor_velocity, cruise);
@@ -62,13 +76,17 @@ bool cruise_handle_event(CruiseStorage *cruise, const Event *e) {
       break;
     case INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_PLUS:
     case INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_MINUS:
-      // Run callback immediately
+      // reset just in case we switched directly
       soft_timer_cancel(cruise->repeat_timer);
+      cruise->repeat_counter = 0;
+
       cruise->offset_cms = CRUISE_OFFSET_CMS;
       if (e->id == INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_MINUS) {
         cruise->offset_cms = -CRUISE_OFFSET_CMS;
       }
-      soft_timer_start(0, prv_timer_cb, cruise, &cruise->repeat_timer);
+
+      // Immediately run callback - note that we require a small delay or else the callback might not run
+      soft_timer_start(100, prv_timer_cb, cruise, &cruise->repeat_timer);
       break;
     case INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED:
       cruise->target_speed_cms = cruise->current_speed_cms;
