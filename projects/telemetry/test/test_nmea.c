@@ -18,7 +18,6 @@ void test_gps_nmea_gga(void) {
   nmea_gga_sentence r = { 0 };
   TEST_ASSERT_TRUE(status_ok(nmea_get_gga_sentence(input, &r)));
 
-  LOG_DEBUG("%d\n", r.time.hh);
   TEST_ASSERT_TRUE(r.time.hh == 5);
   TEST_ASSERT_TRUE(r.time.mm == 37);
   TEST_ASSERT_TRUE(r.time.ss == 40);
@@ -52,6 +51,7 @@ void test_gps_nmea_gga(void) {
   TEST_ASSERT_TRUE(r.geoid_seperation_2 == 2);
 
   TEST_ASSERT_TRUE(r.units_geoid_seperation == 'M');
+  TEST_ASSERT_TRUE(r.drs == 0);
 
   TEST_ASSERT_TRUE(nmea_checksum_validate(input, strlen(input)));
 }
@@ -60,8 +60,8 @@ void test_gps_nmea_vtg(void) {
   const char input[] = "$GPVTG,79.65,T,,M,2.69,N,5.0,K,A*38";
 
   nmea_vtg_sentence vtg = { 0 };
-  TEST_ASSERT_TRUE(status_ok(nmea_get_vtg_sentence(input, &vtg)));
 
+  TEST_ASSERT_TRUE(status_ok(nmea_get_vtg_sentence(input, &vtg)));
   TEST_ASSERT_TRUE(vtg.measure_heading_degrees_1 == 79);
   TEST_ASSERT_TRUE(vtg.measure_heading_degrees_2 == 65);
   TEST_ASSERT_TRUE(vtg.speed_kmh_1 == 5);

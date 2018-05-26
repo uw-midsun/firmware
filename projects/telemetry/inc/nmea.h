@@ -32,18 +32,18 @@ typedef enum {
 } NmeaPositionFix;
 
 typedef struct {
-  uint8_t hh;   // Hours
-  uint8_t mm;   // Minutes
-  uint8_t ss;   // Seconds
-  uint8_t sss;  // Milliseconds
+  uint32_t hh;   // Hours
+  uint32_t mm;   // Minutes
+  uint32_t ss;   // Seconds
+  uint32_t sss;  // Milliseconds
 } nmea_utc_time;
 
 // Representation of longitude or latitude
 // https://en.wikipedia.org/wiki/Longitude
 typedef struct {
-  uint16_t degrees;
-  uint16_t minutes;
-  uint16_t fraction;
+  uint32_t degrees;
+  uint32_t minutes;
+  uint32_t fraction;
 } nmea_coord;
 
 // Info passed from the GPS chip should be dropped into this struct (more fields
@@ -51,32 +51,30 @@ typedef struct {
 
 typedef struct {
   NmeaPositionFix position_fix;  // True if this struct has valid data
-  uint8_t satellites_used;
-  uint8_t adc;                  // Age of diff. corr. in seconds
-  uint8_t drs;                  // Diff. Ref. Station. Not sure what it is yet
-  uint8_t hdop_1;               // Horizontal dilution of precision, characteristic
-  uint8_t hdop_2;               // Horizontal dilution of precision, mantissa
-  uint16_t msl_altitude_1;      // In meters, characteristic
-  uint16_t msl_altitude_2;      // In meters, mantissa
-  uint16_t geoid_seperation_1;  // In meters, characteristic
-  uint16_t geoid_seperation_2;  // In meters, mantissa
+  uint32_t satellites_used;
+  uint32_t adc;                 // Age of diff. corr. in seconds
+  uint32_t drs;                 // Diff. Ref. Station. Not sure what it is yet
+  uint32_t hdop_1;              // Horizontal dilution of precision, characteristic
+  uint32_t hdop_2;              // Horizontal dilution of precision, mantissa
+  uint32_t msl_altitude_1;      // In meters, characteristic
+  uint32_t msl_altitude_2;      // In meters, mantissa
+  uint32_t geoid_seperation_1;  // In meters, characteristic
+  uint32_t geoid_seperation_2;  // In meters, mantissa
   nmea_coord latitude;
   nmea_coord longitude;
   nmea_utc_time time;
-  char east_west;                  // East or West. E for East, W for West
-  char north_south;                // North or South. N for North, S for South
-  uint8_t units_msl_altitude;      // Indicated units of above, should be M for meters.
-  uint8_t units_geoid_seperation;  // Indicates units of above, should be M for meters.
-  uint8_t checksum[3];             // Should be * followed by two integers
+  char east_west;                   // East or West. E for East, W for West
+  char north_south;                 // North or South. N for North, S for South
+  uint32_t units_msl_altitude;      // Indicated units of above, should be M for meters.
+  uint32_t units_geoid_seperation;  // Indicates units of above, should be M for meters.
   NmeaMessageID message_id;
 } nmea_gga_sentence;
 
 typedef struct {
-  uint16_t measure_heading_degrees_1;  // Whole number of degrees representing the heading
-  uint16_t measure_heading_degrees_2;  // Decimal part of degrees representing the heading
-  uint16_t speed_kmh_1;                // Speed in km/h
-  uint16_t speed_kmh_2;                // Speed in km/h, fractional part (after the decimal)
-  uint8_t checksum[3];
+  uint32_t measure_heading_degrees_1;  // Whole number of degrees representing the heading
+  uint32_t measure_heading_degrees_2;  // Decimal part of degrees representing the heading
+  uint32_t speed_kmh_1;                // Speed in km/h
+  uint32_t speed_kmh_2;                // Speed in km/h, fractional part (after the decimal)
 } nmea_vtg_sentence;
 
 // Parsing functions for NMEA sentences

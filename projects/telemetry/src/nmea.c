@@ -1,19 +1,15 @@
 #include "nmea.h"
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include "log.h"
+#include "misc.h"
 #include "nmea_checksum.h"
 #include "status.h"
 
 // This is to get the number of fields in a sentence for array allocation
 static const size_t s_nmea_message_num_fields[] = { 0, 16, 9, 11, 13, 14, 14, 10 };
-
-// Splits individual message components into a 2D array
-static bool prv_strtok(const char *rx_arr, int * start_pos, char delimiter) {
-
-}
 
 // Just a function to loosely validate if a sentence is valid
 StatusCode nmea_valid(const char *to_check) {
@@ -105,45 +101,42 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, nmea_gga_sentence *result) 
     // $GPGGA,053740.000,2503.6319,N,12136.0099,E,1,08,1.1,63.8,M,15.2,M,,0000*64
 
     char *saveptr;
-    char *rx_arr_copy = strdup(rx_arr);
-    char *section;
+    bool is_double_delimiter = false;
 
-    // Consume $GPGGA section
-    strtok_r(rx_arr_copy, ",", &saveptr);
-
-    section = strtok_r(NULL, ",", &saveptr);
-    if (strlen(section) > 0) {
-      sscanf(section, "%2d%2d%2d.%3d", (int *)&result->time.hh, (int *)&result->time.mm,
+    is_double_delimiter = strtok_d(rx_arr, ',', &saveptr, &is_double_delimiter);
+    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
+      sscanf(saveptr, "%2d%2d%2d.%3d", (int *)&result->time.hh, (int *)&result->time.mm,
              (int *)&result->time.ss, (int *)&result->time.sss);
     }
 
-    section = strtok_r(NULL, ",", &saveptr);
-    if (strlen(section) > 0) {
-      sscanf(section, "%2d%2d.%4d", (int *)&result->latitude.degrees,
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
+      sscanf(saveptr, "%2d%2d.%4d", (int *)&result->latitude.degrees,
              (int *)&result->latitude.minutes, (int *)&result->latitude.fraction);
     }
 
-    section = strtok_r(NULL, ",", &saveptr);
-    if (strlen(section) > 0) {
-      result->north_south = section[0];
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+
+    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
+      result->north_south = saveptr[0];
     }
 
-    section = strtok_r(NULL, ",", &saveptr);
-    if (strlen(section) > 0) {
-      sscanf(section, "%3d%2d.%4d", (int *)&result->longitude.degrees,
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
+      sscanf(saveptr, "%3d%2d.%4d", (int *)&result->longitude.degrees,
              (int *)&result->longitude.minutes, (int *)&result->longitude.fraction);
     }
 
-    section = strtok_r(NULL, ",", &saveptr);
-    if (strlen(section) > 0) {
-      result->east_west = section[0];
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
+      result->east_west = saveptr[0];
     }
 
-    section = strtok_r(NULL, ",", &saveptr);
-    if (strlen(section) > 0) {
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
       uint8_t temp_position_fix = 0;
 
-      sscanf(section, "%d", (int *)&temp_position_fix);
+      sscanf(saveptr, "%d", (int *)&temp_position_fix);
 
       // Valid position fix defined by 1, 2, or 6 as described in
       // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
@@ -163,54 +156,45 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, nmea_gga_sentence *result) 
           break;
       }
     }
-
-    section = strtok_r(NULL, ",", &saveptr);
-    if (strlen(section) > 0) {
-      sscanf(section, "%d", (int *)&result->satellites_used);
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
+      sscanf(saveptr, "%d", (int *)&result->satellites_used);
     }
 
-    section = strtok_r(NULL, ",", &saveptr);
-    if (strlen(section) > 0) {
-      sscanf(section, "%d.%d", (int *)&result->hdop_1, (int *)&result->hdop_2);
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
+      sscanf(saveptr, "%d.%d", (int *)&result->hdop_1, (int *)&result->hdop_2);
     }
 
-    section = strtok_r(NULL, ",", &saveptr);
-    if (strlen(section) > 0) {
-      sscanf(section, "%d.%d", (int *)&result->msl_altitude_1, (int *)&result->msl_altitude_2);
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
+      sscanf(saveptr, "%d.%d", (int *)&result->msl_altitude_1, (int *)&result->msl_altitude_2);
     }
 
-    section = strtok_r(NULL, ",", &saveptr);
-    if (strlen(section) > 0) {
-      result->units_msl_altitude = (uint8_t)section[0];
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
+      result->units_msl_altitude = (uint8_t)saveptr[0];
     }
-
-    section = strtok_r(NULL, ",", &saveptr);
-    if (strlen(section) > 0) {
-      sscanf(section, "%d.%d", (int *)&result->geoid_seperation_1,
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
+      sscanf(saveptr, "%d.%d", (int *)&result->geoid_seperation_1,
              (int *)&result->geoid_seperation_2);
     }
 
-    section = strtok_r(NULL, ",", &saveptr);
-    if (strlen(section) > 0) {
-      result->units_geoid_seperation = (uint8_t)section[0];
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
+      result->units_geoid_seperation = (uint8_t)saveptr[0];
     }
 
-    section = strtok_r(NULL, ",", &saveptr);
-    if (strlen(section) > 0) {
-      sscanf(section, "%d", (int *)&result->adc);
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
+      sscanf(saveptr, "%d", (int *)&result->adc);
     }
 
-    section = strtok_r(NULL, ",", &saveptr);
-    if (strlen(section) > 0) {
-      sscanf(section, "%d", (int *)&result->drs);
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
+      sscanf(saveptr, "%d", (int *)&result->drs);
     }
-
-    section = strtok_r(NULL, ",", &saveptr);
-    if (strlen(section) > 0) {
-      sscanf(section, "%*[^*]*%2x", (int *)&result->checksum);
-    }
-
-    free(rx_arr_copy);
     return STATUS_CODE_OK;
   }
   return status_msg(STATUS_CODE_INVALID_ARGS, "NMEA: Incorrect message ID received\n");
@@ -230,21 +214,32 @@ StatusCode nmea_get_vtg_sentence(const char *rx_arr, nmea_vtg_sentence *result) 
 
   status_ok_or_return(nmea_sentence_type(rx_arr, &m_id));
 
-  char temp_buf[s_nmea_message_num_fields[NMEA_VTG]][10];
-
-  prv_split_nmea_into_array(rx_arr, len, s_nmea_message_num_fields[NMEA_VTG], 10, temp_buf);
-
   if (m_id == NMEA_VTG) {
     // Example message:
     // $GPVTG,79.65,T,,M,2.69,N,5.0,K,A*38
 
     // Parses NMEA message
     // We only need the direction and speed
-    sscanf(temp_buf[0], "%d.%d", (int *)&result->measure_heading_degrees_1,
+
+    char *saveptr;
+    bool is_double_delimiter = false;
+
+    is_double_delimiter = strtok_d(rx_arr, ',', &saveptr, &is_double_delimiter);
+    sscanf(saveptr, "%d.%d", (int *)&result->measure_heading_degrees_1,
            (int *)&result->measure_heading_degrees_2);
 
-    sscanf(temp_buf[6], "%d.%d", (int *)&result->speed_kmh_1, (int *)&result->speed_kmh_2);
+    // Just discarding data we don't need
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
+    if (!is_double_delimiter) {
+      sscanf(saveptr, "%d.%d", (int *)&result->speed_kmh_1, (int *)&result->speed_kmh_2);
+    }
     return STATUS_CODE_OK;
   }
+
   return status_msg(STATUS_CODE_INVALID_ARGS, "Incorrect message id\n");
 }
