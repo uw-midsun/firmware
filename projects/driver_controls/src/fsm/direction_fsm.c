@@ -20,10 +20,13 @@ FSM_STATE_TRANSITION(state_forward) {
   FSM_ADD_TRANSITION(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, state_reverse);
 }
 
+// TODO(ELEC-407): Add neutral state
+
 FSM_STATE_TRANSITION(state_reverse) {
   FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_reverse);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, state_forward);
+  // TODO(ELEC-407): revert to default state on power on?
 }
 
 // Direction selector FSM arbiter guard functions
