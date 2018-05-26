@@ -13,10 +13,10 @@ typedef struct {
 static UartSocketData s_sock[NUM_UART_PORTS];
 
 void uart_receiver_wrapper(struct X86SocketThread *thread, int client_fd, const char *rx_data,
-                             size_t rx_len, void *context);
+                           size_t rx_len, void *context);
 
 void uart_receiver_wrapper(struct X86SocketThread *thread, int client_fd, const char *rx_data,
-                      size_t rx_len, void *context) {
+                           size_t rx_len, void *context) {
   UartSocketData *sock = context;
   sock->storage->rx_handler((uint8_t *)rx_data, rx_len, context);
 }
