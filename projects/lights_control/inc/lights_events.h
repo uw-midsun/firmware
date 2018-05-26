@@ -44,4 +44,3 @@ typedef enum {
   LIGHTS_EVENT_SIGNAL_MODE_HAZARD,
   NUM_LIGHTS_EVENT_SIGNAL_MODES
 } LightsEventSignalMode;
-
