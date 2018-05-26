@@ -9,16 +9,16 @@
 #include "unity.h"
 
 #define TEST_LIGHTS_CAN_ASSERT_RAISED_EVENT(event, peripheral) \
-  do { \
-    const Event raised_event = { 0 }; \
-    TEST_ASSERT_OK(event_process(&raised_event)); \
-    TEST_ASSERT_EQUAL(peripheral, raised_event.data); \
-    TEST_ASSERT_EQUAL(event, raised_event.id); \
+  do {                                                         \
+    const Event raised_event = { 0 };                          \
+    TEST_ASSERT_OK(event_process(&raised_event));              \
+    TEST_ASSERT_EQUAL(peripheral, raised_event.data);          \
+    TEST_ASSERT_EQUAL(event, raised_event.id);                 \
   } while (0)
 
-#define TEST_LIGHTS_CAN_ASSERT_NO_EVENT_RAISED() \
-  do { \
-    const Event raised_event = { 0 }; \
+#define TEST_LIGHTS_CAN_ASSERT_NO_EVENT_RAISED()      \
+  do {                                                \
+    const Event raised_event = { 0 };                 \
     TEST_ASSERT_NOT_OK(event_process(&raised_event)); \
   } while (0)
 
@@ -47,7 +47,7 @@ void test_lights_signal_fsm_process_event_none_to_left_and_right(void) {
   const Event e1 = { .id = LIGHTS_EVENT_SIGNAL_ON, .data = LIGHTS_EVENT_SIGNAL_MODE_LEFT };
   TEST_ASSERT_OK(lights_signal_fsm_process_event(&s_signal_fsm, &e1));
   TEST_LIGHTS_CAN_ASSERT_RAISED_EVENT(LIGHTS_EVENT_GPIO_ON,
-                  LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
+                                      LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
   // Can't transition to right state (invalid transition)
   const Event e2 = { .id = LIGHTS_EVENT_SIGNAL_ON, .data = LIGHTS_EVENT_SIGNAL_MODE_RIGHT };
   TEST_ASSERT_OK(lights_signal_fsm_process_event(&s_signal_fsm, &e2));
@@ -56,13 +56,13 @@ void test_lights_signal_fsm_process_event_none_to_left_and_right(void) {
   const Event e3 = { .id = LIGHTS_EVENT_SIGNAL_OFF, .data = LIGHTS_EVENT_SIGNAL_MODE_LEFT };
   TEST_ASSERT_OK(lights_signal_fsm_process_event(&s_signal_fsm, &e3));
   TEST_LIGHTS_CAN_ASSERT_RAISED_EVENT(LIGHTS_EVENT_GPIO_OFF,
-                  LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
+                                      LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
 
   // Go to right state.
   const Event e4 = { .id = LIGHTS_EVENT_SIGNAL_ON, .data = LIGHTS_EVENT_SIGNAL_MODE_RIGHT };
   TEST_ASSERT_OK(lights_signal_fsm_process_event(&s_signal_fsm, &e4));
   TEST_LIGHTS_CAN_ASSERT_RAISED_EVENT(LIGHTS_EVENT_GPIO_ON,
-                  LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_RIGHT);
+                                      LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_RIGHT);
 
   // Can't go to left state.
   const Event e5 = { .id = LIGHTS_EVENT_SIGNAL_ON, .data = LIGHTS_EVENT_SIGNAL_MODE_LEFT };
@@ -73,7 +73,7 @@ void test_lights_signal_fsm_process_event_none_to_left_and_right(void) {
   const Event e6 = { .id = LIGHTS_EVENT_SIGNAL_OFF, .data = LIGHTS_EVENT_SIGNAL_MODE_RIGHT };
   TEST_ASSERT_OK(lights_signal_fsm_process_event(&s_signal_fsm, &e6));
   TEST_LIGHTS_CAN_ASSERT_RAISED_EVENT(LIGHTS_EVENT_GPIO_OFF,
-                  LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_RIGHT);
+                                      LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_RIGHT);
 }
 
 void test_lights_signal_fsm_process_event_hazard_left_left(void) {
@@ -82,7 +82,7 @@ void test_lights_signal_fsm_process_event_hazard_left_left(void) {
   const Event e1 = { .id = LIGHTS_EVENT_SIGNAL_ON, .data = LIGHTS_EVENT_SIGNAL_MODE_HAZARD };
   TEST_ASSERT_OK(lights_signal_fsm_process_event(&s_signal_fsm, &e1));
   TEST_LIGHTS_CAN_ASSERT_RAISED_EVENT(LIGHTS_EVENT_GPIO_ON,
-                  LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_HAZARD);
+                                      LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_HAZARD);
 
   // Go to hazard-left state (no change in behaviour).
   const Event e2 = { .id = LIGHTS_EVENT_SIGNAL_ON, .data = LIGHTS_EVENT_SIGNAL_MODE_LEFT };
@@ -98,15 +98,15 @@ void test_lights_signal_fsm_process_event_hazard_left_left(void) {
   const Event e4 = { .id = LIGHTS_EVENT_SIGNAL_OFF, .data = LIGHTS_EVENT_SIGNAL_MODE_HAZARD };
   TEST_ASSERT_OK(lights_signal_fsm_process_event(&s_signal_fsm, &e4));
   TEST_LIGHTS_CAN_ASSERT_RAISED_EVENT(LIGHTS_EVENT_GPIO_OFF,
-                  LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_HAZARD);
+                                      LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_HAZARD);
   TEST_LIGHTS_CAN_ASSERT_RAISED_EVENT(LIGHTS_EVENT_GPIO_ON,
-                  LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
+                                      LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
 
   // Go back to none state.
   const Event e5 = { .id = LIGHTS_EVENT_SIGNAL_OFF, .data = LIGHTS_EVENT_SIGNAL_MODE_LEFT };
   TEST_ASSERT_OK(lights_signal_fsm_process_event(&s_signal_fsm, &e5));
   TEST_LIGHTS_CAN_ASSERT_RAISED_EVENT(LIGHTS_EVENT_GPIO_OFF,
-                  LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
+                                      LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
 }
 
 void test_lights_signal_fsm_process_event_left_hazard_left(void) {
@@ -116,19 +116,18 @@ void test_lights_signal_fsm_process_event_left_hazard_left(void) {
   const Event e1 = { .id = LIGHTS_EVENT_SIGNAL_ON, .data = LIGHTS_EVENT_SIGNAL_MODE_LEFT };
   TEST_ASSERT_OK(lights_signal_fsm_process_event(&s_signal_fsm, &e1));
   TEST_LIGHTS_CAN_ASSERT_RAISED_EVENT(LIGHTS_EVENT_GPIO_ON,
-                  LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
+                                      LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
 
   // Go to left-hazard state.
   const Event e2 = { .id = LIGHTS_EVENT_SIGNAL_ON, .data = LIGHTS_EVENT_SIGNAL_MODE_HAZARD };
   TEST_ASSERT_OK(lights_signal_fsm_process_event(&s_signal_fsm, &e2));
   TEST_LIGHTS_CAN_ASSERT_RAISED_EVENT(LIGHTS_EVENT_GPIO_OFF,
-                  LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
+                                      LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
   TEST_LIGHTS_CAN_ASSERT_RAISED_EVENT(LIGHTS_EVENT_GPIO_ON,
-                  LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_HAZARD);
+                                      LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_HAZARD);
 
   // Go to hazard state.
   const Event e3 = { .id = LIGHTS_EVENT_SIGNAL_OFF, .data = LIGHTS_EVENT_SIGNAL_MODE_LEFT };
   TEST_ASSERT_OK(lights_signal_fsm_process_event(&s_signal_fsm, &e3));
   TEST_LIGHTS_CAN_ASSERT_NO_EVENT_RAISED();
 }
-

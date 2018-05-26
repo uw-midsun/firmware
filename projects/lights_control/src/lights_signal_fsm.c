@@ -28,8 +28,7 @@ static bool prv_guard_signal_hazard(const FSM *fsm, const Event *e, void *contex
 FSM_STATE_TRANSITION(state_none) {
   FSM_ADD_GUARDED_TRANSITION(LIGHTS_EVENT_SIGNAL_ON, prv_guard_signal_left, state_left_signal);
   FSM_ADD_GUARDED_TRANSITION(LIGHTS_EVENT_SIGNAL_ON, prv_guard_signal_right, state_right_signal);
-  FSM_ADD_GUARDED_TRANSITION(LIGHTS_EVENT_SIGNAL_ON, prv_guard_signal_hazard,
-                             state_hazard_signal);
+  FSM_ADD_GUARDED_TRANSITION(LIGHTS_EVENT_SIGNAL_ON, prv_guard_signal_hazard, state_hazard_signal);
 }
 
 FSM_STATE_TRANSITION(state_left_signal) {
@@ -40,10 +39,8 @@ FSM_STATE_TRANSITION(state_left_signal) {
 
 // Transition table for state_hazard_left_signal.
 FSM_STATE_TRANSITION(state_hazard_left_signal) {
-  FSM_ADD_GUARDED_TRANSITION(LIGHTS_EVENT_SIGNAL_OFF, prv_guard_signal_left,
-                             state_hazard_signal);
-  FSM_ADD_GUARDED_TRANSITION(LIGHTS_EVENT_SIGNAL_OFF, prv_guard_signal_hazard,
-                             state_left_signal);
+  FSM_ADD_GUARDED_TRANSITION(LIGHTS_EVENT_SIGNAL_OFF, prv_guard_signal_left, state_hazard_signal);
+  FSM_ADD_GUARDED_TRANSITION(LIGHTS_EVENT_SIGNAL_OFF, prv_guard_signal_hazard, state_left_signal);
 }
 
 FSM_STATE_TRANSITION(state_right_signal) {
@@ -53,10 +50,8 @@ FSM_STATE_TRANSITION(state_right_signal) {
 }
 
 FSM_STATE_TRANSITION(state_hazard_right_signal) {
-  FSM_ADD_GUARDED_TRANSITION(LIGHTS_EVENT_SIGNAL_OFF, prv_guard_signal_hazard,
-                             state_right_signal);
-  FSM_ADD_GUARDED_TRANSITION(LIGHTS_EVENT_SIGNAL_OFF, prv_guard_signal_right,
-                             state_hazard_signal);
+  FSM_ADD_GUARDED_TRANSITION(LIGHTS_EVENT_SIGNAL_OFF, prv_guard_signal_hazard, state_right_signal);
+  FSM_ADD_GUARDED_TRANSITION(LIGHTS_EVENT_SIGNAL_OFF, prv_guard_signal_right, state_hazard_signal);
 }
 
 FSM_STATE_TRANSITION(state_hazard_signal) {
