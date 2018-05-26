@@ -1,5 +1,7 @@
 #pragma once
 // This module handles state transitions for signal lights. There are 6 states in total.
+// Since this module uses lights_blinker to create the blinking behaviour for the signal lights,
+// it will raise LIGHTS_EVENT_GPIO_ON and LIGHTS_EVENT_GPIO_OFF events.
 
 #include "event_queue.h"
 #include "fsm.h"
