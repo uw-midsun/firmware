@@ -9,8 +9,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "event_queue.h"
-#include "status.h"
 #include "soft_timer.h"
+#include "status.h"
 
 // How to much to increment/decrement in cm/s (m/s * 100)
 // Arbitrary default of ~1mph
@@ -19,10 +19,10 @@
 #define CRUISE_MAX_TARGET_CMS 2700
 
 typedef struct CruiseStorage {
-  volatile int16_t target_speed_cms;  // m/s * 100
-  volatile int16_t current_speed_cms; // From motor controllers
+  volatile int16_t target_speed_cms;   // m/s * 100
+  volatile int16_t current_speed_cms;  // From motor controllers
   int16_t offset_cms;
-  SoftTimerID repeat_timer; // Repeats offset while increment/decrement is held
+  SoftTimerID repeat_timer;  // Repeats offset while increment/decrement is held
   size_t repeat_counter;
 } CruiseStorage;
 

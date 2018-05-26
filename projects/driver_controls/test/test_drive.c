@@ -1,6 +1,6 @@
 #include "can.h"
-#include "delay.h"
 #include "cruise_fsm.h"
+#include "delay.h"
 #include "direction_fsm.h"
 #include "drive_output.h"
 #include "event_arbiter.h"

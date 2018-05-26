@@ -2,8 +2,8 @@
 #include "can.h"
 #include "can_msg_defs.h"
 #include "can_unpack.h"
-#include "misc.h"
 #include "input_event.h"
+#include "misc.h"
 
 static CruiseStorage s_cruise_storage;
 

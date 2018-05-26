@@ -1,9 +1,9 @@
 // Updates to the drive output module are driven by the update requested events
 
 #include "mechanical_brake_fsm.h"
+#include "drive_output.h"
 #include "event_arbiter.h"
 #include "input_event.h"
-#include "drive_output.h"
 #include "log.h"
 
 // Mechanical Brake FSM state definitions

@@ -21,14 +21,14 @@
 // The following require CAN to be initialized.
 
 // Send a TX message over CAN and RX it.
-#define MS_TEST_HELPER_CAN_TX_RX(tx_event, rx_event)           \
-  ({                                                           \
-    Event e = { 0, 0 };                                        \
-    MS_TEST_HELPER_AWAIT_EVENT(e);                             \
-    TEST_ASSERT_EQUAL((tx_event), e.id);                    \
+#define MS_TEST_HELPER_CAN_TX_RX(tx_event, rx_event)  \
+  ({                                                  \
+    Event e = { 0, 0 };                               \
+    MS_TEST_HELPER_AWAIT_EVENT(e);                    \
+    TEST_ASSERT_EQUAL((tx_event), e.id);              \
     TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e)); \
-    MS_TEST_HELPER_AWAIT_EVENT(e);                             \
-    TEST_ASSERT_EQUAL((rx_event), e.id);                    \
+    MS_TEST_HELPER_AWAIT_EVENT(e);                    \
+    TEST_ASSERT_EQUAL((rx_event), e.id);              \
     TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e)); \
   })
 

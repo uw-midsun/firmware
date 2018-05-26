@@ -1,15 +1,15 @@
 #include "can.h"
 #include "can_transmit.h"
 #include "cruise.h"
+#include "delay.h"
 #include "event_queue.h"
 #include "input_event.h"
 #include "interrupt.h"
+#include "log.h"
+#include "ms_test_helpers.h"
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
-#include "ms_test_helpers.h"
-#include "log.h"
-#include "delay.h"
 
 #define TEST_CRUISE_DEVICE_ID 1
 #define TEST_CRUISE_NUM_RX_HANDLERS 3

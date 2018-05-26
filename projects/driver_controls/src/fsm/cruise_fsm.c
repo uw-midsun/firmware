@@ -1,7 +1,7 @@
 #include "cruise_fsm.h"
-#include "input_event.h"
-#include "drive_output.h"
 #include "cruise.h"
+#include "drive_output.h"
+#include "input_event.h"
 
 // Retains target speed
 FSM_DECLARE_STATE(cruise_off);

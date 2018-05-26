@@ -27,4 +27,4 @@ The result of the event blocking is:
 * Direction FSM prevents Cruise FSM from entering cruise control state if not forward. Since changing direction requires activating the mechanical brake and the Cruise FSM has a transition to exit cruise on mechanical braking, we cannot change direction without exiting cruise.
 * Pedal FSM prevents Cruise FSM from entering cruise control state if braking.
 
-Note that this means cruise control can be entered while regen braking. We assume motor controller interface will ignore throttle position if the mechanical brake is detected.
+Note that we assume motor controller interface will ignore throttle position if the mechanical brake is detected.
