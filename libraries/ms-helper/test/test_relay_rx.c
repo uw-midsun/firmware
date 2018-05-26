@@ -49,7 +49,7 @@ static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckS
                                    uint16_t num_remaining, void *context) {
   (void)num_remaining;
   CANAckStatus *expected_status = context;
-  TEST_ASSERT_EQUAL(SYSTEM_CAN_MESSAGE_BATTERY_RELAY, msg_id);
+  TEST_ASSERT_EQUAL(SYSTEM_CAN_MESSAGE_BATTERY_RELAY_MAIN, msg_id);
   TEST_ASSERT_EQUAL(TEST_RELAY_CAN_DEVICE_ID, device);
   TEST_ASSERT_EQUAL(*expected_status, status);
   return STATUS_CODE_OK;
@@ -89,31 +89,31 @@ void teardown_test(void) {}
 void test_relay_rx_guards(void) {
   TestRelayRxHandlerCtx context = {
     .ret_code = STATUS_CODE_OK,
-    .expected_msg_id = SYSTEM_CAN_MESSAGE_BATTERY_RELAY,
+    .expected_msg_id = SYSTEM_CAN_MESSAGE_BATTERY_RELAY_MAIN,
     .expected_state = TEST_RELAY_RX_STATE_OPEN,
     .executed = false,
   };
-  RelayRxStorage relay_storage_a = {};
-  TEST_ASSERT_OK(relay_rx_configure_handler(&relay_storage_a, SYSTEM_CAN_MESSAGE_BATTERY_RELAY,
+  RelayRxStorage relay_storage_a = { 0 };
+  TEST_ASSERT_OK(relay_rx_configure_handler(&relay_storage_a, SYSTEM_CAN_MESSAGE_BATTERY_RELAY_MAIN,
                                             NUM_TEST_RELAY_RX_STATES, prv_relay_rx_handler,
                                             &context));
   // Fail to register duplicates.
-  RelayRxStorage relay_storage_b = {};
+  RelayRxStorage relay_storage_b = { 0 };
   TEST_ASSERT_EQUAL(
       STATUS_CODE_RESOURCE_EXHAUSTED,
-      relay_rx_configure_handler(&relay_storage_b, SYSTEM_CAN_MESSAGE_BATTERY_RELAY,
+      relay_rx_configure_handler(&relay_storage_b, SYSTEM_CAN_MESSAGE_BATTERY_RELAY_MAIN,
                                  NUM_TEST_RELAY_RX_STATES, prv_relay_rx_handler, &context));
 }
 
 void test_relay_rx(void) {
   TestRelayRxHandlerCtx context = {
     .ret_code = STATUS_CODE_OK,
-    .expected_msg_id = SYSTEM_CAN_MESSAGE_BATTERY_RELAY,
+    .expected_msg_id = SYSTEM_CAN_MESSAGE_BATTERY_RELAY_MAIN,
     .expected_state = TEST_RELAY_RX_STATE_OPEN,
     .executed = false,
   };
-  RelayRxStorage relay_storage = {};
-  TEST_ASSERT_OK(relay_rx_configure_handler(&relay_storage, SYSTEM_CAN_MESSAGE_BATTERY_RELAY,
+  RelayRxStorage relay_storage = { 0 };
+  TEST_ASSERT_OK(relay_rx_configure_handler(&relay_storage, SYSTEM_CAN_MESSAGE_BATTERY_RELAY_MAIN,
                                             NUM_TEST_RELAY_RX_STATES, prv_relay_rx_handler,
                                             &context));
 
@@ -125,27 +125,27 @@ void test_relay_rx(void) {
   };
 
   // Open.
-  CAN_TRANSMIT_BATTERY_RELAY(&req, TEST_RELAY_RX_STATE_OPEN);
+  CAN_TRANSMIT_BATTERY_RELAY_MAIN(&req, TEST_RELAY_RX_STATE_OPEN);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_RELAY_RX_CAN_TX, TEST_RELAY_RX_CAN_RX);
   TEST_ASSERT_TRUE(context.executed);
   context.executed = false;
 
   // Close.
   context.expected_state = TEST_RELAY_RX_STATE_CLOSE;
-  CAN_TRANSMIT_BATTERY_RELAY(&req, TEST_RELAY_RX_STATE_CLOSE);
+  CAN_TRANSMIT_BATTERY_RELAY_MAIN(&req, TEST_RELAY_RX_STATE_CLOSE);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_RELAY_RX_CAN_TX, TEST_RELAY_RX_CAN_RX);
   TEST_ASSERT_TRUE(context.executed);
   context.executed = false;
 
   // Invalid.
   expected_status = CAN_ACK_STATUS_INVALID;
-  CAN_TRANSMIT_BATTERY_RELAY(&req, NUM_TEST_RELAY_RX_STATES);
+  CAN_TRANSMIT_BATTERY_RELAY_MAIN(&req, NUM_TEST_RELAY_RX_STATES);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_RELAY_RX_CAN_TX, TEST_RELAY_RX_CAN_RX);
   TEST_ASSERT_FALSE(context.executed);
 
   // Fail to update relay.
   context.ret_code = STATUS_CODE_INTERNAL_ERROR;
-  CAN_TRANSMIT_BATTERY_RELAY(&req, TEST_RELAY_RX_STATE_CLOSE);
+  CAN_TRANSMIT_BATTERY_RELAY_MAIN(&req, TEST_RELAY_RX_STATE_CLOSE);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_RELAY_RX_CAN_TX, TEST_RELAY_RX_CAN_RX);
   TEST_ASSERT_TRUE(context.executed);
 }
