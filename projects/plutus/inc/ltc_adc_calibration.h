@@ -7,7 +7,7 @@
 
 typedef struct {
   int32_t voltage;  // Voltage in microvolts
-  int32_t current;  // Voltage in amps
+  int32_t current;  // Voltage in milliamps
 } LTCCalibrationValue;
 
 // User-defined points for two-point calibration
