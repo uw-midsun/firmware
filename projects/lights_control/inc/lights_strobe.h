@@ -16,4 +16,3 @@ StatusCode lights_strobe_init(LightsStrobe *lights_strobe, LightsBlinkerDuration
 
 // Processes LIGHTS_EVENT_STROBE_ON and LIGHTS_EVENT_STROBE_OFF events.
 StatusCode lights_strobe_process_event(LightsStrobe *lights_strobe, const Event *event);
-

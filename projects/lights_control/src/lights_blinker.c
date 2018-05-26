@@ -1,5 +1,4 @@
 #include <stddef.h>
-#include <stdio.h>
 
 #include "event_queue.h"
 #include "soft_timer.h"

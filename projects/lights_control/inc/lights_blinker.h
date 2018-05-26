@@ -41,4 +41,3 @@ StatusCode lights_blinker_deactivate(LightsBlinker *blinker);
 
 // Only used for syncing purposes. Reschedules the timer, sets the state to ON.
 StatusCode lights_blinker_sync_on(LightsBlinker *blinker);
-
