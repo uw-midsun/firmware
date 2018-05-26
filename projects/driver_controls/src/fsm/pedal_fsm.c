@@ -1,6 +1,4 @@
 // Updates to the drive output module are driven by the update requested events
-// TODO: is this module really necessary? The drive output event seems a little unnecessary - we
-// could probably just use event data since all transitions are now through pedal events
 
 #include "pedal_fsm.h"
 #include "drive_output.h"
@@ -42,6 +40,7 @@ FSM_STATE_TRANSITION(state_accel) {
 
 static void prv_update_drive_output(void) {
   ThrottlePosition position = { 0 };
+  // TODO(ELEC-431): Could just remove UPDATE_REQUESTED transitions and use the actual events + data
   throttle_get_position(throttle_global(), &position);
 
   const int16_t zone_multiplier[NUM_THROTTLE_ZONES] = {

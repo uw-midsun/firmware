@@ -14,7 +14,7 @@ FSM_DECLARE_STATE(cruise_on_brake);
 FSM_STATE_TRANSITION(cruise_off) {
   FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, cruise_off);
 
-  // TODO: guard transition if target speed is 0 or below minimum?
+  // TODO(ELEC-431): guard transition if target speed is 0 or below minimum?
   FSM_ADD_TRANSITION(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME, cruise_on);
 }
 

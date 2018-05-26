@@ -121,8 +121,6 @@ void test_drive_basic(void) {
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
   prv_dump_fsms();
 
-  // TODO: verify current states?
-
   delay_ms(DRIVE_OUTPUT_BROADCAST_MS);
   prv_clock_update_request();
 }
