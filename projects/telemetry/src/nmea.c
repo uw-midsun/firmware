@@ -1,6 +1,8 @@
 #include "nmea.h"
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "log.h"
@@ -100,43 +102,47 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, nmea_gga_sentence *result) 
     // Example message:
     // $GPGGA,053740.000,2503.6319,N,12136.0099,E,1,08,1.1,63.8,M,15.2,M,,0000*64
 
-    char *saveptr;
-    bool is_double_delimiter = false;
+    char *rx_arr_copy = strdup(rx_arr);
 
-    is_double_delimiter = strtok_d(rx_arr, ',', &saveptr, &is_double_delimiter);
-    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
-      sscanf(saveptr, "%2d%2d%2d.%3d", (int *)&result->time.hh, (int *)&result->time.mm,
+    // strsep modifies original pointer, so we have to keep a copy
+    char *rx_arr_copy_pointer_backup = rx_arr_copy;
+
+    // Get rid of $GPGGA
+    char *token = strsep(&rx_arr_copy, ",");
+
+    token = strsep(&rx_arr_copy, ",");
+    if (token != NULL) {
+      sscanf(token, "%2d%2d%2d.%3d", (int *)&result->time.hh, (int *)&result->time.mm,
              (int *)&result->time.ss, (int *)&result->time.sss);
     }
 
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
-      sscanf(saveptr, "%2d%2d.%4d", (int *)&result->latitude.degrees,
+    token = strsep(&rx_arr_copy, ",");
+    if (token != NULL) {
+      sscanf(token, "%2d%2d.%4d", (int *)&result->latitude.degrees,
              (int *)&result->latitude.minutes, (int *)&result->latitude.fraction);
     }
 
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-
-    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
-      result->north_south = saveptr[0];
+    token = strsep(&rx_arr_copy, ",");
+    if (token != NULL) {
+      result->north_south = token[0];
     }
 
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
-      sscanf(saveptr, "%3d%2d.%4d", (int *)&result->longitude.degrees,
+    token = strsep(&rx_arr_copy, ",");
+    if (token != NULL) {
+      sscanf(token, "%3d%2d.%4d", (int *)&result->longitude.degrees,
              (int *)&result->longitude.minutes, (int *)&result->longitude.fraction);
     }
 
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
-      result->east_west = saveptr[0];
+    token = strsep(&rx_arr_copy, ",");
+    if (token != NULL) {
+      result->east_west = token[0];
     }
 
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
+    token = strsep(&rx_arr_copy, ",");
+    if (token != NULL) {
       uint8_t temp_position_fix = 0;
 
-      sscanf(saveptr, "%d", (int *)&temp_position_fix);
+      sscanf(token, "%d", (int *)&temp_position_fix);
 
       // Valid position fix defined by 1, 2, or 6 as described in
       // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
@@ -156,45 +162,50 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, nmea_gga_sentence *result) 
           break;
       }
     }
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
-      sscanf(saveptr, "%d", (int *)&result->satellites_used);
+
+    token = strsep(&rx_arr_copy, ",");
+
+    if (token != NULL) {
+      sscanf(token, "%d", (int *)&result->satellites_used);
     }
 
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
-      sscanf(saveptr, "%d.%d", (int *)&result->hdop_1, (int *)&result->hdop_2);
+    token = strsep(&rx_arr_copy, ",");
+    if (token != NULL) {
+      sscanf(token, "%d.%d", (int *)&result->hdop_1, (int *)&result->hdop_2);
     }
 
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
-      sscanf(saveptr, "%d.%d", (int *)&result->msl_altitude_1, (int *)&result->msl_altitude_2);
+    token = strsep(&rx_arr_copy, ",");
+    if (token != NULL) {
+      sscanf(token, "%d.%d", (int *)&result->msl_altitude_1, (int *)&result->msl_altitude_2);
     }
 
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
-      result->units_msl_altitude = (uint8_t)saveptr[0];
+    token = strsep(&rx_arr_copy, ",");
+    if (token != NULL) {
+      result->units_msl_altitude = (uint8_t)token[0];
     }
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
-      sscanf(saveptr, "%d.%d", (int *)&result->geoid_seperation_1,
+
+    token = strsep(&rx_arr_copy, ",");
+    if (token != NULL) {
+      sscanf(token, "%d.%d", (int *)&result->geoid_seperation_1,
              (int *)&result->geoid_seperation_2);
     }
 
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
-      result->units_geoid_seperation = (uint8_t)saveptr[0];
+    token = strsep(&rx_arr_copy, ",");
+    if (token != NULL) {
+      result->units_geoid_seperation = (uint8_t)token[0];
     }
 
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
-      sscanf(saveptr, "%d", (int *)&result->adc);
+    token = strsep(&rx_arr_copy, ",");
+    if (token != NULL) {
+      sscanf(token, "%d", (int *)&result->adc);
     }
 
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-    if (!is_double_delimiter && saveptr && strlen(saveptr) > 0) {
-      sscanf(saveptr, "%d", (int *)&result->drs);
+    token = strsep(&rx_arr_copy, ",");
+    if (token != NULL) {
+      sscanf(token, "%d", (int *)&result->drs);
     }
+
+    free(rx_arr_copy_pointer_backup);
     return STATUS_CODE_OK;
   }
   return status_msg(STATUS_CODE_INVALID_ARGS, "NMEA: Incorrect message ID received\n");
@@ -221,23 +232,31 @@ StatusCode nmea_get_vtg_sentence(const char *rx_arr, nmea_vtg_sentence *result) 
     // Parses NMEA message
     // We only need the direction and speed
 
-    char *saveptr;
-    bool is_double_delimiter = false;
+    char *rx_arr_copy = strdup(rx_arr);
 
-    is_double_delimiter = strtok_d(rx_arr, ',', &saveptr, &is_double_delimiter);
-    sscanf(saveptr, "%d.%d", (int *)&result->measure_heading_degrees_1,
-           (int *)&result->measure_heading_degrees_2);
+    // strsep modifies original pointer, so we have to keep a copy
+    char *rx_arr_copy_pointer_backup = rx_arr_copy;
+    char *token;
+
+    // First call is to discard $GPVTG
+    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy, ",");
+    if (token != NULL) {
+      sscanf(token, "%d.%d", (int *)&result->measure_heading_degrees_1,
+             (int *)&result->measure_heading_degrees_2);
+    }
 
     // Just discarding data we don't need
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-    is_double_delimiter = strtok_d(saveptr, ',', &saveptr, &is_double_delimiter);
-    if (!is_double_delimiter) {
-      sscanf(saveptr, "%d.%d", (int *)&result->speed_kmh_1, (int *)&result->speed_kmh_2);
+    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy, ",");
+    if (token != NULL) {
+      sscanf(token, "%d.%d", (int *)&result->speed_kmh_1, (int *)&result->speed_kmh_2);
     }
+    free(rx_arr_copy_pointer_backup);
     return STATUS_CODE_OK;
   }
 

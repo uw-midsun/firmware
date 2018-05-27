@@ -62,6 +62,7 @@ void test_gps_nmea_vtg(void) {
   nmea_vtg_sentence vtg = { 0 };
 
   TEST_ASSERT_TRUE(status_ok(nmea_get_vtg_sentence(input, &vtg)));
+
   TEST_ASSERT_TRUE(vtg.measure_heading_degrees_1 == 79);
   TEST_ASSERT_TRUE(vtg.measure_heading_degrees_2 == 65);
   TEST_ASSERT_TRUE(vtg.speed_kmh_1 == 5);
