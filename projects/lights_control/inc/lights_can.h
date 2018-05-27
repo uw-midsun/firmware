@@ -26,4 +26,4 @@ typedef struct LightsCanSettings {
 } LightsCanSettings;
 
 // Initializes the lights_can module.
-StatusCode lights_can_init(const LightsCanSettings *lights_can, LightsCanStorage *storage);
+StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *lights_can);

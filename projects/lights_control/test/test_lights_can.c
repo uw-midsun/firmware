@@ -45,7 +45,7 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
   event_queue_init();
-  TEST_ASSERT_OK(lights_can_init(&s_test_settings, &s_test_storage));
+  TEST_ASSERT_OK(lights_can_init(&s_test_storage, &s_test_settings));
 }
 
 void teardown_test(void) {}

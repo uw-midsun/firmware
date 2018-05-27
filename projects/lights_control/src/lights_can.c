@@ -60,7 +60,7 @@ static StatusCode prv_rx_horn_handler(const CANMessage *msg, void *context,
                      LIGHTS_EVENT_GPIO_PERIPHERAL_HORN);
 }
 
-StatusCode lights_can_init(const LightsCanSettings *settings, LightsCanStorage *storage) {
+StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *settings) {
   CANSettings can_settings = {
     .device_id = settings->device_id,
     .bitrate = settings->bitrate,
