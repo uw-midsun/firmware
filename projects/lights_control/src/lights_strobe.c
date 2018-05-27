@@ -1,10 +1,11 @@
 #include "lights_strobe.h"
 
-StatusCode lights_strobe_init(LightsStrobe *lights_strobe, LightsBlinkerDuration blinker_duration) {
+StatusCode lights_strobe_init(LightsStrobeStorage *lights_strobe,
+                              LightsBlinkerDuration blinker_duration) {
   return lights_blinker_init(&lights_strobe->blinker, blinker_duration);
 }
 
-StatusCode lights_strobe_process_event(LightsStrobe *lights_strobe, const Event *event) {
+StatusCode lights_strobe_process_event(LightsStrobeStorage *lights_strobe, const Event *event) {
   if (event->id == LIGHTS_EVENT_STROBE_ON) {
     status_ok_or_return(
         lights_blinker_activate(&lights_strobe->blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_STROBE));

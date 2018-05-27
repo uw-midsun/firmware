@@ -9,7 +9,7 @@
 
 #define TEST_LIGHTS_STROBE_DURATION 300
 
-static LightsStrobe s_lights_strobe = { 0 };
+static LightsStrobeStorage s_lights_strobe = { 0 };
 
 void setup_test(void) {
   interrupt_init();
@@ -18,7 +18,7 @@ void setup_test(void) {
   lights_strobe_init(&s_lights_strobe, TEST_LIGHTS_STROBE_DURATION);
 }
 
-void teardown_test() {}
+void teardown_test(void) {}
 
 // We turn strobe on, make sure it blinks, and turn it off again.
 void test_lights_strobe_turn_on_off() {
