@@ -107,10 +107,10 @@
     status;                                                                              \
   })
 
-#define CAN_TRANSMIT_LIGHTS_STATES(light_id_u8, light_state_u8)    \
+#define CAN_TRANSMIT_LIGHT_STATE(light_id_u8, light_state_u8)    \
   ({                                                               \
     CANMessage msg = { 0 };                                        \
-    CAN_PACK_LIGHTS_STATES(&msg, (light_id_u8), (light_state_u8)); \
+    CAN_PACK_LIGHT_STATE(&msg, (light_id_u8), (light_state_u8)); \
     StatusCode status = can_transmit(&msg, NULL);                  \
     status;                                                        \
   })

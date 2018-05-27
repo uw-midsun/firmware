@@ -3,6 +3,7 @@
 // Every event is post-fixed by the module that processes it.
 // i.e. LIGHTS_EVENT_GPIO* is used by the lights_gpio module.
 
+// TODO(ELEC-372): Rename this file to lights_event.h
 typedef enum {
   // Used internally by the can module.
   LIGHTS_EVENT_CAN_RX = 0,
@@ -19,7 +20,7 @@ typedef enum {
   LIGHTS_EVENT_STROBE_ON,
   // Event processed by lights_sync module.
   LIGHTS_EVENT_SYNC,
-  LIGHTS_EVENT_BPS,
+  LIGHTS_EVENT_BPS_HEARTBEAT,
   NUM_LIGHTS_EVENTS
 } LightsEvent;
 

@@ -19,9 +19,10 @@ typedef struct LightsCanStorage {
 typedef struct LightsCanSettings {
   uint16_t device_id;
   bool loopback;
-  uint8_t generic_light_lookup[NUM_LIGHTS_GENERIC_TYPES];
+  LightsEventGpioPeripheral peripheral_lookup[NUM_EE_LIGHT_TYPES];
   GPIOAddress rx_addr;
   GPIOAddress tx_addr;
+  CANHwBitrate bitrate;
 } LightsCanSettings;
 
 // Initializes the lights_can module.
