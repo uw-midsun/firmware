@@ -108,11 +108,11 @@
   })
 
 #define CAN_TRANSMIT_LIGHT_STATE(light_id_u8, light_state_u8)    \
-  ({                                                               \
-    CANMessage msg = { 0 };                                        \
+  ({                                                             \
+    CANMessage msg = { 0 };                                      \
     CAN_PACK_LIGHT_STATE(&msg, (light_id_u8), (light_state_u8)); \
-    StatusCode status = can_transmit(&msg, NULL);                  \
-    status;                                                        \
+    StatusCode status = can_transmit(&msg, NULL);                \
+    status;                                                      \
   })
 
 #define CAN_TRANSMIT_HORN(state_u8)               \

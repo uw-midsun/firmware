@@ -13,7 +13,7 @@ const LightsCanSettings s_settings_rear = {
   },
   // clang-format on
   .loopback = false,
-  // TODO (ELEC-372): Change this once we decide a network bitrate.
+  // TODO(ELEC-372): Change this once we decide a network bitrate.
   .bitrate = CAN_HW_BITRATE_125KBPS,
   .rx_addr = { .port = GPIO_PORT_A, .pin = 11 },
   .tx_addr = { .port = GPIO_PORT_A, .pin = 12 },
@@ -30,7 +30,7 @@ const LightsCanSettings s_settings_front = {
   },
   // clang-format on
   .loopback = false,
-  // TODO (ELEC-372): Change this once we decide a network bitrate.
+  // TODO(ELEC-372): Change this once we decide a network bitrate.
   .bitrate = CAN_HW_BITRATE_125KBPS,
   .rx_addr = { .port = GPIO_PORT_A, .pin = 11 },
   .tx_addr = { .port = GPIO_PORT_A, .pin = 12 },

@@ -24,7 +24,7 @@ static StatusCode prv_rx_signal_handler(const CANMessage *msg, void *context,
 
 // RX handler for lights states messages.
 static StatusCode prv_rx_lights_handler(const CANMessage *msg, void *context,
-                                                CANAckStatus *ack_reply) {
+                                        CANAckStatus *ack_reply) {
   LightsCanSettings *settings = (LightsCanSettings *)context;
   uint8_t light_type = 0;
   uint8_t state = 0;
@@ -45,7 +45,7 @@ static StatusCode prv_rx_sync_handler(const CANMessage *msg, void *context,
 
 // RX handler for BPS heartbeat.
 static StatusCode prv_rx_bps_heartbeat_handler(const CANMessage *msg, void *context,
-                                           CANAckStatus *ack_reply) {
+                                               CANAckStatus *ack_reply) {
   uint8_t status = 0;
   status_ok_or_return(CAN_UNPACK_BPS_HEARTBEAT(msg, &status));
   return event_raise(LIGHTS_EVENT_BPS_HEARTBEAT, status);
@@ -78,12 +78,12 @@ StatusCode lights_can_init(const LightsCanSettings *settings, LightsCanStorage *
   // Initialize CAN RX handlers.
   status_ok_or_return(
       can_register_rx_handler(SYSTEM_CAN_MESSAGE_SIGNAL_LIGHT_STATE, prv_rx_signal_handler, NULL));
-  status_ok_or_return(can_register_rx_handler(SYSTEM_CAN_MESSAGE_LIGHT_STATE,
-                                              prv_rx_lights_handler, (void *)settings));
+  status_ok_or_return(can_register_rx_handler(SYSTEM_CAN_MESSAGE_LIGHT_STATE, prv_rx_lights_handler,
+                                              (void *)settings));
   status_ok_or_return(
       can_register_rx_handler(SYSTEM_CAN_MESSAGE_LIGHTS_SYNC, prv_rx_sync_handler, NULL));
-  status_ok_or_return(
-      can_register_rx_handler(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT, prv_rx_bps_heartbeat_handler, NULL));
+  status_ok_or_return(can_register_rx_handler(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT,
+                                              prv_rx_bps_heartbeat_handler, NULL));
   status_ok_or_return(can_register_rx_handler(SYSTEM_CAN_MESSAGE_HORN, prv_rx_horn_handler, NULL));
   return STATUS_CODE_OK;
 }

@@ -3,13 +3,13 @@
 #include "can_pack.h"
 #include "event_queue.h"
 #include "interrupt.h"
+#include "ms_test_helpers.h"
 #include "status.h"
 #include "test_helpers.h"
-#include "ms_test_helpers.h"
 #include "unity.h"
 
-#include "exported_enums.h"
 #include "can_transmit.h"
+#include "exported_enums.h"
 #include "lights_can.h"
 #include "lights_events.h"
 
