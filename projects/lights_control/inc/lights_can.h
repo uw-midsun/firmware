@@ -1,5 +1,8 @@
 #pragma once
 
+// This module is responsible for receiving various CAN messages and in return raising events to be
+// processed by other modules.
+
 #include "can.h"
 #include "exported_enums.h"
 #include "lights_events.h"
