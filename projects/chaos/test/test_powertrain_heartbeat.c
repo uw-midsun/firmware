@@ -19,6 +19,7 @@
 #include "interrupt.h"
 #include "log.h"
 #include "misc.h"
+#include "ms_test_helpers.h"
 #include "soft_timer.h"
 #include "status.h"
 #include "test_helpers.h"
@@ -28,37 +29,8 @@
 
 static CANStorage s_storage;
 static CANRxHandler s_rx_handlers[NUM_CAN_RX_HANDLERS];
-
-static void prv_transmit(uint16_t times) {
-  Event e = { 0 };
-  StatusCode status = NUM_STATUS_CODES;
-  for (uint16_t i = 0; i < times; i++) {
-    // TX
-    do {
-      status = event_process(&e);
-    } while (status == STATUS_CODE_EMPTY);
-    TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_TX, e.id);
-    TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-    // RX
-    do {
-      status = event_process(&e);
-    } while (status == STATUS_CODE_EMPTY);
-    TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_RX, e.id);
-    TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-    // TX
-    do {
-      status = event_process(&e);
-    } while (status == STATUS_CODE_EMPTY);
-    TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_TX, e.id);
-    TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-    // RX
-    do {
-      status = event_process(&e);
-    } while (status == STATUS_CODE_EMPTY);
-    TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_RX, e.id);
-    TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-  }
-}
+static Event s_tx_event = { CHAOS_EVENT_CAN_TX, 0 };
+static Event s_rx_event = { CHAOS_EVENT_CAN_RX, 0 };
 
 void setup_test(void) {
   interrupt_init();
@@ -68,7 +40,7 @@ void setup_test(void) {
 
   CANSettings settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
-    .bitrate = CAN_HW_BITRATE_125KBPS,
+    .bitrate = CAN_HW_BITRATE_250KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,
     .tx_event = CHAOS_EVENT_CAN_TX,
     .fault_event = CHAOS_EVENT_CAN_FAULT,
@@ -91,12 +63,12 @@ void test_powertrain_heartbeat_watchdog(void) {
   TEST_ASSERT_TRUE(powertrain_heartbeat_process_event(&e));
 
   // Send 3 times (all three will have ack failures).
-  prv_transmit(3);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
 
   // Watchdog should activate.
-  do {
-    status = event_process(&e);
-  } while (status == STATUS_CODE_EMPTY);
+  MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHAOS_EVENT_SEQUENCE_EMERGENCY, e.id);
 
   // No more should activate.
@@ -110,7 +82,7 @@ void test_stop_heartbeat(void) {
   e.id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE;
   TEST_ASSERT_TRUE(powertrain_heartbeat_process_event(&e));
 
-  prv_transmit(1);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
 
   e.id = CHAOS_EVENT_SEQUENCE_EMERGENCY;
   TEST_ASSERT_TRUE(powertrain_heartbeat_process_event(&e));
@@ -131,9 +103,7 @@ void test_kick_watchdog(void) {
   e.id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE;
   TEST_ASSERT_TRUE(powertrain_heartbeat_process_event(&e));
 
-  do {
-    status = event_process(&e);
-  } while (status == STATUS_CODE_EMPTY);
+  MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_TX, e.id);
   TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
 
@@ -144,28 +114,16 @@ void test_kick_watchdog(void) {
   msg.source_id = SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER;
   TEST_ASSERT_OK(can_ack_handle_msg(&s_storage.ack_requests, &msg));
 
-  do {
-    status = event_process(&e);
-  } while (status == STATUS_CODE_EMPTY);
+  MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_RX, e.id);
   TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-  do {
-    status = event_process(&e);
-  } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_TX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-  do {
-    status = event_process(&e);
-  } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_RX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  MS_TEST_HELPER_CAN_TX_RX(s_tx_event, s_rx_event);
 
   // Skip the two messages that should send
-  prv_transmit(2);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
 
   // Watchdog should trigger.
-  do {
-    status = event_process(&e);
-  } while (status == STATUS_CODE_EMPTY);
+  MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHAOS_EVENT_SEQUENCE_EMERGENCY, e.id);
 }

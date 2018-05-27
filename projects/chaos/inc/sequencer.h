@@ -30,6 +30,7 @@ typedef struct SequencerStorage {
   const SequencerEventPair *events_it;
   const SequencerEventPair *events_end;
   bool awaiting_response;
+  bool started;
 } SequencerStorage;
 
 // Initializes |storage| with the |event_array| of |size|.

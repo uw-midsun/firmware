@@ -20,6 +20,7 @@ StatusCode sequencer_init(SequencerStorage *storage, const SequencerEventPair *e
   storage->events_end = storage->events_it + size;
   if (memcmp(&storage->events_it->response, &s_sequencer_no_op_event, sizeof(Event)) != 0) {
     storage->awaiting_response = true;
+    storage->started = true;
   }
   return event_raise(storage->events_it->raise.id, storage->events_it->raise.data);
 }
@@ -39,6 +40,10 @@ StatusCode sequencer_advance(SequencerStorage *storage, const Event *last_event)
   } else {
     // Check if |last_event| is the same as the previous |raise| event.
     if (memcmp(last_event, &storage->events_it->raise, sizeof(Event)) != 0) {
+      // Allow old events to flush if we haven't seen the first event from the current sequence.
+      if (!storage->started) {
+        return STATUS_CODE_OK;
+      }
       return status_code(STATUS_CODE_INTERNAL_ERROR);
     }
     // Check if |response| is empty (|s_sequencer_no_op_event|).
@@ -52,6 +57,7 @@ StatusCode sequencer_advance(SequencerStorage *storage, const Event *last_event)
   const SequencerEventPair *addr = storage->events_it;
   storage->events_it++;
 
+  storage->started = true;
   if (sequencer_complete(storage)) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }

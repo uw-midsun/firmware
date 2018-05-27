@@ -10,6 +10,7 @@
 #include "can_transmit.h"
 #include "chaos_events.h"
 #include "event_queue.h"
+#include "exported_enums.h"
 #include "fsm.h"
 #include "misc.h"
 #include "relay_id.h"
@@ -106,13 +107,13 @@ static void prv_relay_transmit(RelayId id, RelayState state, const CANAckRequest
 static void prv_opening(FSM *fsm, const Event *e, void *context) {
   RelayFsmCtx *relay_ctx = context;
   relay_ctx->ack_ctx.event_id = CHAOS_EVENT_RELAY_OPENED;
-  prv_relay_transmit(relay_ctx->ack_ctx.id, RELAY_STATE_OPEN, &relay_ctx->request);
+  prv_relay_transmit(relay_ctx->ack_ctx.id, EE_CHAOS_CMD_RELAY_STATE_OPEN, &relay_ctx->request);
 }
 
 static void prv_closing(FSM *fsm, const Event *e, void *context) {
   RelayFsmCtx *relay_ctx = context;
   relay_ctx->ack_ctx.event_id = CHAOS_EVENT_RELAY_CLOSED;
-  prv_relay_transmit(relay_ctx->ack_ctx.id, RELAY_STATE_CLOSE, &relay_ctx->request);
+  prv_relay_transmit(relay_ctx->ack_ctx.id, EE_CHAOS_CMD_RELAY_STATE_CLOSE, &relay_ctx->request);
 }
 
 void relay_fsm_init(void) {

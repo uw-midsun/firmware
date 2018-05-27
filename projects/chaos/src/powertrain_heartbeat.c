@@ -31,7 +31,7 @@ static void prv_hb_watchdog(SoftTimerID timer_id, void *context) {
   (void)timer_id;
   (void)context;
   s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
-  event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, 0);
+  event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_EMERGENCY, 0);
   if (s_interval_id != SOFT_TIMER_INVALID_TIMER) {
     soft_timer_cancel(s_interval_id);
     s_interval_id = SOFT_TIMER_INVALID_TIMER;
