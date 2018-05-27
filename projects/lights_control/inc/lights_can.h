@@ -1,23 +1,10 @@
 #pragma once
 
 #include "can.h"
+#include "exported_enums.h"
 #include "lights_events.h"
 
-#define LIGHTS_CAN_NUM_RX_HANDLERS 1
-
-typedef enum {
-  LIGHTS_CAN_ACTION_SIGNAL_RIGHT = 0,
-  LIGHTS_CAN_ACTION_SIGNAL_LEFT,
-  LIGHTS_CAN_ACTION_SIGNAL_HAZARD,
-  LIGHTS_CAN_ACTION_HORN,
-  LIGHTS_CAN_ACTION_HIGH_BEAMS,
-  LIGHTS_CAN_ACTION_LOW_BEAMS,
-  LIGHTS_CAN_ACTION_DRL,
-  LIGHTS_CAN_ACTION_BRAKES,
-  LIGHTS_CAN_ACTION_STROBE,
-  LIGHTS_CAN_ACTION_SYNC,
-  NUM_LIGHTS_CAN_ACTIONS_ID
-} LightsCanActionID;
+#define LIGHTS_CAN_NUM_RX_HANDLERS 5
 
 // User uses this instance to provide storage for the module.
 typedef struct LightsCanStorage {
@@ -29,8 +16,7 @@ typedef struct LightsCanStorage {
 typedef struct LightsCanSettings {
   uint16_t device_id;
   bool loopback;
-  uint8_t event_data_lookup[NUM_LIGHTS_CAN_ACTIONS_ID];
-  LightsEvent event_lookup[NUM_LIGHTS_CAN_ACTIONS_ID][2];
+  uint8_t generic_light_lookup[NUM_LIGHTS_GENERIC_TYPES];
   GPIOAddress rx_addr;
   GPIOAddress tx_addr;
 } LightsCanSettings;

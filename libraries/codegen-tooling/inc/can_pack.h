@@ -70,11 +70,20 @@
                     SYSTEM_CAN_MESSAGE_MOTOR_CONTROLS, 8, (throttle_u16), (direction_u16), \
                     (cruise_control_u16), (mechanical_brake_state_u16))
 
-#define CAN_PACK_LIGHTS_STATES(msg_ptr, light_id_u8, light_state_u8)                               \
-  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, SYSTEM_CAN_MESSAGE_LIGHTS_STATES, \
-                   2, (light_id_u8), (light_state_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,   \
-                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                  \
-                   CAN_PACK_IMPL_EMPTY)
+#define CAN_PACK_LIGHTS_GENERIC_TYPES(msg_ptr, light_id_u8, light_state_u8)                     \
+  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,                                \
+                   SYSTEM_CAN_MESSAGE_LIGHTS_GENERIC_TYPES, 2, (light_id_u8), (light_state_u8), \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,               \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
+
+#define CAN_PACK_LIGHTS_SIGNAL_STATES(msg_ptr, light_sig_type_u8, light_state_u8)              \
+  can_pack_impl_u8(                                                                            \
+      (msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, SYSTEM_CAN_MESSAGE_LIGHTS_SIGNAL_TYPES, 2, \
+      (light_sig_type_u8), (light_state_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,         \
+      CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
+
+#define CAN_PACK_LIGHTS_SYNC(msg_ptr) \
+  can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_LIGHTS_REAR, SYSTEM_CAN_MESSAGE_LIGHTS_SYNC)
 
 #define CAN_PACK_HORN(msg_ptr, state_u8)                                                      \
   can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, SYSTEM_CAN_MESSAGE_HORN, 1,  \

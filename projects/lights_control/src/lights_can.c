@@ -5,26 +5,62 @@
 #include "event_queue.h"
 #include "status.h"
 
+#include "exported_enums.h"
 #include "lights_can.h"
 #include "lights_events.h"
 
-// RX handler function.
-static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
-  const LightsCanSettings *settings = (const LightsCanSettings *)context;
-  // Unpacks the message, and raises events.
-  LightsCanActionID action_id = 0;
-  uint8_t data = 0;
-  CAN_UNPACK_LIGHTS_STATES(msg, (uint8_t *)&action_id, &data);
-  if (action_id >= NUM_LIGHTS_CAN_ACTIONS_ID) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "Unsupported lights action.");
+// RX handler for signal type events.
+static StatusCode prv_rx_signal_handler(const CANMessage *msg, void *context,
+                                        CANAckStatus *ack_reply) {
+  uint8_t signal_type = 0;
+  uint8_t state = 0;
+  status_ok_or_return(CAN_UNPACK_LIGHTS_SIGNAL_TYPES(msg, &signal_type, &state));
+  if (signal_type >= NUM_LIGHTS_SIGNAL_TYPES) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Unsupported signals type.");
   }
-  status_ok_or_return(
-      event_raise(settings->event_lookup[action_id][data], settings->event_data_lookup[action_id]));
-  return STATUS_CODE_OK;
+  return event_raise((state) ? LIGHTS_EVENT_SIGNAL_ON : LIGHTS_EVENT_SIGNAL_OFF,
+                     (LightsEventSignalMode)signal_type);
+}
+
+// RX handler for generic lights.
+static StatusCode prv_rx_generic_lights_handler(const CANMessage *msg, void *context,
+                                                CANAckStatus *ack_reply) {
+  LightsCanSettings *settings = (LightsCanSettings *)context;
+  uint8_t light_type = 0;
+  uint8_t state = 0;
+  status_ok_or_return(CAN_UNPACK_LIGHTS_GENERIC_TYPES(msg, &light_type, &state));
+  if (light_type >= NUM_LIGHTS_GENERIC_TYPES) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Unsupported generic light type.");
+  }
+  return event_raise((state) ? LIGHTS_EVENT_GPIO_ON : LIGHTS_EVENT_GPIO_OFF,
+                     (LightsEventSignalMode)settings->generic_light_lookup[light_type]);
+}
+
+// RX handler for sync.
+static StatusCode prv_rx_sync_handler(const CANMessage *msg, void *context,
+                                      CANAckStatus *ack_reply) {
+  status_ok_or_return(CAN_UNPACK_LIGHTS_SYNC(msg));
+  return event_raise(LIGHTS_EVENT_SYNC, 0);
+}
+
+// RX handler for BPS faults.
+static StatusCode prv_rx_bps_fault_handler(const CANMessage *msg, void *context,
+                                           CANAckStatus *ack_reply) {
+  uint8_t status = 0;
+  status_ok_or_return(CAN_UNPACK_BPS_HEARTBEAT(msg, &status));
+  return event_raise(LIGHTS_EVENT_BPS, status);
+}
+
+// RX handler for horn.
+static StatusCode prv_rx_horn_handler(const CANMessage *msg, void *context,
+                                      CANAckStatus *ack_reply) {
+  uint8_t state = 0;
+  status_ok_or_return(CAN_UNPACK_HORN(msg, &state));
+  return event_raise((state) ? LIGHTS_EVENT_GPIO_ON : LIGHTS_EVENT_GPIO_OFF,
+                     LIGHTS_EVENT_GPIO_PERIPHERAL_HORN);
 }
 
 StatusCode lights_can_init(const LightsCanSettings *settings, LightsCanStorage *storage) {
-  CANMessageID msg_id = SYSTEM_CAN_MESSAGE_LIGHTS_STATES;
   CANSettings can_settings = {
     .device_id = settings->device_id,
     .bitrate = CAN_HW_BITRATE_125KBPS,
@@ -39,7 +75,15 @@ StatusCode lights_can_init(const LightsCanSettings *settings, LightsCanStorage *
   status_ok_or_return(can_init(&can_settings, &storage->can_storage, storage->rx_handlers,
                                LIGHTS_CAN_NUM_RX_HANDLERS));
 
-  // Initialize CAN RX handler.
-  status_ok_or_return(can_register_rx_handler(msg_id, prv_rx_handler, (void *)settings));
+  // Initialize CAN RX handlers.
+  status_ok_or_return(
+      can_register_rx_handler(SYSTEM_CAN_MESSAGE_LIGHTS_SIGNAL_TYPES, prv_rx_signal_handler, NULL));
+  status_ok_or_return(can_register_rx_handler(SYSTEM_CAN_MESSAGE_LIGHTS_GENERIC_TYPES,
+                                              prv_rx_generic_lights_handler, (void *)settings));
+  status_ok_or_return(
+      can_register_rx_handler(SYSTEM_CAN_MESSAGE_LIGHTS_SYNC, prv_rx_sync_handler, NULL));
+  status_ok_or_return(
+      can_register_rx_handler(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT, prv_rx_bps_fault_handler, NULL));
+  status_ok_or_return(can_register_rx_handler(SYSTEM_CAN_MESSAGE_HORN, prv_rx_horn_handler, NULL));
   return STATUS_CODE_OK;
 }
