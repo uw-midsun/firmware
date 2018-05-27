@@ -112,14 +112,14 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, nmea_gga_sentence *result) 
 
     token = strsep(&rx_arr_copy, ",");
     if (token != NULL) {
-      sscanf(token, "%2d%2d%2d.%3d", (int *)&result->time.hh, (int *)&result->time.mm,
-             (int *)&result->time.ss, (int *)&result->time.sss);
+      sscanf(token, "%2" SCNd8 "%2" SCNd8 "%2" SCNd8 ".%3" SCNd16, &result->time.hh,
+             &result->time.mm, &result->time.ss, &result->time.sss);
     }
 
     token = strsep(&rx_arr_copy, ",");
     if (token != NULL) {
-      sscanf(token, "%2d%2d.%4d", (int *)&result->latitude.degrees,
-             (int *)&result->latitude.minutes, (int *)&result->latitude.fraction);
+      sscanf(token, "%2" SCNd16 "%2" SCNd16 ".%4" SCNd16, &result->latitude.degrees,
+             &result->latitude.minutes, &result->latitude.fraction);
     }
 
     token = strsep(&rx_arr_copy, ",");
@@ -129,8 +129,8 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, nmea_gga_sentence *result) 
 
     token = strsep(&rx_arr_copy, ",");
     if (token != NULL) {
-      sscanf(token, "%3d%2d.%4d", (int *)&result->longitude.degrees,
-             (int *)&result->longitude.minutes, (int *)&result->longitude.fraction);
+      sscanf(token, "%3" SCNd16 "%2" SCNd16 ".%4" SCNd16, &result->longitude.degrees,
+             &result->longitude.minutes, &result->longitude.fraction);
     }
 
     token = strsep(&rx_arr_copy, ",");
@@ -142,7 +142,7 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, nmea_gga_sentence *result) 
     if (token != NULL) {
       uint8_t temp_position_fix = 0;
 
-      sscanf(token, "%d", (int *)&temp_position_fix);
+      sscanf(token, "%" SCNd8, &temp_position_fix);
 
       // Valid position fix defined by 1, 2, or 6 as described in
       // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
@@ -166,17 +166,17 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, nmea_gga_sentence *result) 
     token = strsep(&rx_arr_copy, ",");
 
     if (token != NULL) {
-      sscanf(token, "%d", (int *)&result->satellites_used);
+      sscanf(token, "%" SCNd16, &result->satellites_used);
     }
 
     token = strsep(&rx_arr_copy, ",");
     if (token != NULL) {
-      sscanf(token, "%d.%d", (int *)&result->hdop_1, (int *)&result->hdop_2);
+      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->hdop_1, &result->hdop_2);
     }
 
     token = strsep(&rx_arr_copy, ",");
     if (token != NULL) {
-      sscanf(token, "%d.%d", (int *)&result->msl_altitude_1, (int *)&result->msl_altitude_2);
+      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->msl_altitude_1, &result->msl_altitude_2);
     }
 
     token = strsep(&rx_arr_copy, ",");
@@ -186,23 +186,23 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, nmea_gga_sentence *result) 
 
     token = strsep(&rx_arr_copy, ",");
     if (token != NULL) {
-      sscanf(token, "%d.%d", (int *)&result->geoid_seperation_1,
-             (int *)&result->geoid_seperation_2);
+      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->geoid_seperation_1,
+             &result->geoid_seperation_2);
     }
 
     token = strsep(&rx_arr_copy, ",");
     if (token != NULL) {
-      result->units_geoid_seperation = (uint8_t)token[0];
+      result->units_geoid_seperation = token[0];
     }
 
     token = strsep(&rx_arr_copy, ",");
     if (token != NULL) {
-      sscanf(token, "%d", (int *)&result->adc);
+      sscanf(token, "%" SCNd16, &result->adc);
     }
 
     token = strsep(&rx_arr_copy, ",");
     if (token != NULL) {
-      sscanf(token, "%d", (int *)&result->drs);
+      sscanf(token, "%" SCNd16, &result->drs);
     }
 
     free(rx_arr_copy_pointer_backup);
@@ -242,8 +242,8 @@ StatusCode nmea_get_vtg_sentence(const char *rx_arr, nmea_vtg_sentence *result) 
     token = strsep(&rx_arr_copy, ",");
     token = strsep(&rx_arr_copy, ",");
     if (token != NULL) {
-      sscanf(token, "%d.%d", (int *)&result->measure_heading_degrees_1,
-             (int *)&result->measure_heading_degrees_2);
+      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->measure_heading_degrees_1,
+             &result->measure_heading_degrees_2);
     }
 
     // Just discarding data we don't need
@@ -254,7 +254,7 @@ StatusCode nmea_get_vtg_sentence(const char *rx_arr, nmea_vtg_sentence *result) 
     token = strsep(&rx_arr_copy, ",");
     token = strsep(&rx_arr_copy, ",");
     if (token != NULL) {
-      sscanf(token, "%d.%d", (int *)&result->speed_kmh_1, (int *)&result->speed_kmh_2);
+      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->speed_kmh_1, &result->speed_kmh_2);
     }
     free(rx_arr_copy_pointer_backup);
     return STATUS_CODE_OK;
