@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "interrupt.h"
@@ -95,6 +94,31 @@ void test_lights_blinker_activate_with_existing_peripheral(void) {
   TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_ON, e.id);
   TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
   TEST_ASSERT_NOT_OK(event_process(&e));
+}
+
+void test_lights_blinker_activate_existing_peripheral_while_inactive(void) {
+  // If lights_blinker_activate gets called with the same peripheral, we're not expecting any
+  // behaviour change. But if the blinker is already inactive, there should be a behaviour change.
+  LightsBlinker blinker = { 0 };
+  Event e = { 0 };
+  TEST_ASSERT_OK(lights_blinker_init(&blinker, TEST_LIGHTS_BLINKER_DURATION_SHORT));
+  // Activating with signal left peripheral.
+  TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
+  TEST_ASSERT_OK(event_process(&e));
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT, e.data);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_ON, e.id);
+  // Activating again with the same peripheral. No event should get raised.
+  TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
+  TEST_ASSERT_NOT_OK(event_process(&e));
+  // Deactivating the blinker. A LIGHTS_EVENT_GPIO_OFF should generate.
+  TEST_ASSERT_OK(lights_blinker_deactivate(&blinker));
+  TEST_ASSERT_OK(event_process(&e));
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_OFF, e.id);
+  // Activating with the same peripheral again. It should raise an event.
+  TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
+  TEST_ASSERT_OK(event_process(&e));
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT, e.data);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_ON, e.id);
 }
 
 void test_lights_blinker_deactivate_timer_cancelled(void) {
