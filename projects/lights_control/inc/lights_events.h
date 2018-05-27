@@ -22,7 +22,7 @@ typedef enum {
   NUM_LIGHTS_EVENTS
 } LightsEvent;
 
-// Possible data fields to be used with a LIGHTS_EVENT_GPIO* event.
+// Possible data fields to be used with a LIGHTS_EVENT_GPIO_* event.
 typedef enum {
   LIGHTS_EVENT_GPIO_PERIPHERAL_HORN = 0,
   LIGHTS_EVENT_GPIO_PERIPHERAL_HIGH_BEAMS,
