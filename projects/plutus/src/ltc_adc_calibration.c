@@ -27,3 +27,15 @@ StatusCode ltc_adc_calibration_init(LTCCalibrationStorage *storage, LTCCalibrati
 
   return STATUS_CODE_OK;
 }
+
+StatusCode ltc_adc_calibration_get_value(LTCCalibrationStorage *storage,
+                                         LTCCalibrationValue *value) {
+  if (storage == NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+
+  value->voltage = storage->value.voltage;
+  value->current = storage->value.current;
+
+  return STATUS_CODE_OK;
+}

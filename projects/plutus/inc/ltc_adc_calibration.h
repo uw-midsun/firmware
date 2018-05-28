@@ -22,5 +22,10 @@ typedef struct {
   LTCCalibrationValue value;
 } LTCCalibrationStorage;
 
-// Initialize the calibration module. Requires LTCCalibrationLineData to be filled beforehand
+// Initialize the calibration module. Requires ltc_adc to be initialized and
+// LTCCalibrationLineData to be filled beforehand
 StatusCode ltc_adc_calibration_init(LTCCalibrationStorage *storage, LTCCalibrationLineData *line);
+
+// Obtain the most recent calibrated adc readings
+StatusCode ltc_adc_calibration_get_value(LTCCalibrationStorage *storage,
+                                         LTCCalibrationValue *value);
