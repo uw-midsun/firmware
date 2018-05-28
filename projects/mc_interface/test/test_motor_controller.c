@@ -75,23 +75,22 @@ void setup_test(void) {
   TEST_ASSERT_OK(
       generic_can_hw_init(&s_can, &can_hw_settings, TEST_MOTOR_CONTROLLER_EVENT_CAN_FAULT));
 
+  // clang-format off
   const MotorControllerSettings mc_settings = {
     .can_uart = (GenericCan *)&s_can,
-    .ids =
-        {
-            [MOTOR_CONTROLLER_LEFT] =
-                {
-                    .motor_controller = TEST_MOTOR_CONTROLLER_CAN_ID_MC_LEFT,
-                    .interface = TEST_MOTOR_CONTROLLER_CAN_ID_DC_LEFT,
-                },
-            [MOTOR_CONTROLLER_RIGHT] =
-                {
-                    .motor_controller = TEST_MOTOR_CONTROLLER_CAN_ID_MC_RIGHT,
-                    .interface = TEST_MOTOR_CONTROLLER_CAN_ID_DC_RIGHT,
-                },
-        },
+    .ids = {
+      [MOTOR_CONTROLLER_LEFT] = {
+          .motor_controller = TEST_MOTOR_CONTROLLER_CAN_ID_MC_LEFT,
+          .interface = TEST_MOTOR_CONTROLLER_CAN_ID_DC_LEFT,
+      },
+      [MOTOR_CONTROLLER_RIGHT] = {
+          .motor_controller = TEST_MOTOR_CONTROLLER_CAN_ID_MC_RIGHT,
+          .interface = TEST_MOTOR_CONTROLLER_CAN_ID_DC_RIGHT,
+      },
+    },
     .max_bus_current = TEST_MOTOR_CONTROLLER_MAX_BUS_CURRENT,
   };
+  // clang-format on
   motor_controller_init(&s_storage, &mc_settings);
 
   MotorControllerCanId dc_ids[NUM_MOTOR_CONTROLLERS] = {
