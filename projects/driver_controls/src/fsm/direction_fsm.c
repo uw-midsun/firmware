@@ -38,14 +38,14 @@ static bool prv_guard_reverse(const Event *e) {
 static void prv_forward_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_DIRECTION,
-                      DRIVE_OUTPUT_DIRECTION_FORWARD);
+                      EE_DRIVE_OUTPUT_DIRECTION_FORWARD);
   event_arbiter_set_guard_fn(guard, NULL);
 }
 
 static void prv_reverse_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_DIRECTION,
-                      DRIVE_OUTPUT_DIRECTION_REVERSE);
+                      EE_DRIVE_OUTPUT_DIRECTION_REVERSE);
   event_arbiter_set_guard_fn(guard, prv_guard_reverse);
 }
 

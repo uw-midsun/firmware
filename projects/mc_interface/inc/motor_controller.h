@@ -1,5 +1,6 @@
 #pragma once
 // Interfaces with WaveSculptor20 motor controllers
+// TODO(ELEC-338): Requires ...
 //
 // Expects a CAN UART slave
 // Repeats the last received message every 50ms - seems to result in smoother transitions
