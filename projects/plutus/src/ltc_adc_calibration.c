@@ -11,6 +11,10 @@ static void prv_callback(int32_t *value, void *context) {
   storage->value.current = storage->line->max_point.current *
                            (*value - storage->line->zero_point.voltage) /
                            (storage->line->max_point.voltage - storage->line->zero_point.voltage);
+
+  if (storage->callback != NULL) {
+    storage->callback(&storage->value, storage->context);
+  }
 }
 
 StatusCode ltc_adc_calibration_init(LTCCalibrationStorage *storage, LTCCalibrationLineData *line) {
@@ -28,14 +32,16 @@ StatusCode ltc_adc_calibration_init(LTCCalibrationStorage *storage, LTCCalibrati
   return STATUS_CODE_OK;
 }
 
-StatusCode ltc_adc_calibration_get_value(LTCCalibrationStorage *storage,
-                                         LTCCalibrationValue *value) {
+// Register a callback to run when new data is available
+StatusCode ltc_adc_calibration_register_callback(LTCCalibrationStorage *storage,
+                                                 LtcAdcCalibrationCallback callback,
+                                                 void *context) {
   if (storage == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  value->voltage = storage->value.voltage;
-  value->current = storage->value.current;
+  storage->callback = callback;
+  storage->context = context;
 
   return STATUS_CODE_OK;
 }

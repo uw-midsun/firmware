@@ -10,6 +10,8 @@ typedef struct {
   int32_t current;  // Voltage in milliamps
 } LTCCalibrationValue;
 
+typedef void (*LtcAdcCalibrationCallback)(LTCCalibrationValue *value, void *context);
+
 // User-defined points for two-point calibration
 typedef struct {
   LTCCalibrationValue zero_point;
@@ -20,12 +22,15 @@ typedef struct {
   LtcAdcStorage storage;
   LTCCalibrationLineData *line;
   LTCCalibrationValue value;
+  LtcAdcCalibrationCallback callback;
+  void *context;
 } LTCCalibrationStorage;
 
 // Initialize the calibration module. Requires ltc_adc to be initialized and
 // LTCCalibrationLineData to be filled beforehand
 StatusCode ltc_adc_calibration_init(LTCCalibrationStorage *storage, LTCCalibrationLineData *line);
 
-// Obtain the most recent calibrated adc readings
-StatusCode ltc_adc_calibration_get_value(LTCCalibrationStorage *storage,
-                                         LTCCalibrationValue *value);
+// Register a callback to run when new data is available
+StatusCode ltc_adc_calibration_register_callback(LTCCalibrationStorage *storage,
+                                                 LtcAdcCalibrationCallback callback, void *context);
+
