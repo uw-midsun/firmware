@@ -1,6 +1,9 @@
 #pragma once
 // WaveSculptor 20 CAN definitions
 
+#define WAVESCULPTOR_FORWARD_VELOCITY 100.0f
+#define WAVESCULPTOR_REVERSE_VELOCITY -100.0f
+
 typedef union WaveSculptorCanId {
   struct {
     uint16_t msg_id : 5;

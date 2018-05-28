@@ -55,7 +55,7 @@ static void prv_periodic_tx(SoftTimerID timer_id, void *context) {
     } else {
       // Velocity control (non-primary): use torque control instead, but copy the current setpoint
       // from the primary motor controller
-      can_data.drive_cmd.motor_velocity_ms = (storage->cruise_is_braking) ? 0.0f : 100.0f;
+      can_data.drive_cmd.motor_velocity_ms = (storage->cruise_is_braking) ? 0.0f : WAVESCULPTOR_FORWARD_VELOCITY;
       can_data.drive_cmd.motor_current_percentage = storage->cruise_current_percentage;
     }
     msg.data = can_data.raw;
@@ -68,7 +68,7 @@ static void prv_periodic_tx(SoftTimerID timer_id, void *context) {
 }
 
 StatusCode motor_controller_init(MotorControllerStorage *controller,
-                                 MotorControllerSettings *settings) {
+                                 const MotorControllerSettings *settings) {
   memset(controller, 0, sizeof(*controller));
   controller->settings = *settings;
 
@@ -80,13 +80,13 @@ StatusCode motor_controller_init(MotorControllerStorage *controller,
   // Only bother registering the bus measurement handler for the first motor controller since
   // that's all we care about
   generic_can_register_rx(controller->settings.can_uart, prv_bus_measurement_rx,
-                          GENERIC_CAN_EMPTY_MASK, can_id.raw, controller, NULL);
+                          GENERIC_CAN_EMPTY_MASK, can_id.raw, false, controller);
 
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
     can_id.device_id = controller->settings.ids[i].motor_controller;
     can_id.msg_id = WAVESCULPTOR_MEASUREMENT_ID_VELOCITY;
     generic_can_register_rx(controller->settings.can_uart, prv_velocity_measurement_rx,
-                            GENERIC_CAN_EMPTY_MASK, can_id.raw, controller, NULL);
+                            GENERIC_CAN_EMPTY_MASK, can_id.raw, false, controller);
   }
 
   return soft_timer_start_millis(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS, prv_periodic_tx, controller,
@@ -98,8 +98,8 @@ StatusCode motor_controller_set_throttle(MotorControllerStorage *controller, int
   // Use impossible target velocity for torque control
   const float velocity_lookup[] = {
     [EE_DRIVE_OUTPUT_DIRECTION_NEUTRAL] = 0.0f,
-    [EE_DRIVE_OUTPUT_DIRECTION_FORWARD] = 100.0f,
-    [EE_DRIVE_OUTPUT_DIRECTION_REVERSE] = -100.0f,
+    [EE_DRIVE_OUTPUT_DIRECTION_FORWARD] = WAVESCULPTOR_FORWARD_VELOCITY,
+    [EE_DRIVE_OUTPUT_DIRECTION_REVERSE] = WAVESCULPTOR_REVERSE_VELOCITY,
   };
 
   float target_velocity = velocity_lookup[direction];
@@ -129,7 +129,7 @@ StatusCode motor_controller_set_cruise(MotorControllerStorage *controller, int16
 
   controller->timeout_counter = 0;
   controller->target_velocity_ms = (float)speed_cms / 100;
-  controller->target_current_percentage = 100.0f;
+  controller->target_current_percentage = 1.0f;
 
   // Start with no information on cruise state
   controller->cruise_current_percentage = 0.0f;

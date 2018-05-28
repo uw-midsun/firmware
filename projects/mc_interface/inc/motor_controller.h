@@ -58,7 +58,7 @@ typedef struct MotorControllerStorage {
 
 // |settings.can_uart| should be initialized to an instance of CAN UART
 StatusCode motor_controller_init(MotorControllerStorage *controller,
-                                 MotorControllerSettings *settings);
+                                 const MotorControllerSettings *settings);
 
 StatusCode motor_controller_set_throttle(MotorControllerStorage *controller, int16_t throttle,
                                          EEDriveOutputDirection direction);

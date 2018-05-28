@@ -9,6 +9,8 @@ static StatusCode prv_handle_drive(const CANMessage *msg, void *context, CANAckS
   status_ok_or_return(CAN_UNPACK_MOTOR_CONTROLS(msg, (uint16_t *)&pedal, (uint16_t *)&direction,
                                                 (uint16_t *)&cruise, (uint16_t *)&mech_brake));
 
+  // TODO: could verify basic things i.e. direction is valid, pedal is valid, mech brake is valid, cruise is valid
+
   if (mech_brake > EE_DRIVE_OUTPUT_MECH_THRESHOLD) {
     // Mechanical brake is active - force into coast/regen
     motor_controller_set_throttle(controller, MIN(0, pedal), direction);
