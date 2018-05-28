@@ -28,7 +28,7 @@ static void prv_bus_measurement_rx(const GenericCanMsg *msg, void *context) {
 static void prv_velocity_measurement_rx(const GenericCanMsg *msg, void *context) {
   MotorControllerStorage *storage = context;
 
-  // TODO: average vehicle speed?
+  // TODO(ELEC-338): Record and output average vehicle speed
 }
 
 static void prv_periodic_tx(SoftTimerID timer_id, void *context) {
@@ -55,7 +55,8 @@ static void prv_periodic_tx(SoftTimerID timer_id, void *context) {
     } else {
       // Velocity control (non-primary): use torque control instead, but copy the current setpoint
       // from the primary motor controller
-      can_data.drive_cmd.motor_velocity_ms = (storage->cruise_is_braking) ? 0.0f : WAVESCULPTOR_FORWARD_VELOCITY;
+      can_data.drive_cmd.motor_velocity_ms =
+          (storage->cruise_is_braking) ? 0.0f : WAVESCULPTOR_FORWARD_VELOCITY;
       can_data.drive_cmd.motor_current_percentage = storage->cruise_current_percentage;
     }
     msg.data = can_data.raw;
@@ -113,7 +114,7 @@ StatusCode motor_controller_set_throttle(MotorControllerStorage *controller, int
     target_velocity = 0.0f;
   }
 
-  // TODO: may need critical section
+  // TODO(ELEC-338): may need critical section
 
   // Reset counter
   controller->timeout_counter = 0;

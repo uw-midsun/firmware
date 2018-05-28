@@ -1,14 +1,14 @@
 #include "can_hw.h"
-#include "motor_controller.h"
+#include "delay.h"
+#include "event_queue.h"
+#include "generic_can_hw.h"
 #include "interrupt.h"
 #include "log.h"
+#include "motor_controller.h"
+#include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
-#include "event_queue.h"
-#include "delay.h"
 #include "wavesculptor.h"
-#include "generic_can_hw.h"
-#include "soft_timer.h"
 
 #define TEST_MOTOR_CONTROLLER_EVENT_CAN_FAULT 0
 // arbitrary value of 100A to make the math easy
@@ -27,15 +27,12 @@ static WaveSculptorDriveCmd s_drive_cmds[NUM_MOTOR_CONTROLLERS];
 
 static void prv_copy_drive_cmd(const GenericCanMsg *msg, void *context) {
   WaveSculptorDriveCmd *drive_cmd = context;
-  WaveSculptorCanData can_data = {
-    .raw = msg->data
-  };
+  WaveSculptorCanData can_data = { .raw = msg->data };
   *drive_cmd = can_data.drive_cmd;
 
-  WaveSculptorCanId can_id = {
-    .raw = msg->id
-  };
-  printf("RX drive command from %d (current %.4f velocity %.2f)\n", can_id.device_id, drive_cmd->motor_current_percentage, drive_cmd->motor_velocity_ms);
+  WaveSculptorCanId can_id = { .raw = msg->id };
+  printf("RX drive command from %d (current %.4f velocity %.2f)\n", can_id.device_id,
+         drive_cmd->motor_current_percentage, drive_cmd->motor_velocity_ms);
 }
 
 static void prv_fake_bus_measurement(float bus_current) {
@@ -45,10 +42,11 @@ static void prv_fake_bus_measurement(float bus_current) {
     .msg_id = WAVESCULPTOR_MEASUREMENT_ID_BUS,
   };
   WaveSculptorCanData can_data = {
-    .bus_measurement = {
-      .bus_voltage = 150.0f,
-      .bus_current = bus_current,
-    },
+    .bus_measurement =
+        {
+            .bus_voltage = 150.0f,
+            .bus_current = bus_current,
+        },
   };
   GenericCanMsg motor_bus_msg = {
     .id = can_id.raw,
@@ -74,20 +72,24 @@ void setup_test(void) {
   };
 
   // Use CAN HW to mock CAN UART
-  TEST_ASSERT_OK(generic_can_hw_init(&s_can, &can_hw_settings, TEST_MOTOR_CONTROLLER_EVENT_CAN_FAULT));
+  TEST_ASSERT_OK(
+      generic_can_hw_init(&s_can, &can_hw_settings, TEST_MOTOR_CONTROLLER_EVENT_CAN_FAULT));
 
   const MotorControllerSettings mc_settings = {
     .can_uart = (GenericCan *)&s_can,
-    .ids = {
-      [MOTOR_CONTROLLER_LEFT] = {
-        .motor_controller = TEST_MOTOR_CONTROLLER_CAN_ID_MC_LEFT,
-        .interface = TEST_MOTOR_CONTROLLER_CAN_ID_DC_LEFT,
-      },
-      [MOTOR_CONTROLLER_RIGHT] = {
-        .motor_controller = TEST_MOTOR_CONTROLLER_CAN_ID_MC_RIGHT,
-        .interface = TEST_MOTOR_CONTROLLER_CAN_ID_DC_RIGHT,
-      },
-    },
+    .ids =
+        {
+            [MOTOR_CONTROLLER_LEFT] =
+                {
+                    .motor_controller = TEST_MOTOR_CONTROLLER_CAN_ID_MC_LEFT,
+                    .interface = TEST_MOTOR_CONTROLLER_CAN_ID_DC_LEFT,
+                },
+            [MOTOR_CONTROLLER_RIGHT] =
+                {
+                    .motor_controller = TEST_MOTOR_CONTROLLER_CAN_ID_MC_RIGHT,
+                    .interface = TEST_MOTOR_CONTROLLER_CAN_ID_DC_RIGHT,
+                },
+        },
     .max_bus_current = TEST_MOTOR_CONTROLLER_MAX_BUS_CURRENT,
   };
   motor_controller_init(&s_storage, &mc_settings);
@@ -101,7 +103,8 @@ void setup_test(void) {
       .device_id = dc_ids[i],
       .msg_id = WAVESCULPTOR_CMD_ID_DRIVE,
     };
-    generic_can_register_rx((GenericCan *)&s_can, prv_copy_drive_cmd, GENERIC_CAN_EMPTY_MASK, can_id.raw, false, &s_drive_cmds[i]);
+    generic_can_register_rx((GenericCan *)&s_can, prv_copy_drive_cmd, GENERIC_CAN_EMPTY_MASK,
+                            can_id.raw, false, &s_drive_cmds[i]);
   }
 }
 
@@ -112,7 +115,8 @@ void test_motor_controller_throttle_forward(void) {
   motor_controller_set_throttle(&s_storage, 100, EE_DRIVE_OUTPUT_DIRECTION_FORWARD);
   delay_ms(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS * 2);
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
-    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_DRIVE_OUTPUT_DENOMINATOR, s_drive_cmds[i].motor_current_percentage);
+    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_DRIVE_OUTPUT_DENOMINATOR,
+                            s_drive_cmds[i].motor_current_percentage);
     TEST_ASSERT_EQUAL_FLOAT(WAVESCULPTOR_FORWARD_VELOCITY, s_drive_cmds[i].motor_velocity_ms);
   }
 
@@ -126,7 +130,8 @@ void test_motor_controller_throttle_forward(void) {
   motor_controller_set_throttle(&s_storage, -100, EE_DRIVE_OUTPUT_DIRECTION_FORWARD);
   delay_ms(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS * 2);
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
-    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_DRIVE_OUTPUT_DENOMINATOR, s_drive_cmds[i].motor_current_percentage);
+    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_DRIVE_OUTPUT_DENOMINATOR,
+                            s_drive_cmds[i].motor_current_percentage);
     TEST_ASSERT_EQUAL_FLOAT(0.0f, s_drive_cmds[i].motor_velocity_ms);
   }
 }
@@ -160,7 +165,8 @@ void test_motor_controller_throttle_reverse(void) {
   motor_controller_set_throttle(&s_storage, 100, EE_DRIVE_OUTPUT_DIRECTION_REVERSE);
   delay_ms(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS * 2);
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
-    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_DRIVE_OUTPUT_DENOMINATOR, s_drive_cmds[i].motor_current_percentage);
+    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_DRIVE_OUTPUT_DENOMINATOR,
+                            s_drive_cmds[i].motor_current_percentage);
     TEST_ASSERT_EQUAL_FLOAT(WAVESCULPTOR_REVERSE_VELOCITY, s_drive_cmds[i].motor_velocity_ms);
   }
 
@@ -174,7 +180,8 @@ void test_motor_controller_throttle_reverse(void) {
   motor_controller_set_throttle(&s_storage, -100, EE_DRIVE_OUTPUT_DIRECTION_REVERSE);
   delay_ms(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS * 2);
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
-    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_DRIVE_OUTPUT_DENOMINATOR, s_drive_cmds[i].motor_current_percentage);
+    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_DRIVE_OUTPUT_DENOMINATOR,
+                            s_drive_cmds[i].motor_current_percentage);
     TEST_ASSERT_EQUAL_FLOAT(0.0f, s_drive_cmds[i].motor_velocity_ms);
   }
 }
@@ -184,7 +191,8 @@ void test_motor_controller_watchdog(void) {
   motor_controller_set_throttle(&s_storage, 100, EE_DRIVE_OUTPUT_DIRECTION_FORWARD);
   delay_ms(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS * 2);
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
-    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_DRIVE_OUTPUT_DENOMINATOR, s_drive_cmds[i].motor_current_percentage);
+    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_DRIVE_OUTPUT_DENOMINATOR,
+                            s_drive_cmds[i].motor_current_percentage);
     TEST_ASSERT_EQUAL_FLOAT(WAVESCULPTOR_FORWARD_VELOCITY, s_drive_cmds[i].motor_velocity_ms);
   }
 
@@ -207,7 +215,8 @@ void test_motor_controller_cruise(void) {
   TEST_ASSERT_EQUAL_FLOAT(0.45f, s_drive_cmds[0].motor_velocity_ms);
 
   // Secondary controller should use current setpoint
-  TEST_ASSERT_EQUAL_FLOAT(50.0f / TEST_MOTOR_CONTROLLER_MAX_BUS_CURRENT, s_drive_cmds[1].motor_current_percentage);
+  TEST_ASSERT_EQUAL_FLOAT(50.0f / TEST_MOTOR_CONTROLLER_MAX_BUS_CURRENT,
+                          s_drive_cmds[1].motor_current_percentage);
   TEST_ASSERT_EQUAL_FLOAT(WAVESCULPTOR_FORWARD_VELOCITY, s_drive_cmds[1].motor_velocity_ms);
 
   // Pretend we're braking
@@ -219,6 +228,7 @@ void test_motor_controller_cruise(void) {
   TEST_ASSERT_EQUAL_FLOAT(0.45f, s_drive_cmds[0].motor_velocity_ms);
 
   // Secondary controller should use current setpoint
-  TEST_ASSERT_EQUAL_FLOAT(50.0f / TEST_MOTOR_CONTROLLER_MAX_BUS_CURRENT, s_drive_cmds[1].motor_current_percentage);
+  TEST_ASSERT_EQUAL_FLOAT(50.0f / TEST_MOTOR_CONTROLLER_MAX_BUS_CURRENT,
+                          s_drive_cmds[1].motor_current_percentage);
   TEST_ASSERT_EQUAL_FLOAT(0.0f, s_drive_cmds[1].motor_velocity_ms);
 }

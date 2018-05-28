@@ -69,7 +69,7 @@ void setup_test(void) {
 
 void teardown_test(void) {}
 
-// TODO: lazy and need to replace this
+// TODO(ELEC-338): Replace this with the updated version
 static const Event s_tx_event = { TEST_DRIVE_CAN_EVENT_TX, 0 };
 static const Event s_rx_event = { TEST_DRIVE_CAN_EVENT_RX, 0 };
 
