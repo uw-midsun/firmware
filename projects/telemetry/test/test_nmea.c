@@ -39,16 +39,16 @@ void test_gps_nmea_gga(void) {
 
   TEST_ASSERT_TRUE(r.satellites_used == 8);
 
-  TEST_ASSERT_TRUE(r.hdop_1 == 1);
-  TEST_ASSERT_TRUE(r.hdop_2 == 1);
+  TEST_ASSERT_TRUE(r.hdop_integer == 1);
+  TEST_ASSERT_TRUE(r.hdop_fraction == 1);
 
-  TEST_ASSERT_TRUE(r.msl_altitude_1 == 63);
-  TEST_ASSERT_TRUE(r.msl_altitude_2 == 8);
+  TEST_ASSERT_TRUE(r.msl_altitude_integer == 63);
+  TEST_ASSERT_TRUE(r.msl_altitude_fraction == 8);
 
   TEST_ASSERT_TRUE(r.units_msl_altitude == 'M');
 
-  TEST_ASSERT_TRUE(r.geoid_seperation_1 == 15);
-  TEST_ASSERT_TRUE(r.geoid_seperation_2 == 2);
+  TEST_ASSERT_TRUE(r.geoid_seperation_integer == 15);
+  TEST_ASSERT_TRUE(r.geoid_seperation_fraction == 2);
 
   TEST_ASSERT_TRUE(r.units_geoid_seperation == 'M');
   TEST_ASSERT_TRUE(r.drs == 0);
@@ -63,10 +63,10 @@ void test_gps_nmea_vtg(void) {
 
   TEST_ASSERT_TRUE(status_ok(nmea_get_vtg_sentence(input, &vtg)));
 
-  TEST_ASSERT_TRUE(vtg.measure_heading_degrees_1 == 79);
-  TEST_ASSERT_TRUE(vtg.measure_heading_degrees_2 == 65);
-  TEST_ASSERT_TRUE(vtg.speed_kmh_1 == 5);
-  TEST_ASSERT_TRUE(vtg.speed_kmh_2 == 0);
+  TEST_ASSERT_TRUE(vtg.measure_heading_degrees_integer == 79);
+  TEST_ASSERT_TRUE(vtg.measure_heading_degrees_fraction == 65);
+  TEST_ASSERT_TRUE(vtg.speed_kmh_integer == 5);
+  TEST_ASSERT_TRUE(vtg.speed_kmh_fraction == 0);
 }
 
 void test_fail_vtg(void) {

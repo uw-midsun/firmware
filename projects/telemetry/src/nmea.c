@@ -9,6 +9,7 @@
 #include "misc.h"
 #include "nmea_checksum.h"
 #include "status.h"
+#include "uart.h"  // For UART_MAX_BUFFER_LEN
 
 // This is to get the number of fields in a sentence for array allocation
 static const size_t s_nmea_message_num_fields[] = { 0, 16, 9, 11, 13, 14, 14, 10 };
@@ -102,43 +103,45 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, nmea_gga_sentence *result) 
     // Example message:
     // $GPGGA,053740.000,2503.6319,N,12136.0099,E,1,08,1.1,63.8,M,15.2,M,,0000*64
 
-    char *rx_arr_copy = strdup(rx_arr);
+    char rx_arr_copy[UART_MAX_BUFFER_LEN] = { 0 };
+    strncpy(rx_arr_copy, rx_arr, UART_MAX_BUFFER_LEN);
 
-    // strsep modifies original pointer, so we have to keep a copy
-    char *rx_arr_copy_pointer_backup = rx_arr_copy;
+    // This pointer is required because strsep will modify what the pointer
+    // points too. This should not be done with the original array
+    char *rx_arr_copy_ptr = &rx_arr_copy[0];
 
     // Get rid of $GPGGA
-    char *token = strsep(&rx_arr_copy, ",");
+    char *token = strsep(&rx_arr_copy_ptr, ",");
 
-    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       sscanf(token, "%2" SCNd8 "%2" SCNd8 "%2" SCNd8 ".%3" SCNd16, &result->time.hh,
              &result->time.mm, &result->time.ss, &result->time.sss);
     }
 
-    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       sscanf(token, "%2" SCNd16 "%2" SCNd16 ".%4" SCNd16, &result->latitude.degrees,
              &result->latitude.minutes, &result->latitude.fraction);
     }
 
-    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       result->north_south = token[0];
     }
 
-    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       sscanf(token, "%3" SCNd16 "%2" SCNd16 ".%4" SCNd16, &result->longitude.degrees,
              &result->longitude.minutes, &result->longitude.fraction);
     }
 
-    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       result->east_west = token[0];
     }
 
-    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       uint8_t temp_position_fix = 0;
 
@@ -163,49 +166,49 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, nmea_gga_sentence *result) 
       }
     }
 
-    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
 
     if (token != NULL) {
       sscanf(token, "%" SCNd16, &result->satellites_used);
     }
 
-    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
-      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->hdop_1, &result->hdop_2);
+      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->hdop_integer, &result->hdop_fraction);
     }
 
-    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
-      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->msl_altitude_1, &result->msl_altitude_2);
+      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->msl_altitude_integer,
+             &result->msl_altitude_fraction);
     }
 
-    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       result->units_msl_altitude = (uint8_t)token[0];
     }
 
-    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
-      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->geoid_seperation_1,
-             &result->geoid_seperation_2);
+      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->geoid_seperation_integer,
+             &result->geoid_seperation_fraction);
     }
 
-    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       result->units_geoid_seperation = token[0];
     }
 
-    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       sscanf(token, "%" SCNd16, &result->adc);
     }
 
-    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       sscanf(token, "%" SCNd16, &result->drs);
     }
 
-    free(rx_arr_copy_pointer_backup);
     return STATUS_CODE_OK;
   }
   return status_msg(STATUS_CODE_INVALID_ARGS, "NMEA: Incorrect message ID received\n");
@@ -232,31 +235,34 @@ StatusCode nmea_get_vtg_sentence(const char *rx_arr, nmea_vtg_sentence *result) 
     // Parses NMEA message
     // We only need the direction and speed
 
-    char *rx_arr_copy = strdup(rx_arr);
+    char rx_arr_copy[UART_MAX_BUFFER_LEN] = { 0 };
+    strncpy(rx_arr_copy, rx_arr, UART_MAX_BUFFER_LEN);
 
-    // strsep modifies original pointer, so we have to keep a copy
-    char *rx_arr_copy_pointer_backup = rx_arr_copy;
+    // This pointer is required because strsep will modify what the pointer
+    // points too. This should not be done with the original array
+    char *rx_arr_copy_ptr = &rx_arr_copy[0];
     char *token;
 
     // First call is to discard $GPVTG
-    token = strsep(&rx_arr_copy, ",");
-    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
-      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->measure_heading_degrees_1,
-             &result->measure_heading_degrees_2);
+      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->measure_heading_degrees_integer,
+             &result->measure_heading_degrees_fraction);
     }
 
     // Just discarding data we don't need
-    token = strsep(&rx_arr_copy, ",");
-    token = strsep(&rx_arr_copy, ",");
-    token = strsep(&rx_arr_copy, ",");
-    token = strsep(&rx_arr_copy, ",");
-    token = strsep(&rx_arr_copy, ",");
-    token = strsep(&rx_arr_copy, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
-      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->speed_kmh_1, &result->speed_kmh_2);
+      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->speed_kmh_integer,
+             &result->speed_kmh_fraction);
     }
-    free(rx_arr_copy_pointer_backup);
+
     return STATUS_CODE_OK;
   }
 

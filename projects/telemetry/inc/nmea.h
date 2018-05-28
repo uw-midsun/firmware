@@ -52,14 +52,14 @@ typedef struct {
 typedef struct {
   NmeaPositionFix position_fix;  // True if this struct has valid data
   uint16_t satellites_used;
-  uint16_t adc;                 // Age of diff. corr. in seconds
-  uint16_t drs;                 // Diff. Ref. Station. Not sure what it is yet
-  uint16_t hdop_1;              // Horizontal dilution of precision, characteristic
-  uint16_t hdop_2;              // Horizontal dilution of precision, mantissa
-  uint16_t msl_altitude_1;      // In meters, characteristic
-  uint16_t msl_altitude_2;      // In meters, mantissa
-  uint16_t geoid_seperation_1;  // In meters, characteristic
-  uint16_t geoid_seperation_2;  // In meters, mantissa
+  uint16_t adc;                        // Age of diff. corr. in seconds
+  uint16_t drs;                        // Diff. Ref. Station. Not sure what it is yet
+  uint16_t hdop_integer;               // Horizontal dilution of precision, characteristic
+  uint16_t hdop_fraction;              // Horizontal dilution of precision, mantissa
+  uint16_t msl_altitude_integer;       // In meters, characteristic
+  uint16_t msl_altitude_fraction;      // In meters, mantissa
+  uint16_t geoid_seperation_integer;   // In meters, characteristic
+  uint16_t geoid_seperation_fraction;  // In meters, mantissa
   nmea_coord latitude;
   nmea_coord longitude;
   nmea_utc_time time;
@@ -71,10 +71,10 @@ typedef struct {
 } nmea_gga_sentence;
 
 typedef struct {
-  uint16_t measure_heading_degrees_1;  // Whole number of degrees representing the heading
-  uint16_t measure_heading_degrees_2;  // Decimal part of degrees representing the heading
-  uint16_t speed_kmh_1;                // Speed in km/h
-  uint16_t speed_kmh_2;                // Speed in km/h, fractional part (after the decimal)
+  uint16_t measure_heading_degrees_integer;   // Whole number of degrees representing the heading
+  uint16_t measure_heading_degrees_fraction;  // Decimal part of degrees representing the heading
+  uint16_t speed_kmh_integer;                 // Speed in km/h
+  uint16_t speed_kmh_fraction;                // Speed in km/h, fractional part (after the decimal)
 } nmea_vtg_sentence;
 
 // Parsing functions for NMEA sentences

@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Private method to convert hex char to int
+// Private method to convert hex char (stored in the 'h' parameter) to an int
+// Store the result in the result pointer (which cannot be NULL)
+// Returns STATUS_CODE_OK if the conversion was successful
 static StatusCode prv_hex_to_int(char h, uint8_t *result) {
   if (result == NULL) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Cannot supply NULL pointer as arg\n");
@@ -13,7 +15,7 @@ static StatusCode prv_hex_to_int(char h, uint8_t *result) {
     *result = (uint8_t)(h - '0');
     return STATUS_CODE_OK;
   } else if ('A' <= h && h <= 'F') {
-    // We only care about uppercase because the NMEA messages are all caps
+    // We only care about uppercase letters because the NMEA messages are all caps
     *result = (uint8_t)(h - 'A' + 10);
     return STATUS_CODE_OK;
   }
