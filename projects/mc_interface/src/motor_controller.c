@@ -1,6 +1,8 @@
 #include "motor_controller.h"
 #include <math.h>
+#include <stddef.h>
 #include <string.h>
+#include "can_transmit.h"
 #include "soft_timer.h"
 #include "wavesculptor.h"
 
@@ -28,7 +30,22 @@ static void prv_bus_measurement_rx(const GenericCanMsg *msg, void *context) {
 static void prv_velocity_measurement_rx(const GenericCanMsg *msg, void *context) {
   MotorControllerStorage *storage = context;
 
-  // TODO(ELEC-338): Record and output average vehicle speed
+  for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
+    WaveSculptorCanId can_id = { .raw = msg->id };
+    if (can_id.device_id == storage->settings.ids[i].motor_controller) {
+      WaveSculptorCanData can_data = { .raw = msg->data };
+      storage->speed_cms[i] = (int16_t)(can_data.velocity_measurement.vehicle_velocity_ms * 100);
+      storage->rx_bitset |= 1 << i;
+      break;
+    }
+  }
+
+  if (storage->rx_bitset == (1 << NUM_MOTOR_CONTROLLERS) - 1) {
+    // Received speed from all motor controllers - clear bitset and broadcast
+    storage->rx_bitset = 0;
+    storage->settings.speed_cb(storage->speed_cms, NUM_MOTOR_CONTROLLERS,
+                               storage->settings.context);
+  }
 }
 
 static void prv_periodic_tx(SoftTimerID timer_id, void *context) {
@@ -92,6 +109,14 @@ StatusCode motor_controller_init(MotorControllerStorage *controller,
 
   return soft_timer_start_millis(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS, prv_periodic_tx, controller,
                                  NULL);
+}
+
+StatusCode motor_controller_set_speed_cb(MotorControllerStorage *controller,
+                                         MotorControllerSpeedCb speed_cb, void *context) {
+  controller->settings.speed_cb = speed_cb;
+  controller->settings.context = context;
+
+  return STATUS_CODE_OK;
 }
 
 StatusCode motor_controller_set_throttle(MotorControllerStorage *controller, int16_t throttle,

@@ -1,6 +1,6 @@
 #pragma once
 // Handles drive output messages from Driver Controls
-// Requires CAN to be initialized
+// Requires CAN and motor controllers to be initialized
 //
 // Raises events accordingly
 #include "motor_controller.h"

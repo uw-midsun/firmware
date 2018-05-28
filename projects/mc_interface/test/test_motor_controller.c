@@ -1,3 +1,4 @@
+#include <string.h>
 #include "can_hw.h"
 #include "delay.h"
 #include "event_queue.h"
@@ -53,6 +54,29 @@ static void prv_fake_bus_measurement(float bus_current) {
   generic_can_tx((GenericCan *)&s_can, &motor_bus_msg);
 }
 
+static void prv_fake_velocity_measurement(MotorControllerCanId id, float velocity_ms) {
+  WaveSculptorCanId can_id = {
+    .device_id = id,
+    .msg_id = WAVESCULPTOR_MEASUREMENT_ID_VELOCITY,
+  };
+  WaveSculptorCanData can_data = { 0 };
+  can_data.velocity_measurement.vehicle_velocity_ms = velocity_ms;
+  GenericCanMsg motor_velocity_msg = {
+    .id = can_id.raw,
+    .data = can_data.raw,
+    .dlc = 8,
+    .extended = false,
+  };
+
+  generic_can_tx((GenericCan *)&s_can, &motor_velocity_msg);
+}
+
+static void prv_handle_speed(int16_t speed_cms[], size_t num_speeds, void *context) {
+  int16_t *speed_arr = context;
+  speed_arr[0] = speed_cms[0];
+  speed_arr[1] = speed_cms[1];
+}
+
 void setup_test(void) {
   interrupt_init();
   gpio_init();
@@ -100,6 +124,8 @@ void setup_test(void) {
     generic_can_register_rx((GenericCan *)&s_can, prv_copy_drive_cmd, GENERIC_CAN_EMPTY_MASK,
                             can_id.raw, false, &s_drive_cmds[i]);
   }
+
+  memset(s_drive_cmds, 0, sizeof(s_drive_cmds));
 }
 
 void teardown_test(void) {}
@@ -225,4 +251,17 @@ void test_motor_controller_cruise(void) {
   TEST_ASSERT_EQUAL_FLOAT(50.0f / TEST_MOTOR_CONTROLLER_MAX_BUS_CURRENT,
                           s_drive_cmds[1].motor_current_percentage);
   TEST_ASSERT_EQUAL_FLOAT(0.0f, s_drive_cmds[1].motor_velocity_ms);
+}
+
+void test_motor_controller_speed(void) {
+  int16_t speed_arr[NUM_MOTOR_CONTROLLERS] = { 0 };
+  motor_controller_set_speed_cb(&s_storage, prv_handle_speed, speed_arr);
+
+  prv_fake_velocity_measurement(TEST_MOTOR_CONTROLLER_CAN_ID_MC_LEFT, 10.0f);
+  prv_fake_velocity_measurement(TEST_MOTOR_CONTROLLER_CAN_ID_MC_RIGHT, -10.0f);
+
+  delay_ms(10);
+
+  TEST_ASSERT_EQUAL(1000, speed_arr[0]);
+  TEST_ASSERT_EQUAL(-1000, speed_arr[1]);
 }

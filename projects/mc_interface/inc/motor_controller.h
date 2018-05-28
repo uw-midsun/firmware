@@ -1,18 +1,22 @@
 #pragma once
 // Interfaces with WaveSculptor20 motor controllers
-// TODO(ELEC-338): Requires ...
+// Requires generic CAN and soft timers to be initialized.
 //
 // Expects a CAN UART slave
 // Repeats the last received message every 50ms - seems to result in smoother transitions
 //
 // In cruise mode, the first motor controller is picked as a master and set to velocity control.
 // Its current reading is copied over to all other motor controllers to allow them to handle turns.
+//
+// We also require setpoint updates within ~250ms or we disable the motors as a safety precaution.
 #include "exported_enums.h"
 #include "generic_can.h"
 
 #define MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS 50
 // Arbitrary timeout after 5 TX periods without receiving a setpoint update
 #define MOTOR_CONTROLLER_WATCHDOG_COUNTER 5
+
+typedef void (*MotorControllerSpeedCb)(int16_t speed_cms[], size_t num_speeds, void *context);
 
 typedef enum {
   MOTOR_CONTROLLER_LEFT,
@@ -39,6 +43,9 @@ typedef struct MotorControllerSettings {
   // Maximum bus current (should be programmed into the motor controllers)
   // Used to copy current setpoint from primary cruise controller
   float max_bus_current;
+
+  MotorControllerSpeedCb speed_cb;
+  void *context;
 } MotorControllerSettings;
 
 typedef struct MotorControllerStorage {
@@ -52,7 +59,8 @@ typedef struct MotorControllerStorage {
   float target_current_percentage;
   MotorControllerMode target_mode;
 
-  // TODO(ELEC-338): record speed for TX
+  int16_t speed_cms[NUM_MOTOR_CONTROLLERS];
+  uint8_t rx_bitset;
 
   size_t timeout_counter;
 } MotorControllerStorage;
@@ -60,6 +68,9 @@ typedef struct MotorControllerStorage {
 // |settings.can_uart| should be initialized to an instance of CAN UART
 StatusCode motor_controller_init(MotorControllerStorage *controller,
                                  const MotorControllerSettings *settings);
+
+StatusCode motor_controller_set_speed_cb(MotorControllerStorage *controller,
+                                         MotorControllerSpeedCb speed_cb, void *context);
 
 StatusCode motor_controller_set_throttle(MotorControllerStorage *controller, int16_t throttle,
                                          EEDriveOutputDirection direction);
