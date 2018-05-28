@@ -51,7 +51,7 @@ typedef struct MotorControllerStorage {
   float target_current_percentage;
   MotorControllerMode target_mode;
 
-  // TODO: record speed for TX
+  // TODO(ELEC-338): record speed for TX
 
   size_t timeout_counter;
 } MotorControllerStorage;
