@@ -40,6 +40,9 @@ void TEST_MOCK(motor_controller_set_cruise)(MotorControllerStorage *controller, 
   s_speed_cms = speed_cms;
 }
 
+void TEST_MOCK(motor_controller_set_speed_cb)(MotorControllerStorage *controller,
+                                              MotorControllerSpeedCb speed_cb, void *context) {}
+
 void setup_test(void) {
   event_queue_init();
   interrupt_init();
