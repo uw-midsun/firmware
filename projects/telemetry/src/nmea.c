@@ -1,3 +1,4 @@
+#define _DEFAULT_SOURCE
 #include "nmea.h"
 #include <inttypes.h>
 #include <stdbool.h>
@@ -10,6 +11,11 @@
 #include "nmea_checksum.h"
 #include "status.h"
 #include "uart.h"  // For UART_MAX_BUFFER_LEN
+
+// Essentially a char, should be defined in inttypes.h but wasn't
+#ifndef SCNd8
+#define SCNd8 "hhd"
+#endif
 
 // This is to get the number of fields in a sentence for array allocation
 static const size_t s_nmea_message_num_fields[] = { 0, 16, 9, 11, 13, 14, 14, 10 };
