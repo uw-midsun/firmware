@@ -1,13 +1,13 @@
 #pragma once
 
-// This module is responsible for receiving various CAN messages and in return raising events to be
-// processed by other modules.
+// This module is responsible for receiving CAN messages and raising events in return, or sending
+// can messages.
 
 #include "can.h"
 #include "exported_enums.h"
 #include "lights_events.h"
 
-#define LIGHTS_CAN_NUM_RX_HANDLERS 5
+#define LIGHTS_CAN_NUM_RX_HANDLERS 4
 
 // User uses this instance to provide storage for the module.
 typedef struct LightsCanStorage {
@@ -19,7 +19,8 @@ typedef struct LightsCanStorage {
 typedef struct LightsCanSettings {
   uint16_t device_id;
   bool loopback;
-  LightsEventGpioPeripheral peripheral_lookup[NUM_EE_LIGHT_TYPES];
+  LightsEvent event_id_lookup[NUM_EE_LIGHT_TYPES][NUM_EE_LIGHT_STATES];
+  uint8_t event_data_lookup[NUM_EE_LIGHT_TYPES];
   GPIOAddress rx_addr;
   GPIOAddress tx_addr;
   CANHwBitrate bitrate;
@@ -27,3 +28,6 @@ typedef struct LightsCanSettings {
 
 // Initializes the lights_can module.
 StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *lights_can);
+
+// Sends a sync message.
+StatusCode lights_can_transmit_sync(void);

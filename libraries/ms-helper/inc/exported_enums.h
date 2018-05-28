@@ -26,23 +26,27 @@ typedef enum {
 } EEChargerConnState;
 
 typedef enum {
-  EE_SIGNAL_LIGHT_TYPE_LEFT = 0,
-  EE_SIGNAL_LIGHT_TYPE_RIGHT,
-  EE_SIGNAL_LIGHT_TYPE_HAZARD,
-  NUM_EE_SIGNAL_LIGHT_TYPES
-} EESignalLightType;
-
-typedef enum {
   EE_LIGHT_TYPE_HIGH_BEAMS = 0,
   EE_LIGHT_TYPE_LOW_BEAMS,
   EE_LIGHT_TYPE_DRL,
   EE_LIGHT_TYPE_BRAKES,
+  EE_LIGHT_TYPE_SIGNAL_RIGHT,
+  EE_LIGHT_TYPE_SIGNAL_LEFT,
+  EE_LIGHT_TYPE_SIGNAL_HAZARD,
   NUM_EE_LIGHT_TYPES
 } EELightType;
 
-typedef enum { EE_LIGHT_STATE_OFF = 0, EE_LIGHT_STATE_ON, NUM_EE_LIGHT_STATES } EELightsState;
+typedef enum {
+  EE_LIGHT_STATE_OFF = 0,  //
+  EE_LIGHT_STATE_ON,       //
+  NUM_EE_LIGHT_STATES      //
+} EELightsState;
 
-typedef enum { EE_HORN_STATE_OFF = 0, EE_HORN_STATE_ON, NUM_EE_HORN_STATES } EEHornState;
+typedef enum {
+  EE_HORN_STATE_OFF = 0,  //
+  EE_HORN_STATE_ON,       //
+  NUM_EE_HORN_STATES      //
+} EEHornState;
 
 typedef enum BpsHeartbeatState {
   EE_BPS_HEARTBEAT_STATE_OK = 0,

@@ -62,13 +62,6 @@
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY,          \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
-#define CAN_UNPACK_SIGNAL_LIGHT_STATE(msg_ptr, light_sig_type_u8_ptr, light_state_u8_ptr) \
-  can_unpack_impl_u8((msg_ptr), 2, (light_sig_type_u8_ptr), (light_state_u8_ptr),         \
-                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, \
-                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
-
-#define CAN_UNPACK_LIGHTS_SYNC(msg_ptr) can_unpack_impl_u64((msg_ptr), 0, CAN_UNPACK_IMPL_EMPTY)
-
 #define CAN_UNPACK_HORN(msg_ptr, state_u8_ptr)                                                   \
   can_unpack_impl_u8((msg_ptr), 1, (state_u8_ptr), CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY,        \
