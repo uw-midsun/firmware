@@ -2,6 +2,7 @@
 
 #include "ltc_adc_calibration.h"
 
+#include "critical_section.h"
 #include "gpio.h"
 #include "interrupt.h"
 #include "log.h"
@@ -9,7 +10,6 @@
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
-#include "critical_section.h"
 
 // Arbitrary number of testing samples
 #define TEST_ADC_CALIBRATION_DURATION 25
@@ -30,7 +30,7 @@ static uint8_t s_callback_runs = 0;
 void prv_callback(LTCCalibrationValue *value, void *context) {
   s_callback_runs++;
   LOG_DEBUG("[%d / %d] | Voltage =  %" PRId32 ", Current =  %" PRId32 "\n", s_callback_runs,
-              TEST_ADC_CALIBRATION_DURATION, value->voltage, value->current);
+            TEST_ADC_CALIBRATION_DURATION, value->voltage, value->current);
 }
 
 void setup_test(void) {

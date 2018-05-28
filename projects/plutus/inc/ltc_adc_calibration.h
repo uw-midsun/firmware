@@ -33,4 +33,3 @@ StatusCode ltc_adc_calibration_init(LTCCalibrationStorage *storage, LTCCalibrati
 // Register a callback to run when new data is available
 StatusCode ltc_adc_calibration_register_callback(LTCCalibrationStorage *storage,
                                                  LtcAdcCalibrationCallback callback, void *context);
-
