@@ -31,7 +31,6 @@ static void prv_rx_handler(void *context) {
       if (gch->base.rx_storage[i].rx_handler != NULL &&
           (rx_msg.id & gch->base.rx_storage[i].mask) == gch->base.rx_storage[i].filter) {
         gch->base.rx_storage[i].rx_handler(&rx_msg, gch->base.rx_storage[i].context);
-        break;
       }
     }
   }

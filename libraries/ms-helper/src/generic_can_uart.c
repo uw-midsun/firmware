@@ -28,7 +28,6 @@ static void prv_generic_can_uart_rx_handler(const CanUart *can_uart, uint32_t id
         .dlc = dlc,
       };
       gcu->base.rx_storage[i].rx_handler(&msg, gcu->base.rx_storage[i].context);
-      break;
     }
   }
 }
