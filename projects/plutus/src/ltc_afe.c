@@ -155,7 +155,8 @@ StatusCode ltc_afe_init(LtcAfeStorage *afe, const LtcAfeSettings *settings) {
         // Input disabled - offset to compensate
         offset++;
       }
-      afe->index_offset[cell * device] = offset;
+
+      afe->index_offset[LTC_AFE_MAX_CELLS_PER_DEVICE * device + cell] = offset;
     }
   }
 
@@ -275,7 +276,7 @@ StatusCode ltc_afe_toggle_cell_discharge(LtcAfeStorage *afe, uint16_t cell, bool
           } else {
             afe->discharge_bitset[device] &= ~(1 << cell);
           }
-          break;
+          return STATUS_CODE_OK;
         }
 
         actual_cell++;
@@ -283,5 +284,6 @@ StatusCode ltc_afe_toggle_cell_discharge(LtcAfeStorage *afe, uint16_t cell, bool
     }
   }
 
-  return STATUS_CODE_OK;
+  // Somehow couldn't find the cell?
+  return status_code(STATUS_CODE_INTERNAL_ERROR);
 }
