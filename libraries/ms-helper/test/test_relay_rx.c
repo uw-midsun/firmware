@@ -40,8 +40,6 @@ typedef struct TestRelayRxHandlerCtx {
   bool executed;
 } TestRelayRxHandlerCtx;
 
-static const Event s_tx_event = { TEST_RELAY_RX_CAN_TX, 0 };
-static const Event s_rx_event = { TEST_RELAY_RX_CAN_RX, 0 };
 static CANStorage s_can_storage;
 static CANAckRequests s_can_ack_requests;
 static CANRxHandler s_rx_handlers[NUM_TEST_RELAY_RX_CAN_HANDLERS];
@@ -128,26 +126,26 @@ void test_relay_rx(void) {
 
   // Open.
   CAN_TRANSMIT_BATTERY_RELAY_MAIN(&req, TEST_RELAY_RX_STATE_OPEN);
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_RELAY_RX_CAN_TX, TEST_RELAY_RX_CAN_RX);
   TEST_ASSERT_TRUE(context.executed);
   context.executed = false;
 
   // Close.
   context.expected_state = TEST_RELAY_RX_STATE_CLOSE;
   CAN_TRANSMIT_BATTERY_RELAY_MAIN(&req, TEST_RELAY_RX_STATE_CLOSE);
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_RELAY_RX_CAN_TX, TEST_RELAY_RX_CAN_RX);
   TEST_ASSERT_TRUE(context.executed);
   context.executed = false;
 
   // Invalid.
   expected_status = CAN_ACK_STATUS_INVALID;
   CAN_TRANSMIT_BATTERY_RELAY_MAIN(&req, NUM_TEST_RELAY_RX_STATES);
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_RELAY_RX_CAN_TX, TEST_RELAY_RX_CAN_RX);
   TEST_ASSERT_FALSE(context.executed);
 
   // Fail to update relay.
   context.ret_code = STATUS_CODE_INTERNAL_ERROR;
   CAN_TRANSMIT_BATTERY_RELAY_MAIN(&req, TEST_RELAY_RX_STATE_CLOSE);
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_RELAY_RX_CAN_TX, TEST_RELAY_RX_CAN_RX);
   TEST_ASSERT_TRUE(context.executed);
 }
