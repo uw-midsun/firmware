@@ -30,8 +30,7 @@ StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage
   s_sock[uart].storage->rx_handler = settings->rx_handler;
   s_sock[uart].storage->context = settings->context;
 
-  return x86_socket_init(&s_sock[uart].thread, module_name, prv_receiver_wrapper,
-                                       &s_sock[uart]);
+  return x86_socket_init(&s_sock[uart].thread, module_name, prv_receiver_wrapper, &s_sock[uart]);
 }
 
 StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *context) {
