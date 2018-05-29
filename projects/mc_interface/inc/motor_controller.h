@@ -16,6 +16,8 @@
 // Arbitrary timeout after 5 TX periods without receiving a setpoint update
 #define MOTOR_CONTROLLER_WATCHDOG_COUNTER 5
 
+// Called with an array of reported vehicle speeds in cm/s when a new set of information
+// is received from all motor controllers.
 typedef void (*MotorControllerSpeedCb)(int16_t speed_cms[], size_t num_speeds, void *context);
 
 typedef enum {
@@ -69,10 +71,16 @@ typedef struct MotorControllerStorage {
 StatusCode motor_controller_init(MotorControllerStorage *controller,
                                  const MotorControllerSettings *settings);
 
+// Override the speed callback that is called when reported vehicle speed is received from the
+// motor controllers
 StatusCode motor_controller_set_speed_cb(MotorControllerStorage *controller,
                                          MotorControllerSpeedCb speed_cb, void *context);
 
+// Switch the motor controllers to throttle control
+// |throttle| should be -EE_DRIVE_OUTPUT_DENOMINATOR to EE_DRIVE_OUTPUT_DENOMINATOR
+// where |throttle| < 0: brake, |throttle| == 0: coast, |throttle| > 0: accel
 StatusCode motor_controller_set_throttle(MotorControllerStorage *controller, int16_t throttle,
                                          EEDriveOutputDirection direction);
 
+// Switch the motor controllers to cruise control
 StatusCode motor_controller_set_cruise(MotorControllerStorage *controller, int16_t speed_cms);
