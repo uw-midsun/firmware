@@ -30,10 +30,8 @@ StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage
   s_sock[uart].storage->rx_handler = settings->rx_handler;
   s_sock[uart].storage->context = settings->context;
 
-  StatusCode ret_val = x86_socket_init(&s_sock[uart].thread, module_name, prv_receiver_wrapper,
-                                       (void *)&s_sock[uart]);
-
-  return ret_val;
+  return x86_socket_init(&s_sock[uart].thread, module_name, prv_receiver_wrapper,
+                                       &s_sock[uart]);
 }
 
 StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *context) {
@@ -44,7 +42,5 @@ StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *co
 }
 
 StatusCode uart_tx(UARTPort uart, uint8_t *tx_data, size_t len) {
-  StatusCode ret_val = x86_socket_broadcast(&s_sock[uart].thread, (char *)tx_data, len);
-
-  return ret_val;
+  return x86_socket_broadcast(&s_sock[uart].thread, (char *)tx_data, len);
 }
