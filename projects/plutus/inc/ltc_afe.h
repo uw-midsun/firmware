@@ -5,6 +5,7 @@
 // - GPIO2, GPIO3, GPIO4, GPIO5 are used as AUX channel select outputs
 // - GPIO1 is used as a thermistor input
 // requires GPIO, Interrupts and Soft Timers to be initialized
+// Note that all units are in 100uV
 
 #include <assert.h>
 #include <stdbool.h>
@@ -13,12 +14,9 @@
 #include "gpio.h"
 #include "spi.h"
 #include "status.h"
+#include "plutus_cfg.h"
 
-#define LTC6804_CELLS_PER_DEVICE 12
-
-// - 12-bit, 16-bit and 24-bit values are little endian
-// - commands and PEC are big endian
-#define SWAP_UINT16(x) (uint16_t)(((uint16_t)(x) >> 8) | ((uint16_t)(x) << 8))
+#define LTC_AFE_MAX_CELLS_PER_DEVICE 12
 
 #if defined(__GNUC__)
 #define _PACKED __attribute__((packed))
@@ -48,20 +46,35 @@ typedef struct LtcAfeSettings {
   uint32_t spi_baudrate;
 
   LtcAfeAdcMode adc_mode;
+  // Cell inputs to include in the measurement arrays
+  uint16_t input_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
 } LtcAfeSettings;
 
-// initialize the LTC6804
-StatusCode ltc_afe_init(const LtcAfeSettings *afe);
+typedef struct LtcAfeStorage {
+  SPIPort spi_port;
+  GPIOAddress cs;
+  LtcAfeAdcMode adc_mode;
 
-// read all voltages
-// result is an array of size LTC6804_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
-// len should be SIZEOF_ARRAY(result)
-StatusCode ltc_afe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result, size_t len);
+  // Cell inputs to include in the measurement arrays
+  uint16_t input_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
+  // Precalculate the offset so we can easily insert it into the result array
+  // Note that this offset should be subtracted from the actual index
+  uint16_t index_offset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN * LTC_AFE_MAX_CELLS_PER_DEVICE];
+  // Discharge enabled - device-relative
+  uint16_t discharge_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
+} LtcAfeStorage;
 
-// read all auxiliary registers
-// result should be an array of size LTC6804_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
-// len should be SIZEOF_ARRAY(result)
-StatusCode ltc_afe_read_all_aux(const LtcAfeSettings *afe, uint16_t *result, size_t len);
+// Initialize the LTC6804
+StatusCode ltc_afe_init(LtcAfeStorage *afe, const LtcAfeSettings *settings);
 
-// mark cells for discharging (takes effect after config is re-written)
-StatusCode ltc_afe_toggle_discharge_cells(const LtcAfeSettings *afe, uint16_t cell, bool discharge);
+// Read all cell voltages (in 100uV)
+// |result_arr| is an array of size PLUTUS_CFG_TOTAL_CELLS
+StatusCode ltc_afe_read_all_voltage(LtcAfeStorage *afe, uint16_t *result_arr, size_t len);
+
+// Read all auxiliary voltages (in 100uV)
+// |result_arr| should be an array of size PLUTUS_CFG_TOTAL_CELLS
+StatusCode ltc_afe_read_all_aux(LtcAfeStorage *afe, uint16_t *result_arr, size_t len);
+
+// Mark cell for discharging (takes effect after config is re-written)
+// |cell| should be [0, PLUTUS_CFG_TOTAL_CELLS)
+StatusCode ltc_afe_toggle_cell_discharge(LtcAfeStorage *afe, uint16_t cell, bool discharge);
