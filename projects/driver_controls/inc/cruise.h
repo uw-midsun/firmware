@@ -13,10 +13,10 @@
 #include "status.h"
 
 // How to much to increment/decrement in cm/s (m/s * 100)
-// Arbitrary default of ~1mph
+// Arbitrary default of ~1mph (~1.61kph)
 #define CRUISE_OFFSET_CMS 45
-// Arbitrary maximum of ~60mph
-#define CRUISE_MAX_TARGET_CMS 2700
+// Arbitrary maximum of ~70mph (~112.65kph)
+#define CRUISE_MAX_TARGET_CMS 3150
 
 typedef struct CruiseStorage {
   volatile int16_t target_speed_cms;   // m/s * 100

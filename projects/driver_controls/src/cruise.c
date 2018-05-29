@@ -66,6 +66,7 @@ bool cruise_handle_event(CruiseStorage *cruise, const Event *e) {
       cruise->repeat_timer = SOFT_TIMER_INVALID_TIMER;
       break;
     case INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_PLUS:
+      // Fall-through since it's handled using the same timer
     case INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_MINUS:
       // reset just in case we switched directly
       soft_timer_cancel(cruise->repeat_timer);
