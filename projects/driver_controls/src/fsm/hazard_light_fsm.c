@@ -41,7 +41,7 @@ StatusCode hazard_light_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  fsm_init(fsm, "hazard_light_fsm", &state_hazard_off, guard);
+  fsm_init(fsm, "Hazard Light FSM", &state_hazard_off, guard);
 
   return STATUS_CODE_OK;
 }
