@@ -84,7 +84,7 @@ static void prv_trigger_adc_conversion(LtcAfeStorage *afe) {
   spi_exchange(afe->spi_port, cmd, 4, NULL, 0);
 
   // wait for conversions to finish
-  // TODO: why this delay value? shouldn't take that long
+  // TODO(ELEC-441): why this delay value? shouldn't take that long
   delay_ms(100);
 }
 
