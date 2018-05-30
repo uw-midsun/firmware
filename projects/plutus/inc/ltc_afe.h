@@ -14,9 +14,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "gpio.h"
+#include "plutus_cfg.h"
 #include "spi.h"
 #include "status.h"
-#include "plutus_cfg.h"
 
 #define LTC_AFE_MAX_CELLS_PER_DEVICE 12
 

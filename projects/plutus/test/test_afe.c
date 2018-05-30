@@ -21,9 +21,9 @@ void setup_test(void) {
     .mosi = PLUTUS_CFG_SPI_MOSI,  //
     .miso = PLUTUS_CFG_SPI_MISO,  //
     .sclk = PLUTUS_CFG_SPI_SCLK,  //
-    .cs = PLUTUS_CFG_SPI_CS,    //
+    .cs = PLUTUS_CFG_SPI_CS,      //
 
-    .spi_port = PLUTUS_CFG_SPI_PORT,  //
+    .spi_port = PLUTUS_CFG_SPI_PORT,          //
     .spi_baudrate = PLUTUS_CFG_SPI_BAUDRATE,  //
     .adc_mode = PLUTUS_CFG_AFE_MODE,
 

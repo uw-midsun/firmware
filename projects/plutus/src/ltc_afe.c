@@ -1,10 +1,10 @@
 #include "ltc_afe.h"
+#include <stddef.h>
+#include <string.h>
 #include "crc15.h"
 #include "delay.h"
 #include "ltc68041.h"
 #include "misc.h"
-#include <string.h>
-#include <stddef.h>
 
 // - 12-bit, 16-bit and 24-bit values are little endian
 // - commands and PEC are big endian
@@ -164,7 +164,7 @@ StatusCode ltc_afe_init(LtcAfeStorage *afe, const LtcAfeSettings *settings) {
 
   SPISettings spi_config = {
     .baudrate = settings->spi_baudrate,  //
-    .mode = SPI_MODE_3,             //
+    .mode = SPI_MODE_3,                  //
     .mosi = settings->mosi,              //
     .miso = settings->miso,              //
     .sclk = settings->sclk,              //
