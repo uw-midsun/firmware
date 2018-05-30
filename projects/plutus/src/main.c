@@ -17,13 +17,13 @@ int main(void) {
   soft_timer_init();
 
   const LtcAfeSettings afe_settings = {
-    .mosi = PLUTUS_CFG_SPI_MOSI,  //
-    .miso = PLUTUS_CFG_SPI_MISO,  //
-    .sclk = PLUTUS_CFG_SPI_SCLK,  //
-    .cs = PLUTUS_CFG_SPI_CS,      //
+    .mosi = PLUTUS_CFG_AFE_SPI_MOSI,  //
+    .miso = PLUTUS_CFG_AFE_SPI_MISO,  //
+    .sclk = PLUTUS_CFG_AFE_SPI_SCLK,  //
+    .cs = PLUTUS_CFG_AFE_SPI_CS,      //
 
-    .spi_port = PLUTUS_CFG_SPI_PORT,          //
-    .spi_baudrate = PLUTUS_CFG_SPI_BAUDRATE,  //
+    .spi_port = PLUTUS_CFG_AFE_SPI_PORT,          //
+    .spi_baudrate = PLUTUS_CFG_AFE_SPI_BAUDRATE,  //
     .adc_mode = PLUTUS_CFG_AFE_MODE,
 
     .input_bitset = PLUTUS_CFG_INPUT_BITSET_ARR,
@@ -39,7 +39,7 @@ int main(void) {
       LOG_DEBUG("Invalid status\n");
     }
 
-    for (size_t i = 0; i < PLUTUS_CFG_TOTAL_CELLS; i++) {
+    for (int i = 0; i < PLUTUS_CFG_TOTAL_CELLS; i++) {
       LOG_DEBUG("C%d: %d\n", i, voltages[i]);
     }
   }

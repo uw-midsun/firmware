@@ -8,7 +8,6 @@
 #include "interrupt.h"
 #include "log.h"
 #include "misc.h"
-#include "plutus_config.h"
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
@@ -41,13 +40,13 @@ static volatile TestAdcStorage s_storage = {
 };
 
 static LtcAdcStorage s_adc_settings = {
-  .mosi = { GPIO_PORT_B, 15 },  //
-  .miso = { GPIO_PORT_B, 14 },  //
-  .sclk = { GPIO_PORT_B, 13 },  //
-  .cs = { GPIO_PORT_B, 12 },    //
+  .mosi = PLUTUS_CFG_CURRENT_SENSE_MOSI,  //
+  .miso = PLUTUS_CFG_CURRENT_SENSE_MISO,  //
+  .sclk = PLUTUS_CFG_CURRENT_SENSE_SCLK,  //
+  .cs = PLUTUS_CFG_CURRENT_SENSE_CS,      //
 
-  .spi_port = SPI_PORT_2,  //
-  .spi_baudrate = 750000,  //
+  .spi_port = PLUTUS_CFG_CURRENT_SENSE_SPI_PORT,          //
+  .spi_baudrate = PLUTUS_CFG_CURRENT_SENSE_SPI_BAUDRATE,  //
   .filter_mode = LTC_ADC_FILTER_50HZ_60HZ,
 };
 
