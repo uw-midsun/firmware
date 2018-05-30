@@ -21,17 +21,20 @@ FSM_STATE_TRANSITION(state_forward) {
   FSM_ADD_TRANSITION(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, state_reverse);
 }
 
+// TODO(ELEC-407): Add neutral state
+
 FSM_STATE_TRANSITION(state_reverse) {
   FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_reverse);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, state_forward);
+  // TODO(ELEC-407): revert to default state on power on?
 }
 
 // Direction selector FSM arbiter guard functions
 
 static bool prv_guard_reverse(const Event *e) {
   // Cruise control is forbidden in reverse for obvious reasons
-  return e->id != INPUT_EVENT_CRUISE_CONTROL;
+  return e->id != INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME;
 }
 
 // Direction selector FSM output functions
@@ -60,7 +63,7 @@ StatusCode direction_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  fsm_init(fsm, "direction_fsm", &state_forward, guard);
+  fsm_init(fsm, "Direction FSM", &state_forward, guard);
 
   return STATUS_CODE_OK;
 }
