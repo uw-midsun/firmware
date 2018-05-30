@@ -42,5 +42,7 @@ int main(void) {
     for (int i = 0; i < PLUTUS_CFG_TOTAL_CELLS; i++) {
       LOG_DEBUG("C%d: %d\n", i, voltages[i]);
     }
+
+    delay_s(1);
   }
 }

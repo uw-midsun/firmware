@@ -3,6 +3,7 @@
 #include <string.h>
 #include "crc15.h"
 #include "delay.h"
+#include "log.h"
 #include "ltc68041.h"
 #include "misc.h"
 
@@ -197,10 +198,10 @@ StatusCode ltc_afe_read_all_voltage(LtcAfeStorage *afe, uint16_t *result_arr, si
       for (uint16_t cell = 0; cell < LTC6804_CELLS_IN_REG; ++cell) {
         // LSB of the reading is 100 uV
         uint16_t voltage = voltage_register[device].reg.voltages[cell];
-        uint16_t index =
-            device * LTC_AFE_MAX_CELLS_PER_DEVICE + cell + (cell_reg * LTC6804_CELLS_IN_REG);
+        uint16_t device_cell = cell + (cell_reg * LTC6804_CELLS_IN_REG);
+        uint16_t index = device * LTC_AFE_MAX_CELLS_PER_DEVICE + device_cell;
 
-        if ((afe->input_bitset[device] >> cell) & 0x1) {
+        if (((afe->input_bitset[device] >> device_cell) & 0x1) == 0x1) {
           // Input enabled - store result
           result_arr[index - afe->index_offset[index]] = voltage;
         }
