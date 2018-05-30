@@ -17,9 +17,6 @@
 #define SCNd8 "hhd"
 #endif
 
-// This is to get the number of fields in a sentence for array allocation
-static const size_t s_nmea_message_num_fields[] = { 0, 16, 9, 11, 13, 14, 14, 10 };
-
 // Just a function to loosely validate if a sentence is valid
 StatusCode nmea_valid(const char *to_check) {
   if (to_check == NULL) {
@@ -43,7 +40,7 @@ StatusCode nmea_valid(const char *to_check) {
 }
 
 // Returns the NMEA sentence type
-StatusCode nmea_sentence_type(const char *rx_arr, NmeaMessageID *result) {
+StatusCode nmea_sentence_type(const char *rx_arr, NmeaMessageId *result) {
   if (result == NULL || rx_arr == NULL) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Cannot pass NULL pointers to this function\n");
   }
@@ -64,22 +61,22 @@ StatusCode nmea_sentence_type(const char *rx_arr, NmeaMessageID *result) {
 
   // Parsing which type of NMEA message this is
   if (strcmp(message_id, "GGA") == 0) {
-    *result = NMEA_GGA;
+    *result = NMEA_MESSAGE_ID_GGA;
     return STATUS_CODE_OK;
   } else if (strcmp(message_id, "GLL") == 0) {
-    *result = NMEA_GLL;
+    *result = NMEA_MESSAGE_ID_GLL;
     return STATUS_CODE_OK;
   } else if (strcmp(message_id, "GSA") == 0) {
-    *result = NMEA_GSA;
+    *result = NMEA_MESSAGE_ID_GSA;
     return STATUS_CODE_OK;
   } else if (strcmp(message_id, "GSV") == 0) {
-    *result = NMEA_GSV;
+    *result = NMEA_MESSAGE_ID_GSV;
     return STATUS_CODE_OK;
   } else if (strcmp(message_id, "RMC") == 0) {
-    *result = NMEA_RMC;
+    *result = NMEA_MESSAGE_ID_RMC;
     return STATUS_CODE_OK;
   } else if (strcmp(message_id, "VTG") == 0) {
-    *result = NMEA_VTG;
+    *result = NMEA_MESSAGE_ID_VTG;
     return STATUS_CODE_OK;
   } else {
     LOG_DEBUG("Unknown message type: %c%c%c", message_id[0], message_id[1], message_id[2]);
@@ -87,7 +84,7 @@ StatusCode nmea_sentence_type(const char *rx_arr, NmeaMessageID *result) {
   }
 }
 
-StatusCode nmea_get_gga_sentence(const char *rx_arr, nmea_gga_sentence *result) {
+StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
   if (result == NULL || rx_arr == NULL) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Cannot pass NULL pointers to this function\n");
   }
@@ -97,7 +94,7 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, nmea_gga_sentence *result) 
   status_ok_or_return(nmea_valid(rx_arr));
 
   // m_id will keep track of which sentence type we are currently operating on
-  NmeaMessageID m_id = 0;
+  NmeaMessageId m_id = 0;
 
   status_ok_or_return(nmea_sentence_type(rx_arr, &m_id));
 
@@ -105,7 +102,7 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, nmea_gga_sentence *result) 
 
   // Parses NMEA message
 
-  if (m_id == NMEA_GGA) {
+  if (m_id == NMEA_MESSAGE_ID_GGA) {
     // Example message:
     // $GPGGA,053740.000,2503.6319,N,12136.0099,E,1,08,1.1,63.8,M,15.2,M,,0000*64
 
@@ -220,7 +217,7 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, nmea_gga_sentence *result) 
   return status_msg(STATUS_CODE_INVALID_ARGS, "NMEA: Incorrect message ID received\n");
 }
 
-StatusCode nmea_get_vtg_sentence(const char *rx_arr, nmea_vtg_sentence *result) {
+StatusCode nmea_get_vtg_sentence(const char *rx_arr, NmeaVtgSentence *result) {
   if (result == NULL || rx_arr == NULL) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Cannot pass NULL pointers to function\n");
   }
@@ -230,11 +227,11 @@ StatusCode nmea_get_vtg_sentence(const char *rx_arr, nmea_vtg_sentence *result) 
   status_ok_or_return(nmea_valid(rx_arr));
 
   // m_id will keep track of which sentence type we are currently operating on
-  NmeaMessageID m_id = 0;
+  NmeaMessageId m_id = 0;
 
   status_ok_or_return(nmea_sentence_type(rx_arr, &m_id));
 
-  if (m_id == NMEA_VTG) {
+  if (m_id == NMEA_MESSAGE_ID_VTG) {
     // Example message:
     // $GPVTG,79.65,T,,M,2.69,N,5.0,K,A*38
 

@@ -11,11 +11,11 @@
 void setup_test(void) {}
 void teardown_test(void) {}
 
-void test_gps_nmea_gga(void) {
+void test_gps_NMEA_MESSAGE_ID_GGA(void) {
   const char input[] =
       "$GPGGA,053740.000,2503.6319,N,12136.0099,E,1,08,1.1,63.8,"
       "M,15.2,M,,0000*64";
-  nmea_gga_sentence r = { 0 };
+  NmeaGgaSentence r = { 0 };
   TEST_ASSERT_TRUE(status_ok(nmea_get_gga_sentence(input, &r)));
 
   TEST_ASSERT_TRUE(r.time.hh == 5);
@@ -56,10 +56,10 @@ void test_gps_nmea_gga(void) {
   TEST_ASSERT_TRUE(nmea_checksum_validate(input, strlen(input)));
 }
 
-void test_gps_nmea_vtg(void) {
+void test_gps_NMEA_MESSAGE_ID_VTG(void) {
   const char input[] = "$GPVTG,79.65,T,,M,2.69,N,5.0,K,A*38";
 
-  nmea_vtg_sentence vtg = { 0 };
+  NmeaVtgSentence vtg = { 0 };
 
   TEST_ASSERT_TRUE(status_ok(nmea_get_vtg_sentence(input, &vtg)));
 
@@ -72,6 +72,6 @@ void test_gps_nmea_vtg(void) {
 void test_fail_vtg(void) {
   const char input[] = "$GPVTG,d5,T,,dM,2.69,d0d,K,dA*38";
 
-  nmea_vtg_sentence vtg = { 0 };
+  NmeaVtgSentence vtg = { 0 };
   TEST_ASSERT_FALSE(status_ok(nmea_get_vtg_sentence(input, &vtg)));
 }
