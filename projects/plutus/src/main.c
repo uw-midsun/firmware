@@ -7,6 +7,7 @@
 #include "plutus_cfg.h"
 #include "soft_timer.h"
 #include "spi.h"
+#include "delay.h"
 
 static LtcAfeStorage s_afe;
 
@@ -15,22 +16,17 @@ int main(void) {
   interrupt_init();
   soft_timer_init();
 
-  LtcAfeSettings afe_settings = {
-    .mosi = { GPIO_PORT_A, 7 },  //
-    .miso = { GPIO_PORT_A, 6 },  //
-    .sclk = { GPIO_PORT_A, 5 },  //
-    .cs = { GPIO_PORT_A, 4 },    //
+  const LtcAfeSettings afe_settings = {
+    .mosi = PLUTUS_CFG_SPI_MOSI,  //
+    .miso = PLUTUS_CFG_SPI_MISO,  //
+    .sclk = PLUTUS_CFG_SPI_SCLK,  //
+    .cs = PLUTUS_CFG_SPI_CS,    //
 
-    .spi_port = SPI_PORT_1,
-    .spi_baudrate = 250000,  //
-    .adc_mode = LTC_AFE_ADC_MODE_27KHZ,
+    .spi_port = PLUTUS_CFG_SPI_PORT,  //
+    .spi_baudrate = PLUTUS_CFG_SPI_BAUDRATE,  //
+    .adc_mode = PLUTUS_CFG_AFE_MODE,
 
-    .input_bitset = {
-      // PLUTUS_CFG_INPUT_BITSET_FULL,
-      PLUTUS_CFG_INPUT_BITSET_SPLIT,
-      // PLUTUS_CFG_INPUT_BITSET_FULL,
-      // PLUTUS_CFG_INPUT_BITSET_SPLIT,
-    }
+    .input_bitset = PLUTUS_CFG_INPUT_BITSET_ARR,
   };
 
   ltc_afe_init(&s_afe, &afe_settings);

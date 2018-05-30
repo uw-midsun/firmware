@@ -1,12 +1,14 @@
 #pragma once
-// driver for LTC6804-1 AFE chip
-// assumes that:
+// Driver for LTC6804-1 AFE chip
+// Assumes that:
 // - a 16 channel analog MUX is attached to the GPIO outputs
 // - GPIO2, GPIO3, GPIO4, GPIO5 are used as AUX channel select outputs
 // - GPIO1 is used as a thermistor input
-// requires GPIO, Interrupts and Soft Timers to be initialized
-// Note that all units are in 100uV
-
+// Requires GPIO, Interrupts and Soft Timers to be initialized
+//
+// Note that all units are in 100uV.
+//
+// This module supports AFEs with fewer than 12 cells using the |input_bitset|.
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -64,7 +66,9 @@ typedef struct LtcAfeStorage {
   uint16_t discharge_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
 } LtcAfeStorage;
 
-// Initialize the LTC6804
+// Initialize the LTC6804.
+// |settings.input_bitset| should be an array of bitsets where bits 0 to 11 represent whether
+// we should monitor the cell input for the given device.
 StatusCode ltc_afe_init(LtcAfeStorage *afe, const LtcAfeSettings *settings);
 
 // Read all cell voltages (in 100uV)

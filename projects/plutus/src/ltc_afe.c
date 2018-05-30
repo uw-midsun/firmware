@@ -121,7 +121,7 @@ static StatusCode prv_write_config(LtcAfeStorage *afe, uint8_t gpio_enable_pins)
     uint16_t overvoltage = 0;
 
     config_packet.devices[curr_device].reg.discharge_bitset = afe->discharge_bitset[curr_device];
-    config_packet.devices[curr_device].reg.discharge_timeout = LTC_AFE_DISCHARGE_TIMEOUT_1_MIN;
+    config_packet.devices[curr_device].reg.discharge_timeout = LTC_AFE_DISCHARGE_TIMEOUT_30_S;
 
     config_packet.devices[curr_device].reg.adcopt = ((afe->adc_mode + 1) > 3);
     config_packet.devices[curr_device].reg.swtrd = true;
@@ -243,6 +243,7 @@ StatusCode ltc_afe_read_all_aux(LtcAfeStorage *afe, uint16_t *result_arr, size_t
       uint16_t voltage = register_data[device].reg.voltages[0];
 
       if ((afe->input_bitset[device] >> cell) & 0x1) {
+        // Need to offset the data if enabled as an input
         uint16_t index = device * LTC_AFE_MAX_CELLS_PER_DEVICE + cell;
         result_arr[index - afe->index_offset[index]] = voltage;
       }
