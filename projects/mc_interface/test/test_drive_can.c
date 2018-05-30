@@ -72,38 +72,34 @@ void setup_test(void) {
 
 void teardown_test(void) {}
 
-// TODO(ELEC-338): Replace this with the updated version
-static const Event s_tx_event = { TEST_DRIVE_CAN_EVENT_TX, 0 };
-static const Event s_rx_event = { TEST_DRIVE_CAN_EVENT_RX, 0 };
-
 void test_drive_can_basic(void) {
   // Make sure we prevent throttle/cruise from activating if mechanical brake is active
   CAN_TRANSMIT_MOTOR_CONTROLS(100, EE_DRIVE_OUTPUT_DIRECTION_FORWARD, 0,
                               EE_DRIVE_OUTPUT_MECH_THRESHOLD + 1);
-  MS_TEST_HELPER_CAN_TX_RX(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX(TEST_DRIVE_CAN_EVENT_TX, TEST_DRIVE_CAN_EVENT_RX);
   TEST_ASSERT_EQUAL(0, s_throttle);
 
   CAN_TRANSMIT_MOTOR_CONTROLS(0, EE_DRIVE_OUTPUT_DIRECTION_FORWARD, 45,
                               EE_DRIVE_OUTPUT_MECH_THRESHOLD + 1);
-  MS_TEST_HELPER_CAN_TX_RX(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX(TEST_DRIVE_CAN_EVENT_TX, TEST_DRIVE_CAN_EVENT_RX);
   TEST_ASSERT_EQUAL(0, s_throttle);
   TEST_ASSERT_EQUAL(0, s_speed_cms);
 
   // Allow regen braking to pass through even if mechanical brake is active
   CAN_TRANSMIT_MOTOR_CONTROLS((uint16_t)-300, EE_DRIVE_OUTPUT_DIRECTION_FORWARD, 0,
                               EE_DRIVE_OUTPUT_MECH_THRESHOLD + 1);
-  MS_TEST_HELPER_CAN_TX_RX(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX(TEST_DRIVE_CAN_EVENT_TX, TEST_DRIVE_CAN_EVENT_RX);
   TEST_ASSERT_EQUAL(-300, s_throttle);
   TEST_ASSERT_EQUAL(0, s_speed_cms);
 
   // Cruise should override throttle
   CAN_TRANSMIT_MOTOR_CONTROLS(200, EE_DRIVE_OUTPUT_DIRECTION_FORWARD, 45, 0);
-  MS_TEST_HELPER_CAN_TX_RX(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX(TEST_DRIVE_CAN_EVENT_TX, TEST_DRIVE_CAN_EVENT_RX);
   TEST_ASSERT_EQUAL(0, s_throttle);
   TEST_ASSERT_EQUAL(45, s_speed_cms);
 
   // Throttle
   CAN_TRANSMIT_MOTOR_CONTROLS(300, EE_DRIVE_OUTPUT_DIRECTION_REVERSE, 0, 0);
-  MS_TEST_HELPER_CAN_TX_RX(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX(TEST_DRIVE_CAN_EVENT_TX, TEST_DRIVE_CAN_EVENT_RX);
   TEST_ASSERT_EQUAL(300, s_throttle);
 }
