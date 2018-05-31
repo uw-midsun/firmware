@@ -8,6 +8,7 @@
 #include "interrupt.h"
 #include "log.h"
 #include "misc.h"
+#include "plutus_cfg.h"
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
