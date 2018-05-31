@@ -1,12 +1,12 @@
-#include "ltc_adc_calibration.h"
+#include "ltc_current_sense.h"
 
 static void prv_callback(int32_t *value, void *context) {
-  LTCCalibrationStorage *storage = (LTCCalibrationStorage *)context;
+  LTCCurrentSenseStorage *storage = (LTCCurrentSenseStorage *)context;
 
   // Correct for voltage offset
   storage->value.voltage = *value - storage->line->zero_point.voltage;
 
-  // Formula for calculating calibrated current. Draws slope between given calibration
+  // Formula for calculating calibrated current. Draws slope between given calibrated
   // points, and uses the result as well as the voltage offset to calculate current
   storage->value.current = storage->line->max_point.current *
                            (*value - storage->line->zero_point.voltage) /
@@ -17,7 +17,7 @@ static void prv_callback(int32_t *value, void *context) {
   }
 }
 
-StatusCode ltc_adc_calibration_init(LTCCalibrationStorage *storage, LTCCalibrationLineData *line) {
+StatusCode ltc_current_sense_init(LTCCurrentSenseStorage *storage, LTCCurrentSenseLineData *line) {
   if (storage == NULL) {
     return status_code(STATUS_CODE_UNINITIALIZED);
   }
@@ -33,9 +33,8 @@ StatusCode ltc_adc_calibration_init(LTCCalibrationStorage *storage, LTCCalibrati
 }
 
 // Register a callback to run when new data is available
-StatusCode ltc_adc_calibration_register_callback(LTCCalibrationStorage *storage,
-                                                 LtcAdcCalibrationCallback callback,
-                                                 void *context) {
+StatusCode ltc_current_sense_register_callback(LTCCurrentSenseStorage *storage,
+                                               LtcCurrentSenseCallback callback, void *context) {
   if (storage == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
