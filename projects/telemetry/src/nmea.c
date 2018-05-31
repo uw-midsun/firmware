@@ -1,5 +1,6 @@
 #define _DEFAULT_SOURCE
 #include "nmea.h"
+#include <ctype.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -16,6 +17,48 @@
 #ifndef SCNd8
 #define SCNd8 "hhd"
 #endif
+
+// Small power function, be careful not to overflow with it.
+// Only for positive numbers
+// Not useful for edge cases such as 0^0
+static uint16_t prv_pow_uint(uint8_t base, int8_t exp) {
+  if (exp <= 0) {
+    return 1;
+  }
+  if (base == 0) {
+    return 0;
+  }
+  uint16_t result = base;
+  for (uint8_t i = 1; i < exp; i++) {
+    result *= base;
+  }
+  return result;
+}
+
+// Turns a string into an integer, but taking place values into account (depending on places arg)
+// ex. 0002 => 2, 2000 => 2000, 2 => 2000
+static StatusCode prv_string_to_fraction(const char *input, int8_t places, uint16_t *result) {
+  if (input == NULL || result == NULL) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Cannot pass NULL pointers as args");
+  }
+  if (places == 0) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Must parse at least one decimal place");
+  }
+  size_t len = strlen(input);
+
+  if (len == 0) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Cannot pass empty string as arg");
+  }
+  for (uint8_t i = 0; i < len && i < places; i++) {
+    if (isdigit(input[i])) {
+      *result += (input[i] - '0') * prv_pow_uint(10, places - i - 1);
+    } else {
+      return status_msg(STATUS_CODE_INVALID_ARGS, "Must pass numeric string only");
+    }
+  }
+
+  return STATUS_CODE_OK;
+}
 
 // Just a function to loosely validate if a sentence is valid
 StatusCode nmea_valid(const char *to_check) {
@@ -118,14 +161,22 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
 
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
-      sscanf(token, "%2" SCNd8 "%2" SCNd8 "%2" SCNd8 ".%3" SCNd16, &result->time.hh,
-             &result->time.mm, &result->time.ss, &result->time.sss);
+      char fraction_string[5] = { 0 };
+      sscanf(token, "%2" SCNd8 "%2" SCNd8 "%2" SCNd8 ".%4s", &result->time.hh, &result->time.mm,
+             &result->time.ss, fraction_string);
+      uint16_t fraction = 0;
+      prv_string_to_fraction(fraction_string, 3, &fraction);
+      result->time.sss = fraction;
     }
 
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
-      sscanf(token, "%2" SCNd16 "%2" SCNd16 ".%4" SCNd16, &result->latitude.degrees,
-             &result->latitude.minutes, &result->latitude.fraction);
+      char fraction_string[5] = { 0 };
+      sscanf(token, "%2" SCNd16 "%2" SCNd16 ".%4s", &result->latitude.degrees,
+             &result->latitude.minutes, fraction_string);
+      uint16_t fraction = 0;
+      prv_string_to_fraction(fraction_string, 3, &fraction);
+      result->latitude.fraction = fraction;
     }
 
     token = strsep(&rx_arr_copy_ptr, ",");
@@ -135,8 +186,12 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
 
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
-      sscanf(token, "%3" SCNd16 "%2" SCNd16 ".%4" SCNd16, &result->longitude.degrees,
-             &result->longitude.minutes, &result->longitude.fraction);
+      char fraction_string[5] = { 0 };
+      sscanf(token, "%3" SCNd16 "%2" SCNd16 ".%4s", &result->longitude.degrees,
+             &result->longitude.minutes, fraction_string);
+      uint16_t fraction = 0;
+      prv_string_to_fraction(fraction_string, 3, &fraction);
+      result->longitude.fraction = fraction;
     }
 
     token = strsep(&rx_arr_copy_ptr, ",");
@@ -155,16 +210,16 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
       // on page 14
       switch (temp_position_fix) {
         case 1:
-          result->position_fix = NMEA_PF_GPS_SPS;
+          result->position_fix = NMEA_POSITION_FIX_GPS_SPS;
           break;
         case 2:
-          result->position_fix = NMEA_PF_DIFFERENTIAL_GPS_SPS;
+          result->position_fix = NMEA_POSITION_FIX_DIFFERENTIAL_GPS_SPS;
           break;
         case 6:
-          result->position_fix = NMEA_PF_DEAD_RECKONING_MODE;
+          result->position_fix = NMEA_POSITION_FIX_DEAD_RECKONING_MODE;
           break;
         default:
-          result->position_fix = NMEA_PF_INVALID;
+          result->position_fix = NMEA_POSITION_FIX_INVALID;
           break;
       }
     }
@@ -172,29 +227,39 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
     token = strsep(&rx_arr_copy_ptr, ",");
 
     if (token != NULL) {
-      sscanf(token, "%" SCNd16, &result->satellites_used);
+      sscanf(token, "%" SCNu16, &result->satellites_used);
     }
 
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
-      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->hdop_integer, &result->hdop_fraction);
+      char fraction_string[5] = { 0 };
+      sscanf(token, "%" SCNd16 ".%4s", &result->hdop_integer, fraction_string);
+      uint16_t fraction = 0;
+      prv_string_to_fraction(fraction_string, 3, &fraction);
+      result->hdop_fraction = fraction;
     }
 
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
-      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->msl_altitude_integer,
-             &result->msl_altitude_fraction);
+      char fraction_string[5] = { 0 };
+      sscanf(token, "%" SCNd16 ".%4s", &result->msl_altitude_integer, fraction_string);
+      uint16_t fraction = 0;
+      prv_string_to_fraction(fraction_string, 3, &fraction);
+      result->msl_altitude_fraction = fraction;
     }
 
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
-      result->units_msl_altitude = (uint8_t)token[0];
+      result->units_msl_altitude = token[0];
     }
 
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
-      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->geoid_seperation_integer,
-             &result->geoid_seperation_fraction);
+      char fraction_string[5] = { 0 };
+      sscanf(token, "%" SCNd16 ".%4s", &result->geoid_seperation_integer, fraction_string);
+      uint16_t fraction = 0;
+      prv_string_to_fraction(fraction_string, 3, &fraction);
+      result->geoid_seperation_fraction = fraction;
     }
 
     token = strsep(&rx_arr_copy_ptr, ",");
@@ -250,8 +315,11 @@ StatusCode nmea_get_vtg_sentence(const char *rx_arr, NmeaVtgSentence *result) {
     token = strsep(&rx_arr_copy_ptr, ",");
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
-      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->measure_heading_degrees_integer,
-             &result->measure_heading_degrees_fraction);
+      char fraction_string[5] = { 0 };
+      sscanf(token, "%" SCNd16 ".%4s", &result->measure_heading_degrees_integer, fraction_string);
+      uint16_t fraction = 0;
+      prv_string_to_fraction(fraction_string, 3, &fraction);
+      result->measure_heading_degrees_fraction = fraction;
     }
 
     // Just discarding data we don't need
@@ -262,8 +330,11 @@ StatusCode nmea_get_vtg_sentence(const char *rx_arr, NmeaVtgSentence *result) {
     token = strsep(&rx_arr_copy_ptr, ",");
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
-      sscanf(token, "%" SCNd16 ".%" SCNd16, &result->speed_kmh_integer,
-             &result->speed_kmh_fraction);
+      char fraction_string[5] = { 0 };
+      sscanf(token, "%" SCNd16 ".%4s", &result->speed_kmh_integer, fraction_string);
+      uint16_t fraction = 0;
+      prv_string_to_fraction(fraction_string, 3, &fraction);
+      result->speed_kmh_fraction = fraction;
     }
 
     return STATUS_CODE_OK;
