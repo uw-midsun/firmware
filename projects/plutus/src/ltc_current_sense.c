@@ -1,5 +1,7 @@
 #include "ltc_current_sense.h"
 
+#include <string.h>
+
 static void prv_callback(int32_t *value, void *context) {
   LTCCurrentSenseStorage *storage = (LTCCurrentSenseStorage *)context;
 
@@ -17,17 +19,26 @@ static void prv_callback(int32_t *value, void *context) {
   }
 }
 
-StatusCode ltc_current_sense_init(LTCCurrentSenseStorage *storage, LTCCurrentSenseLineData *line) {
+StatusCode ltc_current_sense_init(LTCCurrentSenseStorage *storage, LTCCurrentSenseLineData *line,
+                                  LtcAdcStorage *adc_storage) {
   if (storage == NULL) {
     return status_code(STATUS_CODE_UNINITIALIZED);
   }
 
+  memset(storage, 0, sizeof(LTCCurrentSenseStorage));
+
   // Initialize ADC and start periodic polling
-  status_ok_or_return(ltc_adc_init(&(storage->storage)));
-  status_ok_or_return(ltc_adc_register_callback(&(storage->storage), prv_callback, storage));
+  status_ok_or_return(ltc_adc_init(adc_storage));
+  status_ok_or_return(ltc_adc_register_callback(adc_storage, prv_callback, storage));
 
   // Store calibration parameters
+  storage->adc_storage = adc_storage;
   storage->line = line;
+
+  // Reset data and callbacks
+  storage->value = (LTCCurrentSenseValue){ 0 };
+  storage->callback = NULL;
+  storage->context = NULL;
 
   return STATUS_CODE_OK;
 }

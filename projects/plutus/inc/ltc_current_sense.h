@@ -19,7 +19,7 @@ typedef struct {
 } LTCCurrentSenseLineData;
 
 typedef struct {
-  LtcAdcStorage storage;
+  LtcAdcStorage *adc_storage;
   LTCCurrentSenseLineData *line;
   LTCCurrentSenseValue value;
   LtcCurrentSenseCallback callback;
@@ -28,7 +28,8 @@ typedef struct {
 
 // Initialize the current sense module. Requires ltc_adc to be initialized and
 // LTCCurrentSenseLineData to be calibrated beforehand
-StatusCode ltc_current_sense_init(LTCCurrentSenseStorage *storage, LTCCurrentSenseLineData *line);
+StatusCode ltc_current_sense_init(LTCCurrentSenseStorage *storage, LTCCurrentSenseLineData *line,
+                                  LtcAdcStorage *adc_storage);
 
 // Register a callback to run when new data is available
 StatusCode ltc_current_sense_register_callback(LTCCurrentSenseStorage *storage,
