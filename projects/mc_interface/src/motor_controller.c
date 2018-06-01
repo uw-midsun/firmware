@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <string.h>
 #include "can_transmit.h"
+#include "critical_section.h"
 #include "soft_timer.h"
 #include "wavesculptor.h"
 
@@ -113,8 +114,10 @@ StatusCode motor_controller_init(MotorControllerStorage *controller,
 
 StatusCode motor_controller_set_speed_cb(MotorControllerStorage *controller,
                                          MotorControllerSpeedCb speed_cb, void *context) {
+  bool disabled = critical_section_start();
   controller->settings.speed_cb = speed_cb;
   controller->settings.context = context;
+  critical_section_end(disabled);
 
   return STATUS_CODE_OK;
 }
@@ -139,13 +142,13 @@ StatusCode motor_controller_set_throttle(MotorControllerStorage *controller, int
     target_velocity = 0.0f;
   }
 
-  // TODO(ELEC-338): may need critical section
-
   // Reset counter
+  bool disabled = critical_section_start();
   controller->timeout_counter = 0;
   controller->target_velocity_ms = target_velocity,
   controller->target_current_percentage = (float)throttle / EE_DRIVE_OUTPUT_DENOMINATOR;
   controller->target_mode = MOTOR_CONTROLLER_MODE_TORQUE;
+  critical_section_end(disabled);
 
   return STATUS_CODE_OK;
 }
@@ -153,6 +156,7 @@ StatusCode motor_controller_set_throttle(MotorControllerStorage *controller, int
 StatusCode motor_controller_set_cruise(MotorControllerStorage *controller, int16_t speed_cms) {
   // Cruise control is always forward
 
+  bool disabled = critical_section_start();
   controller->timeout_counter = 0;
   controller->target_velocity_ms = (float)speed_cms / 100;
   controller->target_current_percentage = 1.0f;
@@ -161,6 +165,7 @@ StatusCode motor_controller_set_cruise(MotorControllerStorage *controller, int16
   controller->cruise_current_percentage = 0.0f;
   controller->cruise_is_braking = false;
   controller->target_mode = MOTOR_CONTROLLER_MODE_VELOCITY;
+  critical_section_end(disabled);
 
   return STATUS_CODE_OK;
 }
