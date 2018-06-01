@@ -33,7 +33,7 @@ static CANRxHandler s_rx_handlers[TEST_NOTIFY_NUM_CAN_RX_HANDLERS];
 static void prv_callback(const GenericCanMsg *msg, void *context) {
   (void)msg;
   EEChargerSetRelayState *state = context;
-  if (*state < NUM_EE_CHARGER_SET_RELAY_STATES) {
+  if (*state < NUM_EE_RELAY_SET_STATES) {
     CAN_TRANSMIT_CHARGER_SET_RELAY_STATE(*state);
   }
 }
@@ -72,7 +72,7 @@ void test_notify(void) {
   StatusCode status = NUM_STATUS_CODES;
 
   // Charge
-  s_response = EE_CHARGER_SET_RELAY_STATE_CLOSE;
+  s_response = EE_RELAY_SET_STATE_CLOSE;
   notify_post();
   // Do twice to ensure the watchdog doesn't get triggered
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHARGER_EVENT_CAN_TX, CHARGER_EVENT_CAN_RX);
@@ -84,13 +84,13 @@ void test_notify(void) {
   TEST_ASSERT_EQUAL(CHARGER_EVENT_START_CHARGING, e.id);
 
   // Don't charge
-  s_response = EE_CHARGER_SET_RELAY_STATE_OPEN;
+  s_response = EE_RELAY_SET_STATE_OPEN;
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHARGER_EVENT_CAN_TX, CHARGER_EVENT_CAN_RX);
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_STOP_CHARGING, e.id);
 
   // Watchdog
-  s_response = NUM_EE_CHARGER_SET_RELAY_STATES;
+  s_response = NUM_EE_RELAY_SET_STATES;
   e.id = UINT16_MAX;
   while (e.id != CHARGER_EVENT_STOP_CHARGING) {
     do {
@@ -103,13 +103,13 @@ void test_notify(void) {
 
   // Check still running
   // Charge
-  s_response = EE_CHARGER_SET_RELAY_STATE_CLOSE;
+  s_response = EE_RELAY_SET_STATE_CLOSE;
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHARGER_EVENT_CAN_TX, CHARGER_EVENT_CAN_RX);
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_START_CHARGING, e.id);
 
   // Send a singular disconnect message.
-  s_response = NUM_EE_CHARGER_SET_RELAY_STATES;  // Don't respond.
+  s_response = NUM_EE_RELAY_SET_STATES;  // Don't respond.
   notify_cease();
   MS_TEST_HELPER_CAN_TX_RX(CHARGER_EVENT_CAN_TX, CHARGER_EVENT_CAN_RX);
 
