@@ -20,7 +20,6 @@ typedef enum {
   LIGHTS_EVENT_STROBE_ON,
   // Event processed by lights_sync module.
   LIGHTS_EVENT_SYNC,
-  LIGHTS_EVENT_BPS_HEARTBEAT,
   NUM_LIGHTS_EVENTS
 } LightsEvent;
 

@@ -123,6 +123,14 @@
     status;                                       \
   })
 
+#define CAN_TRANSMIT_LIGHT_SYNC()                 \
+  ({                                              \
+    CANMessage msg = { 0 };                       \
+    CAN_PACK_LIGHTS_SYNC(&msg);                   \
+    StatusCode status = can_transmit(&msg, NULL); \
+    status;                                       \
+  })
+
 #define CAN_TRANSMIT_CHARGER_CONN_STATE(is_connected_u8)  \
   ({                                                      \
     CANMessage msg = { 0 };                               \
