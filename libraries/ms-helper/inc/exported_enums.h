@@ -26,7 +26,7 @@ typedef enum {
 } EEChargerConnState;
 
 typedef enum {
-  EE_CHAOS_CMD_RELAY_STATE_OPEN = 0,
-  EE_CHAOS_CMD_RELAY_STATE_CLOSE,
-  NUM_EE_CHAOS_CMD_RELAY_STATES,
-} EEChaosCmdRelayState;
+  EE_RELAY_STATE_OPEN = 0,
+  EE_RELAY_STATE_CLOSE,
+  NUM_EE_RELAY_STATES,
+} EERelayState;

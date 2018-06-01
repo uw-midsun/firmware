@@ -114,8 +114,7 @@ static void prv_opening(FSM *fsm, const Event *e, void *context) {
     return;
   }
   relay_ctx->ack_ctx.event_id = CHAOS_EVENT_RELAY_OPENED;
-  prv_relay_transmit(relay_ctx->ack_ctx.id, (RelayState)EE_CHAOS_CMD_RELAY_STATE_OPEN,
-                     &relay_ctx->request);
+  prv_relay_transmit(relay_ctx->ack_ctx.id, (RelayState)EE_RELAY_STATE_OPEN, &relay_ctx->request);
 }
 
 static void prv_closing(FSM *fsm, const Event *e, void *context) {
@@ -129,8 +128,7 @@ static void prv_closing(FSM *fsm, const Event *e, void *context) {
     return;
   }
   relay_ctx->ack_ctx.event_id = CHAOS_EVENT_RELAY_CLOSED;
-  prv_relay_transmit(relay_ctx->ack_ctx.id, (RelayState)EE_CHAOS_CMD_RELAY_STATE_CLOSE,
-                     &relay_ctx->request);
+  prv_relay_transmit(relay_ctx->ack_ctx.id, (RelayState)EE_RELAY_STATE_CLOSE, &relay_ctx->request);
 }
 
 void relay_fsm_init(void) {
