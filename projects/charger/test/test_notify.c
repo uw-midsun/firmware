@@ -24,8 +24,6 @@
 #define TEST_NOTIFY_WATCHDOG_PERIOD_S 2
 #define TEST_NOTIFY_NUM_CAN_RX_HANDLERS 4
 
-static const Event s_tx_event = { CHARGER_EVENT_CAN_TX, 0 };
-static const Event s_rx_event = { CHARGER_EVENT_CAN_RX, 0 };
 static EEChargerSetRelayState s_response;
 static GenericCanNetwork s_generic_can;
 static CANStorage s_can_storage;
@@ -77,17 +75,17 @@ void test_notify(void) {
   s_response = EE_CHARGER_SET_RELAY_STATE_CLOSE;
   notify_post();
   // Do twice to ensure the watchdog doesn't get triggered
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHARGER_EVENT_CAN_TX, CHARGER_EVENT_CAN_RX);
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_START_CHARGING, e.id);
 
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHARGER_EVENT_CAN_TX, CHARGER_EVENT_CAN_RX);
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_START_CHARGING, e.id);
 
   // Don't charge
   s_response = EE_CHARGER_SET_RELAY_STATE_OPEN;
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHARGER_EVENT_CAN_TX, CHARGER_EVENT_CAN_RX);
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_STOP_CHARGING, e.id);
 
@@ -106,14 +104,14 @@ void test_notify(void) {
   // Check still running
   // Charge
   s_response = EE_CHARGER_SET_RELAY_STATE_CLOSE;
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHARGER_EVENT_CAN_TX, CHARGER_EVENT_CAN_RX);
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_START_CHARGING, e.id);
 
   // Send a singular disconnect message.
   s_response = NUM_EE_CHARGER_SET_RELAY_STATES;  // Don't respond.
   notify_cease();
-  MS_TEST_HELPER_CAN_TX_RX(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX(CHARGER_EVENT_CAN_TX, CHARGER_EVENT_CAN_RX);
 
   delay_ms(1100);
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
