@@ -24,7 +24,7 @@
 #define TEST_NOTIFY_WATCHDOG_PERIOD_S 2
 #define TEST_NOTIFY_NUM_CAN_RX_HANDLERS 4
 
-static EEChargerSetRelayState s_response;
+static EERelaySetState s_response;
 static GenericCanNetwork s_generic_can;
 static CANStorage s_can_storage;
 static CANRxHandler s_rx_handlers[TEST_NOTIFY_NUM_CAN_RX_HANDLERS];
@@ -32,7 +32,7 @@ static CANRxHandler s_rx_handlers[TEST_NOTIFY_NUM_CAN_RX_HANDLERS];
 // GenericCanRxCb
 static void prv_callback(const GenericCanMsg *msg, void *context) {
   (void)msg;
-  EEChargerSetRelayState *state = context;
+  EERelaySetState *state = context;
   if (*state < NUM_EE_RELAY_SET_STATES) {
     CAN_TRANSMIT_CHARGER_SET_RELAY_STATE(*state);
   }

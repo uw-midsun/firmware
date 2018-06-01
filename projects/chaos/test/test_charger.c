@@ -21,13 +21,13 @@
 
 static CANStorage s_storage;
 static CANRxHandler s_rx_handlers[TEST_CHARGER_NUM_CAN_RX_HANDLERS];
-static EEChargerSetRelayState s_expected_state = NUM_EE_RELAY_SET_STATES;
+static EERelaySetState s_expected_state = NUM_EE_RELAY_SET_STATES;
 
 static StatusCode prv_charger_can_handler(const CANMessage *msg, void *context,
                                           CANAckStatus *ack_reply) {
   (void)context;
   (void)ack_reply;
-  EEChargerSetRelayState state = NUM_EE_RELAY_SET_STATES;
+  EERelaySetState state = NUM_EE_RELAY_SET_STATES;
   CAN_UNPACK_CHARGER_SET_RELAY_STATE(msg, (uint8_t *)&state);
   TEST_ASSERT_EQUAL(s_expected_state, state);
   return STATUS_CODE_OK;

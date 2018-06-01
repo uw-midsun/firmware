@@ -10,7 +10,7 @@
 #include "status.h"
 
 typedef struct ChargerStorage {
-  EEChargerSetRelayState relay_state;
+  EERelaySetState relay_state;
   EEChargerConnState conn_state;
 } ChargerStorage;
 
@@ -34,7 +34,7 @@ StatusCode charger_init(void) {
                                  prv_handle_charger_conn_state, NULL);
 }
 
-StatusCode charger_set_state(EEChargerSetRelayState state) {
+StatusCode charger_set_state(EERelaySetState state) {
   if (state >= NUM_EE_RELAY_SET_STATES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
