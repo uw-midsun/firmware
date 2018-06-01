@@ -20,79 +20,84 @@ static SequencerStorage s_storage;
 
 // Emergency State Order:
 // - Turn off the charger (if active)
-// - Disable DCDC Monitoring
 // - Open main power relay
 // - Open solar master rear relay
 // - Open solar master front relay
-// - Open battery relay
 // - Disable all unnecessary GPIO pins
+// - Disable DCDC Monitoring
+// - Open battery relay (DCDC)
 static const SequencerEventPair s_emergency_events[] = {
   { .raise = { .id = CHAOS_EVENT_CHARGER_OPEN, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
-  { .raise = { .id = CHAOS_EVENT_MONITOR_DISABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
-    .response = SEQUENCER_NO_RESPONSE },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MAIN_POWER },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MAIN_POWER } },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY } },
+  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MOTORS },
+    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_MOTORS } },
+  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
+    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
+  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
+    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
   { .raise = { .id = CHAOS_EVENT_GPIO_EMERGENCY, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
+  { .raise = { .id = CHAOS_EVENT_MONITOR_DISABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
+    .response = SEQUENCER_NO_RESPONSE },
+  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_BATTERY_SLAVE },
+    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_BATTERY_SLAVE } },
+  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_BATTERY_MAIN },
+    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_BATTERY_MAIN } },
   { .raise = { .id = CHAOS_EVENT_SEQUENCE_EMERGENCY_DONE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
 };
 
 // Idle State Order:
 // - Turn off the charger (if active)
-// - Disable DCDC Monitoring
 // - Open main power relay
 // - Open solar master rear relay
 // - Open solar master front relay
-// - Open battery relay
 // - Disable all unnecessary GPIO pins
+// - Disable DCDC Monitoring
+// - Open battery relay (DCDC)
 static const SequencerEventPair s_idle_events[] = {
   { .raise = { .id = CHAOS_EVENT_CHARGER_OPEN, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
-  { .raise = { .id = CHAOS_EVENT_MONITOR_DISABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
-    .response = SEQUENCER_NO_RESPONSE },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MAIN_POWER },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MAIN_POWER } },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY } },
+  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MOTORS },
+    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_MOTORS } },
+  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
+    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
+  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
+    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
   { .raise = { .id = CHAOS_EVENT_GPIO_IDLE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
+  { .raise = { .id = CHAOS_EVENT_MONITOR_DISABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
+    .response = SEQUENCER_NO_RESPONSE },
+  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_BATTERY_SLAVE },
+    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_BATTERY_SLAVE } },
+  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_BATTERY_MAIN },
+    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_BATTERY_MAIN } },
   { .raise = { .id = CHAOS_EVENT_SEQUENCE_IDLE_DONE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
 };
 
 // Charge State Order:
-// - Turn on charging GPIOs
-// - Open battery relay
-// - Open solar master rear relay
-// - Open solar master front relay
-// - Open main power relay
+// - Close battery relay (DCDC)
 // - Enable DCDC monitoring
+// - Turn on charging GPIOs
+// - Close solar master rear relay
+// - Close solar master front relay
 // - Turn on the charger
+// NOTE: No need to manipulate the main relay since it turns on the motors and will be open by
+// default before reaching this state.
 static const SequencerEventPair s_charge_events[] = {
+  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY_MAIN },
+    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY_MAIN } },
+  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY_SLAVE },
+    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY_SLAVE } },
+  { .raise = { .id = CHAOS_EVENT_MONITOR_ENABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
+    .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_GPIO_CHARGE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MAIN_POWER },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MAIN_POWER } },
-  { .raise = { .id = CHAOS_EVENT_MONITOR_ENABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
-    .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_CHARGER_CLOSE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_SEQUENCE_CHARGE_DONE, .data = SEQUENCER_EMPTY_DATA },
@@ -100,26 +105,28 @@ static const SequencerEventPair s_charge_events[] = {
 };
 
 // Drive State Order:
-// - Turn on drive GPIOs
-// - Open battery relay
-// - Open solar master rear relay
-// - Open solar master front relay
-// - Open main power relay
+// - Close battery relay (DCDC)
 // - Enable DCDC monitoring
+// - Turn on drive GPIOs
+// - Close solar master rear relay
+// - Close solar master front relay
+// - Close main power relay
 // NOTE: No need to manipulate the charger since you can't reach Drive from Charge.
 static const SequencerEventPair s_drive_events[] = {
+  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY_MAIN },
+    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY_MAIN } },
+  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY_SLAVE },
+    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY_SLAVE } },
+  { .raise = { .id = CHAOS_EVENT_MONITOR_ENABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
+    .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_GPIO_DRIVE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MAIN_POWER },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MAIN_POWER } },
-  { .raise = { .id = CHAOS_EVENT_MONITOR_ENABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
-    .response = SEQUENCER_NO_RESPONSE },
+  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MOTORS },
+    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MOTORS } },
   { .raise = { .id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
 };

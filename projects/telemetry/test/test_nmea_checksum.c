@@ -57,6 +57,13 @@ void test_nmea_checksum_validate(void) {
 
   input =
       "$GPGGA,053740.000,2503.6319,N,12136.0099,E,1,08,1.1,63.8,"
+      "M,15.2,M,,0000*z.";
+  message_len = strlen(input);
+  // should return false because the checksum is not a valid hex integer
+  TEST_ASSERT_FALSE(nmea_checksum_validate(input, message_len));
+
+  input =
+      "$GPGGA,053740.000,2503.6319,N,12136.0099,E,1,08,1.1,63.8,"
       "M,15.2,M,,0000*00";
   message_len = strlen(input);
   // should return false because checksum is incorrect

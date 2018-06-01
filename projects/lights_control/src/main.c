@@ -6,8 +6,6 @@
 #include "status.h"
 #include "wait.h"
 
-#include "lights_gpio.h"
-
 int main(void) {
   Event e;
 

@@ -83,8 +83,14 @@ StatusCode gpio_expander_init_pin(GpioExpanderStorage *expander, GpioExpanderPin
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 
+  if (settings->resistor != GPIO_RES_NONE && settings->resistor != GPIO_RES_PULLUP) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+
   // Set the direction of the data I/O
   prv_set_bit(expander, MCP23008_IODIR, pin, (settings->direction == GPIO_DIR_IN));
+  // Set the pull-up
+  prv_set_bit(expander, MCP23008_GPPU, pin, (settings->resistor == GPIO_RES_PULLUP));
   // Disable interrupt in case it was set before
   prv_set_bit(expander, MCP23008_GPINTEN, pin, false);
 

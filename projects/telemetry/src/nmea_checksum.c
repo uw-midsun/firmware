@@ -6,17 +6,17 @@
 
 // This error code makes sense because it is used in the function which
 // converts a single char (which represents a hex digit). Therefore the bounds
-// on its result is [0, 15]. 0x00 = 16 in base 10, therefore it can be
+// on its result is [0, 15]. 0x10 = 16 in base 10, therefore it can be
 // used as an error result because it should never occur
-#define NMEA_CHECKSUM_HEX_ERROR 0x00
+#define NMEA_CHECKSUM_HEX_ERROR 0x10
 
 // Private method to convert hex char to int
 static uint8_t prv_hex_to_int(char h) {
   if ('0' <= h && h <= '9') {
-    return h - '0';
+    return (uint8_t)(h - '0');
   } else if ('A' <= h && h <= 'F') {
     // We only care about uppercase because the NMEA messages are all caps
-    return h - 'A' + 10;
+    return (uint8_t)(h - 'A' + 10);
   }
   // Just to make the checksum fail
   return NMEA_CHECKSUM_HEX_ERROR;

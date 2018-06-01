@@ -16,9 +16,11 @@
 #include "event_queue.h"
 #include "input_event.h"
 
+static ThrottleStorage s_throttle_storage;
+
 // Scales a reading to a measure out of THROTTLE_DENOMINATOR based on the given range(min to max).
 static uint16_t prv_scale_reading(int16_t reading, int16_t max, int16_t min) {
-  return THROTTLE_DENOMINATOR * (reading - min) / (max - min);
+  return (uint16_t)(THROTTLE_DENOMINATOR * (reading - min) / (max - min));
 }
 
 // Given a reading from main channel and a zone, finds how far within that zone the pedal is pushed.
@@ -178,4 +180,8 @@ StatusCode throttle_get_position(ThrottleStorage *storage, ThrottlePosition *pos
   position->zone = storage->position.zone;
   position->numerator = storage->position.numerator;
   return STATUS_CODE_OK;
+}
+
+ThrottleStorage *throttle_global(void) {
+  return &s_throttle_storage;
 }
