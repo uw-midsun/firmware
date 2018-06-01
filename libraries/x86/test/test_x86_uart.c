@@ -25,5 +25,5 @@ void test_x86_uart_init(void) {
   TEST_ASSERT_OK(uart_init(UART_PORT_2, &settings, &storage2));
 
   //
-  //TEST_ASSERT_OK(uart_tx(UART_PORT_1, (uint8_t *)send, strlen(send)));
+  // TEST_ASSERT_OK(uart_tx(UART_PORT_1, (uint8_t *)send, strlen(send)));
 }
