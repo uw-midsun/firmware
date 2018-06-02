@@ -24,3 +24,9 @@ typedef enum {
   EE_CHARGER_CONN_STATE_CONNECTED,
   NUM_EE_CHARGER_CONN_STATES,
 } EEChargerConnState;
+
+typedef enum {
+  EE_RELAY_STATE_OPEN = 0,
+  EE_RELAY_STATE_CLOSE,
+  NUM_EE_RELAY_STATES,
+} EERelayState;
