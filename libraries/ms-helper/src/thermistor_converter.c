@@ -4,12 +4,12 @@
 
 // In milliohms
 uint32_t resistance[71] = {
-  272186, 260760, 249877, 239509, 229629, 220211, 211230, 202666, 194495, 186698, 179255, 172139,
-  165344, 158856, 152658, 146735, 141075, 135664, 130489, 125540, 120805, 116281, 111947, 107795,
-  103815, 100000, 96342,  92835,  89470,  86242,  83145,  80181,  77337,  74609,  71991,  69479,
-  67067,  64751,  62526,  60390,  58336,  56357,  54454,  52623,  50863,  49169,  47539,  45971,
-  44461,  43008,  41609,  40262,  38964,  37714,  36510,  35350,  34231,  33152,  32113,  31110,
-  30143,  29224,  28337,  27482,  26657,  25861,  25093,  24351,  23635,  22943,  22275,
+  27218600, 26076000, 24987700, 23950900, 22962900, 22021100, 21123000, 20266600, 19449500, 18669800, 17925500, 17213900,
+  16534400, 15885600, 15265800, 14673500, 14107500, 13566400, 13048900, 12554000, 12080500, 11628100, 11194700, 10779500,
+  10381500, 10000000, 9634200,  9283500,  8947000,  8624200,  8314500,  8018100,  7733700,  7460900,  7199100,  6947900,
+  6706700,  6475100,  6252600,  6039000,  5833600,  5635700,  5445400,  5262300,  5086300,  4916900,  4753900,  4597100,
+  4446100,  4300800,  4160900,  4026200,  3896400,  3771400,  3651000,  3535000,  3423100,  3315200,  3211300,  3111000,
+  3014300,  2922400,  2833700,  2748200,  2665700,  2586100,  2509300,  2435100,  2363500,  2294300,  2227500,
 };
 
 // uint16_t find_temperature(uint16_t sibling_resistance, uint16_t sibling_voltage,
@@ -28,9 +28,9 @@ uint32_t resistance[71] = {
 // }
 
 // assuming resistor is r2 for the voltage resistor equation
-/* static uint32_t prv_voltage_to_resistance(uint32_t vin, uint32_t r2, uint32_t vout) {
-  return (r2*vin)/vout - r2;
-} */
+static uint32_t prv_voltage_to_resistance(uint32_t vin, uint32_t r2, uint32_t vout) {
+  return (10000000/vout)*3000 - 10000000;
+}
 
 StatusCode thermistor_converter_init(void) {
   // gpio info
@@ -62,19 +62,20 @@ StatusCode thermistor_converter_init(void) {
   return STATUS_CODE_OK;
 }
 
-uint16_t thermistor_converter_get_temp(void) {
+uint32_t thermistor_converter_get_temp(void) {
   // The target resistance based on previous resistors and source voltage
-  uint16_t thermistor_resistance = (3 - 1.5) * 10000 / 1.5;
+  //uint16_t thermistor_resistance = (3 - 1.5) * 10000 / 1.5;
 
   // get raw reading
   uint16_t reading = 0;
+  uint32_t thermistor_resistance = 0;
   //adc_read_raw(ADC_CHANNEL_4, &reading);
   adc_read_converted(ADC_CHANNEL_4, &reading);
-  //prv_voltage_to_resistance(3000, 10000 * 1000, (uint32_t)reading);
-  return reading;
+  //return reading;
+  thermistor_resistance = prv_voltage_to_resistance(3000, 10000000, (uint32_t)reading);
+  // return thermistor_resistance;
   // Finds the target temperature
-  uint16_t temp;
-  for (uint16_t i = 0; i < 70 - 1; i++) {
+  for (uint32_t i = 0; i < 70; i++) {
     if (thermistor_resistance <= resistance[i] && thermistor_resistance >= resistance[i + 1]) {
       // return i * (thermistor_resistance - resistance[0]) / (resistance[i + 1] - resistance[i]);
       return i;

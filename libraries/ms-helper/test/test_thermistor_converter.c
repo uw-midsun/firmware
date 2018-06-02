@@ -1,12 +1,24 @@
 #include "log.h"
 #include "test_helpers.h"
 #include "thermistor_converter.h"
+#include <math.h>
 
-/*static int prv_voltage_to_resistance(uint16_t vout) {
-  int vo = (int)vout / 1000;
-  int r2 = 30000/vo - 10000;
-  return r2;
+/*
+static int prv_voltage_to_resistance(uint32_t vout) {
+ int vo = (int)vout;
+  int r2 = (10000000/vo)*3000 - 10000000;
+  int r = (int)vout;
+  int a = 8984; 
+  int b = 2495;
+  int c = 2;
+
+  int temp = a +b*log(r) + c*log(r)*log(r)*log(r);
+  int x1 = a +b*log(r);
+  printf("%d  %d  %d  %d \t", a, (int)(a+b*log(r)), (int)(c*log(r)*log(r)*log(r)), (int)(1 / temp));
+  return 1 / temp;
 } */
+
+
 
 void setup_test(void) {}
 
@@ -17,8 +29,9 @@ void test_thermistor_init(void) {
 }
 
 void test_thermistor_values(void) {
-  uint16_t reading = thermistor_converter_get_temp();
+  uint32_t reading;
   while (true) {
-    printf("Voltage reading: %u\tCalculated Resistance:\n", reading);
+    reading = thermistor_converter_get_temp();
+    printf("Temperature reading: %lu\n", reading);
   }
 }
