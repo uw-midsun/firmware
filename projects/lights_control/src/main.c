@@ -9,10 +9,37 @@
 #include "lights_blinker.h"
 #include "lights_can.h"
 #include "lights_can_config.h"
-#include "lights_config.h"
+#include "lights_board_type.h"
 #include "lights_gpio.h"
 #include "lights_gpio_config.h"
 #include "lights_signal_fsm.h"
+
+#define LIGHTS_CONFIG_SIGNAL_BLINKER_DURATION 500
+#define LIGHTS_CONFIG_SYNC_COUNT 5
+
+static CANSettings s_can_settings = {
+  .bitrate = CAN_HW_BITRATE_500KBPS,
+  .rx_event = LIGHTS_EVENT_CAN_RX,
+  // clang-format off
+  .tx = {
+    .port = GPIO_PORT_A,
+    .pin = 12,
+  },
+  .rx = {
+    .port = GPIO_PORT_A,
+    .pin = 11,
+  },
+  // clang-format on
+  .tx_event = LIGHTS_EVENT_CAN_TX,
+  .fault_event = LIGHTS_EVENT_CAN_FAULT,
+  .loopback = false,
+};
+
+static LightsSignalFsm s_signal_fsm = { 0 };
+
+static LightsCanStorage s_lights_can_storage = { 0 };
+
+static const GPIOAddress s_board_type_address = { .port = GPIO_PORT_B, .pin = 13 };
 
 int main(void) {
   // Initialize the libraries.
@@ -21,24 +48,36 @@ int main(void) {
   soft_timer_init();
   event_queue_init();
 
-  // Get board's configuration.
-  lights_config_init();
-  LightsConfig *config = lights_config_load();
+  // Getting board type.
+  GPIOState state = 0;
+  status_ok_or_return(gpio_get_state(&s_board_type_address, &state));
+  LightsBoardType board_type =
+      (state == GPIO_STATE_HIGH) ? LIGHTS_BOARD_TYPE_FRONT : LIGHTS_BOARD_TYPE_REAR;
 
   // Initialize lights_gpio.
-  lights_gpio_init(config->lights_gpio);
+  status_ok_or_return(lights_gpio_config_init(board_type));
+  LightsGpio *lights_gpio = lights_gpio_config_load();
+  lights_gpio_init(lights_gpio);
 
   // Initialize lights_can.
-  lights_can_init(config->lights_can_storage, config->lights_can_settings, config->can_settings);
+  s_can_settings.device_id = (board_type == LIGHTS_BOARD_TYPE_FRONT)
+                                 ? SYSTEM_CAN_DEVICE_LIGHTS_FRONT
+                                 : SYSTEM_CAN_DEVICE_LIGHTS_REAR;
+  lights_can_init(&s_lights_can_storage, lights_can_config_load(), &s_can_settings);
 
   // Initialize lights_signal_fsm.
-  lights_signal_fsm_init(config->signal_fsm, config->signal_blinker_duration, config->sync_count);
+  lights_signal_fsm_init(&s_signal_fsm, LIGHTS_CONFIG_SIGNAL_BLINKER_DURATION,
+                  LIGHTS_CONFIG_SYNC_COUNT);
 
+  // Initialize lights_strobe.
+
+  Event e = { 0 };
   while (event_process(&e) != STATUS_CODE_OK) {
-    const Event raised_event = { .id = e.id, .data = e.data };
-    lights_can_process_event(&raised_event);
-    lights_gpio_process_event(lights_gpio_config, &raised_event);
-    lights_signal_fsm_process_event(&signal_fsm, &raised_event);
+    lights_can_process_event(&e);
+    lights_gpio_process_event(lights_gpio, &e);
+    lights_signal_fsm_process_event(&s_signal_fsm, &e);
+    wait();
   }
   return STATUS_CODE_OK;
 }
+

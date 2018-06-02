@@ -7,11 +7,11 @@
 
 #include "event_queue.h"
 #include "gpio.h"
-#include "lights_config.h"
+#include "lights_board_type.h"
 #include "lights_gpio.h"
 
 // Initializes the configuration based on the board type.
-StatusCode lights_gpio_config_init(LightsConfigBoardType board_type);
+StatusCode lights_gpio_config_init(LightsBoardType board_type);
 
 // Loads configuration for lights_gpio. Configuration includes mappings of peripherals to outputs.
 LightsGpio *lights_gpio_config_load(void);
