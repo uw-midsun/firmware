@@ -20,6 +20,7 @@
 #define SEQUENCER_EMPTY_DATA 0
 #define SEQUENCER_NO_RESPONSE \
   { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA }
+#define SEQUENCER_MAX_FILTERS 5
 
 typedef struct SequencerEventPair {
   Event raise;
@@ -30,6 +31,7 @@ typedef struct SequencerStorage {
   const SequencerEventPair *events_it;
   const SequencerEventPair *events_end;
   bool awaiting_response;
+  bool started;
 } SequencerStorage;
 
 // Initializes |storage| with the |event_array| of |size|.
