@@ -25,11 +25,11 @@ StatusCode relay_retry_service_update(const Event *e) {
 
   switch (e->id) {
     case CHAOS_EVENT_MAYBE_RETRY_RELAY:
-      // We want to consider retrying the relay first validate the relay is valid.
+      // We want to consider retrying the relay. First validate the relay is valid.
       if (e->data >= NUM_RELAY_IDS) {
         return status_code(STATUS_CODE_INVALID_ARGS);
       }
-      // In the case of limited retries handle the accounting of attempts or raise an error if
+      // In the case of limited retries we handle the accounting of attempts or raise an error if
       // exceeded.
       if (s_storage->max_retries != RELAY_RETRY_SERVICE_UNLIMITED_ATTEMPTS) {
         if (s_storage->relays_curr_retries[e->data] >= s_storage->max_retries) {
@@ -37,7 +37,7 @@ StatusCode relay_retry_service_update(const Event *e) {
         }
         s_storage->relays_curr_retries[e->data]++;
       }
-      // In the unlimited case or if there are remaining retries raise a retry event.
+      // In the unlimited case or if there are remaining retries we raise a retry event.
       return event_raise(CHAOS_EVENT_RETRY_RELAY, e->data);
     case CHAOS_EVENT_SET_RELAY_RETRIES:
       // Allow setting the relay attempts to a value in range:
