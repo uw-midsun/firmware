@@ -22,7 +22,7 @@ const CANSettings s_can_settings = {
   .bitrate = CAN_HW_BITRATE_500KBPS,
   .rx = { .port = GPIO_PORT_A, .pin = 11 },
   .tx = { .port = GPIO_PORT_A, .pin = 12 },
-  .device_id = LIGHTS_CAN_CONFIG_BOARD_TYPE_FRONT,
+  .device_id = SYSTEM_CAN_DEVICE_LIGHTS_FRONT,
   .rx_event = LIGHTS_EVENT_CAN_RX,
   .tx_event = LIGHTS_EVENT_CAN_TX,
   .fault_event = LIGHTS_EVENT_CAN_FAULT
@@ -34,7 +34,6 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
   event_queue_init();
-  lights_can_config_init(LIGHTS_CAN_CONFIG_BOARD_TYPE_REAR);
   s_test_lights_can_settings = lights_can_config_load();
   lights_can_init(&s_storage, s_test_lights_can_settings, &s_can_settings);
 }
