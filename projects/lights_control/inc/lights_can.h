@@ -22,17 +22,13 @@ typedef struct LightsCanStorage {
 
 // Contains all the configuration functions.
 typedef struct LightsCanSettings {
-  uint16_t device_id;
-  bool loopback;
   LightsEvent event_type[NUM_EE_LIGHT_TYPES];
-  uint8_t event_data_lookup[NUM_EE_LIGHT_TYPES];
-  GPIOAddress rx_addr;
-  GPIOAddress tx_addr;
-  CANHwBitrate bitrate;
+  uint16_t event_data_lookup[NUM_EE_LIGHT_TYPES];
 } LightsCanSettings;
 
 // Initializes the lights_can module.
-StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *lights_can);
+StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *lights_can,
+                           const CANSettings *can_settings);
 
 // Sends a sync message.
 StatusCode lights_can_process_event(const Event *);

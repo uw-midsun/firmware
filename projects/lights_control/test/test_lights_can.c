@@ -14,33 +14,18 @@
 #include "lights_can_config.h"
 #include "lights_events.h"
 
-const LightsCanSettings s_test_settings = {
-  // clang-format off
-  .event_type = {
-    [EE_LIGHT_TYPE_HIGH_BEAMS] = LIGHTS_CAN_EVENT_TYPE_GPIO,
-    [EE_LIGHT_TYPE_LOW_BEAMS] = LIGHTS_CAN_EVENT_TYPE_GPIO,
-    [EE_LIGHT_TYPE_DRL] = LIGHTS_CAN_EVENT_TYPE_GPIO,
-    [EE_LIGHT_TYPE_BRAKES] = LIGHTS_CAN_EVENT_TYPE_GPIO,
-    [EE_LIGHT_TYPE_SIGNAL_RIGHT] = LIGHTS_CAN_EVENT_TYPE_SIGNAL,
-    [EE_LIGHT_TYPE_SIGNAL_LEFT] = LIGHTS_CAN_EVENT_TYPE_SIGNAL,
-    [EE_LIGHT_TYPE_SIGNAL_HAZARD] = LIGHTS_CAN_EVENT_TYPE_SIGNAL,
-    [EE_LIGHT_TYPE_STROBE] = LIGHTS_CAN_EVENT_TYPE_STROBE,
-  },
-  .event_data_lookup = {
-    [EE_LIGHT_TYPE_HIGH_BEAMS] = LIGHTS_EVENT_GPIO_PERIPHERAL_HIGH_BEAMS,
-    [EE_LIGHT_TYPE_LOW_BEAMS] = LIGHTS_EVENT_GPIO_PERIPHERAL_LOW_BEAMS,
-    [EE_LIGHT_TYPE_DRL] = LIGHTS_EVENT_GPIO_PERIPHERAL_DRL,
-    [EE_LIGHT_TYPE_BRAKES] = LIGHTS_EVENT_GPIO_PERIPHERAL_BRAKES,
-    [EE_LIGHT_TYPE_SIGNAL_RIGHT] = LIGHTS_EVENT_SIGNAL_MODE_RIGHT,
-    [EE_LIGHT_TYPE_SIGNAL_LEFT] = LIGHTS_EVENT_SIGNAL_MODE_LEFT,
-    [EE_LIGHT_TYPE_SIGNAL_HAZARD] = LIGHTS_EVENT_SIGNAL_MODE_HAZARD
-  },
+const LightsCanSettings *s_test_lights_can_settings;
+
+const CANSettings s_can_settings = {
   // clang-format on
   .loopback = true,
-  .bitrate = CAN_HW_BITRATE_125KBPS,
-  .rx_addr = { .port = GPIO_PORT_A, .pin = 11 },
-  .tx_addr = { .port = GPIO_PORT_A, .pin = 12 },
-  .device_id = LIGHTS_CAN_CONFIG_BOARD_TYPE_FRONT
+  .bitrate = CAN_HW_BITRATE_500KBPS,
+  .rx = { .port = GPIO_PORT_A, .pin = 11 },
+  .tx = { .port = GPIO_PORT_A, .pin = 12 },
+  .device_id = LIGHTS_CAN_CONFIG_BOARD_TYPE_FRONT,
+  .rx_event = LIGHTS_EVENT_CAN_RX,
+  .tx_event = LIGHTS_EVENT_CAN_TX,
+  .fault_event = LIGHTS_EVENT_CAN_FAULT
 };
 
 static LightsCanStorage s_storage = { 0 };
@@ -49,7 +34,9 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
   event_queue_init();
-  lights_can_init(&s_storage, &s_test_settings);
+  lights_can_config_init(LIGHTS_CAN_CONFIG_BOARD_TYPE_REAR);
+  s_test_lights_can_settings = lights_can_config_load();
+  lights_can_init(&s_storage, s_test_lights_can_settings, &s_can_settings);
 }
 
 void teardown_test(void) {}

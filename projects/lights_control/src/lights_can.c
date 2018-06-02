@@ -50,19 +50,10 @@ static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckSta
   return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid message id");
 }
 
-StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *settings) {
-  CANSettings can_settings = {
-    .device_id = settings->device_id,
-    .bitrate = settings->bitrate,
-    .rx_event = LIGHTS_EVENT_CAN_RX,
-    .tx_event = LIGHTS_EVENT_CAN_TX,
-    .fault_event = LIGHTS_EVENT_CAN_FAULT,
-    .tx = settings->tx_addr,
-    .rx = settings->rx_addr,
-    .loopback = settings->loopback,
-  };
+StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *settings,
+                           const CANSettings *can_settings) {
   // Initialize CAN.
-  status_ok_or_return(can_init(&can_settings, &storage->can_storage, storage->rx_handlers,
+  status_ok_or_return(can_init(can_settings, &storage->can_storage, storage->rx_handlers,
                                LIGHTS_CAN_NUM_RX_HANDLERS));
   // Initialize CAN RX handlers.
   status_ok_or_return(

@@ -34,26 +34,20 @@ typedef enum EELightType {
   EE_LIGHT_TYPE_SIGNAL_LEFT,
   EE_LIGHT_TYPE_SIGNAL_HAZARD,
   EE_LIGHT_TYPE_STROBE,
-  NUM_EE_LIGHT_TYPES
+  NUM_EE_LIGHT_TYPES,
 } EELightType;
 
 typedef enum EELightsState {
   EE_LIGHT_STATE_OFF = 0,  //
   EE_LIGHT_STATE_ON,       //
-  NUM_EE_LIGHT_STATES      //
+  NUM_EE_LIGHT_STATES,     //
 } EELightsState;
 
 typedef enum EEHornState {
   EE_HORN_STATE_OFF = 0,  //
   EE_HORN_STATE_ON,       //
-  NUM_EE_HORN_STATES      //
+  NUM_EE_HORN_STATES,     //
 } EEHornState;
-
-typedef enum BpsHeartbeatState {
-  EE_BPS_HEARTBEAT_STATE_OK = 0,
-  EE_BPS_HEARTBEAT_STATE_ERROR,
-  NUM_EE_BPS_HEARTBEAT_STATES,
-} EEBpsHeartbeatState;
 
 typedef enum EERelayState {
   EE_RELAY_STATE_OPEN = 0,

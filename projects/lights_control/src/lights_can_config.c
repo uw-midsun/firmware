@@ -24,11 +24,6 @@
                            [EE_LIGHT_TYPE_SIGNAL_RIGHT] = LIGHTS_EVENT_SIGNAL_MODE_RIGHT,        \
                            [EE_LIGHT_TYPE_SIGNAL_LEFT] = LIGHTS_EVENT_SIGNAL_MODE_LEFT,          \
                            [EE_LIGHT_TYPE_SIGNAL_HAZARD] = LIGHTS_EVENT_SIGNAL_MODE_HAZARD },    \
-    .loopback = false,                                                                           \
-    .bitrate = CAN_HW_BITRATE_125KBPS,                                                           \
-    .rx_addr = { .port = GPIO_PORT_A, .pin = 11 },                                               \
-    .tx_addr = { .port = GPIO_PORT_A, .pin = 12 },                                               \
-    .device_id = id                                                                              \
   }
 
 LIGHTS_CAN_DECLARE_SETTINGS(front, SYSTEM_CAN_DEVICE_LIGHTS_FRONT);
