@@ -112,4 +112,3 @@ StatusCode lights_signal_fsm_process_event(LightsSignalFsm *lights_signal_fsm, c
   }
   return STATUS_CODE_OK;
 }
-

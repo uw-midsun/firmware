@@ -3,14 +3,14 @@
 // Config for various modules. Probes the GPIO to figure out board type (front or back).
 // Needs GPIO to be initialized.
 
-#include "status.h"
 #include "can.h"
+#include "lights_blinker.h"
 #include "lights_can.h"
 #include "lights_can_config.h"
 #include "lights_gpio.h"
 #include "lights_gpio_config.h"
 #include "lights_signal_fsm.h"
-#include "lights_blinker.h"
+#include "status.h"
 
 typedef enum {
   LIGHTS_CONFIG_BOARD_TYPE_FRONT = 0,
@@ -31,4 +31,3 @@ typedef struct LightsConfig {
 StatusCode lights_config_init();
 
 LightsConfig *lights_config_load();
-

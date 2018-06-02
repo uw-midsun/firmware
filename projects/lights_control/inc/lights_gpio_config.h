@@ -7,8 +7,8 @@
 
 #include "event_queue.h"
 #include "gpio.h"
-#include "lights_gpio.h"
 #include "lights_config.h"
+#include "lights_gpio.h"
 
 // Initializes the configuration based on the board type.
 StatusCode lights_gpio_config_init(LightsConfigBoardType board_type);

@@ -9,9 +9,9 @@
 #include "lights_blinker.h"
 #include "lights_can.h"
 #include "lights_can_config.h"
+#include "lights_config.h"
 #include "lights_gpio.h"
 #include "lights_gpio_config.h"
-#include "lights_config.h"
 #include "lights_signal_fsm.h"
 
 int main(void) {
@@ -34,17 +34,11 @@ int main(void) {
   // Initialize lights_signal_fsm.
   lights_signal_fsm_init(config->signal_fsm, config->signal_blinker_duration, config->sync_count);
 
-
   while (event_process(&e) != STATUS_CODE_OK) {
-    const Event raised_event = {
-      .id = e.id,
-      .data = e.data
-    };
+    const Event raised_event = { .id = e.id, .data = e.data };
     lights_can_process_event(&raised_event);
     lights_gpio_process_event(lights_gpio_config, &raised_event);
     lights_signal_fsm_process_event(&signal_fsm, &raised_event);
-
   }
   return STATUS_CODE_OK;
 }
-
