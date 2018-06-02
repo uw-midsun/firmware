@@ -116,7 +116,7 @@ void test_power_path_uv_ov(void) {
   TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.aux_bat, TEST_POWER_PATH_ADC_PERIOD_MS));
   TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.dcdc, TEST_POWER_PATH_ADC_PERIOD_MS));
 
-  delay_us(TEST_POWER_PATH_ADC_PERIOD_US + TEST_POWER_PATH_ADC_PERIOD_US / 10);
+  delay_us(TEST_POWER_PATH_ADC_PERIOD_MS + TEST_POWER_PATH_ADC_PERIOD_MS / 10);
 
   gpio_it_trigger_interrupt(&s_ppc.aux_bat.uv_ov_pin);
 
@@ -162,8 +162,8 @@ void test_power_path_uv_ov(void) {
 }
 
 void test_power_path_adcs(void) {
-  TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.aux_bat, TEST_POWER_PATH_ADC_PERIOD_US));
-  TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.dcdc, TEST_POWER_PATH_ADC_PERIOD_US));
+  TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.aux_bat, TEST_POWER_PATH_ADC_PERIOD_MS));
+  TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.dcdc, TEST_POWER_PATH_ADC_PERIOD_MS));
 
   delay_ms(TEST_POWER_PATH_ADC_PERIOD_MS + TEST_POWER_PATH_ADC_PERIOD_MS / 10);
 
