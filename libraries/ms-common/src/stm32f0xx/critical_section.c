@@ -19,3 +19,7 @@ void critical_section_end(bool disabled_in_scope) {
     __enable_irq();
   }
 }
+
+void _critical_section_cleanup(bool *disabled_in_scope) {
+  critical_section_end(*disabled_in_scope);
+}

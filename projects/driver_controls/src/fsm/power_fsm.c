@@ -135,7 +135,7 @@ StatusCode power_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  fsm_init(fsm, "power_fsm", &state_off, guard);
+  fsm_init(fsm, "Power FSM", &state_off, guard);
 
   return STATUS_CODE_OK;
 }

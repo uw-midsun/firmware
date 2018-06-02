@@ -14,7 +14,7 @@ static void prv_watchdog_cb(SoftTimerID timer_id, void *context) {
   if (storage->watchdog != DRIVE_OUTPUT_VALID_WATCHDOG) {
     // Error - raise a warning, disable periodic drive storage
     soft_timer_cancel(storage->output_timer);
-    event_raise(storage->fault_event, 0);
+    event_raise_priority(EVENT_PRIORITY_HIGHEST, storage->fault_event, 0);
   }
 
   // Reset watchdog
@@ -35,10 +35,10 @@ static void prv_broadcast_cb(SoftTimerID timer_id, void *context) {
             storage->data[DRIVE_OUTPUT_SOURCE_DIRECTION],
             storage->data[DRIVE_OUTPUT_SOURCE_MECH_BRAKE]);
 
-  CAN_TRANSMIT_MOTOR_CONTROLS((uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_THROTTLE],
-                              (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_CRUISE],
-                              (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_DIRECTION],
-                              (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_MECH_BRAKE]);
+  CAN_TRANSMIT_DRIVE_OUTPUT((uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_THROTTLE],
+                            (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_CRUISE],
+                            (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_DIRECTION],
+                            (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_MECH_BRAKE]);
 
   soft_timer_start_millis(DRIVE_OUTPUT_BROADCAST_MS, prv_broadcast_cb, context,
                           &storage->output_timer);
