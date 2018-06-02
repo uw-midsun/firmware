@@ -1,9 +1,9 @@
-#include "ltc_current_sense.h"
+#include "current_sense.h"
 
 #include <string.h>
 
 static void prv_callback(int32_t *value, void *context) {
-  LTCCurrentSenseStorage *storage = (LTCCurrentSenseStorage *)context;
+  CurrentSenseStorage *storage = (CurrentSenseStorage *)context;
 
   // Correct for voltage offset
   storage->value.voltage = *value - storage->line->zero_point.voltage;
@@ -19,13 +19,13 @@ static void prv_callback(int32_t *value, void *context) {
   }
 }
 
-StatusCode ltc_current_sense_init(LTCCurrentSenseStorage *storage, LTCCurrentSenseLineData *line,
-                                  LtcAdcStorage *adc_storage) {
+StatusCode current_sense_init(CurrentSenseStorage *storage, CurrentSenseLineData *line,
+                              LtcAdcStorage *adc_storage) {
   if (storage == NULL) {
     return status_code(STATUS_CODE_UNINITIALIZED);
   }
 
-  memset(storage, 0, sizeof(LTCCurrentSenseStorage));
+  memset(storage, 0, sizeof(CurrentSenseStorage));
 
   // Initialize ADC and start periodic polling
   status_ok_or_return(ltc_adc_init(adc_storage));
@@ -36,7 +36,7 @@ StatusCode ltc_current_sense_init(LTCCurrentSenseStorage *storage, LTCCurrentSen
   storage->line = line;
 
   // Reset data and callbacks
-  storage->value = (LTCCurrentSenseValue){ 0 };
+  storage->value = (CurrentSenseValue){ 0 };
   storage->callback = NULL;
   storage->context = NULL;
 
@@ -44,8 +44,8 @@ StatusCode ltc_current_sense_init(LTCCurrentSenseStorage *storage, LTCCurrentSen
 }
 
 // Register a callback to run when new data is available
-StatusCode ltc_current_sense_register_callback(LTCCurrentSenseStorage *storage,
-                                               LtcCurrentSenseCallback callback, void *context) {
+StatusCode current_sense_register_callback(CurrentSenseStorage *storage,
+                                           CurrentSenseCallback callback, void *context) {
   if (storage == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
