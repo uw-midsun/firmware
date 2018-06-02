@@ -6,11 +6,7 @@
 #include "log.h"
 #include "soft_timer.h"
 
-// ##### Voltage Conversion #####
-// 12 Bit ADC from 0 V to 3 V
-#define CHAOS_CONFIG_VALUE_TO_MILLIVOLTS(val) ((val)*3000 / (((uint16_t)1 << 12) - 1))
-#define CHAOS_CONFIG_VALUE_TO_MICROVOLTS(val) \
-  (((uint32_t)(val)) * 3000000 / (((uint16_t)1 << 12) - 1))
+#define CHAOS_CONFIG_VALUE_TO_MICROVOLTS(millivolts) ((millivolts)*1000)
 
 // ##### Current Equation #####
 // I = V / (Gain * R)
@@ -47,11 +43,11 @@ static uint16_t prv_convert_dcdc_current(uint16_t value) {
 }
 
 static uint16_t prv_convert_aux_bat_voltage(uint16_t value) {
-  return CHAOS_CONFIG_AUX_BAT_VOLTAGE_CONVERT(CHAOS_CONFIG_VALUE_TO_MILLIVOLTS(value));
+  return CHAOS_CONFIG_AUX_BAT_VOLTAGE_CONVERT(value);
 }
 
 static uint16_t prv_convert_dcdc_voltage(uint16_t value) {
-  return CHAOS_CONFIG_DCDC_VOLTAGE_CONVERT(CHAOS_CONFIG_VALUE_TO_MILLIVOLTS(value));
+  return CHAOS_CONFIG_DCDC_VOLTAGE_CONVERT(value);
 }
 
 // clang-format off
@@ -66,7 +62,7 @@ static ChaosConfig s_config = {
       .current_pin = { GPIO_PORT_A, 3 },
       .current_convert_fn = prv_convert_aux_bat_current,
       .voltage_convert_fn = prv_convert_aux_bat_voltage,
-      .period_us = CHAOS_CONFIG_POWER_PATH_PERIOD_US,
+      .period_millis = CHAOS_CONFIG_POWER_PATH_PERIOD_MS,
       .timer_id = SOFT_TIMER_INVALID_TIMER,
     },
     .dcdc = {
@@ -76,7 +72,7 @@ static ChaosConfig s_config = {
       .current_pin = { GPIO_PORT_A, 2 },
       .current_convert_fn = prv_convert_dcdc_current,
       .voltage_convert_fn = prv_convert_dcdc_voltage,
-      .period_us = CHAOS_CONFIG_POWER_PATH_PERIOD_US,
+      .period_millis = CHAOS_CONFIG_POWER_PATH_PERIOD_MS,
       .timer_id = SOFT_TIMER_INVALID_TIMER,
     }
   },
