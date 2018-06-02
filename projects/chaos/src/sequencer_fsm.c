@@ -24,6 +24,18 @@ static uint8_t s_retries = 0;
 static bool s_pending_transition = false;
 static uint16_t s_filtered_ids[NUM_SEQUENCER_FSM_FILTERS] = { 0 };
 
+// Filter:
+//
+// Rationale:
+//
+// Normally the sequencer filters to the range of (NUM_CHAOS_EVENTS_CAN, NUM_CHAOS_EVENT_SEQEUNCES)
+// with special handling of CHAOS_EVENT_RELAY_ERROR.
+//
+// We use filtering in the emergency state to discard CHAOS_EVENT_RELAY_ERROR and
+// CHAOS_EVENT_RELAY_OPENED so that we can skip awaiting responses. However, if we didn't include
+// this filtering behavior the CHAOS_EVENT_RELAY_OPENED message would hit the main sequencer and
+// since it was unexpected it would cause a fault. To avoid this we need to filter it.
+
 // Adds a filter on |id| to ignore it until it is cleared.
 static bool prv_add_filter(uint16_t id) {
   for (size_t i = 0; i < NUM_SEQUENCER_FSM_FILTERS; i++) {
