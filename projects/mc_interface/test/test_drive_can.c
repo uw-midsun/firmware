@@ -75,19 +75,19 @@ void teardown_test(void) {}
 void test_drive_can_basic(void) {
   // Make sure we prevent throttle/cruise from activating if mechanical brake is active
   CAN_TRANSMIT_DRIVE_OUTPUT(100, EE_DRIVE_OUTPUT_DIRECTION_FORWARD, 0,
-                              EE_DRIVE_OUTPUT_MECH_THRESHOLD + 1);
+                            EE_DRIVE_OUTPUT_MECH_THRESHOLD + 1);
   MS_TEST_HELPER_CAN_TX_RX(TEST_DRIVE_CAN_EVENT_TX, TEST_DRIVE_CAN_EVENT_RX);
   TEST_ASSERT_EQUAL(0, s_throttle);
 
   CAN_TRANSMIT_DRIVE_OUTPUT(0, EE_DRIVE_OUTPUT_DIRECTION_FORWARD, 45,
-                              EE_DRIVE_OUTPUT_MECH_THRESHOLD + 1);
+                            EE_DRIVE_OUTPUT_MECH_THRESHOLD + 1);
   MS_TEST_HELPER_CAN_TX_RX(TEST_DRIVE_CAN_EVENT_TX, TEST_DRIVE_CAN_EVENT_RX);
   TEST_ASSERT_EQUAL(0, s_throttle);
   TEST_ASSERT_EQUAL(0, s_speed_cms);
 
   // Allow regen braking to pass through even if mechanical brake is active
   CAN_TRANSMIT_DRIVE_OUTPUT((uint16_t)-300, EE_DRIVE_OUTPUT_DIRECTION_FORWARD, 0,
-                              EE_DRIVE_OUTPUT_MECH_THRESHOLD + 1);
+                            EE_DRIVE_OUTPUT_MECH_THRESHOLD + 1);
   MS_TEST_HELPER_CAN_TX_RX(TEST_DRIVE_CAN_EVENT_TX, TEST_DRIVE_CAN_EVENT_RX);
   TEST_ASSERT_EQUAL(-300, s_throttle);
   TEST_ASSERT_EQUAL(0, s_speed_cms);
