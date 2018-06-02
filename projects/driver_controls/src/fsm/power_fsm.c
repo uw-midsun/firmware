@@ -12,10 +12,13 @@
 // The alternative would be to use guarded transitions and expose the mechanical brake state.
 
 #include "power_fsm.h"
+
 #include "drive_output.h"
 #include "event_arbiter.h"
+#include "exported_enums.h"
 #include "input_event.h"
 #include "log.h"
+#include "power_distribution_controller.h"
 
 // Power FSM state definitions
 
@@ -101,16 +104,35 @@ static bool prv_guard_off(const Event *e) {
 
 // Power FSM output functions
 
-static void prv_on_output(FSM *fsm, const Event *e, void *context) {
+static void prv_drive_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
+  power_distribution_controller_send_update(EE_POWER_STATE_DRIVE);
 
   // Allow all events and begin sending periodic drive commands
   drive_output_set_enabled(drive_output_global(), true);
   event_arbiter_set_guard_fn(guard, NULL);
 }
 
-static void prv_off_output(FSM *fsm, const Event *e, void *context) {
+static void prv_fault_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
+
+  // Disable periodic drive output updates if not running
+  drive_output_set_enabled(drive_output_global(), false);
+  event_arbiter_set_guard_fn(guard, prv_guard_off);
+}
+
+static void prv_idle_output(FSM *fsm, const Event *e, void *context) {
+  EventArbiterGuard *guard = fsm->context;
+  power_distribution_controller_send_update(EE_POWER_STATE_IDLE);
+
+  // Disable periodic drive output updates if not running
+  drive_output_set_enabled(drive_output_global(), false);
+  event_arbiter_set_guard_fn(guard, prv_guard_off);
+}
+
+static void prv_charge_output(FSM *fsm, const Event *e, void *context) {
+  EventArbiterGuard *guard = fsm->context;
+  power_distribution_controller_send_update(EE_POWER_STATE_CHARGE);
 
   // Disable periodic drive output updates if not running
   drive_output_set_enabled(drive_output_global(), false);
@@ -119,15 +141,15 @@ static void prv_off_output(FSM *fsm, const Event *e, void *context) {
 
 StatusCode power_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
   // TODO(ELEC-354): could use just a mechanical brake guard in state_off?
-  fsm_state_init(state_off, prv_off_output);
-  fsm_state_init(state_off_brake, prv_off_output);
-  fsm_state_init(state_charging, prv_off_output);
-  fsm_state_init(state_charging_brake, prv_off_output);
-  fsm_state_init(state_on, prv_on_output);
-  fsm_state_init(state_on_brake, prv_on_output);
+  fsm_state_init(state_off, prv_idle_output);
+  fsm_state_init(state_off_brake, prv_idle_output);
+  fsm_state_init(state_charging, prv_charge_output);
+  fsm_state_init(state_charging_brake, prv_charge_output);
+  fsm_state_init(state_on, prv_drive_output);
+  fsm_state_init(state_on_brake, prv_drive_output);
   // TODO(ELEC-354): fault should probably have a new output state that resets things?
-  fsm_state_init(state_fault, prv_off_output);
-  fsm_state_init(state_fault_brake, prv_off_output);
+  fsm_state_init(state_fault, prv_fault_output);
+  fsm_state_init(state_fault_brake, prv_fault_output);
 
   EventArbiterGuard *guard = event_arbiter_add_fsm(storage, fsm, prv_guard_off);
 
