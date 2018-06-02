@@ -7,6 +7,10 @@
 // LIGHTS_EVENT_GPIO_ON events with the data field set to different peripherals. Events are to be
 // processed by the lights_gpio module.
 
+// There are two types of blinker: syncing blinkers, and non-syncing blinkers. Syncing blinkers
+// will count the number of times they blink and when they reach some set number, they'll raise a
+// SYNC event.
+
 #include "event_queue.h"
 #include "lights_events.h"
 #include "soft_timer.h"
@@ -20,16 +24,24 @@ typedef enum {
 
 typedef uint32_t LightsBlinkerDuration;
 
-// Blinker members.
+// Blinker storage.
 typedef struct LightsBlinker {
   LightsEventGpioPeripheral peripheral;
   SoftTimerID timer_id;
   LightsBlinkerState state;
-  LightsBlinkerDuration duration_ms;  // Duration, in milliseconds
+  // Duration, in milliseconds.
+  LightsBlinkerDuration duration_ms;
+  // Used for syncing blinkers.
+  uint32_t blink_count_threshold;
+  uint32_t blink_count;
 } LightsBlinker;
 
-// Initializes the blinker.
-StatusCode lights_blinker_init(LightsBlinker *blinker, LightsBlinkerDuration duration_ms);
+// If this is used as the count threshold, then a non-syncing blinker is initialized.
+#define LIGHTS_BLINKER_COUNT_THRESHOLD_NO_SYNC 0
+
+// Initializes a blinker. Blinker is syncing if blink_count_threshold > 0.
+StatusCode lights_blinker_init(LightsBlinker *blinker, LightsBlinkerDuration duration_ms,
+                               uint32_t blink_count_threshold);
 
 // Starts generating LIGHTS_EVENT_GPIO_OFF and LIGHTS_EVENT_GPIO_ON events with data field set to
 // the passed-in peripheral. First event generated is an LIGHTS_EVENT_GPIO_ON event.
@@ -40,4 +52,4 @@ StatusCode lights_blinker_activate(LightsBlinker *blinker, LightsEventGpioPeriph
 StatusCode lights_blinker_deactivate(LightsBlinker *blinker);
 
 // Only used for syncing purposes. Reschedules the timer, sets the state to ON.
-StatusCode lights_blinker_sync_on(LightsBlinker *blinker);
+StatusCode lights_blinker_force_on(LightsBlinker *blinker);

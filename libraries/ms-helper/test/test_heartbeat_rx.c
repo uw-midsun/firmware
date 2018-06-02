@@ -34,8 +34,6 @@ typedef struct TestHeartbeatRxHandlerCtx {
   bool executed;
 } TestHeartbeatRxHandlerCtx;
 
-static const Event s_tx_event = { TEST_HEARTBEAT_RX_RX_CAN_TX, 0 };
-static const Event s_rx_event = { TEST_HEARTBEAT_RX_RX_CAN_RX, 0 };
 static HeartbeatRxHandlerStorage s_hb_storage;
 static CANStorage s_can_storage;
 static CANAckRequests s_can_ack_requests;
@@ -100,12 +98,12 @@ void test_heartbeat_rx(void) {
   };
 
   CAN_TRANSMIT_POWERTRAIN_HEARTBEAT(&req);
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_HEARTBEAT_RX_RX_CAN_TX, TEST_HEARTBEAT_RX_RX_CAN_RX);
   TEST_ASSERT_TRUE(context.executed);
 
   expected_status = CAN_ACK_STATUS_INVALID;
   context.ret_code = false;
   CAN_TRANSMIT_POWERTRAIN_HEARTBEAT(&req);
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_HEARTBEAT_RX_RX_CAN_TX, TEST_HEARTBEAT_RX_RX_CAN_RX);
   TEST_ASSERT_TRUE(context.executed);
 }
