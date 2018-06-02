@@ -32,7 +32,7 @@ typedef struct SequencerStorage {
   const SequencerEventPair *events_end;
   bool awaiting_response;
   bool started;
-  bool stopped;
+  bool stop_after_response;
 } SequencerStorage;
 
 // Initializes |storage| with the |event_array| of |size|.

@@ -18,7 +18,7 @@ StatusCode sequencer_init(SequencerStorage *storage, const SequencerEventPair *e
   memset(storage, 0, sizeof(SequencerStorage));
   storage->events_it = event_array;
   storage->events_end = storage->events_it + size;
-  storage->stopped = false;
+  storage->stop_after_response = false;
   if (memcmp(&storage->events_it->response, &s_sequencer_no_op_event, sizeof(Event)) != 0) {
     storage->awaiting_response = true;
     storage->started = true;
@@ -38,8 +38,8 @@ StatusCode sequencer_advance(SequencerStorage *storage, const Event *last_event)
       return STATUS_CODE_OK;
     }
     storage->awaiting_response = false;
-    // Don't continue if stopped. Must be awaiting in order to be stopped.
-    if (storage->stopped) {
+    // Don't continue if stopped on response. Must be awaiting in order to be stopped.
+    if (storage->stop_after_response) {
       return STATUS_CODE_OK;
     }
   } else {
@@ -75,7 +75,7 @@ bool sequencer_complete(const SequencerStorage *storage) {
 
 bool sequencer_stop_awaiting(SequencerStorage *storage) {
   if (storage->awaiting_response) {
-    storage->stopped = true;
+    storage->stop_after_response = true;
     return true;
   }
   return false;
