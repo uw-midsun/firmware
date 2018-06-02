@@ -57,7 +57,7 @@ void teardown_test(void) {}
 // Transmit a lights state can message, and expect the correct event to be raised.
 void test_lights_rx_handler(void) {
   // Transmit an lights state ON message.
-  TEST_ASSERT_OK(CAN_TRANSMIT_LIGHT_STATE(EE_LIGHT_TYPE_HIGH_BEAMS, EE_LIGHT_STATE_ON));
+  TEST_ASSERT_OK(CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_HIGH_BEAMS, EE_LIGHT_STATE_ON));
   Event e = { 0 };
   MS_TEST_HELPER_CAN_TX_RX(LIGHTS_EVENT_CAN_TX, LIGHTS_EVENT_CAN_RX);
   while (!status_ok(event_process(&e))) {
@@ -66,7 +66,7 @@ void test_lights_rx_handler(void) {
   TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_PERIPHERAL_HIGH_BEAMS, e.data);
 
   // Transmit an lights state OFF message.
-  TEST_ASSERT_OK(CAN_TRANSMIT_LIGHT_STATE(EE_LIGHT_TYPE_LOW_BEAMS, EE_LIGHT_STATE_OFF));
+  TEST_ASSERT_OK(CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_LOW_BEAMS, EE_LIGHT_STATE_OFF));
   MS_TEST_HELPER_CAN_TX_RX(LIGHTS_EVENT_CAN_TX, LIGHTS_EVENT_CAN_RX);
   while (!status_ok(event_process(&e))) {
   }
@@ -74,7 +74,7 @@ void test_lights_rx_handler(void) {
   TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_PERIPHERAL_LOW_BEAMS, e.data);
 
   // Transmit a signal light ON message.
-  TEST_ASSERT_OK(CAN_TRANSMIT_LIGHT_STATE(EE_LIGHT_TYPE_SIGNAL_RIGHT, EE_LIGHT_STATE_ON));
+  TEST_ASSERT_OK(CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_SIGNAL_RIGHT, EE_LIGHT_STATE_ON));
   MS_TEST_HELPER_CAN_TX_RX(LIGHTS_EVENT_CAN_TX, LIGHTS_EVENT_CAN_RX);
   while (!status_ok(event_process(&e))) {
   }
@@ -95,7 +95,7 @@ void test_lights_rx_horn_handler(void) {
 
 // Transmit a sync message and make sure lights sync event gets raised.
 void test_lights_sync_handler(void) {
-  TEST_ASSERT_OK(CAN_TRANSMIT_LIGHT_SYNC());
+  TEST_ASSERT_OK(CAN_TRANSMIT_LIGHTS_SYNC());
   Event e = { 0 };
   MS_TEST_HELPER_CAN_TX_RX(LIGHTS_EVENT_CAN_TX, LIGHTS_EVENT_CAN_RX);
   while (!status_ok(event_process(&e))) {

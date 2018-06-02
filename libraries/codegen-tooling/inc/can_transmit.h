@@ -97,36 +97,44 @@
     status;                                                       \
   })
 
-#define CAN_TRANSMIT_MOTOR_CONTROLS(throttle_u16, direction_u16, cruise_control_u16,     \
-                                    mechanical_brake_state_u16)                          \
-  ({                                                                                     \
-    CANMessage msg = { 0 };                                                              \
-    CAN_PACK_MOTOR_CONTROLS(&msg, (throttle_u16), (direction_u16), (cruise_control_u16), \
-                            (mechanical_brake_state_u16));                               \
-    StatusCode status = can_transmit(&msg, NULL);                                        \
-    status;                                                                              \
+#define CAN_TRANSMIT_DRIVE_OUTPUT(throttle_u16, direction_u16, cruise_control_u16,     \
+                                  mechanical_brake_state_u16)                          \
+  ({                                                                                   \
+    CANMessage msg = { 0 };                                                            \
+    CAN_PACK_DRIVE_OUTPUT(&msg, (throttle_u16), (direction_u16), (cruise_control_u16), \
+                          (mechanical_brake_state_u16));                               \
+    StatusCode status = can_transmit(&msg, NULL);                                      \
+    status;                                                                            \
   })
 
-#define CAN_TRANSMIT_LIGHT_STATE(light_id_u8, light_state_u8)    \
-  ({                                                             \
-    CANMessage msg = { 0 };                                      \
-    CAN_PACK_LIGHT_STATE(&msg, (light_id_u8), (light_state_u8)); \
-    StatusCode status = can_transmit(&msg, NULL);                \
-    status;                                                      \
+#define CAN_TRANSMIT_CRUISE_TARGET(target_speed_u8)  \
+  ({                                                 \
+    CANMessage msg = { 0 };                          \
+    CAN_PACK_CRUISE_TARGET(&msg, (target_speed_u8)); \
+    StatusCode status = can_transmit(&msg, NULL);    \
+    status;                                          \
+  })
+
+#define CAN_TRANSMIT_LIGHTS_SYNC()                \
+  ({                                              \
+    CANMessage msg = { 0 };                       \
+    CAN_PACK_LIGHTS_SYNC(&msg);                   \
+    StatusCode status = can_transmit(&msg, NULL); \
+    status;                                       \
+  })
+
+#define CAN_TRANSMIT_LIGHTS_STATE(light_id_u8, light_state_u8)    \
+  ({                                                              \
+    CANMessage msg = { 0 };                                       \
+    CAN_PACK_LIGHTS_STATE(&msg, (light_id_u8), (light_state_u8)); \
+    StatusCode status = can_transmit(&msg, NULL);                 \
+    status;                                                       \
   })
 
 #define CAN_TRANSMIT_HORN(state_u8)               \
   ({                                              \
     CANMessage msg = { 0 };                       \
     CAN_PACK_HORN(&msg, (state_u8));              \
-    StatusCode status = can_transmit(&msg, NULL); \
-    status;                                       \
-  })
-
-#define CAN_TRANSMIT_LIGHT_SYNC()                 \
-  ({                                              \
-    CANMessage msg = { 0 };                       \
-    CAN_PACK_LIGHTS_SYNC(&msg);                   \
     StatusCode status = can_transmit(&msg, NULL); \
     status;                                       \
   })

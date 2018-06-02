@@ -34,8 +34,8 @@ static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckSta
   uint8_t param_1 = 0;
   uint8_t param_2 = 0;
   switch (msg->msg_id) {
-    case SYSTEM_CAN_MESSAGE_LIGHT_STATE:
-      status_ok_or_return(CAN_UNPACK_LIGHT_STATE(msg, &param_1, &param_2));
+    case SYSTEM_CAN_MESSAGE_LIGHTS_STATE:
+      status_ok_or_return(CAN_UNPACK_LIGHTS_STATE(msg, &param_1, &param_2));
       LightsEvent e_id;
       status_ok_or_return(
           prv_get_event_id(settings->event_type[param_1], (EELightsState)param_2, &e_id));
@@ -66,7 +66,7 @@ StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *s
                                LIGHTS_CAN_NUM_RX_HANDLERS));
   // Initialize CAN RX handlers.
   status_ok_or_return(
-      can_register_rx_handler(SYSTEM_CAN_MESSAGE_LIGHT_STATE, prv_rx_handler, settings));
+      can_register_rx_handler(SYSTEM_CAN_MESSAGE_LIGHTS_STATE, prv_rx_handler, settings));
   status_ok_or_return(
       can_register_rx_handler(SYSTEM_CAN_MESSAGE_LIGHTS_SYNC, prv_rx_handler, settings));
   status_ok_or_return(
@@ -77,5 +77,5 @@ StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *s
 
 // TODO(ELEC-372): This needs to be implemented.
 StatusCode lights_can_transmit_sync(void) {
-  return CAN_TRANSMIT_LIGHT_SYNC();
+  return CAN_TRANSMIT_LIGHTS_SYNC();
 }
