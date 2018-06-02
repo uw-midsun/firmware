@@ -30,3 +30,10 @@ typedef enum {
   EE_RELAY_STATE_CLOSE,
   NUM_EE_RELAY_STATES,
 } EERelayState;
+
+typedef enum {
+  EE_POWER_STATE_IDLE = 0,
+  EE_POWER_STATE_CHARGE,
+  EE_POWER_STATE_DRIVE,
+  NUM_EE_POWER_STATES,
+} EEPowerState;
