@@ -156,5 +156,13 @@ void test_sequencer_bad_args(void) {
   TEST_ASSERT_FALSE(sequencer_complete(&storage));
   raised_event.id = TEST_SEQUENCER_EVENT_C;
   raised_event.data = TEST_SEQUENCER_EVENT_C;
+  // Forgive errors prior to receiving the first good event (allows flushing).
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, sequencer_advance(&storage, &raised_event));
+  raised_event.id = TEST_SEQUENCER_EVENT_A;
+  raised_event.data = TEST_SEQUENCER_EVENT_B;
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, sequencer_advance(&storage, &raised_event));
+  raised_event.id = TEST_SEQUENCER_EVENT_C;
+  raised_event.data = TEST_SEQUENCER_EVENT_C;
+  // Now raise an error.
   TEST_ASSERT_EQUAL(STATUS_CODE_INTERNAL_ERROR, sequencer_advance(&storage, &raised_event));
 }

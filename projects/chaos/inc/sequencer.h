@@ -20,6 +20,7 @@
 #define SEQUENCER_EMPTY_DATA 0
 #define SEQUENCER_NO_RESPONSE \
   { .id = CHAOS_EVENT_NO_OP, .data = SEQUENCER_EMPTY_DATA }
+#define SEQUENCER_MAX_FILTERS 5
 
 typedef struct SequencerEventPair {
   Event raise;
@@ -30,6 +31,8 @@ typedef struct SequencerStorage {
   const SequencerEventPair *events_it;
   const SequencerEventPair *events_end;
   bool awaiting_response;
+  bool started;
+  bool stop_after_response;
 } SequencerStorage;
 
 // Initializes |storage| with the |event_array| of |size|.
@@ -42,3 +45,7 @@ StatusCode sequencer_advance(SequencerStorage *storage, const Event *last_event)
 
 // Returns true if the sequence in |storage| is finished.
 bool sequencer_complete(const SequencerStorage *storage);
+
+// Stops a sequencer from raising anything else if it is awaiting an event. Returns true if it was
+// awaiting and was stopped.
+bool sequencer_stop_awaiting(SequencerStorage *storage);
