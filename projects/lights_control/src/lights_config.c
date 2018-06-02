@@ -7,16 +7,16 @@
 static CANSettings s_can_settings = {
   .bitrate = CAN_HW_BITRATE_500KBPS,
   .rx_event = LIGHTS_EVENT_CAN_RX,
-  .tx =
-      {
-          .port = GPIO_PORT_A,
-          .pin = 12,
-      },
-  .rx =
-      {
-          .port = GPIO_PORT_A,
-          .pin = 11,
-      },
+  // clang-format off
+  .tx = {
+    .port = GPIO_PORT_A,
+    .pin = 12,
+  },
+  .rx = {
+    .port = GPIO_PORT_A,
+    .pin = 11,
+  },
+  // clang-format on
   .tx_event = LIGHTS_EVENT_CAN_TX,
   .fault_event = LIGHTS_EVENT_CAN_FAULT,
   .loopback = false,
