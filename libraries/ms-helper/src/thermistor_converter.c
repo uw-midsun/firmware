@@ -28,41 +28,37 @@ uint32_t resistance[71] = {
 // }
 
 // assuming resistor is r2 for the voltage resistor equation
-static uint32_t prv_voltage_to_resistance(uint32_t vin, uint32_t r2, uint32_t vout) {
-  return (10000000/vout)*3000 - 10000000;
-}
+// static uint32_t prv_voltage_to_resistance(uint32_t vsource, uint32_t r2, uint32_t vout) {
+//   return (10000000/vout)*3000 - 10000000;
+// }
 
-StatusCode thermistor_converter_init(void) {
-  // gpio info
-  GPIOAddress DCDCTemperature1 = {
-    .port = GPIO_PORT_A,
-    .pin = 4,
-  };
+// StatusCode thermistor_converter_init(ThermistorStorage *thermistor) {
+//   // gpio info
 
-  GPIOSettings settings = {
-    .direction = GPIO_DIR_IN,
-    .state = GPIO_STATE_LOW,
-    .resistor = GPIO_RES_NONE,
-    .alt_function = GPIO_ALTFN_ANALOG,
-  };
+//   GPIOSettings settings = {
+//     .direction = GPIO_DIR_IN,
+//     .state = GPIO_STATE_LOW,
+//     .resistor = GPIO_RES_NONE,
+//     .alt_function = GPIO_ALTFN_ANALOG,
+//   };
 
-  // initialize gpio
-  gpio_init();
-  gpio_init_pin(&DCDCTemperature1, &settings);
+//  // initialize gpio
+//   gpio_init();
+//   gpio_init_pin(&DCDCTemperature1, &settings);
 
-  // initialize interrupts
-  interrupt_init();
+//   // initialize interrupts
+//   interrupt_init();
 
-  soft_timer_init();
+//   soft_timer_init();
 
-  // initialize the channel
-  adc_init(ADC_MODE_CONTINUOUS);
-  adc_set_channel(ADC_CHANNEL_4, true);
+//   // initialize the channel
+//   adc_init(ADC_MODE_CONTINUOUS);
+//   adc_set_channel(ADC_CHANNEL_4, true);
 
-  return STATUS_CODE_OK;
-}
-
-uint32_t thermistor_converter_get_temp(void) {
+//   return STATUS_CODE_OK;
+// }
+//Sibling resistance in ohms, source voltage in millivolts
+uint32_t thermistor_converter_get_temp(ThermistorStorage *thermistor) {
   // The target resistance based on previous resistors and source voltage
   //uint16_t thermistor_resistance = (3 - 1.5) * 10000 / 1.5;
 
@@ -70,9 +66,10 @@ uint32_t thermistor_converter_get_temp(void) {
   uint16_t reading = 0;
   uint32_t thermistor_resistance = 0;
   //adc_read_raw(ADC_CHANNEL_4, &reading);
-  adc_read_converted(ADC_CHANNEL_4, &reading);
+  adc_read_converted(thermistor->channel, &reading);
   //return reading;
-  thermistor_resistance = prv_voltage_to_resistance(3000, 10000000, (uint32_t)reading);
+  thermistor_resistance = (thermistor->sibling_resistance * 1000 / reading )*(thermistor->source_voltage) - thermistor->sibling_resistance * 1000;
+  // printf("%lu %d \n",thermistor_resistance, reading);
   // return thermistor_resistance;
   // Finds the target temperature
   for (uint32_t i = 0; i < 70; i++) {
@@ -84,3 +81,4 @@ uint32_t thermistor_converter_get_temp(void) {
 
   return 0;
 }
+
