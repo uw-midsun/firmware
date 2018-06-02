@@ -51,57 +51,68 @@
 //   return 0;
 // }
 #include <stdint.h>
+#include <stdio.h>
 
+#include <stdbool.h>
 #include "adc.h"
+#include "ads1015.h"
+#include "ads1015_def.h"
+#include "delay.h"
+#include "event_arbiter.h"
+#include "event_queue.h"
 #include "gpio_it.h"
 #include "i2c.h"
-#include "interrupt.h"
-
-#include "event_arbiter.h"
 #include "input_event.h"
-
-#include "direction_fsm.h"
-#include "hazard_light_fsm.h"
-#include "horn_fsm.h"
-#include "mechanical_brake_fsm.h"
-#include "pedal_fsm.h"
-#include "power_fsm.h"
-#include "push_to_talk_fsm.h"
+#include "interrupt.h"
+#include "log.h"
+#include "magnetic_brake_event_generator.h"
 #include "soft_timer.h"
-#include "turn_signal_fsm.h"
+#include "status.h"
+#include "unity.h"
 
-// Struct of FSMs to be used in the program
-typedef struct FSMGroup {
-  FSM power;
-  FSM pedal;
-  FSM direction;
-  FSM turn_signal;
-  FSM hazard_light;
-  FSM mechanical_brake;
-  FSM horn;
-  FSM push_to_talk;
-} FSMGroup;
+static MagneticCalibrationData data;
 
-int main(void) {
-  FSMGroup fsm_group;
-  Event e;
+static void prv_callback_channel(Ads1015Channel channel, void *context) {
+  MagneticCalibrationData *data = context;
+  // ads1015_read_raw(data->storage, channel, data->reading);
+}
 
-  // Initialize the various driver control devices
+  Ads1015Storage storage;
+
   gpio_init();
   interrupt_init();
   gpio_it_init();
-
   soft_timer_init();
 
-  adc_init(ADC_MODE_CONTINUOUS);
+  I2CSettings i2c_settings = {
+    .speed = I2C_SPEED_FAST,
+    .scl = { .port = GPIO_PORT_B, .pin = 10 },
+    .sda = { .port = GPIO_PORT_B, .pin = 11 },
+  };
 
-  event_queue_init();
+  i2c_init(I2C_PORT_2, &i2c_settings);
+  GPIOAddress ready_pin = { .port = GPIO_PORT_B, .pin = 2 };
 
-  // Initialize FSMs
+  ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
 
-  for (;;) {
-    if (status_ok(event_process(&e))) {
-      // Process the event with the input FSMs
-    }
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, prv_callback_channel, &data);
+
+  data.reading = 30000;
+
+  MagneticBrakeSettings brake_settings = {
+    .percentage_threshold = 60000,
+    .zero_value = 418,
+    .hundred_value = 1253,
+    .min_allowed_range = 0,
+    .max_allowed_range = (1 << 12),
+  };
+
+  magnetic_brake_event_generator_init(&data, &brake_settings);
+
+  percentage_converter(&data, &brake_settings);
+
+  printf("%d %d\n", data.reading, data.percentage);
+
+  while (true) {
   }
-}
+
