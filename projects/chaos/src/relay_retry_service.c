@@ -1,7 +1,5 @@
 #include "relay_retry_service.h"
 
-#include "relay_retry_service.h"
-
 #include "chaos_events.h"
 #include "event_queue.h"
 #include "relay_id.h"
