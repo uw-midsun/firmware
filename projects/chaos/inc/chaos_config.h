@@ -3,6 +3,7 @@
 #include "gpio.h"
 #include "power_path.h"
 
+#define CHAOS_CONFIG_GPIO_OPEN_DELAY_US 1000
 #define CHAOS_CONFIG_POWER_PATH_PERIOD_US 250000
 
 typedef struct ChaosConfig {

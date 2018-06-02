@@ -1,3 +1,5 @@
+// WARNING: Temporary test main! Not for use in vehicle.
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -20,7 +22,6 @@
 #include "status.h"
 
 #define CHAOS_NUM_RX_HANDLERS 1
-#define CHAOS_GPIO_OPEN_DELAY_US 1000
 
 static CANStorage s_can_storage;
 static CANRxHandler s_rx_handlers[CHAOS_NUM_RX_HANDLERS];
@@ -76,7 +77,7 @@ int main(void) {
   };
 
   StatusCode code =
-      gpio_seq_init_pins(addrs, SIZEOF_ARRAY(addrs), &settings, CHAOS_GPIO_OPEN_DELAY_US);
+      gpio_seq_init_pins(addrs, SIZEOF_ARRAY(addrs), &settings, CHAOS_CONFIG_GPIO_OPEN_DELAY_US);
   if (!status_ok(code)) {
     LOG_CRITICAL("Failed to activate GPIO pins. StatusCode: %d\n", code);
     return EXIT_FAILURE;

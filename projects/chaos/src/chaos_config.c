@@ -62,31 +62,32 @@ static uint16_t prv_convert_dcdc_voltage(uint16_t value) {
   return CHAOS_CONFIG_DCDC_VOLTAGE_CONVERT(CHAOS_CONFIG_VALUE_TO_MILLIVOLTS(value));
 }
 
+// clang-format off
 static ChaosConfig s_config = {
-  .power_path = { .enable_pin = { GPIO_PORT_B, 8 },
-                  .shutdown_pin = { GPIO_PORT_A, 8 },
-                  .aux_bat =
-                      {
-                          .id = POWER_PATH_SOURCE_ID_AUX_BAT,
-                          .uv_ov_pin = { GPIO_PORT_A, 9 },
-                          .voltage_pin = { GPIO_PORT_A, 1 },
-                          .current_pin = { GPIO_PORT_A, 3 },
-                          .current_convert_fn = prv_convert_aux_bat_current,
-                          .voltage_convert_fn = prv_convert_aux_bat_voltage,
-                          .period_us = CHAOS_CONFIG_POWER_PATH_PERIOD_US,
-                          .timer_id = SOFT_TIMER_INVALID_TIMER,
-                      },
-                  .dcdc =
-                      {
-                          .id = POWER_PATH_SOURCE_ID_DCDC,
-                          .uv_ov_pin = { GPIO_PORT_A, 10 },
-                          .voltage_pin = { GPIO_PORT_A, 0 },
-                          .current_pin = { GPIO_PORT_A, 2 },
-                          .current_convert_fn = prv_convert_dcdc_current,
-                          .voltage_convert_fn = prv_convert_dcdc_voltage,
-                          .period_us = CHAOS_CONFIG_POWER_PATH_PERIOD_US,
-                          .timer_id = SOFT_TIMER_INVALID_TIMER,
-                      } },
+  .power_path = { 
+    .enable_pin = { GPIO_PORT_B, 8 },
+    .shutdown_pin = { GPIO_PORT_A, 8 },
+    .aux_bat = {
+      .id = POWER_PATH_SOURCE_ID_AUX_BAT,
+      .uv_ov_pin = { GPIO_PORT_A, 9 },
+      .voltage_pin = { GPIO_PORT_A, 1 },
+      .current_pin = { GPIO_PORT_A, 3 },
+      .current_convert_fn = prv_convert_aux_bat_current,
+      .voltage_convert_fn = prv_convert_aux_bat_voltage,
+      .period_us = CHAOS_CONFIG_POWER_PATH_PERIOD_US,
+      .timer_id = SOFT_TIMER_INVALID_TIMER,
+    },
+    .dcdc = {
+      .id = POWER_PATH_SOURCE_ID_DCDC,
+      .uv_ov_pin = { GPIO_PORT_A, 10 },
+      .voltage_pin = { GPIO_PORT_A, 0 },
+      .current_pin = { GPIO_PORT_A, 2 },
+      .current_convert_fn = prv_convert_dcdc_current,
+      .voltage_convert_fn = prv_convert_dcdc_voltage,
+      .period_us = CHAOS_CONFIG_POWER_PATH_PERIOD_US,
+      .timer_id = SOFT_TIMER_INVALID_TIMER,
+    }
+  },
   .telemetry_power = { GPIO_PORT_B, 14 },
   .array_sense_power = { GPIO_PORT_B, 13 },
   .rear_camera_power = { GPIO_PORT_B, 12 },
@@ -100,6 +101,7 @@ static ChaosConfig s_config = {
   .spare_protected_power = { GPIO_PORT_B, 1 },
   .spare_unprotected_power = { GPIO_PORT_B, 9 },
 };
+// clang-format on
 
 ChaosConfig *chaos_config_load(void) {
   return &s_config;
