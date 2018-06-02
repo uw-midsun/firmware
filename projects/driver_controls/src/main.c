@@ -50,10 +50,7 @@
 
 //   return 0;
 // }
-
-int main(void){
-  #include <stdint.h>
-#include <stdio.h>
+#include <stdint.h>
 
 #include "adc.h"
 #include "gpio_it.h"
@@ -85,7 +82,7 @@ typedef struct FSMGroup {
   FSM push_to_talk;
 } FSMGroup;
 
-int main() {
+int main(void) {
   FSMGroup fsm_group;
   Event e;
 
@@ -107,5 +104,4 @@ int main() {
       // Process the event with the input FSMs
     }
   }
-}
 }

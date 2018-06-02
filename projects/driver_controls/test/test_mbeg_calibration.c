@@ -18,16 +18,7 @@
 #include "magnetic_brake_event_generator.h"
 #include "status.h"
 
-MagneticCalibrationData data = {
-  .reading = 100;
-}
-
-MagneticSensorReading reading = {
-  .zero_value = 418;
-  .hundred_value = 1253;
-  .min_allowed_range = 0;
-  .max_allowed_range = 100;
-}
+static MagneticCalibrationData data;
 
 static void prv_callback_channel(Ads1015Channel channel, void *context) {
   MagneticCalibrationData *data = context;
@@ -55,16 +46,24 @@ void set_up(void){
 
   ads1015_configure_channel(&storage, ADS1015_CHANNEL_0, true, prv_callback_channel, &data);
 
-  MagneticBrakeSettings brake_settings ={
-    .percent_threshold = 50;
-  }
+  data.reading = 30000;
 
-  magnetic_brake_event_generator_init(&reading, &data, &brake_settings);
+  MagneticBrakeSettings brake_settings ={
+    .percentage_threshold = 60000,
+    .zero_value = 418,
+    .hundred_value = 1253,
+    .min_allowed_range = 0,
+    .max_allowed_range = (1<<12),
+  };
+
+  magnetic_brake_event_generator_init(&data, &brake_settings);
+
+  percentage_converter(&data, &brake_settings);
+
+  printf("%d %d\n",data.reading,data.percentage);
 
   while (true) {
   }
-
-  return 0;
 
 }
 
