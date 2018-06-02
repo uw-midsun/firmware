@@ -14,12 +14,26 @@
 // Arbitrary number of testing samples
 #define TEST_NUM_SAMPLES 25
 
+// Mock SPI data
+static uint32_t x = 0;
+StatusCode TEST_MOCK(spi_exchange)(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *rx_data,
+                                   size_t rx_len) {
+  if (rx_data != NULL) {
+    for (uint8_t i = 0; i < rx_len; i++) {
+      rx_data[i] = (x >> 8 * (rx_len - 1 - i));
+    }
+
+    x += 10000;
+  }
+
+  return status_code(STATUS_CODE_OK);
+}
+
 static CurrentSenseStorage s_storage;
 
 static uint8_t s_callback_runs = 0;
 
-static CurrentSenseCalibrationData s_line = { .zero_point = { 1081, 0 },
-                                              .max_point = { 62288, 3000 } };
+static CurrentSenseCalibrationData s_line = { .zero_point = { 0, 0 }, .max_point = { 10, 3000 } };
 
 static void prv_callback(CurrentSenseValue *value, void *context) {
   s_callback_runs++;
