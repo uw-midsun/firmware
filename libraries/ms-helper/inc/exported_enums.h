@@ -15,10 +15,10 @@
 
 // General relay state fields
 typedef enum {
-  EE_RELAY_SET_STATE_OPEN = 0,
-  EE_RELAY_SET_STATE_CLOSE,
-  NUM_EE_RELAY_SET_STATES,
-} EERelaySetState;
+  EE_RELAY_STATE_OPEN = 0,
+  EE_RELAY_STATE_CLOSE,
+  NUM_EE_RELAY_STATES,
+} EERelayState;
 
 typedef enum {
   EE_CHARGER_CONN_STATE_DISCONNECTED = 0,
