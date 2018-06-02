@@ -6,17 +6,17 @@
 #include "wait.h"
 
 uint16_t TIM3_IRQHandler(void) {
-  TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
+  //TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
 
-  uint16_t IC2Value = TIM_GetCapture2(TIM3);
+  //uint16_t IC2Value = TIM_GetCapture2(TIM3);
 
-  if (IC2Value != 0) {
-    return (TIM_GetCapture1(TIM3) * 100) / IC2Value;
+  //if (IC2Value != 0) {
+  //  return (TIM_GetCapture1(TIM3) * 100) / IC2Value;
 
-    // Frequency = SystemCoreClock / IC2Value;
-  } else {
-    return 0;
-  }
+  //  // Frequency = SystemCoreClock / IC2Value;
+  //} else {
+  //  return 0;
+  //}
 }
 
 int main(void) {
@@ -34,9 +34,9 @@ int main(void) {
   GPIOSettings output_settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,
-    .alt_function = GPIO_AF_2,
+    //.alt_function = GPIO_AF_2,
   };
 
   gpio_init_pin(&output, &output_settings);
-  pwm_input_init();
+  //pwm_input_init();
 }
