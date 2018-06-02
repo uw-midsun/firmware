@@ -37,5 +37,5 @@ static void prv_handle_speed(int16_t speed_cms[], size_t num_speeds, void *conte
 
 StatusCode drive_can_init(MotorControllerStorage *controller) {
   motor_controller_set_speed_cb(controller, prv_handle_speed, NULL);
-  return can_register_rx_handler(SYSTEM_CAN_MESSAGE_MOTOR_CONTROLS, prv_handle_drive, controller);
+  return can_register_rx_handler(SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT, prv_handle_drive, controller);
 }

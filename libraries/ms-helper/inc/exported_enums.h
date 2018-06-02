@@ -13,18 +13,24 @@
 //   NUM_EE_<MY_CAN_MESSAGE_NAME>_<FIELD_NAME>_<PLURAL>,
 // } EE<MyCanMessageName><FieldName>
 
-// General relay state fields
 typedef enum {
-  EE_RELAY_STATE_OPEN = 0,
-  EE_RELAY_STATE_CLOSE,
-  NUM_EE_RELAY_STATES,
-} EERelayState;
+  EE_CHARGER_SET_RELAY_STATE_OPEN = 0,
+  EE_CHARGER_SET_RELAY_STATE_CLOSE,
+  NUM_EE_CHARGER_SET_RELAY_STATES,
+} EEChargerSetRelayState;
 
 typedef enum {
   EE_CHARGER_CONN_STATE_DISCONNECTED = 0,
   EE_CHARGER_CONN_STATE_CONNECTED,
   NUM_EE_CHARGER_CONN_STATES,
 } EEChargerConnState;
+
+// General relay state
+typedef enum EERelayState {
+  EE_RELAY_STATE_OPEN = 0,
+  EE_RELAY_STATE_CLOSE,
+  NUM_EE_RELAY_STATES,
+} EERelayState;
 
 // Drive output
 // Mech brake + throttle

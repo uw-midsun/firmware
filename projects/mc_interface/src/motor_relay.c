@@ -17,7 +17,7 @@ static StatusCode prv_handle_relay_rx(SystemCanMessage msg_id, uint8_t state, vo
   soft_timer_cancel(storage->delay_timer);
 
   gpio_set_state(&storage->settings.left_relay, state);
-  if (state == EE_RELAY_SET_STATE_CLOSE) {
+  if (state == EE_RELAY_STATE_CLOSE) {
     soft_timer_start_millis(storage->settings.delay_ms, prv_delay_cb, storage,
                             &storage->delay_timer);
   } else {
@@ -40,5 +40,5 @@ StatusCode motor_relay_init(MotorRelayStorage *storage, const MotorRelaySettings
   gpio_init_pin(&storage->settings.right_relay, &gpio_settings);
 
   return relay_rx_configure_handler(&storage->relay_rx, SYSTEM_CAN_MESSAGE_MOTOR_RELAY,
-                                    NUM_EE_RELAY_SET_STATES, prv_handle_relay_rx, storage);
+                                    NUM_EE_RELAY_STATES, prv_handle_relay_rx, storage);
 }

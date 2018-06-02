@@ -45,21 +45,16 @@ static void prv_init_periph(void) {
   can_hw_init(&can_hw_settings);
 }
 
-static void prv_rx_cb(const struct CanUart *can_uart, uint32_t id, bool extended,
-                      const uint64_t *data, size_t dlc, void *context) {
-  LOG_DEBUG("RX id %ld\n", id);
-}
-
 int main(void) {
   prv_init_periph();
 
   CanUart can_uart = {
     .uart = CAN_SLAVE_UART_PORT,  //
-    .rx_cb = prv_rx_cb,           // Ignore RX'd messages from the master
+    .rx_cb = NULL,                // Ignore RX'd messages from the master
     .context = NULL               //
   };
   can_uart_init(&can_uart);
-  // can_uart_enable_passthrough(&can_uart);
+  can_uart_enable_passthrough(&can_uart);
 
   while (true) {
     wait();
