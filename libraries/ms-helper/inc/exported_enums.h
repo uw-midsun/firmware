@@ -38,3 +38,27 @@ typedef enum {
   EE_DRIVE_OUTPUT_DIRECTION_REVERSE,
   NUM_EE_DRIVE_OUTPUT_DIRECTIONS,
 } EEDriveOutputDirection;
+
+typedef enum EELightType {
+  EE_LIGHT_TYPE_HIGH_BEAMS = 0,
+  EE_LIGHT_TYPE_LOW_BEAMS,
+  EE_LIGHT_TYPE_DRL,
+  EE_LIGHT_TYPE_BRAKES,
+  EE_LIGHT_TYPE_SIGNAL_RIGHT,
+  EE_LIGHT_TYPE_SIGNAL_LEFT,
+  EE_LIGHT_TYPE_SIGNAL_HAZARD,
+  EE_LIGHT_TYPE_STROBE,
+  NUM_EE_LIGHT_TYPES,
+} EELightType;
+
+typedef enum EELightsState {
+  EE_LIGHT_STATE_OFF = 0,  //
+  EE_LIGHT_STATE_ON,       //
+  NUM_EE_LIGHT_STATES,     //
+} EELightsState;
+
+typedef enum EEHornState {
+  EE_HORN_STATE_OFF = 0,  //
+  EE_HORN_STATE_ON,       //
+  NUM_EE_HORN_STATES,     //
+} EEHornState;
