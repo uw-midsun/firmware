@@ -1,6 +1,5 @@
 #include "pwm_input.h"
 #include "pwm.h"
-#include "stm32f0xx.h"
 #include "gpio.h"
 #include "interrupt.h"
 #include "wait.h"
