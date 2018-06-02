@@ -36,7 +36,7 @@ typedef enum {
   LTC_AFE_ADC_MODE_14KHZ,
   LTC_AFE_ADC_MODE_3KHZ,
   LTC_AFE_ADC_MODE_2KHZ,
-  NUM_LTC_AFE_ADC_MODE
+  NUM_LTC_AFE_ADC_MODES
 } LtcAfeAdcMode;
 
 typedef struct LtcAfeSettings {

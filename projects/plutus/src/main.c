@@ -32,6 +32,8 @@ int main(void) {
 
   ltc_afe_init(&s_afe, &afe_settings);
 
+  uint16_t prev_voltages[PLUTUS_CFG_TOTAL_CELLS] = { 0 };
+
   while (true) {
     uint16_t voltages[PLUTUS_CFG_TOTAL_CELLS] = { 0 };
     StatusCode status = ltc_afe_read_all_voltage(&s_afe, voltages, PLUTUS_CFG_TOTAL_CELLS);
@@ -50,6 +52,6 @@ int main(void) {
                 aux_voltages[i] / 10, aux_voltages[i] % 10);
     }
 
-    delay_s(1);
+    // delay_s(1);
   }
 }

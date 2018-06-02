@@ -24,6 +24,16 @@ static uint8_t s_voltage_reg[NUM_LTC_AFE_VOLTAGE_REGISTERS] = {
   LTC_AFE_REGISTER_CELL_VOLTAGE_D,
 };
 
+// From the datasheet: Table 5
+static uint32_t s_conversion_delay_ms[NUM_LTC_AFE_ADC_MODES] = {
+  [LTC_AFE_ADC_MODE_27KHZ] = 2,
+  [LTC_AFE_ADC_MODE_14KHZ] = 2,
+  [LTC_AFE_ADC_MODE_7KHZ] = 3,
+  [LTC_AFE_ADC_MODE_3KHZ] = 4,
+  [LTC_AFE_ADC_MODE_2KHZ] = 5,
+  [LTC_AFE_ADC_MODE_26HZ] = 202,
+};
+
 static void prv_wakeup_idle(LtcAfeStorage *afe) {
   gpio_set_state(&afe->cs, GPIO_STATE_LOW);
   delay_us(2);
@@ -85,8 +95,7 @@ static void prv_trigger_adc_conversion(LtcAfeStorage *afe) {
   spi_exchange(afe->spi_port, cmd, 4, NULL, 0);
 
   // wait for conversions to finish
-  // TODO(ELEC-441): why this delay value? shouldn't take that long
-  delay_ms(100);
+  delay_us(s_conversion_delay_ms[afe->adc_mode]);
 }
 
 static void prv_trigger_aux_adc_conversion(LtcAfeStorage *afe) {
@@ -101,7 +110,7 @@ static void prv_trigger_aux_adc_conversion(LtcAfeStorage *afe) {
   spi_exchange(afe->spi_port, cmd, 4, NULL, 0);
 
   // wait for conversions to finish
-  delay_ms(10);
+  delay_us(s_conversion_delay_ms[afe->adc_mode]);
 }
 
 // write config to all devices

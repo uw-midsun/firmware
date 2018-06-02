@@ -6,9 +6,11 @@
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
+#include "log.h"
 
-#define AFE_TEST_SAMPLES 5
-#define AFE_TEST_VOLTAGE_VARIATION 10
+#define TEST_AFE_NUM_SAMPLES 100
+// Maximum total measurement error in filtered mode - +/-2.8mV
+#define TEST_AFE_VOLTAGE_VARIATION 28
 
 static LtcAfeStorage s_afe;
 
@@ -52,21 +54,30 @@ void test_ltc_afe_adc_conversion_initiated(void) {
 void test_ltc_afe_read_all_voltage_repeated_within_tolerances(void) {
   // the idea here is that we repeatedly take samples and verify that the values being read
   // are within an acceptable tolerance
-  uint16_t samples[PLUTUS_CFG_TOTAL_CELLS][AFE_TEST_SAMPLES] = { 0 };
+  struct {
+    uint16_t min;
+    uint16_t max;
+  } bounds[PLUTUS_CFG_TOTAL_CELLS] = { 0 };
 
-  for (int sample = 0; sample < AFE_TEST_SAMPLES; ++sample) {
+  for (int i = 0; i < PLUTUS_CFG_TOTAL_CELLS; i++) {
+    bounds[i].min = UINT16_MAX;
+  }
+
+  for (int sample = 0; sample < TEST_AFE_NUM_SAMPLES; ++sample) {
     uint16_t voltages[PLUTUS_CFG_TOTAL_CELLS] = { 0 };
     StatusCode status = ltc_afe_read_all_voltage(&s_afe, voltages, SIZEOF_ARRAY(voltages));
     TEST_ASSERT_OK(status);
 
     for (int cell = 0; cell < PLUTUS_CFG_TOTAL_CELLS; ++cell) {
-      samples[cell][sample] = voltages[cell];
-
-      for (int old_sample = 0; old_sample < sample; ++old_sample) {
-        uint16_t old_value = samples[cell][old_sample];
-        TEST_ASSERT_UINT16_WITHIN(AFE_TEST_VOLTAGE_VARIATION, old_value, voltages[cell]);
-      }
+      bounds[cell].min = MIN(bounds[cell].min, voltages[cell]);
+      bounds[cell].max = MAX(bounds[cell].max, voltages[cell]);
     }
+  }
+
+  for (size_t i = 0; i < PLUTUS_CFG_TOTAL_CELLS; i++) {
+    uint16_t delta = bounds[i].max - bounds[i].min;
+    TEST_ASSERT_TRUE(TEST_AFE_VOLTAGE_VARIATION < delta);
+    LOG_DEBUG("C%d delta %d (min %d, max %d)\n", i, delta, bounds[i].min, bounds[i].max);
   }
 }
 
@@ -80,21 +91,30 @@ void test_ltc_afe_read_all_voltage_wrong_size(void) {
 void test_ltc_afe_read_all_aux_repeated_within_tolerances(void) {
   // the idea here is that we repeatedly take samples and verify that the values being read
   // are within an acceptable tolerance
-  uint16_t samples[PLUTUS_CFG_TOTAL_CELLS][AFE_TEST_SAMPLES] = { 0 };
+  struct {
+    uint16_t min;
+    uint16_t max;
+  } bounds[PLUTUS_CFG_TOTAL_CELLS] = { 0 };
 
-  for (int sample = 0; sample < AFE_TEST_SAMPLES; ++sample) {
+  for (int i = 0; i < PLUTUS_CFG_TOTAL_CELLS; i++) {
+    bounds[i].min = UINT16_MAX;
+  }
+
+  for (int sample = 0; sample < TEST_AFE_NUM_SAMPLES; ++sample) {
     uint16_t voltages[PLUTUS_CFG_TOTAL_CELLS] = { 0 };
     StatusCode status = ltc_afe_read_all_aux(&s_afe, voltages, SIZEOF_ARRAY(voltages));
     TEST_ASSERT_OK(status);
 
     for (int cell = 0; cell < PLUTUS_CFG_TOTAL_CELLS; ++cell) {
-      samples[cell][sample] = voltages[cell];
-
-      for (int old_sample = 0; old_sample < sample; ++old_sample) {
-        uint16_t old_value = samples[cell][old_sample];
-        TEST_ASSERT_UINT16_WITHIN(AFE_TEST_VOLTAGE_VARIATION, old_value, voltages[cell]);
-      }
+      bounds[cell].min = MIN(bounds[cell].min, voltages[cell]);
+      bounds[cell].max = MAX(bounds[cell].max, voltages[cell]);
     }
+  }
+
+  for (size_t i = 0; i < PLUTUS_CFG_TOTAL_CELLS; i++) {
+    uint16_t delta = bounds[i].max - bounds[i].min;
+    TEST_ASSERT_TRUE(TEST_AFE_VOLTAGE_VARIATION < delta);
+    LOG_DEBUG("C%d delta %d (min %d, max %d)\n", i, delta, bounds[i].min, bounds[i].max);
   }
 }
 
