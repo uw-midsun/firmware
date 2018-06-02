@@ -35,4 +35,4 @@ typedef struct LightsCanSettings {
 StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *lights_can);
 
 // Sends a sync message.
-StatusCode lights_can_transmit_sync(void);
+StatusCode lights_can_process_event(const Event *);

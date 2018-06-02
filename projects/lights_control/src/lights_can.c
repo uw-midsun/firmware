@@ -75,7 +75,10 @@ StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *s
   return STATUS_CODE_OK;
 }
 
-// TODO(ELEC-372): This needs to be implemented.
-StatusCode lights_can_transmit_sync(void) {
-  return CAN_TRANSMIT_LIGHTS_SYNC();
+StatusCode lights_can_process_event(const Event *e) {
+  if (e->id == LIGHTS_EVENT_SYNC) {
+    return CAN_TRANSMIT_LIGHTS_SYNC();
+  }
+  return STATUS_CODE_OK;
 }
+
