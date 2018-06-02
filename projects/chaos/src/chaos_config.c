@@ -39,26 +39,18 @@
 #define CHAOS_CONFIG_AUX_BAT_VOLTAGE_CONVERT(val) (((uint32_t)(val)) * (470 + 140) / 140)
 
 static uint16_t prv_convert_aux_bat_current(uint16_t value) {
-  LOG_DEBUG("Aux Bat Current: %u\n",
-            CHAOS_CONFIG_AUX_BAT_CURRENT_CONVERT(CHAOS_CONFIG_VALUE_TO_MICROVOLTS(value)));
   return CHAOS_CONFIG_AUX_BAT_CURRENT_CONVERT(CHAOS_CONFIG_VALUE_TO_MICROVOLTS(value));
 }
 
 static uint16_t prv_convert_dcdc_current(uint16_t value) {
-  LOG_DEBUG("DCDC Current: %u\n",
-            CHAOS_CONFIG_DCDC_CURRENT_CONVERT(CHAOS_CONFIG_VALUE_TO_MICROVOLTS(value)));
   return CHAOS_CONFIG_DCDC_CURRENT_CONVERT(CHAOS_CONFIG_VALUE_TO_MICROVOLTS(value));
 }
 
 static uint16_t prv_convert_aux_bat_voltage(uint16_t value) {
-  LOG_DEBUG("Aux Bat Voltage: %u\n",
-            CHAOS_CONFIG_AUX_BAT_VOLTAGE_CONVERT(CHAOS_CONFIG_VALUE_TO_MILLIVOLTS(value)));
   return CHAOS_CONFIG_AUX_BAT_VOLTAGE_CONVERT(CHAOS_CONFIG_VALUE_TO_MILLIVOLTS(value));
 }
 
 static uint16_t prv_convert_dcdc_voltage(uint16_t value) {
-  LOG_DEBUG("DCDC Voltage: %u\n",
-            CHAOS_CONFIG_DCDC_VOLTAGE_CONVERT(CHAOS_CONFIG_VALUE_TO_MILLIVOLTS(value)));
   return CHAOS_CONFIG_DCDC_VOLTAGE_CONVERT(CHAOS_CONFIG_VALUE_TO_MILLIVOLTS(value));
 }
 
