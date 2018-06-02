@@ -15,7 +15,7 @@ static void prv_calculate_current(int32_t *value, void *context) {
                            (storage->line->max_point.voltage - storage->line->zero_point.voltage);
 
   if (storage->callback != NULL) {
-    storage->callback(&storage->value, storage->context);
+    storage->callback(storage->value.current, storage->context);
   }
 }
 

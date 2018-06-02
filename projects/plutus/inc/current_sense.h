@@ -5,12 +5,13 @@
 #include "ltc_adc.h"
 #include "status.h"
 
+// Current-voltage data points
 typedef struct {
   int32_t voltage;  // Voltage in microvolts
   int32_t current;  // Voltage in milliamps
 } CurrentSenseValue;
 
-typedef void (*CurrentSenseCallback)(CurrentSenseValue *value, void *context);
+typedef void (*CurrentSenseCallback)(int32_t current, void *context);
 
 // User-defined points for two-point calibration
 typedef struct {

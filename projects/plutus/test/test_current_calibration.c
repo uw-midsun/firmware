@@ -16,13 +16,7 @@
 
 #define TEST_CURRENT_CALIBRATION_DELAY_SECONDS 5
 
-static void prv_callback(CurrentSenseValue *value, void *context) {
-  // Test that actual values are being received
-  TEST_ASSERT_NOT_EQUAL(0, value->voltage);
-  TEST_ASSERT_NOT_EQUAL(0, value->current);
-
-  LOG_DEBUG("Voltage =  %" PRId32 ", Current =  %" PRId32 "\n", value->voltage, value->current);
-}
+static void prv_callback(int32_t current, void *context) { }
 
 static LtcAdcStorage adc_storage = {
   .mosi = { GPIO_PORT_B, 15 },

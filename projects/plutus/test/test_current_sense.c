@@ -35,20 +35,22 @@ static uint8_t s_callback_runs = 0;
 
 static CurrentSenseCalibrationData s_line = { .zero_point = { 0, 0 }, .max_point = { 10, 3000 } };
 
-static void prv_callback(CurrentSenseValue *value, void *context) {
+static void prv_callback(int32_t current, void *context) {
   s_callback_runs++;
+
+  int voltage = s_storage.value.voltage;
 
   int32_t x_min = s_line.zero_point.voltage;
   int32_t y_min = s_line.zero_point.current;
   int32_t x_max = s_line.max_point.voltage;
   int32_t y_max = s_line.max_point.current;
 
-  int32_t test_current = (y_max) * (value->voltage) / (x_max - x_min);
+  int32_t test_current = (y_max) * (s_storage.value.voltage) / (x_max - x_min);
 
-  TEST_ASSERT_EQUAL(test_current, value->current);
+  TEST_ASSERT_EQUAL(test_current, current);
 
-  LOG_DEBUG("[%d / %d] | Voltage =  %" PRId32 ", Current =  %" PRId32 "\n", s_callback_runs,
-            TEST_NUM_SAMPLES, value->voltage, value->current);
+  LOG_DEBUG("[%d / %d] | Voltage = %" PRId32 ", Current = %" PRId32 "\n",
+             s_callback_runs, TEST_NUM_SAMPLES, voltage, current);
 }
 
 void setup_test(void) {
