@@ -14,9 +14,9 @@ uint16_t TIM3_IRQHandler(void) {
   //  return (TIM_GetCapture1(TIM3) * 100) / IC2Value;
 
   //  // Frequency = SystemCoreClock / IC2Value;
-  //} else {
+  // } else {
   //  return 0;
-  //}
+  // }
 }
 
 int main(void) {
@@ -33,7 +33,7 @@ int main(void) {
 
   GPIOSettings output_settings = {
     .direction = GPIO_DIR_OUT, .state = GPIO_STATE_HIGH,
-    //.alt_function = GPIO_AF_2,
+    // .alt_function = GPIO_AF_2,
   };
 
   gpio_init_pin(&output, &output_settings);
