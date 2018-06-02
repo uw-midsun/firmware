@@ -6,6 +6,13 @@
 #include "status.h"
 #include "wait.h"
 
+#include "lights_can.h"
+#include "lights_blinker.h"
+#include "lights_can_config.h"
+#include "lights_gpio.h"
+
+
+
 int main(void) {
   Event e;
 
@@ -14,6 +21,11 @@ int main(void) {
   interrupt_init();
   soft_timer_init();
   event_queue_init();
+
+
+
+
+
 
   while (true) {
   }
