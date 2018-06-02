@@ -38,15 +38,16 @@ PROBE=cmsis-dap
 OPENOCD_SCRIPT_DIR := /usr/share/openocd/scripts/
 OPENOCD_CFG := -s $(OPENOCD_SCRIPT_DIR) \
                -f interface/$(PROBE).cfg -f target/stm32f0x.cfg \
+               -c "$$(python3 $(SCRIPT_DIR)/select_programmer.py $(SERIAL))" \
                -f $(SCRIPT_DIR)/stm32f0-openocd.cfg
 
 # Platform targets
-.PHONY: program gdb target
+.PHONY: program gdb target set_programmer
 
 ifeq (,$(MACOS_SSH_USERNAME))
 
 program: $(TARGET_BINARY:$(PLATFORM_EXT)=.bin)
-	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash $<" -c shutdown
+	$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash $<" -c shutdown
 
 gdb: $(TARGET_BINARY)
 	@pkill $(OPENOCD) || true
@@ -55,6 +56,7 @@ gdb: $(TARGET_BINARY)
 	@pkill $(OPENOCD)
 
 define session_wrapper
+pkill $(OPENOCD) || true
 setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
 $1; pkill $(OPENOCD)
 endef
