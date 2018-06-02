@@ -14,6 +14,7 @@
 #include "horn_fsm.h"
 #include "mechanical_brake_fsm.h"
 #include "pedal_fsm.h"
+#include "power_distribution_controller.h"
 #include "power_fsm.h"
 #include "push_to_talk_fsm.h"
 #include "soft_timer.h"
@@ -51,6 +52,7 @@ int main() {
   for (;;) {
     if (status_ok(event_process(&e))) {
       // Process the event with the input FSMs
+      power_distribution_controller_retry(&e);
     }
   }
 }
