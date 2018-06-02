@@ -7,8 +7,8 @@
 #include "chaos_config.h"
 #include "event_queue.h"
 
-// Initialize the FSM event.
+// Initialize the FSM and sequences
 void gpio_fsm_init(const ChaosConfig *cfg);
 
-// transition the GPIO FSM through a thin wrapper of fsm_process_event.
+// Transition the GPIO FSM through a thin wrapper of fsm_process_event.
 bool gpio_fsm_process_event(const Event *e);
