@@ -30,7 +30,7 @@ Chaos has four internal states:
   external sources.
 - Drive: the car is fully powered and capable of driving.
 - Emergency: A fault state which attempts to turn everything high voltage off
-  and keep active only the minimal number of low voltage systems to recover.
+  and keeps active only the minimal number of low voltage systems to recover.
 
 ## Architecture
 
@@ -57,7 +57,7 @@ The following services are running:
   affirmative message into the event loop. If no ACK is received it raises a
   message into the event loop asking to attempt a retry. 
 - `relay_retry_service`: listens for relay retry requests and decides whether to
-  retry of raise a relay failure message if the retry limit is exceeded. Also
+  retry or raise a relay failure message if the retry limit is exceeded. Also
   listens for configuration updates over the event loop.
 - `powertrain_heartbeat`: listens for the completion of transition to the Drive
   state. In the drive state it starts a watchdog and pulses a heartbeat to
