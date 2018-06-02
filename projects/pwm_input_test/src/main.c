@@ -33,7 +33,7 @@ int main(void) {
 
   GPIOSettings output_settings = {
     .direction = GPIO_DIR_OUT, .state = GPIO_STATE_HIGH,
-    // .alt_function = GPIO_AF_2,
+    .alt_function = GPIO_AF_0,
   };
 
   gpio_init_pin(&output, &output_settings);
