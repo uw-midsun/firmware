@@ -55,7 +55,7 @@ int main(void) {
 
   CanUart can_uart = {
     .uart = CAN_SLAVE_UART_PORT,  //
-    .rx_cb = prv_rx_cb,                // Ignore RX'd messages from the master
+    .rx_cb = prv_rx_cb,           // Ignore RX'd messages from the master
     .context = NULL               //
   };
   can_uart_init(&can_uart);
