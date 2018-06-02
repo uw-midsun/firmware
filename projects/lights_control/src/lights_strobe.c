@@ -2,7 +2,8 @@
 
 StatusCode lights_strobe_init(LightsStrobeStorage *lights_strobe,
                               LightsBlinkerDuration blinker_duration) {
-  return lights_blinker_init(&lights_strobe->blinker, blinker_duration);
+  return lights_blinker_init(&lights_strobe->blinker, blinker_duration,
+                             LIGHTS_BLINKER_COUNT_THRESHOLD_NO_SYNC);
 }
 
 StatusCode lights_strobe_process_event(LightsStrobeStorage *lights_strobe, const Event *event) {
