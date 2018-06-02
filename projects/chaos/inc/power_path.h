@@ -35,7 +35,7 @@ typedef struct PowerPathSource {
   volatile PowerPathVCReadings readings;
   PowerPathConversionFn current_convert_fn;
   PowerPathConversionFn voltage_convert_fn;
-  uint32_t period_us;
+  uint32_t period_millis;
   SoftTimerID timer_id;
   bool monitoring_active;
 } PowerPathSource;
@@ -52,7 +52,7 @@ typedef struct PowerPathCfg {
 StatusCode power_path_init(PowerPathCfg *pp);
 
 // Starts monitoring the specified power source periodically.
-StatusCode power_path_source_monitor_enable(PowerPathSource *source, uint32_t period_us);
+StatusCode power_path_source_monitor_enable(PowerPathSource *source, uint32_t period_millis);
 
 // Stops monitoring the specified power source periodically.
 StatusCode power_path_source_monitor_disable(PowerPathSource *source);

@@ -97,3 +97,7 @@ StatusCode throttle_init(ThrottleStorage *storage, ThrottleCalibrationData *cali
 
 // Gets the current position of the pedal (writes to ThrottlePosition *position).
 StatusCode throttle_get_position(ThrottleStorage *storage, ThrottlePosition *position);
+
+// Returns a pointer to the global throttle storage.
+// Note that this only exists because our FSMs already use their context pointers for event arbiters
+ThrottleStorage *throttle_global(void);
