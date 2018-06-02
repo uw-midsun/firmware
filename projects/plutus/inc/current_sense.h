@@ -16,11 +16,11 @@ typedef void (*CurrentSenseCallback)(CurrentSenseValue *value, void *context);
 typedef struct {
   CurrentSenseValue zero_point;
   CurrentSenseValue max_point;
-} CurrentSenseLineData;
+} CurrentSenseCalibrationData;
 
 typedef struct {
   LtcAdcStorage *adc_storage;
-  CurrentSenseLineData *line;
+  CurrentSenseCalibrationData *line;
   CurrentSenseValue value;
   CurrentSenseCallback callback;
   void *context;
@@ -28,7 +28,7 @@ typedef struct {
 
 // Initialize the current sense module. Requires adc_storage to be initialized and
 // CurrentSenseLineData to be calibrated beforehand
-StatusCode current_sense_init(CurrentSenseStorage *storage, CurrentSenseLineData *line,
+StatusCode current_sense_init(CurrentSenseStorage *storage, CurrentSenseCalibrationData *line,
                               LtcAdcStorage *adc_storage);
 
 // Register a callback to run when new data is available

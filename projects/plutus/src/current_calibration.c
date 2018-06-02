@@ -9,7 +9,7 @@ static void prv_callback(int32_t *value, void *context) {
   storage->voltage += *value;
   storage->samples++;
 
-  LOG_DEBUG("Sample [%d/%d]\n", storage->samples, CALIBRATION_SAMPLES);
+  LOG_DEBUG("Sample [%d/%d]\n", storage->samples, CURRENT_CALIBRATION_SAMPLES);
 }
 
 StatusCode current_calibration_sample_point(CurrentCalibrationStorage *storage,
@@ -18,20 +18,20 @@ StatusCode current_calibration_sample_point(CurrentCalibrationStorage *storage,
     return status_code(STATUS_CODE_UNINITIALIZED);
   }
 
-  ltc_adc_init(&storage->adc_storage);
-  ltc_adc_register_callback(&storage->adc_storage, prv_callback, storage);
+  ltc_adc_init(storage->adc_storage);
+  ltc_adc_register_callback(storage->adc_storage, prv_callback, storage);
 
   storage->samples = 0;
   storage->voltage = 0;
 
-  while (storage->samples < CALIBRATION_SAMPLES) {
+  while (storage->samples < CURRENT_CALIBRATION_SAMPLES) {
     wait();
   }
 
   // Disable callback
-  ltc_adc_register_callback(&storage->adc_storage, NULL, storage);
+  ltc_adc_register_callback(storage->adc_storage, NULL, storage);
 
-  storage->voltage /= CALIBRATION_SAMPLES;
+  storage->voltage /= CURRENT_CALIBRATION_SAMPLES;
 
   point->voltage = storage->voltage;
   point->current = current;

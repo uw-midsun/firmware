@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-static void prv_callback(int32_t *value, void *context) {
+static void prv_calculate_current(int32_t *value, void *context) {
   CurrentSenseStorage *storage = (CurrentSenseStorage *)context;
 
   // Correct for voltage offset
@@ -19,7 +19,7 @@ static void prv_callback(int32_t *value, void *context) {
   }
 }
 
-StatusCode current_sense_init(CurrentSenseStorage *storage, CurrentSenseLineData *line,
+StatusCode current_sense_init(CurrentSenseStorage *storage, CurrentSenseCalibrationData *line,
                               LtcAdcStorage *adc_storage) {
   if (storage == NULL) {
     return status_code(STATUS_CODE_UNINITIALIZED);
@@ -29,7 +29,7 @@ StatusCode current_sense_init(CurrentSenseStorage *storage, CurrentSenseLineData
 
   // Initialize ADC and start periodic polling
   status_ok_or_return(ltc_adc_init(adc_storage));
-  status_ok_or_return(ltc_adc_register_callback(adc_storage, prv_callback, storage));
+  status_ok_or_return(ltc_adc_register_callback(adc_storage, prv_calculate_current, storage));
 
   // Store calibration parameters
   storage->adc_storage = adc_storage;

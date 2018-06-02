@@ -4,10 +4,10 @@
 
 #include "current_sense.h"
 
-#define CALIBRATION_SAMPLES 10
+#define CURRENT_CALIBRATION_SAMPLES 10
 
 typedef struct {
-  LtcAdcStorage adc_storage;
+  LtcAdcStorage *adc_storage;
   int32_t voltage;
   volatile uint8_t samples;
 } CurrentCalibrationStorage;

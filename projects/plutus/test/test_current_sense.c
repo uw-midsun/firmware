@@ -36,7 +36,7 @@ void teardown_test(void) {}
 
 void test_current_sense(void) {
   // Arbitrary calibration points
-  CurrentSenseLineData line = { .zero_point = { 1081, 0 }, .max_point = { 62288, 3000 } };
+  CurrentSenseCalibrationData line = { .zero_point = { 1081, 0 }, .max_point = { 62288, 3000 } };
 
   // Fill out ADC storage struct and initialize current sense
   LtcAdcStorage adc_storage = { .mosi = { GPIO_PORT_B, 15 },
