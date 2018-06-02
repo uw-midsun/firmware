@@ -40,7 +40,7 @@ StatusCode horn_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  fsm_init(fsm, "horn_fsm", &state_horn_off, guard);
+  fsm_init(fsm, "Horn FSM", &state_horn_off, guard);
 
   return STATUS_CODE_OK;
 }

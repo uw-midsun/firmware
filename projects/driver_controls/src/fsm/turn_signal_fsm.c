@@ -57,7 +57,7 @@ StatusCode turn_signal_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  fsm_init(fsm, "turn_signal_fsm", &state_no_signal, guard);
+  fsm_init(fsm, "Turn Signal FSM", &state_no_signal, guard);
 
   return STATUS_CODE_OK;
 }
