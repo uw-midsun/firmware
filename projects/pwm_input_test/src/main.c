@@ -32,8 +32,9 @@ int main(void) {
   };
 
   GPIOSettings output_settings = {
+    .direction = GPIO_DIR_OUT,
+    .state = GPIO_STATE_HIGH,
     .alt_function = GPIO_AF_2,
-    .state = GPIO_STATE_LOW,
   };
 
   gpio_init_pin(&output, &output_settings);
