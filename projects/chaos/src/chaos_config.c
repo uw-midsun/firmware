@@ -56,7 +56,7 @@ static uint16_t prv_convert_dcdc_voltage(uint16_t value) {
 
 // clang-format off
 static ChaosConfig s_config = {
-  .power_path = { 
+  .power_path = {
     .enable_pin = { GPIO_PORT_B, 8 },
     .shutdown_pin = { GPIO_PORT_A, 8 },
     .aux_bat = {
