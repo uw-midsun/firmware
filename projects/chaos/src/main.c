@@ -19,7 +19,7 @@
 #include "powertrain_heartbeat.h"
 #include "relay.h"
 #include "relay_retry_service.h"
-#include "sequencer_fsm.c"
+#include "sequencer_fsm.h"
 #include "soft_timer.h"
 #include "state_handler.h"
 #include "status.h"
