@@ -11,7 +11,7 @@
 #include "unity.h"
 
 #define TEST_MAX_CURRENT_POINT 3
-#define TEST_SAMPLE_DELAY_SECONDS 10
+#define TEST_SAMPLE_DELAY_SECONDS 5
 
 static void prv_callback(CurrentSenseValue *value, void *context) {
   // Test that actual values are being received
