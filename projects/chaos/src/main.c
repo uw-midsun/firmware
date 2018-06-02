@@ -77,7 +77,7 @@ int main(void) {
   };
 
   StatusCode code =
-      gpio_seq_init_pins(addrs, SIZEOF_ARRAY(addrs), &settings, CHAOS_CONFIG_GPIO_OPEN_DELAY_US);
+      gpio_seq_init_pins(addrs, SIZEOF_ARRAY(addrs), &settings, CHAOS_CONFIG_GPIO_OPEN_DELAY_MS);
   if (!status_ok(code)) {
     LOG_CRITICAL("Failed to activate GPIO pins. StatusCode: %d\n", code);
     return EXIT_FAILURE;
