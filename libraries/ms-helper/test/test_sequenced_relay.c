@@ -6,29 +6,29 @@
 #include "gpio.h"
 #include "interrupt.h"
 #include "log.h"
-#include "motor_relay.h"
+#include "sequenced_relay.h"
 #include "ms_test_helpers.h"
 #include "test_helpers.h"
 #include "unity.h"
 
-#define TEST_MOTOR_RELAY_NUM_RX_HANDLERS 5
-#define TEST_MOTOR_RELAY_CAN_DEVICE_ID 0x1
+#define TEST_SEQUENCED_RELAY_NUM_RX_HANDLERS 5
+#define TEST_SEQUENCED_RELAY_CAN_DEVICE_ID 0x1
 
-#define TEST_MOTOR_RELAY_LEFT \
+#define TEST_SEQUENCED_RELAY_LEFT \
   { .port = GPIO_PORT_B, .pin = 3 }
-#define TEST_MOTOR_RELAY_RIGHT \
+#define TEST_SEQUENCED_RELAY_RIGHT \
   { .port = GPIO_PORT_B, .pin = 9 }
-#define TEST_MOTOR_RELAY_DELAY_MS 10
+#define TEST_SEQUENCED_RELAY_DELAY_MS 10
 
 static CANStorage s_can;
-static CANRxHandler s_rx_handlers[TEST_MOTOR_RELAY_NUM_RX_HANDLERS];
-static MotorRelayStorage s_motor_relay;
+static CANRxHandler s_rx_handlers[TEST_SEQUENCED_RELAY_NUM_RX_HANDLERS];
+static SequencedRelayStorage s_sequenced_relay;
 
 typedef enum {
-  TEST_MOTOR_RELAY_EVENT_CAN_RX = 0,
-  TEST_MOTOR_RELAY_EVENT_CAN_TX,
-  TEST_MOTOR_RELAY_EVENT_CAN_FAULT,
-} TestMotorRelayEvent;
+  TEST_SEQUENCED_RELAY_EVENT_CAN_RX = 0,
+  TEST_SEQUENCED_RELAY_EVENT_CAN_TX,
+  TEST_SEQUENCED_RELAY_EVENT_CAN_FAULT,
+} TestSequencedRelayEvent;
 
 static StatusCode prv_ack_cb(CANMessageID msg_id, uint16_t device, CANAckStatus status,
                              uint16_t num_remaining, void *context) {
@@ -46,45 +46,46 @@ void setup_test(void) {
   soft_timer_init();
 
   CANSettings can_settings = {
-    .device_id = TEST_MOTOR_RELAY_CAN_DEVICE_ID,
+    .device_id = TEST_SEQUENCED_RELAY_CAN_DEVICE_ID,
     .bitrate = CAN_HW_BITRATE_500KBPS,
-    .rx_event = TEST_MOTOR_RELAY_EVENT_CAN_RX,
-    .tx_event = TEST_MOTOR_RELAY_EVENT_CAN_TX,
-    .fault_event = TEST_MOTOR_RELAY_EVENT_CAN_FAULT,
+    .rx_event = TEST_SEQUENCED_RELAY_EVENT_CAN_RX,
+    .tx_event = TEST_SEQUENCED_RELAY_EVENT_CAN_TX,
+    .fault_event = TEST_SEQUENCED_RELAY_EVENT_CAN_FAULT,
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },
     .loopback = true,
   };
-  TEST_ASSERT_OK(can_init(&can_settings, &s_can, s_rx_handlers, TEST_MOTOR_RELAY_NUM_RX_HANDLERS));
+  TEST_ASSERT_OK(can_init(&can_settings, &s_can, s_rx_handlers, TEST_SEQUENCED_RELAY_NUM_RX_HANDLERS));
 
-  MotorRelaySettings relay_settings = {
-    .left_relay = TEST_MOTOR_RELAY_LEFT,
-    .right_relay = TEST_MOTOR_RELAY_RIGHT,
-    .delay_ms = TEST_MOTOR_RELAY_DELAY_MS,
+  SequencedRelaySettings relay_settings = {
+    .can_message = SYSTEM_CAN_MESSAGE_MOTOR_RELAY,
+    .left_relay = TEST_SEQUENCED_RELAY_LEFT,
+    .right_relay = TEST_SEQUENCED_RELAY_RIGHT,
+    .delay_ms = TEST_SEQUENCED_RELAY_DELAY_MS,
   };
-  TEST_ASSERT_OK(motor_relay_init(&s_motor_relay, &relay_settings));
+  TEST_ASSERT_OK(sequenced_relay_init(&s_sequenced_relay, &relay_settings));
 }
 
 void teardown_test(void) {}
 
-void test_motor_relay_basic(void) {
+void test_sequenced_relay_basic(void) {
   // Ask to close the relay
   volatile CANAckStatus status = NUM_STATUS_CODES;
   CANAckRequest ack_request = {
     .callback = prv_ack_cb,
     .context = &status,
-    .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_MOTOR_RELAY_CAN_DEVICE_ID),
+    .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_SEQUENCED_RELAY_CAN_DEVICE_ID),
   };
   CAN_TRANSMIT_MOTOR_RELAY(&ack_request, EE_RELAY_STATE_CLOSE);
 
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_MOTOR_RELAY_EVENT_CAN_TX, TEST_MOTOR_RELAY_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_SEQUENCED_RELAY_EVENT_CAN_TX, TEST_SEQUENCED_RELAY_EVENT_CAN_RX);
   TEST_ASSERT_OK(status);
 
-  GPIOAddress left_relay = TEST_MOTOR_RELAY_LEFT;
-  GPIOAddress right_relay = TEST_MOTOR_RELAY_RIGHT;
+  GPIOAddress left_relay = TEST_SEQUENCED_RELAY_LEFT;
+  GPIOAddress right_relay = TEST_SEQUENCED_RELAY_RIGHT;
 
   // Make sure that both relays are now closed. We allow some delay before checking for sequencing.
-  delay_ms(TEST_MOTOR_RELAY_DELAY_MS);
+  delay_ms(TEST_SEQUENCED_RELAY_DELAY_MS);
   GPIOState state = NUM_GPIO_STATES;
   gpio_get_state(&left_relay, &state);
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
@@ -93,7 +94,7 @@ void test_motor_relay_basic(void) {
 
   // Try opening the relays
   CAN_TRANSMIT_MOTOR_RELAY(&ack_request, EE_RELAY_STATE_OPEN);
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_MOTOR_RELAY_EVENT_CAN_TX, TEST_MOTOR_RELAY_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_SEQUENCED_RELAY_EVENT_CAN_TX, TEST_SEQUENCED_RELAY_EVENT_CAN_RX);
   TEST_ASSERT_OK(status);
 
   // Opening the relays does not require sequencing, so don't delay
