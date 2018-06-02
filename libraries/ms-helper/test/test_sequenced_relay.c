@@ -68,7 +68,7 @@ void setup_test(void) {
 
 void teardown_test(void) {}
 
-void test_sequenced_relay_basic(void) {
+void test_sequenced_relay_can(void) {
   // Ask to close the relay
   volatile CANAckStatus status = NUM_STATUS_CODES;
   CANAckRequest ack_request = {
@@ -96,6 +96,32 @@ void test_sequenced_relay_basic(void) {
   CAN_TRANSMIT_MOTOR_RELAY(&ack_request, EE_RELAY_STATE_OPEN);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_SEQUENCED_RELAY_EVENT_CAN_TX, TEST_SEQUENCED_RELAY_EVENT_CAN_RX);
   TEST_ASSERT_OK(status);
+
+  // Opening the relays does not require sequencing, so don't delay
+  state = NUM_GPIO_STATES;
+  gpio_get_state(&left_relay, &state);
+  TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
+  gpio_get_state(&right_relay, &state);
+  TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
+}
+
+void test_sequenced_relay_set(void) {
+  // Close the relays
+  TEST_ASSERT_OK(sequenced_relay_set_state(&s_sequenced_relay, EE_RELAY_STATE_CLOSE));
+
+  GPIOAddress left_relay = TEST_SEQUENCED_RELAY_LEFT;
+  GPIOAddress right_relay = TEST_SEQUENCED_RELAY_RIGHT;
+
+  // Make sure that both relays are now closed. We allow some delay before checking for sequencing.
+  delay_ms(TEST_SEQUENCED_RELAY_DELAY_MS);
+  GPIOState state = NUM_GPIO_STATES;
+  gpio_get_state(&left_relay, &state);
+  TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
+  gpio_get_state(&right_relay, &state);
+  TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
+
+  // Opening the relays
+  TEST_ASSERT_OK(sequenced_relay_set_state(&s_sequenced_relay, EE_RELAY_STATE_OPEN));
 
   // Opening the relays does not require sequencing, so don't delay
   state = NUM_GPIO_STATES;

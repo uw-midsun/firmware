@@ -8,6 +8,7 @@
 #include "relay_rx.h"
 #include "soft_timer.h"
 #include "status.h"
+#include "exported_enums.h"
 
 typedef struct SequencedRelaySettings {
   SystemCanMessage can_message;
@@ -25,3 +26,5 @@ typedef struct SequencedRelayStorage {
 
 // |storage| should persist
 StatusCode sequenced_relay_init(SequencedRelayStorage *storage, const SequencedRelaySettings *settings);
+
+StatusCode sequenced_relay_set_state(SequencedRelayStorage *storage, EERelayState state);

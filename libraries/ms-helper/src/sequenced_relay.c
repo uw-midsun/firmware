@@ -14,17 +14,7 @@ static void prv_delay_cb(SoftTimerID timer_id, void *context) {
 static StatusCode prv_handle_relay_rx(SystemCanMessage msg_id, uint8_t state, void *context) {
   SequencedRelayStorage *storage = context;
 
-  soft_timer_cancel(storage->delay_timer);
-
-  gpio_set_state(&storage->settings.left_relay, state);
-  if (state == EE_RELAY_STATE_CLOSE) {
-    soft_timer_start_millis(storage->settings.delay_ms, prv_delay_cb, storage,
-                            &storage->delay_timer);
-  } else {
-    gpio_set_state(&storage->settings.right_relay, state);
-  }
-
-  return STATUS_CODE_OK;
+  return sequenced_relay_set_state(storage, state);
 }
 
 StatusCode sequenced_relay_init(SequencedRelayStorage *storage, const SequencedRelaySettings *settings) {
@@ -41,4 +31,18 @@ StatusCode sequenced_relay_init(SequencedRelayStorage *storage, const SequencedR
 
   return relay_rx_configure_handler(&storage->relay_rx, storage->settings.can_message,
                                     NUM_EE_RELAY_STATES, prv_handle_relay_rx, storage);
+}
+
+StatusCode sequenced_relay_set_state(SequencedRelayStorage *storage, EERelayState state) {
+  soft_timer_cancel(storage->delay_timer);
+
+  gpio_set_state(&storage->settings.left_relay, state);
+  if (state == EE_RELAY_STATE_CLOSE) {
+    soft_timer_start_millis(storage->settings.delay_ms, prv_delay_cb, storage,
+                            &storage->delay_timer);
+  } else {
+    gpio_set_state(&storage->settings.right_relay, state);
+  }
+
+  return STATUS_CODE_OK;
 }
