@@ -142,24 +142,48 @@ static StatusCode prv_write_config(LtcAfeStorage *afe, uint8_t gpio_enable_pins)
                       NULL, 0);
 }
 
+static void prv_calc_offsets(LtcAfeStorage *afe) {
+  // Our goal is to populate result arrays as if the ignored inputs don't exist. This requires
+  // converting the actual LTC6804 cell index to some potentially smaller result index.
+  //
+  // Since we access the same register across multiple devices, we can't just keep a counter and
+  // increment it for each new value we get during register access. Instead, we precompute each
+  // input's corresponding result index. Inputs that are ignored will not be copied into the result
+  // array.
+  //
+  // Similarly, we do the opposite mapping for discharge.
+  size_t cell_index = 0;
+  size_t aux_index = 0;
+  size_t discharge_index = 0;
+  for (size_t device = 0; device < PLUTUS_CFG_AFE_DEVICES_IN_CHAIN; device++) {
+    for (size_t device_cell = 0; device_cell < LTC_AFE_MAX_CELLS_PER_DEVICE; device_cell++) {
+      size_t cell = device * LTC_AFE_MAX_CELLS_PER_DEVICE + device_cell;
+
+      if ((afe->cell_bitset[device] >> device_cell) & 0x1) {
+        // Cell input enabled - store the index that this input should be stored in
+        // when copying to the result array and the opposite for discharge
+        afe->discharge_cell_lookup[cell_index] = cell;
+        afe->cell_result_index[cell] = cell_index++;
+      }
+
+      if ((afe->aux_bitset[device] >> device_cell) & 0x1) {
+        // Cell input enabled - store the index that this input should be stored in
+        // when copying to the result array
+        afe->aux_result_index[cell] = aux_index++;
+      }
+    }
+  }
+}
+
 StatusCode ltc_afe_init(LtcAfeStorage *afe, const LtcAfeSettings *settings) {
   memset(afe, 0, sizeof(*afe));
   afe->spi_port = settings->spi_port;
   afe->cs = settings->cs;
   afe->adc_mode = settings->adc_mode;
-  memcpy(afe->input_bitset, settings->input_bitset, sizeof(afe->input_bitset));
+  memcpy(afe->cell_bitset, settings->cell_bitset, sizeof(afe->cell_bitset));
+  memcpy(afe->aux_bitset, settings->aux_bitset, sizeof(afe->aux_bitset));
 
-  size_t offset = 0;
-  for (size_t device = 0; device < PLUTUS_CFG_AFE_DEVICES_IN_CHAIN; device++) {
-    for (size_t cell = 0; cell < LTC_AFE_MAX_CELLS_PER_DEVICE; cell++) {
-      if (((afe->input_bitset[device] >> cell) & 0x1) == 0x00) {
-        // Input disabled - offset to compensate
-        offset++;
-      }
-
-      afe->index_offset[LTC_AFE_MAX_CELLS_PER_DEVICE * device + cell] = offset;
-    }
-  }
+  prv_calc_offsets(afe);
 
   crc15_init_table();
 
@@ -201,9 +225,9 @@ StatusCode ltc_afe_read_all_voltage(LtcAfeStorage *afe, uint16_t *result_arr, si
         uint16_t device_cell = cell + (cell_reg * LTC6804_CELLS_IN_REG);
         uint16_t index = device * LTC_AFE_MAX_CELLS_PER_DEVICE + device_cell;
 
-        if (((afe->input_bitset[device] >> device_cell) & 0x1) == 0x1) {
+        if (((afe->cell_bitset[device] >> device_cell) & 0x1) == 0x1) {
           // Input enabled - store result
-          result_arr[index - afe->index_offset[index]] = voltage;
+          result_arr[afe->cell_result_index[index]] = voltage;
         }
       }
 
@@ -243,10 +267,10 @@ StatusCode ltc_afe_read_all_aux(LtcAfeStorage *afe, uint16_t *result_arr, size_t
       // we only care about GPIO1 and the PEC
       uint16_t voltage = register_data[device].reg.voltages[0];
 
-      if ((afe->input_bitset[device] >> cell) & 0x1) {
-        // Need to offset the data if enabled as an input
+      if ((afe->aux_bitset[device] >> cell) & 0x1) {
+        // Input enabled - store result
         uint16_t index = device * LTC_AFE_MAX_CELLS_PER_DEVICE + cell;
-        result_arr[index - afe->index_offset[index]] = voltage;
+        result_arr[afe->aux_result_index[index]] = voltage;
       }
 
       uint16_t received_pec = SWAP_UINT16(register_data[device].pec);
@@ -265,27 +289,15 @@ StatusCode ltc_afe_toggle_cell_discharge(LtcAfeStorage *afe, uint16_t cell, bool
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  // Convert cell to device/actual cell
-  size_t actual_cell = 0;
-  for (size_t device = 0; device < PLUTUS_CFG_AFE_DEVICES_IN_CHAIN; device++) {
-    for (size_t cell = 0; cell < LTC_AFE_MAX_CELLS_PER_DEVICE; cell++) {
-      // As an optimization, we could use ffs
-      if ((afe->input_bitset[device] >> cell) & 0x1) {
-        // Cell is enabled
-        if (actual_cell == cell) {
-          if (discharge) {
-            afe->discharge_bitset[device] |= 1 << cell;
-          } else {
-            afe->discharge_bitset[device] &= ~(1 << cell);
-          }
-          return STATUS_CODE_OK;
-        }
+  uint16_t actual_cell = afe->discharge_cell_lookup[cell];
+  uint16_t device = actual_cell % LTC_AFE_MAX_CELLS_PER_DEVICE;
+  uint16_t device_cell = actual_cell / LTC_AFE_MAX_CELLS_PER_DEVICE;
 
-        actual_cell++;
-      }
-    }
+  if (discharge) {
+    afe->discharge_bitset[device] |= 1 << device_cell;
+  } else {
+    afe->discharge_bitset[device] &= ~(1 << device_cell);
   }
 
-  // Somehow couldn't find the cell?
-  return status_code(STATUS_CODE_INTERNAL_ERROR);
+  return STATUS_CODE_OK;
 }

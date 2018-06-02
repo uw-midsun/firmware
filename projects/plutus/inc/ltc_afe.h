@@ -19,6 +19,7 @@
 #include "status.h"
 
 #define LTC_AFE_MAX_CELLS_PER_DEVICE 12
+#define LTC_AFE_MAX_TOTAL_CELLS (PLUTUS_CFG_AFE_DEVICES_IN_CHAIN * LTC_AFE_MAX_CELLS_PER_DEVICE)
 
 #if defined(__GNUC__)
 #define _PACKED __attribute__((packed))
@@ -49,7 +50,11 @@ typedef struct LtcAfeSettings {
 
   LtcAfeAdcMode adc_mode;
   // Cell inputs to include in the measurement arrays
-  uint16_t input_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
+  // Should have |PLUTUS_CFG_TOTAL_CELLS| set bits.
+  uint16_t cell_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
+  // Aux inputs to include in the measurement arrays
+  // Should have |PLUTUS_CFG_TOTAL_CELLS| set bits.
+  uint16_t aux_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
 } LtcAfeSettings;
 
 typedef struct LtcAfeStorage {
@@ -58,12 +63,18 @@ typedef struct LtcAfeStorage {
   LtcAfeAdcMode adc_mode;
 
   // Cell inputs to include in the measurement arrays
-  uint16_t input_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
-  // Precalculate the offset so we can easily insert it into the result array
-  // Note that this offset should be subtracted from the actual index
-  uint16_t index_offset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN * LTC_AFE_MAX_CELLS_PER_DEVICE];
+  uint16_t cell_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
+  // Lookup table for mapping AFE cell -> result index
+  uint16_t cell_result_index[LTC_AFE_MAX_TOTAL_CELLS];
+
+  // Aux inputs to include in the measurement arrays
+  uint16_t aux_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
+  uint16_t aux_result_index[LTC_AFE_MAX_TOTAL_CELLS];
+
   // Discharge enabled - device-relative
   uint16_t discharge_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
+  // Lookup table for mapping cell -> actual device-relative AFE cell
+  uint16_t discharge_cell_lookup[LTC_AFE_MAX_TOTAL_CELLS];
 } LtcAfeStorage;
 
 // Initialize the LTC6804.

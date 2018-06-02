@@ -17,30 +17,37 @@ int main(void) {
   soft_timer_init();
 
   const LtcAfeSettings afe_settings = {
-    .mosi = PLUTUS_CFG_AFE_SPI_MOSI,  //
-    .miso = PLUTUS_CFG_AFE_SPI_MISO,  //
-    .sclk = PLUTUS_CFG_AFE_SPI_SCLK,  //
-    .cs = PLUTUS_CFG_AFE_SPI_CS,      //
+    .mosi = PLUTUS_CFG_AFE_SPI_MOSI,
+    .miso = PLUTUS_CFG_AFE_SPI_MISO,
+    .sclk = PLUTUS_CFG_AFE_SPI_SCLK,
+    .cs = PLUTUS_CFG_AFE_SPI_CS,
 
-    .spi_port = PLUTUS_CFG_AFE_SPI_PORT,          //
-    .spi_baudrate = PLUTUS_CFG_AFE_SPI_BAUDRATE,  //
+    .spi_port = PLUTUS_CFG_AFE_SPI_PORT,
+    .spi_baudrate = PLUTUS_CFG_AFE_SPI_BAUDRATE,
     .adc_mode = PLUTUS_CFG_AFE_MODE,
 
-    .input_bitset = PLUTUS_CFG_INPUT_BITSET_ARR,
+    .cell_bitset = PLUTUS_CFG_CELL_BITSET_ARR,
+    .aux_bitset = PLUTUS_CFG_AUX_BITSET_ARR,
   };
 
   ltc_afe_init(&s_afe, &afe_settings);
 
   while (true) {
     uint16_t voltages[PLUTUS_CFG_TOTAL_CELLS] = { 0 };
-    size_t len = SIZEOF_ARRAY(voltages);
-    StatusCode status = ltc_afe_read_all_voltage(&s_afe, voltages, len);
+    StatusCode status = ltc_afe_read_all_voltage(&s_afe, voltages, PLUTUS_CFG_TOTAL_CELLS);
     if (status != STATUS_CODE_OK) {
-      LOG_DEBUG("Invalid status\n");
+      LOG_DEBUG("Invalid status %d\n", status);
+    }
+
+    uint16_t aux_voltages[PLUTUS_CFG_TOTAL_CELLS] = { 0 };
+    status = ltc_afe_read_all_aux(&s_afe, aux_voltages, PLUTUS_CFG_TOTAL_CELLS);
+    if (status != STATUS_CODE_OK) {
+      LOG_DEBUG("Invalid status (aux) %d\n", status);
     }
 
     for (int i = 0; i < PLUTUS_CFG_TOTAL_CELLS; i++) {
-      LOG_DEBUG("C%d: %d\n", i, voltages[i]);
+      LOG_DEBUG("C%d: cell %d.%dmV, aux %d.%dmV\n", i, voltages[i] / 10, voltages[i] % 10,
+                aux_voltages[i] / 10, aux_voltages[i] % 10);
     }
 
     delay_s(1);

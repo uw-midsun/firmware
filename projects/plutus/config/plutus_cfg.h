@@ -5,17 +5,22 @@
 #ifdef PLUTUS_CFG_DEBUG
 #define PLUTUS_CFG_AFE_DEVICES_IN_CHAIN 1
 #define PLUTUS_CFG_TOTAL_CELLS 6
-#define PLUTUS_CFG_INPUT_BITSET_ARR \
+#define PLUTUS_CFG_CELL_BITSET_ARR \
   { PLUTUS_CFG_INPUT_BITSET_SPLIT }
+#define PLUTUS_CFG_AUX_BITSET_ARR \
+  { PLUTUS_CFG_INPUT_BITSET_FIRST }
 #else
 // number of devices in daisy chain (including master)
 #define PLUTUS_CFG_AFE_DEVICES_IN_CHAIN 4
 #define PLUTUS_CFG_TOTAL_CELLS 36
 // We're using 18 modules per box -> 2 AFEs each
 // clang-format off
-#define PLUTUS_CFG_INPUT_BITSET_ARR                                 \
+#define PLUTUS_CFG_CELL_BITSET_ARR                                  \
   { PLUTUS_CFG_INPUT_BITSET_FULL, PLUTUS_CFG_INPUT_BITSET_SPLIT,    \
     PLUTUS_CFG_INPUT_BITSET_FULL, PLUTUS_CFG_INPUT_BITSET_SPLIT, }
+#define PLUTUS_CFG_AUX_BITSET_ARR                                   \
+  { PLUTUS_CFG_INPUT_BITSET_FULL, PLUTUS_CFG_INPUT_BITSET_FIRST,    \
+    PLUTUS_CFG_INPUT_BITSET_FULL, PLUTUS_CFG_INPUT_BITSET_FIRST, }
 // clang-format on
 #endif
 
@@ -48,3 +53,5 @@
 #define PLUTUS_CFG_INPUT_BITSET_FULL 0xFFF
 // Using 6 cell inputs split across the 2 muxes
 #define PLUTUS_CFG_INPUT_BITSET_SPLIT (0x7 << 6 | 0x7)
+// Using first 6 cell inputs
+#define PLUTUS_CFG_INPUT_BITSET_FIRST 0x3F

@@ -18,16 +18,17 @@ void setup_test(void) {
   soft_timer_init();
 
   const LtcAfeSettings afe_settings = {
-    .mosi = PLUTUS_CFG_AFE_SPI_MOSI,  //
-    .miso = PLUTUS_CFG_AFE_SPI_MISO,  //
-    .sclk = PLUTUS_CFG_AFE_SPI_SCLK,  //
-    .cs = PLUTUS_CFG_AFE_SPI_CS,      //
+    .mosi = PLUTUS_CFG_AFE_SPI_MOSI,
+    .miso = PLUTUS_CFG_AFE_SPI_MISO,
+    .sclk = PLUTUS_CFG_AFE_SPI_SCLK,
+    .cs = PLUTUS_CFG_AFE_SPI_CS,
 
-    .spi_port = PLUTUS_CFG_AFE_SPI_PORT,          //
-    .spi_baudrate = PLUTUS_CFG_AFE_SPI_BAUDRATE,  //
+    .spi_port = PLUTUS_CFG_AFE_SPI_PORT,
+    .spi_baudrate = PLUTUS_CFG_AFE_SPI_BAUDRATE,
     .adc_mode = PLUTUS_CFG_AFE_MODE,
 
-    .input_bitset = PLUTUS_CFG_INPUT_BITSET_ARR,
+    .cell_bitset = PLUTUS_CFG_CELL_BITSET_ARR,
+    .aux_bitset = PLUTUS_CFG_AUX_BITSET_ARR,
   };
 
   ltc_afe_init(&s_afe, &afe_settings);
