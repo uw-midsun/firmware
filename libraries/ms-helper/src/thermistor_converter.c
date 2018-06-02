@@ -1,8 +1,5 @@
-#include <math.h>
 #include <stdint.h>
-#include "adc.h"
-#include "gpio.h"
-#include "interrupt.h"
+#include "thermistor_converter.h"
 #include "log.h"
 
 // In milliohms
@@ -30,6 +27,11 @@ uint32_t resistance[71] = {
 //   }
 // }
 
+// assuming resistor is r2 for the voltage resistor equation
+/* static uint32_t prv_voltage_to_resistance(uint32_t vin, uint32_t r2, uint32_t vout) {
+  return (r2*vin)/vout - r2;
+} */
+
 StatusCode thermistor_converter_init(void) {
   // gpio info
   GPIOAddress DCDCTemperature1 = {
@@ -51,6 +53,8 @@ StatusCode thermistor_converter_init(void) {
   // initialize interrupts
   interrupt_init();
 
+  soft_timer_init();
+
   // initialize the channel
   adc_init(ADC_MODE_CONTINUOUS);
   adc_set_channel(ADC_CHANNEL_4, true);
@@ -63,11 +67,13 @@ uint16_t thermistor_converter_get_temp(void) {
   uint16_t thermistor_resistance = (3 - 1.5) * 10000 / 1.5;
 
   // get raw reading
-  uint16_t reading;
-  adc_read_raw(ADC_CHANNEL_4, &reading);
-
+  uint16_t reading = 0;
+  //adc_read_raw(ADC_CHANNEL_4, &reading);
+  adc_read_converted(ADC_CHANNEL_4, &reading);
+  //prv_voltage_to_resistance(3000, 10000 * 1000, (uint32_t)reading);
+  return reading;
   // Finds the target temperature
-  uint8_t temp;
+  uint16_t temp;
   for (uint16_t i = 0; i < 70 - 1; i++) {
     if (thermistor_resistance <= resistance[i] && thermistor_resistance >= resistance[i + 1]) {
       // return i * (thermistor_resistance - resistance[0]) / (resistance[i + 1] - resistance[i]);
