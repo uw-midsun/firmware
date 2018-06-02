@@ -77,7 +77,7 @@ int main(void) {
   };
 
   StatusCode code =
-      gpio_seq_init_pins(addrs, SIZEOF_ARRAY(addrs), &settings, CHAOS_CONFIG_GPIO_OPEN_DELAY_MS);
+      gpio_seq_init_pins(addrs, SIZEOF_ARRAY(addrs), &settings, CHAOS_CONFIG_GPIO_OPEN_DELAY_US);
   if (!status_ok(code)) {
     LOG_CRITICAL("Failed to activate GPIO pins. StatusCode: %d\n", code);
     return EXIT_FAILURE;
@@ -90,7 +90,7 @@ int main(void) {
   }
 
   code =
-      power_path_source_monitor_enable(&cfg->power_path.aux_bat, CHAOS_CONFIG_POWER_PATH_PERIOD_US);
+      power_path_source_monitor_enable(&cfg->power_path.aux_bat, CHAOS_CONFIG_POWER_PATH_PERIOD_MS);
   if (!status_ok(code)) {
     LOG_CRITICAL("Failed to activate Power Path Source AUX BAT. StatusCode: %d\n", code);
     return EXIT_FAILURE;
