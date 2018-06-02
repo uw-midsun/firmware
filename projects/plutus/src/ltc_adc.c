@@ -70,9 +70,7 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
 
     // Invoke callback with the new data
     if (storage->callback != NULL) {
-      bool disabled = critical_section_start();
       storage->callback(&storage->buffer.value, storage->context);
-      critical_section_end(disabled);
     }
   }
 
@@ -157,8 +155,11 @@ StatusCode ltc_adc_register_callback(LtcAdcStorage *storage, LtcAdcCallback call
   if (storage == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
+
+  bool disabled = critical_section_start();
   storage->callback = callback;
   storage->context = context;
+  critical_section_end(disabled);
 
   return STATUS_CODE_OK;
 }

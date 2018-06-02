@@ -4,13 +4,13 @@
 
 #include "ltc_current_sense.h"
 
-#define LTC_CALIBRATION_SAMPLES 100
+#define LTC_CALIBRATION_SAMPLES 10
 
 typedef struct {
-  LtcAdcStorage *storage;
+  LtcAdcStorage adc_storage;
   int32_t voltage;
-  uint8_t samples;
-} LTCCalibrationStorage
+  volatile uint8_t samples;
+} LTCCalibrationStorage;
 
 // Samples adc readings at specified current in order to obtain data for two-point
 // calibration. Function will block until completion. For optimal results, make

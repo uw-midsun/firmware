@@ -12,13 +12,13 @@
 #include "unity.h"
 
 // Arbitrary number of testing samples
-#define TEST_NUM_SAMPLES 25
+#define TEST_NUM_SAMPLES 100
 
 static LTCCurrentSenseStorage s_storage;
 
 static uint8_t s_callback_runs = 0;
 
-void prv_callback(LTCCurrentSenseValue *value, void *context) {
+static void prv_callback(LTCCurrentSenseValue *value, void *context) {
   s_callback_runs++;
   LOG_DEBUG("[%d / %d] | Voltage =  %" PRId32 ", Current =  %" PRId32 "\n", s_callback_runs,
             TEST_NUM_SAMPLES, value->voltage, value->current);
@@ -36,7 +36,7 @@ void teardown_test(void) {}
 
 void test_current_sense(void) {
   // Arbitrary calibration points
-  LTCCurrentSenseLineData line = { .zero_point = { 100, 0 }, .max_point = { 20000, 200 } };
+  LTCCurrentSenseLineData line = { .zero_point = { 1081, 0 }, .max_point = { 62288, 3000 } };
 
   // Fill out ADC storage struct and initialize current sense
   LtcAdcStorage adc_storage = {

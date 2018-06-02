@@ -26,7 +26,7 @@ typedef struct {
   void *context;
 } LTCCurrentSenseStorage;
 
-// Initialize the current sense module. Requires ltc_adc to be initialized and
+// Initialize the current sense module. Requires adc_storage to be initialized and
 // LTCCurrentSenseLineData to be calibrated beforehand
 StatusCode ltc_current_sense_init(LTCCurrentSenseStorage *storage, LTCCurrentSenseLineData *line,
                                   LtcAdcStorage *adc_storage);
