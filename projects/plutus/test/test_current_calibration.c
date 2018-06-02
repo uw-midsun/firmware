@@ -10,8 +10,11 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#define TEST_MAX_CURRENT_POINT 3
-#define TEST_SAMPLE_DELAY_SECONDS 5
+// The module does not know what current the adc readings correspond to, so keep an arbitrary
+// max point for testing
+#define TEST_CURRENT_CALIBRATION_MAX 3
+
+#define TEST_CURRENT_CALIBRATION_DELAY_SECONDS 5
 
 static void prv_callback(CurrentSenseValue *value, void *context) {
   // Test that actual values are being received
@@ -48,18 +51,18 @@ void test_current_calibration_sample(void) {
 
   // Obtain zero point
   LOG_DEBUG("Set current to 0 A\n");
-  delay_s(TEST_SAMPLE_DELAY_SECONDS);
+  delay_s(TEST_CURRENT_CALIBRATION_DELAY_SECONDS);
   LOG_DEBUG("Start sampling\n");
   TEST_ASSERT_OK(current_calibration_sample_point(&s_storage, &line.zero_point, 0));
   LOG_DEBUG("Sampling finished -> { Voltage = %" PRId32 ", Current = %" PRId32 " }\n",
             line.zero_point.voltage, line.zero_point.current);
 
   // Obtain max point
-  LOG_DEBUG("Set current to %d A\n", TEST_MAX_CURRENT_POINT);
-  delay_s(TEST_SAMPLE_DELAY_SECONDS);
+  LOG_DEBUG("Set current to %d A\n", TEST_CURRENT_CALIBRATION_MAX);
+  delay_s(TEST_CURRENT_CALIBRATION_DELAY_SECONDS);
   LOG_DEBUG("Start sampling\n");
   TEST_ASSERT_OK(
-      current_calibration_sample_point(&s_storage, &line.max_point, TEST_MAX_CURRENT_POINT));
+      current_calibration_sample_point(&s_storage, &line.max_point, TEST_CURRENT_CALIBRATION_MAX));
   LOG_DEBUG("Sampling finished -> { Voltage = %" PRId32 ", Current = %" PRId32 " }\n",
             line.max_point.voltage, line.max_point.current);
 
@@ -69,5 +72,5 @@ void test_current_calibration_sample(void) {
   current_sense_init(&storage, &line, s_storage.adc_storage);
   current_sense_register_callback(&storage, prv_callback, NULL);
 
-  delay_s(TEST_SAMPLE_DELAY_SECONDS);
+  delay_s(TEST_CURRENT_CALIBRATION_DELAY_SECONDS);
 }
