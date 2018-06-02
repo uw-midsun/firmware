@@ -196,7 +196,7 @@ StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading) {
     return status_code(STATUS_CODE_EMPTY);
   }
 
-  uint16_t adc_reading;
+  uint16_t adc_reading = 0;
   adc_read_raw(adc_channel, &adc_reading);
 
   switch (adc_channel) {

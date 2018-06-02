@@ -3,6 +3,9 @@
 #include "gpio.h"
 #include "power_path.h"
 
+#define CHAOS_CONFIG_GPIO_OPEN_DELAY_US 1000
+#define CHAOS_CONFIG_POWER_PATH_PERIOD_MS 250000
+
 typedef struct ChaosConfig {
   PowerPathCfg power_path;
   // Roof
@@ -17,10 +20,10 @@ typedef struct ChaosConfig {
   const GPIOAddress battery_box_power;
   const GPIOAddress motor_interface_power;
   const GPIOAddress rear_lights_power;
+  const GPIOAddress pjb_fan;
   // Unused but available pins
-  // const GPIOAddress spare_protected_power;
-  // const GPIOAddress spare_unprotected_power
-  //
+  const GPIOAddress spare_protected_power;
+  const GPIOAddress spare_unprotected_power;
   // Debug LEDs
   // const GPIOAddress led1_power;
   // const GPIOAddress led2_power;

@@ -4,7 +4,7 @@
 #include "event_queue.h"
 #include "relay_id.h"
 
-static RelayRetryServiceStorage *s_storage;
+static RelayRetryServiceStorage *s_storage = NULL;
 
 StatusCode relay_retry_service_init(RelayRetryServiceStorage *storage) {
   if (storage == NULL) {
@@ -56,5 +56,7 @@ StatusCode relay_retry_service_update(const Event *e) {
 }
 
 void relay_retry_service_fail_fast(void) {
-  s_storage->max_retries = 0;
+  if (s_storage != NULL) {
+    s_storage->max_retries = 0;
+  }
 }
