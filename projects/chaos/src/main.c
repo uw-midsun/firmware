@@ -96,7 +96,7 @@ int main(void) {
     return EXIT_FAILURE;
   }
 
-  code = power_path_source_monitor_enable(&cfg->power_path.dcdc, CHAOS_CONFIG_POWER_PATH_PERIOD_US);
+  code = power_path_source_monitor_enable(&cfg->power_path.dcdc, CHAOS_CONFIG_POWER_PATH_PERIOD_MS);
   if (!status_ok(code)) {
     LOG_CRITICAL("Failed to activate Power Path Source DCDC. StatusCode: %d\n", code);
     return EXIT_FAILURE;
