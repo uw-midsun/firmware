@@ -24,8 +24,6 @@ typedef enum {
 
 typedef uint32_t LightsBlinkerDuration;
 
-typedef uint32_t LightsBlinkerSyncCount;
-
 // Blinker storage.
 typedef struct LightsBlinker {
   LightsEventGpioPeripheral peripheral;
@@ -34,21 +32,15 @@ typedef struct LightsBlinker {
   // Duration, in milliseconds.
   LightsBlinkerDuration duration_ms;
   // Used for syncing blinkers.
-  LightsBlinkerSyncCount sync_count;
+  uint32_t blink_count_threshold;
   uint32_t blink_count;
 } LightsBlinker;
 
-// Initializes a non-syncing blinker.
-#define lights_blinker_init_without_sync(blinker, duration) \
-  lights_blinker_init(blinker, duration, 0)
+#define LIGHTS_BLINKER_NON_BLINKING 0
 
-// Initializes a syncing blinker.
-#define lights_blinker_init_with_sync(blinker, duration, count) \
-  lights_blinker_init(blinker, duration, count)
-
-// Initializes a blinker.
+// Initializes a blinker. Blinker is syncing if blink_count_threshold > 0.
 StatusCode lights_blinker_init(LightsBlinker *blinker, LightsBlinkerDuration duration_ms,
-                               LightsBlinkerSyncCount sync_count);
+                               uint32_t blink_count_threshold);
 
 // Starts generating LIGHTS_EVENT_GPIO_OFF and LIGHTS_EVENT_GPIO_ON events with data field set to
 // the passed-in peripheral. First event generated is an LIGHTS_EVENT_GPIO_ON event.
@@ -59,4 +51,4 @@ StatusCode lights_blinker_activate(LightsBlinker *blinker, LightsEventGpioPeriph
 StatusCode lights_blinker_deactivate(LightsBlinker *blinker);
 
 // Only used for syncing purposes. Reschedules the timer, sets the state to ON.
-StatusCode lights_blinker_sync(LightsBlinker *blinker);
+StatusCode lights_blinker_force_on(LightsBlinker *blinker);

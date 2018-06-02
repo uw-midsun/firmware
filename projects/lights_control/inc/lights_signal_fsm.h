@@ -17,16 +17,11 @@ typedef struct LightsSignalFsm {
   FSM fsm;
 } LightsSignalFsm;
 
-// Initializes the FSM with a non-syncing blinker.
-#define lights_signal_fsm_init_front(fsm, duration) lights_signal_fsm_init(fsm, duration, 0)
-// Initializes the FSM with a syncing blinker.
-#define lights_signal_fsm_init_rear(fsm, duration, sync_count) \
-  lights_signal_fsm_init(fsm, duration, sync_count)
-
-// Initializes state machines, and blinker (use above macros instead).
+// Initializes state machines, and blinker.
+// If sync count is passed as 0, then it will use a non-syncing blinker. Thus not raising any
+// sync events.
 StatusCode lights_signal_fsm_init(LightsSignalFsm *lights_signal_fsm,
-                                  LightsBlinkerDuration const blinker_duration,
-                                  LightsBlinkerSyncCount count);
+                                  LightsBlinkerDuration const blinker_duration, uint32_t count);
 
 // Processes signal events.
 StatusCode lights_signal_fsm_process_event(LightsSignalFsm *lights_signal_fsm, const Event *event);

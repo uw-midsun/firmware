@@ -92,8 +92,7 @@ static void prv_state_hazard_signal_output(FSM *fsm, const Event *e, void *conte
 }
 
 StatusCode lights_signal_fsm_init(LightsSignalFsm *lights_signal_fsm,
-                                  const LightsBlinkerDuration blinker_duration,
-                                  LightsBlinkerSyncCount count) {
+                                  const LightsBlinkerDuration blinker_duration, uint32_t count) {
   fsm_state_init(state_none, prv_state_none_output);
   fsm_state_init(state_left_signal, prv_state_left_signal_output);
   fsm_state_init(state_right_signal, prv_state_right_signal_output);
@@ -101,15 +100,7 @@ StatusCode lights_signal_fsm_init(LightsSignalFsm *lights_signal_fsm,
   fsm_state_init(state_hazard_left_signal, prv_state_hazard_signal_output);
   fsm_state_init(state_hazard_right_signal, prv_state_hazard_signal_output);
 
-  if (count == 0) {
-    // If count is 0, means we don't want a syncing blinker.
-    status_ok_or_return(
-        lights_blinker_init_without_sync(&lights_signal_fsm->blinker, blinker_duration));
-  } else {
-    // Initialize fsm with a syncing blinker.
-    status_ok_or_return(
-        lights_blinker_init_with_sync(&lights_signal_fsm->blinker, blinker_duration, count));
-  }
+  status_ok_or_return(lights_blinker_init(&lights_signal_fsm->blinker, blinker_duration, count));
   fsm_init(&lights_signal_fsm->fsm, "Lights Signal FSM", &state_none, lights_signal_fsm);
   return STATUS_CODE_OK;
 }
@@ -122,7 +113,7 @@ StatusCode lights_signal_fsm_process_event(LightsSignalFsm *lights_signal_fsm, c
 StatusCode lights_signal_fsm_process_sync_event(LightsSignalFsm *lights_signal_fsm,
                                                 const Event *event) {
   if (event->id == LIGHTS_EVENT_SYNC) {
-    return lights_blinker_sync(&lights_signal_fsm->blinker);
+    return lights_blinker_force_on(&lights_signal_fsm->blinker);
   }
   return STATUS_CODE_OK;
 }
