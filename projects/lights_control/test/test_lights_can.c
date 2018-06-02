@@ -105,10 +105,7 @@ void test_lights_sync_handler(void) {
 
 // Transmit a sync message.
 void test_lights_process_event(void) {
-  const Event e = {
-    .id = LIGHTS_EVENT_SYNC,
-    .data = 0
-  };
+  const Event e = { .id = LIGHTS_EVENT_SYNC, .data = 0 };
   TEST_ASSERT_OK(lights_can_process_event(&e));
   MS_TEST_HELPER_CAN_TX_RX(LIGHTS_EVENT_CAN_TX, LIGHTS_EVENT_CAN_RX);
   while (!status_ok(event_process(&e))) {

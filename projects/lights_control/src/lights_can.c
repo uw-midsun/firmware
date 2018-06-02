@@ -81,4 +81,3 @@ StatusCode lights_can_process_event(const Event *e) {
   }
   return STATUS_CODE_OK;
 }
-

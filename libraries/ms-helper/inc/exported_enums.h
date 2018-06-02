@@ -25,7 +25,7 @@ typedef enum {
   NUM_EE_CHARGER_CONN_STATES,
 } EEChargerConnState;
 
-typedef enum EELightType{
+typedef enum EELightType {
   EE_LIGHT_TYPE_HIGH_BEAMS = 0,
   EE_LIGHT_TYPE_LOW_BEAMS,
   EE_LIGHT_TYPE_DRL,
