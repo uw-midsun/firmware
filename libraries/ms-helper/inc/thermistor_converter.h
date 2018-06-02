@@ -9,16 +9,16 @@
 #define RESISTANCE_LEN 71
 
 typedef struct {
-  uint32_t sibling_resistance; // milliohms
-  uint32_t source_voltage; // millivolts
+  uint32_t sibling_resistance;  // milliohms
+  uint32_t source_voltage;      // millivolts
   void *context;
 
   ADCChannel adc_channel;
 } ThermistorStorage;
 
 typedef struct {
-  uint32_t sibling_resistance; // milliohms
-  uint32_t source_voltage; // millivolts
+  uint32_t sibling_resistance;  // milliohms
+  uint32_t source_voltage;      // millivolts
   void *context;
 
   GPIOSettings *gpio_settings;
