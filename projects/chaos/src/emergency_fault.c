@@ -11,8 +11,6 @@
 #include "soft_timer.h"
 #include "status.h"
 
-#define EMERGENCY_FAULT_BACKOFF_MS 10
-
 // Forward declare to resolve the circular dependence of the functions.
 static StatusCode prv_ack_handler(CANMessageID msg_id, uint16_t device, CANAckStatus status,
                                   uint16_t num_remaining, void *context);
