@@ -11,14 +11,17 @@
 #include "lights_events.h"
 
 // Instance of lights signal.
+
 typedef struct LightsSignalFsm {
   LightsBlinker blinker;
   FSM fsm;
 } LightsSignalFsm;
 
 // Initializes state machines, and blinker.
+// If sync count is passed as 0, then it will use a non-syncing blinker. Thus not raising any
+// sync events.
 StatusCode lights_signal_fsm_init(LightsSignalFsm *lights_signal_fsm,
-                                  LightsBlinkerDuration blinker_duration);
+                                  LightsBlinkerDuration const blinker_duration, uint32_t count);
 
 // Processes signal events.
 StatusCode lights_signal_fsm_process_event(LightsSignalFsm *lights_signal_fsm, const Event *event);
