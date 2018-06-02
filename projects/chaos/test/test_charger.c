@@ -19,8 +19,6 @@
 
 #define TEST_CHARGER_NUM_CAN_RX_HANDLERS 2
 
-static const Event s_tx_event = { CHAOS_EVENT_CAN_TX, 0 };
-static const Event s_rx_event = { CHAOS_EVENT_CAN_RX, 0 };
 static CANStorage s_storage;
 static CANRxHandler s_rx_handlers[TEST_CHARGER_NUM_CAN_RX_HANDLERS];
 static EEChargerSetRelayState s_expected_state = NUM_EE_CHARGER_SET_RELAY_STATES;
@@ -75,19 +73,19 @@ void test_charger_state(void) {
   // TODO(ELEC-355): Convert to notification message when codegen-tooling is updated.
   CAN_TRANSMIT_CHARGER_CONN_STATE(EE_CHARGER_CONN_STATE_CONNECTED);
   // TX and RX for notification and command.
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
 
   s_expected_state = EE_CHARGER_SET_RELAY_STATE_CLOSE;
   TEST_ASSERT_OK(charger_set_state(s_expected_state));
   // TX and RX for the command.
-  MS_TEST_HELPER_CAN_TX_RX(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
 
   // Disconnect Charger.
   // TODO(ELEC-355): Convert to notification message when codegen-tooling is updated.
   CAN_TRANSMIT_CHARGER_CONN_STATE(EE_CHARGER_CONN_STATE_DISCONNECTED);
   // TX and RX for notification.
-  MS_TEST_HELPER_CAN_TX_RX(s_tx_event, s_rx_event);
+  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
 
   // Check no more sends occur.
   TEST_ASSERT_OK(charger_set_state(EE_CHARGER_SET_RELAY_STATE_OPEN));
