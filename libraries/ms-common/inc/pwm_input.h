@@ -10,4 +10,4 @@
 #include "status.h"
 
 // Initializes the timer for PWM input.
-StatusCode pwm_init();
+StatusCode pwm_input_init();
