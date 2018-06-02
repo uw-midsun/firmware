@@ -27,7 +27,6 @@
 
 #define CHAOS_NUM_RX_HANDLERS 10
 
-static CANAckRequests s_can_ack_requests;
 static CANStorage s_can_storage;
 static CANRxHandler s_rx_handlers[CHAOS_NUM_RX_HANDLERS];
 static EmergencyFaultStorage s_emergency_storage;
@@ -54,7 +53,6 @@ int main(void) {
     .loopback = false,
   };
   can_init(&can_settings, &s_can_storage, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
-  can_ack_init(&s_can_ack_requests);
 
   // GPIO
   ChaosConfig *cfg = chaos_config_load();
