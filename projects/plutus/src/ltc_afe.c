@@ -26,12 +26,8 @@ static uint8_t s_voltage_reg[NUM_LTC_AFE_VOLTAGE_REGISTERS] = {
 
 // From the datasheet: Table 5
 static uint32_t s_conversion_delay_ms[NUM_LTC_AFE_ADC_MODES] = {
-  [LTC_AFE_ADC_MODE_27KHZ] = 2,
-  [LTC_AFE_ADC_MODE_14KHZ] = 2,
-  [LTC_AFE_ADC_MODE_7KHZ] = 3,
-  [LTC_AFE_ADC_MODE_3KHZ] = 4,
-  [LTC_AFE_ADC_MODE_2KHZ] = 5,
-  [LTC_AFE_ADC_MODE_26HZ] = 202,
+  [LTC_AFE_ADC_MODE_27KHZ] = 2, [LTC_AFE_ADC_MODE_14KHZ] = 2, [LTC_AFE_ADC_MODE_7KHZ] = 3,
+  [LTC_AFE_ADC_MODE_3KHZ] = 4,  [LTC_AFE_ADC_MODE_2KHZ] = 5,  [LTC_AFE_ADC_MODE_26HZ] = 202,
 };
 
 static void prv_wakeup_idle(LtcAfeStorage *afe) {
