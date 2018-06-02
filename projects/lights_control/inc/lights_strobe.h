@@ -1,7 +1,7 @@
 #pragma once
 
 // This module controls the strobe's behaviour. It uses lights_blinker to create blinking
-// behaviour. It needs to be initialized first.
+// behaviour. Requires soft_timers, and interrupts to be initialized.
 
 #include "lights_blinker.h"
 #include "lights_events.h"
