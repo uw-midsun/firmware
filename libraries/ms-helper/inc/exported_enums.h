@@ -57,3 +57,12 @@ typedef enum EERelayState {
   EE_RELAY_STATE_CLOSE,
   NUM_EE_RELAY_STATES,
 } EERelayState;
+
+// Used with the POWER_STATE message sent from driver controls to power distribution to request a
+// state change.
+typedef enum {
+  EE_POWER_STATE_IDLE = 0,
+  EE_POWER_STATE_CHARGE,
+  EE_POWER_STATE_DRIVE,
+  NUM_EE_POWER_STATES,
+} EEPowerState;
