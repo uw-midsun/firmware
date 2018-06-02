@@ -10,7 +10,7 @@
 #include "lights_can.h"
 #include "lights_events.h"
 
-static StatusCode prv_get_event_id(LightsCanEventType event_type, EELightsState state,
+static StatusCode prv_get_event_id(LightsCanEventType event_type, EELightState state,
                                    LightsEvent *event_id) {
   switch (event_type) {
     case LIGHTS_CAN_EVENT_TYPE_GPIO:
@@ -38,7 +38,7 @@ static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckSta
       status_ok_or_return(CAN_UNPACK_LIGHTS_STATE(msg, &param_1, &param_2));
       LightsEvent e_id;
       status_ok_or_return(
-          prv_get_event_id(settings->event_type[param_1], (EELightsState)param_2, &e_id));
+          prv_get_event_id(settings->event_type[param_1], (EELightState)param_2, &e_id));
       return event_raise(e_id, settings->event_data_lookup[param_1]);
     case SYSTEM_CAN_MESSAGE_HORN:
       status_ok_or_return(CAN_UNPACK_HORN(msg, &param_1));
