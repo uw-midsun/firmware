@@ -37,7 +37,7 @@ typedef struct LightsBlinker {
 } LightsBlinker;
 
 // If this is used as the count threshold, then a non-syncing blinker is initialized.
-#define LIGHTS_BLINKER_NON_SYNCING_COUNT_THRESHOLD 0
+#define LIGHTS_BLINKER_COUNT_THRESHOLD_NO_SYNC 0
 
 // Initializes a blinker. Blinker is syncing if blink_count_threshold > 0.
 StatusCode lights_blinker_init(LightsBlinker *blinker, LightsBlinkerDuration duration_ms,
