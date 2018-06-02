@@ -1,6 +1,6 @@
 #pragma once
 
-#define PLUTUS_CFG_DEBUG
+// #define PLUTUS_CFG_DEBUG
 
 #ifdef PLUTUS_CFG_DEBUG
 #define PLUTUS_CFG_AFE_DEVICES_IN_CHAIN 1

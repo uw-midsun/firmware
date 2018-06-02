@@ -74,6 +74,7 @@ typedef struct LtcAfeStorage {
   // Discharge enabled - device-relative
   uint16_t discharge_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
   // Lookup table for mapping cell -> actual device-relative AFE cell
+  // TODO(ELEC-447): Handle unused cell inputs during balancing
   uint16_t discharge_cell_lookup[LTC_AFE_MAX_TOTAL_CELLS];
 } LtcAfeStorage;
 
