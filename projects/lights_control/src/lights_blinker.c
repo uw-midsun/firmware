@@ -16,7 +16,7 @@ static void prv_timer_callback(SoftTimerID timer_id, void *context) {
   LightsEvent event =
       (blinker->state == LIGHTS_BLINKER_STATE_OFF) ? LIGHTS_EVENT_GPIO_OFF : LIGHTS_EVENT_GPIO_ON;
   event_raise(event, blinker->peripheral);
-  if (blinker->blink_count_threshold != 0) {
+  if (blinker->blink_count_threshold != LIGHTS_BLINKER_NON_SYNCING) {
     if (blinker->state == LIGHTS_BLINKER_STATE_ON) {
       blinker->blink_count++;
     }

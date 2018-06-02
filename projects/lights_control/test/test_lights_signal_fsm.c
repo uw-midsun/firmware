@@ -30,7 +30,7 @@ static LightsSignalFsm s_signal_fsm = { 0 };
 void setup_test(void) {
   soft_timer_init();
   event_queue_init();
-  lights_signal_fsm_init(&s_signal_fsm, TEST_LIGHTS_SIGNAL_DURATION, LIGHTS_BLINKER_NON_BLINKING);
+  lights_signal_fsm_init(&s_signal_fsm, TEST_LIGHTS_SIGNAL_DURATION, LIGHTS_BLINKER_NON_SYNCING);
 }
 
 void teardown_test(void) {}

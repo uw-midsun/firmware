@@ -24,7 +24,7 @@ void teardown_test(void) {}
 
 void test_lights_blinker_init(void) {
   LightsBlinker blinker_1 = { 0 };
-  lights_blinker_init(&blinker_1, TEST_LIGHTS_BLINKER_DURATION_SHORT, LIGHTS_BLINKER_NON_BLINKING);
+  lights_blinker_init(&blinker_1, TEST_LIGHTS_BLINKER_DURATION_SHORT, LIGHTS_BLINKER_NON_SYNCING);
   TEST_ASSERT_EQUAL(SOFT_TIMER_INVALID_TIMER, blinker_1.timer_id);
   LightsBlinker blinker_2 = { 0 };
   lights_blinker_init(&blinker_2, TEST_LIGHTS_BLINKER_DURATION_SHORT,
@@ -39,9 +39,9 @@ void test_lights_blinker_activate(void) {
   LightsBlinker blinker_2 = { 0 };
 
   TEST_ASSERT_OK(lights_blinker_init(&blinker_1, TEST_LIGHTS_BLINKER_DURATION_SHORT,
-                                     LIGHTS_BLINKER_NON_BLINKING));
+                                     LIGHTS_BLINKER_NON_SYNCING));
   TEST_ASSERT_OK(lights_blinker_init(&blinker_2, TEST_LIGHTS_BLINKER_DURATION_LONG,
-                                     LIGHTS_BLINKER_NON_BLINKING));
+                                     LIGHTS_BLINKER_NON_SYNCING));
 
   TEST_ASSERT_OK(lights_blinker_activate(&blinker_1, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_HAZARD));
   TEST_ASSERT_EQUAL(TEST_LIGHTS_BLINKER_DURATION_SHORT, blinker_1.duration_ms);
@@ -76,7 +76,7 @@ void test_lights_blinker_activate_already_active(void) {
   LightsBlinker blinker = { 0 };
   Event e = { 0 };
   TEST_ASSERT_OK(lights_blinker_init(&blinker, TEST_LIGHTS_BLINKER_DURATION_SHORT,
-                                     LIGHTS_BLINKER_NON_BLINKING));
+                                     LIGHTS_BLINKER_NON_SYNCING));
   TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
   TEST_ASSERT_OK(event_process(&e));
   TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT, e.data);
@@ -98,7 +98,7 @@ void test_lights_blinker_activate_with_existing_peripheral(void) {
   LightsBlinker blinker = { 0 };
   Event e = { 0 };
   TEST_ASSERT_OK(lights_blinker_init(&blinker, TEST_LIGHTS_BLINKER_DURATION_SHORT,
-                                     LIGHTS_BLINKER_NON_BLINKING));
+                                     LIGHTS_BLINKER_NON_SYNCING));
   TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
   TEST_ASSERT_OK(event_process(&e));
   TEST_ASSERT_EQUAL(LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT, e.data);
@@ -113,7 +113,7 @@ void test_lights_blinker_activate_existing_peripheral_while_inactive(void) {
   LightsBlinker blinker = { 0 };
   Event e = { 0 };
   TEST_ASSERT_OK(lights_blinker_init(&blinker, TEST_LIGHTS_BLINKER_DURATION_SHORT,
-                                     LIGHTS_BLINKER_NON_BLINKING));
+                                     LIGHTS_BLINKER_NON_SYNCING));
   // Activating with signal left peripheral.
   TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
   TEST_ASSERT_OK(event_process(&e));
@@ -137,7 +137,7 @@ void test_lights_blinker_deactivate_timer_cancelled(void) {
   // Making sure timer gets cancelled after we deactivate the blinker.
   LightsBlinker blinker = { 0 };
   TEST_ASSERT_OK(lights_blinker_init(&blinker, TEST_LIGHTS_BLINKER_DURATION_SHORT,
-                                     LIGHTS_BLINKER_NON_BLINKING));
+                                     LIGHTS_BLINKER_NON_SYNCING));
   TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
   TEST_ASSERT_TRUE(soft_timer_inuse());
   TEST_ASSERT_OK(lights_blinker_deactivate(&blinker));
@@ -149,7 +149,7 @@ void test_lights_blinker_deactivate_already_inactive(void) {
   // lights_blinker_deactivate requires that the blinker be an active blinker.
   LightsBlinker blinker = { 0 };
   TEST_ASSERT_OK(lights_blinker_init(&blinker, TEST_LIGHTS_BLINKER_DURATION_SHORT,
-                                     LIGHTS_BLINKER_NON_BLINKING));
+                                     LIGHTS_BLINKER_NON_SYNCING));
   TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
   TEST_ASSERT_OK(lights_blinker_deactivate(&blinker));
   StatusCode s = lights_blinker_deactivate(&blinker);
@@ -161,7 +161,7 @@ void test_lights_blinker_force_on_update(void) {
   // again.
   LightsBlinker blinker = { 0 };
   TEST_ASSERT_OK(lights_blinker_init(&blinker, TEST_LIGHTS_BLINKER_DURATION_SHORT,
-                                     LIGHTS_BLINKER_NON_BLINKING));
+                                     LIGHTS_BLINKER_NON_SYNCING));
   TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
   Event e = { 0 };
   TEST_ASSERT_OK(event_process(&e));
@@ -181,7 +181,7 @@ void test_lights_blinker_force_on_initialized_not_activated(void) {
   // Initialized blinkers are inactive by default. They cannot be synced to ON state.
   LightsBlinker blinker = { 0 };
   TEST_ASSERT_OK(lights_blinker_init(&blinker, TEST_LIGHTS_BLINKER_DURATION_SHORT,
-                                     LIGHTS_BLINKER_NON_BLINKING));
+                                     LIGHTS_BLINKER_NON_SYNCING));
   StatusCode s = lights_blinker_force_on(&blinker);
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, s);
 }
@@ -190,7 +190,7 @@ void test_lights_blinker_force_on_while_deactivated(void) {
   // We should not be able to force_on a deactivated blinker.
   LightsBlinker blinker = { 0 };
   TEST_ASSERT_OK(lights_blinker_init(&blinker, TEST_LIGHTS_BLINKER_DURATION_SHORT,
-                                     LIGHTS_BLINKER_NON_BLINKING));
+                                     LIGHTS_BLINKER_NON_SYNCING));
   TEST_ASSERT_OK(lights_blinker_activate(&blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT));
   Event e = { 0 };
   TEST_ASSERT_OK(event_process(&e));
