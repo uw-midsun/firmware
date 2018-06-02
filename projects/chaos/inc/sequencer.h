@@ -32,6 +32,7 @@ typedef struct SequencerStorage {
   const SequencerEventPair *events_end;
   bool awaiting_response;
   bool started;
+  bool stopped;
 } SequencerStorage;
 
 // Initializes |storage| with the |event_array| of |size|.
@@ -44,3 +45,7 @@ StatusCode sequencer_advance(SequencerStorage *storage, const Event *last_event)
 
 // Returns true if the sequence in |storage| is finished.
 bool sequencer_complete(const SequencerStorage *storage);
+
+// Stops a sequencer from raising anything else if it is awaiting an event. Returns true if it was
+// awaiting and was stopped.
+bool sequencer_stop_awaiting(SequencerStorage *storage);

@@ -13,13 +13,14 @@
 #include "relay_retry_service.h"
 #include "sequencer.h"
 
+#define SEQUENCER_FSM_MAX_RETRIES 2
 #define NUM_SEQUENCER_FSM_FILTERS 3
 
 // Statics
 static FSM s_sequencer_fsm;
 static SequencerStorage s_storage;
 
-static bool s_pending_transition = false;
+static uint8_t s_retries = 0;
 static uint16_t s_filtered_ids[NUM_SEQUENCER_FSM_FILTERS] = { 0 };
 
 // Adds a filter on |id| to ignore it until it is cleared.
@@ -51,11 +52,13 @@ static bool prv_is_filtered_id(uint16_t id) {
 }
 
 // Event order declarations
+//
+// The first event is a guard used to know when we have fully flushed the previous state.
 
 // Emergency State Order:
 // - Turn off the charger (if active)
 // - Disable all unnecessary GPIO pins (this will auto-open all the non-battery relays)
-// - Open main power relay (no-op to sync FSM)
+// - Open motor relay (no-op to sync FSM)
 // - Open solar master rear relay (no-op to sync FSM)
 // - Open solar master front relay (no-op to sync FSM)
 // - Disable DCDC Monitoring
@@ -85,14 +88,18 @@ static const SequencerEventPair s_emergency_events[] = {
 
 // Idle State Order:
 // - Turn off the charger (if active)
-// - Open main power relay
-// - Open solar master rear relay
-// - Open solar master front relay
-// - Disable all unnecessary GPIO pins
+// - Open all GPIO that shouldn't be on. (auto-opens all non-battery relays)
+// - Open motor relay (no-op to sync FSM)
+// - Open solar master rear relay (no-op to sync FSM)
+// - Open solar master front relay (no-op to sync FSM)
 // - Disable DCDC Monitoring
 // - Open battery relay (DCDC)
 static const SequencerEventPair s_idle_events[] = {
+  { .raise = { .id = CHAOS_EVENT_SEQUENCE_IDLE_START, .data = SEQUENCER_EMPTY_DATA },
+    .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_CHARGER_OPEN, .data = SEQUENCER_EMPTY_DATA },
+    .response = SEQUENCER_NO_RESPONSE },
+  { .raise = { .id = CHAOS_EVENT_GPIO_IDLE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MOTORS },
     .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_MOTORS } },
@@ -100,8 +107,6 @@ static const SequencerEventPair s_idle_events[] = {
     .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
     .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
-  { .raise = { .id = CHAOS_EVENT_GPIO_IDLE, .data = SEQUENCER_EMPTY_DATA },
-    .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_MONITOR_DISABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_BATTERY_SLAVE },
@@ -113,15 +118,21 @@ static const SequencerEventPair s_idle_events[] = {
 };
 
 // Charge State Order:
+// - Open all GPIO that shouldn't be on.
+// - Open the motor relay (no-op to sync FSM)
 // - Close battery relay (DCDC)
 // - Enable DCDC monitoring
 // - Turn on charging GPIOs
 // - Close solar master rear relay
 // - Close solar master front relay
 // - Turn on the charger
-// NOTE: No need to manipulate the main relay since it turns on the motors and will be open by
-// default before reaching this state.
 static const SequencerEventPair s_charge_events[] = {
+  { .raise = { .id = CHAOS_EVENT_SEQUENCE_CHARGE_START, .data = SEQUENCER_EMPTY_DATA },
+    .response = SEQUENCER_NO_RESPONSE },
+  { .raise = { .id = CHAOS_EVENT_GPIO_CHARGE_PRECONFIG, .data = SEQUENCER_EMPTY_DATA },
+    .response = SEQUENCER_NO_RESPONSE },
+  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MOTORS },
+    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_MOTORS } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY_MAIN },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY_MAIN } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY_SLAVE },
@@ -141,14 +152,21 @@ static const SequencerEventPair s_charge_events[] = {
 };
 
 // Drive State Order:
+// - Turn off the charger
+// - Open all GPIO that shouldn't be on.
 // - Close battery relay (DCDC)
 // - Enable DCDC monitoring
 // - Turn on drive GPIOs
 // - Close solar master rear relay
 // - Close solar master front relay
-// - Close main power relay
-// NOTE: No need to manipulate the charger since you can't reach Drive from Charge.
+// - Close motor relay
 static const SequencerEventPair s_drive_events[] = {
+  { .raise = { .id = CHAOS_EVENT_SEQUENCE_DRIVE_START, .data = SEQUENCER_EMPTY_DATA },
+    .response = SEQUENCER_NO_RESPONSE },
+  { .raise = { .id = CHAOS_EVENT_CHARGER_OPEN, .data = SEQUENCER_EMPTY_DATA },
+    .response = SEQUENCER_NO_RESPONSE },
+  { .raise = { .id = CHAOS_EVENT_GPIO_DRIVE_PRECONFIG, .data = SEQUENCER_EMPTY_DATA },
+    .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY_MAIN },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_BATTERY_MAIN } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_BATTERY_SLAVE },
@@ -203,14 +221,15 @@ FSM_STATE_TRANSITION(sequencer_state_drive) {
 // Return true if setup succeeded. Return false if we are blocked waiting on an async event to
 // finish. If this returns false the caller should exit immediately.
 static bool prv_sequencer_setup_common(void) {
-  if (s_storage.awaiting_response) {
+  if (sequencer_stop_awaiting(&s_storage)) {
     relay_retry_service_fail_fast();
-    s_pending_transition = true;
-    // We actually transitioned so just reset the state until it succeeds.
+    // We actually transitioned so just reset the state until it succeeds. Note this needs to be
+    // normal priority to allow events to flush. This is to flush an event we are waiting for
+    // (i.e. relay transition) this will take a  mas of 15 ms to succeed.
     event_raise(CHAOS_EVENT_SEQUENCE_RESET, SEQUENCER_EMPTY_DATA);
     return false;
   }
-  s_pending_transition = false;
+  s_retries = 0;
   prv_clear_filters();
   return true;
 }
@@ -284,20 +303,37 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event) {
   }
 
   // Filter out both filtered messages. Also filter all events if there is a pending_transition.
-  if (prv_is_filtered_id(previous_event->id) || s_pending_transition) {
+  if (prv_is_filtered_id(previous_event->id)) {
     return STATUS_CODE_OK;
   }
 
+  // Handle a totally faulted relay in a special way.
+  if (previous_event->id == CHAOS_EVENT_RELAY_ERROR) {
+    // If we aren't in the emergency state we need to switch to that state. This event will not be
+    // raised in the emergency state.
+    return event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_EMERGENCY,
+                                SEQUENCER_EMPTY_DATA);
+  }
+
   // Filter to only handled events. Those in the range
-  // |(NUM_CHAOS_EVENTS_CAN, NUM_CHAOS_EVENTS_FSM)|
-  // in addition to the emergency sequence messages.
-  if (previous_event->id <= NUM_CHAOS_EVENTS_CAN &&
-      !(previous_event->id == CHAOS_EVENT_SEQUENCE_EMERGENCY ||
-        previous_event->id == CHAOS_EVENT_SEQUENCE_EMERGENCY_DONE)) {
+  // |(NUM_CHAOS_EVENTS_CAN, NUM_CHAOS_EVENTS)|
+  if (previous_event->id <= NUM_CHAOS_EVENTS_CAN) {
     // Not in the range of handled events. This isn't necessarily invalid but won't be handled so
     // return unknown.
     return status_code(STATUS_CODE_UNKNOWN);
   }
 
-  return sequencer_advance(&s_storage, previous_event);
+  StatusCode status = sequencer_advance(&s_storage, previous_event);
+  // An unexpected event occurred we should reset.
+  if (status == STATUS_CODE_INTERNAL_ERROR) {
+    if (s_retries < SEQUENCER_FSM_MAX_RETRIES) {
+      s_retries++;
+      return event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_RESET,
+                                  SEQUENCER_EMPTY_DATA);
+    }
+    // If we are stuck go to the emergency state.
+    return event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_EMERGENCY,
+                                SEQUENCER_EMPTY_DATA);
+  }
+  return status;
 }
