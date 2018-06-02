@@ -7,25 +7,25 @@
 #include "ads1015_def.h"
 #include "delay.h"
 #include "event_arbiter.h"
+#include "event_queue.h"
 #include "gpio_it.h"
 #include "i2c.h"
 #include "input_event.h"
 #include "interrupt.h"
 #include "log.h"
-#include "soft_timer.h"
-#include "unity.h"
-#include "event_queue.h"
 #include "magnetic_brake_event_generator.h"
+#include "soft_timer.h"
 #include "status.h"
+#include "unity.h"
 
 static MagneticCalibrationData data;
 
 static void prv_callback_channel(Ads1015Channel channel, void *context) {
   MagneticCalibrationData *data = context;
-  //ads1015_read_raw(data->storage, channel, data->reading);
+  // ads1015_read_raw(data->storage, channel, data->reading);
 }
 
-void set_up(void){
+void set_up(void) {
   Ads1015Storage storage;
 
   gpio_init();
@@ -48,24 +48,22 @@ void set_up(void){
 
   data.reading = 30000;
 
-  MagneticBrakeSettings brake_settings ={
+  MagneticBrakeSettings brake_settings = {
     .percentage_threshold = 60000,
     .zero_value = 418,
     .hundred_value = 1253,
     .min_allowed_range = 0,
-    .max_allowed_range = (1<<12),
+    .max_allowed_range = (1 << 12),
   };
 
   magnetic_brake_event_generator_init(&data, &brake_settings);
 
   percentage_converter(&data, &brake_settings);
 
-  printf("%d %d\n",data.reading,data.percentage);
+  printf("%d %d\n", data.reading, data.percentage);
 
   while (true) {
   }
-
 }
 
 void tear_down(void) {}
-
