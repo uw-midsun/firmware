@@ -25,6 +25,19 @@ typedef enum {
   NUM_EE_CHARGER_CONN_STATES,
 } EEChargerConnState;
 
+// Drive output
+// Mech brake + throttle
+#define EE_DRIVE_OUTPUT_DENOMINATOR (1 << 12)
+// Arbitrary 5% minimum pressure before considering it as engaged
+#define EE_DRIVE_OUTPUT_MECH_THRESHOLD (5 * (EE_DRIVE_OUTPUT_DENOMINATOR) / 100)
+
+typedef enum {
+  EE_DRIVE_OUTPUT_DIRECTION_NEUTRAL = 0,
+  EE_DRIVE_OUTPUT_DIRECTION_FORWARD,
+  EE_DRIVE_OUTPUT_DIRECTION_REVERSE,
+  NUM_EE_DRIVE_OUTPUT_DIRECTIONS,
+} EEDriveOutputDirection;
+
 // Light type to be used with a SYSTEM_CAN_MESSAGE_LIGHTS_STATE message.
 typedef enum EELightType {
   EE_LIGHT_TYPE_HIGH_BEAMS = 0,
@@ -52,6 +65,7 @@ typedef enum EEHornState {
   NUM_EE_HORN_STATES,     //
 } EEHornState;
 
+// Used with most _RELAY messages to request a relay state change.
 typedef enum EERelayState {
   EE_RELAY_STATE_OPEN = 0,
   EE_RELAY_STATE_CLOSE,
