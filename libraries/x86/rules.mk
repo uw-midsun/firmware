@@ -11,5 +11,5 @@ $(T)_DEPS := libcore
 $(T)_CFLAGS += -ffreestanding
 
 ifneq (x86,$(PLATFORM))
-  $(T)_EXCLUDE_TESTS := x86_socket
+  $(T)_EXCLUDE_TESTS := x86_socket x86_cmd
 endif

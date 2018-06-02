@@ -1,12 +1,9 @@
 #pragma once
-
 // Keeps track of whether the mechanical brake is being pressed or not
-
-// Coast, drive, and any events involving cruise control will not be acknowledged while
-// the mechanical brake is pressed
-
-// Direction selector events will not be acknowledged while the mechanical brake is not pressed
-
+//
+// Engaged: Block cruise control
+//          Note that motor controller interface should handle mech brake/throttle interlocks
+// Not Engaged: Block direction changes
 #include "event_arbiter.h"
 #include "fsm.h"
 

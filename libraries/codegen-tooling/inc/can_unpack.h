@@ -8,12 +8,19 @@
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY,         \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
-#define CAN_UNPACK_BATTERY_RELAY(msg_ptr, relay_state_u8_ptr)                             \
+#define CAN_UNPACK_POWER_DISTRIBUTION_FAULT(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
+
+#define CAN_UNPACK_BATTERY_RELAY_MAIN(msg_ptr, relay_state_u8_ptr)                        \
   can_unpack_impl_u8((msg_ptr), 1, (relay_state_u8_ptr), CAN_UNPACK_IMPL_EMPTY,           \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
-#define CAN_UNPACK_MAIN_RELAY(msg_ptr, relay_state_u8_ptr)                                \
+#define CAN_UNPACK_BATTERY_RELAY_SLAVE(msg_ptr, relay_state_u8_ptr)                       \
+  can_unpack_impl_u8((msg_ptr), 1, (relay_state_u8_ptr), CAN_UNPACK_IMPL_EMPTY,           \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
+
+#define CAN_UNPACK_MOTOR_RELAY(msg_ptr, relay_state_u8_ptr)                               \
   can_unpack_impl_u8((msg_ptr), 1, (relay_state_u8_ptr), CAN_UNPACK_IMPL_EMPTY,           \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
@@ -45,12 +52,19 @@
   can_unpack_impl_u16((msg_ptr), 4, (error_id_u16_ptr), (limits_u16_ptr), CAN_UNPACK_IMPL_EMPTY, \
                       CAN_UNPACK_IMPL_EMPTY)
 
-#define CAN_UNPACK_MOTOR_CONTROLS(msg_ptr, throttle_u16_ptr, direction_u16_ptr,           \
-                                  cruise_control_u16_ptr, mechanical_brake_state_u16_ptr) \
-  can_unpack_impl_u16((msg_ptr), 8, (throttle_u16_ptr), (direction_u16_ptr),              \
+#define CAN_UNPACK_DRIVE_OUTPUT(msg_ptr, throttle_u16_ptr, direction_u16_ptr,           \
+                                cruise_control_u16_ptr, mechanical_brake_state_u16_ptr) \
+  can_unpack_impl_u16((msg_ptr), 8, (throttle_u16_ptr), (direction_u16_ptr),            \
                       (cruise_control_u16_ptr), (mechanical_brake_state_u16_ptr))
 
-#define CAN_UNPACK_LIGHTS_STATES(msg_ptr, light_id_u8_ptr, light_state_u8_ptr)                     \
+#define CAN_UNPACK_CRUISE_TARGET(msg_ptr, target_speed_u8_ptr)                            \
+  can_unpack_impl_u8((msg_ptr), 1, (target_speed_u8_ptr), CAN_UNPACK_IMPL_EMPTY,          \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
+
+#define CAN_UNPACK_LIGHTS_SYNC(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
+
+#define CAN_UNPACK_LIGHTS_STATE(msg_ptr, light_id_u8_ptr, light_state_u8_ptr)                      \
   can_unpack_impl_u8((msg_ptr), 2, (light_id_u8_ptr), (light_state_u8_ptr), CAN_UNPACK_IMPL_EMPTY, \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY,          \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
@@ -60,11 +74,14 @@
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY,        \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
-#define CAN_UNPACK_CHARGING_REQ(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
+#define CAN_UNPACK_CHARGER_CONN_STATE(msg_ptr, is_connected_u8_ptr)                       \
+  can_unpack_impl_u8((msg_ptr), 1, (is_connected_u8_ptr), CAN_UNPACK_IMPL_EMPTY,          \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
-#define CAN_UNPACK_CHARGING_PERMISSION(msg_ptr, allowed_u8_ptr)                                    \
-  can_unpack_impl_u8((msg_ptr), 1, (allowed_u8_ptr), CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, \
-                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY,          \
+#define CAN_UNPACK_CHARGER_SET_RELAY_STATE(msg_ptr, state_u8_ptr)                                \
+  can_unpack_impl_u8((msg_ptr), 1, (state_u8_ptr), CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY,        \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
 #define CAN_UNPACK_STEERING_ANGLE(msg_ptr, steering_angle_u16_ptr)                   \

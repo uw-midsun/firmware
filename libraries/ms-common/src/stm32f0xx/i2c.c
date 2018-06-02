@@ -1,5 +1,6 @@
 #include "i2c.h"
 #include <stdbool.h>
+#include "critical_section.h"
 #include "log.h"
 #include "stm32f0xx.h"
 
@@ -12,7 +13,7 @@
       timeout--;                                                            \
       if (timeout == 0) {                                                   \
         LOG_DEBUG("Timeout: %lu waiting for %d to change\n", flag, status); \
-        return STATUS_CODE_TIMEOUT;                                         \
+        return status_code(STATUS_CODE_TIMEOUT);                            \
       }                                                                     \
     }                                                                       \
   } while (0)
@@ -28,7 +29,7 @@ typedef struct {
   I2C_TypeDef *base;
 } I2CPortData;
 
-static I2CPortData s_port[NUM_I2C_PORTS] = {
+static const I2CPortData s_port[NUM_I2C_PORTS] = {
   [I2C_PORT_1] = { .periph = RCC_APB1Periph_I2C1, .base = I2C1 },
   [I2C_PORT_2] = { .periph = RCC_APB1Periph_I2C2, .base = I2C2 },
 };
@@ -97,9 +98,11 @@ StatusCode i2c_read(I2CPort i2c, I2CAddress addr, uint8_t *rx_data, size_t rx_le
   if (i2c >= NUM_I2C_PORTS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid I2C port.");
   }
+  CRITICAL_SECTION_AUTOEND;
+
   I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET);
 
-  prv_transfer(i2c, addr, true, rx_data, rx_len, I2C_AutoEnd_Mode);
+  status_ok_or_return(prv_transfer(i2c, addr, true, rx_data, rx_len, I2C_AutoEnd_Mode));
 
   I2C_STOP(s_port[i2c].base);
 
@@ -110,9 +113,11 @@ StatusCode i2c_write(I2CPort i2c, I2CAddress addr, uint8_t *tx_data, size_t tx_l
   if (i2c >= NUM_I2C_PORTS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid I2C port.");
   }
+  CRITICAL_SECTION_AUTOEND;
+
   I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET);
 
-  prv_transfer(i2c, addr, false, tx_data, tx_len, I2C_AutoEnd_Mode);
+  status_ok_or_return(prv_transfer(i2c, addr, false, tx_data, tx_len, I2C_AutoEnd_Mode));
 
   I2C_STOP(s_port[i2c].base);
 
@@ -124,10 +129,12 @@ StatusCode i2c_read_reg(I2CPort i2c, I2CAddress addr, uint8_t reg, uint8_t *rx_d
   if (i2c >= NUM_I2C_PORTS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid I2C port.");
   }
+  CRITICAL_SECTION_AUTOEND;
+
   I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET);
 
-  prv_transfer(i2c, addr, false, &reg, sizeof(reg), I2C_SoftEnd_Mode);
-  prv_transfer(i2c, addr, true, rx_data, rx_len, I2C_AutoEnd_Mode);
+  status_ok_or_return(prv_transfer(i2c, addr, false, &reg, sizeof(reg), I2C_SoftEnd_Mode));
+  status_ok_or_return(prv_transfer(i2c, addr, true, rx_data, rx_len, I2C_AutoEnd_Mode));
 
   I2C_STOP(s_port[i2c].base);
 
@@ -139,10 +146,12 @@ StatusCode i2c_write_reg(I2CPort i2c, I2CAddress addr, uint8_t reg, uint8_t *tx_
   if (i2c >= NUM_I2C_PORTS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid I2C port.");
   }
+  CRITICAL_SECTION_AUTOEND;
+
   I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET);
 
-  prv_transfer(i2c, addr, false, &reg, sizeof(reg), I2C_SoftEnd_Mode);
-  prv_transfer(i2c, addr, false, tx_data, tx_len, I2C_AutoEnd_Mode);
+  status_ok_or_return(prv_transfer(i2c, addr, false, &reg, sizeof(reg), I2C_SoftEnd_Mode));
+  status_ok_or_return(prv_transfer(i2c, addr, false, tx_data, tx_len, I2C_AutoEnd_Mode));
 
   I2C_STOP(s_port[i2c].base);
 
