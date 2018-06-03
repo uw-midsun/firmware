@@ -23,7 +23,6 @@ static bool s_evm_initialize_by_gpio = false;
 
 // Just some constants so that the max length of raw data can be set
 #define s_max_gga_length 80
-#define s_max_vtg_length 45
 
 // Just some constants to get the actual length
 static size_t s_gga_length = 0;
@@ -31,12 +30,8 @@ static size_t s_vtg_length = 0;
 
 // Stores raw NMEA messages sent by the chip
 static volatile uint8_t s_gga_data[s_max_gga_length];
-static volatile uint8_t s_vtg_data[s_max_vtg_length];
-
-// Variables for GPS interface
 
 static evm_gps_gga_sentence s_gga_sentence;
-static evm_gps_vtg_sentence s_vtg_sentence;
 
 // Methods for GPS utilities
 
@@ -146,40 +141,4 @@ StatusCode evm_gps_clean_up(evm_gps_settings *settings) {
   memset(&s_storage, 0, sizeof(s_storage));
 
   return STATUS_CODE_OK;
-}
-
-// Interface for getting data from the driver below
-
-evm_gps_coord evm_gps_get_latitude(StatusCode *result) {
-  s_gga_sentence = evm_gps_parse_nmea_gga_sentence(s_gga_data, s_gga_length);
-  if (s_gga_sentence.position_fix == 0 && result != NULL) {
-    // GPS could not get a fix
-    (*result) = STATUS_CODE_UNKNOWN;
-  } else if (result != NULL) {
-    (*result) = STATUS_CODE_OK;
-  }
-  return s_gga_sentence.latitude;
-}
-
-evm_gps_coord evm_gps_get_longtitude(StatusCode *result) {
-  s_gga_sentence = evm_gps_parse_nmea_gga_sentence(s_gga_data, s_gga_length);
-  if (s_gga_sentence.position_fix == 0 && result != NULL) {
-    // GPS could not get a fix
-    (*result) = STATUS_CODE_UNKNOWN;
-  } else if (result != NULL) {
-    (*result) = STATUS_CODE_OK;
-  }
-  return s_gga_sentence.longtitude;
-}
-
-// Get the whole and fractional component (because it is a float) of the speed in
-// kilometers an hour.
-void evm_gps_get_speed_kmh(int8_t *whole, int8_t *fraction) {
-  s_vtg_sentence = evm_gps_parse_nmea_vtg_sentence(s_vtg_data, s_vtg_length);
-  if (whole != NULL) {
-    (*whole) = s_vtg_sentence.speed_kmh_1;
-  }
-  if (fraction != NULL) {
-    (*fraction) = s_vtg_sentence.speed_kmh_2;
-  }
 }
