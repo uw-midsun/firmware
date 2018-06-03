@@ -19,12 +19,12 @@
 #include "status.h"
 #include "test_helpers.h"
 #include "unity.h"
+#include "exported_enums.h"
 
 #define NUM_CAN_RX_HANDLERS 2
 
 static CANStorage s_storage;
 static CANRxHandler s_rx_handlers[NUM_CAN_RX_HANDLERS];
-static CANAckRequests s_can_ack_requests;
 
 static StatusCode prv_bps_ack_request(CANMessageID msg_id, uint16_t device, CANAckStatus status,
                                       uint16_t remaining, void *context) {
@@ -53,7 +53,6 @@ void setup_test(void) {
   };
 
   can_init(&settings, &s_storage, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
-  can_ack_init(&s_can_ack_requests);
   TEST_ASSERT_OK(bps_heartbeat_init());
 }
 
@@ -70,7 +69,7 @@ void test_bps_heartbeat_watchdog_kick(void) {
   StatusCode status = NUM_STATUS_CODES;
 
   // Auto Start
-  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, BPS_HEARTBEAT_STATE_OK);
+  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, EE_BPS_HEARTBEAT_STATE_OK);
   // Send HB
   // TX
   do {
@@ -102,7 +101,7 @@ void test_bps_heartbeat_watchdog_kick(void) {
   delay_ms(BPS_HEARTBEAT_EXPECTED_PERIOD_MS / 2);
 
   // Send the HB again
-  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, BPS_HEARTBEAT_STATE_OK);
+  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, EE_BPS_HEARTBEAT_STATE_OK);
   // Send HB
   // TX
   do {
@@ -142,7 +141,7 @@ void test_bps_heartbeat_watchdog_kick(void) {
   TEST_ASSERT_EQUAL(CHAOS_EVENT_SEQUENCE_EMERGENCY, e.id);
 
   // Verify that it auto restarts.
-  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, BPS_HEARTBEAT_STATE_OK);
+  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, EE_BPS_HEARTBEAT_STATE_OK);
   // Send HB
   // TX
   do {

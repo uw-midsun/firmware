@@ -21,7 +21,6 @@
 
 static CANStorage s_storage;
 static CANRxHandler s_rx_handlers[NUM_CAN_RX_HANDLERS];
-static CANAckRequests s_can_ack_requests;
 
 typedef struct TestPowerDistributionControllerAckCtx {
   EEPowerState expected_state;
@@ -57,7 +56,6 @@ void setup_test(void) {
   };
 
   can_init(&settings, &s_storage, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
-  can_ack_init(&s_can_ack_requests);
 }
 
 void teardown_test(void) {}

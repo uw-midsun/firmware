@@ -41,7 +41,6 @@ typedef struct TestRelayRxHandlerCtx {
 } TestRelayRxHandlerCtx;
 
 static CANStorage s_can_storage;
-static CANAckRequests s_can_ack_requests;
 static CANRxHandler s_rx_handlers[NUM_TEST_RELAY_RX_CAN_HANDLERS];
 
 // CANAckRequestCb
@@ -81,7 +80,6 @@ void setup_test(void) {
   };
   TEST_ASSERT_OK(
       can_init(&can_settings, &s_can_storage, s_rx_handlers, NUM_TEST_RELAY_RX_CAN_HANDLERS));
-  can_ack_init(&s_can_ack_requests);
 }
 
 void teardown_test(void) {}

@@ -80,3 +80,10 @@ typedef enum {
   EE_POWER_STATE_DRIVE,
   NUM_EE_POWER_STATES,
 } EEPowerState;
+
+// Used with the BPS heartbeat message
+typedef enum {
+  EE_BPS_HEARTBEAT_STATE_OK = 0,
+  EE_BPS_HEARTBEAT_STATE_FAULT,
+  NUM_EE_BPS_HEARTBEATS,
+} EEBpsHeartbeatState;
