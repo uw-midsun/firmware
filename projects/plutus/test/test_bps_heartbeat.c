@@ -11,7 +11,7 @@
 #include "soft_timer.h"
 #include "test_helpers.h"
 
-#define TEST_BPS_HEARTBEAT_PERIOD_MS 10
+#define TEST_BPS_HEARTBEAT_PERIOD_MS 50
 #define TEST_BPS_HEARTBEAT_NUM_CAN_RX_HANDLERS 5
 
 static CANStorage s_can;
@@ -23,16 +23,19 @@ static EEBpsHeartbeatState s_heartbeat_state;
 
 StatusCode TEST_MOCK(sequenced_relay_set_state)(SequencedRelayStorage *storage,
                                                 EERelayState state) {
+  LOG_DEBUG("Relay state: %d\n", state);
   s_relay_state = state;
 
   return STATUS_CODE_OK;
 }
 
 static StatusCode prv_bps_rx(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
-  LOG_DEBUG("ACK request\n");
   *ack_reply = s_ack_status;
 
-  CAN_UNPACK_BATTERY_RELAY_MAIN(msg, (uint8_t *)&s_heartbeat_state);
+  uint8_t state = NUM_EE_BPS_HEARTBEAT_STATES;
+  CAN_UNPACK_BPS_HEARTBEAT(msg, &state);
+  LOG_DEBUG("ACK request: BPS state %d\n", state);
+  s_heartbeat_state = state;
 
   return STATUS_CODE_OK;
 }
@@ -81,10 +84,12 @@ void test_bps_heartbeat_can(void) {
   TEST_ASSERT_EQUAL(EE_RELAY_STATE_CLOSE, s_relay_state);
   TEST_ASSERT_EQUAL(EE_BPS_HEARTBEAT_STATE_OK, s_heartbeat_state);
 
-  // Pretend something bad happened - make sure we faulted
+  // Pretend something bad happened
   s_ack_status = CAN_ACK_STATUS_TIMEOUT;
-  delay_ms(TEST_BPS_HEARTBEAT_PERIOD_MS);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
+                                    TEST_BPS_HEARTBEAT_EVENT_CAN_RX);
 
+  // Next BPS heartbeat will have faulted
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
                                     TEST_BPS_HEARTBEAT_EVENT_CAN_RX);
   TEST_ASSERT_EQUAL(CAN_ACK_STATUS_TIMEOUT, s_ack_status);
@@ -101,14 +106,15 @@ void test_bps_heartbeat_basic(void) {
   TEST_ASSERT_EQUAL(EE_BPS_HEARTBEAT_STATE_OK, s_heartbeat_state);
 
   // Raise fault - immediately update
+  LOG_DEBUG("Raising fault\n");
   bps_heartbeat_raise_fault(&s_bps_heartbeat);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
                                     TEST_BPS_HEARTBEAT_EVENT_CAN_RX);
-  TEST_ASSERT_EQUAL(CAN_ACK_STATUS_TIMEOUT, s_ack_status);
   TEST_ASSERT_EQUAL(EE_RELAY_STATE_OPEN, s_relay_state);
   TEST_ASSERT_EQUAL(EE_BPS_HEARTBEAT_STATE_FAULT, s_heartbeat_state);
 
   // Try clearing the fault
+  LOG_DEBUG("Clearing fault\n");
   bps_heartbeat_clear_fault(&s_bps_heartbeat);
   delay_ms(TEST_BPS_HEARTBEAT_PERIOD_MS);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
