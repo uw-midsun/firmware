@@ -38,6 +38,9 @@ typedef struct ChargerCanTxDataImpl {
   uint16_t max_voltage;
   uint16_t max_current;
   uint8_t charging;
+  uint8_t p1;
+  uint8_t p2;
+  uint8_t p3;
 } ChargerCanTxDataImpl;
 
 typedef union ChargerCanTxData {
@@ -49,6 +52,9 @@ typedef struct ChargerCanRxDataImpl {
   uint16_t voltage;
   uint16_t current;
   ChargerCanStatus status_flags;
+  uint8_t p1;
+  uint8_t p2;
+  uint8_t p3;
 } ChargerCanRxDataImpl;
 
 typedef union ChargerControllerRxData {

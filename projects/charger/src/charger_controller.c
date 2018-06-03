@@ -12,12 +12,13 @@
 #include "event_queue.h"
 #include "generic_can.h"
 #include "generic_can_msg.h"
+#include "log.h"
 #include "status.h"
 
 #define CHARGER_PERIOD_US 1000000  // 1 Second as defined in datasheet.
 
-#define CHARGER_EXPECTED_RX_DLC 5
-#define CHARGER_EXPECTED_TX_DLC 5
+#define CHARGER_EXPECTED_RX_DLC 8
+#define CHARGER_EXPECTED_TX_DLC 8
 
 static ChargerStorage *s_storage;
 static CanInterval *s_interval;
@@ -50,6 +51,7 @@ static void prv_rx_handler(const GenericCanMsg *msg, void *context) {
     .raw_data = msg->data,
   };
   *s_charger_status = data.data_impl.status_flags;
+  LOG_DEBUG("Voltage: %u, Current %u\n", data.data_impl.voltage, data.data_impl.current);
 
   // Check for statuses
   if (!charger_controller_is_safe()) {

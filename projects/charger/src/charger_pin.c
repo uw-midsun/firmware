@@ -7,6 +7,7 @@
 #include "gpio.h"
 #include "gpio_it.h"
 #include "interrupt_def.h"
+#include "log.h"
 #include "status.h"
 
 static void prv_charger_pin_it(const GPIOAddress *address, void *context) {

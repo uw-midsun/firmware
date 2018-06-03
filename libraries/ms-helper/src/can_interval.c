@@ -6,6 +6,7 @@
 #include "can.h"
 #include "can_uart.h"
 #include "generic_can.h"
+#include "log.h"
 #include "objpool.h"
 #include "soft_timer.h"
 #include "status.h"

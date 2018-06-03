@@ -57,6 +57,7 @@ static void prv_rx_uart(const uint8_t *rx_arr, size_t len, void *context) {
     }
   } else if (marker == CAN_UART_TX_MARKER) {
     // TX request - attempt to transmit message
+    LOG_DEBUG("RX ID %lu\n", packet.id);
     can_hw_transmit(packet.id, extended, (uint8_t *)&packet.data, dlc);
   }
 }
@@ -68,6 +69,7 @@ static void prv_handle_can_rx(void *context) {
   bool extended;
   uint64_t data;
   size_t dlc;
+  LOG_DEBUG("RX\n");
   while (can_hw_receive(&id, &extended, &data, &dlc)) {
     CanUartPacket packet = {
       .header = CAN_UART_BUILD_HEADER(CAN_UART_RX_MARKER, extended, false, dlc),  //
@@ -75,6 +77,7 @@ static void prv_handle_can_rx(void *context) {
       .data = data                                                                //
     };
     uint8_t newline = '\n';
+    LOG_DEBUG("RX ID %lu, Data: %llu\n", id, data);
 
     StatusCode ret = uart_tx(can_uart->uart, (uint8_t *)&packet, sizeof(packet));
     if (ret == STATUS_CODE_OK) {
@@ -102,6 +105,7 @@ StatusCode can_uart_req_slave_tx(const CanUart *can_uart, uint32_t id, bool exte
 
   StatusCode ret = uart_tx(can_uart->uart, (uint8_t *)&packet, sizeof(packet));
   status_ok_or_return(ret);
+  LOG_DEBUG("TX ID %lu, Data: %llu\n", id, *data);
 
   // Add trailing newline
   return uart_tx(can_uart->uart, &newline, sizeof(newline));
