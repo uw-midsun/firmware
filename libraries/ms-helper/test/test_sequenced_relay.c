@@ -6,8 +6,8 @@
 #include "gpio.h"
 #include "interrupt.h"
 #include "log.h"
-#include "sequenced_relay.h"
 #include "ms_test_helpers.h"
+#include "sequenced_relay.h"
 #include "test_helpers.h"
 #include "unity.h"
 
@@ -55,7 +55,8 @@ void setup_test(void) {
     .rx = { GPIO_PORT_A, 11 },
     .loopback = true,
   };
-  TEST_ASSERT_OK(can_init(&can_settings, &s_can, s_rx_handlers, TEST_SEQUENCED_RELAY_NUM_RX_HANDLERS));
+  TEST_ASSERT_OK(
+      can_init(&can_settings, &s_can, s_rx_handlers, TEST_SEQUENCED_RELAY_NUM_RX_HANDLERS));
 
   SequencedRelaySettings relay_settings = {
     .can_message = SYSTEM_CAN_MESSAGE_MOTOR_RELAY,
@@ -78,7 +79,8 @@ void test_sequenced_relay_can(void) {
   };
   CAN_TRANSMIT_MOTOR_RELAY(&ack_request, EE_RELAY_STATE_CLOSE);
 
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_SEQUENCED_RELAY_EVENT_CAN_TX, TEST_SEQUENCED_RELAY_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_SEQUENCED_RELAY_EVENT_CAN_TX,
+                                    TEST_SEQUENCED_RELAY_EVENT_CAN_RX);
   TEST_ASSERT_OK(status);
 
   GPIOAddress left_relay = TEST_SEQUENCED_RELAY_LEFT;
@@ -94,7 +96,8 @@ void test_sequenced_relay_can(void) {
 
   // Try opening the relays
   CAN_TRANSMIT_MOTOR_RELAY(&ack_request, EE_RELAY_STATE_OPEN);
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_SEQUENCED_RELAY_EVENT_CAN_TX, TEST_SEQUENCED_RELAY_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_SEQUENCED_RELAY_EVENT_CAN_TX,
+                                    TEST_SEQUENCED_RELAY_EVENT_CAN_RX);
   TEST_ASSERT_OK(status);
 
   // Opening the relays does not require sequencing, so don't delay

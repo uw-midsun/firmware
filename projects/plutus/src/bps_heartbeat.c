@@ -1,10 +1,11 @@
 #include "bps_heartbeat.h"
 #include "can_transmit.h"
-#include "plutus_cfg.h"
 #include "log.h"
+#include "plutus_cfg.h"
 
-static StatusCode prv_handle_heartbeat_ack(CANMessageID msg_id, uint16_t device, CANAckStatus status,
-                                           uint16_t num_remaining, void *context) {
+static StatusCode prv_handle_heartbeat_ack(CANMessageID msg_id, uint16_t device,
+                                           CANAckStatus status, uint16_t num_remaining,
+                                           void *context) {
   BpsHeartbeatStorage *storage = context;
 
   if (status != CAN_ACK_STATUS_OK) {
@@ -22,7 +23,8 @@ static StatusCode prv_handle_state(BpsHeartbeatStorage *storage) {
     .expected_bitset = storage->expected_bitset,
   };
 
-  EEBpsHeartbeatState state = (storage->faulted) ? EE_BPS_HEARTBEAT_STATE_FAULT : EE_BPS_HEARTBEAT_STATE_OK;
+  EEBpsHeartbeatState state =
+      (storage->faulted) ? EE_BPS_HEARTBEAT_STATE_FAULT : EE_BPS_HEARTBEAT_STATE_OK;
   CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, state);
 
   if (state == EE_BPS_HEARTBEAT_STATE_FAULT) {
@@ -40,7 +42,8 @@ static void prv_periodic_heartbeat(SoftTimerID timer_id, void *context) {
   soft_timer_start_millis(storage->period_ms, prv_periodic_heartbeat, storage, NULL);
 }
 
-StatusCode bps_heartbeat_init(BpsHeartbeatStorage *storage, SequencedRelayStorage *relay, uint32_t period_ms, uint32_t expected_bitset) {
+StatusCode bps_heartbeat_init(BpsHeartbeatStorage *storage, SequencedRelayStorage *relay,
+                              uint32_t period_ms, uint32_t expected_bitset) {
   storage->relay = relay;
   storage->period_ms = period_ms;
   storage->expected_bitset = expected_bitset;

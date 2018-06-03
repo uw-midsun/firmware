@@ -6,9 +6,9 @@
 #include "log.h"
 #include "ltc_afe.h"
 #include "plutus_cfg.h"
+#include "sequenced_relay.h"
 #include "soft_timer.h"
 #include "spi.h"
-#include "sequenced_relay.h"
 
 static LtcAfeStorage s_afe;
 static SequencedRelayStorage s_relays;

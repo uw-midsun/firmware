@@ -11,6 +11,7 @@
 #include "chaos_events.h"
 #include "delay.h"
 #include "event_queue.h"
+#include "exported_enums.h"
 #include "fsm.h"
 #include "gpio.h"
 #include "interrupt.h"
@@ -19,7 +20,6 @@
 #include "status.h"
 #include "test_helpers.h"
 #include "unity.h"
-#include "exported_enums.h"
 
 #define NUM_CAN_RX_HANDLERS 2
 

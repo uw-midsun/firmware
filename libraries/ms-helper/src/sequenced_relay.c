@@ -18,7 +18,8 @@ static StatusCode prv_handle_relay_rx(SystemCanMessage msg_id, uint8_t state, vo
   return sequenced_relay_set_state(storage, state);
 }
 
-StatusCode sequenced_relay_init(SequencedRelayStorage *storage, const SequencedRelaySettings *settings) {
+StatusCode sequenced_relay_init(SequencedRelayStorage *storage,
+                                const SequencedRelaySettings *settings) {
   memset(storage, 0, sizeof(*storage));
   storage->settings = *settings;
   storage->delay_timer = SOFT_TIMER_INVALID_TIMER;

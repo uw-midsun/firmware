@@ -4,11 +4,11 @@
 //
 // Sequences relay closing with a slight delay to offset the high make current of the HV relay coil.
 // We also assume the relays are active-high.
+#include "exported_enums.h"
 #include "gpio.h"
 #include "relay_rx.h"
 #include "soft_timer.h"
 #include "status.h"
-#include "exported_enums.h"
 
 typedef struct SequencedRelaySettings {
   SystemCanMessage can_message;
@@ -25,6 +25,7 @@ typedef struct SequencedRelayStorage {
 } SequencedRelayStorage;
 
 // |storage| should persist
-StatusCode sequenced_relay_init(SequencedRelayStorage *storage, const SequencedRelaySettings *settings);
+StatusCode sequenced_relay_init(SequencedRelayStorage *storage,
+                                const SequencedRelaySettings *settings);
 
 StatusCode sequenced_relay_set_state(SequencedRelayStorage *storage, EERelayState state);
