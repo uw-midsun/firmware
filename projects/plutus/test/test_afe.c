@@ -10,7 +10,8 @@
 
 #define TEST_AFE_NUM_SAMPLES 100
 // Maximum total measurement error in filtered mode - +/-2.8mV
-#define TEST_AFE_VOLTAGE_VARIATION 28
+// Maximum peak-to-peak at 7kHz: +/-250uV
+#define TEST_AFE_VOLTAGE_VARIATION 5
 
 static LtcAfeStorage s_afe;
 
@@ -76,8 +77,8 @@ void test_ltc_afe_read_all_voltage_repeated_within_tolerances(void) {
 
   for (size_t i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {
     uint16_t delta = bounds[i].max - bounds[i].min;
-    TEST_ASSERT_TRUE(TEST_AFE_VOLTAGE_VARIATION < delta);
     LOG_DEBUG("C%d delta %d (min %d, max %d)\n", i, delta, bounds[i].min, bounds[i].max);
+    TEST_ASSERT_TRUE(TEST_AFE_VOLTAGE_VARIATION < delta);
   }
 }
 
@@ -113,8 +114,8 @@ void test_ltc_afe_read_all_aux_repeated_within_tolerances(void) {
 
   for (size_t i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {
     uint16_t delta = bounds[i].max - bounds[i].min;
-    TEST_ASSERT_TRUE(TEST_AFE_VOLTAGE_VARIATION < delta);
     LOG_DEBUG("C%d delta %d (min %d, max %d)\n", i, delta, bounds[i].min, bounds[i].max);
+    TEST_ASSERT_TRUE(TEST_AFE_VOLTAGE_VARIATION < delta);
   }
 }
 

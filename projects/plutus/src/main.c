@@ -9,9 +9,21 @@
 #include "sequenced_relay.h"
 #include "soft_timer.h"
 #include "spi.h"
+#include "bps_heartbeat.h"
+#include "heartbeat_rx.h"
+#include "event_queue.h"
+#include "gpio_it.h"
 
 static LtcAfeStorage s_afe;
 static SequencedRelayStorage s_relays;
+
+static void prv_init_common(void) {
+  gpio_init();
+  interrupt_init();
+  gpio_it_init();
+  soft_timer_init();
+  event_queue_init();
+}
 
 int main(void) {
   gpio_init();
