@@ -5,17 +5,20 @@
 #include "interrupt.h"
 #include "status.h"
 #include "wait.h"
+#include "log.h"
 
 #include "lights_blinker.h"
+#include "lights_board_type.h"
 #include "lights_can.h"
 #include "lights_can_config.h"
-#include "lights_board_type.h"
 #include "lights_gpio.h"
 #include "lights_gpio_config.h"
 #include "lights_signal_fsm.h"
+#include "lights_strobe.h"
 
-#define LIGHTS_CONFIG_SIGNAL_BLINKER_DURATION 500
-#define LIGHTS_CONFIG_SYNC_COUNT 5
+#define LIGHTS_SIGNAL_BLINKER_DURATION 500
+#define LIGHTS_SIGNAL_SYNC_COUNT 5
+#define LIGHTS_STROBE_BLINKER_DURATION 500
 
 static CANSettings s_can_settings = {
   .bitrate = CAN_HW_BITRATE_500KBPS,
@@ -39,6 +42,8 @@ static LightsSignalFsm s_signal_fsm = { 0 };
 
 static LightsCanStorage s_lights_can_storage = { 0 };
 
+static LightsStrobeStorage s_lights_strobe = { 0 };
+
 static const GPIOAddress s_board_type_address = { .port = GPIO_PORT_B, .pin = 13 };
 
 int main(void) {
@@ -53,6 +58,7 @@ int main(void) {
   status_ok_or_return(gpio_get_state(&s_board_type_address, &state));
   LightsBoardType board_type =
       (state == GPIO_STATE_HIGH) ? LIGHTS_BOARD_TYPE_FRONT : LIGHTS_BOARD_TYPE_REAR;
+  LOG_DEBUG("Board Type: %s\n", (board_type == LIGHTS_BOARD_TYPE_FRONT) ? "Front" : "Back");
 
   // Initialize lights_gpio.
   status_ok_or_return(lights_gpio_config_init(board_type));
@@ -66,18 +72,22 @@ int main(void) {
   lights_can_init(&s_lights_can_storage, lights_can_config_load(), &s_can_settings);
 
   // Initialize lights_signal_fsm.
-  lights_signal_fsm_init(&s_signal_fsm, LIGHTS_CONFIG_SIGNAL_BLINKER_DURATION,
-                  LIGHTS_CONFIG_SYNC_COUNT);
+  lights_signal_fsm_init(&s_signal_fsm, LIGHTS_SIGNAL_BLINKER_DURATION,
+                  (board_type == LIGHTS_BOARD_TYPE_FRONT) ? 0 : LIGHTS_SIGNAL_SYNC_COUNT);
 
   // Initialize lights_strobe.
+  lights_strobe_init(&s_lights_strobe, LIGHTS_STROBE_BLINKER_DURATION);
 
   Event e = { 0 };
-  while (event_process(&e) != STATUS_CODE_OK) {
-    lights_can_process_event(&e);
-    lights_gpio_process_event(lights_gpio, &e);
-    lights_signal_fsm_process_event(&s_signal_fsm, &e);
+  while (true) {
+    while (event_process(&e) == STATUS_CODE_OK) {
+      fsm_process_event(CAN_FSM, &e);
+      lights_can_process_event(&e);
+      lights_gpio_process_event(lights_gpio, &e);
+      lights_signal_fsm_process_event(&s_signal_fsm, &e);
+      lights_strobe_process_event(&s_lights_strobe, &e);
+    }
     wait();
   }
   return STATUS_CODE_OK;
 }
-
