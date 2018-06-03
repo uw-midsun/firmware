@@ -85,5 +85,5 @@ typedef enum {
 typedef enum {
   EE_BPS_HEARTBEAT_STATE_OK = 0,
   EE_BPS_HEARTBEAT_STATE_FAULT,
-  NUM_EE_BPS_HEARTBEATS,
+  NUM_EE_BPS_HEARTBEAT_STATES,
 } EEBpsHeartbeatState;

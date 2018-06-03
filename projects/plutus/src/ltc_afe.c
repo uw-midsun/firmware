@@ -91,7 +91,7 @@ static void prv_trigger_adc_conversion(LtcAfeStorage *afe) {
   spi_exchange(afe->spi_port, cmd, 4, NULL, 0);
 
   // wait for conversions to finish
-  delay_us(s_conversion_delay_ms[afe->adc_mode]);
+  delay_ms(s_conversion_delay_ms[afe->adc_mode]);
 }
 
 static void prv_trigger_aux_adc_conversion(LtcAfeStorage *afe) {
@@ -106,7 +106,7 @@ static void prv_trigger_aux_adc_conversion(LtcAfeStorage *afe) {
   spi_exchange(afe->spi_port, cmd, 4, NULL, 0);
 
   // wait for conversions to finish
-  delay_us(s_conversion_delay_ms[afe->adc_mode]);
+  delay_ms(s_conversion_delay_ms[afe->adc_mode]);
 }
 
 // write config to all devices
@@ -211,7 +211,7 @@ StatusCode ltc_afe_init(LtcAfeStorage *afe, const LtcAfeSettings *settings) {
 }
 
 StatusCode ltc_afe_read_all_voltage(LtcAfeStorage *afe, uint16_t *result_arr, size_t len) {
-  if (len != PLUTUS_CFG_TOTAL_CELLS) {
+  if (len != PLUTUS_CFG_AFE_TOTAL_CELLS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
@@ -250,7 +250,7 @@ StatusCode ltc_afe_read_all_voltage(LtcAfeStorage *afe, uint16_t *result_arr, si
 }
 
 StatusCode ltc_afe_read_all_aux(LtcAfeStorage *afe, uint16_t *result_arr, size_t len) {
-  if (len != PLUTUS_CFG_TOTAL_CELLS) {
+  if (len != PLUTUS_CFG_AFE_TOTAL_CELLS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
@@ -290,7 +290,7 @@ StatusCode ltc_afe_read_all_aux(LtcAfeStorage *afe, uint16_t *result_arr, size_t
 }
 
 StatusCode ltc_afe_toggle_cell_discharge(LtcAfeStorage *afe, uint16_t cell, bool discharge) {
-  if (cell >= PLUTUS_CFG_TOTAL_CELLS) {
+  if (cell >= PLUTUS_CFG_AFE_TOTAL_CELLS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
