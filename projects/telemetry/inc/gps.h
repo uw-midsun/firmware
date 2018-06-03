@@ -4,6 +4,7 @@
 #include "nmea.h"
 #include "status.h"
 #include "uart.h"
+#include "soft_timer.h"
 
 typedef void (*evm_gps_gga_handler)(const evm_gps_gga_sentence);
 
@@ -25,3 +26,4 @@ StatusCode evm_gps_init(evm_gps_settings *settings);
 StatusCode evm_gps_clean_up(evm_gps_settings *settings);
 evm_gps_coord evm_gps_get_latitude(StatusCode *result);
 evm_gps_coord evm_gps_get_longtitude(StatusCode *result);
+void evm_gps_dump_internal(SoftTimerID timer_id, void *context);

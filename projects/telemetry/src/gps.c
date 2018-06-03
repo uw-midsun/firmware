@@ -36,8 +36,8 @@ static volatile uint8_t s_vtg_data[s_max_vtg_length];
 
 // Variables for GPS interface
 
-static evm_gps_gga_sentence s_gga_sentence;
-static evm_gps_vtg_sentence s_vtg_sentence;
+static volatile evm_gps_gga_sentence s_gga_sentence;
+static volatile evm_gps_vtg_sentence s_vtg_sentence;
 
 // Methods for GPS utilities
 
@@ -116,9 +116,10 @@ StatusCode evm_gps_init(evm_gps_settings *settings) {
   status_ok_or_return(evm_gps_validate_settings(settings));
 
   // Initializes UART
-  settings->uart_settings->rx_handler = &prv_nmea_read;
+  // settings->uart_settings->rx_handler = &prv_nmea_read;
+  
   StatusCode ret = uart_init(settings->port, settings->uart_settings, &s_storage);
-
+  uart_set_rx_handler(settings->port, prv_nmea_read, NULL);
   // Initializes the power pin
   status_ok_or_return(gpio_init_pin(settings->pin_power, settings->settings_power));
 
@@ -171,6 +172,12 @@ evm_gps_coord evm_gps_get_longtitude(StatusCode *result) {
     (*result) = STATUS_CODE_OK;
   }
   return s_gga_sentence.longtitude;
+}
+
+void evm_gps_dump_internal(SoftTimerID timer_id, void *context) {
+  LOG_DEBUG("%.80s\n", s_gga_data);
+  LOG_DEBUG("%.80s\n", s_vtg_data);
+  soft_timer_start_millis(1000, evm_gps_dump_internal, NULL, NULL);
 }
 
 // Get the whole and fractional component (because it is a float) of the speed in

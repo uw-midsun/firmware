@@ -50,8 +50,6 @@ int main(void) {
                                 .port = s_port };
   StatusCode ret = evm_gps_init(&settings);
 
-  while (true) {
-  }
-  evm_gps_clean_up(&settings);
+  soft_timer_start_millis(1000, evm_gps_dump_internal, NULL, NULL);
   return 0;
 }
