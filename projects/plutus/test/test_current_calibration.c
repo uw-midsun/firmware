@@ -16,7 +16,7 @@
 
 #define TEST_CURRENT_CALIBRATION_DELAY_SECONDS 5
 
-static void prv_callback(int32_t current, void *context) { }
+static void prv_callback(int32_t current, void *context) {}
 
 static LtcAdcStorage adc_storage = {
   .mosi = { GPIO_PORT_B, 15 },

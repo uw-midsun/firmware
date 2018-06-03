@@ -49,7 +49,7 @@ static void prv_callback(int32_t current, void *context) {
 
   TEST_ASSERT_EQUAL(test_current, current);
 
-  printf("Voltage = %" PRId32  ", Current = %" PRId32  "\n", voltage, current);
+  printf("Voltage = %" PRId32 ", Current = %" PRId32 "\n", voltage, current);
 }
 
 void setup_test(void) {
