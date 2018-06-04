@@ -5,7 +5,7 @@
 #include "stm32f0xx.h"
 #include "wait.h"
 
-uint16_t TIM3_IRQHandler(void) {
+// uint16_t TIM3_IRQHandler(void) {
   // TIM_ClearITPendingBit(TIM3, TIM_IT_CC2);
 
   // uint16_t IC2Value = TIM_GetCapture2(TIM3);
@@ -17,7 +17,7 @@ uint16_t TIM3_IRQHandler(void) {
   // } else {
   //  return 0;
   // }
-}
+// }
 
 int main(void) {
   uint16_t period = 1000;
@@ -32,12 +32,13 @@ int main(void) {
   };
 
   GPIOSettings output_settings = {
-    .direction = GPIO_DIR_OUT, .state = GPIO_STATE_HIGH,
+    .direction = GPIO_DIR_OUT, 
+    .state = GPIO_STATE_HIGH,
     .alt_function = GPIO_AF_0,
   };
 
   for (;;) {
-    
+
   }
 
   gpio_init_pin(&output, &output_settings);
