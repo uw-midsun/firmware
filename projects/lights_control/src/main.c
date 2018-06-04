@@ -7,6 +7,7 @@
 #include "wait.h"
 #include "log.h"
 
+#include "lights_gpio_config_front.h"
 #include "lights_blinker.h"
 #include "lights_board_type.h"
 #include "lights_can.h"
@@ -59,7 +60,6 @@ int main(void) {
   LightsBoardType board_type =
       (state == GPIO_STATE_HIGH) ? LIGHTS_BOARD_TYPE_FRONT : LIGHTS_BOARD_TYPE_REAR;
   LOG_DEBUG("Board Type: %s\n", (board_type == LIGHTS_BOARD_TYPE_FRONT) ? "Front" : "Back");
-
   // Initialize lights_gpio.
   status_ok_or_return(lights_gpio_config_init(board_type));
   LightsGpio *lights_gpio = lights_gpio_config_load();

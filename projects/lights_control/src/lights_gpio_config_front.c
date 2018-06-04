@@ -12,47 +12,47 @@ static const LightsGpioOutput s_front_outputs[] = {
   // clang-format off
   [LIGHTS_GPIO_CONFIG_FRONT_OUTPUT_HORN] = {
     .address = { .port = GPIO_PORT_B, .pin = 11 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_FRONT_OUTPUT_HIGH_BEAMS_RIGHT] = {
     .address = { .port = GPIO_PORT_B, .pin = 1 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_FRONT_OUTPUT_HIGH_BEAMS_LEFT] = {
     .address = { .port = GPIO_PORT_B, .pin = 15 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_FRONT_OUTPUT_LOW_BEAMS_RIGHT] = {
     .address = { .port = GPIO_PORT_B, .pin = 2 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_FRONT_OUTPUT_LOW_BEAMS_LEFT] = {
     .address = { .port = GPIO_PORT_A, .pin = 8 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_FRONT_OUTPUT_DRL_RIGHT] = {
     .address = { .port = GPIO_PORT_B, .pin = 0 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_FRONT_OUTPUT_DRL_LEFT] = {
     .address = { .port = GPIO_PORT_A, .pin = 10 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_FRONT_OUTPUT_SIDE_LEFT_INDICATOR] = {
     .address = { .port = GPIO_PORT_B, .pin = 14 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_FRONT_OUTPUT_LEFT_TURN] = {
     .address = { .port = GPIO_PORT_A, .pin = 9 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_FRONT_OUTPUT_SIDE_RIGHT_INDICATOR] = {
     .address = { .port = GPIO_PORT_B, .pin = 12 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_FRONT_OUTPUT_RIGHT_TURN] = {
-    .address = { .port = GPIO_PORT_A, .pin = 10 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .address = { .port = GPIO_PORT_B, .pin = 10 },
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   // clang-format off
 };
