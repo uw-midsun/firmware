@@ -26,9 +26,7 @@ static void prv_init_common(void) {
 }
 
 int main(void) {
-  gpio_init();
-  interrupt_init();
-  soft_timer_init();
+  prv_init_common();
 
   const SequencedRelaySettings relay_settings = {
     .can_message = SYSTEM_CAN_MESSAGE_BATTERY_RELAY_MAIN,
