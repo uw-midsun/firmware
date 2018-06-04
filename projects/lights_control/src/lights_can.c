@@ -1,10 +1,10 @@
 #include "can.h"
-#include "log.h"
 #include "can_hw.h"
 #include "can_msg_defs.h"
 #include "can_transmit.h"
 #include "can_unpack.h"
 #include "event_queue.h"
+#include "log.h"
 #include "status.h"
 
 #include "exported_enums.h"
@@ -64,7 +64,7 @@ StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *s
   status_ok_or_return(
       can_register_rx_handler(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT, prv_rx_handler, settings));
   status_ok_or_return(can_register_rx_handler(SYSTEM_CAN_MESSAGE_HORN, prv_rx_handler, settings));
-  
+
   return STATUS_CODE_OK;
 }
 
@@ -74,6 +74,3 @@ StatusCode lights_can_process_event(const Event *e) {
   }
   return STATUS_CODE_OK;
 }
-
-
-

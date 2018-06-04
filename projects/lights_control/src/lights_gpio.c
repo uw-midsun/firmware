@@ -1,10 +1,10 @@
 #include "lights_gpio.h"
 #include "event_queue.h"
 #include "gpio.h"
-#include "log.h"
 #include "gpio_mcu.h"
 #include "lights_events.h"
 #include "lights_gpio_config.h"
+#include "log.h"
 #include "status.h"
 
 // Searches the event-mappings table for a mapping matching event's peripheral.

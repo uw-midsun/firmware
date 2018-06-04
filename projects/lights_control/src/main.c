@@ -3,17 +3,17 @@
 #include "can.h"
 #include "gpio.h"
 #include "interrupt.h"
+#include "log.h"
 #include "status.h"
 #include "wait.h"
-#include "log.h"
 
-#include "lights_gpio_config_front.h"
 #include "lights_blinker.h"
 #include "lights_board_type.h"
 #include "lights_can.h"
 #include "lights_can_config.h"
 #include "lights_gpio.h"
 #include "lights_gpio_config.h"
+#include "lights_gpio_config_front.h"
 #include "lights_signal_fsm.h"
 #include "lights_strobe.h"
 
@@ -73,7 +73,7 @@ int main(void) {
 
   // Initialize lights_signal_fsm.
   lights_signal_fsm_init(&s_signal_fsm, LIGHTS_SIGNAL_BLINKER_DURATION,
-                  (board_type == LIGHTS_BOARD_TYPE_FRONT) ? 0 : LIGHTS_SIGNAL_SYNC_COUNT);
+                         (board_type == LIGHTS_BOARD_TYPE_FRONT) ? 0 : LIGHTS_SIGNAL_SYNC_COUNT);
 
   // Initialize lights_strobe.
   lights_strobe_init(&s_lights_strobe, LIGHTS_STROBE_BLINKER_DURATION);
