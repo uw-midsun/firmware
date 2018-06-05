@@ -23,7 +23,8 @@
   CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_CHAOS, SYSTEM_CAN_DEVICE_DRIVER_CONTROLS)
 
 // Killswitch
-#define PLUTUS_CFG_KILLSWITCH { .port = GPIO_PORT_B, .pin = 1 }
+#define PLUTUS_CFG_KILLSWITCH \
+  { .port = GPIO_PORT_B, .pin = 1 }
 
 // HV Relay - power/ground
 #define PLUTUS_CFG_RELAY_DELAY_MS 1000
@@ -46,4 +47,5 @@
 #define PLUTUS_CFG_NUM_CAN_RX_HANDLERS 5
 
 // Master/Slave selector
-#define PLUTUS_CFG_BOARD_TYPE_SEL { .port = GPIO_PORT_B, .pin = 2 }
+#define PLUTUS_CFG_BOARD_TYPE_SEL \
+  { .port = GPIO_PORT_B, .pin = 2 }

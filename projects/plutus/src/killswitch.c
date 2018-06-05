@@ -31,7 +31,8 @@ StatusCode killswitch_init(const GPIOAddress *killswitch, BpsHeartbeatStorage *b
 
   // Force update
   prv_killswitch_handler(killswitch, bps_heartbeat);
-  return gpio_it_register_interrupt(killswitch, &it_settings, INTERRUPT_EDGE_RISING_FALLING, prv_killswitch_handler, bps_heartbeat);
+  return gpio_it_register_interrupt(killswitch, &it_settings, INTERRUPT_EDGE_RISING_FALLING,
+                                    prv_killswitch_handler, bps_heartbeat);
 }
 
 StatusCode killswitch_bypass(const GPIOAddress *killswitch) {

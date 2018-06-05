@@ -17,12 +17,12 @@
 // * Sequenced relays: Slave battery
 // * BPS Heartbeat RX
 // * Killswitch bypass
-#include "ltc_afe.h"
-#include "ltc_adc.h"
-#include "can.h"
-#include "sequenced_relay.h"
 #include "bps_heartbeat.h"
+#include "can.h"
 #include "heartbeat_rx.h"
+#include "ltc_adc.h"
+#include "ltc_afe.h"
+#include "sequenced_relay.h"
 
 typedef enum {
   PLUTUS_SYS_TYPE_MASTER = 0,

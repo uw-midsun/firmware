@@ -1,12 +1,12 @@
 #include "plutus_sys.h"
-#include "gpio.h"
-#include "interrupt.h"
-#include "soft_timer.h"
+#include <string.h>
 #include "event_queue.h"
+#include "gpio.h"
 #include "gpio_it.h"
+#include "interrupt.h"
 #include "killswitch.h"
 #include "plutus_event.h"
-#include <string.h>
+#include "soft_timer.h"
 
 // Board-specific details
 typedef struct PlutusSysSpecifics {
@@ -47,7 +47,8 @@ static StatusCode prv_init_common(PlutusSysStorage *storage, PlutusSysType type)
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },
   };
-  status_ok_or_return(can_init(&can_settings, &storage->can, storage->can_rx_handlers, SIZEOF_ARRAY(storage->can_rx_handlers)));
+  status_ok_or_return(can_init(&can_settings, &storage->can, storage->can_rx_handlers,
+                               SIZEOF_ARRAY(storage->can_rx_handlers)));
 
   const SequencedRelaySettings relay_settings = {
     .can_message = s_specifics[type].relay_msg,
@@ -58,16 +59,16 @@ static StatusCode prv_init_common(PlutusSysStorage *storage, PlutusSysType type)
   status_ok_or_return(sequenced_relay_init(&storage->relay, &relay_settings));
 
   // Always respond to powertrain heartbeat
-  status_ok_or_return(heartbeat_rx_register_handler(&storage->powertrain_heartbeat_handler, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT, heartbeat_rx_auto_ack_handler, NULL));
+  status_ok_or_return(heartbeat_rx_register_handler(&storage->powertrain_heartbeat_handler,
+                                                    SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
+                                                    heartbeat_rx_auto_ack_handler, NULL));
 
   // TODO: drive fans
   return STATUS_CODE_OK;
 }
 
 PlutusSysType plutus_sys_get_type(void) {
-  const GPIOSettings gpio_settings = {
-    .direction = GPIO_DIR_IN
-  };
+  const GPIOSettings gpio_settings = { .direction = GPIO_DIR_IN };
   GPIOAddress board_selector = PLUTUS_CFG_BOARD_TYPE_SEL;
   gpio_init_pin(&board_selector, &gpio_settings);
 
@@ -108,7 +109,9 @@ StatusCode plutus_sys_init(PlutusSysStorage *storage, PlutusSysType type) {
     };
 
     status_ok_or_return(ltc_afe_init(&storage->ltc_afe, &afe_settings));
-    status_ok_or_return(bps_heartbeat_init(&storage->bps_heartbeat, &storage->relay, PLUTUS_CFG_HEARTBEAT_PERIOD_MS, PLUTUS_CFG_HEARTBEAT_EXPECTED_DEVICES));
+    status_ok_or_return(bps_heartbeat_init(&storage->bps_heartbeat, &storage->relay,
+                                           PLUTUS_CFG_HEARTBEAT_PERIOD_MS,
+                                           PLUTUS_CFG_HEARTBEAT_EXPECTED_DEVICES));
     status_ok_or_return(killswitch_init(&killswitch, &storage->bps_heartbeat));
 
     // TODO: fault handling
@@ -118,7 +121,9 @@ StatusCode plutus_sys_init(PlutusSysStorage *storage, PlutusSysType type) {
     // Bypass killswitch
     //
     // TODO: fault if heartbeat bad
-    status_ok_or_return(heartbeat_rx_register_handler(&storage->bps_heartbeat_handler, SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT, heartbeat_rx_auto_ack_handler, NULL));
+    status_ok_or_return(heartbeat_rx_register_handler(&storage->bps_heartbeat_handler,
+                                                      SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT,
+                                                      heartbeat_rx_auto_ack_handler, NULL));
     status_ok_or_return(killswitch_bypass(&killswitch));
   }
 

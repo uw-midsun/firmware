@@ -4,8 +4,8 @@
 #include "log.h"
 #include "plutus_cfg.h"
 
-#include "plutus_sys.h"
 #include "fault_monitor.h"
+#include "plutus_sys.h"
 
 static PlutusSysStorage s_plutus;
 

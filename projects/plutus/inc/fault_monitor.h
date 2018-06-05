@@ -1,8 +1,8 @@
 #pragma once
 // Monitor voltage/current/temperature for faults
 // Requires LTC AFE, LTC ADC, BPS heartbeat to be initialized
-#include "ltc_afe.h"
 #include "bps_heartbeat.h"
+#include "ltc_afe.h"
 
 typedef struct FaultMonitorSettings {
   // TODO: add current sense

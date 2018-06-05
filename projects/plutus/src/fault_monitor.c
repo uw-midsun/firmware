@@ -6,7 +6,8 @@ StatusCode fault_monitor_check(FaultMonitorSettings *settings) {
   bool is_charging = false;
 
   uint16_t voltages[PLUTUS_CFG_AFE_TOTAL_CELLS] = { 0 };
-  StatusCode status = ltc_afe_read_all_voltage(settings->ltc_afe, voltages, PLUTUS_CFG_AFE_TOTAL_CELLS);
+  StatusCode status =
+      ltc_afe_read_all_voltage(settings->ltc_afe, voltages, PLUTUS_CFG_AFE_TOTAL_CELLS);
   if (status != STATUS_CODE_OK) {
     LOG_DEBUG("Invalid status %d\n", status);
     bps_heartbeat_raise_fault(settings->bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);

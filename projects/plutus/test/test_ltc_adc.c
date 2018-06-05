@@ -55,7 +55,7 @@ void setup_test(void) {
 
     .spi_port = PLUTUS_CFG_CURRENT_SENSE_SPI_PORT,          //
     .spi_baudrate = PLUTUS_CFG_CURRENT_SENSE_SPI_BAUDRATE,  //
-    .filter_mode = LTC_ADC_FILTER_50HZ_60HZ, //
+    .filter_mode = LTC_ADC_FILTER_50HZ_60HZ,                //
   };
   TEST_ASSERT_OK(ltc_adc_init(&s_adc, &adc_settings));
 
