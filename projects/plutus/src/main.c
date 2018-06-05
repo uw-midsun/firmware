@@ -12,7 +12,7 @@ static PlutusSysStorage s_plutus;
 int main(void) {
   plutus_sys_init(&s_plutus, PLUTUS_SYS_TYPE_MASTER);
 
-  // TODO: fix this
+  // TODO(ELEC-439): fix this
   FaultMonitorSettings fault_monitor = {
     .bps_heartbeat = &s_plutus.bps_heartbeat,
     .ltc_afe = &s_plutus.ltc_afe,
@@ -27,6 +27,7 @@ int main(void) {
       fsm_process_event(CAN_FSM, &e);
     }
 
+    // TODO(ELEC-439): Only check for faults if master?
     fault_monitor_check(&fault_monitor);
   }
 }

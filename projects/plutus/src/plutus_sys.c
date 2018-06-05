@@ -21,7 +21,7 @@ static const PlutusSysSpecifics s_specifics[NUM_PLUTUS_SYS_TYPES] = {
     .relay_msg = SYSTEM_CAN_MESSAGE_BATTERY_RELAY_MAIN,
   },
   [PLUTUS_SYS_TYPE_SLAVE] = {
-    // TODO: switch to slave device
+    // TODO(ELEC-439): switch to slave device
     .can_device = SYSTEM_CAN_DEVICE_PLUTUS,
     .relay_msg = SYSTEM_CAN_MESSAGE_BATTERY_RELAY_SLAVE,
   },
@@ -63,7 +63,7 @@ static StatusCode prv_init_common(PlutusSysStorage *storage, PlutusSysType type)
                                                     SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
                                                     heartbeat_rx_auto_ack_handler, NULL));
 
-  // TODO: drive fans
+  // TODO(ELEC-439): drive fans
   return STATUS_CODE_OK;
 }
 
@@ -113,14 +113,12 @@ StatusCode plutus_sys_init(PlutusSysStorage *storage, PlutusSysType type) {
                                            PLUTUS_CFG_HEARTBEAT_PERIOD_MS,
                                            PLUTUS_CFG_HEARTBEAT_EXPECTED_DEVICES));
     status_ok_or_return(killswitch_init(&killswitch, &storage->bps_heartbeat));
-
-    // TODO: fault handling
   } else if (type == PLUTUS_SYS_TYPE_SLAVE) {
     // Slave also handles:
     // BPS Heartbeat RX
     // Bypass killswitch
     //
-    // TODO: fault if heartbeat bad
+    // TODO(ELEC-439): fault if heartbeat bad
     status_ok_or_return(heartbeat_rx_register_handler(&storage->bps_heartbeat_handler,
                                                       SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT,
                                                       heartbeat_rx_auto_ack_handler, NULL));

@@ -24,7 +24,7 @@ StatusCode fault_monitor_check(FaultMonitorSettings *settings) {
 
   bool had_fault = false;
   for (size_t i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {
-    // TODO: add temperature check
+    // TODO(ELEC-439): add temperature check
     had_fault |= (voltages[i] < settings->undervoltage || voltages[i] > settings->overvoltage);
 
     CAN_TRANSMIT_BATTERY_VCT(i, voltages[i], 0, 0);

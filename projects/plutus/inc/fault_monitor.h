@@ -5,7 +5,7 @@
 #include "ltc_afe.h"
 
 typedef struct FaultMonitorSettings {
-  // TODO: add current sense
+  // TODO(ELEC-439): add current sense
   LtcAfeStorage *ltc_afe;
   BpsHeartbeatStorage *bps_heartbeat;
 
