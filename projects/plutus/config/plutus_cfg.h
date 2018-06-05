@@ -44,3 +44,6 @@
 // CAN
 #define PLUTUS_CFG_CAN_BITRATE CAN_HW_BITRATE_500KBPS
 #define PLUTUS_CFG_NUM_CAN_RX_HANDLERS 5
+
+// Master/Slave selector
+#define PLUTUS_CFG_BOARD_TYPE_SEL { .port = GPIO_PORT_B, .pin = 2 }

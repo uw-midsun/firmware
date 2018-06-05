@@ -64,6 +64,19 @@ static StatusCode prv_init_common(PlutusSysStorage *storage, PlutusSysType type)
   return STATUS_CODE_OK;
 }
 
+PlutusSysType plutus_sys_get_type(void) {
+  const GPIOSettings gpio_settings = {
+    .direction = GPIO_DIR_IN
+  };
+  GPIOAddress board_selector = PLUTUS_CFG_BOARD_TYPE_SEL;
+  gpio_init_pin(&board_selector, &gpio_settings);
+
+  GPIOState state = NUM_GPIO_STATES;
+  gpio_get_state(&board_selector, &state);
+
+  return (state == GPIO_STATE_HIGH) ? PLUTUS_SYS_TYPE_MASTER : PLUTUS_SYS_TYPE_SLAVE;
+}
+
 StatusCode plutus_sys_init(PlutusSysStorage *storage, PlutusSysType type) {
   if (type >= NUM_PLUTUS_SYS_TYPES) {
     return status_code(STATUS_CODE_INVALID_ARGS);

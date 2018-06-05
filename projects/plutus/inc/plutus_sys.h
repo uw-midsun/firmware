@@ -44,5 +44,8 @@ typedef struct PlutusSysStorage {
   PlutusSysType type;
 } PlutusSysStorage;
 
+// Loads the configured type
+PlutusSysType plutus_sys_get_type(void);
+
 // Initializes all modules associated with the system type
 StatusCode plutus_sys_init(PlutusSysStorage *storage, PlutusSysType type);

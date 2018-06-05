@@ -4,7 +4,16 @@
 static void prv_killswitch_handler(const GPIOAddress *address, void *context) {
   BpsHeartbeatStorage *storage = context;
 
-  bps_heartbeat_raise_fault(storage);
+  GPIOState state = NUM_GPIO_STATES;
+  gpio_get_state(address, &state);
+
+  if (state == GPIO_STATE_LOW) {
+    // Falling edge - killswitch was hit
+    bps_heartbeat_raise_fault(storage, BPS_HEARTBEAT_FAULT_SOURCE_KILLSWITCH);
+  } else {
+    // Rising edge - killswitch was released
+    bps_heartbeat_clear_fault(storage, BPS_HEARTBEAT_FAULT_SOURCE_KILLSWITCH);
+  }
 }
 
 StatusCode killswitch_init(const GPIOAddress *killswitch, BpsHeartbeatStorage *bps_heartbeat) {
@@ -19,7 +28,10 @@ StatusCode killswitch_init(const GPIOAddress *killswitch, BpsHeartbeatStorage *b
 
   // Active-low interrupt
   gpio_init_pin(killswitch, &gpio_settings);
-  return gpio_it_register_interrupt(killswitch, &it_settings, INTERRUPT_EDGE_FALLING, prv_killswitch_handler, bps_heartbeat);
+
+  // Force update
+  prv_killswitch_handler(killswitch, bps_heartbeat);
+  return gpio_it_register_interrupt(killswitch, &it_settings, INTERRUPT_EDGE_RISING_FALLING, prv_killswitch_handler, bps_heartbeat);
 }
 
 StatusCode killswitch_bypass(const GPIOAddress *killswitch) {

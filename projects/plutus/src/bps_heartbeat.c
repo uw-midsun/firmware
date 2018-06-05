@@ -8,7 +8,9 @@ static StatusCode prv_handle_heartbeat_ack(CANMessageID msg_id, uint16_t device,
 
   if (status != CAN_ACK_STATUS_OK) {
     // Something bad happened - fault
-    return bps_heartbeat_raise_fault(storage);
+    return bps_heartbeat_raise_fault(storage, BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT);
+  } else if (status == CAN_ACK_STATUS_OK && num_remaining == 0) {
+    return bps_heartbeat_clear_fault(storage, BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT);
   }
 
   return STATUS_CODE_OK;
@@ -21,8 +23,9 @@ static StatusCode prv_handle_state(BpsHeartbeatStorage *storage) {
     .expected_bitset = storage->expected_bitset,
   };
 
+  // Only transmit state OK if we have no ongoing faults
   EEBpsHeartbeatState state =
-      (storage->faulted) ? EE_BPS_HEARTBEAT_STATE_FAULT : EE_BPS_HEARTBEAT_STATE_OK;
+      (storage->fault_bitset == 0x0) ? EE_BPS_HEARTBEAT_STATE_OK : EE_BPS_HEARTBEAT_STATE_FAULT;
   CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, state);
 
   if (state == EE_BPS_HEARTBEAT_STATE_FAULT) {
@@ -45,19 +48,21 @@ StatusCode bps_heartbeat_init(BpsHeartbeatStorage *storage, SequencedRelayStorag
   storage->relay = relay;
   storage->period_ms = period_ms;
   storage->expected_bitset = expected_bitset;
-  storage->faulted = false;
+
+  // Assume things are okay until told otherwise?
+  storage->fault_bitset = 0x00;
 
   return soft_timer_start_millis(storage->period_ms, prv_periodic_heartbeat, storage, NULL);
 }
 
-StatusCode bps_heartbeat_raise_fault(BpsHeartbeatStorage *storage) {
-  storage->faulted = true;
+StatusCode bps_heartbeat_raise_fault(BpsHeartbeatStorage *storage, BpsHeartbeatFaultSource source) {
+  storage->fault_bitset |= (1 << source);
 
   return prv_handle_state(storage);
 }
 
-StatusCode bps_heartbeat_clear_fault(BpsHeartbeatStorage *storage) {
-  storage->faulted = false;
+StatusCode bps_heartbeat_clear_fault(BpsHeartbeatStorage *storage, BpsHeartbeatFaultSource source) {
+  storage->fault_bitset &= ~(1 << source);
 
   return STATUS_CODE_OK;
 }

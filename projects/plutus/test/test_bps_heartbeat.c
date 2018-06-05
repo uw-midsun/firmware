@@ -107,7 +107,7 @@ void test_bps_heartbeat_basic(void) {
 
   // Raise fault - immediately update
   LOG_DEBUG("Raising fault\n");
-  bps_heartbeat_raise_fault(&s_bps_heartbeat);
+  bps_heartbeat_raise_fault(&s_bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_KILLSWITCH);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
                                     TEST_BPS_HEARTBEAT_EVENT_CAN_RX);
   TEST_ASSERT_EQUAL(EE_RELAY_STATE_OPEN, s_relay_state);
@@ -115,7 +115,7 @@ void test_bps_heartbeat_basic(void) {
 
   // Try clearing the fault
   LOG_DEBUG("Clearing fault\n");
-  bps_heartbeat_clear_fault(&s_bps_heartbeat);
+  bps_heartbeat_clear_fault(&s_bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_KILLSWITCH);
   delay_ms(TEST_BPS_HEARTBEAT_PERIOD_MS);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
                                     TEST_BPS_HEARTBEAT_EVENT_CAN_RX);
