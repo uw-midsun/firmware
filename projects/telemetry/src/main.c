@@ -42,17 +42,14 @@ int main(void) {
     .alt_function = GPIO_ALTFN_NONE,
   };
 
-  evm_gps_settings settings = { .settings_power = &settings_power,
-                                .settings_on_off = &settings_on_off,
-                                .pin_power = &s_pins[0],
-                                .pin_on_off = &s_pins[1],
-                                .uart_settings = &s_settings,
-                                .port = s_port };
-  StatusCode ret = evm_gps_init(&settings);
+  gps_settings settings = { .settings_power = &settings_power,
+                            .settings_on_off = &settings_on_off,
+                            .pin_power = &s_pins[0],
+                            .pin_on_off = &s_pins[1],
+                            .uart_settings = &s_settings,
+                            .port = s_port };
+  StatusCode ret = gps_init(&settings);
 
-  while (true) {
-  }
-  evm_gps_clean_up(&settings);
-
+  soft_timer_start_millis(1000, gps_dump_internal, NULL, NULL);
   return 0;
 }
