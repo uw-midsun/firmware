@@ -22,4 +22,10 @@ typedef struct FaultMonitorSettings {
   int32_t overcurrent_discharge;
 } FaultMonitorSettings;
 
-StatusCode fault_monitor_check(FaultMonitorSettings *settings);
+typedef struct FaultMonitorResult {
+  uint16_t cell_voltages[PLUTUS_CFG_AFE_TOTAL_CELLS];
+  uint16_t temp_voltages[PLUTUS_CFG_AFE_TOTAL_CELLS];
+  int32_t current;
+} FaultMonitorResult;
+
+StatusCode fault_monitor_check(const FaultMonitorSettings *settings, FaultMonitorResult *result);
