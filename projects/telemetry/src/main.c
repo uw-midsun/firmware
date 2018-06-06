@@ -50,6 +50,6 @@ int main(void) {
                             .port = s_port };
   StatusCode ret = gps_init(&settings);
 
-  soft_timer_start_millis(1000, gps_dump_internal, NULL, NULL);
+  // Integrate GPS with xbee here
   return 0;
 }

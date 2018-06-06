@@ -1,8 +1,7 @@
 #pragma once
-// This will be the GPS driver
-#include <stdio.h>
-#include "nmea.h"
-#include "soft_timer.h"
+// This will be the GPS driver. It will be responsive for initializing, and cleaning up the GPS
+// as well as providing data from the GPS.
+#include <stdbool.h>
 #include "status.h"
 #include "uart.h"
 
@@ -20,6 +19,16 @@ typedef struct {
   GPIOAddress *pin_on_off;
 } gps_settings;
 
+// Initialized the GPS module
 StatusCode gps_init(gps_settings *settings);
+
+// Shuts the GPS module down
 StatusCode gps_clean_up(gps_settings *settings);
-void gps_dump_internal(SoftTimerID timer_id, void *context);
+
+// Sets gga_message to the last received GGA message
+// Returns whether the GPS is active or not
+bool gps_get_gga(char *gga_message);
+
+// Sets vtg_message to the last received VTG message
+// Returns whether the GPS is active or not
+bool gps_get_vtg(char *vtg_message);

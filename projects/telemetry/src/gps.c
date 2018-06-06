@@ -4,22 +4,21 @@
 #include <stdio.h>
 #include <string.h>
 #include "gpio.h"
-#include "interrupt.h"  // For enabling interrupts.
+#include "interrupt.h"
 #include "log.h"
 #include "misc.h"
 #include "nmea.h"
-#include "soft_timer.h"  // Software timers for scheduling future events.
+#include "soft_timer.h"
 #include "status.h"
 #include "uart_mcu.h"
 
-// Static variables for GPS chip utilities below
-
 static UARTStorage s_storage;
-static volatile bool s_gps_active = false; // Keeps track of whether the GPS is sending data or not
-static volatile bool s_gps_desired_state = true; // Keeps track of whether we want the
-                                                  // GPS to be active or not
 
-static bool s_evm_initialize_by_gpio = false;
+// Keeps track of whether the GPS is sending data or not
+static volatile bool s_gps_active = false;
+
+// Keeps track of whether we want the GPS to be active or not
+static volatile bool s_gps_desired_state = true;
 
 // Just some constants so that the max length of raw data can be set.
 // A GGA message will be around a hundred characters. VTG is less.
@@ -29,6 +28,7 @@ static bool s_evm_initialize_by_gpio = false;
 static volatile char s_gga_data[s_max_nmea_length];
 static volatile char s_vtg_data[s_max_nmea_length];
 
+// This method will be called every time the GPS sends data.
 static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
   if (nmea_is_gga((char *)rx_arr)) {
     snprintf(s_gga_data, s_max_nmea_length, "%s", (char *)rx_arr);
@@ -39,8 +39,9 @@ static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
   }
 }
 
+// The GPS power line will be connected to a 3V pin. This method will
+// control if that pin is providing power or not.
 static void prv_gps_set_power_state(gps_settings *settings, bool powered) {
-  gps_settings *settings = context;
   if (settings->pin_power == NULL) {
     return;
   }
@@ -55,13 +56,13 @@ static void prv_gps_set_power_state(gps_settings *settings, bool powered) {
 // to pass more info into the context
 static void prv_gps_set_power_state_on(SoftTimerID timer_id, void *context) {
   if (context != NULL) {
-    prv_gps_set_power_state((gps_settings *) context, true);
+    prv_gps_set_power_state((gps_settings *)context, true);
   }
 }
 
 static void prv_gps_set_power_state_off(SoftTimerID timer_id, void *context) {
   if (context != NULL) {
-    prv_gps_set_power_state((gps_settings *) context, false);
+    prv_gps_set_power_state((gps_settings *)context, false);
   }
 }
 
@@ -81,7 +82,8 @@ static void prv_gps_init_stage_2(SoftTimerID timer_id, void *context) {
   }
 }
 
-StatusCode gps_validate_settings(gps_settings *settings) {
+// Just a static method to make sure the settings struct has all the necessary fields set
+static StatusCode prv_gps_validate_settings(gps_settings *settings) {
   // Making sure all settings as passed in
   if (!settings) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "The 'settings' argument is null\n");
@@ -102,28 +104,37 @@ StatusCode gps_validate_settings(gps_settings *settings) {
   return STATUS_CODE_OK;
 }
 
+// This method runs every 5 seconds and clears the active flag. The UART
+// callback for the GPS runs every second and sets the active flag.
+// This is do that if the GPS crashes or something like that, it will be
+// automatically rebooted
 static void prv_gps_health_monitor(SoftTimerID timer_id, void *context) {
   if (context == NULL) {
     LOG_CRITICAL("Context to prv_gps_health_monitor is NULL, cannot monitor GPS health\n");
     return;
   }
+
+  gps_settings *settings = (gps_settings *)context;
+
+  // Restarts the GPS if it is not "active" and the desired state is "on".
   if (!s_gps_active && s_gps_desired_state) {
     prv_gps_set_power_state(settings, false);
     soft_timer_start_seconds(1, prv_gps_set_power_state_on, settings, NULL);
     soft_timer_start_seconds(3, prv_gps_init_stage_1, settings, NULL);
     soft_timer_start_millis(3100, prv_gps_init_stage_2, settings, NULL);
-    s_gps_active = false;
   }
   StatusCode ret = soft_timer_start_seconds(5, prv_gps_health_monitor, settings, NULL);
   if (!status_ok(ret)) {
     LOG_CRITICAL("Could not start prv_gps_health_monitor timer\n");
   }
+  // Sets the GPS to the "inactive" state for book keeping purposes
+  s_gps_active = false;
 }
 
 // Initialization of this chip is described on page 10 of:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
 StatusCode gps_init(gps_settings *settings) {
-  status_ok_or_return(gps_validate_settings(settings));
+  status_ok_or_return(prv_gps_validate_settings(settings));
 
   // Initializes UART
   StatusCode ret = uart_init(settings->port, settings->uart_settings, &s_storage);
@@ -133,8 +144,10 @@ StatusCode gps_init(gps_settings *settings) {
   status_ok_or_return(gpio_init_pin(settings->pin_power, settings->settings_power));
   status_ok_or_return(gpio_init_pin(settings->pin_on_off, settings->settings_on_off));
 
-  // Initializes the GPS by pulling the ON OFF pin to high for 100 ms
+  // Starts the GPS health monitor
   status_ok_or_return(soft_timer_start_seconds(5, prv_gps_health_monitor, settings, NULL));
+
+  // Set the desired state to "on", in case of multiple initializations
   s_gps_desired_state = true;
   return STATUS_CODE_OK;
 }
@@ -143,11 +156,30 @@ StatusCode gps_init(gps_settings *settings) {
 // From page 25 of:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
 StatusCode gps_clean_up(gps_settings *settings) {
-  // The char array below should read $PSRF117,16*0B\r\n
+  // Makes sure that the health monitor doesn't keep restarting the GPS
   s_gps_desired_state = false;
+
+  // The shutdown message to be sent to the GPS
   char *message = "$PSRF117,16*0B\r\n";
 
-  status_ok_or_return(uart_tx(settings->port, message, strlen(message)));
+  // Sends the message
+  status_ok_or_return(uart_tx(settings->port, (uint8_t *)message, strlen(message)));
   status_ok_or_return(soft_timer_start_seconds(1, prv_gps_set_power_state_off, settings, NULL));
   return STATUS_CODE_OK;
+}
+
+// Are these two methods below thread safe? Or should I pass in a pointer,
+// and use snprintf to copy into it?
+bool gps_get_gga(char *gga_message) {
+  if (gga_message != NULL) {
+    gga_message = s_gga_data;
+  }
+  return s_gps_active;
+}
+
+bool gps_get_vtg(char *vtg_message) {
+  if (vtg_message != NULL) {
+    vtg_message = s_vtg_data;
+  }
+  return s_gps_active;
 }
