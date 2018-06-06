@@ -1,55 +1,124 @@
-// Test program for STM32F072RB discovery boards - attempts to connect to the onboard MEMS
-// gyroscope over SPI. Blinks the blue LED on success or the red LED on fail.
 #include <stdbool.h>
-#include <stdint.h>
+#include <stdlib.h>
 
+#include "adc.h"
+#include "bps_heartbeat.h"
+#include "can.h"
+#include "can_ack.h"
+#include "chaos_config.h"
+#include "chaos_events.h"
+#include "charger.h"
+#include "delay.h"
+#include "emergency_fault.h"
+#include "event_queue.h"
 #include "gpio.h"
-#include "log.h"
-#include "spi.h"
+#include "gpio_fsm.h"
+#include "gpio_it.h"
+#include "interrupt.h"
+#include "power_path.h"
+#include "powertrain_heartbeat.h"
+#include "relay.h"
+#include "relay_retry_service.h"
+#include "sequencer_fsm.h"
+#include "soft_timer.h"
+#include "state_handler.h"
+#include "status.h"
+#include "wait.h"
 
-#define GYRO_ID 0xD4
+#define CHAOS_NUM_RX_HANDLERS 10
 
-void gyro_cmd(bool read, bool autoincrement, uint8_t addr, uint8_t *data) {
-  uint8_t packet[] = { (read & 0x01) << 7 | (autoincrement & 0x01) << 6 | (addr & 0x3F),
-                       (read) ? 0 : *data };
-
-  spi_exchange(SPI_PORT_2, packet, (size_t)(2 - read), data, read);
-}
+static CANStorage s_can_storage;
+static CANRxHandler s_rx_handlers[CHAOS_NUM_RX_HANDLERS];
+static EmergencyFaultStorage s_emergency_storage;
+static RelayRetryServiceStorage s_retry_storage;
 
 int main(void) {
+  // Common
+  event_queue_init();
+  interrupt_init();
+  soft_timer_init();
   gpio_init();
+  gpio_it_init();
+  adc_init(ADC_MODE_SINGLE);
 
-  SPISettings spi_settings = {
-    .baudrate = 1500000,
-    .mode = SPI_MODE_0,
-    .mosi = { GPIO_PORT_B, 15 },
-    .miso = { GPIO_PORT_B, 14 },
-    .sclk = { GPIO_PORT_B, 13 },
-    .cs = { GPIO_PORT_C, 0 },
+  // CAN
+  CANSettings can_settings = {
+    .device_id = SYSTEM_CAN_DEVICE_CHAOS,
+    .bitrate = CAN_HW_BITRATE_125KBPS,
+    .rx_event = CHAOS_EVENT_CAN_RX,
+    .tx_event = CHAOS_EVENT_CAN_TX,
+    .fault_event = CHAOS_EVENT_CAN_FAULT,
+    .tx = { GPIO_PORT_A, 12 },
+    .rx = { GPIO_PORT_A, 11 },
+    .loopback = false,
   };
+  can_init(&can_settings, &s_can_storage, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
 
-  spi_init(SPI_PORT_2, &spi_settings);
+  // GPIO
+  ChaosConfig *cfg = chaos_config_load();
+  gpio_fsm_init(cfg);
 
-  uint8_t whoami = 0xAA;
-  gyro_cmd(true, false, 0x0F, &whoami);
+  // Heartbeats
+  bps_heartbeat_init();  // Use the auto start feature to start the watchdog.
+  powertrain_heartbeat_init();
 
-  GPIOSettings led_settings = {
-    .direction = GPIO_DIR_OUT,
-    .state = GPIO_STATE_HIGH,
+  // Power Path
+  power_path_init(&cfg->power_path);
+  // AUX Battery Monitoring.
+  power_path_source_monitor_enable(&cfg->power_path.aux_bat, CHAOS_CONFIG_POWER_PATH_PERIOD_MS);
+
+  // Relays
+  RelaySettings relay_settings = {
+    .battery_main_power_pin = cfg->battery_box_power,
+    .battery_slave_power_pin = cfg->battery_box_power,
+    .motor_power_pin = cfg->motor_interface_power,
+    .solar_front_power_pin = cfg->array_sense_power,
+    .solar_rear_power_pin = cfg->array_sense_power,
+    .loopback = false,
   };
+  relay_init(&relay_settings);
 
-  GPIOAddress leds[] = { { GPIO_PORT_C, 6 }, { GPIO_PORT_C, 7 } };
-  gpio_init_pin(&leds[0], &led_settings);
-  gpio_init_pin(&leds[1], &led_settings);
+  // Sequencer
+  sequencer_fsm_init();
 
+  // Chaos is considered to be in the Idle state at this point and will only begin to transition
+  // once it receives input from driver controls. To do so we enable the state handler and other
+  // CAN services below now that Chaos is in what is considered to be a valid state.
+
+  // CAN services
+  charger_init();
+  emergency_fault_clear(&s_emergency_storage);
+  state_handler_init();
+
+  // Main loop
+  Event e = { 0 };
+  StatusCode status = NUM_STATUS_CODES;
   while (true) {
-    LOG_DEBUG("ID: %d\n", whoami);
-    gpio_toggle_state(&leds[whoami == GYRO_ID]);
+    // Tight event loop
+    do {
+      status = event_process(&e);
+      // TODO(ELEC-105): Validate nothing gets stuck here.
+      if (status == STATUS_CODE_EMPTY) {
+        wait();
+      }
+    } while (status != STATUS_CODE_OK);
 
-    // arbitrary software delay
-    for (volatile int i = 0; i < 2000000; i++) {
-    }
+    // Event Processing:
+
+    // TODO(ELEC-105): At least one of the following should respond with either a boolean true or
+    // a STATUS_CODE_OK for each emitted message. Consider adding a requirement that this is the
+    // case with a failure resulting in faulting into Emergency.
+    fsm_process_event(CAN_FSM, &e);
+    emergency_fault_process_event(&s_emergency_storage, &e);
+    gpio_fsm_process_event(&e);
+    powertrain_heartbeat_process_event(&e);
+    power_path_process_event(&cfg->power_path, &e);
+    charger_process_event(&e);
+    relay_process_event(&e);
+    relay_retry_service_update(&e);
+    sequencer_fsm_publish_next_event(&e);
   }
 
-  return 0;
+  // Not reached.
+  return EXIT_SUCCESS;
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include <assert.h>
-#include "plutus_config.h"
+#include "plutus_cfg.h"
 
 // used internally by the LTC AFE driver
 
@@ -18,7 +18,7 @@ typedef enum {
   LTC_AFE_REGISTER_STATUS_A,
   LTC_AFE_REGISTER_STATUS_B,
   LTC_AFE_REGISTER_COMM,
-  NUM_LTC_AFE_REGISTER
+  NUM_LTC_AFE_REGISTERS
 } LtcAfeRegister;
 
 typedef enum {
@@ -26,7 +26,7 @@ typedef enum {
   LTC_AFE_VOLTAGE_REGISTER_B,
   LTC_AFE_VOLTAGE_REGISTER_C,
   LTC_AFE_VOLTAGE_REGISTER_D,
-  NUM_LTC_AFE_VOLTAGE_REGISTER
+  NUM_LTC_AFE_VOLTAGE_REGISTERS
 } LtcAfeVoltageRegister;
 
 typedef enum {
@@ -60,19 +60,7 @@ typedef struct {
   uint32_t undervoltage : 12;  // Undervoltage Comparison Voltage
   uint32_t overvoltage : 12;   // Overvoltage Comparison Voltage
 
-  uint8_t discharge_c1 : 1;
-  uint8_t discharge_c2 : 1;
-  uint8_t discharge_c3 : 1;
-  uint8_t discharge_c4 : 1;
-  uint8_t discharge_c5 : 1;
-  uint8_t discharge_c6 : 1;
-  uint8_t discharge_c7 : 1;
-  uint8_t discharge_c8 : 1;
-  uint8_t discharge_c9 : 1;
-  uint8_t discharge_c10 : 1;
-  uint8_t discharge_c11 : 1;
-  uint8_t discharge_c12 : 1;
-
+  uint16_t discharge_bitset : 12;
   uint8_t discharge_timeout : 4;
 } _PACKED LtcAfeConfigRegisterData;
 static_assert(sizeof(LtcAfeConfigRegisterData) == 6, "LtcAfeConfigRegisterData must be 6 bytes");
@@ -89,9 +77,9 @@ typedef struct {
   uint8_t wrcfg[4];
 
   // devices are ordered with the last slave first
-  LtcAfeWriteDeviceConfigPacket devices[PLUTUS_AFE_DEVICES_IN_CHAIN];
+  LtcAfeWriteDeviceConfigPacket devices[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
 } _PACKED LtcAfeWriteConfigPacket;
-static_assert(sizeof(LtcAfeWriteConfigPacket) == 4 + 8 * PLUTUS_AFE_DEVICES_IN_CHAIN,
+static_assert(sizeof(LtcAfeWriteConfigPacket) == 4 + 8 * PLUTUS_CFG_AFE_DEVICES_IN_CHAIN,
               "LtcAfeWriteConfigPacket is not expected size");
 
 typedef union {

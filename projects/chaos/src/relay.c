@@ -3,22 +3,23 @@
 #include <stdbool.h>
 
 #include "can_msg_defs.h"
+#include "chaos_events.h"
 #include "event_queue.h"
 #include "relay_fsm.h"
 #include "relay_id.h"
 
 static FSM s_relay_fsms[NUM_RELAY_IDS];
 
-void relay_init(bool loopback) {
+void relay_init(const RelaySettings *settings) {
   relay_fsm_init();
 
-  uint32_t solar_front_bitset;
-  uint32_t solar_rear_bitset;
-  uint32_t motor_bitset;
   uint32_t battery_main_bitset;
   uint32_t battery_slave_bitset;
+  uint32_t motor_bitset;
+  uint32_t solar_front_bitset;
+  uint32_t solar_rear_bitset;
 
-  if (loopback) {
+  if (settings->loopback) {
     battery_main_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_CHAOS);
     battery_slave_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_CHAOS);
     motor_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_CHAOS);
@@ -26,7 +27,6 @@ void relay_init(bool loopback) {
     solar_rear_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_CHAOS);
   } else {
     battery_main_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_PLUTUS);
-    // TODO(ELEC-428): Add slave device? May require extended IDs...
     battery_slave_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_PLUTUS);
     motor_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER);
     solar_front_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_SOLAR_MASTER_FRONT);
@@ -34,14 +34,15 @@ void relay_init(bool loopback) {
   }
 
   relay_fsm_create(&s_relay_fsms[RELAY_ID_BATTERY_MAIN], RELAY_ID_BATTERY_MAIN, "BatteryMainRelay",
-                   battery_main_bitset);
+                   &settings->battery_main_power_pin, battery_main_bitset);
   relay_fsm_create(&s_relay_fsms[RELAY_ID_BATTERY_SLAVE], RELAY_ID_BATTERY_SLAVE,
-                   "BatterySlaveRelay", battery_slave_bitset);
+                   "BatterySlaveRelay", &settings->battery_slave_power_pin, battery_slave_bitset);
+  relay_fsm_create(&s_relay_fsms[RELAY_ID_MOTORS], RELAY_ID_MOTORS, "MotorRelay",
+                   &settings->motor_power_pin, motor_bitset);
   relay_fsm_create(&s_relay_fsms[RELAY_ID_SOLAR_MASTER_FRONT], RELAY_ID_SOLAR_MASTER_FRONT,
-                   "SolarFrontRelay", solar_front_bitset);
+                   "SolarFrontRelay", &settings->solar_front_power_pin, solar_front_bitset);
   relay_fsm_create(&s_relay_fsms[RELAY_ID_SOLAR_MASTER_REAR], RELAY_ID_SOLAR_MASTER_REAR,
-                   "SolarRearRelay", solar_rear_bitset);
-  relay_fsm_create(&s_relay_fsms[RELAY_ID_MOTORS], RELAY_ID_MOTORS, "MotorRelay", motor_bitset);
+                   "SolarRearRelay", &settings->solar_rear_power_pin, solar_rear_bitset);
 }
 
 bool relay_process_event(const Event *e) {
