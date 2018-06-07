@@ -26,7 +26,6 @@
 static RelayRetryServiceStorage s_relay_retry_storage;
 static CANStorage s_storage;
 static CANRxHandler s_rx_handlers[NUM_CAN_RX_HANDLERS];
-static CANAckRequests s_can_ack_requests;
 
 static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   CANAckStatus *status = context;
@@ -55,7 +54,6 @@ void setup_test(void) {
   };
 
   can_init(&s_storage, &settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
-  can_ack_init(&s_can_ack_requests);
 
   RelaySettings relay_settings = {
     .battery_main_power_pin = { GPIO_PORT_A, 0 },

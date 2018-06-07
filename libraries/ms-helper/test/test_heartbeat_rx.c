@@ -36,7 +36,6 @@ typedef struct TestHeartbeatRxHandlerCtx {
 
 static HeartbeatRxHandlerStorage s_hb_storage;
 static CANStorage s_can_storage;
-static CANAckRequests s_can_ack_requests;
 static CANRxHandler s_rx_handlers[NUM_TEST_HEARTBEAT_RX_RX_STORAGE_HANDLERS];
 
 // CANAckRequestCb
@@ -75,7 +74,6 @@ void setup_test(void) {
   };
   TEST_ASSERT_OK(can_init(&s_can_storage, &can_settings, s_rx_handlers,
                           NUM_TEST_HEARTBEAT_RX_RX_CAN_HANDLERS));
-  can_ack_init(&s_can_ack_requests);
 }
 
 void teardown_test(void) {}
