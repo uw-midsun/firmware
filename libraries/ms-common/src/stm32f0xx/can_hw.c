@@ -65,6 +65,7 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
 
   can_cfg.CAN_Mode = settings->loopback ? CAN_Mode_Silent_LoopBack : CAN_Mode_Normal;
   can_cfg.CAN_SJW = CAN_SJW_1tq;
+  can_cfg.CAN_ABOM = ENABLE;
   can_cfg.CAN_BS1 = s_timing[settings->bitrate].bs1;
   can_cfg.CAN_BS2 = s_timing[settings->bitrate].bs2;
   can_cfg.CAN_Prescaler = s_timing[settings->bitrate].prescaler;
