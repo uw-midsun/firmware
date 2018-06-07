@@ -4,9 +4,9 @@
 #include "log.h"
 #include "plutus_cfg.h"
 
+#include "can_transmit.h"
 #include "fault_monitor.h"
 #include "plutus_sys.h"
-#include "can_transmit.h"
 
 static PlutusSysStorage s_plutus;
 static FaultMonitorResult s_result;
