@@ -1,26 +1,31 @@
 #pragma once
-// Handles motor relay CAN requests and sequencing
+// Handles relay CAN requests and sequencing
 // Requires CAN, soft timers to be initialized.
 //
 // Sequences relay closing with a slight delay to offset the high make current of the HV relay coil.
 // We also assume the relays are active-high.
+#include "exported_enums.h"
 #include "gpio.h"
 #include "relay_rx.h"
 #include "soft_timer.h"
 #include "status.h"
 
-typedef struct MotorRelaySettings {
+typedef struct SequencedRelaySettings {
+  SystemCanMessage can_message;
   GPIOAddress left_relay;
   GPIOAddress right_relay;
   // Delay between left and right relays closing
   uint32_t delay_ms;
-} MotorRelaySettings;
+} SequencedRelaySettings;
 
-typedef struct MotorRelayStorage {
-  MotorRelaySettings settings;
+typedef struct SequencedRelayStorage {
+  SequencedRelaySettings settings;
   SoftTimerID delay_timer;
   RelayRxStorage relay_rx;
-} MotorRelayStorage;
+} SequencedRelayStorage;
 
 // |storage| should persist
-StatusCode motor_relay_init(MotorRelayStorage *storage, const MotorRelaySettings *settings);
+StatusCode sequenced_relay_init(SequencedRelayStorage *storage,
+                                const SequencedRelaySettings *settings);
+
+StatusCode sequenced_relay_set_state(SequencedRelayStorage *storage, EERelayState state);
