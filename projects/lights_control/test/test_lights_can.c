@@ -14,8 +14,6 @@
 #include "lights_can_config.h"
 #include "lights_events.h"
 
-const LightsCanSettings *s_test_lights_can_settings;
-
 const CANSettings s_can_settings = {
   // clang-format on
   .loopback = true,
@@ -29,13 +27,15 @@ const CANSettings s_can_settings = {
 };
 
 static LightsCanStorage s_storage = { 0 };
+
 void setup_test(void) {
   gpio_init();
   interrupt_init();
   soft_timer_init();
   event_queue_init();
-  s_test_lights_can_settings = lights_can_config_load();
-  lights_can_init(s_test_lights_can_settings, &s_storage, &s_can_settings);
+
+  const LightsCanSettings *lights_settings = lights_can_config_load();
+  lights_can_init(&s_storage, lights_settings, &s_can_settings);
 }
 
 void teardown_test(void) {}
