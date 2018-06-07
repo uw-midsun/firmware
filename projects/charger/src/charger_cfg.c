@@ -12,13 +12,11 @@
 #include "status.h"
 #include "uart.h"
 
-// TODO(ELEC-355): Fill in the pinouts.
-
 static CANSettings s_can_settings = {
   .device_id = SYSTEM_CAN_DEVICE_CHARGER,
   .bitrate = CAN_HW_BITRATE_250KBPS,
-  .tx = { 0, 0 },
-  .rx = { 0, 0 },
+  .tx = { GPIO_PORT_A, 12 },
+  .rx = { GPIO_PORT_A, 11 },
   .rx_event = CHARGER_EVENT_CAN_RX,
   .tx_event = CHARGER_EVENT_CAN_TX,
   .fault_event = CHARGER_EVENT_CAN_FAULT,
@@ -33,9 +31,9 @@ static UARTSettings s_uart_settings = {
   .baudrate = 115200,
   .rx_handler = NULL,
   .context = NULL,
-  .tx = { 0, 0 },
-  .rx = { 0, 0 },
-  .alt_fn = NUM_GPIO_ALTFNS,
+  .tx = { GPIO_PORT_B, 10 },
+  .rx = { GPIO_PORT_B, 11 },
+  .alt_fn = GPIO_ALTFN_4,
 };
 
 UARTSettings *charger_cfg_load_uart_settings(void) {
@@ -43,19 +41,19 @@ UARTSettings *charger_cfg_load_uart_settings(void) {
 }
 
 UARTPort charger_cfg_load_uart_port(void) {
-  return 0;
+  return UART_PORT_3;
 }
 
 GPIOAddress charger_cfg_load_charger_pin(void) {
-  return ((GPIOAddress){ 0, 0 });
+  return ((GPIOAddress){ GPIO_PORT_A, 15 });
 }
 
 static GenericCanNetwork s_can_storage;
 static GenericCanUart s_can_uart_storage;
 
 static ChargerSettings s_charger_settings = {
-  .max_voltage = 0,
-  .max_current = 0,
+  .max_voltage = 1512,  // 151.2 V
+  .max_current = 1224,  // 122.4 A
   .can = (GenericCan *)&s_can_storage,
   .can_uart = (GenericCan *)&s_can_uart_storage,
 };
