@@ -35,7 +35,7 @@ void setup_test(void) {
   soft_timer_init();
   event_queue_init();
   s_test_lights_can_settings = lights_can_config_load();
-  lights_can_init(&s_storage, s_test_lights_can_settings, &s_can_settings);
+  lights_can_init(s_test_lights_can_settings, &s_storage, &s_can_settings);
 }
 
 void teardown_test(void) {}

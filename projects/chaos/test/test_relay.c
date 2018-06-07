@@ -54,7 +54,7 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  can_init(&settings, &s_storage, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+  can_init(&s_storage, &settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
   can_ack_init(&s_can_ack_requests);
 
   RelaySettings relay_settings = {

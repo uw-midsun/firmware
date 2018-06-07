@@ -55,7 +55,7 @@ void setup_test(void) {
     .rx = { GPIO_PORT_A, 11 },
     .loopback = true,
   };
-  TEST_ASSERT_OK(can_init(&can_settings, &s_can, s_rx_handlers, TEST_MOTOR_RELAY_NUM_RX_HANDLERS));
+  TEST_ASSERT_OK(can_init(&s_can, &can_settings, s_rx_handlers, TEST_MOTOR_RELAY_NUM_RX_HANDLERS));
 
   MotorRelaySettings relay_settings = {
     .left_relay = TEST_MOTOR_RELAY_LEFT,
