@@ -5,22 +5,22 @@
 // * A1: Drive
 // * A2: Neutral
 // * A3: Reverse
-// * A4: Hazards
-// * A5: DRLs
-// * A6: Lowbeams
+// * A4: DRLs
+// * A5: Lowbeams
+// * A6: Hazards
 
 static const EventID s_events[NUM_CENTER_CONSOLE_INPUTS] = {
   INPUT_EVENT_CENTER_CONSOLE_POWER,
   INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE,
   INPUT_EVENT_CENTER_CONSOLE_DIRECTION_NEUTRAL,
   INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE,
-  INPUT_EVENT_CENTER_CONSOLE_HAZARDS_PRESSED,
   INPUT_EVENT_CENTER_CONSOLE_DRL,
   INPUT_EVENT_CENTER_CONSOLE_LOWBEAMS,
+  INPUT_EVENT_CENTER_CONSOLE_HAZARDS_PRESSED,
 };
 
 static void prv_raise_event_cb(GpioExpanderPin pin, GPIOState state, void *context) {
-  if (state == GPIO_STATE_HIGH) {
+  if (state == GPIO_STATE_LOW) {
     event_raise(s_events[pin], 0);
   } else if ((uint8_t)pin == (uint8_t)CENTER_CONSOLE_INPUT_HAZARDS) {
     // Only hazards is non-latching

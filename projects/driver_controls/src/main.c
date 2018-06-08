@@ -1,58 +1,47 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "adc.h"
+#include "gpio.h"
 #include "gpio_it.h"
 #include "i2c.h"
 #include "interrupt.h"
-
-#include "event_arbiter.h"
 #include "input_event.h"
-
-#include "direction_fsm.h"
-#include "hazard_light_fsm.h"
-#include "horn_fsm.h"
-#include "mechanical_brake_fsm.h"
-#include "pedal_fsm.h"
 #include "power_distribution_controller.h"
-#include "power_fsm.h"
-#include "push_to_talk_fsm.h"
 #include "soft_timer.h"
-#include "turn_signal_fsm.h"
+#include "event_queue.h"
+#include "center_console.h"
+#include "log.h"
 
-// Struct of FSMs to be used in the program
-typedef struct FSMGroup {
-  FSM power;
-  FSM pedal;
-  FSM direction;
-  FSM turn_signal;
-  FSM hazard_light;
-  FSM mechanical_brake;
-  FSM horn;
-  FSM push_to_talk;
-} FSMGroup;
+static GpioExpanderStorage s_expander;
 
 int main() {
-  FSMGroup fsm_group;
-  Event e;
-
-  // Initialize the various driver control devices
   gpio_init();
   interrupt_init();
   gpio_it_init();
-
   soft_timer_init();
-
-  adc_init(ADC_MODE_CONTINUOUS);
-
   event_queue_init();
 
-  // Initialize FSMs
+  const I2CSettings settings = {
+    .speed = I2C_SPEED_FAST,     //
+    .sda = { GPIO_PORT_B, 9 },  //
+    .scl = { GPIO_PORT_B, 8 },  //
+  };
 
+  i2c_init(I2C_PORT_1, &settings);
+
+  GPIOAddress int_pin = { GPIO_PORT_A, 9 };
+  gpio_expander_init(&s_expander, I2C_PORT_1, GPIO_EXPANDER_ADDRESS_1, &int_pin);
+  center_console_init(&s_expander);
+
+  LOG_DEBUG("hello\n");
+
+  Event e;
   for (;;) {
     if (status_ok(event_process(&e))) {
       // Process the event with the input FSMs
       power_distribution_controller_retry(&e);
+
+      printf("Event %d\n", e.id);
     }
   }
 }
