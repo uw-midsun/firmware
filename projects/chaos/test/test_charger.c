@@ -50,7 +50,7 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  can_init(&settings, &s_storage, s_rx_handlers, TEST_CHARGER_NUM_CAN_RX_HANDLERS);
+  can_init(&s_storage, &settings, s_rx_handlers, TEST_CHARGER_NUM_CAN_RX_HANDLERS);
   can_register_rx_handler(SYSTEM_CAN_MESSAGE_CHARGER_SET_RELAY_STATE, prv_charger_can_handler,
                           NULL);
   TEST_ASSERT_OK(charger_init());
