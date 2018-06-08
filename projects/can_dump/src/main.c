@@ -1,3 +1,4 @@
+#include <inttypes.h>
 #include "delay.h"
 #include "generic_can.h"
 #include "generic_can_hw.h"
@@ -10,7 +11,7 @@
 static GenericCanHw s_can;
 
 static void prv_can_rx_callback(const GenericCanMsg *msg, void *context) {
-  printf("ID %ld DLC %u extended %d\n", msg->id, msg->dlc, msg->extended);
+  printf("ID %" PRIx32 " DLC %" PRIu8 " extended %" PRIu8 "\n", msg->id, (uint8_t)msg->dlc, msg->extended);
 }
 
 int main(void) {
@@ -19,7 +20,7 @@ int main(void) {
   soft_timer_init();
 
   const CANHwSettings can_hw_settings = {
-    .bitrate = CAN_HW_BITRATE_250KBPS,
+    .bitrate = CAN_HW_BITRATE_500KBPS,
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },
     .loopback = false,
