@@ -21,8 +21,7 @@ static const PlutusSysSpecifics s_specifics[NUM_PLUTUS_SYS_TYPES] = {
     .relay_msg = SYSTEM_CAN_MESSAGE_BATTERY_RELAY_MAIN,
   },
   [PLUTUS_SYS_TYPE_SLAVE] = {
-    // TODO(ELEC-439): switch to slave device
-    .can_device = SYSTEM_CAN_DEVICE_PLUTUS,
+    .can_device = SYSTEM_CAN_DEVICE_PLUTUS_SLAVE,
     .relay_msg = SYSTEM_CAN_MESSAGE_BATTERY_RELAY_SLAVE,
   },
 };

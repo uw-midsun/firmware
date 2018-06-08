@@ -12,9 +12,10 @@ static PlutusSysStorage s_plutus;
 static FaultMonitorResult s_result;
 
 static void prv_periodic_tx_debug(SoftTimerID timer_id, void *context) {
-  // TODO(ELEC-439): current data should have its own message
+  // TODO(ELEC-439): Output current data
+  // CAN_TRANSMIT_BATTERY_CURRENT();
   for (size_t i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {
-    CAN_TRANSMIT_BATTERY_VCT(i, s_result.cell_voltages[i], 0, s_result.temp_voltages[i]);
+    CAN_TRANSMIT_BATTERY_VT(i, s_result.cell_voltages[i], s_result.temp_voltages[i]);
   }
 
   soft_timer_start_millis(PLUTUS_CFG_TELEMETRY_PERIOD_MS, prv_periodic_tx_debug, NULL, NULL);
