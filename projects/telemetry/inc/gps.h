@@ -20,10 +20,10 @@ typedef struct {
 } gps_settings;
 
 // Initialized the GPS module
-StatusCode gps_init(gps_settings *settings);
+StatusCode gps_init();
 
 // Shuts the GPS module down
-StatusCode gps_clean_up(gps_settings *settings);
+StatusCode gps_clean_up();
 
 // Sets gga_message to the last received GGA message
 // Returns whether the GPS is active or not

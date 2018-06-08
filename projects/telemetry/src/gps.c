@@ -10,9 +10,50 @@
 #include "nmea.h"
 #include "soft_timer.h"
 #include "status.h"
+#include "uart.h"
 #include "uart_mcu.h"
 
-static UARTStorage s_storage;
+// Sends and receives data over UART to the GPS
+#define TELEMETRY_GPS_PIN_ALT_FN GPIO_ALTFN_1
+
+#define TELEMETRY_GPS_PORT_TX GPIO_PORT_A
+#define TELEMETRY_GPS_PIN_TX 2
+
+#define TELEMETRY_GPS_PORT_RX GPIO_PORT_A
+#define TELEMETRY_GPS_PIN_RX 3
+
+// GPS misc power options
+#define TELEMETRY_GPS_PORT_POWER GPIO_PORT_B
+#define TELEMETRY_GPS_PIN_POWER 3
+
+#define TELEMETRY_GPS_PORT_ON_OFF GPIO_PORT_B
+#define TELEMETRY_GPS_PIN_ON_OFF 4
+
+// Just some constants so that the max length of raw data can be set.
+// A GGA message will be around a hundred characters. VTG is less.
+#define s_max_nmea_length 128
+
+static UARTSettings s_gps_settings = {
+  .baudrate = 9600,
+  .tx = { .port = TELEMETRY_GPS_PORT_TX, .pin = TELEMETRY_GPS_PIN_TX },
+  .rx = { .port = TELEMETRY_GPS_PORT_RX, .pin = TELEMETRY_GPS_PIN_RX },
+  .alt_fn = TELEMETRY_GPS_PIN_ALT_FN,
+};
+
+// The UART port to use for the GPS
+static const UARTPort s_gps_port = UART_PORT_2;
+
+// The pin numbers to use for UART
+static const GPIOAddress s_pins[] = {
+  { .port = TELEMETRY_GPS_PORT_POWER, .pin = TELEMETRY_GPS_PIN_POWER },    // Pin GPS power
+  { .port = TELEMETRY_GPS_PORT_ON_OFF, .pin = TELEMETRY_GPS_PIN_ON_OFF },  // Pin GPS on_off
+};
+
+static GPIOSettings s_settings_gpio_general = {
+  .direction = GPIO_DIR_OUT,  // The pin needs to output.
+  .state = GPIO_STATE_LOW,    // Start in the "off" state.
+  .alt_function = GPIO_ALTFN_NONE,
+};
 
 // Keeps track of whether the GPS is sending data or not
 static volatile bool s_gps_active = false;
@@ -20,13 +61,17 @@ static volatile bool s_gps_active = false;
 // Keeps track of whether we want the GPS to be active or not
 static volatile bool s_gps_desired_state = true;
 
-// Just some constants so that the max length of raw data can be set.
-// A GGA message will be around a hundred characters. VTG is less.
-#define s_max_nmea_length 128
-
 // Stores raw NMEA messages sent by the chip
 static volatile char s_gga_data[s_max_nmea_length];
 static volatile char s_vtg_data[s_max_nmea_length];
+
+static gps_settings s_settings = { .settings_power = &s_settings_gpio_general,
+                                   .settings_on_off = &s_settings_gpio_general,
+                                   .pin_power = &s_pins[0],
+                                   .pin_on_off = &s_pins[1],
+                                   .uart_settings = &s_gps_settings };
+
+static UARTStorage s_storage;
 
 // This method will be called every time the GPS sends data.
 static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
@@ -82,28 +127,6 @@ static void prv_gps_init_stage_2(SoftTimerID timer_id, void *context) {
   }
 }
 
-// Just a static method to make sure the settings struct has all the necessary fields set
-static StatusCode prv_gps_validate_settings(gps_settings *settings) {
-  // Making sure all settings as passed in
-  if (!settings) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "The 'settings' argument is null\n");
-  }
-  if (!settings->uart_settings) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "The 'settings->uart_settings' argument is null\n");
-  }
-  if (!settings->settings_power) {
-    return status_msg(STATUS_CODE_INVALID_ARGS,
-                      "The 'settings->settings_power' argument is null\n");
-  }
-  if (!settings->pin_power) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "The 'settings->pin_power' argument is null\n");
-  }
-  if (!settings->pin_on_off) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "The 'settings->pin_on_off' argument is null\n");
-  }
-  return STATUS_CODE_OK;
-}
-
 // This method runs every 5 seconds and clears the active flag. The UART
 // callback for the GPS runs every second and sets the active flag.
 // This is do that if the GPS crashes or something like that, it will be
@@ -133,19 +156,17 @@ static void prv_gps_health_monitor(SoftTimerID timer_id, void *context) {
 
 // Initialization of this chip is described on page 10 of:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
-StatusCode gps_init(gps_settings *settings) {
-  status_ok_or_return(prv_gps_validate_settings(settings));
-
+StatusCode gps_init() {
   // Initializes UART
-  StatusCode ret = uart_init(settings->port, settings->uart_settings, &s_storage);
-  uart_set_rx_handler(settings->port, prv_gps_callback, NULL);
+  StatusCode ret = uart_init(s_gps_port, s_settings.uart_settings, &s_storage);
+  uart_set_rx_handler(s_gps_port, prv_gps_callback, NULL);
 
   // Initializes the pins
-  status_ok_or_return(gpio_init_pin(settings->pin_power, settings->settings_power));
-  status_ok_or_return(gpio_init_pin(settings->pin_on_off, settings->settings_on_off));
+  status_ok_or_return(gpio_init_pin(s_settings.pin_power, s_settings.settings_power));
+  status_ok_or_return(gpio_init_pin(s_settings.pin_on_off, s_settings.settings_on_off));
 
   // Starts the GPS health monitor
-  status_ok_or_return(soft_timer_start_seconds(5, prv_gps_health_monitor, settings, NULL));
+  status_ok_or_return(soft_timer_start_seconds(5, prv_gps_health_monitor, &s_settings, NULL));
 
   // Set the desired state to "on", in case of multiple initializations
   s_gps_desired_state = true;
@@ -155,7 +176,7 @@ StatusCode gps_init(gps_settings *settings) {
 // Implementing shut down here:
 // From page 25 of:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
-StatusCode gps_clean_up(gps_settings *settings) {
+StatusCode gps_clean_up() {
   // Makes sure that the health monitor doesn't keep restarting the GPS
   s_gps_desired_state = false;
 
@@ -163,8 +184,8 @@ StatusCode gps_clean_up(gps_settings *settings) {
   char *message = "$PSRF117,16*0B\r\n";
 
   // Sends the message
-  status_ok_or_return(uart_tx(settings->port, (uint8_t *)message, strlen(message)));
-  status_ok_or_return(soft_timer_start_seconds(1, prv_gps_set_power_state_off, settings, NULL));
+  status_ok_or_return(uart_tx(s_gps_port, (uint8_t *)message, strlen(message)));
+  status_ok_or_return(soft_timer_start_seconds(1, prv_gps_set_power_state_off, &s_settings, NULL));
   return STATUS_CODE_OK;
 }
 

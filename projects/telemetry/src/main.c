@@ -1,54 +1,32 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "log.h"
-
 #include "delay.h"
-#include "gpio.h"  // General Purpose I/O control.
+#include "event_queue.h"
+#include "gpio.h"
 #include "gps.h"
-#include "interrupt.h"   // For enabling interrupts.
-#include "soft_timer.h"  // Software timers for scheduling future events.
+#include "interrupt.h"
+#include "log.h"
+#include "soft_timer.h"
 #include "uart.h"
-
-static const GPIOAddress s_pins[] = {
-  { .port = GPIO_PORT_B, .pin = 3 },  // Pin power
-  { .port = GPIO_PORT_B, .pin = 4 },  // Pin on_off
-};
-
-static const UARTPort s_port = UART_PORT_2;
+#include "xbee.h"
 
 int main(void) {
   interrupt_init();
   gpio_init();
   soft_timer_init();
+  event_queue_init();
 
-  UARTSettings s_settings = {
-    .baudrate = 9600,
+  StatusCode ret = xbee_init();
+  if (!status_ok(ret)) {
+    LOG_CRITICAL("Telemetry project could not initialize xbee. Quitting...\n");
+    return 0;
+  }
 
-    .tx = { .port = GPIO_PORT_A, .pin = 2 },
-    .rx = { .port = GPIO_PORT_A, .pin = 3 },
-    .alt_fn = GPIO_ALTFN_1,
-  };
-
-  const GPIOSettings settings_power = {
-    .direction = GPIO_DIR_OUT,  // The pin needs to output.
-    .state = GPIO_STATE_LOW,    // Start in the "off" state.
-    .alt_function = GPIO_ALTFN_NONE,
-  };
-
-  const GPIOSettings settings_on_off = {
-    .direction = GPIO_DIR_OUT,  // The pin needs to output.
-    .state = GPIO_STATE_LOW,    // Start in the "off" state.
-    .alt_function = GPIO_ALTFN_NONE,
-  };
-
-  gps_settings settings = { .settings_power = &settings_power,
-                            .settings_on_off = &settings_on_off,
-                            .pin_power = &s_pins[0],
-                            .pin_on_off = &s_pins[1],
-                            .uart_settings = &s_settings,
-                            .port = s_port };
-  StatusCode ret = gps_init(&settings);
+  ret = gps_init();
+  if (!status_ok(ret)) {
+    LOG_CRITICAL("Telemetry project could not initialize GPS\n");
+  }
 
   // Integrate GPS with xbee here
   return 0;
