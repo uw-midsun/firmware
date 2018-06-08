@@ -2,10 +2,14 @@
 
 // LTC 2484 calibration module
 
+#include <assert.h>
 #include "current_sense.h"
+
 
 // Must be less than 128, or overflow may occur
 #define CURRENT_CALIBRATION_SAMPLES 10
+
+static_assert(CURRENT_CALIBRATION_SAMPLES < 128, "Sample limit too large. May cause overflow");
 
 typedef struct {
   LtcAdcStorage *adc_storage;

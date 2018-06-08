@@ -39,16 +39,16 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_current_calibration_sample(void) {
-  CurrentSenseCalibrationData line = { 0 };
+  CurrentSenseCalibrationData data = { 0 };
 
   // Reset calibration and obtain zero point
   TEST_ASSERT_OK(current_calibration_init(&s_storage, &adc_storage));
   LOG_DEBUG("Set current to 0 A\n");
   delay_s(TEST_CURRENT_CALIBRATION_DELAY_SECONDS);
   LOG_DEBUG("Start sampling\n");
-  TEST_ASSERT_OK(current_calibration_sample_point(&s_storage, &line.zero_point, 0));
+  TEST_ASSERT_OK(current_calibration_sample_point(&s_storage, &data.zero_point, 0));
   LOG_DEBUG("Sampling finished -> { Voltage = %" PRId32 ", Current = %" PRId32 " }\n",
-            line.zero_point.voltage, line.zero_point.current);
+            data.zero_point.voltage, data.zero_point.current);
 
   // Reset calibration and obtain max point
   LOG_DEBUG("Set current to %d A\n", TEST_CURRENT_CALIBRATION_MAX);
@@ -57,13 +57,5 @@ void test_current_calibration_sample(void) {
   TEST_ASSERT_OK(
       current_calibration_sample_point(&s_storage, &line.max_point, TEST_CURRENT_CALIBRATION_MAX));
   LOG_DEBUG("Sampling finished -> { Voltage = %" PRId32 ", Current = %" PRId32 " }\n",
-            line.max_point.voltage, line.max_point.current);
-
-  // Test calibration points by obtaining current samples
-  CurrentSenseStorage storage = { .line = &line };
-
-  current_sense_init(&storage, &line, s_storage.adc_storage);
-  current_sense_register_callback(&storage, prv_callback, NULL);
-
-  delay_s(TEST_CURRENT_CALIBRATION_DELAY_SECONDS);
+            data.max_point.voltage, data.max_point.current);
 }

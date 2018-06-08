@@ -5,13 +5,12 @@
 #include "ltc_adc.h"
 #include "status.h"
 
-// Current-voltage data points
+typedef void (*CurrentSenseCallback)(int32_t current, void *context);
+
 typedef struct {
   int32_t voltage;  // Voltage in microvolts
   int32_t current;  // Voltage in milliamps
 } CurrentSenseValue;
-
-typedef void (*CurrentSenseCallback)(int32_t current, void *context);
 
 // User-defined points for two-point calibration
 typedef struct {
@@ -21,7 +20,7 @@ typedef struct {
 
 typedef struct {
   LtcAdcStorage *adc_storage;
-  CurrentSenseCalibrationData *line;
+  CurrentSenseCalibrationData *data;
   CurrentSenseValue value;
   CurrentSenseCallback callback;
   void *context;
@@ -29,7 +28,7 @@ typedef struct {
 
 // Initialize the current sense module. Requires adc_storage to be initialized and
 // CurrentSenseLineData to be calibrated beforehand
-StatusCode current_sense_init(CurrentSenseStorage *storage, CurrentSenseCalibrationData *line,
+StatusCode current_sense_init(CurrentSenseStorage *storage, CurrentSenseCalibrationData *data,
                               LtcAdcStorage *adc_storage);
 
 // Register a callback to run when new data is available

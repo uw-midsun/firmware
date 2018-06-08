@@ -18,7 +18,7 @@ static CurrentSenseStorage s_storage;
 
 static volatile uint8_t s_callback_runs = 0;
 
-static CurrentSenseCalibrationData s_line = {
+static CurrentSenseCalibrationData s_data = {
   .zero_point = { 888, 0 },
   .max_point = { 62304, 3000 }
 };
@@ -48,7 +48,7 @@ void test_current_sense(void) {
                                 .spi_baudrate = 750000,
                                 .filter_mode = LTC_ADC_FILTER_50HZ_60HZ };
 
-  TEST_ASSERT_OK(current_sense_init(&s_storage, &s_line, &adc_storage));
+  TEST_ASSERT_OK(current_sense_init(&s_storage, &s_data, &adc_storage));
   TEST_ASSERT_OK(current_sense_register_callback(&s_storage, prv_callback, NULL));
 
   // Wait for samples to accumulate

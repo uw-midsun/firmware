@@ -8,20 +8,20 @@ static void prv_calculate_current(int32_t *value, void *context) {
   CurrentSenseStorage *storage = (CurrentSenseStorage *)context;
 
   // Correct for voltage offset
-  storage->value.voltage = *value - storage->line->zero_point.voltage;
+  storage->value.voltage = *value - storage->data->zero_point.voltage;
 
   // Formula for calculating calibrated current. Draws slope between given calibrated
   // points, and uses the result as well as the voltage offset to calculate current
-  storage->value.current = storage->line->max_point.current *
-                           (*value - storage->line->zero_point.voltage) /
-                           (storage->line->max_point.voltage - storage->line->zero_point.voltage);
+  storage->value.current = storage->data->max_point.current *
+                           (*value - storage->data->zero_point.voltage) /
+                           (storage->data->max_point.voltage - storage->data->zero_point.voltage);
 
   if (storage->callback != NULL) {
     storage->callback(storage->value.current, storage->context);
   }
 }
 
-StatusCode current_sense_init(CurrentSenseStorage *storage, CurrentSenseCalibrationData *line,
+StatusCode current_sense_init(CurrentSenseStorage *storage, CurrentSenseCalibrationData *data,
                               LtcAdcStorage *adc_storage) {
   if (storage == NULL) {
     return status_code(STATUS_CODE_UNINITIALIZED);
@@ -35,7 +35,7 @@ StatusCode current_sense_init(CurrentSenseStorage *storage, CurrentSenseCalibrat
 
   // Store calibration parameters
   storage->adc_storage = adc_storage;
-  storage->line = line;
+  storage->data = data;
 
   // Reset data and callbacks
   storage->value = (CurrentSenseValue){ 0 };
