@@ -46,14 +46,12 @@ FSM_STATE_TRANSITION(state_reverse) {
 }
 
 // Direction selector FSM arbiter guard functions
-
 static bool prv_guard_prevent_cruise(const Event *e) {
   // Cruise control is forbidden in neutral/reverse for obvious reasons
   return e->id != INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME;
 }
 
 // Direction selector FSM output functions
-
 static void prv_forward_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_DIRECTION,

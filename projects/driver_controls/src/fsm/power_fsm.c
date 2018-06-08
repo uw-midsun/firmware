@@ -21,7 +21,6 @@
 #include "power_distribution_controller.h"
 
 // Power FSM state definitions
-
 // TODO(ELEC-234): Remove extra _brake states
 FSM_DECLARE_STATE(state_off);
 FSM_DECLARE_STATE(state_off_brake);
@@ -33,7 +32,6 @@ FSM_DECLARE_STATE(state_fault);
 FSM_DECLARE_STATE(state_fault_brake);
 
 // Power FSM transition table definitions
-
 FSM_STATE_TRANSITION(state_off) {
   FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_charging);
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_off_brake);
@@ -103,7 +101,6 @@ static bool prv_guard_off(const Event *e) {
 }
 
 // Power FSM output functions
-
 static void prv_drive_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   power_distribution_controller_send_update(EE_POWER_STATE_DRIVE);

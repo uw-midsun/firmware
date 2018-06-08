@@ -1,34 +1,32 @@
-#include "hazard_light_fsm.h"
+#include "hazards_fsm.h"
 #include "event_arbiter.h"
 #include "input_event.h"
-#include "log.h"
+#include "exported_enums.h"
+#include "can_transmit.h"
 
 // Hazard light FSM state definitions
-
-FSM_DECLARE_STATE(state_hazard_on);
 FSM_DECLARE_STATE(state_hazard_off);
+FSM_DECLARE_STATE(state_hazard_on);
 
 // Hazard light FSM transition table definitions
-
-FSM_STATE_TRANSITION(state_hazard_on) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_HAZARD_LIGHT, state_hazard_off);
-}
-
 FSM_STATE_TRANSITION(state_hazard_off) {
   FSM_ADD_TRANSITION(INPUT_EVENT_HAZARD_LIGHT, state_hazard_on);
 }
 
+FSM_STATE_TRANSITION(state_hazard_on) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_HAZARD_LIGHT, state_hazard_off);
+
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_hazard_off);
+  FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_hazard_off);
+}
+
 // Hazard light FSM output function
+static void prv_hazard_off_output(FSM *fsm, const Event *e, void *context) {
+  CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_SIGNAL_HAZARD, EE_LIGHT_STATE_ON);
+}
 
-static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  HazardLightFSMState hazard_light_state = HAZARD_LIGHT_FSM_STATE_OFF;
-
-  if (fsm->current_state == &state_hazard_on) {
-    hazard_light_state = HAZARD_LIGHT_FSM_STATE_ON;
-  }
-
-  (void)hazard_light_state;
-  // Previous: Output Hazard state
+static void prv_hazard_on_output(FSM *fsm, const Event *e, void *context) {
+  CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_SIGNAL_HAZARD, EE_LIGHT_STATE_OFF);
 }
 
 StatusCode hazard_light_fsm_init(FSM *fsm, EventArbiterStorage *storage) {

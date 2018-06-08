@@ -1,7 +1,8 @@
 #include "horn_fsm.h"
 #include "event_arbiter.h"
 #include "input_event.h"
-#include "log.h"
+#include "exported_enums.h"
+#include "can_transmit.h"
 
 // Horn FSM state definitions
 
@@ -16,18 +17,18 @@ FSM_STATE_TRANSITION(state_horn_off) {
 
 FSM_STATE_TRANSITION(state_horn_on) {
   FSM_ADD_TRANSITION(INPUT_EVENT_HORN, state_horn_off);
+
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_horn_off);
+  FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_horn_off);
 }
 
 // Horn FSM output function
-static void prv_state_output(FSM *fsm, const Event *e, void *context) {
-  HornFSMState horn_state = HORN_FSM_STATE_OFF;
+static void prv_horn_off_output(FSM *fsm, const Event *e, void *context) {
+  CAN_TRANSMIT_HORN(EE_HORN_STATE_OFF);
+}
 
-  if (fsm->current_state == &state_horn_on) {
-    horn_state = HORN_FSM_STATE_ON;
-  }
-
-  (void)horn_state;
-  // Previous: Output horn state
+static void prv_horn_on_output(FSM *fsm, const Event *e, void *context) {
+  CAN_TRANSMIT_HORN(EE_HORN_STATE_ON);
 }
 
 StatusCode horn_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
