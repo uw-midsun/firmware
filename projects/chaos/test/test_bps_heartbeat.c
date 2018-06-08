@@ -11,6 +11,7 @@
 #include "chaos_events.h"
 #include "delay.h"
 #include "event_queue.h"
+#include "exported_enums.h"
 #include "fsm.h"
 #include "gpio.h"
 #include "interrupt.h"
@@ -68,7 +69,7 @@ void test_bps_heartbeat_watchdog_kick(void) {
   StatusCode status = NUM_STATUS_CODES;
 
   // Auto Start
-  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, BPS_HEARTBEAT_STATE_OK);
+  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, EE_BPS_HEARTBEAT_STATE_OK);
   // Send HB
   // TX
   do {
@@ -100,7 +101,7 @@ void test_bps_heartbeat_watchdog_kick(void) {
   delay_ms(BPS_HEARTBEAT_EXPECTED_PERIOD_MS / 2);
 
   // Send the HB again
-  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, BPS_HEARTBEAT_STATE_OK);
+  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, EE_BPS_HEARTBEAT_STATE_OK);
   // Send HB
   // TX
   do {
@@ -140,7 +141,7 @@ void test_bps_heartbeat_watchdog_kick(void) {
   TEST_ASSERT_EQUAL(CHAOS_EVENT_SEQUENCE_EMERGENCY, e.id);
 
   // Verify that it auto restarts.
-  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, BPS_HEARTBEAT_STATE_OK);
+  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, EE_BPS_HEARTBEAT_STATE_OK);
   // Send HB
   // TX
   do {
