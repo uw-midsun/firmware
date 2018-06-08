@@ -79,7 +79,7 @@ int main(void) {
   drive_can_init(&s_controller_storage);
 
   SequencedRelaySettings relay_settings = {
-    .can_message = SYSTEM_CAN_MESSAGE_MOTOR_RELAY,
+    .can_msg_id = SYSTEM_CAN_MESSAGE_MOTOR_RELAY,
     .left_relay = MC_CFG_RELAY_LEFT,
     .right_relay = MC_CFG_RELAY_RIGHT,
     .delay_ms = MC_CFG_RELAY_DELAY_MS,
