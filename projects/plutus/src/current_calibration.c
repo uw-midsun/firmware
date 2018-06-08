@@ -14,7 +14,7 @@ static void prv_callback(int32_t *value, void *context) {
 }
 
 StatusCode current_calibration_init(CurrentCalibrationStorage *storage,
-                                            LtcAdcStorage *adc_storage) {
+                                    LtcAdcStorage *adc_storage) {
   if (storage == NULL || adc_storage == NULL) {
     return status_code(STATUS_CODE_UNINITIALIZED);
   }

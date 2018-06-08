@@ -18,10 +18,8 @@ static CurrentSenseStorage s_storage;
 
 static volatile uint8_t s_callback_runs = 0;
 
-static CurrentSenseCalibrationData s_data = {
-  .zero_point = { 888, 0 },
-  .max_point = { 62304, 3000 }
-};
+static CurrentSenseCalibrationData s_data = { .zero_point = { 888, 0 },
+                                              .max_point = { 62304, 3000 } };
 
 static void prv_callback(int32_t current, void *context) {
   s_callback_runs++;
@@ -52,5 +50,6 @@ void test_current_sense(void) {
   TEST_ASSERT_OK(current_sense_register_callback(&s_storage, prv_callback, NULL));
 
   // Wait for samples to accumulate
-  while (s_callback_runs <= TEST_NUM_SAMPLES) { }
+  while (s_callback_runs <= TEST_NUM_SAMPLES) {
+  }
 }

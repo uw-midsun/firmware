@@ -16,8 +16,6 @@
 
 #define TEST_CURRENT_CALIBRATION_DELAY_SECONDS 10
 
-static void prv_callback(int32_t current, void *context) {}
-
 static LtcAdcStorage adc_storage = {
   .mosi = { GPIO_PORT_B, 15 },
   .miso = { GPIO_PORT_B, 14 },
@@ -55,7 +53,7 @@ void test_current_calibration_sample(void) {
   delay_s(TEST_CURRENT_CALIBRATION_DELAY_SECONDS);
   LOG_DEBUG("Start sampling\n");
   TEST_ASSERT_OK(
-      current_calibration_sample_point(&s_storage, &line.max_point, TEST_CURRENT_CALIBRATION_MAX));
+      current_calibration_sample_point(&s_storage, &data.max_point, TEST_CURRENT_CALIBRATION_MAX));
   LOG_DEBUG("Sampling finished -> { Voltage = %" PRId32 ", Current = %" PRId32 " }\n",
             data.max_point.voltage, data.max_point.current);
 }
