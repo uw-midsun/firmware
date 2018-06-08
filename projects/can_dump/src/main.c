@@ -11,7 +11,8 @@
 static GenericCanHw s_can;
 
 static void prv_can_rx_callback(const GenericCanMsg *msg, void *context) {
-  printf("ID %" PRIx32 " DLC %" PRIu8 " extended %" PRIu8 "\n", msg->id, (uint8_t)msg->dlc, msg->extended);
+  printf("ID %" PRIx32 " DLC %" PRIu8 " extended %" PRIu8 "\n", msg->id, (uint8_t)msg->dlc,
+         msg->extended);
 }
 
 int main(void) {
