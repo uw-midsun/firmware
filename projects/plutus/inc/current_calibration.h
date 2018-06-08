@@ -12,12 +12,14 @@ static_assert(CURRENT_CALIBRATION_SAMPLES < 128, "Sample limit too large. May ca
 
 typedef struct {
   LtcAdcStorage *adc_storage;
+  LtcAdcSettings *settings;
   int32_t voltage;
   volatile uint8_t samples;
 } CurrentCalibrationStorage;
 
 // Initialize current calibration
-StatusCode current_calibration_init(CurrentCalibrationStorage *storage, LtcAdcStorage *adc_storage);
+StatusCode current_calibration_init(CurrentCalibrationStorage *storage, LtcAdcStorage *adc_storage,
+                                    LtcAdcSettings *adc_settings);
 
 // Samples adc readings at specified current in order to obtain data for two-point
 // calibration. Function will block until completion. For optimal results, make

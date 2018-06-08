@@ -14,9 +14,9 @@
 // max point for testing
 #define TEST_CURRENT_CALIBRATION_MAX 3
 
-#define TEST_CURRENT_CALIBRATION_DELAY_SECONDS 10
+#define TEST_CURRENT_CALIBRATION_DELAY_SECONDS 1
 
-static LtcAdcStorage adc_storage = {
+static LtcAdcSettings adc_settings = {
   .mosi = { GPIO_PORT_B, 15 },
   .miso = { GPIO_PORT_B, 14 },
   .sclk = { GPIO_PORT_B, 13 },
@@ -25,8 +25,6 @@ static LtcAdcStorage adc_storage = {
   .spi_baudrate = 750000,
   .filter_mode = LTC_ADC_FILTER_50HZ_60HZ,
 };
-
-static CurrentCalibrationStorage s_storage;
 
 void setup_test(void) {
   gpio_init();
@@ -37,10 +35,12 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_current_calibration_sample(void) {
+  CurrentCalibrationStorage s_storage = { 0 };
   CurrentSenseCalibrationData data = { 0 };
+  LtcAdcStorage adc_storage = { 0 };
 
   // Reset calibration and obtain zero point
-  TEST_ASSERT_OK(current_calibration_init(&s_storage, &adc_storage));
+  TEST_ASSERT_OK(current_calibration_init(&s_storage, &adc_storage, &adc_settings));
   LOG_DEBUG("Set current to 0 A\n");
   delay_s(TEST_CURRENT_CALIBRATION_DELAY_SECONDS);
   LOG_DEBUG("Start sampling\n");

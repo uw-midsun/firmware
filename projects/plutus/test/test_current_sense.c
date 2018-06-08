@@ -14,16 +14,15 @@
 // Arbitrary number of testing samples
 #define TEST_NUM_SAMPLES 25
 
-static CurrentSenseStorage s_storage;
-
 static volatile uint8_t s_callback_runs = 0;
 
+static CurrentSenseStorage s_storage = { 0 };
 static CurrentSenseCalibrationData s_data = { .zero_point = { 888, 0 },
                                               .max_point = { 62304, 3000 } };
 
 static void prv_callback(int32_t current, void *context) {
   s_callback_runs++;
-  printf("Current = %" PRId32 "\n", current);
+  LOG_DEBUG("Current = %" PRId32 "\n", current);
 }
 
 void setup_test(void) {
@@ -38,15 +37,19 @@ void teardown_test(void) {}
 
 void test_current_sense(void) {
   // Fill out ADC storage struct and initialize current sense
-  LtcAdcStorage adc_storage = { .mosi = { GPIO_PORT_B, 15 },
-                                .miso = { GPIO_PORT_B, 14 },
-                                .sclk = { GPIO_PORT_B, 13 },
-                                .cs = { GPIO_PORT_B, 12 },
-                                .spi_port = SPI_PORT_2,
-                                .spi_baudrate = 750000,
-                                .filter_mode = LTC_ADC_FILTER_50HZ_60HZ };
+  LtcAdcSettings adc_settings = { 
+    .mosi = { GPIO_PORT_B, 15 },
+    .miso = { GPIO_PORT_B, 14 },
+    .sclk = { GPIO_PORT_B, 13 },
+    .cs = { GPIO_PORT_B, 12 },
+    .spi_port = SPI_PORT_2,
+    .spi_baudrate = 750000,
+    .filter_mode = LTC_ADC_FILTER_50HZ_60HZ
+  };
 
-  TEST_ASSERT_OK(current_sense_init(&s_storage, &s_data, &adc_storage));
+  LtcAdcStorage adc_storage = { 0 };
+
+  TEST_ASSERT_OK(current_sense_init(&s_storage, &s_data, &adc_storage, &adc_settings));
   TEST_ASSERT_OK(current_sense_register_callback(&s_storage, prv_callback, NULL));
 
   // Wait for samples to accumulate
