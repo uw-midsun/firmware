@@ -20,10 +20,10 @@ typedef struct CANHwEventHandler {
 
 // Generated settings using http://www.bittiming.can-wiki.info/
 static CANHwTiming s_timing[NUM_CAN_HW_BITRATES] = {  // For 48MHz clock
-  [CAN_HW_BITRATE_125KBPS] = { .prescaler = 24, .bs1 = 13, .bs2 = 2 },
-  [CAN_HW_BITRATE_250KBPS] = { .prescaler = 12, .bs1 = 13, .bs2 = 2 },
-  [CAN_HW_BITRATE_500KBPS] = { .prescaler = 6, .bs1 = 13, .bs2 = 2 },
-  [CAN_HW_BITRATE_1000KBPS] = { .prescaler = 3, .bs1 = 13, .bs2 = 2 }
+  [CAN_HW_BITRATE_125KBPS] = { .prescaler = 24, .bs1 = 12, .bs2 = 1 },
+  [CAN_HW_BITRATE_250KBPS] = { .prescaler = 12, .bs1 = 12, .bs2 = 1 },
+  [CAN_HW_BITRATE_500KBPS] = { .prescaler = 6, .bs1 = 12, .bs2 = 1 },
+  [CAN_HW_BITRATE_1000KBPS] = { .prescaler = 3, .bs1 = 12, .bs2 = 1 }
 };
 static CANHwEventHandler s_handlers[NUM_CAN_HW_EVENTS];
 static uint8_t s_num_filters;
