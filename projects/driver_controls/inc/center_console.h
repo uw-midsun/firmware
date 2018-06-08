@@ -11,6 +11,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include "gpio_expander.h"
+#include "soft_timer.h"
 
 // How long the power button must be held to count as a press
 #define CENTER_CONSOLE_POWER_HOLD_MS 3000
@@ -27,7 +28,7 @@ typedef enum {
 } CenterConsoleInput;
 
 typedef struct CenterConsoleStorage {
-  SoftTimerID power_hold;
+  SoftTimerID hold_timer;
 } CenterConsoleStorage;
 
 // Sets up the expander as inputs to raise the associated events

@@ -13,6 +13,7 @@
 #include "soft_timer.h"
 
 static GpioExpanderStorage s_expander;
+static CenterConsoleStorage s_console;
 
 int main() {
   gpio_init();
@@ -31,7 +32,8 @@ int main() {
 
   GPIOAddress int_pin = { GPIO_PORT_A, 9 };
   gpio_expander_init(&s_expander, I2C_PORT_1, GPIO_EXPANDER_ADDRESS_1, &int_pin);
-  center_console_init(&s_expander);
+
+  center_console_init(&s_console, &s_expander);
 
   LOG_DEBUG("hello\n");
 
