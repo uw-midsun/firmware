@@ -1,11 +1,11 @@
-#include "generic_can_hw.h"
-#include "generic_can.h"
-#include "interrupt.h"
-#include "gpio.h"
-#include "wait.h"
-#include "log.h"
 #include "delay.h"
+#include "generic_can.h"
+#include "generic_can_hw.h"
+#include "gpio.h"
+#include "interrupt.h"
+#include "log.h"
 #include "soft_timer.h"
+#include "wait.h"
 
 static GenericCanHw s_can;
 
