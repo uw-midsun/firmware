@@ -63,7 +63,7 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  can_init(&settings, &s_can, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+  can_init(&s_can, &settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
   TEST_ASSERT_OK(can_register_rx_handler(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT, prv_bps_rx, NULL));
 
   // Closed relay for testing since we want to make sure it opens on fault.
