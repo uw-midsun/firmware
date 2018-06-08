@@ -4,6 +4,8 @@
 //
 // Sequences relay closing with a slight delay to offset the high make current of the HV relay coil.
 // We also assume the relays are active-high.
+#include <stdint.h>
+#include "can_msg.h"
 #include "exported_enums.h"
 #include "gpio.h"
 #include "relay_rx.h"
@@ -11,7 +13,7 @@
 #include "status.h"
 
 typedef struct SequencedRelaySettings {
-  SystemCanMessage can_message;
+  CANMessageID can_msg_id;
   GPIOAddress left_relay;
   GPIOAddress right_relay;
   // Delay between left and right relays closing
