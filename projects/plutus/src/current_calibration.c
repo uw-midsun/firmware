@@ -12,17 +12,27 @@ static void prv_callback(int32_t *value, void *context) {
   LOG_DEBUG("Sample [%d/%d]\n", storage->samples, CURRENT_CALIBRATION_SAMPLES);
 }
 
+StatusCode current_calibration_init(CurrentCalibrationStorage *storage,
+                                            LtcAdcStorage *adc_storage) {
+  if (storage == NULL || adc_storage == NULL) {
+    return status_code(STATUS_CODE_UNINITIALIZED);
+  }
+
+  storage->adc_storage = adc_storage;
+  storage->samples = 0;
+  storage->voltage = 0;
+
+  return STATUS_CODE_OK;
+}
+
 StatusCode current_calibration_sample_point(CurrentCalibrationStorage *storage,
                                             CurrentSenseValue *point, int32_t current) {
-  if (storage == NULL) {
+  if (storage == NULL || point == NULL) {
     return status_code(STATUS_CODE_UNINITIALIZED);
   }
 
   ltc_adc_init(storage->adc_storage);
   ltc_adc_register_callback(storage->adc_storage, prv_callback, storage);
-
-  storage->samples = 0;
-  storage->voltage = 0;
 
   while (storage->samples < CURRENT_CALIBRATION_SAMPLES) {
     wait();

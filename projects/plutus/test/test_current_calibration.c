@@ -14,7 +14,7 @@
 // max point for testing
 #define TEST_CURRENT_CALIBRATION_MAX 3
 
-#define TEST_CURRENT_CALIBRATION_DELAY_SECONDS 5
+#define TEST_CURRENT_CALIBRATION_DELAY_SECONDS 10
 
 static void prv_callback(int32_t current, void *context) {}
 
@@ -34,8 +34,6 @@ void setup_test(void) {
   gpio_init();
   interrupt_init();
   soft_timer_init();
-
-  s_storage.adc_storage = &adc_storage;
 }
 
 void teardown_test(void) {}
@@ -43,7 +41,8 @@ void teardown_test(void) {}
 void test_current_calibration_sample(void) {
   CurrentSenseCalibrationData line = { 0 };
 
-  // Obtain zero point
+  // Reset calibration and obtain zero point
+  TEST_ASSERT_OK(current_calibration_init(&s_storage, &adc_storage));
   LOG_DEBUG("Set current to 0 A\n");
   delay_s(TEST_CURRENT_CALIBRATION_DELAY_SECONDS);
   LOG_DEBUG("Start sampling\n");
@@ -51,7 +50,7 @@ void test_current_calibration_sample(void) {
   LOG_DEBUG("Sampling finished -> { Voltage = %" PRId32 ", Current = %" PRId32 " }\n",
             line.zero_point.voltage, line.zero_point.current);
 
-  // Obtain max point
+  // Reset calibration and obtain max point
   LOG_DEBUG("Set current to %d A\n", TEST_CURRENT_CALIBRATION_MAX);
   delay_s(TEST_CURRENT_CALIBRATION_DELAY_SECONDS);
   LOG_DEBUG("Start sampling\n");

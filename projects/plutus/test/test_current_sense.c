@@ -14,42 +14,18 @@
 // Arbitrary number of testing samples
 #define TEST_NUM_SAMPLES 25
 
-// Mock SPI data
-static uint32_t x = 0;
-StatusCode TEST_MOCK(spi_exchange)(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *rx_data,
-                                   size_t rx_len) {
-  if (rx_data != NULL) {
-    for (uint8_t i = 0; i < rx_len; i++) {
-      rx_data[i] = (x >> 8 * (rx_len - 1 - i));
-    }
-
-    x += 10000;
-  }
-
-  return status_code(STATUS_CODE_OK);
-}
-
 static CurrentSenseStorage s_storage;
 
-static uint8_t s_callback_runs = 0;
+static volatile uint8_t s_callback_runs = 0;
 
-static CurrentSenseCalibrationData s_line = { .zero_point = { 0, 0 }, .max_point = { 10, 3000 } };
+static CurrentSenseCalibrationData s_line = {
+  .zero_point = { 888, 0 },
+  .max_point = { 62304, 3000 }
+};
 
 static void prv_callback(int32_t current, void *context) {
   s_callback_runs++;
-
-  int32_t voltage = s_storage.value.voltage;
-
-  int32_t x_min = s_line.zero_point.voltage;
-  int32_t y_min = s_line.zero_point.current;
-  int32_t x_max = s_line.max_point.voltage;
-  int32_t y_max = s_line.max_point.current;
-
-  int32_t test_current = (y_max) * (s_storage.value.voltage) / (x_max - x_min);
-
-  TEST_ASSERT_EQUAL(test_current, current);
-
-  printf("Voltage = %" PRId32 ", Current = %" PRId32 "\n", voltage, current);
+  printf("Current = %" PRId32 "\n", current);
 }
 
 void setup_test(void) {
@@ -76,11 +52,5 @@ void test_current_sense(void) {
   TEST_ASSERT_OK(current_sense_register_callback(&s_storage, prv_callback, NULL));
 
   // Wait for samples to accumulate
-  while (1) {
-    bool disabled = critical_section_start();
-    if (s_callback_runs >= TEST_NUM_SAMPLES) {
-      return;
-    }
-    critical_section_end(disabled);
-  }
+  while (s_callback_runs <= TEST_NUM_SAMPLES) { }
 }

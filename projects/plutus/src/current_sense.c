@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include "critical_section.h"
+
 static void prv_calculate_current(int32_t *value, void *context) {
   CurrentSenseStorage *storage = (CurrentSenseStorage *)context;
 
@@ -50,8 +52,10 @@ StatusCode current_sense_register_callback(CurrentSenseStorage *storage,
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
+  bool disabled = critical_section_start();
   storage->callback = callback;
   storage->context = context;
+  critical_section_end(disabled);
 
   return STATUS_CODE_OK;
 }
