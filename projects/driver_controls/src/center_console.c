@@ -29,7 +29,8 @@ static void prv_raise_event_cb(GpioExpanderPin pin, GPIOState state, void *conte
   switch (pin) {
     case CENTER_CONSOLE_INPUT_POWER:
       if (state == GPIO_STATE_LOW) {
-        soft_timer_start(CENTER_CONSOLE_POWER_HOLD_MS, prv_hold_timeout, NULL, &storage->power_hold);
+        soft_timer_start(CENTER_CONSOLE_POWER_HOLD_MS, prv_hold_timeout, NULL,
+                         &storage->power_hold);
       } else {
         // Power button released
         soft_timer_cancel(storage->power_hold);

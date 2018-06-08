@@ -1,16 +1,16 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "center_console.h"
+#include "event_queue.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "i2c.h"
-#include "interrupt.h"
 #include "input_event.h"
+#include "interrupt.h"
+#include "log.h"
 #include "power_distribution_controller.h"
 #include "soft_timer.h"
-#include "event_queue.h"
-#include "center_console.h"
-#include "log.h"
 
 static GpioExpanderStorage s_expander;
 
@@ -22,7 +22,7 @@ int main() {
   event_queue_init();
 
   const I2CSettings settings = {
-    .speed = I2C_SPEED_FAST,     //
+    .speed = I2C_SPEED_FAST,    //
     .sda = { GPIO_PORT_B, 9 },  //
     .scl = { GPIO_PORT_B, 8 },  //
   };
