@@ -103,7 +103,7 @@ void setup_test(void) {
   };
 
   TEST_ASSERT_OK(
-      can_init(&can_settings, &s_can_storage, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers)));
+      can_init(&s_can_storage, &can_settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers)));
   TEST_ASSERT_OK(power_path_init(&s_ppc));
 }
 

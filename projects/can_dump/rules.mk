@@ -5,13 +5,5 @@
 # $(T)_INC_DIRS: $(T)_DIR/inc{/$(PLATFORM)}
 # $(T)_SRC: $(T)_DIR/src{/$(PLATFORM)}/*.{c,s}
 
-# Specify the device library you want to include
+# Specify the libraries you want to include
 $(T)_DEPS := ms-common ms-helper
-
-$(T)_INC_DIRS += $($(T)_DIR)/config
-
-ifeq (x86,$(PLATFORM))
-$(T)_EXCLUDE_TESTS := afe current_calibration current_sense
-endif
-
-$(T)_test_bps_heartbeat_MOCKS := sequenced_relay_set_state
