@@ -90,10 +90,12 @@
 
 #define CAN_UNPACK_BATTERY_SOC(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
 
-#define CAN_UNPACK_BATTERY_VCT(msg_ptr, module_id_u16_ptr, voltage_u16_ptr, current_u16_ptr,   \
-                               temperature_u16_ptr)                                            \
-  can_unpack_impl_u16((msg_ptr), 8, (module_id_u16_ptr), (voltage_u16_ptr), (current_u16_ptr), \
-                      (temperature_u16_ptr))
+#define CAN_UNPACK_BATTERY_VT(msg_ptr, module_id_u16_ptr, voltage_u16_ptr, temperature_u16_ptr)    \
+  can_unpack_impl_u16((msg_ptr), 6, (module_id_u16_ptr), (voltage_u16_ptr), (temperature_u16_ptr), \
+                      CAN_UNPACK_IMPL_EMPTY)
+
+#define CAN_UNPACK_BATTERY_CURRENT(msg_ptr, current_u32_ptr) \
+  can_unpack_impl_u32((msg_ptr), 4, (current_u32_ptr), CAN_UNPACK_IMPL_EMPTY)
 
 #define CAN_UNPACK_MOTOR_CONTROLLER_VC(msg_ptr, mc_voltage_1_u16_ptr, mc_current_1_u16_ptr, \
                                        mc_voltage_2_u16_ptr, mc_current_2_u16_ptr)          \
