@@ -79,7 +79,7 @@ void setup_test(void) {
     .loopback = true,
   };
   TEST_ASSERT_OK(
-      can_init(&can_settings, &s_can_storage, s_rx_handlers, NUM_TEST_RELAY_RX_CAN_HANDLERS));
+      can_init(&s_can_storage, &can_settings, s_rx_handlers, NUM_TEST_RELAY_RX_CAN_HANDLERS));
 }
 
 void teardown_test(void) {}

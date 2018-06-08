@@ -72,7 +72,7 @@ void setup_test(void) {
     .rx = { GPIO_PORT_A, 11 },
     .loopback = true,
   };
-  TEST_ASSERT_OK(can_init(&can_settings, &s_can_storage, s_rx_handlers,
+  TEST_ASSERT_OK(can_init(&s_can_storage, &can_settings, s_rx_handlers,
                           NUM_TEST_HEARTBEAT_RX_RX_CAN_HANDLERS));
 }
 

@@ -11,7 +11,7 @@
 #include "status.h"
 
 typedef struct SequencedRelaySettings {
-  SystemCanMessage can_message;
+  CANMessageID can_msg_id;
   GPIOAddress left_relay;
   GPIOAddress right_relay;
   // Delay between left and right relays closing

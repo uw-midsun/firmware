@@ -52,7 +52,7 @@ int main(void) {
     .rx = { GPIO_PORT_A, 11 },
     .loopback = false,
   };
-  can_init(&can_settings, &s_can_storage, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+  can_init(&s_can_storage, &can_settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
 
   // GPIO
   ChaosConfig *cfg = chaos_config_load();

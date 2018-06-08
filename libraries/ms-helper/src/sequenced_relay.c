@@ -31,7 +31,7 @@ StatusCode sequenced_relay_init(SequencedRelayStorage *storage,
   gpio_init_pin(&storage->settings.left_relay, &gpio_settings);
   gpio_init_pin(&storage->settings.right_relay, &gpio_settings);
 
-  return relay_rx_configure_handler(&storage->relay_rx, storage->settings.can_message,
+  return relay_rx_configure_handler(&storage->relay_rx, storage->settings.can_msg_id,
                                     NUM_EE_RELAY_STATES, prv_handle_relay_rx, storage);
 }
 

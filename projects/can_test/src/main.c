@@ -66,7 +66,7 @@ int main(void) {
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },
   };
-  can_init(&can_settings, &s_can_storage, s_rx_handlers, CAN_TEST_NUM_RX_HANDLERS);
+  can_init(&s_can_storage, &can_settings, s_rx_handlers, CAN_TEST_NUM_RX_HANDLERS);
 
   if (is_sender || CAN_TEST_BUS_ACTIVE) {
     uint16_t msg_id = 15 + !is_sender;

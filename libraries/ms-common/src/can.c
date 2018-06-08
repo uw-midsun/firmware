@@ -39,7 +39,7 @@ void prv_bus_error_handler(void *context);
 
 static CANStorage *s_can_storage;
 
-StatusCode can_init(const CANSettings *settings, CANStorage *storage, CANRxHandler *rx_handlers,
+StatusCode can_init(CANStorage *storage, const CANSettings *settings, CANRxHandler *rx_handlers,
                     size_t num_rx_handlers) {
   if (settings->device_id >= CAN_MSG_MAX_DEVICES) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: Invalid device ID");

@@ -35,7 +35,7 @@ static void prv_setup_system_can(void) {
     .loopback = false,
   };
 
-  can_init(&can_settings, &s_can_storage, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+  can_init(&s_can_storage, &can_settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
 }
 
 static void prv_setup_motor_can(void) {
@@ -79,7 +79,7 @@ int main(void) {
   drive_can_init(&s_controller_storage);
 
   SequencedRelaySettings relay_settings = {
-    .can_message = SYSTEM_CAN_MESSAGE_MOTOR_RELAY,
+    .can_msg_id = SYSTEM_CAN_MESSAGE_MOTOR_RELAY,
     .left_relay = MC_CFG_RELAY_LEFT,
     .right_relay = MC_CFG_RELAY_RIGHT,
     .delay_ms = MC_CFG_RELAY_DELAY_MS,

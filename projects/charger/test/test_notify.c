@@ -54,7 +54,7 @@ void setup_test(void) {
   };
 
   TEST_ASSERT_OK(
-      can_init(&can_settings, &s_can_storage, s_rx_handlers, TEST_NOTIFY_NUM_CAN_RX_HANDLERS));
+      can_init(&s_can_storage, &can_settings, s_rx_handlers, TEST_NOTIFY_NUM_CAN_RX_HANDLERS));
   TEST_ASSERT_OK(generic_can_network_init(&s_generic_can));
   TEST_ASSERT_OK(
       generic_can_register_rx((GenericCan *)&s_generic_can, prv_callback, GENERIC_CAN_EMPTY_MASK,

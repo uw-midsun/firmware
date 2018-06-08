@@ -56,10 +56,10 @@ void setup_test(void) {
     .loopback = true,
   };
   TEST_ASSERT_OK(
-      can_init(&can_settings, &s_can, s_rx_handlers, TEST_SEQUENCED_RELAY_NUM_RX_HANDLERS));
+      can_init(&s_can, &can_settings, s_rx_handlers, TEST_SEQUENCED_RELAY_NUM_RX_HANDLERS));
 
   SequencedRelaySettings relay_settings = {
-    .can_message = SYSTEM_CAN_MESSAGE_MOTOR_RELAY,
+    .can_msg_id = SYSTEM_CAN_MESSAGE_MOTOR_RELAY,
     .left_relay = TEST_SEQUENCED_RELAY_LEFT,
     .right_relay = TEST_SEQUENCED_RELAY_RIGHT,
     .delay_ms = TEST_SEQUENCED_RELAY_DELAY_MS,
