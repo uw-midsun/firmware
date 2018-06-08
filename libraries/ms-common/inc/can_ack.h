@@ -39,7 +39,7 @@ typedef enum {
   CAN_ACK_STATUS_TIMEOUT,
   CAN_ACK_STATUS_INVALID,
   CAN_ACK_STATUS_UNKNOWN,
-  NUM_ACK_STATUSES
+  NUM_ACK_STATUSES,
 } CANAckStatus;
 
 // If the callback was fired due to timer expiry, the device ID is invalid.
