@@ -4,7 +4,7 @@
 
 #ifdef PLUTUS_CFG_DEBUG
 #define PLUTUS_CFG_AFE_DEVICES_IN_CHAIN 1
-#define PLUTUS_CFG_TOTAL_CELLS 6
+#define PLUTUS_CFG_AFE_TOTAL_CELLS 6
 #define PLUTUS_CFG_CELL_BITSET_ARR \
   { PLUTUS_CFG_INPUT_BITSET_SPLIT }
 #define PLUTUS_CFG_AUX_BITSET_ARR \
@@ -12,7 +12,7 @@
 #else
 // number of devices in daisy chain (including master)
 #define PLUTUS_CFG_AFE_DEVICES_IN_CHAIN 4
-#define PLUTUS_CFG_TOTAL_CELLS 36
+#define PLUTUS_CFG_AFE_TOTAL_CELLS 36
 // We're using 18 modules per box -> 2 AFEs each
 // clang-format off
 #define PLUTUS_CFG_CELL_BITSET_ARR                                  \
