@@ -16,6 +16,7 @@
 #include "drive_output.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
+#include "fault_handler.h"
 #include "input_event.h"
 #include "log.h"
 #include "power_distribution_controller.h"
@@ -112,6 +113,8 @@ static void prv_drive_output(FSM *fsm, const Event *e, void *context) {
 
 static void prv_fault_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
+
+  fault_handler_clear_fault();
 
   // Disable periodic drive output updates if not running
   drive_output_set_enabled(drive_output_global(), false);
