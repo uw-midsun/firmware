@@ -6,7 +6,7 @@
 #include "interrupt.h"
 #include "mc_cfg.h"
 #include "motor_controller.h"
-#include "motor_relay.h"
+#include "sequenced_relay.h"
 #include "uart.h"
 #include "wait.h"
 
@@ -21,7 +21,7 @@ static GenericCanUart s_can_uart;
 static CANStorage s_can_storage;
 static CANRxHandler s_rx_handlers[MC_CFG_NUM_CAN_RX_HANDLERS];
 static UARTStorage s_uart_storage;
-static MotorRelayStorage s_relay_storage;
+static SequencedRelayStorage s_relay_storage;
 
 static void prv_setup_system_can(void) {
   CANSettings can_settings = {
@@ -78,13 +78,14 @@ int main(void) {
   motor_controller_init(&s_controller_storage, &mc_settings);
   drive_can_init(&s_controller_storage);
 
-  MotorRelaySettings relay_settings = {
+  SequencedRelaySettings relay_settings = {
+    .can_msg_id = SYSTEM_CAN_MESSAGE_MOTOR_RELAY,
     .left_relay = MC_CFG_RELAY_LEFT,
     .right_relay = MC_CFG_RELAY_RIGHT,
     .delay_ms = MC_CFG_RELAY_DELAY_MS,
   };
 
-  motor_relay_init(&s_relay_storage, &relay_settings);
+  sequenced_relay_init(&s_relay_storage, &relay_settings);
 
   while (true) {
     Event e = { 0 };
