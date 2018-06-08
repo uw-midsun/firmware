@@ -46,11 +46,11 @@ static StatusCode prv_init_common(PlutusSysStorage *storage, PlutusSysType type)
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },
   };
-  status_ok_or_return(can_init(&can_settings, &storage->can, storage->can_rx_handlers,
+  status_ok_or_return(can_init(&storage->can, &can_settings, storage->can_rx_handlers,
                                SIZEOF_ARRAY(storage->can_rx_handlers)));
 
   const SequencedRelaySettings relay_settings = {
-    .can_message = s_specifics[type].relay_msg,
+    .can_msg_id = s_specifics[type].relay_msg,
     .left_relay = PLUTUS_CFG_RELAY_PWR,
     .right_relay = PLUTUS_CFG_RELAY_GND,
     .delay_ms = PLUTUS_CFG_RELAY_DELAY_MS,
