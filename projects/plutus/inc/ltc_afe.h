@@ -50,10 +50,10 @@ typedef struct LtcAfeSettings {
 
   LtcAfeAdcMode adc_mode;
   // Cell inputs to include in the measurement arrays
-  // Should have |PLUTUS_CFG_TOTAL_CELLS| set bits.
+  // Should have |PLUTUS_CFG_AFE_TOTAL_CELLS| set bits.
   uint16_t cell_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
   // Aux inputs to include in the measurement arrays
-  // Should have |PLUTUS_CFG_TOTAL_CELLS| set bits.
+  // Should have |PLUTUS_CFG_AFE_TOTAL_CELLS| set bits.
   uint16_t aux_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
 } LtcAfeSettings;
 
@@ -84,13 +84,13 @@ typedef struct LtcAfeStorage {
 StatusCode ltc_afe_init(LtcAfeStorage *afe, const LtcAfeSettings *settings);
 
 // Read all cell voltages (in 100uV)
-// |result_arr| is an array of size PLUTUS_CFG_TOTAL_CELLS
+// |result_arr| is an array of size PLUTUS_CFG_AFE_TOTAL_CELLS
 StatusCode ltc_afe_read_all_voltage(LtcAfeStorage *afe, uint16_t *result_arr, size_t len);
 
 // Read all auxiliary voltages (in 100uV)
-// |result_arr| should be an array of size PLUTUS_CFG_TOTAL_CELLS
+// |result_arr| should be an array of size PLUTUS_CFG_AFE_TOTAL_CELLS
 StatusCode ltc_afe_read_all_aux(LtcAfeStorage *afe, uint16_t *result_arr, size_t len);
 
 // Mark cell for discharging (takes effect after config is re-written)
-// |cell| should be [0, PLUTUS_CFG_TOTAL_CELLS)
+// |cell| should be [0, PLUTUS_CFG_AFE_TOTAL_CELLS)
 StatusCode ltc_afe_toggle_cell_discharge(LtcAfeStorage *afe, uint16_t cell, bool discharge);
