@@ -35,7 +35,7 @@ static void prv_setup_system_can(void) {
     .loopback = false,
   };
 
-  can_init(&can_settings, &s_can_storage, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+  can_init(&s_can_storage, &can_settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
 }
 
 static void prv_setup_motor_can(void) {
