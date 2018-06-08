@@ -6,10 +6,21 @@
 // Also dedicates another MCP23008 to LED output for state notification.
 //
 // Raises INPUT_EVENT_CENTER_CONSOLE_* events with empty data fields.
+// Assumes all inputs other than hazards are non-latching.
 #include <assert.h>
 #include <stdint.h>
 #include "gpio_expander.h"
 
-#define CENTER_CONSOLE_NUM_INPUTS 7
-static_assert(CENTER_CONSOLE_NUM_INPUTS <= NUM_GPIO_EXPANDER_PINS,
-              "Center console inputs larger than number of MCP23008 pins!");
+typedef enum {
+  CENTER_CONSOLE_INPUT_POWER = 0,
+  CENTER_CONSOLE_INPUT_DRIVE,
+  CENTER_CONSOLE_INPUT_NEUTRAL,
+  CENTER_CONSOLE_INPUT_REVERSE,
+  CENTER_CONSOLE_INPUT_HAZARDS,
+  CENTER_CONSOLE_INPUT_DRL,
+  CENTER_CONSOLE_INPUT_LOWBEAM,
+  NUM_CENTER_CONSOLE_INPUTS
+} CenterConsoleInput;
+
+// Sets up the expander as inputs to raise the associated events
+StatusCode center_console_init(GpioExpanderStorage *expander);
