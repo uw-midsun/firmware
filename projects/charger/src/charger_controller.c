@@ -16,8 +16,8 @@
 
 #define CHARGER_PERIOD_US 1000000  // 1 Second as defined in datasheet.
 
-#define CHARGER_EXPECTED_RX_DLC 5
-#define CHARGER_EXPECTED_TX_DLC 5
+#define CHARGER_EXPECTED_RX_DLC 8
+#define CHARGER_EXPECTED_TX_DLC 8
 
 static ChargerStorage *s_storage;
 static CanInterval *s_interval;

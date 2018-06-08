@@ -1,24 +1,25 @@
 #pragma once
-// driver for LTC6804-1 AFE chip
-// assumes that:
+// Driver for LTC6804-1 AFE chip
+// Assumes that:
 // - a 16 channel analog MUX is attached to the GPIO outputs
 // - GPIO2, GPIO3, GPIO4, GPIO5 are used as AUX channel select outputs
 // - GPIO1 is used as a thermistor input
-// requires GPIO, Interrupts and Soft Timers to be initialized
-
+// Requires GPIO, Interrupts and Soft Timers to be initialized
+//
+// Note that all units are in 100uV.
+//
+// This module supports AFEs with fewer than 12 cells using the |input_bitset|.
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include "gpio.h"
+#include "plutus_cfg.h"
 #include "spi.h"
 #include "status.h"
 
-#define LTC6804_CELLS_PER_DEVICE 12
-
-// - 12-bit, 16-bit and 24-bit values are little endian
-// - commands and PEC are big endian
-#define SWAP_UINT16(x) (uint16_t)(((uint16_t)(x) >> 8) | ((uint16_t)(x) << 8))
+#define LTC_AFE_MAX_CELLS_PER_DEVICE 12
+#define LTC_AFE_MAX_TOTAL_CELLS (PLUTUS_CFG_AFE_DEVICES_IN_CHAIN * LTC_AFE_MAX_CELLS_PER_DEVICE)
 
 #if defined(__GNUC__)
 #define _PACKED __attribute__((packed))
@@ -35,7 +36,7 @@ typedef enum {
   LTC_AFE_ADC_MODE_14KHZ,
   LTC_AFE_ADC_MODE_3KHZ,
   LTC_AFE_ADC_MODE_2KHZ,
-  NUM_LTC_AFE_ADC_MODE
+  NUM_LTC_AFE_ADC_MODES
 } LtcAfeAdcMode;
 
 typedef struct LtcAfeSettings {
@@ -48,20 +49,48 @@ typedef struct LtcAfeSettings {
   uint32_t spi_baudrate;
 
   LtcAfeAdcMode adc_mode;
+  // Cell inputs to include in the measurement arrays
+  // Should have |PLUTUS_CFG_AFE_TOTAL_CELLS| set bits.
+  uint16_t cell_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
+  // Aux inputs to include in the measurement arrays
+  // Should have |PLUTUS_CFG_AFE_TOTAL_CELLS| set bits.
+  uint16_t aux_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
 } LtcAfeSettings;
 
-// initialize the LTC6804
-StatusCode ltc_afe_init(const LtcAfeSettings *afe);
+typedef struct LtcAfeStorage {
+  SPIPort spi_port;
+  GPIOAddress cs;
+  LtcAfeAdcMode adc_mode;
 
-// read all voltages
-// result is an array of size LTC6804_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
-// len should be SIZEOF_ARRAY(result)
-StatusCode ltc_afe_read_all_voltage(const LtcAfeSettings *afe, uint16_t *result, size_t len);
+  // Cell inputs to include in the measurement arrays
+  uint16_t cell_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
+  // Lookup table for mapping AFE cell -> result index
+  uint16_t cell_result_index[LTC_AFE_MAX_TOTAL_CELLS];
 
-// read all auxiliary registers
-// result should be an array of size LTC6804_CELLS_PER_DEVICE * LTC_AFE_DEVICES_IN_CHAIN
-// len should be SIZEOF_ARRAY(result)
-StatusCode ltc_afe_read_all_aux(const LtcAfeSettings *afe, uint16_t *result, size_t len);
+  // Aux inputs to include in the measurement arrays
+  uint16_t aux_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
+  uint16_t aux_result_index[LTC_AFE_MAX_TOTAL_CELLS];
 
-// mark cells for discharging (takes effect after config is re-written)
-StatusCode ltc_afe_toggle_discharge_cells(const LtcAfeSettings *afe, uint16_t cell, bool discharge);
+  // Discharge enabled - device-relative
+  uint16_t discharge_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
+  // Lookup table for mapping cell -> actual device-relative AFE cell
+  // TODO(ELEC-447): Handle unused cell inputs during balancing
+  uint16_t discharge_cell_lookup[LTC_AFE_MAX_TOTAL_CELLS];
+} LtcAfeStorage;
+
+// Initialize the LTC6804.
+// |settings.input_bitset| should be an array of bitsets where bits 0 to 11 represent whether
+// we should monitor the cell input for the given device.
+StatusCode ltc_afe_init(LtcAfeStorage *afe, const LtcAfeSettings *settings);
+
+// Read all cell voltages (in 100uV)
+// |result_arr| is an array of size PLUTUS_CFG_AFE_TOTAL_CELLS
+StatusCode ltc_afe_read_all_voltage(LtcAfeStorage *afe, uint16_t *result_arr, size_t len);
+
+// Read all auxiliary voltages (in 100uV)
+// |result_arr| should be an array of size PLUTUS_CFG_AFE_TOTAL_CELLS
+StatusCode ltc_afe_read_all_aux(LtcAfeStorage *afe, uint16_t *result_arr, size_t len);
+
+// Mark cell for discharging (takes effect after config is re-written)
+// |cell| should be [0, PLUTUS_CFG_AFE_TOTAL_CELLS)
+StatusCode ltc_afe_toggle_cell_discharge(LtcAfeStorage *afe, uint16_t cell, bool discharge);
