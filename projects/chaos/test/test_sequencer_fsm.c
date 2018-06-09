@@ -54,6 +54,9 @@ void test_sequencer_fsm_run(void) {
         } else if (prev_event.id == CHAOS_EVENT_OPEN_RELAY) {
           present_event.id = CHAOS_EVENT_RELAY_OPENED;
           present_event.data = prev_event.data;
+        } else if (prev_event.id == CHAOS_EVENT_DELAY_MS) {
+          present_event.id = CHAOS_EVENT_DELAY_DONE;
+          present_event.data = 0;
         }
         LOG_DEBUG("No event raised. Responding with: %d : %d\n", present_event.id,
                   present_event.data);
@@ -100,6 +103,9 @@ void test_sequencer_fsm_reset_relay(void) {
       } else if (prev_event.id == CHAOS_EVENT_OPEN_RELAY) {
         present_event.id = CHAOS_EVENT_RELAY_OPENED;
         present_event.data = prev_event.data;
+      } else if (prev_event.id == CHAOS_EVENT_DELAY_MS) {
+        present_event.id = CHAOS_EVENT_DELAY_DONE;
+        present_event.data = 0;
       }
     }
     if (present_event.id <= NUM_CHAOS_EVENTS_CAN) {
@@ -136,6 +142,9 @@ void test_sequencer_fsm_reset_events(void) {
       } else if (prev_event.id == CHAOS_EVENT_OPEN_RELAY) {
         present_event.id = CHAOS_EVENT_RELAY_OPENED;
         present_event.data = prev_event.data;
+      } else if (prev_event.id == CHAOS_EVENT_DELAY_MS) {
+        present_event.id = CHAOS_EVENT_DELAY_DONE;
+        present_event.data = 0;
       }
     }
     // Cause a major error!
@@ -186,6 +195,9 @@ void test_sequencer_fsm_interrupted(void) {
       } else if (prev_event.id == CHAOS_EVENT_OPEN_RELAY) {
         present_event.id = CHAOS_EVENT_RELAY_OPENED;
         present_event.data = prev_event.data;
+      } else if (prev_event.id == CHAOS_EVENT_DELAY_MS) {
+        present_event.id = CHAOS_EVENT_DELAY_DONE;
+        present_event.data = 0;
       }
     }
     // Cause a transition.
@@ -237,6 +249,9 @@ void test_sequencer_fsm_interrupted_awaiting(void) {
       } else if (prev_event.id == CHAOS_EVENT_OPEN_RELAY) {
         present_event.id = CHAOS_EVENT_RELAY_OPENED;
         present_event.data = prev_event.data;
+      } else if (prev_event.id == CHAOS_EVENT_DELAY_MS) {
+        present_event.id = CHAOS_EVENT_DELAY_DONE;
+        present_event.data = 0;
       }
     }
     // Cause a transition.
@@ -287,6 +302,9 @@ void test_sequencer_fsm_interrupted_awaiting_error(void) {
       } else if (prev_event.id == CHAOS_EVENT_OPEN_RELAY) {
         present_event.id = CHAOS_EVENT_RELAY_OPENED;
         present_event.data = prev_event.data;
+      } else if (prev_event.id == CHAOS_EVENT_DELAY_MS) {
+        present_event.id = CHAOS_EVENT_DELAY_DONE;
+        present_event.data = 0;
       }
     }
     // Cause a transition.
