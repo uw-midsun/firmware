@@ -9,8 +9,10 @@ static StatusCode prv_handle_heartbeat_ack(CANMessageID msg_id, uint16_t device,
 
   if (status != CAN_ACK_STATUS_OK) {
     // Something bad happened - fault
+    LOG_DEBUG("Timeout %d\n", device);
     return bps_heartbeat_raise_fault(storage, BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT);
   } else if (status == CAN_ACK_STATUS_OK) {
+    LOG_DEBUG("OK %d\n", device);
     return bps_heartbeat_clear_fault(storage, BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT);
   }
 

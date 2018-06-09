@@ -205,7 +205,6 @@ FSM_DECLARE_STATE(sequencer_state_charge);
 FSM_DECLARE_STATE(sequencer_state_drive);
 
 FSM_STATE_TRANSITION(sequencer_state_emergency) {
-  FSM_ADD_TRANSITION(CHAOS_EVENT_SEQUENCE_EMERGENCY, sequencer_state_emergency);
   FSM_ADD_TRANSITION(CHAOS_EVENT_SEQUENCE_IDLE, sequencer_state_idle);
   FSM_ADD_TRANSITION(CHAOS_EVENT_SEQUENCE_RESET, sequencer_state_emergency);
 }
@@ -251,6 +250,7 @@ static bool prv_sequencer_setup_common(void) {
 
 // FSM Transitions
 static void prv_sequencer_state_emergency(FSM *fsm, const Event *e, void *context) {
+  LOG_DEBUG("Emergency\n");
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
@@ -264,6 +264,7 @@ static void prv_sequencer_state_emergency(FSM *fsm, const Event *e, void *contex
 }
 
 static void prv_sequencer_state_idle(FSM *fsm, const Event *e, void *context) {
+  LOG_DEBUG("IDLE\n");
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
@@ -275,6 +276,7 @@ static void prv_sequencer_state_idle(FSM *fsm, const Event *e, void *context) {
 }
 
 static void prv_sequencer_state_charge(FSM *fsm, const Event *e, void *context) {
+  LOG_DEBUG("Charge\n");
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
@@ -286,6 +288,7 @@ static void prv_sequencer_state_charge(FSM *fsm, const Event *e, void *context) 
 }
 
 static void prv_sequencer_state_drive(FSM *fsm, const Event *e, void *context) {
+  LOG_DEBUG("Drive\n");
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
@@ -360,6 +363,9 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event) {
     // If we are stuck go to the emergency state.
     return event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_EMERGENCY,
                                 SEQUENCER_EMPTY_DATA);
+  }
+  if (sequencer_complete(&s_storage)) {
+    LOG_DEBUG("Sequence Finished\n");
   }
   return status;
 }

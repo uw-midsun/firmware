@@ -15,6 +15,7 @@
 #include "gpio_fsm.h"
 #include "gpio_it.h"
 #include "interrupt.h"
+#include "log.h"
 #include "power_path.h"
 #include "powertrain_heartbeat.h"
 #include "relay.h"
@@ -44,7 +45,7 @@ int main(void) {
   // CAN
   CANSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
-    .bitrate = CAN_HW_BITRATE_125KBPS,
+    .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,
     .tx_event = CHAOS_EVENT_CAN_TX,
     .fault_event = CHAOS_EVENT_CAN_FAULT,
@@ -53,6 +54,7 @@ int main(void) {
     .loopback = false,
   };
   can_init(&s_can_storage, &can_settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+  LOG_DEBUG("hello\n");
 
   // GPIO
   ChaosConfig *cfg = chaos_config_load();
@@ -89,6 +91,8 @@ int main(void) {
   charger_init();
   emergency_fault_clear(&s_emergency_storage);
   state_handler_init();
+
+  LOG_DEBUG("started\n");
 
   // Main loop
   Event e = { 0 };
