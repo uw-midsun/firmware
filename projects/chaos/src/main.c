@@ -45,7 +45,7 @@ int main(void) {
   // CAN
   CANSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
-    .bitrate = CAN_HW_BITRATE_125KBPS,
+    .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,
     .tx_event = CHAOS_EVENT_CAN_TX,
     .fault_event = CHAOS_EVENT_CAN_FAULT,
@@ -55,15 +55,12 @@ int main(void) {
   };
   can_init(&s_can_storage, &can_settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
 
-  // GPIO
-  ChaosConfig *cfg = chaos_config_load();
-  gpio_fsm_init(cfg);
-
   // Heartbeats
   bps_heartbeat_init();  // Use the auto start feature to start the watchdog.
   powertrain_heartbeat_init();
 
   // Power Path
+  ChaosConfig *cfg = chaos_config_load();
   power_path_init(&cfg->power_path);
   // AUX Battery Monitoring.
   power_path_source_monitor_enable(&cfg->power_path.aux_bat, CHAOS_CONFIG_POWER_PATH_PERIOD_MS);
@@ -78,6 +75,7 @@ int main(void) {
     .loopback = false,
   };
   relay_init(&relay_settings);
+  relay_retry_service_init(&s_retry_storage);
 
   // Sequencer
   sequencer_fsm_init();
@@ -90,6 +88,10 @@ int main(void) {
   charger_init();
   emergency_fault_clear(&s_emergency_storage);
   state_handler_init();
+
+  // GPIO
+  // Postpone to as late as possible so that BPS heartbeats are ready to be ACK'd.
+  gpio_fsm_init(cfg);
 
   // Main loop
   Event e = { 0 };
