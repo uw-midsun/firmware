@@ -46,10 +46,14 @@ typedef struct PowerPathCfg {
   const GPIOAddress shutdown_pin;
   PowerPathSource aux_bat;
   PowerPathSource dcdc;
+  uint32_t period_millis;
 } PowerPathCfg;
 
 // Configures the GPIO pins for the power path.
 StatusCode power_path_init(PowerPathCfg *pp);
+
+// Starts sending data periodically over CAN.
+StatusCode power_path_send_data_daemon(PowerPathCfg *pp, uint32_t period_millis);
 
 // Starts monitoring the specified power source periodically.
 StatusCode power_path_source_monitor_enable(PowerPathSource *source, uint32_t period_millis);
