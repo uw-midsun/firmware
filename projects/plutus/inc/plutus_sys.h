@@ -20,6 +20,7 @@
 #include "bps_heartbeat.h"
 #include "can.h"
 #include "heartbeat_rx.h"
+#include "killswitch.h"
 #include "ltc_adc.h"
 #include "ltc_afe.h"
 #include "sequenced_relay.h"
@@ -40,6 +41,7 @@ typedef struct PlutusSysStorage {
 
   HeartbeatRxHandlerStorage powertrain_heartbeat_handler;
   HeartbeatRxHandlerStorage bps_heartbeat_handler;
+  KillswitchStorage killswitch;
 
   PlutusSysType type;
 } PlutusSysStorage;

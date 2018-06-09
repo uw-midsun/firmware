@@ -62,7 +62,15 @@ static StatusCode prv_init_common(PlutusSysStorage *storage, PlutusSysType type)
                                                     SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
                                                     heartbeat_rx_auto_ack_handler, NULL));
 
-  // TODO(ELEC-439): drive fans
+  // TODO(ELEC-439): drive fans using PWM
+  GPIOSettings fan_settings = {
+    .direction = GPIO_DIR_OUT,
+    .state = GPIO_STATE_HIGH,
+  };
+  GPIOAddress fan_1 = PLUTUS_CFG_FAN_1, fan_2 = PLUTUS_CFG_FAN_2;
+  gpio_init_pin(&fan_1, &fan_settings);
+  gpio_init_pin(&fan_2, &fan_settings);
+
   return STATUS_CODE_OK;
 }
 
@@ -111,7 +119,8 @@ StatusCode plutus_sys_init(PlutusSysStorage *storage, PlutusSysType type) {
     status_ok_or_return(bps_heartbeat_init(&storage->bps_heartbeat, &storage->relay,
                                            PLUTUS_CFG_HEARTBEAT_PERIOD_MS,
                                            PLUTUS_CFG_HEARTBEAT_EXPECTED_DEVICES));
-    status_ok_or_return(killswitch_init(&killswitch, &storage->bps_heartbeat));
+    status_ok_or_return(
+        killswitch_init(&storage->killswitch, &killswitch, &storage->bps_heartbeat));
   } else if (type == PLUTUS_SYS_TYPE_SLAVE) {
     // Slave also handles:
     // BPS Heartbeat RX

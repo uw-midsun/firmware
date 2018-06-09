@@ -48,9 +48,9 @@ int main(void) {
       fsm_process_event(CAN_FSM, &e);
     }
 
-    if (board_type == PLUTUS_SYS_TYPE_MASTER) {
-      // Only check for faults if master
-      fault_monitor_check(&fault_monitor, &s_result);
-    }
+    // if (board_type == PLUTUS_SYS_TYPE_MASTER) {
+    //   // Only check for faults if master
+    //   fault_monitor_check(&fault_monitor, &s_result);
+    // }
   }
 }

@@ -1,6 +1,6 @@
 #pragma once
-#define PLUTUS_CFG_DEBUG_PACK
-#define PLUTUS_CFG_STANDALONE
+// #define PLUTUS_CFG_DEBUG_PACK
+// #define PLUTUS_CFG_STANDALONE
 
 #include "adc_cfg.h"
 #include "afe_cfg.h"
@@ -18,6 +18,7 @@
 #define PLUTUS_CFG_OVERCURRENT_CHARGE -130000
 
 // Heartbeat settings
+// TODO(ELEC-439): need to fix this - since AFE uses blocking delay, CAN times out
 #define PLUTUS_CFG_HEARTBEAT_PERIOD_MS 500
 #ifndef PLUTUS_CFG_STANDALONE
 #define PLUTUS_CFG_HEARTBEAT_EXPECTED_DEVICES                                       \
@@ -51,7 +52,7 @@
 // CAN
 #define PLUTUS_CFG_CAN_BITRATE CAN_HW_BITRATE_500KBPS
 #define PLUTUS_CFG_NUM_CAN_RX_HANDLERS 5
-#define PLUTUS_CFG_TELEMETRY_PERIOD_MS 100
+#define PLUTUS_CFG_TELEMETRY_PERIOD_MS 1000
 
 // Master/Slave selector
 #define PLUTUS_CFG_BOARD_TYPE_SEL \

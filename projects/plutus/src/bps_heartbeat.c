@@ -1,5 +1,6 @@
 #include "bps_heartbeat.h"
 #include "can_transmit.h"
+#include "log.h"
 
 static StatusCode prv_handle_heartbeat_ack(CANMessageID msg_id, uint16_t device,
                                            CANAckStatus status, uint16_t num_remaining,
@@ -9,7 +10,7 @@ static StatusCode prv_handle_heartbeat_ack(CANMessageID msg_id, uint16_t device,
   if (status != CAN_ACK_STATUS_OK) {
     // Something bad happened - fault
     return bps_heartbeat_raise_fault(storage, BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT);
-  } else if (status == CAN_ACK_STATUS_OK && num_remaining == 0) {
+  } else if (status == CAN_ACK_STATUS_OK) {
     return bps_heartbeat_clear_fault(storage, BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT);
   }
 
@@ -26,6 +27,9 @@ static StatusCode prv_handle_state(BpsHeartbeatStorage *storage) {
   // Only transmit state OK if we have no ongoing faults
   EEBpsHeartbeatState state =
       (storage->fault_bitset == 0x0) ? EE_BPS_HEARTBEAT_STATE_OK : EE_BPS_HEARTBEAT_STATE_FAULT;
+  if (state == EE_BPS_HEARTBEAT_STATE_FAULT) {
+    LOG_DEBUG("fault: 0x%x\n", storage->fault_bitset);
+  }
   CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, state);
 
   if (state == EE_BPS_HEARTBEAT_STATE_FAULT) {

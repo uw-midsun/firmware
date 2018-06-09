@@ -12,13 +12,13 @@ StatusCode fault_monitor_check(const FaultMonitorSettings *settings, FaultMonito
   }
   bps_heartbeat_clear_fault(settings->bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
 
-  status =
-      ltc_afe_read_all_aux(settings->ltc_afe, result->temp_voltages, PLUTUS_CFG_AFE_TOTAL_CELLS);
-  if (status != STATUS_CODE_OK) {
-    LOG_DEBUG("Invalid status (aux) %d\n", status);
-    bps_heartbeat_raise_fault(settings->bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
-  }
-  bps_heartbeat_clear_fault(settings->bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+  // status =
+  //     ltc_afe_read_all_aux(settings->ltc_afe, result->temp_voltages, PLUTUS_CFG_AFE_TOTAL_CELLS);
+  // if (status != STATUS_CODE_OK) {
+  //   LOG_DEBUG("Invalid status (aux) %d\n", status);
+  //   bps_heartbeat_raise_fault(settings->bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+  // }
+  // bps_heartbeat_clear_fault(settings->bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
 
   bool had_fault = false;
   for (size_t i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {

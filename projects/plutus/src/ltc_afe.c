@@ -98,7 +98,10 @@ static void prv_trigger_adc_conversion(LtcAfeStorage *afe) {
   spi_exchange(afe->spi_port, cmd, 4, NULL, 0);
 
   // wait for conversions to finish
-  delay_us(s_conversion_delay_us[afe->adc_mode]);
+  // TODO(ELEC-439): figure out why the additional delay is necessary
+  // TODO(ELEC-439): this seems to be the minimum delay required
+  delay_ms(10);
+  // delay_us(s_conversion_delay_us[afe->adc_mode]);
 }
 
 static void prv_trigger_aux_adc_conversion(LtcAfeStorage *afe) {
@@ -113,8 +116,9 @@ static void prv_trigger_aux_adc_conversion(LtcAfeStorage *afe) {
   spi_exchange(afe->spi_port, cmd, 4, NULL, 0);
 
   // wait for conversions to finish
-  // TODO: may need to multiply by # devices in chain
-  delay_us(s_aux_conversion_delay_us[afe->adc_mode]);
+  // TODO(ELEC-439): this seems to be the minimum delay required
+  delay_ms(6);
+  // delay_us(s_aux_conversion_delay_us[afe->adc_mode]);
 }
 
 // write config to all devices
