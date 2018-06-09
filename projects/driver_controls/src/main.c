@@ -1,6 +1,6 @@
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdbool.h>
 
 #include "center_console.h"
 #include "event_queue.h"

@@ -38,7 +38,7 @@ static void prv_raise_event_cb(GpioExpanderPin pin, GPIOState state, void *conte
       } else if (storage->hold_timer == SOFT_TIMER_INVALID_TIMER) {
         // Power button pressed for the first time
         soft_timer_start_millis(CENTER_CONSOLE_POWER_HOLD_MS, prv_hold_timeout, storage,
-                         &storage->hold_timer);
+                                &storage->hold_timer);
       }
       break;
     case CENTER_CONSOLE_INPUT_HAZARDS:
