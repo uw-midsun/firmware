@@ -205,7 +205,6 @@ FSM_DECLARE_STATE(sequencer_state_charge);
 FSM_DECLARE_STATE(sequencer_state_drive);
 
 FSM_STATE_TRANSITION(sequencer_state_emergency) {
-  FSM_ADD_TRANSITION(CHAOS_EVENT_SEQUENCE_EMERGENCY, sequencer_state_emergency);
   FSM_ADD_TRANSITION(CHAOS_EVENT_SEQUENCE_IDLE, sequencer_state_idle);
   FSM_ADD_TRANSITION(CHAOS_EVENT_SEQUENCE_RESET, sequencer_state_emergency);
 }
