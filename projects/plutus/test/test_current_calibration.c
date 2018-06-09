@@ -49,6 +49,7 @@ void test_current_calibration_sample(void) {
             data.zero_point.voltage, data.zero_point.current);
 
   // Reset calibration and obtain max point
+  TEST_ASSERT_OK(current_calibration_init(&s_storage, &adc_storage, &adc_settings));
   LOG_DEBUG("Set current to %d A\n", TEST_CURRENT_CALIBRATION_MAX);
   delay_s(TEST_CURRENT_CALIBRATION_DELAY_SECONDS);
   LOG_DEBUG("Start sampling\n");

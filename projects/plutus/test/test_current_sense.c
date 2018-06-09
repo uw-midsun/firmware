@@ -2,7 +2,6 @@
 
 #include "current_sense.h"
 
-#include "critical_section.h"
 #include "gpio.h"
 #include "interrupt.h"
 #include "log.h"
@@ -12,7 +11,8 @@
 #include "unity.h"
 
 // Arbitrary number of testing samples
-#define TEST_NUM_SAMPLES 25
+#define TEST_NUM_SAMPLES    25
+#define TEST_INPUT_VOLTAGE  1000
 
 static volatile uint8_t s_callback_runs = 0;
 
@@ -22,7 +22,23 @@ static CurrentSenseCalibrationData s_data = { .zero_point = { 888, 0 },
 
 static void prv_callback(int32_t current, void *context) {
   s_callback_runs++;
-  LOG_DEBUG("Current = %" PRId32 "\n", current);
+
+  int32_t x_min = s_data.zero_point.voltage;
+  int32_t y_min = s_data.zero_point.current;
+  int32_t x_max = s_data.max_point.voltage;
+  int32_t y_max = s_data.max_point.current;
+
+  int32_t test_current = (y_max) * (TEST_INPUT_VOLTAGE) / (x_max - x_min);
+
+  TEST_ASSERT_EQUAL(current, test_current);
+
+  LOG_DEBUG("Current = %" PRId32 ", Voltage = %" PRId32 "\n", current, s_storage.adc_storage->buffer.value);
+}
+
+// Mock the adc readings
+StatusCode TEST_MOCK(ltc2484_raw_adc_to_uv)(uint8_t *spi_data, int32_t *voltage) {
+  *voltage = TEST_INPUT_VOLTAGE;
+  return STATUS_CODE_OK;
 }
 
 void setup_test(void) {
