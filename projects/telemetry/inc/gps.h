@@ -28,7 +28,3 @@ StatusCode gps_clean_up();
 // Sets gga_message to the last received GGA message
 // Returns whether the GPS is active or not
 bool gps_get_gga(char *gga_message);
-
-// Sets vtg_message to the last received VTG message
-// Returns whether the GPS is active or not
-bool gps_get_vtg(char *vtg_message);

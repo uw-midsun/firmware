@@ -5,9 +5,10 @@
 #include "status.h"
 #include "uart.h"
 
+#define XBEE_UART_PORT UART_PORT_3
+
 // Initializes the xbee. Assumes it is already powered and good to transmit
 StatusCode xbee_init();
 
-// Sends a message to the xbee. Must be terminated with a newline or else the message will
-// not send
+// Sends a message to the xbee.
 StatusCode xbee_transmit(const uint8_t *message, size_t len);
