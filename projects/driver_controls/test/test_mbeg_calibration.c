@@ -64,7 +64,6 @@ void set_up(void) {
 
   while (true) {
   }
-  
 }
 
 void tear_down(void) {}

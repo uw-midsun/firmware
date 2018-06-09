@@ -18,10 +18,8 @@
 #include "soft_timer.h"
 #include "status.h"
 #include "unity.h"
-#include "delay.h"
 
-int16_t percentage_converter(MagneticCalibrationData *data,
-                                MagneticBrakeSettings *brake_settings) {
+int16_t percentage_converter(MagneticCalibrationData *data, MagneticBrakeSettings *brake_settings) {
   int16_t percentage;
 
   if (brake_settings->zero_value > brake_settings->hundred_value) {
@@ -35,7 +33,7 @@ int16_t percentage_converter(MagneticCalibrationData *data,
         (brake_settings->hundred_value - brake_settings->zero_value);
   }
 
-  if(percentage < brake_settings->min_allowed_range){
+  if (percentage < brake_settings->min_allowed_range) {
     percentage = brake_settings->min_allowed_range;
   } else if (percentage > brake_settings->max_allowed_range) {
     percentage = brake_settings->max_allowed_range;
@@ -43,20 +41,18 @@ int16_t percentage_converter(MagneticCalibrationData *data,
 
   // add code to see if the percentage is greater than max allowed value
   if (percentage > brake_settings->percentage_threshold) {
-
-    uint16_t percentage_data = (uint16_t) percentage;
+    uint16_t percentage_data = (uint16_t)percentage;
     event_raise(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, percentage_data);
   } else {
-    uint16_t percentage_data = (uint16_t) percentage;
+    uint16_t percentage_data = (uint16_t)percentage;
     event_raise(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, percentage_data);
   }
 
- return percentage;
-
+  return percentage;
 }
 
-static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *brake_settings, Ads1015Channel channel) {
-  
+static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *brake_settings,
+                         Ads1015Channel channel) {
   int16_t first_samples[1000];
   int16_t second_samples[1000];
   int16_t temp1, temp2, temp3, temp4;
@@ -68,7 +64,7 @@ static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *b
   delay_s(3);
 
   for (int i = 0; i < 1000; i++) {
-    //ads1015_read_raw(data->storage, channel, &data->reading);
+    // ads1015_read_raw(data->storage, channel, &data->reading);
     first_samples[i] = data->percentage;
   }
 
@@ -94,7 +90,7 @@ static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *b
 
   int16_t average_lowest = (temp1 + temp2) / 2;
   brake_settings->zero_value = average_lowest;
-  printf("%s %d\n","zero value" , brake_settings->zero_value);
+  printf("%s %d\n", "zero value", brake_settings->zero_value);
 
   printf("%s\n",
          "Initial calibration complete, Please press and hold the brake \n"
@@ -103,9 +99,9 @@ static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *b
   delay_s(3);
 
   for (int i = 0; i < 1000; i++) {
-    //ads1015_read_raw(data->storage, channel, &data->reading);
+    // ads1015_read_raw(data->storage, channel, &data->reading);
     second_samples[i] = data->percentage;
-    //printf("%s %d %d\n","second sample", i, second_samples[i]);
+    // printf("%s %d %d\n","second sample", i, second_samples[i]);
   }
 
   for (int i = 0; i < 1000; i++) {
@@ -126,7 +122,7 @@ static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *b
 
   int16_t average_highest = (temp3 + temp4) / 2;
   brake_settings->hundred_value = average_highest;
-  printf("%s %d\n" ,"hundred value" , brake_settings->hundred_value);
+  printf("%s %d\n", "hundred value", brake_settings->hundred_value);
 
   printf("%s\n", "Final calibration complete.");
 
@@ -134,7 +130,8 @@ static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *b
 }
 
 StatusCode magnetic_brake_event_generator_init(MagneticCalibrationData *data,
-                                               MagneticBrakeSettings *brake_settings, Ads1015Channel channel) {
+                                               MagneticBrakeSettings *brake_settings,
+                                               Ads1015Channel channel) {
   input_values(data, brake_settings, channel);
 
   return STATUS_CODE_OK;
