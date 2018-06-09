@@ -22,7 +22,7 @@ static MagneticCalibrationData data;
 
 static void prv_callback_channel(Ads1015Channel channel, void *context) {
   MagneticCalibrationData *data = context;
-  // ads1015_read_raw(data->storage, channel, data->reading);
+  ads1015_read_raw(data->storage, channel, data->reading);
 }
 
 void set_up(void) {
@@ -64,6 +64,7 @@ void set_up(void) {
 
   while (true) {
   }
+  
 }
 
 void tear_down(void) {}

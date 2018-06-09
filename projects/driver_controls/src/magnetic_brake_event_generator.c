@@ -18,10 +18,11 @@
 #include "soft_timer.h"
 #include "status.h"
 #include "unity.h"
+#include "delay.h"
 
-StatusCode percentage_converter(MagneticCalibrationData *data,
+int16_t percentage_converter(MagneticCalibrationData *data,
                                 MagneticBrakeSettings *brake_settings) {
-  uint16_t percentage;
+  int16_t percentage;
 
   if (brake_settings->zero_value > brake_settings->hundred_value) {
     percentage =
@@ -34,29 +35,40 @@ StatusCode percentage_converter(MagneticCalibrationData *data,
         (brake_settings->hundred_value - brake_settings->zero_value);
   }
 
-  // add code to see if the percentage is greater than max allowed value
-  if (percentage > brake_settings->percentage_threshold) {
-    event_raise(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, percentage);
-  } else {
-    event_raise(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, percentage);
+  if(percentage < brake_settings->min_allowed_range){
+    percentage = brake_settings->min_allowed_range;
+  } else if (percentage > brake_settings->max_allowed_range) {
+    percentage = brake_settings->max_allowed_range;
   }
 
-  data->percentage = percentage;
+  // add code to see if the percentage is greater than max allowed value
+  if (percentage > brake_settings->percentage_threshold) {
 
-  return STATUS_CODE_OK;
+    uint16_t percentage_data = (uint16_t) percentage;
+    event_raise(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, percentage_data);
+  } else {
+    uint16_t percentage_data = (uint16_t) percentage;
+    event_raise(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, percentage_data);
+  }
+
+ return percentage;
+
 }
 
-static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *brake_settings) {
-  uint16_t first_samples[1000];
-  uint16_t second_samples[1000];
-  uint16_t temp1, temp2, temp3, temp4;
+static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *brake_settings, Ads1015Channel channel) {
+  
+  int16_t first_samples[1000];
+  int16_t second_samples[1000];
+  int16_t temp1, temp2, temp3, temp4;
 
   printf("%s\n",
-         "Brake sensor is calibrating, Please ensure the brake is not being pressed, wait for "
-         "response to continue");
+         "Brake sensor is calibrating, Please ensure the brake is not being pressed, wait \n "
+         "for response to continue");
+
+  delay_s(3);
 
   for (int i = 0; i < 1000; i++) {
-    percentage_converter(data, brake_settings);
+    //ads1015_read_raw(data->storage, channel, &data->reading);
     first_samples[i] = data->percentage;
   }
 
@@ -65,8 +77,8 @@ static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *b
   // min in range of samples = temp 2 and 4
 
   for (int i = 0; i < 1000; i++) {
-    uint16_t max = 0;
-    uint16_t min = brake_settings->max_allowed_range;
+    int16_t max = 0;
+    int16_t min = brake_settings->max_allowed_range;
 
     temp1 = first_samples[i];
     temp2 = first_samples[i];
@@ -80,21 +92,25 @@ static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *b
     }
   }
 
-  uint16_t average_lowest = (temp1 + temp2) / 2;
-  // reading->zero_value = average_lowest;
+  int16_t average_lowest = (temp1 + temp2) / 2;
+  brake_settings->zero_value = average_lowest;
+  printf("%s %d\n","zero value" , brake_settings->zero_value);
 
   printf("%s\n",
-         "Initial calibration complete, Please press and hold the brake for aprroximately 3 "
-         "seconds, wait for response to continue");
+         "Initial calibration complete, Please press and hold the brake \n"
+         "wait for response to continue");
+
+  delay_s(3);
 
   for (int i = 0; i < 1000; i++) {
-    percentage_converter(data, brake_settings);
+    //ads1015_read_raw(data->storage, channel, &data->reading);
     second_samples[i] = data->percentage;
+    //printf("%s %d %d\n","second sample", i, second_samples[i]);
   }
 
   for (int i = 0; i < 1000; i++) {
-    uint16_t max = 0;
-    uint16_t min = brake_settings->max_allowed_range;
+    int16_t max = 0;
+    int16_t min = brake_settings->max_allowed_range;
 
     temp3 = second_samples[i];
     temp4 = second_samples[i];
@@ -108,15 +124,18 @@ static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *b
     }
   }
 
-  uint16_t average_highest = (temp3 + temp4) / 2;
-  // reading->hundred_value = average_highest;
+  int16_t average_highest = (temp3 + temp4) / 2;
+  brake_settings->hundred_value = average_highest;
+  printf("%s %d\n" ,"hundred value" , brake_settings->hundred_value);
 
   printf("%s\n", "Final calibration complete.");
+
+  delay_s(3);
 }
 
 StatusCode magnetic_brake_event_generator_init(MagneticCalibrationData *data,
-                                               MagneticBrakeSettings *brake_settings) {
-  input_values(data, brake_settings);
+                                               MagneticBrakeSettings *brake_settings, Ads1015Channel channel) {
+  input_values(data, brake_settings, channel);
 
   return STATUS_CODE_OK;
 }
