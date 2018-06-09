@@ -43,8 +43,8 @@ static bool prv_guard_engaged(const Event *e) {
 static bool prv_guard_disengaged(const Event *e) {
   // The brake must be engaged in order for gear shifts to happen.
   switch (e->id) {
-    case INPUT_EVENT_DIRECTION_SELECTOR_DRIVE:
-    case INPUT_EVENT_DIRECTION_SELECTOR_REVERSE:
+    case INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE:
+    case INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE:
       return false;
     default:
       return true;
