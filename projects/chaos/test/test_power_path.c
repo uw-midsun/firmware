@@ -60,12 +60,16 @@ static StatusCode prv_handle_uvov(const CANMessage *msg, void *context, CANAckSt
 
 static StatusCode prv_handle_vc(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   LOG_DEBUG("Handled\n");
-  uint8_t aux_v = UINT8_MAX uint8_t aux_c = UINT8_MAX uint8_t dcdc_v = UINT8_MAX uint8_t dcdc_c =
-      UINT8_MAX CAN_UNPACK_AUX_DCDC_VC(msg, &aux_v, &aux_c, &dcdc_v, &dcdc_c);
+  uint16_t aux_v = UINT8_MAX;
+  uint16_t aux_c = UINT8_MAX;
+  uint16_t dcdc_v = UINT8_MAX;
+  uint16_t dcdc_c = UINT8_MAX;
+  CAN_UNPACK_AUX_DCDC_VC(msg, &aux_v, &aux_c, &dcdc_v, &dcdc_c);
   TEST_ASSERT_EQUAL(TEST_POWER_PATH_AUX_UV_VAL, aux_v);
   TEST_ASSERT_EQUAL(TEST_POWER_PATH_AUX_CURRENT_VAL, aux_c);
   TEST_ASSERT_EQUAL(TEST_POWER_PATH_DCDC_UV_VAL, dcdc_v);
   TEST_ASSERT_EQUAL(TEST_POWER_PATH_DCDC_CURRENT_VAL, dcdc_c);
+  return STATUS_CODE_OK;
 }
 
 static PowerPathCfg s_ppc = { .enable_pin = { .port = 0, .pin = 0 },
@@ -198,7 +202,7 @@ void test_send_daemon(void) {
 
   TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.aux_bat, TEST_POWER_PATH_ADC_PERIOD_MS));
   TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.dcdc, TEST_POWER_PATH_ADC_PERIOD_MS));
-  TEST_ASSERT_OK(power_path_send_data_daemon(&s_ppc.dcdc, TEST_POWER_PATH_ADC_PERIOD_MS));
+  TEST_ASSERT_OK(power_path_send_data_daemon(&s_ppc, TEST_POWER_PATH_ADC_PERIOD_MS));
   delay_ms(TEST_POWER_PATH_ADC_PERIOD_MS + TEST_POWER_PATH_ADC_PERIOD_MS / 10);
 
   MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
