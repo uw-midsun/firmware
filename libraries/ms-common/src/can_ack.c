@@ -90,6 +90,10 @@ static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
     // Since we always check if a device was expected, we don't need to actually mask it
     uint16_t num_remaining =
         __builtin_popcount(found_request->response_bitset ^ found_request->expected_bitset);
+    if (num_remaining == 0 && device == CAN_MSG_INVALID_DEVICE) {
+      // TODO(ELEC-457): Does this get cleaned up?
+      return STATUS_CODE_OK;
+    }
     StatusCode ret = found_request->callback(found_request->msg_id, device, status, num_remaining,
                                              found_request->context);
     // If we ran into an error and the return code was not ok,
