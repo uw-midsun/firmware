@@ -1,6 +1,7 @@
 #include <stddef.h>
 
 #include "delay.h"
+#include "event_queue.h"
 #include "gpio.h"
 #include "interrupt.h"
 #include "log.h"
@@ -9,7 +10,6 @@
 #include "soft_timer.h"
 #include "spi.h"
 #include "wait.h"
-#include "event_queue.h"
 
 static LtcAfeStorage s_afe;
 

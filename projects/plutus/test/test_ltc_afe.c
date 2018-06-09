@@ -1,16 +1,16 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include "event_queue.h"
 #include "interrupt.h"
 #include "log.h"
 #include "ltc_afe.h"
 #include "ms_test_helpers.h"
 #include "plutus_cfg.h"
+#include "plutus_event.h"
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
-#include "plutus_event.h"
-#include "event_queue.h"
 
 #define TEST_LTC_AFE_NUM_SAMPLES 100
 // Maximum total measurement error in filtered mode - +/-2.8mV

@@ -15,11 +15,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "fsm.h"
 #include "gpio.h"
 #include "plutus_cfg.h"
 #include "spi.h"
 #include "status.h"
-#include "fsm.h"
 
 #define LTC_AFE_MAX_CELLS_PER_DEVICE 12
 #define LTC_AFE_MAX_TOTAL_CELLS (PLUTUS_CFG_AFE_DEVICES_IN_CHAIN * LTC_AFE_MAX_CELLS_PER_DEVICE)

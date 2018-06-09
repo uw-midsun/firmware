@@ -1,7 +1,7 @@
 #include "ltc_afe_fsm.h"
+#include "ltc_afe_impl.h"
 #include "plutus_event.h"
 #include "soft_timer.h"
-#include "ltc_afe_impl.h"
 
 FSM_DECLARE_STATE(afe_idle);
 FSM_DECLARE_STATE(afe_trigger_cell_conv);
@@ -32,7 +32,8 @@ FSM_STATE_TRANSITION(afe_trigger_aux_conv) {
 }
 
 FSM_STATE_TRANSITION(afe_read_aux) {
-  FSM_ADD_GUARDED_TRANSITION(PLUTUS_EVENT_AFE_TRIGGER_AUX_CONV, prv_all_aux_complete, afe_aux_complete);
+  FSM_ADD_GUARDED_TRANSITION(PLUTUS_EVENT_AFE_TRIGGER_AUX_CONV, prv_all_aux_complete,
+                             afe_aux_complete);
   FSM_ADD_TRANSITION(PLUTUS_EVENT_AFE_TRIGGER_AUX_CONV, afe_trigger_aux_conv);
 }
 
@@ -74,7 +75,8 @@ static void prv_afe_trigger_aux_conv_output(struct FSM *fsm, const Event *e, voi
   uint32_t device_cell = e->data;
   ltc_afe_impl_trigger_aux_conv(afe, device_cell);
 
-  soft_timer_start_millis(LTC_AFE_FSM_AUX_CONV_DELAY_MS, prv_aux_conv_timeout, (void *)device_cell, NULL);
+  soft_timer_start_millis(LTC_AFE_FSM_AUX_CONV_DELAY_MS, prv_aux_conv_timeout, (void *)device_cell,
+                          NULL);
 }
 
 static void prv_afe_read_aux_output(struct FSM *fsm, const Event *e, void *context) {
