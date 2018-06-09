@@ -14,17 +14,18 @@
 static LtcAfeStorage s_afe;
 
 static void prv_cell_conv_cb(uint16_t *result_arr, size_t len, void *context) {
-  for (size_t i = 0; i < len; i++) {
-    LOG_DEBUG("C%d: %d.%dmV\n", i, result_arr[i] / 10, result_arr[i] % 10);
-  }
+  // disabled until CAN ACK timeout is fixed
+  // for (size_t i = 0; i < len; i++) {
+  //   LOG_DEBUG("C%d: %d.%dmV\n", i, result_arr[i] / 10, result_arr[i] % 10);
+  // }
 
   ltc_afe_request_aux_conversion(&s_afe);
 }
 
 static void prv_aux_conv_cb(uint16_t *result_arr, size_t len, void *context) {
-  for (size_t i = 0; i < len; i++) {
-    LOG_DEBUG("C%d: aux %d.%dmV\n", i, result_arr[i] / 10, result_arr[i] % 10);
-  }
+  // for (size_t i = 0; i < len; i++) {
+  //   LOG_DEBUG("C%d: aux %d.%dmV\n", i, result_arr[i] / 10, result_arr[i] % 10);
+  // }
 
   ltc_afe_request_cell_conversion(&s_afe);
 }

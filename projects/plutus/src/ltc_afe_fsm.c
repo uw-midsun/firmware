@@ -46,8 +46,8 @@ static void prv_cell_conv_timeout(SoftTimerID timer_id, void *context) {
 }
 
 static void prv_aux_conv_timeout(SoftTimerID timer_id, void *context) {
-  uint32_t device_cell = (uint32_t)context;
-  event_raise(PLUTUS_EVENT_AFE_AUX_CONV_COMPLETE, device_cell);
+  LtcAfeStorage *afe = context;
+  event_raise(PLUTUS_EVENT_AFE_AUX_CONV_COMPLETE, afe->aux_index);
 }
 
 static void prv_afe_trigger_cell_conv_output(struct FSM *fsm, const Event *e, void *context) {
@@ -75,7 +75,8 @@ static void prv_afe_trigger_aux_conv_output(struct FSM *fsm, const Event *e, voi
   uint32_t device_cell = e->data;
   ltc_afe_impl_trigger_aux_conv(afe, device_cell);
 
-  soft_timer_start_millis(LTC_AFE_FSM_AUX_CONV_DELAY_MS, prv_aux_conv_timeout, (void *)device_cell,
+  afe->aux_index = device_cell;
+  soft_timer_start_millis(LTC_AFE_FSM_AUX_CONV_DELAY_MS, prv_aux_conv_timeout, &afe->aux_index,
                           NULL);
 }
 
