@@ -16,6 +16,7 @@
 #include "interrupt.h"
 #include "log.h"
 #include "misc.h"
+#include "ms_test_helpers.h"
 #include "soft_timer.h"
 #include "status.h"
 #include "test_helpers.h"
@@ -57,28 +58,40 @@ static StatusCode prv_handle_uvov(const CANMessage *msg, void *context, CANAckSt
   return STATUS_CODE_OK;
 }
 
-static PowerPathCfg s_ppc = { .enable_pin = { .port = 0, .pin = 0 },
-                              .shutdown_pin = { .port = 0, .pin = 1 },
-                              .aux_bat = { .id = POWER_PATH_SOURCE_ID_AUX_BAT,
-                                           .uv_ov_pin = { .port = 0, .pin = 2 },
-                                           .voltage_pin = { .port = 0, .pin = 3 },
-                                           .current_pin = { .port = 0, .pin = 4 },
-                                           .readings = { .voltage = 0, .current = 0 },
-                                           .current_convert_fn = prv_aux_current_convert,
-                                           .voltage_convert_fn = prv_aux_undervoltage_convert,
-                                           .period_millis = 0,
-                                           .timer_id = SOFT_TIMER_INVALID_TIMER,
-                                           .monitoring_active = false },
-                              .dcdc = { .id = POWER_PATH_SOURCE_ID_DCDC,
-                                        .uv_ov_pin = { .port = 0, .pin = 5 },
-                                        .voltage_pin = { .port = 0, .pin = 6 },
-                                        .current_pin = { .port = 0, .pin = 7 },
-                                        .readings = { .voltage = 0, .current = 0 },
-                                        .current_convert_fn = prv_dcdc_current_convert,
-                                        .voltage_convert_fn = prv_dcdc_undervoltage_convert,
-                                        .period_millis = 0,
-                                        .timer_id = SOFT_TIMER_INVALID_TIMER,
-                                        .monitoring_active = false } };
+static StatusCode prv_handle_vc(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+  LOG_DEBUG("Handled\n");
+  uint8_t aux_v = UINT8_MAX uint8_t aux_c = UINT8_MAX uint8_t dcdc_v = UINT8_MAX uint8_t dcdc_c =
+      UINT8_MAX CAN_UNPACK_AUX_DCDC_VC(msg, &aux_v, &aux_c, &dcdc_v, &dcdc_c);
+  TEST_ASSERT_EQUAL(TEST_POWER_PATH_AUX_UV_VAL, aux_v);
+  TEST_ASSERT_EQUAL(TEST_POWER_PATH_AUX_CURRENT_VAL, aux_c);
+  TEST_ASSERT_EQUAL(TEST_POWER_PATH_DCDC_UV_VAL, dcdc_v);
+  TEST_ASSERT_EQUAL(TEST_POWER_PATH_DCDC_CURRENT_VAL, dcdc_c);
+}
+
+static StatusCode prv_handle
+
+    static PowerPathCfg s_ppc = { .enable_pin = { .port = 0, .pin = 0 },
+                                  .shutdown_pin = { .port = 0, .pin = 1 },
+                                  .aux_bat = { .id = POWER_PATH_SOURCE_ID_AUX_BAT,
+                                               .uv_ov_pin = { .port = 0, .pin = 2 },
+                                               .voltage_pin = { .port = 0, .pin = 3 },
+                                               .current_pin = { .port = 0, .pin = 4 },
+                                               .readings = { .voltage = 0, .current = 0 },
+                                               .current_convert_fn = prv_aux_current_convert,
+                                               .voltage_convert_fn = prv_aux_undervoltage_convert,
+                                               .period_millis = 0,
+                                               .timer_id = SOFT_TIMER_INVALID_TIMER,
+                                               .monitoring_active = false },
+                                  .dcdc = { .id = POWER_PATH_SOURCE_ID_DCDC,
+                                            .uv_ov_pin = { .port = 0, .pin = 5 },
+                                            .voltage_pin = { .port = 0, .pin = 6 },
+                                            .current_pin = { .port = 0, .pin = 7 },
+                                            .readings = { .voltage = 0, .current = 0 },
+                                            .current_convert_fn = prv_dcdc_current_convert,
+                                            .voltage_convert_fn = prv_dcdc_undervoltage_convert,
+                                            .period_millis = 0,
+                                            .timer_id = SOFT_TIMER_INVALID_TIMER,
+                                            .monitoring_active = false } };
 
 static CANStorage s_can_storage;
 static CANRxHandler s_rx_handlers[TEST_POWER_PATH_NUM_RX_HANDLERS];
@@ -180,4 +193,15 @@ void test_power_path_adcs(void) {
 
   TEST_ASSERT_EQUAL(STATUS_CODE_UNINITIALIZED, power_path_read_source(&s_ppc.aux_bat, &readings));
   TEST_ASSERT_EQUAL(STATUS_CODE_UNINITIALIZED, power_path_read_source(&s_ppc.dcdc, &readings));
+}
+
+void test_send_daemon(void) {
+  can_register_rx_handler(SYSTEM_CAN_MESSAGE_AUX_DCDC_VC, prv_handle_vc, NULL);
+
+  TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.aux_bat, TEST_POWER_PATH_ADC_PERIOD_MS));
+  TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.dcdc, TEST_POWER_PATH_ADC_PERIOD_MS));
+  TEST_ASSERT_OK(power_path_send_data_daemon(&s_ppc.dcdc, TEST_POWER_PATH_ADC_PERIOD_MS));
+  delay_ms(TEST_POWER_PATH_ADC_PERIOD_MS + TEST_POWER_PATH_ADC_PERIOD_MS / 10);
+
+  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
 }
