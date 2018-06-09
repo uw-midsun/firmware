@@ -148,7 +148,7 @@ StatusCode ltc2484_raw_adc_to_uv(uint8_t *spi_data, int32_t *voltage) {
   // Convert the voltage to uV
   // 2^24 * 4092 * 1000 = 6.86523679e13 (which fits in an int64_t)
   // dividing by 2^24 gives 4092000, which fits in an int32_t
-  *voltage = 888;
+  *voltage = (int32_t)(((int64_t)(adc_value)*LTC2484_V_REF_MILLIVOLTS * 1000) >> 24);
 
   return STATUS_CODE_OK;
 }

@@ -11,14 +11,13 @@
 #include "unity.h"
 
 // Arbitrary number of testing samples
-#define TEST_NUM_SAMPLES 25
+#define TEST_NUM_SAMPLES 5
 #define TEST_INPUT_VOLTAGE 1000
 
 static volatile uint8_t s_callback_runs = 0;
 
 static CurrentSenseStorage s_storage = { 0 };
-static CurrentSenseCalibrationData s_data = { .zero_point = { 888, 0 },
-                                              .max_point = { 62304, 3000 } };
+static CurrentSenseCalibrationData s_data = { .zero_point = { 0, 0 }, .max_point = { 1000, 3 } };
 
 static void prv_callback(int32_t current, void *context) {
   s_callback_runs++;
@@ -28,17 +27,11 @@ static void prv_callback(int32_t current, void *context) {
   int32_t x_max = s_data.max_point.voltage;
   int32_t y_max = s_data.max_point.current;
 
-  int32_t test_current = (y_max) * (TEST_INPUT_VOLTAGE) / (x_max - x_min);
+  int32_t test_current = (y_max) * (TEST_INPUT_VOLTAGE - x_min) / (x_max - x_min);
 
   TEST_ASSERT_EQUAL(current, test_current);
 
   LOG_DEBUG("Current = %" PRId32 "\n", current);
-}
-
-// Mock the adc readings
-StatusCode TEST_MOCK(ltc2484_raw_adc_to_uv)(uint8_t *spi_data, int32_t *voltage) {
-  *voltage = TEST_INPUT_VOLTAGE;
-  return STATUS_CODE_OK;
 }
 
 void setup_test(void) {
@@ -52,6 +45,8 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_current_sense(void) {
+  int32_t voltage = 0;
+
   // Fill out ADC storage struct and initialize current sense
   LtcAdcSettings adc_settings = { .mosi = { GPIO_PORT_B, 15 },
                                   .miso = { GPIO_PORT_B, 14 },
