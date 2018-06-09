@@ -10,10 +10,12 @@
 #include "throttle.h"
 #include "throttle_calibration.h"
 #include "unity.h"
+#include "calib.h"
 
 static Ads1015Storage s_ads1015_storage;
 static ThrottleStorage s_throttle_storage;
 static ThrottleCalibrationStorage s_calibration_storage;
+static CalibStorage s_calib;
 
 void setup_test(void) {
   gpio_init();
@@ -41,6 +43,8 @@ void setup_test(void) {
     .bounds_tolerance_percentage = 1,
   };
   throttle_calibration_init(&s_calibration_storage, &calib_settings);
+
+  calib_init(&s_calib);
 }
 
 void teardown_test(void) {}
@@ -57,10 +61,12 @@ void test_throttle_calibration_run(void) {
   throttle_calibration_sample(&s_calibration_storage, THROTTLE_CALIBRATION_POINT_FULL_ACCEL);
   LOG_DEBUG("Completed sampling\n");
 
-  ThrottleCalibrationData calib_data;
-  throttle_calibration_result(&s_calibration_storage, &calib_data);
+  throttle_calibration_result(&s_calibration_storage, &calib_blob(&s_calib)->throttle_calib);
 
-  throttle_init(&s_throttle_storage, &calib_data, &s_ads1015_storage);
+  LOG_DEBUG("Stored throttle calib data\n");
+  calib_commit(&s_calib);
+
+  throttle_init(&s_throttle_storage, &calib_blob(&s_calib)->throttle_calib, &s_ads1015_storage);
 
   while (true) {
     ThrottlePosition position = { .zone = NUM_THROTTLE_ZONES };
