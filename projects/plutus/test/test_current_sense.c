@@ -11,8 +11,8 @@
 #include "unity.h"
 
 // Arbitrary number of testing samples
-#define TEST_NUM_SAMPLES    25
-#define TEST_INPUT_VOLTAGE  1000
+#define TEST_NUM_SAMPLES 25
+#define TEST_INPUT_VOLTAGE 1000
 
 static volatile uint8_t s_callback_runs = 0;
 
@@ -32,7 +32,7 @@ static void prv_callback(int32_t current, void *context) {
 
   TEST_ASSERT_EQUAL(current, test_current);
 
-  LOG_DEBUG("Current = %" PRId32 ", Voltage = %" PRId32 "\n", current, s_storage.adc_storage->buffer.value);
+  LOG_DEBUG("Current = %" PRId32 "\n", current);
 }
 
 // Mock the adc readings
@@ -53,15 +53,13 @@ void teardown_test(void) {}
 
 void test_current_sense(void) {
   // Fill out ADC storage struct and initialize current sense
-  LtcAdcSettings adc_settings = { 
-    .mosi = { GPIO_PORT_B, 15 },
-    .miso = { GPIO_PORT_B, 14 },
-    .sclk = { GPIO_PORT_B, 13 },
-    .cs = { GPIO_PORT_B, 12 },
-    .spi_port = SPI_PORT_2,
-    .spi_baudrate = 750000,
-    .filter_mode = LTC_ADC_FILTER_50HZ_60HZ
-  };
+  LtcAdcSettings adc_settings = { .mosi = { GPIO_PORT_B, 15 },
+                                  .miso = { GPIO_PORT_B, 14 },
+                                  .sclk = { GPIO_PORT_B, 13 },
+                                  .cs = { GPIO_PORT_B, 12 },
+                                  .spi_port = SPI_PORT_2,
+                                  .spi_baudrate = 750000,
+                                  .filter_mode = LTC_ADC_FILTER_50HZ_60HZ };
 
   LtcAdcStorage adc_storage = { 0 };
 

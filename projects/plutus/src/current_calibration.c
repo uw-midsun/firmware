@@ -35,7 +35,7 @@ StatusCode current_calibration_sample_point(CurrentCalibrationStorage *storage,
 
   status_ok_or_return(ltc_adc_init(storage->adc_storage, storage->settings));
   status_ok_or_return(ltc_adc_register_callback(storage->adc_storage, prv_callback, storage));
-  
+
   while (storage->samples < CURRENT_CALIBRATION_SAMPLES) {
     wait();
   }
