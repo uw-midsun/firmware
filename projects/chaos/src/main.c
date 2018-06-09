@@ -39,7 +39,7 @@ int main(void) {
   soft_timer_init();
   gpio_init();
   gpio_it_init();
-  adc_init(ADC_MODE_SINGLE);
+  adc_init(ADC_MODE_CONTINUOUS);
 
   // CAN
   CANSettings can_settings = {
