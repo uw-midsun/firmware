@@ -49,6 +49,9 @@ static ControlStalk s_stalk;
 static GpioExpanderStorage s_stalk_expander;
 static Ads1015Storage s_stalk_ads1015;
 
+static CANStorage s_can;
+static CANRxHandler s_rx_handlers[5];
+
 static void prv_dump_fsms(void) {
   for (size_t i = 0; i < NUM_DRIVER_CONTROLS_FSMS; i++) {
     printf("> %-30s%s\n", s_fsms[i].name, s_fsms[i].current_state->name);
@@ -74,6 +77,7 @@ int main() {
     .rx = { GPIO_PORT_A, 11 },
     .loopback = false,
   };
+  can_init(&s_can, &can_settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
 
   const I2CSettings settings = {
     .speed = I2C_SPEED_FAST,    //
@@ -123,6 +127,8 @@ int main() {
       power_distribution_controller_retry(&e);
       cruise_handle_event(cruise_global(), &e);
       event_arbiter_process_event(&s_event_arbiter, &e);
+
+      (void)prv_dump_fsms;
     }
   }
 }
