@@ -20,7 +20,10 @@ static const EventID s_events[NUM_CENTER_CONSOLE_INPUTS] = {
 };
 
 static void prv_hold_timeout(SoftTimerID timer_id, void *context) {
-  event_raise(INPUT_EVENT_CENTER_CONSOLE_POWER, 0);
+  CenterConsoleStorage *storage = context;
+
+  storage->hold_timer = SOFT_TIMER_INVALID_TIMER;
+  event_raise_priority(EVENT_PRIORITY_HIGH, INPUT_EVENT_CENTER_CONSOLE_POWER, 0);
 }
 
 static void prv_raise_event_cb(GpioExpanderPin pin, GPIOState state, void *context) {
@@ -28,13 +31,14 @@ static void prv_raise_event_cb(GpioExpanderPin pin, GPIOState state, void *conte
 
   switch (pin) {
     case CENTER_CONSOLE_INPUT_POWER:
-      if (state == GPIO_STATE_LOW) {
-        soft_timer_start_millis(CENTER_CONSOLE_POWER_HOLD_MS, prv_hold_timeout, NULL,
-                         &storage->hold_timer);
-      } else {
+      if (state == GPIO_STATE_HIGH) {
         // Power button released
         soft_timer_cancel(storage->hold_timer);
         storage->hold_timer = SOFT_TIMER_INVALID_TIMER;
+      } else if (storage->hold_timer == SOFT_TIMER_INVALID_TIMER) {
+        // Power button pressed for the first time
+        soft_timer_start_millis(CENTER_CONSOLE_POWER_HOLD_MS, prv_hold_timeout, storage,
+                         &storage->hold_timer);
       }
       break;
     case CENTER_CONSOLE_INPUT_HAZARDS:
@@ -47,7 +51,6 @@ static void prv_raise_event_cb(GpioExpanderPin pin, GPIOState state, void *conte
       if (state == GPIO_STATE_LOW) {
         event_raise(s_events[pin], 0);
       }
-      break;
   }
 }
 

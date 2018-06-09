@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "center_console.h"
 #include "event_queue.h"
@@ -35,15 +36,11 @@ int main() {
 
   center_console_init(&s_console, &s_expander);
 
-  LOG_DEBUG("hello\n");
-
   Event e;
-  for (;;) {
+  while (true) {
     if (status_ok(event_process(&e))) {
       // Process the event with the input FSMs
       power_distribution_controller_retry(&e);
-
-      printf("Event %d\n", e.id);
     }
   }
 }
