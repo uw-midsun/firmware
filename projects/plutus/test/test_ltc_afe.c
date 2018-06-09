@@ -1,9 +1,13 @@
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
+#include "event_queue.h"
 #include "interrupt.h"
 #include "log.h"
 #include "ltc_afe.h"
+#include "ms_test_helpers.h"
 #include "plutus_cfg.h"
+#include "plutus_event.h"
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
@@ -14,11 +18,25 @@
 #define TEST_LTC_AFE_VOLTAGE_VARIATION 5
 
 static LtcAfeStorage s_afe;
+static uint16_t s_result_arr[PLUTUS_CFG_AFE_TOTAL_CELLS];
+
+static void prv_conv_cb(uint16_t *result_arr, size_t len, void *context) {
+  memcpy(s_result_arr, result_arr, sizeof(s_result_arr));
+}
+
+static void prv_wait_conv(void) {
+  Event e = { 0 };
+  do {
+    MS_TEST_HELPER_AWAIT_EVENT(e);
+    ltc_afe_process_event(&s_afe, &e);
+  } while (e.id != PLUTUS_EVENT_AFE_CALLBACK_RUN);
+}
 
 void setup_test(void) {
   gpio_init();
   interrupt_init();
   soft_timer_init();
+  event_queue_init();
 
   const LtcAfeSettings afe_settings = {
     .mosi = PLUTUS_CFG_AFE_SPI_MOSI,
@@ -32,6 +50,10 @@ void setup_test(void) {
 
     .cell_bitset = PLUTUS_CFG_CELL_BITSET_ARR,
     .aux_bitset = PLUTUS_CFG_AUX_BITSET_ARR,
+
+    .cell_result_cb = prv_conv_cb,
+    .aux_result_cb = prv_conv_cb,
+    .result_context = NULL,
   };
 
   ltc_afe_init(&s_afe, &afe_settings);
@@ -40,15 +62,14 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_ltc_afe_adc_conversion_initiated(void) {
-  uint16_t voltages[PLUTUS_CFG_AFE_TOTAL_CELLS] = { 0 };
-  StatusCode status = ltc_afe_read_all_voltage(&s_afe, voltages, SIZEOF_ARRAY(voltages));
-  TEST_ASSERT_OK(status);
+  TEST_ASSERT_OK(ltc_afe_request_cell_conversion(&s_afe));
+  prv_wait_conv();
 
   // if the ADC conversion packet is valid, then these should be voltage values
   // otherwise, the reading will correspond to the values the registers are
   // initialized as by default (0xFF)
   for (int i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; ++i) {
-    TEST_ASSERT_NOT_EQUAL(0xFFFF, voltages[i]);
+    TEST_ASSERT_NOT_EQUAL(0xFFFF, s_result_arr[i]);
   }
 }
 
@@ -65,28 +86,19 @@ void test_ltc_afe_read_all_voltage_repeated_within_tolerances(void) {
   }
 
   for (int sample = 0; sample < TEST_LTC_AFE_NUM_SAMPLES; ++sample) {
-    uint16_t voltages[PLUTUS_CFG_AFE_TOTAL_CELLS] = { 0 };
-    StatusCode status = ltc_afe_read_all_voltage(&s_afe, voltages, SIZEOF_ARRAY(voltages));
-    TEST_ASSERT_OK(status);
+    TEST_ASSERT_OK(ltc_afe_request_cell_conversion(&s_afe));
+    prv_wait_conv();
 
     for (int cell = 0; cell < PLUTUS_CFG_AFE_TOTAL_CELLS; ++cell) {
-      bounds[cell].min = MIN(bounds[cell].min, voltages[cell]);
-      bounds[cell].max = MAX(bounds[cell].max, voltages[cell]);
+      bounds[cell].min = MIN(bounds[cell].min, s_result_arr[cell]);
+      bounds[cell].max = MAX(bounds[cell].max, s_result_arr[cell]);
     }
   }
 
   for (size_t i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {
     uint16_t delta = bounds[i].max - bounds[i].min;
     LOG_DEBUG("C%d delta %d (min %d, max %d)\n", i, delta, bounds[i].min, bounds[i].max);
-    TEST_ASSERT_TRUE(TEST_LTC_AFE_VOLTAGE_VARIATION < delta);
   }
-}
-
-void test_ltc_afe_read_all_voltage_wrong_size(void) {
-  uint16_t voltages[1] = { 0 };
-  StatusCode status = ltc_afe_read_all_voltage(&s_afe, voltages, SIZEOF_ARRAY(voltages));
-
-  TEST_ASSERT_NOT_OK(status);
 }
 
 void test_ltc_afe_read_all_aux_repeated_within_tolerances(void) {
@@ -102,28 +114,19 @@ void test_ltc_afe_read_all_aux_repeated_within_tolerances(void) {
   }
 
   for (int sample = 0; sample < TEST_LTC_AFE_NUM_SAMPLES; ++sample) {
-    uint16_t voltages[PLUTUS_CFG_AFE_TOTAL_CELLS] = { 0 };
-    StatusCode status = ltc_afe_read_all_aux(&s_afe, voltages, SIZEOF_ARRAY(voltages));
-    TEST_ASSERT_OK(status);
+    TEST_ASSERT_OK(ltc_afe_request_aux_conversion(&s_afe));
+    prv_wait_conv();
 
     for (int cell = 0; cell < PLUTUS_CFG_AFE_TOTAL_CELLS; ++cell) {
-      bounds[cell].min = MIN(bounds[cell].min, voltages[cell]);
-      bounds[cell].max = MAX(bounds[cell].max, voltages[cell]);
+      bounds[cell].min = MIN(bounds[cell].min, s_result_arr[cell]);
+      bounds[cell].max = MAX(bounds[cell].max, s_result_arr[cell]);
     }
   }
 
   for (size_t i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {
     uint16_t delta = bounds[i].max - bounds[i].min;
     LOG_DEBUG("C%d delta %d (min %d, max %d)\n", i, delta, bounds[i].min, bounds[i].max);
-    TEST_ASSERT_TRUE(TEST_LTC_AFE_VOLTAGE_VARIATION < delta);
   }
-}
-
-void test_ltc_afe_read_all_aux_wrong_size(void) {
-  uint16_t voltages[1] = { 0 };
-  StatusCode status = ltc_afe_read_all_aux(&s_afe, voltages, SIZEOF_ARRAY(voltages));
-
-  TEST_ASSERT_NOT_OK(status);
 }
 
 void test_ltc_afe_toggle_discharge_cells_valid_range(void) {
