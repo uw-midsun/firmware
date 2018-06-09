@@ -14,6 +14,7 @@
 #include "exported_enums.h"
 #include "fsm.h"
 #include "gpio.h"
+#include "log.h"
 #include "misc.h"
 #include "relay_id.h"
 #include "status.h"
@@ -45,8 +46,10 @@ static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckS
   (void)num_remaining;
   RelayFsmAckCtx *ack_ctx = context;
   if (status != CAN_ACK_STATUS_OK) {
+    LOG_DEBUG("Relay Failed: %d %d %d %d\n", ack_ctx->id, device, status, num_remaining);
     event_raise(CHAOS_EVENT_MAYBE_RETRY_RELAY, ack_ctx->id);
   } else {
+    LOG_DEBUG("Relay OK: %d %d %d\n", ack_ctx->id, device, num_remaining);
     event_raise(ack_ctx->event_id, ack_ctx->id);
   }
   return STATUS_CODE_OK;
@@ -61,6 +64,7 @@ FSM_DECLARE_STATE(relay_closed);
 FSM_DECLARE_STATE(relay_opening);
 
 FSM_STATE_TRANSITION(relay_opened) {
+  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_OPEN_RELAY, prv_guard_select_relay, relay_opening);
   FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_CLOSE_RELAY, prv_guard_select_relay, relay_closing);
 }
 
@@ -71,6 +75,7 @@ FSM_STATE_TRANSITION(relay_closing) {
 }
 
 FSM_STATE_TRANSITION(relay_closed) {
+  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_CLOSE_RELAY, prv_guard_select_relay, relay_closing);
   FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_OPEN_RELAY, prv_guard_select_relay, relay_opening);
 }
 
@@ -108,8 +113,10 @@ static void prv_opening(FSM *fsm, const Event *e, void *context) {
   // Check that the GPIO pin is in |GPIO_STATE_HIGH| before opening. If it is already off we assume
   // the relay to be opened already.
   GPIOState state = GPIO_STATE_LOW;
+  LOG_DEBUG("Opening Relay %d\n", e->data);
   gpio_get_state(&relay_ctx->power_pin, &state);
   if (state == GPIO_STATE_LOW) {
+    LOG_DEBUG("Opening failed (not powered) %d\n", e->data);
     event_raise(CHAOS_EVENT_RELAY_OPENED, relay_ctx->ack_ctx.id);
     return;
   }
@@ -122,9 +129,11 @@ static void prv_closing(FSM *fsm, const Event *e, void *context) {
   // Check that the GPIO pin is in |GPIO_STATE_HIGH| before closing. If it is already off this
   // action is an error and we raise it as such, this will reset us to the open state.
   GPIOState state = GPIO_STATE_LOW;
+  LOG_DEBUG("Closing Relay %d\n", e->data);
   gpio_get_state(&relay_ctx->power_pin, &state);
   if (state == GPIO_STATE_LOW) {
     event_raise(CHAOS_EVENT_RELAY_ERROR, relay_ctx->ack_ctx.id);
+    LOG_DEBUG("Closing failed (not powered) %d\n", e->data);
     return;
   }
   relay_ctx->ack_ctx.event_id = CHAOS_EVENT_RELAY_CLOSED;

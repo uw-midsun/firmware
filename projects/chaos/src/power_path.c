@@ -16,6 +16,7 @@
 #include "status.h"
 
 // All values in millivolts
+#define POWER_PATH_UPDATE_PERIOD_MS 5000
 #define POWER_PATH_AUX_UV_MILLIV 8460
 #define POWER_PATH_AUX_OV_MILLIV 14310
 #define POWER_PATH_DCDC_UV_MILLIV 11160
@@ -70,6 +71,16 @@ static void prv_adc_read(SoftTimerID timer_id, void *context) {
   soft_timer_start_millis(pps->period_millis, prv_adc_read, pps, &pps->timer_id);
 }
 
+static void prv_send(SoftTimerID timer_id, void *context) {
+  (void)timer_id;
+  PowerPathCfg *cfg = context;
+  PowerPathVCReadings aux = { 0 };
+  power_path_read_source(&cfg->aux_bat, &aux);
+  PowerPathVCReadings dcdc = { 0 };
+  power_path_read_source(&cfg->dcdc, &dcdc);
+  CAN_TRANSMIT_AUX_DCDC_VC(aux.voltage, aux.current, dcdc.voltage, dcdc.current);
+};
+
 StatusCode power_path_init(PowerPathCfg *pp) {
   GPIOSettings settings = {
     .direction = GPIO_DIR_OUT,
@@ -102,7 +113,8 @@ StatusCode power_path_init(PowerPathCfg *pp) {
   status_ok_or_return(gpio_init_pin(&pp->aux_bat.voltage_pin, &settings));
   status_ok_or_return(gpio_init_pin(&pp->aux_bat.current_pin, &settings));
   status_ok_or_return(gpio_init_pin(&pp->dcdc.voltage_pin, &settings));
-  return gpio_init_pin(&pp->dcdc.current_pin, &settings);
+  status_ok_or_return(gpio_init_pin(&pp->dcdc.current_pin, &settings));
+  return soft_timer_start_millis(POWER_PATH_UPDATE_PERIOD_MS, prv_send, pp, NULL);
 }
 
 StatusCode power_path_source_monitor_enable(PowerPathSource *source, uint32_t period_millis) {

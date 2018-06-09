@@ -85,10 +85,10 @@ static const SequencerEventPair s_emergency_events[] = {
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MOTORS },
     .response = SEQUENCER_NO_RESPONSE },
-  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
-    .response = SEQUENCER_NO_RESPONSE },
-  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
-    .response = SEQUENCER_NO_RESPONSE },
+  // { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
+  //   .response = SEQUENCER_NO_RESPONSE },
+  // { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
+  //   .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_MONITOR_DISABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_BATTERY_SLAVE },
@@ -116,10 +116,10 @@ static const SequencerEventPair s_idle_events[] = {
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MOTORS },
     .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_MOTORS } },
-  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
-    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
-  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
-    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
+  // { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
+  //   .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
+  // { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
+  //   .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
   { .raise = { .id = CHAOS_EVENT_MONITOR_DISABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_BATTERY_SLAVE },
@@ -154,10 +154,12 @@ static const SequencerEventPair s_charge_events[] = {
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_GPIO_CHARGE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
+  { .raise = { .id = CHAOS_EVENT_DELAY_MS, .data = 1000 },
+    .response = { CHAOS_EVENT_DELAY_DONE, 0 } },
+  // { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
+  //   .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
+  // { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
+  //   .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
   { .raise = { .id = CHAOS_EVENT_CHARGER_CLOSE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_SEQUENCE_CHARGE_DONE, .data = SEQUENCER_EMPTY_DATA },
@@ -188,14 +190,16 @@ static const SequencerEventPair s_drive_events[] = {
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_GPIO_DRIVE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MOTORS },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MOTORS } },
-  { .raise = { .id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE, .data = SEQUENCER_EMPTY_DATA },
-    .response = SEQUENCER_NO_RESPONSE },
+  { .raise = { .id = CHAOS_EVENT_DELAY_MS, .data = 1000 },
+    .response = { CHAOS_EVENT_DELAY_DONE, 0 } },
+  // { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
+  //   .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
+  // { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
+  //   .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
+  //{ .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MOTORS },
+  //  .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MOTORS } },
+  //{ .raise = { .id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE, .data = SEQUENCER_EMPTY_DATA },
+  //  .response = SEQUENCER_NO_RESPONSE },
 };
 
 // FSM Setup
@@ -234,6 +238,7 @@ FSM_STATE_TRANSITION(sequencer_state_drive) {
 // finish. If this returns false the caller should exit immediately.
 static bool prv_sequencer_setup_common(void) {
   if (sequencer_stop_awaiting(&s_storage)) {
+    LOG_DEBUG("Awaiting\n");
     relay_retry_service_fail_fast();
     // We actually transitioned so just reset the state until it succeeds. Note this needs to be
     // normal priority to allow events to flush. This is to flush an event we are waiting for
@@ -333,11 +338,10 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event) {
   // Handle a totally faulted relay in a special way, ignore this kind of failure if we are
   // transitioning as the relay may not have reached the maximal retry limit.
   if (previous_event->id == CHAOS_EVENT_RELAY_ERROR) {
-    if (s_pending_transition) {
-      // Force the awaiting flag to clear as we the relay failed fast.
-      s_storage.awaiting_response = false;
-      return STATUS_CODE_OK;
-    }
+    // Force the awaiting flag to clear as we the relay failed.
+    s_storage.awaiting_response = false;
+    return STATUS_CODE_OK;
+
     // If we aren't in the emergency state we need to switch to that state. This event will not be
     // raised in the emergency state.
     return event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_EMERGENCY,

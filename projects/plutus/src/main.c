@@ -15,9 +15,9 @@ static void prv_periodic_tx_debug(SoftTimerID timer_id, void *context) {
   // TODO(ELEC-439): Output current data
   // CAN_TRANSMIT_BATTERY_CURRENT();
   for (size_t i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {
-    LOG_DEBUG("C%d %d.%dmV, aux %d.%dmV\n", i, s_result.cell_voltages[i] / 10,
-              s_result.cell_voltages[i] % 10, s_result.temp_voltages[i] / 10,
-              s_result.temp_voltages[i] % 10);
+    // LOG_DEBUG("C%d %d.%dmV, aux %d.%dmV\n", i, s_result.cell_voltages[i] / 10,
+    //           s_result.cell_voltages[i] % 10, s_result.temp_voltages[i] / 10,
+    //           s_result.temp_voltages[i] % 10);
     CAN_TRANSMIT_BATTERY_VT(i, s_result.cell_voltages[i], s_result.temp_voltages[i]);
   }
 

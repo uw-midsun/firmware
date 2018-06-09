@@ -2,6 +2,7 @@
 
 #include "chaos_events.h"
 #include "event_queue.h"
+#include "log.h"
 #include "relay_id.h"
 
 static RelayRetryServiceStorage *s_storage = NULL;
@@ -25,6 +26,7 @@ StatusCode relay_retry_service_update(const Event *e) {
 
   switch (e->id) {
     case CHAOS_EVENT_MAYBE_RETRY_RELAY:
+      LOG_DEBUG("Retrying %d\n", e->data);
       // We want to consider retrying the relay. First validate the relay is valid.
       if (e->data >= NUM_RELAY_IDS) {
         return status_code(STATUS_CODE_INVALID_ARGS);

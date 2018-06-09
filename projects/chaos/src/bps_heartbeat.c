@@ -41,7 +41,6 @@ static StatusCode prv_bps_rx(const CANMessage *msg, void *context, CANAckStatus 
     LOG_DEBUG("BPS Emergency\n");
     event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, 0);
   } else {
-    LOG_DEBUG("BPS OK\n");
     prv_kick_watchdog();
   }
   return STATUS_CODE_OK;

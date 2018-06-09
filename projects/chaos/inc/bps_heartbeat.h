@@ -9,7 +9,7 @@
 // Expects soft_timer, can, interrupts to be enabled.
 #include "status.h"
 
-#define BPS_HEARTBEAT_EXPECTED_PERIOD_MS 2000
+#define BPS_HEARTBEAT_EXPECTED_PERIOD_MS 4000
 
 // Configures BPS heartbeat handler.
 StatusCode bps_heartbeat_init(void);

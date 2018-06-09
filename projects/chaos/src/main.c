@@ -9,6 +9,7 @@
 #include "chaos_events.h"
 #include "charger.h"
 #include "delay.h"
+#include "delay_service.h"
 #include "emergency_fault.h"
 #include "event_queue.h"
 #include "gpio.h"
@@ -54,11 +55,8 @@ int main(void) {
     .loopback = false,
   };
   can_init(&s_can_storage, &can_settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
-  LOG_DEBUG("hello\n");
 
-  // GPIO
   ChaosConfig *cfg = chaos_config_load();
-  gpio_fsm_init(cfg);
 
   // Heartbeats
   bps_heartbeat_init();  // Use the auto start feature to start the watchdog.
@@ -79,6 +77,7 @@ int main(void) {
     .loopback = false,
   };
   relay_init(&relay_settings);
+  relay_retry_service_init(&s_retry_storage);
 
   // Sequencer
   sequencer_fsm_init();
@@ -92,7 +91,11 @@ int main(void) {
   emergency_fault_clear(&s_emergency_storage);
   state_handler_init();
 
+  // GPIO
+  gpio_fsm_init(cfg);
+
   LOG_DEBUG("started\n");
+  event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_DRIVE, 0);
 
   // Main loop
   Event e = { 0 };
@@ -107,15 +110,17 @@ int main(void) {
       }
     } while (status != STATUS_CODE_OK);
 
+    // LOG_DEBUG("Event %d\n", e.id);
     // Event Processing:
 
     // TODO(ELEC-105): At least one of the following should respond with either a boolean true or
     // a STATUS_CODE_OK for each emitted message. Consider adding a requirement that this is the
     // case with a failure resulting in faulting into Emergency.
     fsm_process_event(CAN_FSM, &e);
+    delay_service_process_event(&e);
     emergency_fault_process_event(&s_emergency_storage, &e);
     gpio_fsm_process_event(&e);
-    powertrain_heartbeat_process_event(&e);
+    // powertrain_heartbeat_process_event(&e);
     power_path_process_event(&cfg->power_path, &e);
     charger_process_event(&e);
     relay_process_event(&e);

@@ -9,10 +9,10 @@ static StatusCode prv_handle_heartbeat_ack(CANMessageID msg_id, uint16_t device,
 
   if (status != CAN_ACK_STATUS_OK) {
     // Something bad happened - fault
-    LOG_DEBUG("Timeout %d\n", device);
+    LOG_DEBUG("Timeout %d %d\n", device, num_remaining);
     return bps_heartbeat_raise_fault(storage, BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT);
   } else if (status == CAN_ACK_STATUS_OK) {
-    LOG_DEBUG("OK %d\n", device);
+    LOG_DEBUG("OK %d %d\n", device, num_remaining);
     return bps_heartbeat_clear_fault(storage, BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT);
   }
 
@@ -58,7 +58,7 @@ StatusCode bps_heartbeat_init(BpsHeartbeatStorage *storage, SequencedRelayStorag
   // Assume things are okay until told otherwise?
   storage->fault_bitset = 0x00;
 
-  return soft_timer_start_millis(storage->period_ms, prv_periodic_heartbeat, storage, NULL);
+  return soft_timer_start_millis(2000U, prv_periodic_heartbeat, storage, NULL);
 }
 
 StatusCode bps_heartbeat_raise_fault(BpsHeartbeatStorage *storage, BpsHeartbeatFaultSource source) {

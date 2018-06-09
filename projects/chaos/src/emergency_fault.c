@@ -65,7 +65,7 @@ void emergency_fault_clear(EmergencyFaultStorage *storage) {
 void emergency_fault_process_event(EmergencyFaultStorage *storage, const Event *e) {
   switch (e->id) {
     case CHAOS_EVENT_SEQUENCE_EMERGENCY:
-      emergency_fault_send(storage);
+      // emergency_fault_send(storage);
       break;
     case CHAOS_EVENT_SEQUENCE_IDLE:    // Falls through.
     case CHAOS_EVENT_SEQUENCE_CHARGE:  // Falls through.

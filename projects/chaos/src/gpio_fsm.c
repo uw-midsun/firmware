@@ -142,8 +142,8 @@ void gpio_fsm_init(const ChaosConfig *cfg) {
 
   // TODO(ELEC-105): Consider resetting battery box.
   const GPIOAddress init_high_sequence[] = {
-    cfg->battery_box_power, cfg->themis_power, cfg->rear_lights_power,
-    cfg->telemetry_power,  // For strobe.
+    cfg->battery_box_power, cfg->themis_power,          cfg->rear_lights_power,
+    cfg->telemetry_power,   cfg->motor_interface_power,  // For strobe.
   };
 
   gpio_seq_init_pins(init_high_sequence, SIZEOF_ARRAY(init_high_sequence), &settings,
