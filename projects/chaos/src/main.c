@@ -89,6 +89,7 @@ int main(void) {
   state_handler_init();
 
   // GPIO
+  // Postpone to as late as possible so that BPS heartbeats are ready to be ACK'd.
   gpio_fsm_init(cfg);
 
   // Main loop
