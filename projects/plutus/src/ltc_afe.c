@@ -33,8 +33,8 @@ static uint32_t s_conversion_delay_us[NUM_LTC_AFE_ADC_MODES] = {
 
 // From the datasheet: Table 7
 static uint32_t s_aux_conversion_delay_us[NUM_LTC_AFE_ADC_MODES] = {
-  [LTC_AFE_ADC_MODE_27KHZ] = 100, [LTC_AFE_ADC_MODE_14KHZ] = 100, [LTC_AFE_ADC_MODE_7KHZ] = 200,
-  [LTC_AFE_ADC_MODE_3KHZ] = 300,  [LTC_AFE_ADC_MODE_2KHZ] = 550,  [LTC_AFE_ADC_MODE_26HZ] = 30000,
+  [LTC_AFE_ADC_MODE_27KHZ] = 150, [LTC_AFE_ADC_MODE_14KHZ] = 150, [LTC_AFE_ADC_MODE_7KHZ] = 250,
+  [LTC_AFE_ADC_MODE_3KHZ] = 350,  [LTC_AFE_ADC_MODE_2KHZ] = 600,  [LTC_AFE_ADC_MODE_26HZ] = 30000,
 };
 
 static void prv_wakeup_idle(LtcAfeStorage *afe) {
@@ -113,6 +113,7 @@ static void prv_trigger_aux_adc_conversion(LtcAfeStorage *afe) {
   spi_exchange(afe->spi_port, cmd, 4, NULL, 0);
 
   // wait for conversions to finish
+  // TODO: may need to multiply by # devices in chain
   delay_us(s_aux_conversion_delay_us[afe->adc_mode]);
 }
 

@@ -1,5 +1,6 @@
 #pragma once
-// #define PLUTUS_CFG_DEBUG
+#define PLUTUS_CFG_DEBUG_PACK
+#define PLUTUS_CFG_STANDALONE
 
 #include "adc_cfg.h"
 #include "afe_cfg.h"
@@ -18,9 +19,14 @@
 
 // Heartbeat settings
 #define PLUTUS_CFG_HEARTBEAT_PERIOD_MS 500
+#ifndef PLUTUS_CFG_STANDALONE
 #define PLUTUS_CFG_HEARTBEAT_EXPECTED_DEVICES                                       \
   CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_PLUTUS_SLAVE, SYSTEM_CAN_DEVICE_CHAOS, \
                            SYSTEM_CAN_DEVICE_DRIVER_CONTROLS)
+#else
+#define PLUTUS_CFG_HEARTBEAT_EXPECTED_DEVICES \
+  CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_PLUTUS_SLAVE)
+#endif
 
 // Killswitch
 #define PLUTUS_CFG_KILLSWITCH \
