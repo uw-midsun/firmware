@@ -330,11 +330,10 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event) {
   // Handle a totally faulted relay in a special way, ignore this kind of failure if we are
   // transitioning as the relay may not have reached the maximal retry limit.
   if (previous_event->id == CHAOS_EVENT_RELAY_ERROR) {
-    if (s_pending_transition) {
-      // Force the awaiting flag to clear as we the relay failed fast.
-      s_storage.awaiting_response = false;
-      return STATUS_CODE_OK;
-    }
+    // Force the awaiting flag to clear as the relay failed.
+    s_storage.awaiting_response = false;
+    return STATUS_CODE_OK;
+
     // If we aren't in the emergency state we need to switch to that state. This event will not be
     // raised in the emergency state.
     return event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_EMERGENCY,
