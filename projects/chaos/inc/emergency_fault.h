@@ -13,7 +13,7 @@
 #include "status.h"
 
 // Uses a linear backoff. We aren't complex enough to warrant an exponential backoff.
-#define EMERGENCY_FAULT_BACKOFF_MS 250
+#define EMERGENCY_FAULT_BACKOFF_MS 750
 
 typedef struct EmergencyFaultStorage {
   SoftTimerID id;
