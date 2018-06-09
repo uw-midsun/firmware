@@ -1,4 +1,5 @@
 #include "ads1015.h"
+#include "calib.h"
 #include "delay.h"
 #include "event_queue.h"
 #include "gpio.h"
@@ -10,7 +11,6 @@
 #include "throttle.h"
 #include "throttle_calibration.h"
 #include "unity.h"
-#include "calib.h"
 
 static Ads1015Storage s_ads1015_storage;
 static ThrottleStorage s_throttle_storage;
@@ -23,17 +23,17 @@ void setup_test(void) {
   gpio_it_init();
   soft_timer_init();
   I2CSettings i2c_settings = {
-    .speed = I2C_SPEED_FAST,                    //
-    .scl = { .port = GPIO_PORT_B, .pin = 10 },  //
-    .sda = { .port = GPIO_PORT_B, .pin = 11 },  //
+    .speed = I2C_SPEED_FAST,                   //
+    .sda = { .port = GPIO_PORT_B, .pin = 9 },  //
+    .scl = { .port = GPIO_PORT_B, .pin = 8 },  //
   };
-  i2c_init(I2C_PORT_2, &i2c_settings);
+  i2c_init(I2C_PORT_1, &i2c_settings);
   GPIOAddress ready_pin = {
-    .port = GPIO_PORT_B,  //
-    .pin = 2,             //
+    .port = GPIO_PORT_A,  //
+    .pin = 10,            //
   };
   event_queue_init();
-  ads1015_init(&s_ads1015_storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
+  ads1015_init(&s_ads1015_storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
 
   ThrottleCalibrationSettings calib_settings = {
     .ads1015 = &s_ads1015_storage,
