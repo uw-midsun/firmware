@@ -1,37 +1,49 @@
 #include "fault_monitor.h"
 #include "log.h"
+#include <string.h>
 
-StatusCode fault_monitor_check(const FaultMonitorSettings *settings, FaultMonitorResult *result) {
-  bool is_charging = false;
+static void prv_extract_cell_result(uint16_t *result_arr, size_t len, void *context) {
+  FaultMonitorStorage *storage = context;
 
-  StatusCode status = ltc_afe_read_all_voltage(settings->ltc_afe, result->cell_voltages,
-                                               PLUTUS_CFG_AFE_TOTAL_CELLS);
-  if (status != STATUS_CODE_OK) {
-    LOG_DEBUG("Invalid status %d\n", status);
-    bps_heartbeat_raise_fault(settings->bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+  ltc_afe_request_aux_conversion(storage->settings.ltc_afe);
+
+  memcpy(storage->result.cell_voltages, result_arr, sizeof(storage->result.cell_voltages));
+
+  for (size_t i = 0; i < len; i++) {
+    if (result_arr[i] < storage->settings.undervoltage || result_arr[i] > storage->settings.overvoltage) {
+      bps_heartbeat_raise_fault(storage->settings.bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+      return;
+    }
   }
-  bps_heartbeat_clear_fault(settings->bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
 
-  // status =
-  //     ltc_afe_read_all_aux(settings->ltc_afe, result->temp_voltages, PLUTUS_CFG_AFE_TOTAL_CELLS);
-  // if (status != STATUS_CODE_OK) {
-  //   LOG_DEBUG("Invalid status (aux) %d\n", status);
-  //   bps_heartbeat_raise_fault(settings->bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+  bps_heartbeat_clear_fault(storage->settings.bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+}
+
+static void prv_extract_aux_result(uint16_t *result_arr, size_t len, void *context) {
+  FaultMonitorStorage *storage = context;
+
+  ltc_afe_request_cell_conversion(storage->settings.ltc_afe);
+
+  memcpy(storage->result.temp_voltages, result_arr, sizeof(storage->result.temp_voltages));
+
+  // TODO(ELEC-439): Add temp faulting
+  // for (size_t i = 0; i < len; i++) {
+  //   bps_heartbeat_raise_fault(storage->settings.bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC);
   // }
-  // bps_heartbeat_clear_fault(settings->bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+}
 
-  bool had_fault = false;
-  for (size_t i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {
-    // TODO(ELEC-439): add temperature check
-    had_fault |= (result->cell_voltages[i] < settings->undervoltage ||
-                  result->cell_voltages[i] > settings->overvoltage);
-  }
+static void prv_extract_current(int32_t *value, void *context) {
+  FaultMonitorStorage *storage = context;
 
-  if (had_fault) {
-    bps_heartbeat_raise_fault(settings->bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
-  } else {
-    bps_heartbeat_clear_fault(settings->bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
-  }
+  storage->result.current = *value;
+}
 
-  return STATUS_CODE_OK;
+StatusCode fault_monitor_init(FaultMonitorStorage *storage, const FaultMonitorSettings *settings) {
+  storage->settings = *settings;
+
+  ltc_adc_register_callback(storage->settings.ltc_adc, prv_extract_current, storage);
+
+  ltc_afe_set_result_cbs(storage->settings.ltc_afe, prv_extract_cell_result, prv_extract_aux_result, storage);
+
+  return ltc_afe_request_cell_conversion(storage->settings.ltc_afe);
 }

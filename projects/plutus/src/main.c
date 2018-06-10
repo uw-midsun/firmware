@@ -7,19 +7,22 @@
 #include "can_transmit.h"
 #include "fault_monitor.h"
 #include "plutus_sys.h"
+#include "wait.h"
 
 static PlutusSysStorage s_plutus;
-static FaultMonitorResult s_result;
+static FaultMonitorStorage s_fault_monitor;
 
 static void prv_periodic_tx_debug(SoftTimerID timer_id, void *context) {
   // TODO(ELEC-439): Output current data
-  // CAN_TRANSMIT_BATTERY_CURRENT();
+  FaultMonitorResult *result = &s_fault_monitor.result;
+
   for (size_t i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {
-    LOG_DEBUG("C%d %d.%dmV, aux %d.%dmV\n", i, s_result.cell_voltages[i] / 10,
-              s_result.cell_voltages[i] % 10, s_result.temp_voltages[i] / 10,
-              s_result.temp_voltages[i] % 10);
-    CAN_TRANSMIT_BATTERY_VT(i, s_result.cell_voltages[i], s_result.temp_voltages[i]);
+    // LOG_DEBUG("C%d %d.%dmV, aux %d.%dmV\n", i, result->cell_voltages[i] / 10,
+    //           result->cell_voltages[i] % 10, result->temp_voltages[i] / 10,
+    //           result->temp_voltages[i] % 10);
+    CAN_TRANSMIT_BATTERY_VT(i, result->cell_voltages[i], result->temp_voltages[i]);
   }
+  CAN_TRANSMIT_BATTERY_CURRENT((uint32_t)result->current);
 
   soft_timer_start_millis(PLUTUS_CFG_TELEMETRY_PERIOD_MS, prv_periodic_tx_debug, NULL, NULL);
 }
@@ -29,28 +32,25 @@ int main(void) {
   plutus_sys_init(&s_plutus, board_type);
   LOG_DEBUG("Board type: %d\n", board_type);
 
-  FaultMonitorSettings fault_monitor = {
-    .bps_heartbeat = &s_plutus.bps_heartbeat,
-    .ltc_afe = &s_plutus.ltc_afe,
-
-    .overvoltage = PLUTUS_CFG_CELL_OVERVOLTAGE,
-    .undervoltage = PLUTUS_CFG_CELL_UNDERVOLTAGE,
-  };
-
   if (board_type == PLUTUS_SYS_TYPE_MASTER) {
-    // Only bother dumping telemetry data if master
+    const FaultMonitorSettings fault_settings = {
+      .bps_heartbeat = &s_plutus.bps_heartbeat,
+      .ltc_afe = &s_plutus.ltc_afe,
+
+      .overvoltage = PLUTUS_CFG_CELL_OVERVOLTAGE,
+      .undervoltage = PLUTUS_CFG_CELL_UNDERVOLTAGE,
+    };
+
+    fault_monitor_init(&s_fault_monitor, &fault_settings);
     soft_timer_start_millis(PLUTUS_CFG_TELEMETRY_PERIOD_MS, prv_periodic_tx_debug, NULL, NULL);
   }
 
   Event e = { 0 };
   while (true) {
-    if (status_ok(event_process(&e))) {
+    wait();
+    while (status_ok(event_process(&e))) {
       fsm_process_event(CAN_FSM, &e);
+      ltc_afe_process_event(&s_plutus.ltc_afe, &e);
     }
-
-    // if (board_type == PLUTUS_SYS_TYPE_MASTER) {
-    //   // Only check for faults if master
-    //   fault_monitor_check(&fault_monitor, &s_result);
-    // }
   }
 }

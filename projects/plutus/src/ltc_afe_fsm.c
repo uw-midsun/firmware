@@ -76,7 +76,7 @@ static void prv_afe_trigger_aux_conv_output(struct FSM *fsm, const Event *e, voi
   ltc_afe_impl_trigger_aux_conv(afe, device_cell);
 
   afe->aux_index = device_cell;
-  soft_timer_start_millis(LTC_AFE_FSM_AUX_CONV_DELAY_MS, prv_aux_conv_timeout, &afe->aux_index,
+  soft_timer_start_millis(LTC_AFE_FSM_AUX_CONV_DELAY_MS, prv_aux_conv_timeout, afe,
                           NULL);
 }
 

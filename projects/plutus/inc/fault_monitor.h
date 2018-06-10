@@ -3,10 +3,11 @@
 // Requires LTC AFE, LTC ADC, BPS heartbeat to be initialized
 #include "bps_heartbeat.h"
 #include "ltc_afe.h"
+#include "ltc_adc.h"
 
 typedef struct FaultMonitorSettings {
-  // TODO(ELEC-439): add current sense
   LtcAfeStorage *ltc_afe;
+  LtcAdcStorage *ltc_adc;
   BpsHeartbeatStorage *bps_heartbeat;
 
   // In 100uV (0.1mV)
@@ -28,4 +29,10 @@ typedef struct FaultMonitorResult {
   int32_t current;
 } FaultMonitorResult;
 
-StatusCode fault_monitor_check(const FaultMonitorSettings *settings, FaultMonitorResult *result);
+typedef struct FaultMonitorStorage {
+  FaultMonitorSettings settings;
+  FaultMonitorResult result;
+} FaultMonitorStorage;
+
+// |storage| should persist. |settings.ltc_afe| and |settings.bps_heartbeat| should be initialized.
+StatusCode fault_monitor_init(FaultMonitorStorage *storage, const FaultMonitorSettings *settings);
