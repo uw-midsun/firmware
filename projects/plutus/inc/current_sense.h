@@ -21,7 +21,7 @@ typedef struct {
 typedef struct {
   LtcAdcStorage *adc_storage;
   CurrentSenseCalibrationData *data;
-  int32_t value;
+  int32_t current_value;
   CurrentSenseCallback callback;
   void *context;
 } CurrentSenseStorage;
@@ -34,4 +34,5 @@ StatusCode current_sense_init(CurrentSenseStorage *storage, CurrentSenseCalibrat
 StatusCode current_sense_register_callback(CurrentSenseStorage *storage,
                                            CurrentSenseCallback callback, void *context);
 
+// Return current in millamps
 StatusCode current_sense_get_value(CurrentSenseStorage *storage, int32_t *current);

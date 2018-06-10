@@ -21,7 +21,7 @@ typedef struct {
 StatusCode current_calibration_init(CurrentCalibrationStorage *storage, LtcAdcStorage *adc_storage,
                                     LtcAdcSettings *adc_settings);
 
-// Samples adc readings at specified current in order to obtain data for two-point
+// Samples adc readings at specified current(milliamps) in order to obtain data for two-point
 // calibration. Function will block until completion. For optimal results, make
 // sure the points are as far apart as possible
 StatusCode current_calibration_sample_point(CurrentCalibrationStorage *storage,
