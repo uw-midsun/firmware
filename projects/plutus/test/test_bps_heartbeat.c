@@ -8,9 +8,9 @@
 #include "interrupt.h"
 #include "log.h"
 #include "ms_test_helpers.h"
+#include "plutus_cfg.h"
 #include "soft_timer.h"
 #include "test_helpers.h"
-#include "plutus_cfg.h"
 
 #define TEST_BPS_HEARTBEAT_PERIOD_MS 50
 #define TEST_BPS_HEARTBEAT_NUM_CAN_RX_HANDLERS 5
