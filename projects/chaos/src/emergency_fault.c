@@ -45,7 +45,7 @@ static StatusCode prv_ack_handler(CANMessageID msg_id, uint16_t device, CANAckSt
   return STATUS_CODE_OK;
 }
 
-void emergency_fault_init_storage(EmergencyFaultStorage *storage) {
+void emergency_fault_init(EmergencyFaultStorage *storage) {
   storage->id = SOFT_TIMER_INVALID_TIMER;
   storage->keep_trying = false;
 }

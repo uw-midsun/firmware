@@ -21,7 +21,7 @@ typedef struct EmergencyFaultStorage {
 } EmergencyFaultStorage;
 
 // Initializes the emergency fault storage.
-void emergency_fault_init_storage(EmergencyFaultStorage *storage);
+void emergency_fault_init(EmergencyFaultStorage *storage);
 
 // Simple utility to send a POWER_DISTRIBUTION_FAULT. Will auto retry until successfully ACK'd.
 StatusCode emergency_fault_send(EmergencyFaultStorage *storage);

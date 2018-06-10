@@ -88,7 +88,7 @@ int main(void) {
 
   // CAN services
   charger_init();
-  emergency_fault_init_storage(&s_emergency_storage);
+  emergency_fault_init(&s_emergency_storage);
   state_handler_init();
 
   // GPIO
