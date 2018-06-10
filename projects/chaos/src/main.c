@@ -31,9 +31,7 @@
 
 static CANStorage s_can_storage;
 static CANRxHandler s_rx_handlers[CHAOS_NUM_RX_HANDLERS];
-static EmergencyFaultStorage s_emergency_storage = {
-  .id = SOFT_TIMER_INVALID_TIMER,
-};
+static EmergencyFaultStorage s_emergency_storage;
 static RelayRetryServiceStorage s_retry_storage;
 
 int main(void) {
@@ -90,7 +88,7 @@ int main(void) {
 
   // CAN services
   charger_init();
-  emergency_fault_clear(&s_emergency_storage);
+  emergency_fault_init_storage(&s_emergency_storage);
   state_handler_init();
 
   // GPIO

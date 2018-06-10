@@ -46,6 +46,7 @@ void setup_test(void) {
   };
 
   can_init(&s_storage, &settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+  emergency_fault_init_storage(&s_em_storage);
 }
 
 void teardown_test(void) {}

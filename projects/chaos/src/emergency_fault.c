@@ -45,6 +45,11 @@ static StatusCode prv_ack_handler(CANMessageID msg_id, uint16_t device, CANAckSt
   return STATUS_CODE_OK;
 }
 
+void emergency_fault_init_storage(EmergencyFaultStorage *storage) {
+  storage->id = SOFT_TIMER_INVALID_TIMER;
+  storage->keep_trying = false;
+}
+
 StatusCode emergency_fault_send(EmergencyFaultStorage *storage) {
   storage->keep_trying = true;
   // Sends a fault message after a brief delay. This is just to simplify the behavior.

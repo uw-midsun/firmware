@@ -13,6 +13,7 @@
 #include "relay_retry_service.h"
 #include "sequencer.h"
 
+#define SEQUENCER_FSM_BOOT_DELAY 2600
 #define SEQUENCER_FSM_MAX_RETRIES 2
 #define NUM_SEQUENCER_FSM_FILTERS 3
 
@@ -154,7 +155,7 @@ static const SequencerEventPair s_charge_events[] = {
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_GPIO_CHARGE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
-  { .raise = { .id = CHAOS_EVENT_DELAY_MS, .data = 2600 },
+  { .raise = { .id = CHAOS_EVENT_DELAY_MS, .data = SEQUENCER_FSM_BOOT_DELAY },
     .response = { CHAOS_EVENT_DELAY_DONE, 0 } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
@@ -190,7 +191,7 @@ static const SequencerEventPair s_drive_events[] = {
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_GPIO_DRIVE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
-  { .raise = { .id = CHAOS_EVENT_DELAY_MS, .data = 2600 },
+  { .raise = { .id = CHAOS_EVENT_DELAY_MS, .data = SEQUENCER_FSM_BOOT_DELAY },
     .response = { CHAOS_EVENT_DELAY_DONE, 0 } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
