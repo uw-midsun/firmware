@@ -15,6 +15,7 @@
 #include "power_distribution_controller.h"
 #include "soft_timer.h"
 #include "throttle.h"
+#include "heartbeat_rx.h"
 
 #include "cruise_fsm.h"
 #include "direction_fsm.h"
@@ -27,8 +28,10 @@
 #include "drive_output.h"
 
 #include "can.h"
+#include "dc_cfg.h"
 
 typedef StatusCode (*DriverControlsFsmInitFn)(FSM *fsm, EventArbiterStorage *storage);
+
 typedef enum {
   DRIVER_CONTROLS_FSM_POWER = 0,
   DRIVER_CONTROLS_FSM_CRUISE,
@@ -51,12 +54,7 @@ static Ads1015Storage s_stalk_ads1015;
 
 static CANStorage s_can;
 static CANRxHandler s_rx_handlers[5];
-
-static void prv_dump_fsms(void) {
-  for (size_t i = 0; i < NUM_DRIVER_CONTROLS_FSMS; i++) {
-    printf("> %-30s%s\n", s_fsms[i].name, s_fsms[i].current_state->name);
-  }
-}
+static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
 
 int main() {
   gpio_init();
@@ -68,44 +66,47 @@ int main() {
   calib_init(&s_calib);
 
   const CANSettings can_settings = {
-    .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,
-    .bitrate = CAN_HW_BITRATE_500KBPS,
+    .device_id = DC_CFG_CAN_DEVICE_ID,
+    .bitrate = DC_CFG_CAN_BITRATE,
     .rx_event = INPUT_EVENT_CAN_RX,
     .tx_event = INPUT_EVENT_CAN_TX,
     .fault_event = INPUT_EVENT_CAN_FAULT,
-    .tx = { GPIO_PORT_A, 12 },
-    .rx = { GPIO_PORT_A, 11 },
+    .tx = DC_CFG_CAN_TX,
+    .rx = DC_CFG_CAN_RX,
     .loopback = false,
   };
   can_init(&s_can, &can_settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
 
-  const I2CSettings settings = {
+  const I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,    //
-    .sda = { GPIO_PORT_B, 9 },  //
-    .scl = { GPIO_PORT_B, 8 },  //
+    .sda = DC_CFG_I2C_BUS_SDA,  //
+    .scl = DC_CFG_I2C_BUS_SCL,  //
   };
 
-  i2c_init(I2C_PORT_1, &settings);
+  i2c_init(DC_CFG_I2C_BUS_PORT, &i2c_settings);
 
-  GPIOAddress stalk_int_pin = { GPIO_PORT_A, 2 };
-  GPIOAddress stalk_ready_pin = { GPIO_PORT_A, 1 };
-  gpio_expander_init(&s_stalk_expander, I2C_PORT_1, GPIO_EXPANDER_ADDRESS_0, &stalk_int_pin);
-  ads1015_init(&s_stalk_ads1015, I2C_PORT_1, ADS1015_ADDRESS_VDD, &stalk_ready_pin);
-  control_stalk_init(&s_stalk, &s_stalk_ads1015, &s_stalk_expander);
-
-  GPIOAddress console_int_pin = { GPIO_PORT_A, 9 };
-  gpio_expander_init(&s_console_expander, I2C_PORT_1, GPIO_EXPANDER_ADDRESS_1, &console_int_pin);
+  GPIOAddress console_int_pin = DC_CFG_CONSOLE_IO_INT_PIN;
+  gpio_expander_init(&s_console_expander, DC_CFG_I2C_BUS_PORT, DC_CFG_CONSOLE_IO_ADDR, &console_int_pin);
   center_console_init(&s_console, &s_console_expander);
 
-  GPIOAddress pedal_ads1015_ready = { GPIO_PORT_A, 10 };
-  ads1015_init(&s_pedal_ads1015, I2C_PORT_1, ADS1015_ADDRESS_GND, &pedal_ads1015_ready);
+  GPIOAddress stalk_int_pin = DC_CFG_STALK_IO_INT_PIN;
+  GPIOAddress stalk_ready_pin = DC_CFG_STALK_ADC_RDY_PIN;
+  gpio_expander_init(&s_stalk_expander, DC_CFG_I2C_BUS_PORT, DC_CFG_STALK_IO_ADDR, &stalk_int_pin);
+  ads1015_init(&s_stalk_ads1015, DC_CFG_I2C_BUS_PORT, DC_CFG_STALK_ADC_ADDR, &stalk_ready_pin);
+  control_stalk_init(&s_stalk, &s_stalk_ads1015, &s_stalk_expander);
+
+  GPIOAddress pedal_ads1015_ready = DC_CFG_PEDAL_ADC_RDY_PIN;
+  ads1015_init(&s_pedal_ads1015, DC_CFG_I2C_BUS_PORT, DC_CFG_PEDAL_ADC_ADDR, &pedal_ads1015_ready);
   throttle_init(throttle_global(), &calib_blob(&s_calib)->throttle_calib, &s_pedal_ads1015);
 
   cruise_init(cruise_global());
   drive_output_init(drive_output_global(), INPUT_EVENT_DRIVE_WATCHDOG_FAULT,
                     INPUT_EVENT_DRIVE_UPDATE_REQUESTED);
 
-  // TODO(ELEC-455): Add heartbeat handlers
+  // TODO(ELEC-455): Add BPS fault handler
+
+  // Powertrain heartbeat
+  heartbeat_rx_register_handler(&s_powertrain_heartbeat, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT, heartbeat_rx_auto_ack_handler, NULL);
 
   event_arbiter_init(&s_event_arbiter);
   DriverControlsFsmInitFn init_fns[] = {
@@ -118,17 +119,10 @@ int main() {
   Event e;
   while (true) {
     if (status_ok(event_process(&e))) {
-      if (e.id != INPUT_EVENT_PEDAL_BRAKE && e.id != INPUT_EVENT_PEDAL_COAST &&
-          e.id != INPUT_EVENT_PEDAL_ACCEL) {
-        LOG_DEBUG("e %d data %d\n", e.id, e.data);
-      }
-
       fsm_process_event(CAN_FSM, &e);
       power_distribution_controller_retry(&e);
       cruise_handle_event(cruise_global(), &e);
       event_arbiter_process_event(&s_event_arbiter, &e);
-
-      (void)prv_dump_fsms;
     }
   }
 }
