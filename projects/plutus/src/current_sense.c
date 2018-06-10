@@ -9,8 +9,9 @@ static void prv_calculate_current(int32_t *value, void *context) {
 
   // Formula for calculating calibrated current. Draws slope between given calibrated
   // points, and uses the result as well as the voltage offset to calculate current
-  storage->current_value = storage->data->max_point.current * (*value - storage->data->zero_point.voltage) /
-                   (storage->data->max_point.voltage - storage->data->zero_point.voltage);
+  storage->current_value = storage->data->max_point.current *
+                           (*value - storage->data->zero_point.voltage) /
+                           (storage->data->max_point.voltage - storage->data->zero_point.voltage);
   if (storage->callback != NULL) {
     storage->callback(storage->current_value, storage->context);
   }
