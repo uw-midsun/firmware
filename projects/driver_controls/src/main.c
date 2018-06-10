@@ -120,6 +120,7 @@ int main() {
 
   Event e;
   while (true) {
+    // TODO(ELEC-461): figure out why I2C seems to die when the motors are running
     if (status_ok(event_process(&e))) {
       fsm_process_event(CAN_FSM, &e);
       power_distribution_controller_retry(&e);
