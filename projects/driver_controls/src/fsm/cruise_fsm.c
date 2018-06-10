@@ -34,7 +34,7 @@ FSM_STATE_TRANSITION(cruise_on) {
 }
 
 FSM_STATE_TRANSITION(cruise_on_brake) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, cruise_on);
+  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, cruise_on_brake);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_CANCEL, cruise_off);
   // Exit cruise if the mechanical brake is pressed or the throttle is pressed to

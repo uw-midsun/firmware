@@ -43,7 +43,7 @@ int main(void) {
   soft_timer_init();
   gpio_init();
   gpio_it_init();
-  adc_init(ADC_MODE_SINGLE);
+  adc_init(ADC_MODE_CONTINUOUS);
 
   // CAN
   CANSettings can_settings = {
@@ -67,6 +67,7 @@ int main(void) {
   power_path_init(&cfg->power_path);
   // AUX Battery Monitoring.
   power_path_source_monitor_enable(&cfg->power_path.aux_bat, CHAOS_CONFIG_POWER_PATH_PERIOD_MS);
+  power_path_send_data_daemon(&cfg->power_path, CHAOS_CONFIG_POWER_PATH_PERIOD_MS);
 
   // Relays
   RelaySettings relay_settings = {
