@@ -60,7 +60,7 @@ int main(void) {
 
   // Heartbeats
   bps_heartbeat_init();  // Use the auto start feature to start the watchdog.
-  // powertrain_heartbeat_init();
+  powertrain_heartbeat_init();
 
   // Power Path
   ChaosConfig *cfg = chaos_config_load();
@@ -117,9 +117,9 @@ int main(void) {
     // case with a failure resulting in faulting into Emergency.
     fsm_process_event(CAN_FSM, &e);
     delay_service_process_event(&e);
-    // emergency_fault_process_event(&s_emergency_storage, &e);
+    emergency_fault_process_event(&s_emergency_storage, &e);
     gpio_fsm_process_event(&e);
-    // powertrain_heartbeat_process_event(&e);
+    powertrain_heartbeat_process_event(&e);
     power_path_process_event(&cfg->power_path, &e);
     charger_process_event(&e);
     relay_process_event(&e);
