@@ -8,6 +8,7 @@
 #include "event_queue.h"
 #include "gpio.h"
 #include "gpio_it.h"
+#include "heartbeat_rx.h"
 #include "i2c.h"
 #include "input_event.h"
 #include "interrupt.h"
@@ -15,7 +16,6 @@
 #include "power_distribution_controller.h"
 #include "soft_timer.h"
 #include "throttle.h"
-#include "heartbeat_rx.h"
 
 #include "cruise_fsm.h"
 #include "direction_fsm.h"
@@ -86,7 +86,8 @@ int main() {
   i2c_init(DC_CFG_I2C_BUS_PORT, &i2c_settings);
 
   GPIOAddress console_int_pin = DC_CFG_CONSOLE_IO_INT_PIN;
-  gpio_expander_init(&s_console_expander, DC_CFG_I2C_BUS_PORT, DC_CFG_CONSOLE_IO_ADDR, &console_int_pin);
+  gpio_expander_init(&s_console_expander, DC_CFG_I2C_BUS_PORT, DC_CFG_CONSOLE_IO_ADDR,
+                     &console_int_pin);
   center_console_init(&s_console, &s_console_expander);
 
   GPIOAddress stalk_int_pin = DC_CFG_STALK_IO_INT_PIN;
@@ -106,7 +107,8 @@ int main() {
   // TODO(ELEC-455): Add BPS fault handler
 
   // Powertrain heartbeat
-  heartbeat_rx_register_handler(&s_powertrain_heartbeat, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT, heartbeat_rx_auto_ack_handler, NULL);
+  heartbeat_rx_register_handler(&s_powertrain_heartbeat, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
+                                heartbeat_rx_auto_ack_handler, NULL);
 
   event_arbiter_init(&s_event_arbiter);
   DriverControlsFsmInitFn init_fns[] = {
