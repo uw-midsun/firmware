@@ -44,6 +44,11 @@ typedef union {
   int32_t i32data;
 } Ltc2484Response;
 
-// Parse the raw 24-bit ADC reading to a voltage measurement in uV. This is
-// called by ltc_adc_read, and is exposed for testing
+
+// The following definitions are exposed for testing
+
+// An arbitray voltage for testing
+#define TEST_INPUT_VOLTAGE 1000
+
+// Parse the raw 24-bit ADC reading to a voltage measurement in uV.
 StatusCode ltc2484_raw_adc_to_uv(uint8_t *spi_data, int32_t *voltage);

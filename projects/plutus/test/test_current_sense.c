@@ -12,26 +12,21 @@
 
 // Arbitrary number of testing samples
 #define TEST_NUM_SAMPLES 5
-#define TEST_INPUT_VOLTAGE 1000
 
 static volatile uint8_t s_callback_runs = 0;
 
 static CurrentSenseStorage s_storage = { 0 };
-static CurrentSenseCalibrationData s_data = { .zero_point = { 0, 0 }, .max_point = { 1000, 3 } };
+
+static CurrentSenseCalibrationData s_data = {
+  .zero_point = { .voltage = 0, .current = 0 },
+  .max_point = { .voltage = 1000, .current = 10 }
+};
 
 static void prv_callback(int32_t current, void *context) {
-  s_callback_runs++;
-
-  int32_t x_min = s_data.zero_point.voltage;
-  int32_t y_min = s_data.zero_point.current;
-  int32_t x_max = s_data.max_point.voltage;
-  int32_t y_max = s_data.max_point.current;
-
-  int32_t test_current = (y_max) * (TEST_INPUT_VOLTAGE - x_min) / (x_max - x_min);
-
-  TEST_ASSERT_EQUAL(current, test_current);
-
+  TEST_ASSERT_EQUAL(current * 100, TEST_INPUT_VOLTAGE);
   LOG_DEBUG("Current = %" PRId32 "\n", current);
+
+  s_callback_runs++;
 }
 
 void setup_test(void) {

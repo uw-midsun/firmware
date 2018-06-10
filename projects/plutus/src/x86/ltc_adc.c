@@ -5,12 +5,10 @@
 #include "critical_section.h"
 #include "ltc2484.h"
 
-#define TEST_INPUT_VOLTAGE 1000
-
 static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
   LtcAdcStorage *storage = (LtcAdcStorage *)context;
 
-  storage->buffer.status = ltc2484_raw_adc_to_uv(NULL, &storage->buffer.value);
+  storage->buffer.value = TEST_INPUT_VOLTAGE;
 
   if (storage->callback != NULL) {
     storage->callback(&storage->buffer.value, storage->context);
@@ -24,14 +22,6 @@ StatusCode ltc_adc_init(LtcAdcStorage *storage, const LtcAdcSettings *settings) 
   if (storage == NULL || settings->filter_mode >= NUM_LTC_ADC_FILTER_MODES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
-
-  storage->buffer.status = STATUS_CODE_UNINITIALIZED;
-  storage->buffer.value = INT16_MAX;
-  storage->callback = NULL;
-  storage->context = NULL;
-  storage->spi_port = settings->spi_port;
-  storage->cs = settings->cs;
-  storage->miso = settings->miso;
 
   return soft_timer_start_millis(LTC2484_MAX_CONVERSION_TIME_MS, prv_ltc_adc_read, storage,
                                  &storage->buffer.timer_id);
