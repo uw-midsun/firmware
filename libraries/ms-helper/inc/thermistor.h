@@ -1,12 +1,7 @@
 #pragma once
-// Thermistor Reading interface for NXRT15XH103FA1B___
-// src:
-// https://www.murata.com/en-global/products/productdetail.aspx?cate=luNTCforTempeSenso&partno=NXRT15XH103FA1B___
+// Thermistor Reading interface for NXRT15XH103FA1B (10k Ohm NTC)
 // Requires ADC, GPIO and Interrupts to be initialized.
 #include "adc.h"
-#include "gpio.h"
-#include "interrupt.h"
-#include "soft_timer.h"
 
 typedef struct {
   uint32_t sibling_resistance;  // milliohms
@@ -24,7 +19,7 @@ typedef struct {
 StatusCode thermistor_init(ThermistorStorage *storage, ThermistorSettings *settings);
 
 // Fetch the temperature reading in milliCelsius from the MCU's ADC
-uint32_t thermistor_get_temp(ThermistorStorage *storage);
+StatusCode thermistor_get_temp(ThermistorStorage *storage, uint32_t *temperature);
 
-// Calculate the temperature based on other data
-uint32_t thermistor_calculate_temp(uint16_t resistance);
+// Calculate the temperature in milliCelsius from milliohms
+StatusCode thermistor_calculate_temp(uint16_t resistance, uint32_t *temperature);

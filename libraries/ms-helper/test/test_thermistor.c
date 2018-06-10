@@ -1,4 +1,7 @@
+#include "gpio.h"
+#include "interrupt.h"
 #include "log.h"
+#include "soft_timer.h"
 #include "test_helpers.h"
 #include "thermistor.h"
 
@@ -32,10 +35,9 @@ void test_thermistor(void) {
   // initialize the channel
   adc_init(ADC_MODE_CONTINUOUS);
 
-  // for some reason this test is being included in x86 tests
-  // and causing the build to fail
-  // TEST_ASSERT_OK(thermistor_init(&storage, &settings));
+  TEST_ASSERT_OK(thermistor_init(&storage, &settings));
 
-  // uint16_t reading = thermistor_get_temp(&storage);
-  // printf("Temperature: %u\n", reading);
+  uint32_t reading = 0;
+  TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
+  LOG_DEBUG("Temperature: %lu\n", reading);
 }

@@ -2,9 +2,8 @@
 #include <stdint.h>
 #include "log.h"
 
-// resistance in milliohms
-// src: https://www.murata.com/en-global/products/productdata/8796836626462/NTHCG83.txt
-static const uint32_t resistance_lookup[] = {
+// expected resistance in milliohms for a given temperature in celsius
+static const uint32_t s_resistance_lookup[] = {
   27218600, 26076000, 24987700, 23950900, 22962900, 22021100, 21123000, 20266600, 19449500,
   18669800, 17925500, 17213900, 16534400, 15885600, 15265800, 14673500, 14107500, 13566400,
   13048900, 12554000, 12080500, 11628100, 11194700, 10779500, 10381500, 10000000, 9634200,
@@ -29,7 +28,7 @@ StatusCode thermistor_init(ThermistorStorage *storage, ThermistorSettings *setti
   return STATUS_CODE_OK;
 }
 
-uint32_t thermistor_get_temp(ThermistorStorage *storage) {
+StatusCode thermistor_get_temp(ThermistorStorage *storage, uint32_t *temperature) {
   // fetch the voltage readings
   uint16_t reading = 0;
   uint32_t thermistor_resistance = 0;
@@ -43,27 +42,30 @@ uint32_t thermistor_get_temp(ThermistorStorage *storage) {
       (storage->sibling_resistance / reading) * (vdda)-storage->sibling_resistance;
 
   // find the approximate target temperature
-  for (uint16_t i = 0; i < SIZEOF_ARRAY(resistance_lookup); i++) {
-    if (thermistor_resistance <= resistance_lookup[i] &&
-        thermistor_resistance >= resistance_lookup[i + 1]) {
+  for (uint16_t i = 0; i < SIZEOF_ARRAY(s_resistance_lookup) - 1; i++) {
+    if (thermistor_resistance <= s_resistance_lookup[i] &&
+        thermistor_resistance >= s_resistance_lookup[i + 1]) {
       // return the temperature with the linear approximation
-      return ((uint32_t)i * 1000 + ((resistance_lookup[i] - thermistor_resistance) * 1000 /
-                                    (resistance_lookup[i] - resistance_lookup[i + 1])));
+      *temperature =
+          ((uint32_t)i * 1000 + ((s_resistance_lookup[i] - thermistor_resistance) * 1000 /
+                                 (s_resistance_lookup[i] - s_resistance_lookup[i + 1])));
+      return STATUS_CODE_OK;
     }
   }
 
-  return 0;
+  return STATUS_CODE_OUT_OF_RANGE;
 }
 
-uint32_t thermistor_calculate_temp(uint16_t resistance) {
+StatusCode thermistor_calculate_temp(uint16_t resistance, uint32_t *temperature) {
   // find the approximate target temperature from the arguments passed
-  for (uint16_t i = 0; i < SIZEOF_ARRAY(resistance_lookup); i++) {
-    if (resistance <= resistance_lookup[i] && resistance >= resistance_lookup[i + 1]) {
+  for (uint16_t i = 0; i < SIZEOF_ARRAY(s_resistance_lookup) - 1; i++) {
+    if (resistance <= s_resistance_lookup[i] && resistance >= s_resistance_lookup[i + 1]) {
       // return the temperature with the linear approximation
-      return ((uint32_t)i * 1000 + ((resistance_lookup[i] - resistance) * 1000 /
-                                    (resistance_lookup[i] - resistance_lookup[i + 1])));
+      *temperature = ((uint32_t)i * 1000 + ((s_resistance_lookup[i] - resistance) * 1000 /
+                                            (s_resistance_lookup[i] - s_resistance_lookup[i + 1])));
+      return STATUS_CODE_OK;
     }
   }
 
-  return 0;
+  return STATUS_CODE_OUT_OF_RANGE;
 }
