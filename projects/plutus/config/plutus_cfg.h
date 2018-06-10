@@ -18,7 +18,6 @@
 #define PLUTUS_CFG_OVERCURRENT_CHARGE -130000
 
 // Heartbeat settings
-// TODO(ELEC-439): need to fix this - since AFE uses blocking delay, CAN times out
 #define PLUTUS_CFG_HEARTBEAT_PERIOD_MS 1000
 #define PLUTUS_CFG_HEARTBEAT_MAX_ACK_FAILS 3
 #ifndef PLUTUS_CFG_STANDALONE
