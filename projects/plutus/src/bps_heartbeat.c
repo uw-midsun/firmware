@@ -63,9 +63,8 @@ StatusCode bps_heartbeat_init(BpsHeartbeatStorage *storage, SequencedRelayStorag
   storage->fault_bitset = 0x00;
   storage->ack_fail_counter = 0;
 
-  // TODO: need to make this a define or something?
-  // this is required since chaos takes time to enter the main loop and process ACKs
-  return soft_timer_start_millis(5000, prv_periodic_heartbeat, storage, NULL);
+  return soft_timer_start_millis(storage->period_ms * BPS_HEARTBEAT_STARTUP_DELAY_MULTIPLIER,
+                                 prv_periodic_heartbeat, storage, NULL);
 }
 
 StatusCode bps_heartbeat_raise_fault(BpsHeartbeatStorage *storage, BpsHeartbeatFaultSource source) {

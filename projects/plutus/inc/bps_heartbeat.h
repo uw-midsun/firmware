@@ -3,6 +3,10 @@
 // Requires soft timers, CAN to be initialized
 #include "sequenced_relay.h"
 
+// Arbitrary multiplier to the heartbeat period for initial startup delay
+// This is necessary because Chaos takes some time to initialize before it can ACK
+#define BPS_HEARTBEAT_STARTUP_DELAY_MULTIPLIER 5
+
 typedef enum {
   BPS_HEARTBEAT_FAULT_SOURCE_KILLSWITCH = 0,
   BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE,
