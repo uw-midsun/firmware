@@ -1,6 +1,7 @@
 #include "bps_heartbeat.h"
 #include "can_transmit.h"
 #include "log.h"
+#include "plutus_cfg.h"
 
 static StatusCode prv_handle_heartbeat_ack(CANMessageID msg_id, uint16_t device,
                                            CANAckStatus status, uint16_t num_remaining,
@@ -9,8 +10,13 @@ static StatusCode prv_handle_heartbeat_ack(CANMessageID msg_id, uint16_t device,
 
   if (status != CAN_ACK_STATUS_OK) {
     // Something bad happened - fault
-    return bps_heartbeat_raise_fault(storage, BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT);
-  } else if (status == CAN_ACK_STATUS_OK && num_remaining == 0) {
+    storage->ack_fail_counter++;
+
+    if (storage->ack_fail_counter >= PLUTUS_CFG_HEARTBEAT_MAX_ACK_FAILS) {
+      return bps_heartbeat_raise_fault(storage, BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT);
+    }
+  } else if (status == CAN_ACK_STATUS_OK) {
+    storage->ack_fail_counter = 0;
     return bps_heartbeat_clear_fault(storage, BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT);
   }
 
@@ -55,7 +61,10 @@ StatusCode bps_heartbeat_init(BpsHeartbeatStorage *storage, SequencedRelayStorag
 
   // Assume things are okay until told otherwise?
   storage->fault_bitset = 0x00;
+  storage->ack_fail_counter = 0;
 
+  // TODO: need to make this a define or something?
+  // this is required since chaos takes time to enter the main loop and process ACKs
   return soft_timer_start_millis(5000, prv_periodic_heartbeat, storage, NULL);
 }
 

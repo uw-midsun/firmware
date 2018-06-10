@@ -12,17 +12,18 @@
 static PlutusSysStorage s_plutus;
 static FaultMonitorStorage s_fault_monitor;
 
+static size_t i = 0;
+
 static void prv_periodic_tx_debug(SoftTimerID timer_id, void *context) {
-  // TODO(ELEC-439): Output current data
   FaultMonitorResult *result = &s_fault_monitor.result;
 
-  for (size_t i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {
-    // LOG_DEBUG("C%d %d.%dmV, aux %d.%dmV\n", i, result->cell_voltages[i] / 10,
-    //           result->cell_voltages[i] % 10, result->temp_voltages[i] / 10,
-    //           result->temp_voltages[i] % 10);
+  if (i < PLUTUS_CFG_AFE_TOTAL_CELLS) {
     CAN_TRANSMIT_BATTERY_VT(i, result->cell_voltages[i], result->temp_voltages[i]);
+    i++;
+  } else if (i == PLUTUS_CFG_AFE_TOTAL_CELLS) {
+    CAN_TRANSMIT_BATTERY_CURRENT((uint32_t)result->current);
+    i = 0;
   }
-  CAN_TRANSMIT_BATTERY_CURRENT((uint32_t)result->current);
 
   soft_timer_start_millis(PLUTUS_CFG_TELEMETRY_PERIOD_MS, prv_periodic_tx_debug, NULL, NULL);
 }
@@ -36,6 +37,7 @@ int main(void) {
     const FaultMonitorSettings fault_settings = {
       .bps_heartbeat = &s_plutus.bps_heartbeat,
       .ltc_afe = &s_plutus.ltc_afe,
+      .ltc_adc = &s_plutus.ltc_adc,
 
       .overvoltage = PLUTUS_CFG_CELL_OVERVOLTAGE,
       .undervoltage = PLUTUS_CFG_CELL_UNDERVOLTAGE,

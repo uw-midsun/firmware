@@ -16,6 +16,7 @@ typedef struct BpsHeartbeatStorage {
   uint32_t period_ms;
   uint32_t expected_bitset;
   uint8_t fault_bitset;
+  uint8_t ack_fail_counter;
 } BpsHeartbeatStorage;
 
 // Sets up the periodic heartbeat message
