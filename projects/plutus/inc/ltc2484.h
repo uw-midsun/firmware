@@ -44,7 +44,6 @@ typedef union {
   int32_t i32data;
 } Ltc2484Response;
 
-
 // The following definitions are exposed for testing
 
 // An arbitray voltage for testing
