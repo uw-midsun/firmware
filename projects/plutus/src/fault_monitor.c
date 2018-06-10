@@ -1,6 +1,6 @@
 #include "fault_monitor.h"
-#include "log.h"
 #include <string.h>
+#include "log.h"
 
 static void prv_extract_cell_result(uint16_t *result_arr, size_t len, void *context) {
   FaultMonitorStorage *storage = context;
@@ -10,8 +10,10 @@ static void prv_extract_cell_result(uint16_t *result_arr, size_t len, void *cont
   memcpy(storage->result.cell_voltages, result_arr, sizeof(storage->result.cell_voltages));
 
   for (size_t i = 0; i < len; i++) {
-    if (result_arr[i] < storage->settings.undervoltage || result_arr[i] > storage->settings.overvoltage) {
-      bps_heartbeat_raise_fault(storage->settings.bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+    if (result_arr[i] < storage->settings.undervoltage ||
+        result_arr[i] > storage->settings.overvoltage) {
+      bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
+                                BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
       return;
     }
   }
@@ -28,7 +30,8 @@ static void prv_extract_aux_result(uint16_t *result_arr, size_t len, void *conte
 
   // TODO(ELEC-439): Add temp faulting
   // for (size_t i = 0; i < len; i++) {
-  //   bps_heartbeat_raise_fault(storage->settings.bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC);
+  //   bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
+  //   BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC);
   // }
 }
 
@@ -43,7 +46,8 @@ StatusCode fault_monitor_init(FaultMonitorStorage *storage, const FaultMonitorSe
 
   ltc_adc_register_callback(storage->settings.ltc_adc, prv_extract_current, storage);
 
-  ltc_afe_set_result_cbs(storage->settings.ltc_afe, prv_extract_cell_result, prv_extract_aux_result, storage);
+  ltc_afe_set_result_cbs(storage->settings.ltc_afe, prv_extract_cell_result, prv_extract_aux_result,
+                         storage);
 
   return ltc_afe_request_cell_conversion(storage->settings.ltc_afe);
 }

@@ -1,15 +1,16 @@
 #include "ltc_afe.h"
+#include "critical_section.h"
 #include "ltc_afe_fsm.h"
 #include "ltc_afe_impl.h"
 #include "plutus_event.h"
-#include "critical_section.h"
 
 StatusCode ltc_afe_init(LtcAfeStorage *afe, const LtcAfeSettings *settings) {
   status_ok_or_return(ltc_afe_impl_init(afe, settings));
   return ltc_afe_fsm_init(&afe->fsm, afe);
 }
 
-StatusCode ltc_afe_set_result_cbs(LtcAfeStorage *afe, LtcAfeResultCallback cell_result_cb, LtcAfeResultCallback aux_result_cb, void *context) {
+StatusCode ltc_afe_set_result_cbs(LtcAfeStorage *afe, LtcAfeResultCallback cell_result_cb,
+                                  LtcAfeResultCallback aux_result_cb, void *context) {
   bool disabled = critical_section_start();
   afe->cell_result_cb = cell_result_cb;
   afe->aux_result_cb = aux_result_cb;
