@@ -16,6 +16,7 @@
 #include "gpio_fsm.h"
 #include "gpio_it.h"
 #include "interrupt.h"
+#include "log.h"
 #include "power_path.h"
 #include "powertrain_heartbeat.h"
 #include "relay.h"
@@ -30,7 +31,9 @@
 
 static CANStorage s_can_storage;
 static CANRxHandler s_rx_handlers[CHAOS_NUM_RX_HANDLERS];
-static EmergencyFaultStorage s_emergency_storage;
+static EmergencyFaultStorage s_emergency_storage = {
+  .id = SOFT_TIMER_INVALID_TIMER,
+};
 static RelayRetryServiceStorage s_retry_storage;
 
 int main(void) {
@@ -57,7 +60,7 @@ int main(void) {
 
   // Heartbeats
   bps_heartbeat_init();  // Use the auto start feature to start the watchdog.
-  powertrain_heartbeat_init();
+  // powertrain_heartbeat_init();
 
   // Power Path
   ChaosConfig *cfg = chaos_config_load();
@@ -113,9 +116,9 @@ int main(void) {
     // case with a failure resulting in faulting into Emergency.
     fsm_process_event(CAN_FSM, &e);
     delay_service_process_event(&e);
-    emergency_fault_process_event(&s_emergency_storage, &e);
+    // emergency_fault_process_event(&s_emergency_storage, &e);
     gpio_fsm_process_event(&e);
-    powertrain_heartbeat_process_event(&e);
+    // powertrain_heartbeat_process_event(&e);
     power_path_process_event(&cfg->power_path, &e);
     charger_process_event(&e);
     relay_process_event(&e);

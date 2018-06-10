@@ -85,10 +85,10 @@ static const SequencerEventPair s_emergency_events[] = {
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MOTORS },
     .response = SEQUENCER_NO_RESPONSE },
-  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
-    .response = SEQUENCER_NO_RESPONSE },
-  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
-    .response = SEQUENCER_NO_RESPONSE },
+  //{ .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
+  //  .response = SEQUENCER_NO_RESPONSE },
+  //{ .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
+  //  .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_MONITOR_DISABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_BATTERY_SLAVE },
@@ -116,10 +116,10 @@ static const SequencerEventPair s_idle_events[] = {
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MOTORS },
     .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_MOTORS } },
-  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
-    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
-  { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
-    .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
+  //{ .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
+  //  .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
+  //{ .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
+  //  .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
   { .raise = { .id = CHAOS_EVENT_MONITOR_DISABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_BATTERY_SLAVE },
@@ -154,12 +154,12 @@ static const SequencerEventPair s_charge_events[] = {
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_GPIO_CHARGE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
-  { .raise = { .id = CHAOS_EVENT_DELAY_MS, .data = 1000 },
+  { .raise = { .id = CHAOS_EVENT_DELAY_MS, .data = 2600 },
     .response = { CHAOS_EVENT_DELAY_DONE, 0 } },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
+  //{ .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
+  //  .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
+  //{ .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
+  //  .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
   { .raise = { .id = CHAOS_EVENT_CHARGER_CLOSE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_SEQUENCE_CHARGE_DONE, .data = SEQUENCER_EMPTY_DATA },
@@ -190,12 +190,12 @@ static const SequencerEventPair s_drive_events[] = {
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_GPIO_DRIVE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
-  { .raise = { .id = CHAOS_EVENT_DELAY_MS, .data = 1000 },
+  { .raise = { .id = CHAOS_EVENT_DELAY_MS, .data = 2600 },
     .response = { CHAOS_EVENT_DELAY_DONE, 0 } },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
-  { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
-    .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
+  // { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
+  //   .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
+  // { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
+  //   .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MOTORS },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MOTORS } },
   { .raise = { .id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE, .data = SEQUENCER_EMPTY_DATA },
@@ -254,6 +254,7 @@ static bool prv_sequencer_setup_common(void) {
 
 // FSM Transitions
 static void prv_sequencer_state_emergency(FSM *fsm, const Event *e, void *context) {
+  LOG_DEBUG("Emergency\n");
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
@@ -267,6 +268,7 @@ static void prv_sequencer_state_emergency(FSM *fsm, const Event *e, void *contex
 }
 
 static void prv_sequencer_state_idle(FSM *fsm, const Event *e, void *context) {
+  LOG_DEBUG("Idle\n");
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
@@ -278,6 +280,7 @@ static void prv_sequencer_state_idle(FSM *fsm, const Event *e, void *context) {
 }
 
 static void prv_sequencer_state_charge(FSM *fsm, const Event *e, void *context) {
+  LOG_DEBUG("Charge\n");
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
@@ -289,6 +292,7 @@ static void prv_sequencer_state_charge(FSM *fsm, const Event *e, void *context) 
 }
 
 static void prv_sequencer_state_drive(FSM *fsm, const Event *e, void *context) {
+  LOG_DEBUG("Drive\n");
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
@@ -335,7 +339,6 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event) {
   if (previous_event->id == CHAOS_EVENT_RELAY_ERROR) {
     // Force the awaiting flag to clear as the relay failed.
     s_storage.awaiting_response = false;
-    return STATUS_CODE_OK;
 
     // If we aren't in the emergency state we need to switch to that state. This event will not be
     // raised in the emergency state.
@@ -359,9 +362,13 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event) {
       return event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_RESET,
                                   SEQUENCER_EMPTY_DATA);
     }
+    LOG_DEBUG("Retries exceeded\n");
     // If we are stuck go to the emergency state.
     return event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_EMERGENCY,
                                 SEQUENCER_EMPTY_DATA);
+  }
+  if (sequencer_complete(&s_storage)) {
+    LOG_DEBUG("Sequence Complete\n");
   }
   return status;
 }

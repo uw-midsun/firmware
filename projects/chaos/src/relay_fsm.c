@@ -14,6 +14,7 @@
 #include "exported_enums.h"
 #include "fsm.h"
 #include "gpio.h"
+#include "log.h"
 #include "misc.h"
 #include "relay_id.h"
 #include "status.h"
@@ -45,8 +46,10 @@ static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckS
   (void)num_remaining;
   RelayFsmAckCtx *ack_ctx = context;
   if (status != CAN_ACK_STATUS_OK) {
+    LOG_DEBUG("RELAY FAIL %d\n", ack_ctx->id);
     event_raise(CHAOS_EVENT_MAYBE_RETRY_RELAY, ack_ctx->id);
   } else {
+    LOG_DEBUG("RELAY OK %d\n", ack_ctx->id);
     event_raise(ack_ctx->event_id, ack_ctx->id);
   }
   return STATUS_CODE_OK;

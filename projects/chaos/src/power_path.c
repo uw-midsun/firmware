@@ -47,7 +47,7 @@ static void prv_voltage_warning(const GPIOAddress *addr, void *context) {
   }
 }
 
-static void prv_adc_read(SoftTimerID timer_id, void *context) {
+static void prv_read_data(SoftTimerID timer_id, void *context) {
   PowerPathSource *pps = context;
   if (pps->timer_id != timer_id || !pps->monitoring_active) {
     // Guard against accidentally starting multiple timers to monitor the same source concurrently.
@@ -67,7 +67,7 @@ static void prv_adc_read(SoftTimerID timer_id, void *context) {
   pps->readings.voltage = pps->voltage_convert_fn(value);
 
   // Start the next timer.
-  soft_timer_start_millis(pps->period_millis, prv_adc_read, pps, &pps->timer_id);
+  soft_timer_start_millis(pps->period_millis, prv_read_data, context, &pps->timer_id);
 }
 
 StatusCode power_path_init(PowerPathCfg *pp) {
@@ -90,6 +90,7 @@ StatusCode power_path_init(PowerPathCfg *pp) {
   // Register interrupts to the same function.
   const InterruptSettings it_settings = {
     .type = INTERRUPT_TYPE_INTERRUPT,
+
     .priority = INTERRUPT_PRIORITY_NORMAL,
   };
   status_ok_or_return(gpio_it_register_interrupt(&pp->aux_bat.uv_ov_pin, &it_settings,
@@ -123,7 +124,7 @@ StatusCode power_path_source_monitor_enable(PowerPathSource *source, uint32_t pe
 
   source->monitoring_active = true;
 
-  return soft_timer_start(source->period_millis, prv_adc_read, source, &source->timer_id);
+  return soft_timer_start_millis(source->period_millis, prv_read_data, source, &source->timer_id);
 }
 
 StatusCode power_path_source_monitor_disable(PowerPathSource *source) {
