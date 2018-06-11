@@ -89,11 +89,10 @@ static void prv_gpio_state_charge(FSM *fsm, const Event *e, void *context) {
   const ChaosConfig *cfg = context;
   const GPIOAddress sequence[] = {
     // cfg->charger_power, (external)
-    cfg->driver_display_power,   //
-    cfg->rear_camera_power,      //
-    cfg->array_sense_power,      //
-    cfg->front_lights_power,     //
-    cfg->motor_interface_power,  //
+    cfg->driver_display_power,  //
+    cfg->rear_camera_power,     //
+    cfg->array_sense_power,     //
+    cfg->front_lights_power,    //
   };
 
   gpio_seq_set_state(sequence, SIZEOF_ARRAY(sequence), GPIO_STATE_HIGH, GPIO_FSM_SLEW_RATE_US);
