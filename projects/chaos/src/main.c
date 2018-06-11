@@ -9,12 +9,14 @@
 #include "chaos_events.h"
 #include "charger.h"
 #include "delay.h"
+#include "delay_service.h"
 #include "emergency_fault.h"
 #include "event_queue.h"
 #include "gpio.h"
 #include "gpio_fsm.h"
 #include "gpio_it.h"
 #include "interrupt.h"
+#include "log.h"
 #include "power_path.h"
 #include "powertrain_heartbeat.h"
 #include "relay.h"
@@ -86,7 +88,7 @@ int main(void) {
 
   // CAN services
   charger_init();
-  emergency_fault_clear(&s_emergency_storage);
+  emergency_fault_init(&s_emergency_storage);
   state_handler_init();
 
   // GPIO
@@ -112,6 +114,7 @@ int main(void) {
     // a STATUS_CODE_OK for each emitted message. Consider adding a requirement that this is the
     // case with a failure resulting in faulting into Emergency.
     fsm_process_event(CAN_FSM, &e);
+    delay_service_process_event(&e);
     emergency_fault_process_event(&s_emergency_storage, &e);
     gpio_fsm_process_event(&e);
     powertrain_heartbeat_process_event(&e);
