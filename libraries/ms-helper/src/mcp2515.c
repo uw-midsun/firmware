@@ -6,6 +6,8 @@
 #include "log.h"
 #include "mcp2515_defs.h"
 
+#define MCP2515_MAX_WRITE_BUFFER_LEN 10
+
 typedef struct Mcp2515TxBuffer {
   uint8_t id;
   uint8_t data;
@@ -41,7 +43,7 @@ static void prv_read(Mcp2515Storage *storage, uint8_t addr, uint8_t *read_data, 
 
 static void prv_write(Mcp2515Storage *storage, uint8_t addr, uint8_t *write_data,
                       size_t write_len) {
-  uint8_t payload[write_len + 2];
+  uint8_t payload[MCP2515_MAX_WRITE_BUFFER_LEN];
   payload[0] = MCP2515_CMD_WRITE;
   payload[1] = addr;
   memcpy(&payload[2], write_data, write_len);
