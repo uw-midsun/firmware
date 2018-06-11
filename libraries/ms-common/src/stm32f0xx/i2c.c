@@ -1,11 +1,12 @@
 #include "i2c.h"
 #include <stdbool.h>
 #include "critical_section.h"
+#include "delay.h"
 #include "log.h"
 #include "stm32f0xx.h"
 
 // Arbitrary timeout
-#define I2C_TIMEOUT 1000000
+#define I2C_TIMEOUT 100000
 #define I2C_TIMEOUT_WHILE_FLAG(i2c, flag, status)                           \
   do {                                                                      \
     uint32_t timeout = (I2C_TIMEOUT);                                       \
@@ -13,6 +14,7 @@
       timeout--;                                                            \
       if (timeout == 0) {                                                   \
         LOG_DEBUG("Timeout: %lu waiting for %d to change\n", flag, status); \
+        prv_recover_lockup();                                               \
         return status_code(STATUS_CODE_TIMEOUT);                            \
       }                                                                     \
     }                                                                       \
@@ -27,9 +29,11 @@
 typedef struct {
   uint32_t periph;
   I2C_TypeDef *base;
+
+  I2CSettings settings;
 } I2CPortData;
 
-static const I2CPortData s_port[NUM_I2C_PORTS] = {
+static I2CPortData s_port[NUM_I2C_PORTS] = {
   [I2C_PORT_1] = { .periph = RCC_APB1Periph_I2C1, .base = I2C1 },
   [I2C_PORT_2] = { .periph = RCC_APB1Periph_I2C2, .base = I2C2 },
 };
@@ -39,6 +43,29 @@ static const uint32_t s_i2c_timing[] = {
   [I2C_SPEED_STANDARD] = 0x10805E89,  // 100 kHz
   [I2C_SPEED_FAST] = 0x00901850,      // 400 kHz
 };
+
+static void prv_recover_lockup(I2CPort port) {
+  I2CSettings *settings = &s_port[port].settings;
+
+  GPIOSettings scl_settings = {
+    .direction = GPIO_DIR_OUT, .alt_function = GPIO_ALTFN_NONE, .state = GPIO_STATE_LOW
+  };
+  // Manually clock SCL
+  gpio_init_pin(&settings->scl, &scl_settings);
+  // 16 pulse
+  for (size_t i = 0; i < 16; i++) {
+    gpio_toggle_state(&settings->scl);
+    delay_us(3);
+  }
+
+  scl_settings.direction = GPIO_DIR_OUT_OD;
+  scl_settings.alt_function = GPIO_ALTFN_1;
+  gpio_init_pin(&settings->scl, &scl_settings);
+
+  // Reset I2C
+  // TODO: is this necessary?
+  I2C_SoftwareResetCmd(s_port[port].base);
+}
 
 static StatusCode prv_transfer(I2CPort port, uint8_t addr, bool read, uint8_t *data, size_t len,
                                uint32_t end_mode) {
@@ -71,6 +98,9 @@ StatusCode i2c_init(I2CPort i2c, const I2CSettings *settings) {
   } else if (settings->speed >= NUM_I2C_SPEEDS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid I2C speed.");
   }
+
+  s_port[i2c].settings = *settings;
+
   RCC_APB1PeriphClockCmd(s_port[i2c].periph, ENABLE);
   RCC_I2CCLKConfig(RCC_I2C1CLK_SYSCLK);
 
