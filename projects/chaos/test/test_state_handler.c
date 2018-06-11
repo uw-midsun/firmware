@@ -18,10 +18,7 @@
 
 static bool s_mock_return = true;
 
-static const Event s_tx_event = { CHAOS_EVENT_CAN_TX, 0 };
-static const Event s_rx_event = { CHAOS_EVENT_CAN_RX, 0 };
 static CANStorage s_can_storage;
-static CANAckRequests s_can_ack_requests;
 static CANRxHandler s_rx_handlers[NUM_TEST_STATE_HANDLER_CAN_HANDLERS];
 
 // CANAckRequestCb
@@ -51,8 +48,7 @@ void setup_test(void) {
     .loopback = true,
   };
   TEST_ASSERT_OK(
-      can_init(&can_settings, &s_can_storage, s_rx_handlers, NUM_TEST_STATE_HANDLER_CAN_HANDLERS));
-  can_ack_init(&s_can_ack_requests);
+      can_init(&s_can_storage, &can_settings, s_rx_handlers, NUM_TEST_STATE_HANDLER_CAN_HANDLERS));
 }
 
 void teardown_test(void) {}

@@ -70,9 +70,7 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
 
     // Invoke callback with the new data
     if (storage->callback != NULL) {
-      bool disabled = critical_section_start();
       storage->callback(&storage->buffer.value, storage->context);
-      critical_section_end(disabled);
     }
   }
 
@@ -80,8 +78,8 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
                           &storage->buffer.timer_id);
 }
 
-StatusCode ltc_adc_init(LtcAdcStorage *storage) {
-  if (storage == NULL || storage->filter_mode >= NUM_LTC_ADC_FILTER_MODES) {
+StatusCode ltc_adc_init(LtcAdcStorage *storage, const LtcAdcSettings *settings) {
+  if (storage == NULL || settings->filter_mode >= NUM_LTC_ADC_FILTER_MODES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
@@ -89,21 +87,24 @@ StatusCode ltc_adc_init(LtcAdcStorage *storage) {
   storage->buffer.value = INT16_MAX;
   storage->callback = NULL;
   storage->context = NULL;
+  storage->spi_port = settings->spi_port;
+  storage->cs = settings->cs;
+  storage->miso = settings->miso;
 
   // The LTC2484 uses SPI Mode 0 (see Figure 5 on p.20 in the datasheet)
   SPISettings spi_config = {
-    .baudrate = storage->spi_baudrate,
+    .baudrate = settings->spi_baudrate,
     .mode = SPI_MODE_0,
-    .mosi = storage->mosi,
-    .miso = storage->miso,
-    .sclk = storage->sclk,
-    .cs = storage->cs,
+    .mosi = settings->mosi,
+    .miso = settings->miso,
+    .sclk = settings->sclk,
+    .cs = settings->cs,
   };
 
   spi_init(storage->spi_port, &spi_config);
 
   uint8_t input[1] = { LTC2484_ENABLE | LTC2484_EXTERNAL_INPUT | LTC2484_AUTO_CALIBRATION |
-                       s_filter_modes[storage->filter_mode] };
+                       s_filter_modes[settings->filter_mode] };
   // send config
   spi_exchange(storage->spi_port, input, 1, NULL, 0);
 
@@ -157,8 +158,11 @@ StatusCode ltc_adc_register_callback(LtcAdcStorage *storage, LtcAdcCallback call
   if (storage == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
+
+  bool disabled = critical_section_start();
   storage->callback = callback;
   storage->context = context;
+  critical_section_end(disabled);
 
   return STATUS_CODE_OK;
 }

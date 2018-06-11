@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "can.h"
+#include "can_interval.h"
 #include "charger_cfg.h"
 #include "charger_controller.h"
 #include "charger_fsm.h"
@@ -16,6 +17,15 @@
 #include "uart.h"
 #include "wait.h"
 
+static CANStorage s_can_storage;
+static CANRxHandler s_can_rx_handlers[CHARGER_CFG_NUM_CAN_RX_HANDLERS];
+static UARTStorage s_uart_storage;
+static ChargerCanStatus s_charger_status;
+static ChargerStorage s_charger_storage;
+static FSM s_charger_fsm;
+
+// TODO(ELEC-355): Add support for polling the ADC/PWM signal from the charging station.
+
 int main(void) {
   // Generic Libraries
   event_queue_init();
@@ -23,17 +33,15 @@ int main(void) {
   gpio_init();
   gpio_it_init();
   soft_timer_init();
+  can_interval_init();
 
   // CAN
   const CANSettings *can_settings = charger_cfg_load_can_settings();
-  CANStorage can_storage;
-  CANRxHandler can_rx_handlers[CHARGER_CFG_NUM_CAN_RX_HANDLERS];
-  can_init(can_settings, &can_storage, can_rx_handlers, CHARGER_CFG_NUM_CAN_RX_HANDLERS);
+  can_init(&s_can_storage, can_settings, s_can_rx_handlers, CHARGER_CFG_NUM_CAN_RX_HANDLERS);
 
   // UART
   UARTSettings *uart_settings = charger_cfg_load_uart_settings();
-  UARTStorage uart_storage;
-  uart_init(charger_cfg_load_uart_port(), uart_settings, &uart_storage);
+  uart_init(charger_cfg_load_uart_port(), uart_settings, &s_uart_storage);
 
   // Charger Cfg
   charger_cfg_init_settings();
@@ -44,16 +52,13 @@ int main(void) {
 
   // Charger Controller
   const ChargerSettings *charger_settings = charger_cfg_load_settings();
-  ChargerCanStatus charger_status;
-  ChargerStorage charger_storage;
-  charger_controller_init(&charger_storage, charger_settings, &charger_status);
+  charger_controller_init(&s_charger_storage, charger_settings, &s_charger_status);
 
   // Notify/Command
   notify_init(charger_settings->can, CHARGER_CFG_SEND_PERIOD_S, CHARGER_CFG_WATCHDOG_PERIOD_S);
 
   // FSM
-  FSM charger_fsm;
-  charger_fsm_init(&charger_fsm);
+  charger_fsm_init(&s_charger_fsm);
 
   StatusCode status = NUM_STATUS_CODES;
   Event e = { 0 };
@@ -62,15 +67,12 @@ int main(void) {
       status = event_process(&e);
 
       // All events are interrupt driven so it is safe to wait while the event_queue is empty.
-      // TODO(ELEC-355): This may change based on what happens with the charger pin work as it may
-      // be on an ADC/PWM Signal.
       if (status == STATUS_CODE_EMPTY) {
         wait();
-        // TODO(ELEC-355): Validate nothing gets stuck here.
       }
     } while (status != STATUS_CODE_OK);
 
-    fsm_process_event(&charger_fsm, &e);
+    fsm_process_event(&s_charger_fsm, &e);
     fsm_process_event(CAN_FSM, &e);
   }
 

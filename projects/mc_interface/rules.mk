@@ -5,5 +5,9 @@
 # $(T)_INC_DIRS: $(T)_DIR/inc{/$(PLATFORM)}
 # $(T)_SRC: $(T)_DIR/src{/$(PLATFORM)}/*.{c,s}
 
-# Specify the device library you want to include
-$(T)_DEPS := ms-common
+# Specify the libraries you want to include
+$(T)_DEPS := ms-common ms-helper
+
+$(T)_test_drive_can_MOCKS := motor_controller_set_throttle motor_controller_set_cruise \
+                             motor_controller_set_speed_cb
+
