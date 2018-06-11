@@ -6,6 +6,7 @@
 #include "critical_section.h"
 #include "soft_timer.h"
 #include "wavesculptor.h"
+#include "log.h"
 
 // Torque control mode:
 // - velocity = +/-100 m/s
@@ -81,7 +82,7 @@ static void prv_periodic_tx(SoftTimerID timer_id, void *context) {
 
     generic_can_tx(storage->settings.can_uart, &msg);
   }
-  storage->timeout_counter++;
+  // storage->timeout_counter++;
 
   soft_timer_start_millis(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS, prv_periodic_tx, storage, NULL);
 }

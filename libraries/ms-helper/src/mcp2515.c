@@ -77,6 +77,11 @@ static void prv_handle_rx(Mcp2515Storage *storage, uint8_t int_flags) {
       uint32_t id = (uint32_t)((read_id[0] << 3) & 0xF) | (uint32_t)((read_id[1] >> 5) & 0x3) | (uint32_t)((read_id[1] << 27) & 0x2) |
                     (uint32_t)(read_id[2] << 19) | (uint32_t)(read_id[3] << 11);
       bool extended = (read_id[1] >> 3) & 0x1;
+
+      if (!extended) {
+        // Standard IDs have garbage in the extended fields
+        id &= 0x7FF;
+      }
       size_t dlc = read_id[4] & MCP2515_TXBNDLC_DLC_MASK;
 
       uint8_t data_payload[] = { MCP2515_CMD_READ_RX | rx_buf->data };
@@ -164,10 +169,6 @@ StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings
   volatile uint8_t control_registers[8] = { 0 };
   prv_read(storage, MCP2515_CTRL_REG_CNF3, control_registers, 8);
 
-  for (size_t i = 0; i < 8; i++) {
-    printf("%d: 0x%x\n", i, control_registers[i]);
-  }
-
   return STATUS_CODE_OK;
 }
 
@@ -177,12 +178,11 @@ StatusCode mcp2515_tx(Mcp2515Storage *storage, uint32_t id, bool extended, uint6
   uint8_t free_index =
       __builtin_ffs(~prv_read_status(storage) &
                     (MCP2515_STATUS_TX0REQ | MCP2515_STATUS_TX1REQ | MCP2515_STATUS_TX2REQ));
-  LOG_DEBUG("TX: free index %d\n", free_index);
   if (free_index == 0) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
-  Mcp2515TxBuffer *tx_buf = &s_tx_buffers[free_index - 1];
+  Mcp2515TxBuffer *tx_buf = &s_tx_buffers[(free_index - 3) / 2];
   // Load ID:
   // STD[10:3] in SIDH[7:0], STD[2:0] in SIDL[7:5]
   // EXT[17:16] in SIDL[1:0], EXT[15:8] in EID8[15:8], EXT[7:0] in EID0[7:0]
@@ -201,7 +201,7 @@ StatusCode mcp2515_tx(Mcp2515Storage *storage, uint32_t id, bool extended, uint6
   struct {
     uint8_t cmd;
     uint64_t data;
-  } data_payload = {
+  } __attribute__((packed)) data_payload = {
     .cmd = MCP2515_CMD_LOAD_TX | tx_buf->data,
     .data = data,
   };

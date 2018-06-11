@@ -5,6 +5,8 @@
 #include "spi.h"
 #include "unity.h"
 #include "log.h"
+#include "soft_timer.h"
+#include "delay.h"
 
 static Mcp2515Storage s_mcp2515;
 static volatile bool s_msg_rx = false;
@@ -19,6 +21,7 @@ void setup_test(void) {
   gpio_init();
   interrupt_init();
   gpio_it_init();
+  soft_timer_init();
 
   s_msg_rx = false;
 
@@ -32,7 +35,7 @@ void setup_test(void) {
 
     .int_pin = { .port = GPIO_PORT_A, 3 },
 
-    .loopback = true,
+    .loopback = false,
 
     .rx_cb = prv_handle_rx,
   };
@@ -42,8 +45,12 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_mcp2515_loopback(void) {
-  LOG_DEBUG("TX\n");
-  mcp2515_tx(&s_mcp2515, 0x123, false, 0x1122334455667788, 8);
 
-  while (!s_msg_rx) {}
+  size_t i = 0;
+  while (true) {
+    mcp2515_tx(&s_mcp2515, i, false, 0x1122334455667788, 8);
+    i = (i + 1) % 0x7FF;
+  }
+
+  // while (!s_msg_rx) {}
 }
