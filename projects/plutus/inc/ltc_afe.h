@@ -106,6 +106,9 @@ typedef struct LtcAfeStorage {
 // conversion is completed.
 StatusCode ltc_afe_init(LtcAfeStorage *afe, const LtcAfeSettings *settings);
 
+StatusCode ltc_afe_set_result_cbs(LtcAfeStorage *afe, LtcAfeResultCallback cell_result_cb,
+                                  LtcAfeResultCallback aux_result_cb, void *context);
+
 // Raises trigger conversion events. These events must be processed.
 StatusCode ltc_afe_request_cell_conversion(LtcAfeStorage *afe);
 StatusCode ltc_afe_request_aux_conversion(LtcAfeStorage *afe);
