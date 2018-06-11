@@ -11,6 +11,9 @@
 #include "input_event.h"
 #include "status.h"
 
+#define POWER_DISTRIBUTION_CONTROLLER_MAX_RETRIES 3
+
+static uint8_t s_num_retries = 0;
 static EEPowerState s_last_state = NUM_EE_POWER_STATES;
 
 // CANAckRequestCb
@@ -21,10 +24,15 @@ static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckS
   (void)device;
   (void)num_remaining;
   (void)context;
-  if (status == CAN_ACK_STATUS_TIMEOUT) {
-    event_raise(INPUT_EVENT_BPS_FAULT, 0);
-  } else if (status == CAN_ACK_STATUS_INVALID) {
-    event_raise(INPUT_EVENT_RETRY_POWER_STATE, s_last_state);
+  if (status != CAN_ACK_STATUS_OK) {
+    if (s_num_retries >= POWER_DISTRIBUTION_CONTROLLER_MAX_RETRIES) {
+      event_raise(INPUT_EVENT_BPS_FAULT, 0);
+    } else {
+      s_num_retries++;
+      event_raise(INPUT_EVENT_RETRY_POWER_STATE, s_last_state);
+    }
+  } else {
+    s_num_retries = 0;
   }
   return STATUS_CODE_OK;
 }
