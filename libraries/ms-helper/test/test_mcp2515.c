@@ -1,18 +1,19 @@
+#include "delay.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "interrupt.h"
+#include "log.h"
 #include "mcp2515.h"
+#include "soft_timer.h"
 #include "spi.h"
 #include "unity.h"
-#include "log.h"
-#include "soft_timer.h"
-#include "delay.h"
 
 static Mcp2515Storage s_mcp2515;
 static volatile bool s_msg_rx = false;
 
 static void prv_handle_rx(uint32_t id, bool extended, uint64_t data, size_t dlc, void *context) {
-  LOG_DEBUG("RX id 0x%lx (extended %d) dlc %d data 0x%lx%lx\n", id, extended, dlc, (uint32_t)(data >> 32), (uint32_t)data);
+  LOG_DEBUG("RX id 0x%lx (extended %d) dlc %d data 0x%lx%lx\n", id, extended, dlc,
+            (uint32_t)(data >> 32), (uint32_t)data);
 
   s_msg_rx = true;
 }
@@ -45,7 +46,6 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_mcp2515_loopback(void) {
-
   size_t i = 0;
   while (true) {
     mcp2515_tx(&s_mcp2515, i, false, 0x1122334455667788, 8);

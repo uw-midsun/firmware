@@ -39,7 +39,7 @@ static void prv_setup_system_can(void) {
 }
 
 static void prv_setup_motor_can(void) {
-  Mcp2515Settings mcp2515_settings = {
+  const Mcp2515Settings mcp2515_settings = {
     .spi_port = SPI_PORT_1,
     .baudrate = 750000,
     .mosi = { .port = GPIO_PORT_A, 7 },
@@ -49,7 +49,6 @@ static void prv_setup_motor_can(void) {
     .int_pin = { .port = GPIO_PORT_A, 3 },
     .loopback = false,
   };
-  // TODO: const settings
   generic_can_mcp2515_init(&s_can_mcp2515, &mcp2515_settings);
 }
 

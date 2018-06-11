@@ -11,4 +11,4 @@ typedef struct GenericCanMcp2515 {
 } GenericCanMcp2515;
 
 // Initialize |can_mcp2515| to use CAN through the MCP2515.
-StatusCode generic_can_mcp2515_init(GenericCanMcp2515 *can_mcp2515, Mcp2515Settings *settings);
+StatusCode generic_can_mcp2515_init(GenericCanMcp2515 *can_mcp2515, const Mcp2515Settings *settings);

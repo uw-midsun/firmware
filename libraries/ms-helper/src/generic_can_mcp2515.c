@@ -1,6 +1,6 @@
 #include "generic_can_mcp2515.h"
-#include "generic_can_helpers.h"
 #include <string.h>
+#include "generic_can_helpers.h"
 
 static Mcp2515Storage s_mcp2515;
 static GenericCanInterface s_interface;
@@ -39,13 +39,12 @@ static StatusCode prv_register_rx(GenericCan *can, GenericCanRx rx_handler, uint
   return generic_can_helpers_register_rx(can, rx_handler, mask, filter, context, NULL);
 }
 
-StatusCode generic_can_mcp2515_init(GenericCanMcp2515 *can_mcp2515, Mcp2515Settings *settings) {
+StatusCode generic_can_mcp2515_init(GenericCanMcp2515 *can_mcp2515, const Mcp2515Settings *settings) {
   s_interface.tx = prv_tx;
   s_interface.register_rx = prv_register_rx;
 
-  settings->rx_cb = prv_rx_handler;
-  settings->context = can_mcp2515;
   status_ok_or_return(mcp2515_init(&s_mcp2515, settings));
+  status_ok_or_return(mcp2515_register_rx_cb(&s_mcp2515, prv_rx_handler, can_mcp2515));
   can_mcp2515->mcp2515 = &s_mcp2515;
 
   memset(can_mcp2515->base.rx_storage, 0, sizeof(GenericCanRx) * NUM_GENERIC_CAN_RX_HANDLERS);

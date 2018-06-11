@@ -21,13 +21,29 @@ def dump_msg(can_id, data, length):
       0x1: ('Status', '<HHHH'),
       0x2: ('Bus Measurement', '<ff'),
       0x3: ('Velocity Measurement', '<ff'),
+      0x4: ('Phase Current Measurement', '<ff'),
+      0x5: ('Motor Voltage Vector Measurement', '<ff'),
+      0x6: ('Motor Current Vector Measurement', '<ff'),
+      0x7: ('Motor BackEMF Measurement / Prediction', '<ff'),
+      0x8: ('15 & 1.65 Voltage Rail Measurement', '<ff'),
+      0x9: ('2.5V & 1.2V Voltage Rail Measurement', '<ff'),
+      0xA: ('Fan Speed Measurement', '<ff'),
+      0xB: ('Sink & Motor Temperature Measurement', '<ff'),
+      0xC: ('Air In & CPU Temperature Measurement', '<ff'),
+      0xD: ('Air Out & Cap Temperature Measurement', '<ff'),
+      0xE: ('Odometer & Bus AmpHours Measurement', '<ff'),
     }
   }
 
   name, fmt = msg_lookup[is_motor].get(msg_id, ('Unknown', '<ff'))
   friendly_type = 'MC' if is_motor else 'DC'
 
-  print('Msg {} from {} 0x{:02x} - {}: {}'.format(msg_id, friendly_type, device_id, name, struct.unpack(fmt, data)))
+  unpacked = struct.unpack(fmt, data)
+  try:
+    data_str = '({:.4f}, {:.4f})'.format(*unpacked)
+  except ValueError:
+    data_str = unpacked
+  print('Msg {} from {} 0x{:02x} - {}: {}'.format(msg_id, friendly_type, device_id, name, data_str))
 
 def main():
   sock = socket.socket(socket.PF_CAN, socket.SOCK_RAW, socket.CAN_RAW)
@@ -40,6 +56,9 @@ def main():
     can_id &= socket.CAN_EFF_MASK
     data = data[:length]
 
-    dump_msg(can_id, data, length)
+    if length == 8:
+      dump_msg(can_id, data, length)
+    else:
+      print('RX id: 0x{:03x} data: 0x{:08x} (dlc {})'.format(can_id, data, length))
 
 main()
