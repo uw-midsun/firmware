@@ -13,6 +13,7 @@
 #include "relay_retry_service.h"
 #include "sequencer.h"
 
+#define SEQUENCER_FSM_BOOT_DELAY 2600
 #define SEQUENCER_FSM_MAX_RETRIES 2
 #define NUM_SEQUENCER_FSM_FILTERS 3
 
@@ -154,6 +155,8 @@ static const SequencerEventPair s_charge_events[] = {
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_GPIO_CHARGE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
+  { .raise = { .id = CHAOS_EVENT_DELAY_MS, .data = SEQUENCER_FSM_BOOT_DELAY },
+    .response = { CHAOS_EVENT_DELAY_DONE, 0 } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
@@ -188,6 +191,8 @@ static const SequencerEventPair s_drive_events[] = {
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_GPIO_DRIVE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
+  { .raise = { .id = CHAOS_EVENT_DELAY_MS, .data = SEQUENCER_FSM_BOOT_DELAY },
+    .response = { CHAOS_EVENT_DELAY_DONE, 0 } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
@@ -250,6 +255,7 @@ static bool prv_sequencer_setup_common(void) {
 
 // FSM Transitions
 static void prv_sequencer_state_emergency(FSM *fsm, const Event *e, void *context) {
+  LOG_DEBUG("Emergency\n");
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
@@ -263,6 +269,7 @@ static void prv_sequencer_state_emergency(FSM *fsm, const Event *e, void *contex
 }
 
 static void prv_sequencer_state_idle(FSM *fsm, const Event *e, void *context) {
+  LOG_DEBUG("Idle\n");
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
@@ -274,6 +281,7 @@ static void prv_sequencer_state_idle(FSM *fsm, const Event *e, void *context) {
 }
 
 static void prv_sequencer_state_charge(FSM *fsm, const Event *e, void *context) {
+  LOG_DEBUG("Charge\n");
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
@@ -285,6 +293,7 @@ static void prv_sequencer_state_charge(FSM *fsm, const Event *e, void *context) 
 }
 
 static void prv_sequencer_state_drive(FSM *fsm, const Event *e, void *context) {
+  LOG_DEBUG("Drive\n");
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
@@ -331,7 +340,6 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event) {
   if (previous_event->id == CHAOS_EVENT_RELAY_ERROR) {
     // Force the awaiting flag to clear as the relay failed.
     s_storage.awaiting_response = false;
-    return STATUS_CODE_OK;
 
     // If we aren't in the emergency state we need to switch to that state. This event will not be
     // raised in the emergency state.
@@ -358,6 +366,9 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event) {
     // If we are stuck go to the emergency state.
     return event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_EMERGENCY,
                                 SEQUENCER_EMPTY_DATA);
+  }
+  if (sequencer_complete(&s_storage)) {
+    LOG_DEBUG("Sequence Complete\n");
   }
   return status;
 }
