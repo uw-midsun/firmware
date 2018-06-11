@@ -35,7 +35,7 @@ typedef enum {
 typedef uint32_t MotorControllerCanId;
 
 typedef struct MotorControllerSettings {
-  GenericCan *can_uart;
+  GenericCan *motor_can;
   struct {
     // WaveSculptor address
     MotorControllerCanId motor_controller;
@@ -67,7 +67,7 @@ typedef struct MotorControllerStorage {
   size_t timeout_counter;
 } MotorControllerStorage;
 
-// |settings.can_uart| should be initialized to an instance of CAN UART
+// |settings.motor_can| should be initialized.
 StatusCode motor_controller_init(MotorControllerStorage *controller,
                                  const MotorControllerSettings *settings);
 
