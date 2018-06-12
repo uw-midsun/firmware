@@ -111,6 +111,7 @@ StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request)
     return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: Invalid message ID");
   }
 
+  LOG_DEBUG("can_tx fun\n");
   if (ack_request != NULL) {
     if (!CAN_MSG_IS_CRITICAL(msg)) {
       return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: ACK requested for non-critical message");
@@ -122,7 +123,8 @@ StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request)
 
   // Basically, the idea is that all the TX and RX should be happening in the main event loop.
   // We raise an event just to ensure that the CAN TX is postponed until the main event loop.
-  event_raise(s_can_storage->tx_event, 1);
+  StatusCode code = event_raise(s_can_storage->tx_event, 1);
+  LOG_DEBUG("Issue %d\n", code);
 
   return can_fifo_push(&s_can_storage->tx_fifo, msg);
 }

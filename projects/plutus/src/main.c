@@ -55,6 +55,7 @@ int main(void) {
     while (status_ok(event_process(&e))) {
       fsm_process_event(CAN_FSM, &e);
       ltc_afe_process_event(&s_plutus.ltc_afe, &e);
+      LOG_DEBUG("ID %d\n", e.id);
     }
   }
 }
