@@ -7,23 +7,23 @@
 
 // Arbitrary timeout
 #define I2C_TIMEOUT 100000
-#define I2C_TIMEOUT_WHILE_FLAG(i2c, flag, status)                           \
+#define I2C_TIMEOUT_WHILE_FLAG(i2c_port, flag, status)                           \
   do {                                                                      \
     uint32_t timeout = (I2C_TIMEOUT);                                       \
-    while (I2C_GetFlagStatus(i2c, flag) == status) {                        \
+    while (I2C_GetFlagStatus(s_port[i2c_port].base, flag) == status) {                        \
       timeout--;                                                            \
       if (timeout == 0) {                                                   \
         LOG_DEBUG("Timeout: %lu waiting for %d to change\n", flag, status); \
-        prv_recover_lockup();                                               \
+        prv_recover_lockup(i2c_port);                                               \
         return status_code(STATUS_CODE_TIMEOUT);                            \
       }                                                                     \
     }                                                                       \
   } while (0)
 
-#define I2C_STOP(i2c)                                   \
+#define I2C_STOP(i2c_port)                                   \
   do {                                                  \
-    I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_STOPF, RESET); \
-    I2C_ClearFlag(i2c, I2C_FLAG_STOPF);                 \
+    I2C_TIMEOUT_WHILE_FLAG(i2c_port, I2C_FLAG_STOPF, RESET); \
+    I2C_ClearFlag(s_port[i2c_port].base, I2C_FLAG_STOPF);                 \
   } while (0)
 
 typedef struct {
@@ -59,7 +59,6 @@ static void prv_recover_lockup(I2CPort port) {
   // 16 pulse
   for (size_t i = 0; i < 16; i++) {
     gpio_toggle_state(&settings->scl);
-    delay_us(3);
   }
 
   scl_settings.direction = GPIO_DIR_OUT_OD;
@@ -80,16 +79,16 @@ static StatusCode prv_transfer(I2CPort port, uint8_t addr, bool read, uint8_t *d
 
   if (read) {
     for (size_t i = 0; i < len; i++) {
-      I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_RXNE, RESET);
+      I2C_TIMEOUT_WHILE_FLAG(port, I2C_FLAG_RXNE, RESET);
       data[i] = I2C_ReceiveData(i2c);
     }
   } else {
     for (size_t i = 0; i < len; i++) {
-      I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_TXIS, RESET);
+      I2C_TIMEOUT_WHILE_FLAG(port, I2C_FLAG_TXIS, RESET);
       I2C_SendData(i2c, data[i]);
     }
     if (end_mode == I2C_SoftEnd_Mode) {
-      I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_TC, RESET);
+      I2C_TIMEOUT_WHILE_FLAG(port, I2C_FLAG_TC, RESET);
     }
   }
 
@@ -134,11 +133,11 @@ StatusCode i2c_read(I2CPort i2c, I2CAddress addr, uint8_t *rx_data, size_t rx_le
   }
   CRITICAL_SECTION_AUTOEND;
 
-  I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET);
+  I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_BUSY, SET);
 
   status_ok_or_return(prv_transfer(i2c, addr, true, rx_data, rx_len, I2C_AutoEnd_Mode));
 
-  I2C_STOP(s_port[i2c].base);
+  I2C_STOP(i2c);
 
   return STATUS_CODE_OK;
 }
@@ -149,11 +148,11 @@ StatusCode i2c_write(I2CPort i2c, I2CAddress addr, uint8_t *tx_data, size_t tx_l
   }
   CRITICAL_SECTION_AUTOEND;
 
-  I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET);
+  I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_BUSY, SET);
 
   status_ok_or_return(prv_transfer(i2c, addr, false, tx_data, tx_len, I2C_AutoEnd_Mode));
 
-  I2C_STOP(s_port[i2c].base);
+  I2C_STOP(i2c);
 
   return STATUS_CODE_OK;
 }
@@ -165,12 +164,12 @@ StatusCode i2c_read_reg(I2CPort i2c, I2CAddress addr, uint8_t reg, uint8_t *rx_d
   }
   CRITICAL_SECTION_AUTOEND;
 
-  I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET);
+  I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_BUSY, SET);
 
   status_ok_or_return(prv_transfer(i2c, addr, false, &reg, sizeof(reg), I2C_SoftEnd_Mode));
   status_ok_or_return(prv_transfer(i2c, addr, true, rx_data, rx_len, I2C_AutoEnd_Mode));
 
-  I2C_STOP(s_port[i2c].base);
+  I2C_STOP(i2c);
 
   return STATUS_CODE_OK;
 }
@@ -182,12 +181,12 @@ StatusCode i2c_write_reg(I2CPort i2c, I2CAddress addr, uint8_t reg, uint8_t *tx_
   }
   CRITICAL_SECTION_AUTOEND;
 
-  I2C_TIMEOUT_WHILE_FLAG(s_port[i2c].base, I2C_FLAG_BUSY, SET);
+  I2C_TIMEOUT_WHILE_FLAG(i2c, I2C_FLAG_BUSY, SET);
 
   status_ok_or_return(prv_transfer(i2c, addr, false, &reg, sizeof(reg), I2C_SoftEnd_Mode));
   status_ok_or_return(prv_transfer(i2c, addr, false, tx_data, tx_len, I2C_AutoEnd_Mode));
 
-  I2C_STOP(s_port[i2c].base);
+  I2C_STOP(i2c);
 
   return STATUS_CODE_OK;
 }

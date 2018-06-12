@@ -111,6 +111,8 @@ static void prv_drive_output(FSM *fsm, const Event *e, void *context) {
   // Allow all events and begin sending periodic drive commands
   drive_output_set_enabled(drive_output_global(), true);
   event_arbiter_set_guard_fn(guard, NULL);
+
+  LOG_DEBUG("drive\n");
 }
 
 static void prv_fault_output(FSM *fsm, const Event *e, void *context) {
@@ -119,6 +121,8 @@ static void prv_fault_output(FSM *fsm, const Event *e, void *context) {
   // Disable periodic drive output updates if not running
   drive_output_set_enabled(drive_output_global(), false);
   event_arbiter_set_guard_fn(guard, prv_guard_off);
+
+  LOG_DEBUG("fault\n");
 }
 
 static void prv_idle_output(FSM *fsm, const Event *e, void *context) {
@@ -128,11 +132,15 @@ static void prv_idle_output(FSM *fsm, const Event *e, void *context) {
   // Disable periodic drive output updates if not running
   drive_output_set_enabled(drive_output_global(), false);
   event_arbiter_set_guard_fn(guard, prv_guard_off);
+
+  LOG_DEBUG("idle\n");
 }
 
 static void prv_charge_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   power_distribution_controller_send_update(EE_POWER_STATE_CHARGE);
+
+  LOG_DEBUG("charging\n");
 
   // Disable periodic drive output updates if not running
   drive_output_set_enabled(drive_output_global(), false);

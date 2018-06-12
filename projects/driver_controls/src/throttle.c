@@ -16,6 +16,7 @@
 #include "event_queue.h"
 #include "input_event.h"
 #include "log.h"
+#include "critical_section.h"
 
 static ThrottleStorage s_throttle_storage;
 
@@ -116,12 +117,6 @@ static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) 
 
   if (storage->reading_updated_flag) {
     if (prv_channels_synced(reading_main, reading_secondary, storage)) {
-      storage->desync_counter = 0;
-    } else {
-      storage->desync_counter++;
-    }
-
-    if (storage->desync_counter < THROTTLE_MAX_DESYNC_COUNT) {
       for (ThrottleZone zone = THROTTLE_ZONE_BRAKE; zone < NUM_THROTTLE_ZONES; zone++) {
         if (prv_reading_within_zone(reading_main, zone, storage)) {
           fault = false;
@@ -178,8 +173,12 @@ StatusCode throttle_get_position(ThrottleStorage *storage, ThrottlePosition *pos
   if (!storage->reading_ok_flag) {
     return status_code(STATUS_CODE_TIMEOUT);
   }
+
+  bool disabled = critical_section_start();
   position->zone = storage->position.zone;
   position->numerator = storage->position.numerator;
+  critical_section_end(disabled);
+
   return STATUS_CODE_OK;
 }
 

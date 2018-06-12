@@ -5,6 +5,15 @@
 #include "i2c.h"
 #include "mcp23008.h"
 
+static void prv_poll_timeout(SoftTimerID timer_id, void *context) {
+  GpioExpanderStorage *expander = context;
+
+  // Trigger an interrupt to force an update
+  gpio_it_trigger_interrupt(&expander->int_pin);
+
+  soft_timer_start_millis(GPIO_EXPANDER_POLL_PERIOD_MS, prv_poll_timeout, expander, NULL);
+}
+
 // IO interrupt occurred
 static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
   GpioExpanderStorage *expander = context;
@@ -49,6 +58,7 @@ StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioE
   memset(expander, 0, sizeof(*expander));
   expander->port = port;
   expander->addr = MCP23008_ADDRESS + addr;
+  expander->int_pin = *interrupt_pin;
 
   // Configure the interrupt pin from the MCP23008 - active-low
   GPIOSettings gpio_settings = {
@@ -63,6 +73,8 @@ StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioE
   gpio_init_pin(interrupt_pin, &gpio_settings);
   gpio_it_register_interrupt(interrupt_pin, &it_settings, INTERRUPT_EDGE_FALLING,
                              prv_interrupt_handler, expander);
+
+  soft_timer_start_millis(GPIO_EXPANDER_POLL_PERIOD_MS, prv_poll_timeout, expander, NULL);
 
   // Set default configuration: input, interrupt on change, active-low interrupt
   uint8_t cfg[] = {
