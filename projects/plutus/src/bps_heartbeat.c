@@ -13,11 +13,11 @@ static StatusCode prv_handle_heartbeat_ack(CANMessageID msg_id, uint16_t device,
     storage->ack_fail_counter++;
 
     if (storage->ack_fail_counter >= PLUTUS_CFG_HEARTBEAT_MAX_ACK_FAILS) {
-      return bps_heartbeat_raise_fault(storage, BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT);
+      return bps_heartbeat_raise_fault(storage, EE_BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT);
     }
   } else if (status == CAN_ACK_STATUS_OK) {
     storage->ack_fail_counter = 0;
-    return bps_heartbeat_clear_fault(storage, BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT);
+    return bps_heartbeat_clear_fault(storage, EE_BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT);
   }
 
   return STATUS_CODE_OK;
@@ -31,14 +31,9 @@ static StatusCode prv_handle_state(BpsHeartbeatStorage *storage) {
   };
 
   // Only transmit state OK if we have no ongoing faults
-  EEBpsHeartbeatState state =
-      (storage->fault_bitset == 0x0) ? EE_BPS_HEARTBEAT_STATE_OK : EE_BPS_HEARTBEAT_STATE_FAULT;
-  if (state == EE_BPS_HEARTBEAT_STATE_FAULT) {
-    LOG_DEBUG("fault: 0x%x\n", storage->fault_bitset);
-  }
-  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, state);
+  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, storage->fault_bitset);
 
-  if (state == EE_BPS_HEARTBEAT_STATE_FAULT) {
+  if (storage->fault_bitset != EE_BPS_HEARTBEAT_STATE_OK) {
     return sequenced_relay_set_state(storage->relay, EE_RELAY_STATE_OPEN);
   }
 
@@ -67,10 +62,11 @@ StatusCode bps_heartbeat_init(BpsHeartbeatStorage *storage, SequencedRelayStorag
                                  prv_periodic_heartbeat, storage, NULL);
 }
 
-StatusCode bps_heartbeat_raise_fault(BpsHeartbeatStorage *storage, BpsHeartbeatFaultSource source) {
+StatusCode bps_heartbeat_raise_fault(BpsHeartbeatStorage *storage,
+                                     EEBpsHeartbeatFaultSource source) {
   storage->fault_bitset |= (1 << source);
 
-  if (source == BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT) {
+  if (source == EE_BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT) {
     return STATUS_CODE_OK;
   }
 
@@ -78,7 +74,8 @@ StatusCode bps_heartbeat_raise_fault(BpsHeartbeatStorage *storage, BpsHeartbeatF
   return prv_handle_state(storage);
 }
 
-StatusCode bps_heartbeat_clear_fault(BpsHeartbeatStorage *storage, BpsHeartbeatFaultSource source) {
+StatusCode bps_heartbeat_clear_fault(BpsHeartbeatStorage *storage,
+                                     EEBpsHeartbeatFaultSource source) {
   storage->fault_bitset &= ~(1 << source);
 
   return STATUS_CODE_OK;
