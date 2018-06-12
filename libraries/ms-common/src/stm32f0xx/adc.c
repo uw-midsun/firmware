@@ -37,6 +37,9 @@ static uint16_t prv_get_temp(uint16_t reading) {
 
 // Formula obtained from section 13.9 of the reference manual. Returns Vdda in mV
 static uint16_t prv_get_vdda(uint16_t reading) {
+  if (reading == 0) {
+    return 0;
+  }
   uint16_t vrefint_cal = *(uint16_t *)VREFINT_CAL;
   reading = (3300 * vrefint_cal) / reading;
   return reading;
@@ -216,7 +219,7 @@ StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading) {
       break;
   }
 
-  uint16_t vdda;
+  uint16_t vdda = 0;
   adc_read_converted(ADC_CHANNEL_REF, &vdda);
   *reading = (adc_reading * vdda) / 4095;
 

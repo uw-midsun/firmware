@@ -11,3 +11,5 @@
 // On CHAOS_EVENT_DELAY_MS a delay is scheduled for the value in the data field interpreted as
 // milliseconds. After expiry CHAOS_EVENT_DELAY_DONE is raised.
 void delay_service_process_event(const Event *e);
+
+void delay_service_cancel(void);

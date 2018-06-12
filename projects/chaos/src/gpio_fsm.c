@@ -25,7 +25,6 @@ FSM_STATE_TRANSITION(gpio_state_emergency) {
   FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_IDLE, gpio_state_idle);
   FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_CHARGE_PRECONFIG, gpio_state_charge_preconfig);
   FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_DRIVE_PRECONFIG, gpio_state_drive_preconfig);
-  FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_EMERGENCY, gpio_state_emergency);
 }
 
 FSM_STATE_TRANSITION(gpio_state_idle) {
