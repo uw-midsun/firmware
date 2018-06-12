@@ -5,11 +5,13 @@
 #include "can.h"
 #include "can_ack.h"
 #include "can_rx.h"
+#include "log.h"
 #include "status.h"
 
 // CANRxHandlerCb
 static StatusCode prv_heartbeat_handler(const CANMessage *msg, void *context,
                                         CANAckStatus *ack_reply) {
+  LOG_DEBUG("Got it\n");
   HeartbeatRxHandlerStorage *storage = context;
   if (!storage->handler(msg->msg_id, storage->context)) {
     *ack_reply = CAN_ACK_STATUS_INVALID;

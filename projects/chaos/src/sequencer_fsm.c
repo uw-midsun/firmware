@@ -361,10 +361,12 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event) {
   // An unexpected event occurred we should reset.
   if (status == STATUS_CODE_INTERNAL_ERROR) {
     if (s_retries < SEQUENCER_FSM_MAX_RETRIES) {
+      LOG_DEBUG("Retrying state\n");
       s_retries++;
       return event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_RESET,
                                   SEQUENCER_EMPTY_DATA);
     }
+    LOG_DEBUG("Retrying state failed emergency\n");
     // If we are stuck go to the emergency state.
     return event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_EMERGENCY,
                                 SEQUENCER_EMPTY_DATA);

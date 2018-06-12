@@ -8,6 +8,7 @@
 #include "chaos_events.h"
 #include "event_queue.h"
 #include "exported_enums.h"
+#include "log.h"
 #include "soft_timer.h"
 #include "status.h"
 
@@ -18,6 +19,7 @@ static SoftTimerID s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
 static void prv_bps_watchdog(SoftTimerID id, void *context) {
   (void)id;
   (void)context;
+  LOG_DEBUG("BPS Watchdog\n");
   event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, 0);
 }
 
@@ -37,7 +39,8 @@ static StatusCode prv_bps_rx(const CANMessage *msg, void *context, CANAckStatus 
   prv_kick_watchdog();
   uint8_t state = 0;
   CAN_UNPACK_BPS_HEARTBEAT(msg, &state);
-  if (state == EE_BPS_HEARTBEAT_STATE_FAULT) {
+  if (state) {
+    LOG_DEBUG("BPS Fault %d\n", state);
     event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, 0);
   }
   return STATUS_CODE_OK;

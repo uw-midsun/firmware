@@ -121,7 +121,7 @@ int main(void) {
     power_path_process_event(&cfg->power_path, &e);
     charger_process_event(&e);
     relay_process_event(&e);
-    relay_retry_service_update(&e);
+    // relay_retry_service_update(&e);
     sequencer_fsm_publish_next_event(&e);
   }
 

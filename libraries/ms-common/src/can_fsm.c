@@ -2,6 +2,7 @@
 #include "can.h"
 #include "can_hw.h"
 #include "can_rx.h"
+#include "log.h"
 
 FSM_DECLARE_STATE(can_rx_fsm_handle);
 FSM_DECLARE_STATE(can_tx_fsm_handle);
@@ -22,6 +23,7 @@ static StatusCode prv_handle_data_msg(CANStorage *can_storage, const CANMessage 
   CANRxHandler *handler = can_rx_get_handler(&can_storage->rx_handlers, rx_msg->msg_id);
   CANAckStatus ack_status = CAN_ACK_STATUS_OK;
   StatusCode ret = STATUS_CODE_OK;
+  LOG_DEBUG("Data msg\n");
 
   if (handler != NULL) {
     ret = handler->callback(rx_msg, handler->context, &ack_status);
@@ -36,6 +38,7 @@ static StatusCode prv_handle_data_msg(CANStorage *can_storage, const CANMessage 
     };
 
     ret = can_transmit(&ack, NULL);
+    LOG_DEBUG("ack %d\n", ret);
     status_ok_or_return(ret);
   }
 
@@ -93,6 +96,7 @@ static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
 
   // If added to mailbox, pop message from the TX queue
   StatusCode ret = can_hw_transmit(msg_id.raw, false, tx_msg.data_u8, tx_msg.dlc);
+  LOG_DEBUG("tx %d\n", ret);
   if (ret == STATUS_CODE_OK) {
     can_fifo_pop(&can_storage->tx_fifo, NULL);
   }
