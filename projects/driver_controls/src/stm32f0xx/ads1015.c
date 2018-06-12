@@ -70,7 +70,8 @@ static void prv_watchdog(SoftTimerID timer_id, void *context) {
   }
   storage->had_interrupt = false;
 
-  soft_timer_start_millis(ADS1015_WATCHDOG_TIMEOUT_MS, prv_watchdog, storage, &storage->watchdog_timer);
+  soft_timer_start_millis(ADS1015_WATCHDOG_TIMEOUT_MS, prv_watchdog, storage,
+                          &storage->watchdog_timer);
 }
 
 // This function is registered as the callback for ALRT/RDY Pin.
@@ -177,7 +178,8 @@ StatusCode ads1015_configure_channel(Ads1015Storage *storage, Ads1015Channel cha
   status_ok_or_return(gpio_it_mask_interrupt(&storage->ready_pin, mask));
 
   if (!mask && storage->watchdog_timer == SOFT_TIMER_INVALID_TIMER) {
-    soft_timer_start_millis(ADS1015_WATCHDOG_TIMEOUT_MS, prv_watchdog, storage, &storage->watchdog_timer);
+    soft_timer_start_millis(ADS1015_WATCHDOG_TIMEOUT_MS, prv_watchdog, storage,
+                            &storage->watchdog_timer);
   } else if (mask) {
     soft_timer_cancel(storage->watchdog_timer);
   }

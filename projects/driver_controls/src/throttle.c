@@ -13,10 +13,10 @@
 // be raised. The throttle_get_position function simply reads the position from storage.
 #include "throttle.h"
 #include <string.h>
+#include "critical_section.h"
 #include "event_queue.h"
 #include "input_event.h"
 #include "log.h"
-#include "critical_section.h"
 
 static ThrottleStorage s_throttle_storage;
 

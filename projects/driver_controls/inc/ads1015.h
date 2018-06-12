@@ -9,8 +9,8 @@
 #include <stdbool.h>
 #include "gpio.h"
 #include "i2c.h"
-#include "status.h"
 #include "soft_timer.h"
+#include "status.h"
 
 typedef enum {
   ADS1015_ADDRESS_GND = 0,

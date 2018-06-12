@@ -1,9 +1,9 @@
 #include "drive_output.h"
 #include <string.h>
 #include "can_transmit.h"
+#include "exported_enums.h"
 #include "log.h"
 #include "misc.h"
-#include "exported_enums.h"
 
 #define DRIVE_OUTPUT_VALID_WATCHDOG ((1 << NUM_DRIVE_OUTPUT_SOURCES) - 1)
 
@@ -36,7 +36,8 @@ static void prv_broadcast_cb(SoftTimerID timer_id, void *context) {
   // note that this will usually output stale data from the previous update request
 
   // LOG_DEBUG("Drive output: throttle %d cruise %d direction %d mech brake %d\n",
-  //           storage->data[DRIVE_OUTPUT_SOURCE_THROTTLE], storage->data[DRIVE_OUTPUT_SOURCE_CRUISE],
+  //           storage->data[DRIVE_OUTPUT_SOURCE_THROTTLE],
+  //           storage->data[DRIVE_OUTPUT_SOURCE_CRUISE],
   //           storage->data[DRIVE_OUTPUT_SOURCE_DIRECTION],
   //           storage->data[DRIVE_OUTPUT_SOURCE_MECH_BRAKE]);
 
