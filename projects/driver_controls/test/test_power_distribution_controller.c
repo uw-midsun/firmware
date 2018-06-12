@@ -86,9 +86,17 @@ void test_emergency_fault(void) {
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
 
-  // Timeout (major issue)
   ctx.returned_status = CAN_ACK_STATUS_TIMEOUT;
   power_distribution_controller_send_update(EE_POWER_STATE_IDLE);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
+  MS_TEST_HELPER_AWAIT_EVENT(e);
+  power_distribution_controller_retry(&e);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
+  MS_TEST_HELPER_AWAIT_EVENT(e);
+  power_distribution_controller_retry(&e);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
+  MS_TEST_HELPER_AWAIT_EVENT(e);
+  power_distribution_controller_retry(&e);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_BPS_FAULT, e.id);

@@ -11,6 +11,7 @@
 #include "soft_timer.h"
 #include "status.h"
 
+static bool s_handled = false;
 static SoftTimerID s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
 
 // SoftTimerCallback
@@ -33,12 +34,11 @@ static StatusCode prv_kick_watchdog(void) {
 static StatusCode prv_bps_rx(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   (void)context;
   (void)ack_reply;
+  prv_kick_watchdog();
   uint8_t state = 0;
   CAN_UNPACK_BPS_HEARTBEAT(msg, &state);
   if (state == EE_BPS_HEARTBEAT_STATE_FAULT) {
     event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, 0);
-  } else {
-    prv_kick_watchdog();
   }
   return STATUS_CODE_OK;
 }

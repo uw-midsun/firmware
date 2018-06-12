@@ -77,8 +77,8 @@ static void prv_gpio_state_charge_preconfig(FSM *fsm, const Event *e, void *cont
   const ChaosConfig *cfg = context;
   const GPIOAddress sequence[] = {
     cfg->array_sense_power,      // To reset relays as a precaution.
-    cfg->front_lights_power,     //
     cfg->motor_interface_power,  //
+    cfg->front_lights_power,     //
     cfg->rear_camera_power,      //
   };
 
