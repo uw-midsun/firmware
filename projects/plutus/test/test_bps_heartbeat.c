@@ -8,6 +8,7 @@
 #include "interrupt.h"
 #include "log.h"
 #include "ms_test_helpers.h"
+#include "plutus_cfg.h"
 #include "soft_timer.h"
 #include "test_helpers.h"
 
@@ -85,9 +86,13 @@ void test_bps_heartbeat_can(void) {
   TEST_ASSERT_EQUAL(EE_BPS_HEARTBEAT_STATE_OK, s_heartbeat_state);
 
   // Pretend something bad happened
+  // We support a number of grace ACK timeouts, so loop
   s_ack_status = CAN_ACK_STATUS_TIMEOUT;
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
-                                    TEST_BPS_HEARTBEAT_EVENT_CAN_RX);
+
+  for (size_t i = 0; i < PLUTUS_CFG_HEARTBEAT_MAX_ACK_FAILS; i++) {
+    MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
+                                      TEST_BPS_HEARTBEAT_EVENT_CAN_RX);
+  }
 
   // Next BPS heartbeat will have faulted
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
