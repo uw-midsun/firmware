@@ -43,6 +43,7 @@ typedef struct CANHwSocketData {
 
 static pthread_t s_rx_pthread_id;
 static pthread_t s_tx_pthread_id;
+static pthread_barrier_t s_barrier;
 // Producer/Consumer semaphore
 static sem_t s_tx_sem;
 
@@ -65,6 +66,8 @@ static uint32_t prv_get_delay(CANHwBitrate bitrate) {
 static void *prv_rx_thread(void *arg) {
   x86_interrupt_pthread_init();
   LOG_DEBUG("CAN HW RX thread started\n");
+
+  pthread_barrier_wait(&s_barrier);
 
   struct timeval timeout = { .tv_usec = CAN_HW_THREAD_EXIT_PERIOD_US };
 
@@ -100,6 +103,8 @@ static void *prv_tx_thread(void *arg) {
   x86_interrupt_pthread_init();
   LOG_DEBUG("CAN HW TX thread started\n");
   struct can_frame frame = { 0 };
+
+  pthread_barrier_wait(&s_barrier);
 
   // Mutex is unlocked when the thread should exit
   while (pthread_mutex_trylock(&s_keep_alive) != 0) {
@@ -185,6 +190,11 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
 
   pthread_create(&s_rx_pthread_id, NULL, prv_rx_thread, NULL);
   pthread_create(&s_tx_pthread_id, NULL, prv_tx_thread, NULL);
+
+  // 3 threads total: main, TX, RX
+  pthread_barrier_init(&s_barrier, NULL, 3);
+  pthread_barrier_wait(&s_barrier);
+  pthread_barrier_destroy(&s_barrier);
 
   return STATUS_CODE_OK;
 }
