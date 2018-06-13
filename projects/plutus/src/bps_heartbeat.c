@@ -30,15 +30,10 @@ static StatusCode prv_handle_state(BpsHeartbeatStorage *storage) {
     .expected_bitset = storage->expected_bitset,
   };
 
-  // Only transmit state OK if we have no ongoing faults
-  EEBpsHeartbeatState state =
-      (storage->fault_bitset == 0x0) ? EE_BPS_HEARTBEAT_STATE_OK : EE_BPS_HEARTBEAT_STATE_FAULT;
-  if (state == EE_BPS_HEARTBEAT_STATE_FAULT) {
-    LOG_DEBUG("fault: 0x%x\n", storage->fault_bitset);
-  }
-  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, state);
+  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, storage->fault_bitset);
 
-  if (state == EE_BPS_HEARTBEAT_STATE_FAULT) {
+  if (storage->fault_bitset) {
+    LOG_DEBUG("fault: 0x%x\n", storage->fault_bitset);
     return sequenced_relay_set_state(storage->relay, EE_RELAY_STATE_OPEN);
   }
 
