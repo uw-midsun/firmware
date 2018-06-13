@@ -4,6 +4,39 @@ import socket
 import struct
 import binascii
 
+def parse_msg(can_id, data):
+    """Parses and prints a system CAN message.
+
+    Args:
+        can_id: Raw standard CAN ID.
+        data: Message data. Up to 8 bytes.
+
+    Returns:
+        None
+    """
+    source_id = can_id & 0xf
+    msg_type = (can_id >> 4) & 0x1
+    msg_id = (can_id >> 5) & 0x3f
+
+    msg_type_name = 'ACK' if msg_type == 1 else 'data'
+    if (msg_id == 32 and len(data) == 6):
+        vt_fmt = '<HHH'
+        module, voltage, aux = struct.unpack(vt_fmt, data)
+        print('C{}: {}mV aux {}mV'.format(module, voltage / 10, aux / 10))
+    elif (msg_id == 0 and msg_type == 0):
+        print('BPS Heartbeat: 0x{} from {}'.format(binascii.hexlify(data).decode('ascii'),
+                                                   source_id))
+    elif (msg_id == 0 and msg_type == 1):
+        print('BPS Hearbeat ACK from {}'.format(source_id))
+    elif (msg_id == 2 or msg_id == 3):
+        relay_name = 'main' if msg_id == 2 else 'slave'
+        state = 'open' if data == 0x0 else 'close'
+        print('Battery relay {}: {} ({}) from {}'.format(relay_name, state, msg_type_name,
+                                                         source_id))
+    else:
+        print('{} from {} ({}): 0x{}'.format(msg_id, source_id, msg_type_name,
+                                             binascii.hexlify(data).decode('ascii')))
+
 def main():
     """Main entry point"""
     sock = socket.socket(socket.PF_CAN, socket.SOCK_RAW, socket.CAN_RAW)
@@ -16,26 +49,7 @@ def main():
         can_id &= socket.CAN_EFF_MASK
         data = data[:length]
 
-        source_id = can_id & 0xf
-        msg_type = (can_id >> 4) & 0x1
-        msg_id = (can_id >> 5) & 0x3f
-
-        # print('RX {} from {} (ack {}) data: 0x{} (dlc {})'.format(msg_id, source_id, msg_type, binascii.hexlify(data), length))
-        msg_type_name = 'ACK' if msg_type == 1 else 'data'
-        if (msg_id == 32 and length == 6):
-            vt_fmt = '<HHH'
-            module, voltage, temp = struct.unpack(vt_fmt, data)
-            # print('C{}: {}mV'.format(module, voltage / 10))
-        elif (msg_id == 0 and msg_type == 0):
-            print('BPS Heartbeat: 0x{} from {}'.format(binascii.hexlify(data).decode('ascii'), source_id))
-        elif (msg_id == 0 and msg_type == 1):
-            print('BPS Hearbeat ACK from {}'.format(source_id))
-        elif (msg_id == 2 or msg_id == 3):
-            relay_name = 'main' if msg_id == 2 else 'slave'
-            state = 'open' if data == 0x0 else 'close'
-            print('Battery relay {}: {} ({}) from {}'.format(relay_name, state, msg_type_name, source_id))
-        else:
-            print('{} from {} ({}): 0x{}'.format(msg_id, source_id, msg_type_name, binascii.hexlify(data).decode('ascii')))
+        parse_msg(can_id, data)
 
 if __name__ == '__main__':
     main()
