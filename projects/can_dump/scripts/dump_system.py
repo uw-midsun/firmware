@@ -14,26 +14,37 @@ def parse_msg(can_id, data):
     Returns:
         None
     """
-    source_id = can_id & 0xf
+
+    # System CAN ID format:
+    # [0:3] Source ID
+    # [4] Message Type (ACK/DATA)
+    # [5:10] Message ID
+    source_id = can_id & (1 << 4) 0xf
     msg_type = (can_id >> 4) & 0x1
     msg_id = (can_id >> 5) & 0x3f
 
     msg_type_name = 'ACK' if msg_type == 1 else 'data'
+
     if (msg_id == 32 and len(data) == 6):
+        # Battery voltage/temperature
         vt_fmt = '<HHH'
         module, voltage, aux = struct.unpack(vt_fmt, data)
         print('C{}: {}mV aux {}mV'.format(module, voltage / 10, aux / 10))
     elif (msg_id == 0 and msg_type == 0):
+        # BPS Heartbeat TX
         print('BPS Heartbeat: 0x{} from {}'.format(binascii.hexlify(data).decode('ascii'),
                                                    source_id))
     elif (msg_id == 0 and msg_type == 1):
+        # BPS Heartbeat ACK
         print('BPS Hearbeat ACK from {}'.format(source_id))
     elif (msg_id == 2 or msg_id == 3):
+        # Battery relay
         relay_name = 'main' if msg_id == 2 else 'slave'
         state = 'open' if data == 0x0 else 'close'
         print('Battery relay {}: {} ({}) from {}'.format(relay_name, state, msg_type_name,
                                                          source_id))
     else:
+        # Unrecognized message
         print('{} from {} ({}): 0x{}'.format(msg_id, source_id, msg_type_name,
                                              binascii.hexlify(data).decode('ascii')))
 
