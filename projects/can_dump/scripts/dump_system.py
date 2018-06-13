@@ -19,7 +19,7 @@ def parse_msg(can_id, data):
     # [0:3] Source ID
     # [4] Message Type (ACK/DATA)
     # [5:10] Message ID
-    source_id = can_id & (1 << 4) 0xf
+    source_id = can_id & 0xf
     msg_type = (can_id >> 4) & 0x1
     msg_id = (can_id >> 5) & 0x3f
 
