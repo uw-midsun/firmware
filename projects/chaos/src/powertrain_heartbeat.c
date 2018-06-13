@@ -9,6 +9,7 @@
 #include "can_transmit.h"
 #include "chaos_events.h"
 #include "event_queue.h"
+#include "log.h"
 #include "soft_timer.h"
 #include "status.h"
 
@@ -31,6 +32,7 @@ static void prv_hb_watchdog(SoftTimerID timer_id, void *context) {
   (void)timer_id;
   (void)context;
   s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
+  LOG_DEBUG("Emergency: Powertrain Watchdog\n");
   event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, 0);
   if (s_interval_id != SOFT_TIMER_INVALID_TIMER) {
     soft_timer_cancel(s_interval_id);
@@ -67,9 +69,9 @@ static void prv_send_hb_request(SoftTimerID timer_id, void *context) {
   CANAckRequest ack_req = {
     .callback = prv_ack_cb,
     .context = NULL,
-    .expected_bitset =
-        CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_PLUTUS, SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,
-                                 SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER),
+    .expected_bitset = CAN_ACK_EXPECTED_DEVICES(
+        SYSTEM_CAN_DEVICE_PLUTUS, SYSTEM_CAN_DEVICE_PLUTUS_SLAVE, SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,
+        SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER),
   };
   CAN_TRANSMIT_POWERTRAIN_HEARTBEAT(&ack_req);
   soft_timer_start_millis(POWERTRAIN_HEARTBEAT_MS, prv_send_hb_request, NULL, &s_interval_id);

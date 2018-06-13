@@ -1,7 +1,7 @@
 #pragma once
 // Module to handle relay retrying
 //
-// Requires event_queue to be initialized. Intended to be used with relays.
+// Requires event_queue and soft_timers to be initialized. Intended to be used with relays.
 //
 // This module subscribes to events from the main event loop that reset and update the number of
 // retries and also send relay retry requests or determines if a relay has faulted.
@@ -9,12 +9,15 @@
 
 #include "event_queue.h"
 #include "relay_id.h"
+#include "soft_timer.h"
 
+#define RELAY_RETRY_SERVICE_BACKOFF_MS 500
 #define RELAY_RETRY_SERVICE_DEFAULT_ATTEMPTS 3
 #define RELAY_RETRY_SERVICE_UNLIMITED_ATTEMPTS RELAY_RETRY_SERVICE_DEFAULT_ATTEMPTS + 1
 
 typedef struct RelayRetryServiceStorage {
   uint8_t relays_curr_retries[NUM_RELAY_IDS];
+  SoftTimerID relays_timer_id[NUM_RELAY_IDS];
   uint8_t max_retries;
 } RelayRetryServiceStorage;
 
