@@ -37,6 +37,10 @@ static uint16_t prv_get_temp(uint16_t reading) {
 
 // Formula obtained from section 13.9 of the reference manual. Returns Vdda in mV
 static uint16_t prv_get_vdda(uint16_t reading) {
+  // To avoid dividing by zero faults:
+  if (!reading) {
+    return reading;
+  }
   uint16_t vrefint_cal = *(uint16_t *)VREFINT_CAL;
   reading = (3300 * vrefint_cal) / reading;
   return reading;
