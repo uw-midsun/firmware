@@ -16,6 +16,7 @@
 #include "gpio.h"
 #include "interrupt.h"
 #include "misc.h"
+#include "ms_test_helpers.h"
 #include "soft_timer.h"
 #include "status.h"
 #include "test_helpers.h"
@@ -69,7 +70,7 @@ void test_bps_heartbeat_watchdog_kick(void) {
   StatusCode status = NUM_STATUS_CODES;
 
   // Auto Start
-  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, EE_BPS_HEARTBEAT_STATE_OK);
+  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, 0);
   // Send HB
   // TX
   do {
@@ -101,7 +102,7 @@ void test_bps_heartbeat_watchdog_kick(void) {
   delay_ms(BPS_HEARTBEAT_EXPECTED_PERIOD_MS / 2);
 
   // Send the HB again
-  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, EE_BPS_HEARTBEAT_STATE_OK);
+  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, 0);
   // Send HB
   // TX
   do {
@@ -141,7 +142,7 @@ void test_bps_heartbeat_watchdog_kick(void) {
   TEST_ASSERT_EQUAL(CHAOS_EVENT_SEQUENCE_EMERGENCY, e.id);
 
   // Verify that it auto restarts.
-  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, EE_BPS_HEARTBEAT_STATE_OK);
+  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, 0);
   // Send HB
   // TX
   do {
@@ -187,4 +188,12 @@ void test_bps_heartbeat_watchdog_timeout(void) {
   // Verify the watchdog is stopped after receiving the first time.
   delay_ms(BPS_HEARTBEAT_EXPECTED_PERIOD_MS + BPS_HEARTBEAT_EXPECTED_PERIOD_MS / 10);
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
+}
+
+void test_bps_heartbeat_fault(void) {
+  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, 0);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
+  Event e = { 0 };
+  TEST_ASSERT_OK(event_process(&e));
+  TEST_ASSERT_EQUAL(CHAOS_EVENT_SEQUENCE_EMERGENCY, e.id);
 }

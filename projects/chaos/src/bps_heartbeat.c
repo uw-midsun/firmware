@@ -33,12 +33,11 @@ static StatusCode prv_kick_watchdog(void) {
 static StatusCode prv_bps_rx(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   (void)context;
   (void)ack_reply;
-  uint8_t state = 0;
-  CAN_UNPACK_BPS_HEARTBEAT(msg, &state);
-  if (state == EE_BPS_HEARTBEAT_STATE_FAULT) {
+  prv_kick_watchdog();
+  uint8_t bitset = 0;
+  CAN_UNPACK_BPS_HEARTBEAT(msg, &bitset);
+  if (bitset) {
     event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, 0);
-  } else {
-    prv_kick_watchdog();
   }
   return STATUS_CODE_OK;
 }
