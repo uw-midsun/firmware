@@ -1,4 +1,5 @@
-#include "fault_handler.h"
+#include "bps_indicator.h"
+#include <stddef.h>
 #include "can_msg_defs.h"
 #include "can_transmit.h"
 #include "can_unpack.h"
@@ -7,8 +8,6 @@
 
 static StatusCode prv_handle_heartbeat(const CANMessage *msg, void *context,
                                        CANAckStatus *ack_reply) {
-  FaultHandlerStorage *storage = context;
-
   uint8_t data = 0;
   CAN_UNPACK_BPS_HEARTBEAT(msg, &data);
 
@@ -21,10 +20,10 @@ static StatusCode prv_handle_heartbeat(const CANMessage *msg, void *context,
   return STATUS_CODE_OK;
 }
 
-StatusCode fault_handler_init(FaultHandlerStorage *storage) {
-  return can_register_rx_handler(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT, prv_handle_heartbeat, storage);
+StatusCode bps_indicator_init(void) {
+  return can_register_rx_handler(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT, prv_handle_heartbeat, NULL);
 }
 
-StatusCode fault_handler_clear_fault(FaultHandlerStorage *storage) {
+StatusCode bps_indicator_clear_fault(void) {
   return CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_STROBE, EE_LIGHT_STATE_OFF);
 }
