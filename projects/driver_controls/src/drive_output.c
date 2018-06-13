@@ -16,9 +16,7 @@ static void prv_watchdog_cb(SoftTimerID timer_id, void *context) {
   if (storage->watchdog != DRIVE_OUTPUT_VALID_WATCHDOG) {
     // Error - raise a warning, clear stored data
     LOG_DEBUG("Drive output watchdog: 0x%x\n", storage->watchdog);
-    // memset(storage->data, 0, sizeof(storage->data));
-    storage->data[DRIVE_OUTPUT_SOURCE_DIRECTION] = EE_DRIVE_OUTPUT_DIRECTION_NEUTRAL;
-    storage->data[DRIVE_OUTPUT_SOURCE_CRUISE] = 0;
+    memset(storage->data, 0, sizeof(storage->data));
     event_raise_priority(EVENT_PRIORITY_HIGHEST, storage->fault_event, 0);
   }
 
@@ -95,7 +93,7 @@ StatusCode drive_output_update(DriveOutputStorage *storage, DriveOutputSource so
     bool data_negative = data < 0, prev_negative = prev_data < 0;
 
     int16_t abs_diff = abs(data - prev_data);
-    int16_t torque_diff = (data - prev_data) * (data_negative) ? -1 : 1;
+    int16_t torque_diff = (data - prev_data) * (data_negative ? -1 : 1);
 
     if (data == 0) {
       // attempting to be in cruise, so don't worry about it

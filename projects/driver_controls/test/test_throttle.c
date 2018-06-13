@@ -53,14 +53,6 @@ static void prv_set_calibration_data(ThrottleCalibrationData *data) {
   data->channel_secondary = TEST_THROTTLE_ADC_CHANNEL_SECONDARY;
 }
 
-static void prv_clock_past_desync(void) {
-  Event e;
-  for (size_t i = 0; i < THROTTLE_MAX_DESYNC_COUNT; i++) {
-    delay_us(THROTTLE_UPDATE_PERIOD_US);
-    TEST_ASSERT_OK(event_process(&e));
-  }
-}
-
 void setup_test(void) {
   gpio_init();
   interrupt_init();
@@ -255,7 +247,6 @@ void test_throttle_secondary_reading_on_edge_invalid(void) {
                                 s_line[THROTTLE_CHANNEL_SECONDARY].full_brake_reading) /
                                    2 +
                                TEST_THROTTLE_TOLERANCE + 1;
-  prv_clock_past_desync();
   delay_us(THROTTLE_UPDATE_PERIOD_US);
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&s_throttle_storage, &position));
   event_process(&e);
@@ -296,7 +287,6 @@ void test_throttle_event_fault_out_of_sync(void) {
   s_mocked_reading_main =
       (s_threshes_main[THROTTLE_ZONE_ACCEL].max + s_threshes_main[THROTTLE_ZONE_ACCEL].min) / 2;
   s_mocked_reading_secondary = s_mocked_reading_main / 3;
-  prv_clock_past_desync();
   delay_us(THROTTLE_UPDATE_PERIOD_US);
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&s_throttle_storage, &position));
   event_process(&e);
@@ -322,7 +312,6 @@ void test_throttle_event_fault_stale_secondary_channel(void) {
   // Turning off second channel to produce the stale reading case.
   ads1015_configure_channel(&s_ads1015_storage, TEST_THROTTLE_ADC_CHANNEL_SECONDARY, false, NULL,
                             NULL);
-  prv_clock_past_desync();
   delay_us(THROTTLE_UPDATE_PERIOD_US);
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&s_throttle_storage, &position));
   event_process(&e);
