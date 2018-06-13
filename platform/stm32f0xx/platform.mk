@@ -42,7 +42,7 @@ OPENOCD_CFG := -s $(OPENOCD_SCRIPT_DIR) \
                -f $(SCRIPT_DIR)/stm32f0-openocd.cfg
 
 # Platform targets
-.PHONY: program gdb target set_programmer
+.PHONY: program gdb target
 
 ifeq (,$(MACOS_SSH_USERNAME))
 

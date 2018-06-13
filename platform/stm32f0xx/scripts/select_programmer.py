@@ -1,25 +1,55 @@
 #!/usr/bin/env python3
-import usb
+"""Selects a programmer for OpenOCD if more than one is connected."""
 import sys
+import usb
 
-if len(sys.argv) > 1:
-  print('cmsis_dap_serial {}'.format(sys.argv[1]))
-  exit()
+def scrape_devices(probe, devices):
+    """Scrapes device list and associated discovered devices with the specified probe type.
 
-devices = usb.core.find(find_all=True, idProduct=0xda42, idVendor=0x1209)
+    Args:
+        probe: String to associate discovered devices with.
+        devices: Device iterator to scrape.
 
-options = []
+    Returns:
+        Device information as a list of tuples of probe, name, and serial.
+    """
+    options = []
+    for dev in devices:
+        manufacturer = usb.util.get_string(dev, dev.iManufacturer)
+        product = usb.util.get_string(dev, dev.iProduct)
+        serial = usb.util.get_string(dev, dev.iSerialNumber)
+        options.append(probe, ('{} {}'.format(manufacturer, product), serial))
 
-print('CMSIS-DAP devices:', file=sys.stderr)
-for i, dev in enumerate(devices):
-  serial = usb.util.get_string(dev, dev.iSerialNumber)
-  print('{}: {}'.format(i, serial), file=sys.stderr)
-  options.append(serial)
+    return options
 
-num_devices = sum(1 for i in devices)
+def get_options():
+    """Retrieve connected programmers and print OpenOCD command"""
+    cmsis_dap = usb.core.find(find_all=True, idProduct=0xda42, idVendor=0x1209)
+    stlink_v2 = usb.core.find(find_all=True, idProduct=0xda42, idVendor=0x1209)
+    options = scrape_devices('CMSIS-DAP', cmsis_dap) + scrape_devices('STLink-V2', stlink_v2)
 
-if num_devices > 1:
-  print('Select device: ', end='', file=sys.stderr)
-  index = int(input())
-  device = options[index]
-  print('cmsis_dap_serial {}'.format(device))
+    if len(options) > 1:
+        for i, (probe, name, serial) in enumerate(options):
+            print('{}: {} - {}'.format(i, probe, serial))
+
+        print('Select device: ', end='', file=sys.stderr)
+        index = int(input())
+        probe, name, serial = options[index]
+
+        cmd = {
+            'CMSIS-DAP': 'cmsis_dap_serial',
+            'STLink-V2': 'hla_serial'
+        }[probe]
+        print('Selected {} ({})'.format(name, serial), file=sys.stderr)
+        print('{} {}'.format(cmd, serial))
+
+def main():
+    """Main entry point"""
+    if len(sys.argv) > 1:
+        # Assume that if it's being specified, it's probably our programmer
+        print('cmsis_dap_serial {}'.format(sys.argv[1]))
+    else:
+        get_options()
+
+if __name__ == '__main__':
+    main()
