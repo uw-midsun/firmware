@@ -74,7 +74,7 @@ void test_bps_indicator_fault(void) {
   TEST_ASSERT_NOT_OK(event_process(&e));
 
   // Send BPS heartbeat not good
-  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, EE_BPS_HEARTBEAT_STATE_FAULT);
+  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, EE_BPS_HEARTBEAT_STATE_FAULT_KILLSWITCH);
 
   // Event gets raised in ACK, so split BPS Heartbeat/ACK
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
