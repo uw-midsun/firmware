@@ -1,15 +1,16 @@
-#include "unity.h"
 #include "bps_indicator.h"
-#include "event_queue.h"
 #include "can.h"
-#include "gpio.h"
-#include "ms_test_helpers.h"
-#include "input_event.h"
-#include "exported_enums.h"
-#include "can_unpack.h"
 #include "can_transmit.h"
-#include "test_helpers.h"
+#include "can_unpack.h"
+#include "event_queue.h"
+#include "exported_enums.h"
+#include "gpio.h"
+#include "input_event.h"
 #include "interrupt.h"
+#include "log.h"
+#include "ms_test_helpers.h"
+#include "test_helpers.h"
+#include "unity.h"
 
 #define TEST_BPS_INDICATOR_NUM_RX_HANDLERS 5
 
@@ -23,14 +24,6 @@ static StatusCode prv_strobe_cb(const CANMessage *msg, void *context, CANAckStat
   CAN_UNPACK_LIGHTS_STATE(msg, &id, &state);
   TEST_ASSERT_EQUAL(EE_LIGHT_TYPE_STROBE, id);
   TEST_ASSERT_EQUAL(*expected_state, state);
-
-  return STATUS_CODE_OK;
-}
-
-static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
-                                   uint16_t num_remaining, void *context) {
-  CANAckStatus *rx_status = context;
-  *rx_status = status;
 
   return STATUS_CODE_OK;
 }
@@ -52,7 +45,8 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  StatusCode ret = can_init(&s_can_storage, &can_settings, s_rx_handlers, TEST_BPS_INDICATOR_NUM_RX_HANDLERS);
+  StatusCode ret =
+      can_init(&s_can_storage, &can_settings, s_rx_handlers, TEST_BPS_INDICATOR_NUM_RX_HANDLERS);
   TEST_ASSERT_OK(ret);
 
   bps_indicator_init();
@@ -69,8 +63,8 @@ void test_bps_indicator_fault(void) {
 
   // Send BPS heartbeat good - make sure we receive an ACK and nothing happened
   CANAckRequest ack_request = {
-    .callback = prv_ack_callback,
-    .context = &rx_status,
+    .callback = NULL,
+    .context = NULL,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_DRIVER_CONTROLS),
   };
   CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, EE_BPS_HEARTBEAT_STATE_OK);
@@ -87,14 +81,24 @@ void test_bps_indicator_fault(void) {
   // Should raise a BPS fault event
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_BPS_FAULT, e.id);
-  // Heartbeat ACK
-  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
+  // Strobe on TX
+  MS_TEST_HELPER_AWAIT_EVENT(e);
+  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_TX, e.id);
+  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  // Heartbeat ACK TX
+  MS_TEST_HELPER_AWAIT_EVENT(e);
+  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_TX, e.id);
+  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
 
-  // Also strobe
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
-  // Should have received a message
+  // Strobe on RX
   expected_state = EE_LIGHT_STATE_ON;
-  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
+  MS_TEST_HELPER_AWAIT_EVENT(e);
+  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_RX, e.id);
+  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  // Heartbeat ACK RX
+  MS_TEST_HELPER_AWAIT_EVENT(e);
+  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_RX, e.id);
+  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
 
   // Clear fault
   bps_indicator_clear_fault();
