@@ -9,9 +9,9 @@
 #include "can_transmit.h"
 #include "chaos_events.h"
 #include "event_queue.h"
+#include "log.h"
 #include "soft_timer.h"
 #include "status.h"
-#include "log.h"
 
 // Implementation Details
 //
