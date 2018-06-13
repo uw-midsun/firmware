@@ -24,3 +24,11 @@ void delay_service_process_event(const Event *e) {
     }
   }
 }
+
+void delay_service_cancel(void) {
+  if (s_timer_id != SOFT_TIMER_INVALID_TIMER) {
+    soft_timer_cancel(s_timer_id);
+    s_timer_id = SOFT_TIMER_INVALID_TIMER;
+    event_raise(CHAOS_EVENT_DELAY_DONE, 0);
+  }
+}
