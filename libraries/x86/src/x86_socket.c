@@ -45,6 +45,8 @@ static void *prv_server_thread(void *context) {
   X86SocketThread *thread = context;
 
   x86_interrupt_pthread_init();
+  pthread_barrier_wait(&thread->barrier);
+
   int server_fd = X86_SOCKET_INVALID_FD;
   if (!status_ok(prv_setup_socket(thread, &server_fd))) {
     LOG_DEBUG("Socket setup failed\n");
@@ -124,6 +126,11 @@ StatusCode x86_socket_init(X86SocketThread *thread, char *module_name, X86Socket
   pthread_mutex_lock(&thread->keep_alive);
 
   pthread_create(&thread->thread, NULL, prv_server_thread, thread);
+
+  // 2 threads: main, server
+  pthread_barrier_init(&thread->barrier, NULL, 2);
+  pthread_barrier_wait(&thread->barrier);
+  pthread_barrier_destroy(&thread->barrier);
 
   return STATUS_CODE_OK;
 }
