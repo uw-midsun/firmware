@@ -14,13 +14,39 @@
 #include "wait.h"
 #include "xbee.h"
 
-static CanUart s_can_uart_settings = {
+GPIOSettings telemetry_settings_gpio_general = {
+  .direction = GPIO_DIR_OUT,  // The pin needs to output.
+  .state = GPIO_STATE_LOW,    // Start in the "off" state.
+  .alt_function = GPIO_ALTFN_NONE,
+};
+
+UARTSettings telemetry_gps_uart_settings = {
+  .baudrate = 9600,
+  .tx = { .port = GPIO_PORT_A, .pin = 2 },
+  .rx = { .port = GPIO_PORT_A, .pin = 3 },
+  .alt_fn = GPIO_ALTFN_1,
+};
+
+// The pin numbers to use for providing power and turning the GPS on and off
+GPIOAddress telemetry_gps_pins[] = {
+  { .port = GPIO_PORT_B, .pin = 3 },  // Pin GPS power
+  { .port = GPIO_PORT_B, .pin = 4 },  // Pin GPS on_off
+};
+
+GpsSettings telemetry_gps_settings = { .settings_power = &telemetry_settings_gpio_general,
+                                       .settings_on_off = &telemetry_settings_gpio_general,
+                                       .pin_power = &telemetry_gps_pins[0],
+                                       .pin_on_off = &telemetry_gps_pins[1],
+                                       .uart_settings = &telemetry_gps_uart_settings,
+                                       .port = UART_PORT_2 };
+
+CanUart telemetry_can_uart_settings = {
   .uart = XBEE_UART_PORT,
   .rx_cb = NULL,
   .context = NULL,
 };
 
-static CANHwSettings can_hw_settings = {
+CANHwSettings telemetry_can_hw_settings = {
   .tx = { .port = GPIO_PORT_A, .pin = 12 },
   .rx = { .port = GPIO_PORT_A, .pin = 11 },
   .bitrate = CAN_HW_BITRATE_500KBPS,
@@ -39,23 +65,23 @@ int main(void) {
     return 0;
   }
 
-  ret = gps_init();
+  ret = gps_init(&telemetry_gps_settings);
   if (!status_ok(ret)) {
     LOG_CRITICAL("Telemetry project could not initialize GPS\n");
   }
 
-  ret = can_hw_init(&can_hw_settings);
+  ret = can_hw_init(&telemetry_can_hw_settings);
   if (!status_ok(ret)) {
     LOG_CRITICAL("Telemetry project could not initialize can_hw. Quitting...\n");
   }
 
-  ret = can_uart_init(&s_can_uart_settings);
+  ret = can_uart_init(&telemetry_can_uart_settings);
   if (!status_ok(ret)) {
     LOG_CRITICAL("Telemetry project could not initialize can_uart. Quitting...\n");
     return 0;
   }
 
-  ret = can_uart_enable_passthrough(&s_can_uart_settings);
+  ret = can_uart_enable_passthrough(&telemetry_can_uart_settings);
   if (!status_ok(ret)) {
     LOG_CRITICAL("Telemetry project could not enable uart passthrough. Quitting...\n");
   }

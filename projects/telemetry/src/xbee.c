@@ -12,13 +12,11 @@ static UARTSettings s_xbee_settings = {
 static UARTStorage s_storage;
 
 StatusCode xbee_init() {
-  status_ok_or_return(uart_init(s_xbee_port, &s_xbee_settings, &s_storage));
-  return STATUS_CODE_OK;
+  return uart_init(s_xbee_port, &s_xbee_settings, &s_storage);
 }
 
 StatusCode xbee_transmit(const uint8_t *message, size_t len) {
   uint8_t newline = '\n';
   status_ok_or_return(uart_tx(s_xbee_port, message, len));
-  status_ok_or_return(uart_tx(s_xbee_port, &newline, sizeof(newline)));
-  return STATUS_CODE_OK;
+  return uart_tx(s_xbee_port, &newline, sizeof(newline));
 }
