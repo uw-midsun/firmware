@@ -12,8 +12,9 @@ static void prv_watchdog_cb(SoftTimerID timer_id, void *context) {
 
   // We're missing at least one updated response
   if (storage->watchdog != DRIVE_OUTPUT_VALID_WATCHDOG) {
-    // Error - raise a warning, disable periodic drive storage
-    soft_timer_cancel(storage->output_timer);
+    // Error - raise a warning, clear stored data
+    LOG_DEBUG("Drive output watchdog: 0x%x\n", storage->watchdog);
+    memset(storage->data, 0, sizeof(storage->data));
     event_raise_priority(EVENT_PRIORITY_HIGHEST, storage->fault_event, 0);
   }
 
@@ -36,8 +37,8 @@ static void prv_broadcast_cb(SoftTimerID timer_id, void *context) {
             storage->data[DRIVE_OUTPUT_SOURCE_MECH_BRAKE]);
 
   CAN_TRANSMIT_DRIVE_OUTPUT((uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_THROTTLE],
-                            (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_CRUISE],
                             (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_DIRECTION],
+                            (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_CRUISE],
                             (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_MECH_BRAKE]);
 
   soft_timer_start_millis(DRIVE_OUTPUT_BROADCAST_MS, prv_broadcast_cb, context,

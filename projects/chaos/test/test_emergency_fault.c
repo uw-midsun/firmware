@@ -18,7 +18,6 @@
 static EmergencyFaultStorage s_em_storage;
 static CANStorage s_storage;
 static CANRxHandler s_rx_handlers[NUM_CAN_RX_HANDLERS];
-static CANAckRequests s_can_ack_requests;
 
 // Handler that allows for injecting ack responses.
 static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
@@ -46,8 +45,8 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  can_init(&settings, &s_storage, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
-  can_ack_init(&s_can_ack_requests);
+  can_init(&s_storage, &settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+  emergency_fault_init(&s_em_storage);
 }
 
 void teardown_test(void) {}
