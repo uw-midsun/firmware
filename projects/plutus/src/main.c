@@ -54,7 +54,9 @@ int main(void) {
     wait();
     while (status_ok(event_process(&e))) {
       fsm_process_event(CAN_FSM, &e);
-      ltc_afe_process_event(&s_plutus.ltc_afe, &e);
+      if (board_type == PLUTUS_SYS_TYPE_MASTER) {
+        ltc_afe_process_event(&s_plutus.ltc_afe, &e);
+      }
     }
   }
 }

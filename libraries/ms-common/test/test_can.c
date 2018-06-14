@@ -144,6 +144,7 @@ void test_can_filter(void) {
 }
 
 void test_can_ack(void) {
+  volatile CANMessage rx_msg = { 0 };
   volatile uint16_t device_acked = CAN_MSG_INVALID_DEVICE;
 
   CANMessage msg = {
@@ -158,6 +159,9 @@ void test_can_ack(void) {
     .context = &device_acked,                                         //
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_CAN_DEVICE_ID),  //
   };
+
+  // Register handler so we ACK
+  can_register_rx_handler(0x1, prv_rx_callback, &rx_msg);
 
   StatusCode ret = can_transmit(&msg, &ack_req);
   TEST_ASSERT_OK(ret);

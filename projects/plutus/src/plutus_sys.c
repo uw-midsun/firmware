@@ -49,6 +49,10 @@ static StatusCode prv_init_common(PlutusSysStorage *storage, PlutusSysType type)
   status_ok_or_return(can_init(&storage->can, &can_settings, storage->can_rx_handlers,
                                SIZEOF_ARRAY(storage->can_rx_handlers)));
 
+  status_ok_or_return(can_add_filter(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT));
+  status_ok_or_return(can_add_filter(SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT));
+  status_ok_or_return(can_add_filter(s_specifics[type].relay_msg));
+
   const SequencedRelaySettings relay_settings = {
     .can_msg_id = s_specifics[type].relay_msg,
     .left_relay = PLUTUS_CFG_RELAY_PWR,
@@ -114,7 +118,6 @@ StatusCode plutus_sys_init(PlutusSysStorage *storage, PlutusSysType type) {
       .cell_bitset = PLUTUS_CFG_CELL_BITSET_ARR,
       .aux_bitset = PLUTUS_CFG_AUX_BITSET_ARR,
     };
-
     status_ok_or_return(ltc_afe_init(&storage->ltc_afe, &afe_settings));
 
     const LtcAdcSettings adc_settings = {
