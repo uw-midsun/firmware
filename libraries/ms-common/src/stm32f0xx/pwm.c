@@ -129,6 +129,9 @@ StatusCode pwm_set_dc(PWMTimer timer, uint16_t dc) {
   uint16_t pulse_width = 0;
   if (dc != 0) {
     pulse_width = ((s_period_us[timer] + 1) * dc) / 100 - 1;
+    if (pulse_width == 0) {
+      return status_msg(STATUS_CODE_INVALID_ARGS, "Duty Cycle is not valid for given period");
+    }
   }
 
   return pwm_set_pulse(timer, pulse_width);
