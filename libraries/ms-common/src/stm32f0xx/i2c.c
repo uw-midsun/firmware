@@ -47,8 +47,6 @@ static const uint32_t s_i2c_timing[] = {
 static void prv_recover_lockup(I2CPort port) {
   I2CSettings *settings = &s_port[port].settings;
 
-  // TODO: should make sure it's actually a lockup and not just the wrong address
-
   GPIOSettings scl_settings = {
     .direction = GPIO_DIR_OUT,
     .alt_function = GPIO_ALTFN_NONE,
@@ -56,7 +54,6 @@ static void prv_recover_lockup(I2CPort port) {
   };
   // Manually clock SCL
   gpio_init_pin(&settings->scl, &scl_settings);
-  // 16 pulse
   for (size_t i = 0; i < 16; i++) {
     gpio_toggle_state(&settings->scl);
   }
@@ -66,7 +63,6 @@ static void prv_recover_lockup(I2CPort port) {
   gpio_init_pin(&settings->scl, &scl_settings);
 
   // Reset I2C
-  // TODO: is this necessary?
   I2C_SoftwareResetCmd(s_port[port].base);
 }
 
