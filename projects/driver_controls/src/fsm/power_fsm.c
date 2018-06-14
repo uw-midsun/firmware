@@ -13,6 +13,7 @@
 
 #include "power_fsm.h"
 
+#include "bps_indicator.h"
 #include "drive_output.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
@@ -35,54 +36,54 @@ FSM_DECLARE_STATE(state_fault_brake);
 // Power FSM transition table definitions
 
 FSM_STATE_TRANSITION(state_off) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_charging);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_charging);
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_off_brake);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
 }
 
 FSM_STATE_TRANSITION(state_off_brake) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_on);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_on);
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_off);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault_brake);
 }
 
 FSM_STATE_TRANSITION(state_charging) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_off);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_off);
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_charging_brake);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
 }
 
 FSM_STATE_TRANSITION(state_charging_brake) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_on_brake);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_on_brake);
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_charging);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault_brake);
 }
 
 FSM_STATE_TRANSITION(state_on) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_off);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_off);
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_on_brake);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
 }
 
 FSM_STATE_TRANSITION(state_on_brake) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_off_brake);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_off_brake);
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_on);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault_brake);
 }
 
 FSM_STATE_TRANSITION(state_fault) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_off);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_off);
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_fault_brake);
 }
 
 FSM_STATE_TRANSITION(state_fault_brake) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER, state_off_brake);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_off_brake);
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_fault);
 }
 
@@ -92,7 +93,7 @@ static bool prv_guard_off(const Event *e) {
   // and fault.
   // This also prevents lights, etc. from being turned on unless the unprotected rail is powered.
   switch (e->id) {
-    case INPUT_EVENT_POWER:
+    case INPUT_EVENT_CENTER_CONSOLE_POWER:
     case INPUT_EVENT_MECHANICAL_BRAKE_RELEASED:
     case INPUT_EVENT_MECHANICAL_BRAKE_PRESSED:
     case INPUT_EVENT_BPS_FAULT:
@@ -124,6 +125,9 @@ static void prv_fault_output(FSM *fsm, const Event *e, void *context) {
 static void prv_idle_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   power_distribution_controller_send_update(EE_POWER_STATE_IDLE);
+
+  // Clear BPS indicators
+  bps_indicator_clear_fault();
 
   // Disable periodic drive output updates if not running
   drive_output_set_enabled(drive_output_global(), false);

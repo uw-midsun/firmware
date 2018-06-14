@@ -8,6 +8,7 @@
 #include "interrupt.h"
 #include "log.h"
 #include "ms_test_helpers.h"
+#include "plutus_cfg.h"
 #include "soft_timer.h"
 #include "test_helpers.h"
 
@@ -32,7 +33,7 @@ StatusCode TEST_MOCK(sequenced_relay_set_state)(SequencedRelayStorage *storage,
 static StatusCode prv_bps_rx(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   *ack_reply = s_ack_status;
 
-  uint8_t state = NUM_EE_BPS_HEARTBEAT_STATES;
+  uint8_t state = UINT8_MAX;
   CAN_UNPACK_BPS_HEARTBEAT(msg, &state);
   LOG_DEBUG("ACK request: BPS state %d\n", state);
   s_heartbeat_state = state;
@@ -69,7 +70,7 @@ void setup_test(void) {
   // Closed relay for testing since we want to make sure it opens on fault.
   s_relay_state = EE_RELAY_STATE_CLOSE;
   s_ack_status = CAN_ACK_STATUS_OK;
-  s_heartbeat_state = NUM_EE_BPS_HEARTBEAT_STATES;
+  s_heartbeat_state = UINT8_MAX;
   bps_heartbeat_init(&s_bps_heartbeat, NULL, TEST_BPS_HEARTBEAT_PERIOD_MS,
                      CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_PLUTUS));
 }
@@ -85,16 +86,20 @@ void test_bps_heartbeat_can(void) {
   TEST_ASSERT_EQUAL(EE_BPS_HEARTBEAT_STATE_OK, s_heartbeat_state);
 
   // Pretend something bad happened
+  // We support a number of grace ACK timeouts, so loop
   s_ack_status = CAN_ACK_STATUS_TIMEOUT;
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
-                                    TEST_BPS_HEARTBEAT_EVENT_CAN_RX);
+
+  for (size_t i = 0; i < PLUTUS_CFG_HEARTBEAT_MAX_ACK_FAILS; i++) {
+    MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
+                                      TEST_BPS_HEARTBEAT_EVENT_CAN_RX);
+  }
 
   // Next BPS heartbeat will have faulted
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
                                     TEST_BPS_HEARTBEAT_EVENT_CAN_RX);
   TEST_ASSERT_EQUAL(CAN_ACK_STATUS_TIMEOUT, s_ack_status);
   TEST_ASSERT_EQUAL(EE_RELAY_STATE_OPEN, s_relay_state);
-  TEST_ASSERT_EQUAL(EE_BPS_HEARTBEAT_STATE_FAULT, s_heartbeat_state);
+  TEST_ASSERT_EQUAL(EE_BPS_HEARTBEAT_STATE_FAULT_ACK_TIMEOUT, s_heartbeat_state);
 }
 
 void test_bps_heartbeat_basic(void) {
@@ -107,15 +112,15 @@ void test_bps_heartbeat_basic(void) {
 
   // Raise fault - immediately update
   LOG_DEBUG("Raising fault\n");
-  bps_heartbeat_raise_fault(&s_bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_KILLSWITCH);
+  bps_heartbeat_raise_fault(&s_bps_heartbeat, EE_BPS_HEARTBEAT_FAULT_SOURCE_KILLSWITCH);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
                                     TEST_BPS_HEARTBEAT_EVENT_CAN_RX);
   TEST_ASSERT_EQUAL(EE_RELAY_STATE_OPEN, s_relay_state);
-  TEST_ASSERT_EQUAL(EE_BPS_HEARTBEAT_STATE_FAULT, s_heartbeat_state);
+  TEST_ASSERT_EQUAL(EE_BPS_HEARTBEAT_STATE_FAULT_KILLSWITCH, s_heartbeat_state);
 
   // Try clearing the fault
   LOG_DEBUG("Clearing fault\n");
-  bps_heartbeat_clear_fault(&s_bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_KILLSWITCH);
+  bps_heartbeat_clear_fault(&s_bps_heartbeat, EE_BPS_HEARTBEAT_FAULT_SOURCE_KILLSWITCH);
   delay_ms(TEST_BPS_HEARTBEAT_PERIOD_MS);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
                                     TEST_BPS_HEARTBEAT_EVENT_CAN_RX);

@@ -35,7 +35,7 @@ static StatusCode prv_bps_rx(const CANMessage *msg, void *context, CANAckStatus 
   (void)ack_reply;
   uint8_t state = 0;
   CAN_UNPACK_BPS_HEARTBEAT(msg, &state);
-  if (state == EE_BPS_HEARTBEAT_STATE_FAULT) {
+  if (state != EE_BPS_HEARTBEAT_STATE_OK) {
     event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, 0);
   } else {
     prv_kick_watchdog();

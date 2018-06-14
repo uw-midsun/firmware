@@ -9,12 +9,14 @@
 #include "chaos_events.h"
 #include "charger.h"
 #include "delay.h"
+#include "delay_service.h"
 #include "emergency_fault.h"
 #include "event_queue.h"
 #include "gpio.h"
 #include "gpio_fsm.h"
 #include "gpio_it.h"
 #include "interrupt.h"
+#include "log.h"
 #include "power_path.h"
 #include "powertrain_heartbeat.h"
 #include "relay.h"
@@ -39,12 +41,12 @@ int main(void) {
   soft_timer_init();
   gpio_init();
   gpio_it_init();
-  adc_init(ADC_MODE_SINGLE);
+  adc_init(ADC_MODE_CONTINUOUS);
 
   // CAN
   CANSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
-    .bitrate = CAN_HW_BITRATE_125KBPS,
+    .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,
     .tx_event = CHAOS_EVENT_CAN_TX,
     .fault_event = CHAOS_EVENT_CAN_FAULT,
@@ -54,18 +56,16 @@ int main(void) {
   };
   can_init(&s_can_storage, &can_settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
 
-  // GPIO
-  ChaosConfig *cfg = chaos_config_load();
-  gpio_fsm_init(cfg);
-
   // Heartbeats
   bps_heartbeat_init();  // Use the auto start feature to start the watchdog.
   powertrain_heartbeat_init();
 
   // Power Path
+  ChaosConfig *cfg = chaos_config_load();
   power_path_init(&cfg->power_path);
   // AUX Battery Monitoring.
   power_path_source_monitor_enable(&cfg->power_path.aux_bat, CHAOS_CONFIG_POWER_PATH_PERIOD_MS);
+  power_path_send_data_daemon(&cfg->power_path, CHAOS_CONFIG_POWER_PATH_PERIOD_MS);
 
   // Relays
   RelaySettings relay_settings = {
@@ -77,6 +77,7 @@ int main(void) {
     .loopback = false,
   };
   relay_init(&relay_settings);
+  relay_retry_service_init(&s_retry_storage);
 
   // Sequencer
   sequencer_fsm_init();
@@ -87,8 +88,12 @@ int main(void) {
 
   // CAN services
   charger_init();
-  emergency_fault_clear(&s_emergency_storage);
+  emergency_fault_init(&s_emergency_storage);
   state_handler_init();
+
+  // GPIO
+  // Postpone to as late as possible so that BPS heartbeats are ready to be ACK'd.
+  gpio_fsm_init(cfg);
 
   // Main loop
   Event e = { 0 };
@@ -109,6 +114,7 @@ int main(void) {
     // a STATUS_CODE_OK for each emitted message. Consider adding a requirement that this is the
     // case with a failure resulting in faulting into Emergency.
     fsm_process_event(CAN_FSM, &e);
+    delay_service_process_event(&e);
     emergency_fault_process_event(&s_emergency_storage, &e);
     gpio_fsm_process_event(&e);
     powertrain_heartbeat_process_event(&e);

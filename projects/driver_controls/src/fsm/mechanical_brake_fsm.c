@@ -3,6 +3,7 @@
 #include "mechanical_brake_fsm.h"
 #include "drive_output.h"
 #include "event_arbiter.h"
+#include "exported_enums.h"
 #include "input_event.h"
 #include "log.h"
 
@@ -43,8 +44,9 @@ static bool prv_guard_engaged(const Event *e) {
 static bool prv_guard_disengaged(const Event *e) {
   // The brake must be engaged in order for gear shifts to happen.
   switch (e->id) {
-    case INPUT_EVENT_DIRECTION_SELECTOR_DRIVE:
-    case INPUT_EVENT_DIRECTION_SELECTOR_REVERSE:
+    case INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE:
+    case INPUT_EVENT_CENTER_CONSOLE_DIRECTION_NEUTRAL:
+    case INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE:
       return false;
     default:
       return true;
@@ -57,7 +59,8 @@ static void prv_engaged_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   event_arbiter_set_guard_fn(guard, prv_guard_engaged);
 
-  drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_MECH_BRAKE, 0);
+  drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_MECH_BRAKE,
+                      EE_DRIVE_OUTPUT_DENOMINATOR);
 }
 
 static void prv_disengaged_output(FSM *fsm, const Event *e, void *context) {

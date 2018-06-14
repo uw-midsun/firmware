@@ -144,6 +144,7 @@ void test_can_filter(void) {
 }
 
 void test_can_ack(void) {
+  volatile CANMessage rx_msg = { 0 };
   volatile uint16_t device_acked = CAN_MSG_INVALID_DEVICE;
 
   CANMessage msg = {
@@ -158,6 +159,9 @@ void test_can_ack(void) {
     .context = &device_acked,                                         //
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_CAN_DEVICE_ID),  //
   };
+
+  // Register handler so we ACK
+  can_register_rx_handler(0x1, prv_rx_callback, &rx_msg);
 
   StatusCode ret = can_transmit(&msg, &ack_req);
   TEST_ASSERT_OK(ret);
@@ -183,7 +187,7 @@ void test_can_ack(void) {
 }
 
 void test_can_ack_expire(void) {
-  volatile CANAckStatus ack_status = NUM_ACK_STATUSES;
+  volatile CANAckStatus ack_status = NUM_CAN_ACK_STATUSES;
   CANMessage msg = {
     .msg_id = 0x1,               //
     .type = CAN_MSG_TYPE_DATA,   //
@@ -200,14 +204,14 @@ void test_can_ack_expire(void) {
   StatusCode ret = can_transmit(&msg, &ack_req);
   TEST_ASSERT_OK(ret);
 
-  while (ack_status == NUM_ACK_STATUSES) {
+  while (ack_status == NUM_CAN_ACK_STATUSES) {
   }
 
   TEST_ASSERT_EQUAL(CAN_ACK_STATUS_TIMEOUT, ack_status);
 }
 
 void test_can_ack_status(void) {
-  volatile CANAckStatus ack_status = NUM_ACK_STATUSES;
+  volatile CANAckStatus ack_status = NUM_CAN_ACK_STATUSES;
   volatile CANMessage rx_msg = { 0 };
   CANMessage msg = {
     .msg_id = TEST_CAN_UNKNOWN_MSG_ID,

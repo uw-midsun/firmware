@@ -19,7 +19,7 @@
 
 // ACK timeout: Should account for transit and computation time
 // Note that this timeout is currently an arbitrary value, but should be minimized.
-#define CAN_ACK_TIMEOUT_MS 15
+#define CAN_ACK_TIMEOUT_MS 25
 #define CAN_ACK_MAX_REQUESTS 10
 
 // Converts devices IDs to their bitset form. Populate ACK request bitsets using this.
@@ -39,7 +39,7 @@ typedef enum {
   CAN_ACK_STATUS_TIMEOUT,
   CAN_ACK_STATUS_INVALID,
   CAN_ACK_STATUS_UNKNOWN,
-  NUM_ACK_STATUSES,
+  NUM_CAN_ACK_STATUSES,
 } CANAckStatus;
 
 // If the callback was fired due to timer expiry, the device ID is invalid.

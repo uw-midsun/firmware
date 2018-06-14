@@ -1,4 +1,5 @@
 #include "ads1015.h"
+#include "calib.h"
 #include "delay.h"
 #include "event_queue.h"
 #include "gpio.h"
@@ -14,6 +15,7 @@
 static Ads1015Storage s_ads1015_storage;
 static ThrottleStorage s_throttle_storage;
 static ThrottleCalibrationStorage s_calibration_storage;
+static CalibStorage s_calib;
 
 void setup_test(void) {
   gpio_init();
@@ -21,17 +23,17 @@ void setup_test(void) {
   gpio_it_init();
   soft_timer_init();
   I2CSettings i2c_settings = {
-    .speed = I2C_SPEED_FAST,                    //
-    .scl = { .port = GPIO_PORT_B, .pin = 10 },  //
-    .sda = { .port = GPIO_PORT_B, .pin = 11 },  //
+    .speed = I2C_SPEED_FAST,                   //
+    .sda = { .port = GPIO_PORT_B, .pin = 9 },  //
+    .scl = { .port = GPIO_PORT_B, .pin = 8 },  //
   };
-  i2c_init(I2C_PORT_2, &i2c_settings);
+  i2c_init(I2C_PORT_1, &i2c_settings);
   GPIOAddress ready_pin = {
-    .port = GPIO_PORT_B,  //
-    .pin = 2,             //
+    .port = GPIO_PORT_A,  //
+    .pin = 10,            //
   };
   event_queue_init();
-  ads1015_init(&s_ads1015_storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
+  ads1015_init(&s_ads1015_storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
 
   ThrottleCalibrationSettings calib_settings = {
     .ads1015 = &s_ads1015_storage,
@@ -41,6 +43,8 @@ void setup_test(void) {
     .bounds_tolerance_percentage = 1,
   };
   throttle_calibration_init(&s_calibration_storage, &calib_settings);
+
+  calib_init(&s_calib);
 }
 
 void teardown_test(void) {}
@@ -57,10 +61,12 @@ void test_throttle_calibration_run(void) {
   throttle_calibration_sample(&s_calibration_storage, THROTTLE_CALIBRATION_POINT_FULL_ACCEL);
   LOG_DEBUG("Completed sampling\n");
 
-  ThrottleCalibrationData calib_data;
-  throttle_calibration_result(&s_calibration_storage, &calib_data);
+  throttle_calibration_result(&s_calibration_storage, &calib_blob(&s_calib)->throttle_calib);
 
-  throttle_init(&s_throttle_storage, &calib_data, &s_ads1015_storage);
+  LOG_DEBUG("Stored throttle calib data\n");
+  calib_commit(&s_calib);
+
+  throttle_init(&s_throttle_storage, &calib_blob(&s_calib)->throttle_calib, &s_ads1015_storage);
 
   while (true) {
     ThrottlePosition position = { .zone = NUM_THROTTLE_ZONES };
