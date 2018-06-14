@@ -9,6 +9,7 @@
 #include "can_transmit.h"
 #include "chaos_events.h"
 #include "event_queue.h"
+#include "log.h"
 #include "soft_timer.h"
 #include "status.h"
 
@@ -54,7 +55,7 @@ static StatusCode prv_ack_cb(CANMessageID id, uint16_t device, CANAckStatus stat
   (void)device;
   (void)context;
   (void)status;
-  if (!num_remaining) {
+  if (num_remaining == 0) {
     prv_kick_watchdog();
   }
   return STATUS_CODE_OK;
