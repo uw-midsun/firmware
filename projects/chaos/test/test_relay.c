@@ -21,6 +21,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 
+#define TEST_RELAY_DELAY_MS 50
 #define NUM_CAN_RX_HANDLERS 2
 
 static RelayRetryServiceStorage s_relay_retry_storage;
@@ -38,7 +39,7 @@ void setup_test(void) {
   event_queue_init();
   interrupt_init();
   soft_timer_init();
-  relay_retry_service_init(&s_relay_retry_storage);
+  relay_retry_service_init(&s_relay_retry_storage, TEST_RELAY_DELAY_MS);
   Event e = { .id = CHAOS_EVENT_SET_RELAY_RETRIES, .data = RELAY_RETRY_SERVICE_DEFAULT_ATTEMPTS };
   relay_retry_service_update(&e);
 
