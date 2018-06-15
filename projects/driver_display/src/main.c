@@ -4,6 +4,7 @@
 
 #include "adc.h"
 #include "crc32.h"
+#include "critical_section.h"
 #include "delay.h"
 #include "flash.h"
 #include "gpio.h"
