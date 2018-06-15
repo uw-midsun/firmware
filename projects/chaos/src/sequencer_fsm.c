@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "chaos_events.h"
+#include "delay_service.h"
 #include "event_queue.h"
 #include "fsm.h"
 #include "log.h"
@@ -239,6 +240,7 @@ FSM_STATE_TRANSITION(sequencer_state_drive) {
 // finish. If this returns false the caller should exit immediately.
 static bool prv_sequencer_setup_common(void) {
   if (sequencer_stop_awaiting(&s_storage)) {
+    delay_service_cancel();
     relay_retry_service_fail_fast();
     // We actually transitioned so just reset the state until it succeeds. Note this needs to be
     // normal priority to allow events to flush. This is to flush an event we are waiting for
@@ -364,6 +366,7 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event) {
                                   SEQUENCER_EMPTY_DATA);
     }
     // If we are stuck go to the emergency state.
+    LOG_DEBUG("Emergency: sequence failed.");
     return event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_EMERGENCY,
                                 SEQUENCER_EMPTY_DATA);
   }

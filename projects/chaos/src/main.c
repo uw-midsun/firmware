@@ -77,7 +77,7 @@ int main(void) {
     .loopback = false,
   };
   relay_init(&relay_settings);
-  relay_retry_service_init(&s_retry_storage);
+  relay_retry_service_init(&s_retry_storage, RELAY_RETRY_SERVICE_BACKOFF_MS);
 
   // Sequencer
   sequencer_fsm_init();
