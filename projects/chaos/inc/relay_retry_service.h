@@ -16,13 +16,14 @@
 #define RELAY_RETRY_SERVICE_UNLIMITED_ATTEMPTS RELAY_RETRY_SERVICE_DEFAULT_ATTEMPTS + 1
 
 typedef struct RelayRetryServiceStorage {
+  uint32_t backoff_ms;
   uint8_t relays_curr_retries[NUM_RELAY_IDS];
   SoftTimerID relays_timer_id[NUM_RELAY_IDS];
   uint8_t max_retries;
 } RelayRetryServiceStorage;
 
 // Initializes the relay retry service.
-StatusCode relay_retry_service_init(RelayRetryServiceStorage *storage);
+StatusCode relay_retry_service_init(RelayRetryServiceStorage *storage, uint32_t backoff_ms);
 
 // Updates the relay retry service based on the input event.
 //
