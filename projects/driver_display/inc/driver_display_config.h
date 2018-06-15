@@ -1,5 +1,7 @@
 #pragma once
-// Configures the internal screen(s)
+// Module to configure the display pins and timers used by the display screens.
+// Initiaizes the persist page and GPIO pins
+// Defines pin functions and other screen parameters such as frequency
 
 #include "adc.h"
 #include "gpio.h"
@@ -7,17 +9,10 @@
 #include "pwm_mcu.h"
 #include "soft_timer.h"
 
-// Temporary defined constant for max value of adc
-// These are just temporary until I figure our how to calibrate the photosensor
-#define DRIVER_DISPLAY_CONFIG_ADC_MAX 4095
-#define DRIVER_DISPLAY_CONFIG_ADC_MIN 0
-#define DRIVER_DISPLAY_CONFIG_ADC_RANGE DRIVER_DISPLAY_CONFIG_ADC_MAX - DRIVER_DISPLAY_CONFIG_ADC_MIN
-// End of temporary constants
-
+#define DRIVER_DISPLAY_CONFIG_CALIBRATION_TIME 5
 // Defined constants for the screen(s)
 #define DRIVER_DISPLAY_CONFIG_NUM_SCREENS 2
-// Frequency will currently cause some errors as the pwm function is set to use milliseconds not
-// microseconds
+
 #define DRIVER_DISPLAY_CONFIG_SCREEN1_FREQ 30  // Frequency in kHz (subject to change)
 #define DRIVER_DISPLAY_CONFIG_SCREEN2_FREQ 30  // Frequency in kHz (subject to change)
 
@@ -30,12 +25,13 @@
 #define DRIVER_DISPLAY_CONFIG_SCREEN1_PIN 7
 #define DRIVER_DISPLAY_CONFIG_SCREEN2_PIN 4
 
-#define DRIVER_DISPLAY_CONFIG_PERSIST_PAGE	(NUM_FLASH_PAGES - 1)
+#define DRIVER_DISPLAY_CONFIG_PERSIST_PAGE (NUM_FLASH_PAGES - 1)
 
 // Defined constants for the ADC
 #define DRIVER_DISPLAY_CONFIG_ADC_PORT GPIO_PORT_A
 #define DRIVER_DISPLAY_CONFIG_ADC_PIN 0
-#define DRIVER_DISPLAY_CONFIG_REFRESH_PERIOD 5  // The length of time in seconds before the adc is sampled again
+#define DRIVER_DISPLAY_CONFIG_REFRESH_PERIOD \
+  5  // The length of time in seconds before the adc is sampled again
 #define DRIVER_DISPLAY_CONFIG_REFRESH_TIMER 0
 
 typedef enum {
