@@ -129,17 +129,17 @@ int main() {
   Event e;
   while (true) {
     if (status_ok(event_process(&e))) {
-      switch (e.id) {
-        case INPUT_EVENT_PEDAL_ACCEL:
-        case INPUT_EVENT_PEDAL_COAST:
-        case INPUT_EVENT_PEDAL_BRAKE:
-        case INPUT_EVENT_DRIVE_UPDATE_REQUESTED:
-        case INPUT_EVENT_CAN_RX:
-        case INPUT_EVENT_CAN_TX:
-          break;
-        default:
-        LOG_DEBUG("e %d %d\n", e.id, e.data);
-      }
+      // switch (e.id) {
+      //   case INPUT_EVENT_PEDAL_ACCEL:
+      //   case INPUT_EVENT_PEDAL_COAST:
+      //   case INPUT_EVENT_PEDAL_BRAKE:
+      //   case INPUT_EVENT_DRIVE_UPDATE_REQUESTED:
+      //   case INPUT_EVENT_CAN_RX:
+      //   case INPUT_EVENT_CAN_TX:
+      //     break;
+      //   default:
+      //   LOG_DEBUG("e %d %d\n", e.id, e.data);
+      // }
       fsm_process_event(CAN_FSM, &e);
       power_distribution_controller_retry(&e);
       cruise_handle_event(cruise_global(), &e);

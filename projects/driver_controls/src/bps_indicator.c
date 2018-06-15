@@ -19,7 +19,14 @@ static StatusCode prv_handle_heartbeat(const CANMessage *msg, void *context,
   return STATUS_CODE_OK;
 }
 
+static StatusCode prv_handle_powertrain_fault(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+  event_raise_priority(EVENT_PRIORITY_HIGHEST, INPUT_EVENT_BPS_FAULT, 0);
+
+  return STATUS_CODE_OK;
+}
+
 StatusCode bps_indicator_init(void) {
+  can_register_rx_handler(SYSTEM_CAN_MESSAGE_POWER_DISTRIBUTION_FAULT, prv_handle_powertrain_fault, NULL);
   return can_register_rx_handler(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT, prv_handle_heartbeat, NULL);
 }
 

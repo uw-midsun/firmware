@@ -40,8 +40,8 @@ def parse_msg(can_id, data):
     elif (msg_id == 2 or msg_id == 3):
         # Battery relay
         relay_name = 'main' if msg_id == 2 else 'slave'
-        state = 'open' if data == 0x0 else 'close'
-        print('Battery relay {}: {} {} ({}) from {}'.format(relay_name, state, data, msg_type_name,
+        state = 'open' if data == b'\x00' else 'close'
+        print('Battery relay {}: {} ({}) from {}'.format(relay_name, state, msg_type_name,
                                                          source_id))
     else:
         # Unrecognized message

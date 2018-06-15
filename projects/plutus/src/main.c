@@ -12,23 +12,23 @@
 static PlutusSysStorage s_plutus;
 static FaultMonitorStorage s_fault_monitor;
 
-static size_t s_telemetry_counter = 0;
+// static size_t s_telemetry_counter = 0;
 
-static void prv_periodic_tx_debug(SoftTimerID timer_id, void *context) {
-  FaultMonitorResult *result = &s_fault_monitor.result;
+// static void prv_periodic_tx_debug(SoftTimerID timer_id, void *context) {
+//   FaultMonitorResult *result = &s_fault_monitor.result;
 
-  // TODO(ELEC-463): Figure out why we need to delay for so long
-  if (s_telemetry_counter < PLUTUS_CFG_AFE_TOTAL_CELLS) {
-    CAN_TRANSMIT_BATTERY_VT(s_telemetry_counter, result->cell_voltages[s_telemetry_counter],
-                            result->temp_voltages[s_telemetry_counter]);
-    s_telemetry_counter++;
-  } else if (s_telemetry_counter == PLUTUS_CFG_AFE_TOTAL_CELLS) {
-    CAN_TRANSMIT_BATTERY_CURRENT((uint32_t)result->current);
-    s_telemetry_counter = 0;
-  }
+//   // TODO(ELEC-463): Figure out why we need to delay for so long
+//   if (s_telemetry_counter < PLUTUS_CFG_AFE_TOTAL_CELLS) {
+//     CAN_TRANSMIT_BATTERY_VT(s_telemetry_counter, result->cell_voltages[s_telemetry_counter],
+//                             result->temp_voltages[s_telemetry_counter]);
+//     s_telemetry_counter++;
+//   } else if (s_telemetry_counter == PLUTUS_CFG_AFE_TOTAL_CELLS) {
+//     CAN_TRANSMIT_BATTERY_CURRENT((uint32_t)result->current);
+//     s_telemetry_counter = 0;
+//   }
 
-  soft_timer_start_millis(PLUTUS_CFG_TELEMETRY_PERIOD_MS, prv_periodic_tx_debug, NULL, NULL);
-}
+//   soft_timer_start_millis(PLUTUS_CFG_TELEMETRY_PERIOD_MS, prv_periodic_tx_debug, NULL, NULL);
+// }
 
 int main(void) {
   PlutusSysType board_type = plutus_sys_get_type();
@@ -46,7 +46,7 @@ int main(void) {
     };
 
     fault_monitor_init(&s_fault_monitor, &fault_settings);
-    soft_timer_start_millis(PLUTUS_CFG_TELEMETRY_PERIOD_MS, prv_periodic_tx_debug, NULL, NULL);
+    // soft_timer_start_millis(PLUTUS_CFG_TELEMETRY_PERIOD_MS, prv_periodic_tx_debug, NULL, NULL);
   }
 
   Event e = { 0 };
