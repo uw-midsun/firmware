@@ -18,11 +18,22 @@ typedef struct MagneticCalibrationData {
   Ads1015Storage *storage;
 } MagneticCalibrationData;
 
+
+
 // this function guides the user of the module through the calibration process to retreive the
 // min/max allowed values
-StatusCode magnetic_brake_event_generator_init(MagneticCalibrationData *data,
+StatusCode magnetic_brake_calibration(MagneticCalibrationData *data,
                                                MagneticBrakeSettings *brake_settings,
                                                Ads1015Channel channel);
 
 // this function converts the reading from lsb into percentage from 0 to 2^12
 int16_t percentage_converter(MagneticCalibrationData *data, MagneticBrakeSettings *brake_settings);
+
+
+
+
+
+
+
+
+

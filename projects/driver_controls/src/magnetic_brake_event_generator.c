@@ -61,10 +61,10 @@ static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *b
          "Brake sensor is calibrating, Please ensure the brake is not being pressed, wait \n "
          "for response to continue");
 
-  delay_s(3);
+  delay_s(10);
 
   for (int i = 0; i < 1000; i++) {
-    // ads1015_read_raw(data->storage, channel, &data->reading);
+    //ads1015_read_raw(data->storage, channel, &data->reading);
     first_samples[i] = data->percentage;
   }
 
@@ -96,12 +96,12 @@ static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *b
          "Initial calibration complete, Please press and hold the brake \n"
          "wait for response to continue");
 
-  delay_s(3);
+  delay_s(10);
 
   for (int i = 0; i < 1000; i++) {
-    // ads1015_read_raw(data->storage, channel, &data->reading);
+    //ads1015_read_raw(data->storage, channel, &data->reading);
     second_samples[i] = data->percentage;
-    // printf("%s %d %d\n","second sample", i, second_samples[i]);
+    printf("%s %d %d\n","second sample", i, second_samples[i]);
   }
 
   for (int i = 0; i < 1000; i++) {
@@ -126,10 +126,10 @@ static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *b
 
   printf("%s\n", "Final calibration complete.");
 
-  delay_s(3);
+  delay_s(10);
 }
 
-StatusCode magnetic_brake_event_generator_init(MagneticCalibrationData *data,
+StatusCode magnetic_brake_calibration(MagneticCalibrationData *data,
                                                MagneticBrakeSettings *brake_settings,
                                                Ads1015Channel channel) {
   input_values(data, brake_settings, channel);

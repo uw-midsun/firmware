@@ -1,4 +1,3 @@
-
 #include <stdint.h>
 #include <stdio.h>
 
@@ -45,7 +44,7 @@ static void prv_callback_channel(Ads1015Channel channel, void *context) {
   
 }
 
-int main(void){
+void setup_test(void){
 
 Ads1015Storage storage;
 
@@ -74,14 +73,4 @@ ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, prv_callback_channe
 
    }
    
-return 0;
-
 }
-
-
-
-
-
-
-
-
