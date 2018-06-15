@@ -51,7 +51,7 @@ def dump_msg(can_id, data):
     unpacked = struct.unpack(fmt, data)
     try:
         data_str = '({:.4f}, {:.4f})'.format(*unpacked)
-    except ValueError:
+    except (ValueError, TypeError):
         data_str = unpacked
     print('Msg {} from {} 0x{:02x} - {}: {}'.format(msg_id, friendly_type, device_id,
                                                     name, data_str))
