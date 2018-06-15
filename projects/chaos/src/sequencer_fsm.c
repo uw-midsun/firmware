@@ -366,6 +366,7 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event) {
                                   SEQUENCER_EMPTY_DATA);
     }
     // If we are stuck go to the emergency state.
+    LOG_DEBUG("Emergency: sequence failed.");
     return event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_EMERGENCY,
                                 SEQUENCER_EMPTY_DATA);
   }

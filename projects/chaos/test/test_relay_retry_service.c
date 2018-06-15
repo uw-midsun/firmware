@@ -2,15 +2,20 @@
 
 #include "chaos_events.h"
 #include "event_queue.h"
+#include "interrupt.h"
+#include "ms_test_helpers.h"
 #include "relay_id.h"
+#include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
 
 static RelayRetryServiceStorage s_storage;
 
 void setup_test(void) {
+  interrupt_init();
+  soft_timer_init();
   event_queue_init();
-  TEST_ASSERT_OK(relay_retry_service_init(&s_storage));
+  TEST_ASSERT_OK(relay_retry_service_init(&s_storage, 100));
 }
 
 void teardown_test(void) {}
@@ -38,7 +43,7 @@ void test_retry_service(void) {
       e.data = relay_id;
       TEST_ASSERT_OK(relay_retry_service_update(&e));
       e.data = NUM_RELAY_IDS;
-      TEST_ASSERT_OK(event_process(&e));
+      MS_TEST_HELPER_AWAIT_EVENT(e);
       TEST_ASSERT_EQUAL(CHAOS_EVENT_RETRY_RELAY, e.id);
       TEST_ASSERT_EQUAL(relay_id, e.data);
     }
@@ -55,12 +60,12 @@ void test_retry_service(void) {
   e.id = CHAOS_EVENT_SET_RELAY_RETRIES;
   e.data = RELAY_RETRY_SERVICE_UNLIMITED_ATTEMPTS;
   TEST_ASSERT_OK(relay_retry_service_update(&e));
-  for (uint16_t i = 0; i <= UINT8_MAX + 1; i++) {
+  for (uint16_t i = 0; i <= 10; i++) {
     e.id = CHAOS_EVENT_MAYBE_RETRY_RELAY;
     e.data = RELAY_ID_SOLAR_MASTER_FRONT;
     TEST_ASSERT_OK(relay_retry_service_update(&e));
     e.data = NUM_RELAY_IDS;
-    TEST_ASSERT_OK(event_process(&e));
+    MS_TEST_HELPER_AWAIT_EVENT(e);
     TEST_ASSERT_EQUAL(CHAOS_EVENT_RETRY_RELAY, e.id);
     TEST_ASSERT_EQUAL(RELAY_ID_SOLAR_MASTER_FRONT, e.data);
   }
@@ -73,7 +78,7 @@ void test_relay_fail_fast(void) {
   e.data = RELAY_ID_SOLAR_MASTER_FRONT;
   TEST_ASSERT_OK(relay_retry_service_update(&e));
   e.data = NUM_RELAY_IDS;
-  TEST_ASSERT_OK(event_process(&e));
+  MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHAOS_EVENT_RETRY_RELAY, e.id);
   TEST_ASSERT_EQUAL(RELAY_ID_SOLAR_MASTER_FRONT, e.data);
 
