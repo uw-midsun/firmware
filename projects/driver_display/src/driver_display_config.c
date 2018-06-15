@@ -25,9 +25,9 @@ void driver_display_config(void) {
   // Init the pwm for each screen
   for (uint8_t i = 0; i < SIZEOF_ARRAY(screen_info); i++) {
     gpio_init_pin(&screen_info[i].address, &screen_pwm_settings);
-    pwm_init(screen_info[i].timer,
-             screen_info[i].frequency * 1000);  // frequency converted to microseconds
-    pwm_set_dc(screen_info[i].timer, 50);       // set the screen brightness to 50% initially
+    pwm_init_hz(screen_info[i].timer,
+                screen_info[i].frequency * 1000);  // frequency converted to Hz
+    pwm_set_dc(screen_info[i].timer, 50);          // set the screen brightness to 50% initially
   }
 
   // Init the ADC pin
