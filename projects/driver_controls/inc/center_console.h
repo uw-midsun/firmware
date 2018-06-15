@@ -14,7 +14,7 @@
 #include "soft_timer.h"
 
 // How long the power button must be held to count as a press
-#define CENTER_CONSOLE_POWER_HOLD_MS 3000
+#define CENTER_CONSOLE_POWER_HOLD_MS 1
 
 typedef enum {
   CENTER_CONSOLE_INPUT_POWER = 0,

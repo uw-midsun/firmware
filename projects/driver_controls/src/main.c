@@ -78,6 +78,11 @@ int main() {
   };
   can_init(&s_can, &can_settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
 
+  can_add_filter(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT);
+  can_add_filter(SYSTEM_CAN_MESSAGE_POWER_STATE);
+  can_add_filter(SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT);
+  can_add_filter(SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY);
+
   const I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,    //
     .sda = DC_CFG_I2C_BUS_SDA,  //
@@ -119,9 +124,22 @@ int main() {
     init_fns[i](&s_fsms[i], &s_event_arbiter);
   }
 
+  LOG_DEBUG("initialized\n");
+
   Event e;
   while (true) {
     if (status_ok(event_process(&e))) {
+      switch (e.id) {
+        case INPUT_EVENT_PEDAL_ACCEL:
+        case INPUT_EVENT_PEDAL_COAST:
+        case INPUT_EVENT_PEDAL_BRAKE:
+        case INPUT_EVENT_DRIVE_UPDATE_REQUESTED:
+        case INPUT_EVENT_CAN_RX:
+        case INPUT_EVENT_CAN_TX:
+          break;
+        default:
+        LOG_DEBUG("e %d %d\n", e.id, e.data);
+      }
       fsm_process_event(CAN_FSM, &e);
       power_distribution_controller_retry(&e);
       cruise_handle_event(cruise_global(), &e);

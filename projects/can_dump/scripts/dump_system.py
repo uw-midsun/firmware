@@ -29,19 +29,19 @@ def parse_msg(can_id, data):
         # Battery voltage/temperature
         vt_fmt = '<HHH'
         module, voltage, aux = struct.unpack(vt_fmt, data)
-        print('C{}: {}mV aux {}mV'.format(module, voltage / 10, aux / 10))
+        # print('C{}: {}mV aux {}mV'.format(module, voltage / 10, aux / 10))
     elif (msg_id == 0 and msg_type == 0):
         # BPS Heartbeat TX
         print('BPS Heartbeat: 0x{} from {}'.format(binascii.hexlify(data).decode('ascii'),
                                                    source_id))
     elif (msg_id == 0 and msg_type == 1):
         # BPS Heartbeat ACK
-        print('BPS Hearbeat ACK from {}'.format(source_id))
+        print('BPS Heartbeat ACK from {}'.format(source_id))
     elif (msg_id == 2 or msg_id == 3):
         # Battery relay
         relay_name = 'main' if msg_id == 2 else 'slave'
         state = 'open' if data == 0x0 else 'close'
-        print('Battery relay {}: {} ({}) from {}'.format(relay_name, state, msg_type_name,
+        print('Battery relay {}: {} {} ({}) from {}'.format(relay_name, state, data, msg_type_name,
                                                          source_id))
     else:
         # Unrecognized message
