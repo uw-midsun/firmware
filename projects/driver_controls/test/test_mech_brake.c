@@ -17,20 +17,18 @@
 #include "soft_timer.h"
 #include "status.h"
 #include "unity.h"
-#include "delay.h"
 
 static MagneticCalibrationData data;
 
 static MagneticBrakeSettings brake_settings = {
-   .percentage_threshold = 500,
-   .zero_value = 513,
-   .hundred_value = 624,
-   .min_allowed_range = 0,
-   .max_allowed_range = (1<<12),
-  };
+  .percentage_threshold = 500,
+  .zero_value = 513,
+  .hundred_value = 624,
+  .min_allowed_range = 0,
+  .max_allowed_range = (1 << 12),
+};
 
 static void prv_callback_channel(Ads1015Channel channel, void *context) {
-
   Ads1015Storage *storage = context;
 
   ads1015_read_raw(storage, channel, &data.reading);
@@ -38,39 +36,35 @@ static void prv_callback_channel(Ads1015Channel channel, void *context) {
   int16_t percentage = percentage_converter(&data, &brake_settings);
   int16_t reading = data.reading;
 
-  printf("%d %d\n",data.reading,percentage);
+  printf("%d %d\n", data.reading, percentage);
 
   data.percentage = percentage;
-  
 }
 
-void setup_test(void){
+void setup_test(void) {
+  Ads1015Storage storage;
 
-Ads1015Storage storage;
+  gpio_init();
+  interrupt_init();
+  gpio_it_init();
+  soft_timer_init();
 
-gpio_init();
-interrupt_init();
-gpio_it_init();
-soft_timer_init();
+  I2CSettings i2c_settings = {
+    .speed = I2C_SPEED_FAST,
+    .scl = { .port = GPIO_PORT_B, .pin = 8 },
+    .sda = { .port = GPIO_PORT_B, .pin = 9 },
+  };
 
-I2CSettings i2c_settings = {
-  .speed = I2C_SPEED_FAST,
-  .scl = { .port = GPIO_PORT_B, .pin = 8 },
-  .sda = { .port = GPIO_PORT_B, .pin = 9 },
-};
+  i2c_init(I2C_PORT_1, &i2c_settings);
 
-i2c_init(I2C_PORT_1, &i2c_settings);
+  GPIOAddress ready_pin = { .port = GPIO_PORT_A, .pin = 10 };
 
-GPIOAddress ready_pin = { .port = GPIO_PORT_A, .pin = 10 };
+  ads1015_init(&storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
 
-ads1015_init(&storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
+  // magnetic_brake_calibration(&data, &brake_settings, ADS1015_CHANNEL_2);
 
-//magnetic_brake_calibration(&data, &brake_settings, ADS1015_CHANNEL_2);
+  ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, prv_callback_channel, &storage);
 
-ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, prv_callback_channel, &storage);
-
- while (true) {
-
-   }
-   
+  while (true) {
+  }
 }

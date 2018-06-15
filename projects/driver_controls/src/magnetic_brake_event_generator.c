@@ -64,7 +64,7 @@ static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *b
   delay_s(10);
 
   for (int i = 0; i < 1000; i++) {
-    //ads1015_read_raw(data->storage, channel, &data->reading);
+    // ads1015_read_raw(data->storage, channel, &data->reading);
     first_samples[i] = data->percentage;
   }
 
@@ -99,9 +99,9 @@ static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *b
   delay_s(10);
 
   for (int i = 0; i < 1000; i++) {
-    //ads1015_read_raw(data->storage, channel, &data->reading);
+    // ads1015_read_raw(data->storage, channel, &data->reading);
     second_samples[i] = data->percentage;
-    printf("%s %d %d\n","second sample", i, second_samples[i]);
+    printf("%s %d %d\n", "second sample", i, second_samples[i]);
   }
 
   for (int i = 0; i < 1000; i++) {
@@ -130,8 +130,8 @@ static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *b
 }
 
 StatusCode magnetic_brake_calibration(MagneticCalibrationData *data,
-                                               MagneticBrakeSettings *brake_settings,
-                                               Ads1015Channel channel) {
+                                      MagneticBrakeSettings *brake_settings,
+                                      Ads1015Channel channel) {
   input_values(data, brake_settings, channel);
 
   return STATUS_CODE_OK;
