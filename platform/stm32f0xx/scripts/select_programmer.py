@@ -19,7 +19,6 @@ def scrape_devices(probe, devices):
         product = usb.util.get_string(dev, dev.iProduct)
         serial = usb.util.get_string(dev, dev.iSerialNumber)
         options.append(probe, ('{} {}'.format(manufacturer, product), serial))
-
     return options
 
 def get_options():
