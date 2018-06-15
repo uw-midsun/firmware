@@ -65,7 +65,8 @@ void driver_display_brightness_read(GPIOAddress adc_address) {
 
   // Convert the raw reading into a percentage of max reading to then be passed into pwm_set_dc to
   // adjust brightness accordingly
-  uint16_t percent_reading = ((reading - data.min_brightness) * 100) / data.range_brightness;
+  uint16_t percent_reading =
+      (((reading - data.min_brightness) * 100) / data.range_brightness) * 100;
 
   DriverDisplayConfigGpio *screen_info = driver_display_config_get_screen_info();
 
