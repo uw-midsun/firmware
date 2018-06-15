@@ -13,12 +13,12 @@ static void prv_extract_cell_result(uint16_t *result_arr, size_t len, void *cont
     if (result_arr[i] < storage->settings.undervoltage ||
         result_arr[i] > storage->settings.overvoltage) {
       bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
-                                BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+                                EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
       return;
     }
   }
 
-  bps_heartbeat_clear_fault(storage->settings.bps_heartbeat, BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+  bps_heartbeat_clear_fault(storage->settings.bps_heartbeat, EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
 }
 
 static void prv_extract_aux_result(uint16_t *result_arr, size_t len, void *context) {
