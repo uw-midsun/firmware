@@ -188,11 +188,12 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
 
   LOG_DEBUG("CAN HW initialized on %s\n", CAN_HW_DEV_INTERFACE);
 
+  // 3 threads total: main, TX, RX
+  pthread_barrier_init(&s_barrier, NULL, 3);
+
   pthread_create(&s_rx_pthread_id, NULL, prv_rx_thread, NULL);
   pthread_create(&s_tx_pthread_id, NULL, prv_tx_thread, NULL);
 
-  // 3 threads total: main, TX, RX
-  pthread_barrier_init(&s_barrier, NULL, 3);
   pthread_barrier_wait(&s_barrier);
   pthread_barrier_destroy(&s_barrier);
 

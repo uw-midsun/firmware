@@ -125,10 +125,11 @@ StatusCode x86_socket_init(X86SocketThread *thread, char *module_name, X86Socket
   pthread_mutex_init(&thread->keep_alive, NULL);
   pthread_mutex_lock(&thread->keep_alive);
 
-  pthread_create(&thread->thread, NULL, prv_server_thread, thread);
-
   // 2 threads: main, server
   pthread_barrier_init(&thread->barrier, NULL, 2);
+
+  pthread_create(&thread->thread, NULL, prv_server_thread, thread);
+
   pthread_barrier_wait(&thread->barrier);
   pthread_barrier_destroy(&thread->barrier);
 
