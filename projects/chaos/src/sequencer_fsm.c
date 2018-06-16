@@ -14,7 +14,7 @@
 #include "relay_retry_service.h"
 #include "sequencer.h"
 
-#define SEQUENCER_FSM_BATTERY_DELAY 2100
+#define SEQUENCER_FSM_BATTERY_DELAY 2000
 #define SEQUENCER_FSM_BOOT_DELAY 2600
 #define SEQUENCER_FSM_MAX_RETRIES 2
 #define NUM_SEQUENCER_FSM_FILTERS 3

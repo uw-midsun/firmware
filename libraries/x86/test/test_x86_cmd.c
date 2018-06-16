@@ -34,10 +34,6 @@ void test_x86_cmd_client(void) {
   volatile bool received = false;
   x86_cmd_register_handler("test", prv_handler, &received);
 
-  // Delay so we hopefully start the client after the RX server thread has actually initialized.
-  LOG_DEBUG("Hopefully delaying a bit for the RX server to start\n");
-  for (volatile uint32_t i = 0; i < 100000000; i++) {
-  }
   int client_fd = test_x86_socket_client_init(X86_CMD_SOCKET_NAME);
 
   const char *cmd = "test a b c d";
