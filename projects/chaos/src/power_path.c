@@ -180,22 +180,26 @@ StatusCode power_path_read_source(const PowerPathSource *source, PowerPathVCRead
 }
 
 bool power_path_process_event(PowerPathCfg *cfg, const Event *e) {
-  PowerPathSource *source = NULL;
-  if (e->data == POWER_PATH_SOURCE_ID_DCDC) {
-    source = &cfg->dcdc;
-  } else if (e->data == POWER_PATH_SOURCE_ID_AUX_BAT) {
-    source = &cfg->aux_bat;
-  } else {
-    return false;
+  switch (e->id) {
+    case CHAOS_EVENT_MONITOR_ENABLE:
+      if (e->data == POWER_PATH_SOURCE_ID_DCDC) {
+        power_path_source_monitor_enable(&cfg->dcdc, cfg->dcdc.period_millis);
+      } else if (e->data == POWER_PATH_SOURCE_ID_AUX_BAT) {
+        power_path_source_monitor_enable(&cfg->aux_bat, cfg->aux_bat.period_millis);
+      } else {
+        return false;
+      }
+      return true;
+    case CHAOS_EVENT_MONITOR_DISABLE:
+      if (e->data == POWER_PATH_SOURCE_ID_DCDC) {
+        power_path_source_monitor_disable(&cfg->dcdc);
+      } else if (e->data == POWER_PATH_SOURCE_ID_AUX_BAT) {
+        power_path_source_monitor_disable(&cfg->aux_bat);
+      } else {
+        return false;
+      }
+      return true;
+    default:
+      return false;
   }
-
-  if (e->id == CHAOS_EVENT_MONITOR_ENABLE) {
-    power_path_source_monitor_enable(source, source->period_millis);
-    return true;
-  } else if (e->id == CHAOS_EVENT_MONITOR_DISABLE) {
-    power_path_source_monitor_disable(source);
-    return true;
-  }
-
-  return false;
 }

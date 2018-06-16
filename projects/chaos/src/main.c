@@ -50,7 +50,7 @@ int main(void) {
   soft_timer_init();
   gpio_init();
   gpio_it_init();
-  // adc_init(ADC_MODE_CONTINUOUS);
+  adc_init(ADC_MODE_CONTINUOUS);
   debug_led_init(DEBUG_LED_RED);
   soft_timer_start_millis(CHAOS_DEBUG_LED_PERIOD_MS, prv_toggle, NULL, NULL);
 
@@ -73,10 +73,10 @@ int main(void) {
 
   // Power Path
   ChaosConfig *cfg = chaos_config_load();
-  // power_path_init(&cfg->power_path);
+  power_path_init(&cfg->power_path);
   // AUX Battery Monitoring.
-  // power_path_source_monitor_enable(&cfg->power_path.aux_bat, CHAOS_CONFIG_POWER_PATH_PERIOD_MS);
-  // power_path_send_data_daemon(&cfg->power_path, CHAOS_CONFIG_POWER_PATH_PERIOD_MS);
+  power_path_source_monitor_enable(&cfg->power_path.aux_bat, CHAOS_CONFIG_POWER_PATH_PERIOD_MS);
+  power_path_send_data_daemon(&cfg->power_path, CHAOS_CONFIG_POWER_PATH_PERIOD_MS);
 
   // Relays
   RelaySettings relay_settings = {
