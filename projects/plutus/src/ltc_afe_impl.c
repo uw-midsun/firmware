@@ -24,7 +24,8 @@ static uint8_t s_voltage_reg[NUM_LTC_AFE_VOLTAGE_REGISTERS] = {
 
 static void prv_wakeup_idle(LtcAfeStorage *afe) {
   gpio_set_state(&afe->cs, GPIO_STATE_LOW);
-  for (volatile int i = 0; i < 10000; i++) {
+  // ~2us delay
+  for (volatile int i = 0; i < 100; i++) {
   }
   gpio_set_state(&afe->cs, GPIO_STATE_HIGH);
 }
