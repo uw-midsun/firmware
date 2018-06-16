@@ -10,7 +10,7 @@ void TIM3_IRQHandler(void) {
   GPIOAddress green_led = {
     .port = GPIO_PORT_C,
     .pin = 9,
-  }
+  };
   gpio_toggle_state(&green_led);
 }
 
