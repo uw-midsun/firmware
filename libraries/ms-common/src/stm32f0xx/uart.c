@@ -7,6 +7,7 @@
 // and call the registered RX handler.
 #include "uart.h"
 #include <string.h>
+#include "critical_section.h"
 #include "stm32f0xx.h"
 
 // basic idea: tx is stored in a buffer, interrupt-driven
@@ -80,8 +81,10 @@ StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage
 }
 
 StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *context) {
+  bool disabled = critical_section_start();
   s_port[uart].storage->rx_handler = rx_handler;
   s_port[uart].storage->context = context;
+  critical_section_end(disabled);
 
   return STATUS_CODE_OK;
 }
@@ -133,6 +136,9 @@ static void prv_handle_irq(UARTPort uart) {
   if (USART_GetITStatus(s_port[uart].base, USART_IT_RXNE) == SET) {
     prv_rx_push(uart);
   }
+
+  // Clear overrun flag
+  USART_ClearITPendingBit(s_port[uart].base, USART_IT_ORE);
 }
 
 void USART1_IRQHandler(void) {

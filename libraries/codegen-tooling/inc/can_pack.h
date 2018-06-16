@@ -111,9 +111,13 @@
 #define CAN_PACK_BATTERY_SOC(msg_ptr) \
   can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_PLUTUS, SYSTEM_CAN_MESSAGE_BATTERY_SOC)
 
-#define CAN_PACK_BATTERY_VCT(msg_ptr, module_id_u16, voltage_u16, current_u16, temperature_u16) \
-  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_PLUTUS, SYSTEM_CAN_MESSAGE_BATTERY_VCT, 8,     \
-                    (module_id_u16), (voltage_u16), (current_u16), (temperature_u16))
+#define CAN_PACK_BATTERY_VT(msg_ptr, module_id_u16, voltage_u16, temperature_u16)          \
+  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_PLUTUS, SYSTEM_CAN_MESSAGE_BATTERY_VT, 6, \
+                    (module_id_u16), (voltage_u16), (temperature_u16), CAN_PACK_IMPL_EMPTY)
+
+#define CAN_PACK_BATTERY_CURRENT(msg_ptr, current_u32)                                          \
+  can_pack_impl_u32((msg_ptr), SYSTEM_CAN_DEVICE_PLUTUS, SYSTEM_CAN_MESSAGE_BATTERY_CURRENT, 4, \
+                    (current_u32), CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_MOTOR_CONTROLLER_VC(msg_ptr, mc_voltage_1_u16, mc_current_1_u16,  \
                                      mc_voltage_2_u16, mc_current_2_u16)           \

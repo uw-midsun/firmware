@@ -25,6 +25,19 @@ typedef enum {
   NUM_EE_CHARGER_CONN_STATES,
 } EEChargerConnState;
 
+// Drive output
+// Mech brake + throttle
+#define EE_DRIVE_OUTPUT_DENOMINATOR (1 << 12)
+// Arbitrary 5% minimum pressure before considering it as engaged
+#define EE_DRIVE_OUTPUT_MECH_THRESHOLD (5 * (EE_DRIVE_OUTPUT_DENOMINATOR) / 100)
+
+typedef enum {
+  EE_DRIVE_OUTPUT_DIRECTION_NEUTRAL = 0,
+  EE_DRIVE_OUTPUT_DIRECTION_FORWARD,
+  EE_DRIVE_OUTPUT_DIRECTION_REVERSE,
+  NUM_EE_DRIVE_OUTPUT_DIRECTIONS,
+} EEDriveOutputDirection;
+
 // Light type to be used with a SYSTEM_CAN_MESSAGE_LIGHTS_STATE message.
 typedef enum EELightType {
   EE_LIGHT_TYPE_HIGH_BEAMS = 0,
@@ -52,6 +65,7 @@ typedef enum EEHornState {
   NUM_EE_HORN_STATES,     //
 } EEHornState;
 
+// Used with most _RELAY messages to request a relay state change.
 typedef enum EERelayState {
   EE_RELAY_STATE_OPEN = 0,
   EE_RELAY_STATE_CLOSE,
@@ -66,3 +80,20 @@ typedef enum {
   EE_POWER_STATE_DRIVE,
   NUM_EE_POWER_STATES,
 } EEPowerState;
+
+// Used with the BPS heartbeat message
+typedef enum {
+  EE_BPS_HEARTBEAT_FAULT_SOURCE_KILLSWITCH = 0,
+  EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE,
+  EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC,
+  EE_BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT,
+  NUM_EE_BPS_HEARTBEAT_FAULT_SOURCES,
+} EEBpsHeartbeatFaultSource;
+
+// BPS heartbeat bitset representing fault reason
+typedef uint8_t EEBpsHeartbeatState;
+#define EE_BPS_HEARTBEAT_STATE_OK 0x0
+#define EE_BPS_HEARTBEAT_STATE_FAULT_KILLSWITCH (1 << EE_BPS_HEARTBEAT_FAULT_SOURCE_KILLSWITCH)
+#define EE_BPS_HEARTBEAT_STATE_FAULT_LTC_AFE (1 << EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE)
+#define EE_BPS_HEARTBEAT_STATE_FAULT_LTC_ADC (1 << EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC)
+#define EE_BPS_HEARTBEAT_STATE_FAULT_ACK_TIMEOUT (1 << EE_BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT)

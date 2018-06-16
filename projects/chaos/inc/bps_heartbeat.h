@@ -9,14 +9,7 @@
 // Expects soft_timer, can, interrupts to be enabled.
 #include "status.h"
 
-#define BPS_HEARTBEAT_EXPECTED_PERIOD_MS 1000
-
-// TODO(ELEC-105): Export enum for usage by Plutus
-typedef enum BpsHeartbeatState {
-  BPS_HEARTBEAT_STATE_OK = 0,
-  BPS_HEARTBEAT_STATE_ERROR,
-  NUM_BPS_HEARTBEAT_STATES,
-} BpsHeartbeatState;
+#define BPS_HEARTBEAT_EXPECTED_PERIOD_MS 3000
 
 // Configures BPS heartbeat handler.
 StatusCode bps_heartbeat_init(void);

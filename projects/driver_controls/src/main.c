@@ -1,86 +1,132 @@
-
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 
-#include <stdbool.h>
-#include "adc.h"
-#include "ads1015.h"
-#include "ads1015_def.h"
-#include "delay.h"
-#include "event_arbiter.h"
+#include "calib.h"
+#include "center_console.h"
+#include "control_stalk.h"
 #include "event_queue.h"
+#include "gpio.h"
 #include "gpio_it.h"
+#include "heartbeat_rx.h"
 #include "i2c.h"
 #include "input_event.h"
 #include "interrupt.h"
 #include "log.h"
-#include "magnetic_brake_event_generator.h"
+#include "power_distribution_controller.h"
 #include "soft_timer.h"
-#include "status.h"
-#include "unity.h"
+#include "throttle.h"
 
-static MagneticCalibrationData data;
+#include "cruise_fsm.h"
+#include "direction_fsm.h"
+#include "event_arbiter.h"
+#include "mechanical_brake_fsm.h"
+#include "pedal_fsm.h"
+#include "power_fsm.h"
 
-static MagneticBrakeSettings brake_settings = {
-  .percentage_threshold = 500,
-  .zero_value = 513,
-  .hundred_value = 624,
-  .min_allowed_range = 0,
-  .max_allowed_range = (1 << 12),
-};
+#include "cruise.h"
+#include "drive_output.h"
 
-static void prv_callback_channel(Ads1015Channel channel, void *context) {
-  Ads1015Storage *storage = context;
+#include "can.h"
+#include "dc_cfg.h"
 
-  ads1015_read_raw(storage, channel, &data.reading);
+typedef StatusCode (*DriverControlsFsmInitFn)(FSM *fsm, EventArbiterStorage *storage);
 
-  int16_t percentage = percentage_converter(&data, &brake_settings);
-  int16_t reading = data.reading;
+typedef enum {
+  DRIVER_CONTROLS_FSM_POWER = 0,
+  DRIVER_CONTROLS_FSM_CRUISE,
+  DRIVER_CONTROLS_FSM_PEDAL,
+  DRIVER_CONTROLS_FSM_DIRECTION,
+  DRIVER_CONTROLS_FSM_MECH_BRAKE,
+  NUM_DRIVER_CONTROLS_FSMS
+} DriverControlsFsm;
 
-  printf("%d %d\n", data.reading, percentage);
+static GpioExpanderStorage s_console_expander;
+static CenterConsoleStorage s_console;
+static CalibStorage s_calib;
+static Ads1015Storage s_pedal_ads1015;
+static EventArbiterStorage s_event_arbiter;
+static FSM s_fsms[NUM_DRIVER_CONTROLS_FSMS];
 
-  data.percentage = percentage;
-}
+static ControlStalk s_stalk;
+static GpioExpanderStorage s_stalk_expander;
+static Ads1015Storage s_stalk_ads1015;
 
-int main(void) {
+static CANStorage s_can;
+static CANRxHandler s_rx_handlers[5];
+static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
+
+int main() {
   gpio_init();
   interrupt_init();
   gpio_it_init();
   soft_timer_init();
+  event_queue_init();
 
-  I2CSettings i2c_settings = {
-    .speed = I2C_SPEED_FAST,
-    .scl = { .port = GPIO_PORT_B, .pin = 8 },
-    .sda = { .port = GPIO_PORT_B, .pin = 9 },
+  calib_init(&s_calib);
+
+  const CANSettings can_settings = {
+    .device_id = DC_CFG_CAN_DEVICE_ID,
+    .bitrate = DC_CFG_CAN_BITRATE,
+    .rx_event = INPUT_EVENT_CAN_RX,
+    .tx_event = INPUT_EVENT_CAN_TX,
+    .fault_event = INPUT_EVENT_CAN_FAULT,
+    .tx = DC_CFG_CAN_TX,
+    .rx = DC_CFG_CAN_RX,
+    .loopback = false,
+  };
+  can_init(&s_can, &can_settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+
+  const I2CSettings i2c_settings = {
+    .speed = I2C_SPEED_FAST,    //
+    .sda = DC_CFG_I2C_BUS_SDA,  //
+    .scl = DC_CFG_I2C_BUS_SCL,  //
   };
 
-  i2c_init(I2C_PORT_1, &i2c_settings);
+  i2c_init(DC_CFG_I2C_BUS_PORT, &i2c_settings);
 
-  GPIOAddress ready_pin = { .port = GPIO_PORT_A, .pin = 10 };
+  GPIOAddress console_int_pin = DC_CFG_CONSOLE_IO_INT_PIN;
+  gpio_expander_init(&s_console_expander, DC_CFG_I2C_BUS_PORT, DC_CFG_CONSOLE_IO_ADDR,
+                     &console_int_pin);
+  center_console_init(&s_console, &s_console_expander);
 
-  ads1015_init(data.mech_brake_storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
+  GPIOAddress stalk_int_pin = DC_CFG_STALK_IO_INT_PIN;
+  GPIOAddress stalk_ready_pin = DC_CFG_STALK_ADC_RDY_PIN;
+  gpio_expander_init(&s_stalk_expander, DC_CFG_I2C_BUS_PORT, DC_CFG_STALK_IO_ADDR, &stalk_int_pin);
+  ads1015_init(&s_stalk_ads1015, DC_CFG_I2C_BUS_PORT, DC_CFG_STALK_ADC_ADDR, &stalk_ready_pin);
+  control_stalk_init(&s_stalk, &s_stalk_ads1015, &s_stalk_expander);
 
-  LOG_DEBUG(
-      "Brake sensor is calibrating, Please ensure the brake is not being pressed, wait \n "
-      "for response to continue");
-  delay_s(5);
-  LOG_DEBUG("Beginning sampling\n");
-  // magnetic_brake_calibration(data.percentage, brake_settings.min_allowed_range,
-  // &brake_settings.zero_value,ADS1015_CHANNEL_2, &brake_settings);
-  LOG_DEBUG("Completed sampling\n");
-  LOG_DEBUG(
-      "Initial calibration complete, Please press and hold the brake \n"
-      "wait for response to continue");
-  delay_s(5);
-  LOG_DEBUG("Beginning sampling\n");
-  // magnetic_brake_calibration(data.percentage,
-  // brake_settings.max_allowed_range,&brake_settings.hundred_value,ADS1015_CHANNEL_2,
-  // &brake_settings);
-  LOG_DEBUG("Completed sampling\n");
+  GPIOAddress pedal_ads1015_ready = DC_CFG_PEDAL_ADC_RDY_PIN;
+  ads1015_init(&s_pedal_ads1015, DC_CFG_I2C_BUS_PORT, DC_CFG_PEDAL_ADC_ADDR, &pedal_ads1015_ready);
+  throttle_init(throttle_global(), &calib_blob(&s_calib)->throttle_calib, &s_pedal_ads1015);
 
-  // ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, prv_callback_channel, &storage);
+  cruise_init(cruise_global());
+  drive_output_init(drive_output_global(), INPUT_EVENT_DRIVE_WATCHDOG_FAULT,
+                    INPUT_EVENT_DRIVE_UPDATE_REQUESTED);
 
+  // TODO(ELEC-455): Add BPS fault handler
+
+  // Powertrain heartbeat
+  heartbeat_rx_register_handler(&s_powertrain_heartbeat, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
+                                heartbeat_rx_auto_ack_handler, NULL);
+
+  event_arbiter_init(&s_event_arbiter);
+  DriverControlsFsmInitFn init_fns[] = {
+    cruise_fsm_init, direction_fsm_init, mechanical_brake_fsm_init, pedal_fsm_init, power_fsm_init,
+  };
+  for (size_t i = 0; i < NUM_DRIVER_CONTROLS_FSMS; i++) {
+    init_fns[i](&s_fsms[i], &s_event_arbiter);
+  }
+
+  Event e;
   while (true) {
+    // TODO(ELEC-461): figure out why I2C seems to die when the motors are running
+    if (status_ok(event_process(&e))) {
+      fsm_process_event(CAN_FSM, &e);
+      power_distribution_controller_retry(&e);
+      cruise_handle_event(cruise_global(), &e);
+      event_arbiter_process_event(&s_event_arbiter, &e);
+    }
   }
 
   return 0;

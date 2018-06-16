@@ -32,20 +32,26 @@ typedef struct {
   LtcAdcCallback callback;
   void *context;
 
-  const GPIOAddress cs;
-  const GPIOAddress mosi;
-  const GPIOAddress miso;
-  const GPIOAddress sclk;
-
-  const SPIPort spi_port;
-  const uint32_t spi_baudrate;
-
-  const LtcAdcFilterMode filter_mode;
+  GPIOAddress cs;
+  GPIOAddress miso;
+  SPIPort spi_port;
 } LtcAdcStorage;
+
+typedef struct LtcAdcSettings {
+  GPIOAddress cs;
+  GPIOAddress mosi;
+  GPIOAddress miso;
+  GPIOAddress sclk;
+
+  SPIPort spi_port;
+  uint32_t spi_baudrate;
+
+  LtcAdcFilterMode filter_mode;
+} LtcAdcSettings;
 
 // Initializes the ADC by setting up the GPIO pins and configuring the ADC with
 // the selected settings
-StatusCode ltc_adc_init(LtcAdcStorage *storage);
+StatusCode ltc_adc_init(LtcAdcStorage *storage, const LtcAdcSettings *settings);
 
 // Register a callback to be run whenever there is new data
 StatusCode ltc_adc_register_callback(LtcAdcStorage *storage, LtcAdcCallback callback,
