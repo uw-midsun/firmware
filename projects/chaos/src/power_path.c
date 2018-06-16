@@ -11,7 +11,6 @@
 #include "gpio.h"
 #include "gpio_it.h"
 #include "interrupt.h"
-#include "log.h"
 #include "soft_timer.h"
 #include "status.h"
 
@@ -40,14 +39,15 @@ static void prv_send(SoftTimerID timer_id, void *context) {
 // Interrupt handler for over and under voltage warnings.
 static void prv_voltage_warning(const GPIOAddress *addr, void *context) {
   PowerPathCfg *pp = context;
-  PowerPathVCReadings readings = { 0 };
   StatusCode status = STATUS_CODE_OK;
   if (prv_addr_eq(*addr, pp->dcdc.uv_ov_pin) && pp->dcdc.monitoring_active) {
+    PowerPathVCReadings readings = { 0 };
     power_path_read_source(&pp->dcdc, &readings);
     status =
         CAN_TRANSMIT_OVUV_DCDC_AUX((readings.voltage >= POWER_PATH_DCDC_OV_MILLIV),
                                    (readings.voltage <= POWER_PATH_DCDC_UV_MILLIV), false, false);
   } else if (prv_addr_eq(*addr, pp->aux_bat.uv_ov_pin) && pp->aux_bat.monitoring_active) {
+    PowerPathVCReadings readings = { 0 };
     power_path_read_source(&pp->aux_bat, &readings);
     status =
         CAN_TRANSMIT_OVUV_DCDC_AUX(false, false, (readings.voltage >= POWER_PATH_AUX_OV_MILLIV),
@@ -64,6 +64,7 @@ static void prv_adc_read(SoftTimerID timer_id, void *context) {
     // Guard against accidentally starting multiple timers to monitor the same source concurrently.
     return;
   }
+  pps->timer_id = SOFT_TIMER_INVALID_TIMER;
 
   uint16_t value = 0;
   ADCChannel chan = NUM_ADC_CHANNELS;
@@ -73,6 +74,7 @@ static void prv_adc_read(SoftTimerID timer_id, void *context) {
   pps->readings.current = pps->current_convert_fn(value);
 
   // Read and convert the voltage values.
+  value = 0;
   adc_get_channel(pps->voltage_pin, &chan);
   adc_read_converted(chan, &value);
   pps->readings.voltage = pps->voltage_convert_fn(value);
@@ -108,13 +110,17 @@ StatusCode power_path_init(PowerPathCfg *pp) {
                                                  INTERRUPT_EDGE_RISING, prv_voltage_warning, pp));
   status_ok_or_return(gpio_it_register_interrupt(&pp->dcdc.uv_ov_pin, &it_settings,
                                                  INTERRUPT_EDGE_RISING, prv_voltage_warning, pp));
+  pp->aux_bat.timer_id = SOFT_TIMER_INVALID_TIMER;
+  pp->dcdc.timer_id = SOFT_TIMER_INVALID_TIMER;
 
   // Configure the ADC Pins
   settings.alt_function = GPIO_ALTFN_ANALOG;
   status_ok_or_return(gpio_init_pin(&pp->aux_bat.voltage_pin, &settings));
   status_ok_or_return(gpio_init_pin(&pp->aux_bat.current_pin, &settings));
   status_ok_or_return(gpio_init_pin(&pp->dcdc.voltage_pin, &settings));
-  return gpio_init_pin(&pp->dcdc.current_pin, &settings);
+  status_ok_or_return(gpio_init_pin(&pp->dcdc.current_pin, &settings));
+  status_ok_or_return(power_path_source_monitor_disable(&pp->aux_bat));
+  return power_path_source_monitor_disable(&pp->dcdc);
 }
 
 StatusCode power_path_send_data_daemon(PowerPathCfg *pp, uint32_t period_millis) {
@@ -150,7 +156,10 @@ StatusCode power_path_source_monitor_disable(PowerPathSource *source) {
 
   source->monitoring_active = false;
   // Ignore this return since we don't care if the timer is already disabled.
-  soft_timer_cancel(source->timer_id);
+  if (source->timer_id != SOFT_TIMER_INVALID_TIMER) {
+    soft_timer_cancel(source->timer_id);
+    source->timer_id = SOFT_TIMER_INVALID_TIMER;
+  }
 
   // Disable the ADCs
   ADCChannel chan = NUM_ADC_CHANNELS;
