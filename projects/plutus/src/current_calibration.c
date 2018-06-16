@@ -1,5 +1,7 @@
 #include "current_calibration.h"
 
+#include <string.h>
+
 #include "critical_section.h"
 #include "log.h"
 #include "wait.h"
@@ -7,10 +9,10 @@
 static void prv_callback(int32_t *value, void *context) {
   CurrentCalibrationStorage *storage = (CurrentCalibrationStorage *)context;
 
-  storage->voltage += *value;
-  storage->samples++;
-
-  LOG_DEBUG("Sample [%d/%d]\n", storage->samples, CURRENT_CALIBRATION_SAMPLES);
+  if (storage->samples < CURRENT_CALIBRATION_SAMPLES) {
+    storage->voltage += *value;
+    storage->samples++;
+  }
 }
 
 StatusCode current_calibration_init(CurrentCalibrationStorage *storage, LtcAdcStorage *adc_storage,
@@ -23,6 +25,9 @@ StatusCode current_calibration_init(CurrentCalibrationStorage *storage, LtcAdcSt
   storage->settings = adc_settings;
   storage->samples = 0;
   storage->voltage = 0;
+
+  memset(storage->buffer, 0, sizeof(int32_t) * CURRENT_CALIBRATION_OFFSET_WINDOW);
+  storage->index = 0;
   storage->num_chip_resets = 1;
 
   return STATUS_CODE_OK;
@@ -52,6 +57,11 @@ StatusCode current_calibration_sample_point(CurrentCalibrationStorage *storage,
   storage->samples = 0;
   storage->voltage = 0;
 
+  // Set the first value in the buffer if we are sampling for the zero point
+  if (current == 0 && storage->buffer[0] == 0) {
+      storage->buffer[0] = point->voltage;
+  }
+
   return STATUS_CODE_OK;
 }
 
@@ -65,9 +75,18 @@ StatusCode current_calibration_zero_reset(CurrentCalibrationStorage *storage,
   CurrentSenseValue new_offset = { 0 };
   current_calibration_sample_point(storage, &new_offset, 0);
 
-  zero_point->voltage *= storage->num_chip_resets;
-  zero_point->voltage += new_offset.voltage;
-  zero_point->voltage /= ++storage->num_chip_resets;
+  // Add new offset to buffer
+  storage->index = (storage->index + 1) % CURRENT_CALIBRATION_OFFSET_WINDOW;
+  storage->buffer[storage->index] = new_offset.voltage;
+
+  // Update zero point with the result of the new moving average
+  zero_point->voltage = (zero_point->voltage * storage->num_chip_resets) + storage->buffer[storage->index];
+
+  if (storage->num_chip_resets < CURRENT_CALIBRATION_OFFSET_WINDOW) {
+    storage->num_chip_resets++;
+  }
+
+  zero_point->voltage /= storage->num_chip_resets;
 
   return STATUS_CODE_OK;
 }
