@@ -1,8 +1,8 @@
 // Retargets STDOUT to UART
 #include "retarget.h"
+#include <stdio.h>
 #include "retarget_cfg.h"
 #include "stm32f0xx.h"
-#include <stdio.h>
 
 static void prv_init_gpio(void) {
   RETARGET_CFG_UART_GPIO_ENABLE_CLK();
@@ -52,22 +52,23 @@ int _write(int fd, char *ptr, int len) {
   return len;
 }
 
-__attribute__((naked)) void HardFault_Handler(void){
+__attribute__((naked)) void HardFault_Handler(void) {
   // Get the appropriate stack pointer, depending on our mode,
   // and use it as the parameter to the C handler. This function
   // will never return
 
-  __asm(  ".syntax unified\n"
-                  "MOVS   R0, #4  \n"
-                  "MOV    R1, LR  \n"
-                  "TST    R0, R1  \n"
-                  "BEQ    _MSP    \n"
-                  "MRS    R0, PSP \n"
-                  "B      HardFault_HandlerC      \n"
-          "_MSP:  \n"
-                  "MRS    R0, MSP \n"
-                  "B      HardFault_HandlerC      \n"
-          ".syntax divided\n");
+  __asm(
+      ".syntax unified\n"
+      "MOVS   R0, #4  \n"
+      "MOV    R1, LR  \n"
+      "TST    R0, R1  \n"
+      "BEQ    _MSP    \n"
+      "MRS    R0, PSP \n"
+      "B      HardFault_HandlerC      \n"
+      "_MSP:  \n"
+      "MRS    R0, MSP \n"
+      "B      HardFault_HandlerC      \n"
+      ".syntax divided\n");
 }
 
 __attribute__((used)) void HardFault_HandlerC(uint32_t *hardfault_args) {
@@ -131,5 +132,5 @@ __attribute__((used)) void HardFault_HandlerC(uint32_t *hardfault_args) {
   printf("MMAR: 0x%lx\n", _MMAR);
   printf("BFAR: 0x%lx\n", _BFAR);
 
-  __asm("BKPT #0\n"); // Break into the debugger
+  __asm("BKPT #0\n");  // Break into the debugger
 }
