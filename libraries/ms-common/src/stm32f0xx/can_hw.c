@@ -19,11 +19,14 @@ typedef struct CANHwEventHandler {
 } CANHwEventHandler;
 
 // Generated settings using http://www.bittiming.can-wiki.info/
+// Note that the BS1/BS2 register values are used +1, so we need to subtract 1 from the calculated
+// value to compenstate. The same is true for the prescaler, but the library subtracts 1 internally.
+// The total time quanta is thus (BS1 + 1) + (BS2 + 1) + SJW (1) ~= 16 tq.
 static CANHwTiming s_timing[NUM_CAN_HW_BITRATES] = {  // For 48MHz clock
-  [CAN_HW_BITRATE_125KBPS] = { .prescaler = 24, .bs1 = 13, .bs2 = 2 },
-  [CAN_HW_BITRATE_250KBPS] = { .prescaler = 12, .bs1 = 13, .bs2 = 2 },
-  [CAN_HW_BITRATE_500KBPS] = { .prescaler = 6, .bs1 = 13, .bs2 = 2 },
-  [CAN_HW_BITRATE_1000KBPS] = { .prescaler = 3, .bs1 = 13, .bs2 = 2 }
+  [CAN_HW_BITRATE_125KBPS] = { .prescaler = 24, .bs1 = 12, .bs2 = 1 },
+  [CAN_HW_BITRATE_250KBPS] = { .prescaler = 12, .bs1 = 12, .bs2 = 1 },
+  [CAN_HW_BITRATE_500KBPS] = { .prescaler = 6, .bs1 = 12, .bs2 = 1 },
+  [CAN_HW_BITRATE_1000KBPS] = { .prescaler = 3, .bs1 = 12, .bs2 = 1 }
 };
 static CANHwEventHandler s_handlers[NUM_CAN_HW_EVENTS];
 static uint8_t s_num_filters;
@@ -65,6 +68,7 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
 
   can_cfg.CAN_Mode = settings->loopback ? CAN_Mode_Silent_LoopBack : CAN_Mode_Normal;
   can_cfg.CAN_SJW = CAN_SJW_1tq;
+  can_cfg.CAN_ABOM = ENABLE;
   can_cfg.CAN_BS1 = s_timing[settings->bitrate].bs1;
   can_cfg.CAN_BS2 = s_timing[settings->bitrate].bs2;
   can_cfg.CAN_Prescaler = s_timing[settings->bitrate].prescaler;

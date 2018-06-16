@@ -15,9 +15,9 @@ void sequencer_fsm_init(void);
 // Publishes the next event in the sequence and transitions to a new sequence if needed. Errors if
 // provided event was unexpected and will attempt to restart the current sequence.
 //
-// |previous_event| is the event that was just processed by the main event loop. It will be handled
-// by this module if it is either a sequence transition. If it is an expected FSM event then it will
-// be handled, if it is not an FSM event it will be skipped. If it is an unexpected FSM event the
+// |previous_event| is the event that was just processed by theevent loop. It will be handled by
+// this module if it is either a sequence transition. If it is an expected FSM event then it will be
+// handled, if it is not an FSM event it will be skipped. If it is an unexpected FSM event the
 // sequence will restart.
 //
 // NOTE: this implicitly means any events in the range

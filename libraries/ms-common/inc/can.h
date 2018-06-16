@@ -38,7 +38,8 @@ typedef struct CANStorage {
 } CANStorage;
 
 // Initializes the specified CAN configuration given pointers to persistant storage.
-StatusCode can_init(const CANSettings *settings, CANStorage *storage, CANRxHandler *rx_handlers,
+// |storage| and |rx_handlers| should persist.
+StatusCode can_init(CANStorage *storage, const CANSettings *settings, CANRxHandler *rx_handlers,
                     size_t num_rx_handlers);
 
 StatusCode can_add_filter(CANMessageID msg_id);

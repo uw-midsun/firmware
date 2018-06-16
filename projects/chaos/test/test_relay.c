@@ -21,12 +21,12 @@
 #include "test_helpers.h"
 #include "unity.h"
 
+#define TEST_RELAY_DELAY_MS 50
 #define NUM_CAN_RX_HANDLERS 2
 
 static RelayRetryServiceStorage s_relay_retry_storage;
 static CANStorage s_storage;
 static CANRxHandler s_rx_handlers[NUM_CAN_RX_HANDLERS];
-static CANAckRequests s_can_ack_requests;
 
 static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   CANAckStatus *status = context;
@@ -39,7 +39,7 @@ void setup_test(void) {
   event_queue_init();
   interrupt_init();
   soft_timer_init();
-  relay_retry_service_init(&s_relay_retry_storage);
+  relay_retry_service_init(&s_relay_retry_storage, TEST_RELAY_DELAY_MS);
   Event e = { .id = CHAOS_EVENT_SET_RELAY_RETRIES, .data = RELAY_RETRY_SERVICE_DEFAULT_ATTEMPTS };
   relay_retry_service_update(&e);
 
@@ -54,8 +54,7 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  can_init(&settings, &s_storage, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
-  can_ack_init(&s_can_ack_requests);
+  can_init(&s_storage, &settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
 
   RelaySettings relay_settings = {
     .battery_main_power_pin = { GPIO_PORT_A, 0 },
