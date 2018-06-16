@@ -1,5 +1,6 @@
 #include "center_console.h"
 #include "input_event.h"
+#include "log.h"
 // Inputs are as follows:
 // * A0: Power
 // * A1: Drive
