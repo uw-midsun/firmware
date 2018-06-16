@@ -54,8 +54,6 @@ int main(void) {
   debug_led_init(DEBUG_LED_RED);
   soft_timer_start_millis(CHAOS_DEBUG_LED_PERIOD_MS, prv_toggle, NULL, NULL);
 
-  LOG_DEBUG("hello\n");
-
   // CAN
   CANSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
@@ -107,6 +105,8 @@ int main(void) {
   // GPIO
   // Postpone to as late as possible so that BPS heartbeats are ready to be ACK'd.
   gpio_fsm_init(cfg);
+
+  LOG_DEBUG("Started\n");
 
   // Main loop
   Event e = { 0 };
