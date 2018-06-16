@@ -61,7 +61,7 @@ void test_soft_timer_preempt(void) {
 
   StatusCode ret;
 
-  ret = soft_timer_start_millis(1, prv_timeout_cb, (void *)&cb_id_medium, &id_medium);
+  ret = soft_timer_start_millis(2, prv_timeout_cb, (void *)&cb_id_medium, &id_medium);
   TEST_ASSERT_OK(ret);
   TEST_ASSERT_NOT_EQUAL(SOFT_TIMER_INVALID_TIMER, id_medium);
 
@@ -69,7 +69,7 @@ void test_soft_timer_preempt(void) {
   TEST_ASSERT_OK(ret);
   TEST_ASSERT_NOT_EQUAL(SOFT_TIMER_INVALID_TIMER, id_longer);
 
-  ret = soft_timer_start(500, prv_timeout_cb, (void *)&cb_id_short, &id_short);
+  ret = soft_timer_start(1000, prv_timeout_cb, (void *)&cb_id_short, &id_short);
   TEST_ASSERT_OK(ret);
   TEST_ASSERT_NOT_EQUAL(SOFT_TIMER_INVALID_TIMER, id_short);
 
