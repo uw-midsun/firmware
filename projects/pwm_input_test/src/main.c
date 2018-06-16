@@ -32,7 +32,7 @@ int main(void) {
   };
 
   GPIOSettings output_settings = {
-    .direction = GPIO_DIR_OUT, 
+    .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,
     .alt_function = GPIO_AF_0,
   };
