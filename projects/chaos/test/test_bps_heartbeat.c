@@ -21,10 +21,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#define NUM_CAN_RX_HANDLERS 2
-
 static CANStorage s_storage;
-static CANRxHandler s_rx_handlers[NUM_CAN_RX_HANDLERS];
 
 static StatusCode prv_bps_ack_request(CANMessageID msg_id, uint16_t device, CANAckStatus status,
                                       uint16_t remaining, void *context) {

@@ -20,7 +20,6 @@ typedef enum {
 static MotorControllerStorage s_controller_storage;
 static GenericCanUart s_can_uart;
 static CANStorage s_can_storage;
-static CANRxHandler s_rx_handlers[MC_CFG_NUM_CAN_RX_HANDLERS];
 static UARTStorage s_uart_storage;
 static SequencedRelayStorage s_relay_storage;
 static HeartbeatRxHandlerStorage s_powertrain_heartbeat;

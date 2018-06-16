@@ -7,7 +7,6 @@
 
 #define TEST_CAN_UNKNOWN_MSG_ID 0xA
 #define TEST_CAN_DEVICE_ID 0x1
-#define TEST_CAN_NUM_RX_HANDLERS 3
 
 typedef enum {
   TEST_CAN_EVENT_RX = 10,
@@ -16,7 +15,6 @@ typedef enum {
 } TestCanEvent;
 
 static CANStorage s_can_storage;
-static CANRxHandler s_rx_handlers[TEST_CAN_NUM_RX_HANDLERS];
 
 static StatusCode prv_rx_callback(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   CANMessage *rx_msg = context;

@@ -11,7 +11,6 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#define TEST_SEQUENCED_RELAY_NUM_RX_HANDLERS 5
 #define TEST_SEQUENCED_RELAY_CAN_DEVICE_ID 0x1
 
 #define TEST_SEQUENCED_RELAY_LEFT \
@@ -21,7 +20,6 @@
 #define TEST_SEQUENCED_RELAY_DELAY_MS 10
 
 static CANStorage s_can;
-static CANRxHandler s_rx_handlers[TEST_SEQUENCED_RELAY_NUM_RX_HANDLERS];
 static SequencedRelayStorage s_sequenced_relay;
 
 typedef enum {

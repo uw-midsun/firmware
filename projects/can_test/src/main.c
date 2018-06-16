@@ -9,7 +9,6 @@
 #include "sender.h"
 #include "soft_timer.h"
 
-#define CAN_TEST_NUM_RX_HANDLERS 5
 #define CAN_TEST_BUS_ACTIVE true
 
 typedef enum {
@@ -20,7 +19,6 @@ typedef enum {
 
 static GPIOAddress s_led = { GPIO_PORT_B, 3 };
 static CANStorage s_can_storage;
-static CANRxHandler s_rx_handlers[CAN_TEST_NUM_RX_HANDLERS];
 
 static void prv_blink_led(SoftTimerID timer_id, void *context) {
   gpio_toggle_state(&s_led);

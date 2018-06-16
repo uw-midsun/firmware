@@ -13,10 +13,8 @@
 #include "test_helpers.h"
 
 #define TEST_BPS_HEARTBEAT_PERIOD_MS 50
-#define TEST_BPS_HEARTBEAT_NUM_CAN_RX_HANDLERS 5
 
 static CANStorage s_can;
-static CANRxHandler s_rx_handlers[TEST_BPS_HEARTBEAT_NUM_CAN_RX_HANDLERS];
 static BpsHeartbeatStorage s_bps_heartbeat;
 static EERelayState s_relay_state;
 static CANAckStatus s_ack_status;

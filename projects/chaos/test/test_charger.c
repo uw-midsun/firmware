@@ -17,10 +17,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#define TEST_CHARGER_NUM_CAN_RX_HANDLERS 2
-
 static CANStorage s_storage;
-static CANRxHandler s_rx_handlers[TEST_CHARGER_NUM_CAN_RX_HANDLERS];
 static EEChargerSetRelayState s_expected_state = NUM_EE_CHARGER_SET_RELAY_STATES;
 
 static StatusCode prv_charger_can_handler(const CANMessage *msg, void *context,

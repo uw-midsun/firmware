@@ -12,10 +12,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#define TEST_BPS_INDICATOR_NUM_RX_HANDLERS 5
-
 static CANStorage s_can_storage;
-static CANRxHandler s_rx_handlers[TEST_BPS_INDICATOR_NUM_RX_HANDLERS];
 
 static StatusCode prv_strobe_cb(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   EELightState *expected_state = context;
@@ -45,8 +42,7 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  StatusCode ret =
-      can_init(&s_can_storage, &can_settings);
+  StatusCode ret = can_init(&s_can_storage, &can_settings);
   TEST_ASSERT_OK(ret);
 
   bps_indicator_init();

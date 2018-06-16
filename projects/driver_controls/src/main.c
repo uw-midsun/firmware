@@ -53,7 +53,6 @@ static GpioExpanderStorage s_stalk_expander;
 static Ads1015Storage s_stalk_ads1015;
 
 static CANStorage s_can;
-static CANRxHandler s_rx_handlers[5];
 static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
 
 int main() {

@@ -22,8 +22,6 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#define TEST_POWER_PATH_NUM_RX_HANDLERS 1
-
 #define TEST_POWER_PATH_ADC_PERIOD_MS 50
 
 #define TEST_POWER_PATH_AUX_CURRENT_VAL 1
@@ -72,31 +70,32 @@ static StatusCode prv_handle_vc(const CANMessage *msg, void *context, CANAckStat
   return STATUS_CODE_OK;
 }
 
-static PowerPathCfg s_ppc = { .enable_pin = { .port = 0, .pin = 0 },
-                              .shutdown_pin = { .port = 0, .pin = 1 },
-                              .aux_bat = { .id = POWER_PATH_SOURCE_ID_AUX_BAT,
-                                           .uv_ov_pin = { .port = 0, .pin = 2 },
-                                           .voltage_pin = { .port = 0, .pin = 3 },
-                                           .current_pin = { .port = 0, .pin = 4 },
-                                           .readings = { .voltage = 0, .current = 0 },
-                                           .current_convert_fn = prv_aux_current_convert,
-                                           .voltage_convert_fn = prv_aux_undervoltage_convert,
-                                           .period_millis = 0,
-                                           .timer_id = SOFT_TIMER_INVALID_TIMER,
-                                           .monitoring_active = false },
-                              .dcdc = { .id = POWER_PATH_SOURCE_ID_DCDC,
-                                        .uv_ov_pin = { .port = 0, .pin = 5 },
-                                        .voltage_pin = { .port = 0, .pin = 6 },
-                                        .current_pin = { .port = 0, .pin = 7 },
-                                        .readings = { .voltage = 0, .current = 0 },
-                                        .current_convert_fn = prv_dcdc_current_convert,
-                                        .voltage_convert_fn = prv_dcdc_undervoltage_convert,
-                                        .period_millis = 0,
-                                        .timer_id = SOFT_TIMER_INVALID_TIMER,
-                                        .monitoring_active = false } };
+static PowerPathCfg s_ppc = {
+  .enable_pin = { .port = 0, .pin = 0 },
+  .shutdown_pin = { .port = 0, .pin = 1 },
+  .aux_bat = { .id = POWER_PATH_SOURCE_ID_AUX_BAT,
+               .uv_ov_pin = { .port = 0, .pin = 2 },
+               .voltage_pin = { .port = 0, .pin = 3 },
+               .current_pin = { .port = 0, .pin = 4 },
+               .readings = { .voltage = 0, .current = 0 },
+               .current_convert_fn = prv_aux_current_convert,
+               .voltage_convert_fn = prv_aux_undervoltage_convert,
+               .period_millis = 0,
+               .timer_id = SOFT_TIMER_INVALID_TIMER,
+               .monitoring_active = false },
+  .dcdc = { .id = POWER_PATH_SOURCE_ID_DCDC,
+            .uv_ov_pin = { .port = 0, .pin = 5 },
+            .voltage_pin = { .port = 0, .pin = 6 },
+            .current_pin = { .port = 0, .pin = 7 },
+            .readings = { .voltage = 0, .current = 0 },
+            .current_convert_fn = prv_dcdc_current_convert,
+            .voltage_convert_fn = prv_dcdc_undervoltage_convert,
+            .period_millis = 0,
+            .timer_id = SOFT_TIMER_INVALID_TIMER,
+            .monitoring_active = false },
+};
 
 static CANStorage s_can_storage;
-static CANRxHandler s_rx_handlers[TEST_POWER_PATH_NUM_RX_HANDLERS];
 
 void setup_test(void) {
   event_queue_init();

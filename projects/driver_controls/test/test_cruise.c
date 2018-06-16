@@ -12,10 +12,8 @@
 #include "unity.h"
 
 #define TEST_CRUISE_DEVICE_ID 1
-#define TEST_CRUISE_NUM_RX_HANDLERS 3
 
 static CANStorage s_can_storage;
-static CANRxHandler s_rx_handlers[TEST_CRUISE_NUM_RX_HANDLERS];
 
 void setup_test(void) {
   event_queue_init();
@@ -33,8 +31,7 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  StatusCode ret =
-      can_init(&s_can_storage, &can_settings);
+  StatusCode ret = can_init(&s_can_storage, &can_settings);
   TEST_ASSERT_OK(ret);
 
   cruise_init(cruise_global());

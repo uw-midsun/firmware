@@ -27,10 +27,7 @@
 #include "status.h"
 #include "wait.h"
 
-#define CHAOS_NUM_RX_HANDLERS 10
-
 static CANStorage s_can_storage;
-static CANRxHandler s_rx_handlers[CHAOS_NUM_RX_HANDLERS];
 static EmergencyFaultStorage s_emergency_storage;
 static RelayRetryServiceStorage s_retry_storage;
 

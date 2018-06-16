@@ -22,11 +22,9 @@
 #include "unity.h"
 
 #define TEST_RELAY_DELAY_MS 50
-#define NUM_CAN_RX_HANDLERS 2
 
 static RelayRetryServiceStorage s_relay_retry_storage;
 static CANStorage s_storage;
-static CANRxHandler s_rx_handlers[NUM_CAN_RX_HANDLERS];
 
 static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   CANAckStatus *status = context;

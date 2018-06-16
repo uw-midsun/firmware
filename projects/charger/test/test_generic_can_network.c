@@ -20,7 +20,6 @@
 
 static GenericCanNetwork s_can;
 static CANStorage s_storage;
-static CANRxHandler s_rx_handlers[NUM_GENERIC_CAN_RX_HANDLERS];
 
 // GenericCanRxCb
 static void prv_can_rx_callback(const GenericCanMsg *msg, void *context) {

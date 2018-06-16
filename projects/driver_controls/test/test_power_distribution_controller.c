@@ -17,10 +17,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#define NUM_CAN_RX_HANDLERS 2
-
 static CANStorage s_storage;
-static CANRxHandler s_rx_handlers[NUM_CAN_RX_HANDLERS];
 
 typedef struct TestPowerDistributionControllerAckCtx {
   EEPowerState expected_state;

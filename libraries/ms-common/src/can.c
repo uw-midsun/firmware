@@ -56,7 +56,8 @@ StatusCode can_init(CANStorage *storage, const CANSettings *settings) {
   status_ok_or_return(can_fifo_init(&s_can_storage->tx_fifo));
   status_ok_or_return(can_fifo_init(&s_can_storage->rx_fifo));
   status_ok_or_return(can_ack_init(&s_can_storage->ack_requests));
-  status_ok_or_return(can_rx_init(&s_can_storage->rx_handlers, s_can_storage->rx_handler_storage, SIZEOF_ARRAY(s_can_storage->rx_handler_storage)));
+  status_ok_or_return(can_rx_init(&s_can_storage->rx_handlers, s_can_storage->rx_handler_storage,
+                                  SIZEOF_ARRAY(s_can_storage->rx_handler_storage)));
 
   CANHwSettings can_hw_settings = {
     .bitrate = settings->bitrate,
