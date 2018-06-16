@@ -9,6 +9,19 @@
 #include "soft_timer.h"
 #include "test_helpers.h"
 
+static void prv_handle_awaiting(const Event *prev_event, Event *present_event) {
+  if (prev_event->id == CHAOS_EVENT_CLOSE_RELAY) {
+    present_event->id = CHAOS_EVENT_RELAY_CLOSED;
+    present_event->data = prev_event->data;
+  } else if (prev_event->id == CHAOS_EVENT_OPEN_RELAY) {
+    present_event->id = CHAOS_EVENT_RELAY_OPENED;
+    present_event->data = prev_event->data;
+  } else if (prev_event->id == CHAOS_EVENT_DELAY_MS) {
+    present_event->id = CHAOS_EVENT_DELAY_DONE;
+    present_event->data = 0;
+  }
+}
+
 static void prv_raise_with_delay_cb(SoftTimerID id, void *context) {
   (void)id;
   Event *e = context;
@@ -48,13 +61,7 @@ void test_sequencer_fsm_run(void) {
       TEST_ASSERT_OK(seq_status);
       event_status = event_process(&present_event);
       if (event_status != STATUS_CODE_OK) {
-        if (prev_event.id == CHAOS_EVENT_CLOSE_RELAY) {
-          present_event.id = CHAOS_EVENT_RELAY_CLOSED;
-          present_event.data = prev_event.data;
-        } else if (prev_event.id == CHAOS_EVENT_OPEN_RELAY) {
-          present_event.id = CHAOS_EVENT_RELAY_OPENED;
-          present_event.data = prev_event.data;
-        }
+        prv_handle_awaiting(&prev_event, &present_event);
         LOG_DEBUG("No event raised. Responding with: %d : %d\n", present_event.id,
                   present_event.data);
       } else {
@@ -97,9 +104,8 @@ void test_sequencer_fsm_reset_relay(void) {
         }
         present_event.id = CHAOS_EVENT_RELAY_CLOSED;
         present_event.data = prev_event.data;
-      } else if (prev_event.id == CHAOS_EVENT_OPEN_RELAY) {
-        present_event.id = CHAOS_EVENT_RELAY_OPENED;
-        present_event.data = prev_event.data;
+      } else {
+        prv_handle_awaiting(&prev_event, &present_event);
       }
     }
     if (present_event.id <= NUM_CHAOS_EVENTS_CAN) {
@@ -130,13 +136,7 @@ void test_sequencer_fsm_reset_events(void) {
     TEST_ASSERT_OK(seq_status);
     event_status = event_process(&present_event);
     if (event_status != STATUS_CODE_OK) {
-      if (prev_event.id == CHAOS_EVENT_CLOSE_RELAY) {
-        present_event.id = CHAOS_EVENT_RELAY_CLOSED;
-        present_event.data = prev_event.data;
-      } else if (prev_event.id == CHAOS_EVENT_OPEN_RELAY) {
-        present_event.id = CHAOS_EVENT_RELAY_OPENED;
-        present_event.data = prev_event.data;
-      }
+      prv_handle_awaiting(&prev_event, &present_event);
     }
     // Cause a major error!
     if (reset && present_event.id == CHAOS_EVENT_GPIO_DRIVE) {
@@ -180,13 +180,7 @@ void test_sequencer_fsm_interrupted(void) {
     TEST_ASSERT_OK(seq_status);
     event_status = event_process(&present_event);
     if (event_status != STATUS_CODE_OK) {
-      if (prev_event.id == CHAOS_EVENT_CLOSE_RELAY) {
-        present_event.id = CHAOS_EVENT_RELAY_CLOSED;
-        present_event.data = prev_event.data;
-      } else if (prev_event.id == CHAOS_EVENT_OPEN_RELAY) {
-        present_event.id = CHAOS_EVENT_RELAY_OPENED;
-        present_event.data = prev_event.data;
-      }
+      prv_handle_awaiting(&prev_event, &present_event);
     }
     // Cause a transition.
     if (transition && present_event.id == CHAOS_EVENT_GPIO_DRIVE) {
@@ -231,13 +225,7 @@ void test_sequencer_fsm_interrupted_awaiting(void) {
     TEST_ASSERT_OK(seq_status);
     event_status = event_process(&present_event);
     if (event_status != STATUS_CODE_OK) {
-      if (prev_event.id == CHAOS_EVENT_CLOSE_RELAY) {
-        present_event.id = CHAOS_EVENT_RELAY_CLOSED;
-        present_event.data = prev_event.data;
-      } else if (prev_event.id == CHAOS_EVENT_OPEN_RELAY) {
-        present_event.id = CHAOS_EVENT_RELAY_OPENED;
-        present_event.data = prev_event.data;
-      }
+      prv_handle_awaiting(&prev_event, &present_event);
     }
     // Cause a transition.
     if (transition && present_event.id == CHAOS_EVENT_CLOSE_RELAY) {
@@ -281,16 +269,10 @@ void test_sequencer_fsm_interrupted_awaiting_error(void) {
     TEST_ASSERT_OK(seq_status);
     event_status = event_process(&present_event);
     if (event_status != STATUS_CODE_OK) {
-      if (prev_event.id == CHAOS_EVENT_CLOSE_RELAY) {
-        present_event.id = CHAOS_EVENT_RELAY_CLOSED;
-        present_event.data = prev_event.data;
-      } else if (prev_event.id == CHAOS_EVENT_OPEN_RELAY) {
-        present_event.id = CHAOS_EVENT_RELAY_OPENED;
-        present_event.data = prev_event.data;
-      }
+      prv_handle_awaiting(&prev_event, &present_event);
     }
     // Cause a transition.
-    if (transition && present_event.id == CHAOS_EVENT_CLOSE_RELAY) {
+    if (transition && present_event.id == CHAOS_EVENT_RELAY_CLOSED) {
       TEST_ASSERT_OK(sequencer_fsm_publish_next_event(&present_event));
       present_event.id = CHAOS_EVENT_SEQUENCE_IDLE;
       // Raise some garbage data to check that flushing is working.
