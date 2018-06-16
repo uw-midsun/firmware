@@ -73,7 +73,7 @@ int main(void) {
     } while (status != STATUS_CODE_OK);
 
     fsm_process_event(&s_charger_fsm, &e);
-    fsm_process_event(CAN_FSM, &e);
+    can_process_event(&e);
   }
 
   return EXIT_SUCCESS;

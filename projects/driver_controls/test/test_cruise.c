@@ -34,7 +34,7 @@ void setup_test(void) {
   };
 
   StatusCode ret =
-      can_init(&s_can_storage, &can_settings, s_rx_handlers, TEST_CRUISE_NUM_RX_HANDLERS);
+      can_init(&s_can_storage, &can_settings);
   TEST_ASSERT_OK(ret);
 
   cruise_init(cruise_global());

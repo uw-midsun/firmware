@@ -75,7 +75,7 @@ int main() {
     .rx = DC_CFG_CAN_RX,
     .loopback = false,
   };
-  can_init(&s_can, &can_settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+  can_init(&s_can, &can_settings);
 
   const I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,    //
@@ -122,7 +122,7 @@ int main() {
   while (true) {
     // TODO(ELEC-461): figure out why I2C seems to die when the motors are running
     if (status_ok(event_process(&e))) {
-      fsm_process_event(CAN_FSM, &e);
+      can_process_event(&e);
       power_distribution_controller_retry(&e);
       cruise_handle_event(cruise_global(), &e);
       event_arbiter_process_event(&s_event_arbiter, &e);

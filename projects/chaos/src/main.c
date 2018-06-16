@@ -54,7 +54,7 @@ int main(void) {
     .rx = { GPIO_PORT_A, 11 },
     .loopback = false,
   };
-  can_init(&s_can_storage, &can_settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+  can_init(&s_can_storage, &can_settings);
 
   // Heartbeats
   bps_heartbeat_init();  // Use the auto start feature to start the watchdog.
@@ -113,7 +113,7 @@ int main(void) {
     // TODO(ELEC-105): At least one of the following should respond with either a boolean true or
     // a STATUS_CODE_OK for each emitted message. Consider adding a requirement that this is the
     // case with a failure resulting in faulting into Emergency.
-    fsm_process_event(CAN_FSM, &e);
+    can_process_event(&e);
     delay_service_process_event(&e);
     emergency_fault_process_event(&s_emergency_storage, &e);
     gpio_fsm_process_event(&e);

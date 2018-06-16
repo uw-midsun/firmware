@@ -118,7 +118,7 @@ void setup_test(void) {
   };
 
   TEST_ASSERT_OK(
-      can_init(&s_can_storage, &can_settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers)));
+      can_init(&s_can_storage, &can_settings);
   TEST_ASSERT_OK(power_path_init(&s_ppc));
 }
 
@@ -142,12 +142,12 @@ void test_power_path_uv_ov(void) {
   do {
     status = event_process(&e);
   } while (status != STATUS_CODE_OK);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
   // RX
   do {
     status = event_process(&e);
   } while (status != STATUS_CODE_OK);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   TEST_ASSERT_EQUAL(false, s_dcdc_uv);
   TEST_ASSERT_EQUAL(false, s_dcdc_ov);
@@ -160,12 +160,12 @@ void test_power_path_uv_ov(void) {
   do {
     status = event_process(&e);
   } while (status != STATUS_CODE_OK);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
   // RX
   do {
     status = event_process(&e);
   } while (status != STATUS_CODE_OK);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   TEST_ASSERT_EQUAL(true, s_dcdc_uv);
   TEST_ASSERT_EQUAL(false, s_dcdc_ov);

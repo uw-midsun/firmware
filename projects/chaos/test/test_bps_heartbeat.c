@@ -52,7 +52,7 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  can_init(&s_storage, &settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+  can_init(&s_storage, &settings);
   TEST_ASSERT_OK(bps_heartbeat_init());
 }
 
@@ -75,14 +75,14 @@ void test_bps_heartbeat_watchdog_kick(void) {
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   // In theory these latter three events are in indeterminate order but it doesn't matter
   // RX
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   // HB Timer is started
 
@@ -91,12 +91,12 @@ void test_bps_heartbeat_watchdog_kick(void) {
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
   // RX
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   delay_ms(BPS_HEARTBEAT_EXPECTED_PERIOD_MS / 2);
 
@@ -107,14 +107,14 @@ void test_bps_heartbeat_watchdog_kick(void) {
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   // In theory these latter three events are in indeterminate order but it doesn't matter
   // RX
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   // HB Timer is started
 
@@ -123,12 +123,12 @@ void test_bps_heartbeat_watchdog_kick(void) {
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
   // RX
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   // Delay long enough the first watchdog would expire but not the second.
   delay_ms(BPS_HEARTBEAT_EXPECTED_PERIOD_MS * 3 / 4);
@@ -147,14 +147,14 @@ void test_bps_heartbeat_watchdog_kick(void) {
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   // In theory these latter three events are in indeterminate order but it doesn't matter
   // RX
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   // HB Timer is started
 
@@ -163,12 +163,12 @@ void test_bps_heartbeat_watchdog_kick(void) {
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
   // RX
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   // Verify that the watchdog actually expires.
   delay_ms(BPS_HEARTBEAT_EXPECTED_PERIOD_MS + BPS_HEARTBEAT_EXPECTED_PERIOD_MS / 10);
