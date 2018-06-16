@@ -1,6 +1,7 @@
 #include "drive_output.h"
 #include <string.h>
 #include "can_transmit.h"
+#include "debug_led.h"
 #include "exported_enums.h"
 #include "log.h"
 #include "misc.h"
@@ -44,6 +45,8 @@ static void prv_broadcast_cb(SoftTimerID timer_id, void *context) {
                             (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_CRUISE],
                             (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_MECH_BRAKE]);
 
+  debug_led_toggle_state(DEBUG_LED_BLUE_A);
+
   soft_timer_start_millis(DRIVE_OUTPUT_BROADCAST_MS, prv_broadcast_cb, context,
                           &storage->output_timer);
 }
@@ -56,6 +59,8 @@ StatusCode drive_output_init(DriveOutputStorage *storage, EventID fault_event,
 
   storage->watchdog_timer = SOFT_TIMER_INVALID_TIMER;
   storage->output_timer = SOFT_TIMER_INVALID_TIMER;
+
+  debug_led_init(DEBUG_LED_BLUE_A);
 
   return STATUS_CODE_OK;
 }
