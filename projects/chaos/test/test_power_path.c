@@ -32,18 +32,22 @@
 #define TEST_POWER_PATH_DCDC_UV_VAL 4
 
 static uint16_t prv_aux_current_convert(uint16_t value) {
+  LOG_DEBUG("Aux Current Converted\n");
   return TEST_POWER_PATH_AUX_CURRENT_VAL;
 }
 
 static uint16_t prv_aux_undervoltage_convert(uint16_t value) {
+  LOG_DEBUG("Aux Voltage Converted\n");
   return TEST_POWER_PATH_AUX_UV_VAL;
 }
 
 static uint16_t prv_dcdc_current_convert(uint16_t value) {
+  LOG_DEBUG("DCDC Current Converted\n");
   return TEST_POWER_PATH_DCDC_CURRENT_VAL;
 }
 
 static uint16_t prv_dcdc_undervoltage_convert(uint16_t value) {
+  LOG_DEBUG("DCDC Voltage Converted\n");
   return TEST_POWER_PATH_DCDC_UV_VAL;
 }
 
@@ -81,7 +85,7 @@ static PowerPathCfg s_ppc = { .enable_pin = { .port = 0, .pin = 0 },
                                            .readings = { .voltage = 0, .current = 0 },
                                            .current_convert_fn = prv_aux_current_convert,
                                            .voltage_convert_fn = prv_aux_undervoltage_convert,
-                                           .period_millis = 0,
+                                           .period_millis = TEST_POWER_PATH_ADC_PERIOD_MS,
                                            .timer_id = SOFT_TIMER_INVALID_TIMER,
                                            .monitoring_active = false },
                               .dcdc = { .id = POWER_PATH_SOURCE_ID_DCDC,
@@ -91,7 +95,7 @@ static PowerPathCfg s_ppc = { .enable_pin = { .port = 0, .pin = 0 },
                                         .readings = { .voltage = 0, .current = 0 },
                                         .current_convert_fn = prv_dcdc_current_convert,
                                         .voltage_convert_fn = prv_dcdc_undervoltage_convert,
-                                        .period_millis = 0,
+                                        .period_millis = TEST_POWER_PATH_ADC_PERIOD_MS,
                                         .timer_id = SOFT_TIMER_INVALID_TIMER,
                                         .monitoring_active = false } };
 
@@ -104,7 +108,7 @@ void setup_test(void) {
   soft_timer_init();
   gpio_init();
   gpio_it_init();
-  adc_init(ADC_MODE_SINGLE);
+  adc_init(ADC_MODE_CONTINUOUS);
 
   CANSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
@@ -131,7 +135,7 @@ void test_power_path_uv_ov(void) {
   TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.aux_bat, TEST_POWER_PATH_ADC_PERIOD_MS));
   TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.dcdc, TEST_POWER_PATH_ADC_PERIOD_MS));
 
-  delay_us(TEST_POWER_PATH_ADC_PERIOD_MS + TEST_POWER_PATH_ADC_PERIOD_MS / 10);
+  delay_ms(TEST_POWER_PATH_ADC_PERIOD_MS + TEST_POWER_PATH_ADC_PERIOD_MS / 10);
 
   gpio_it_trigger_interrupt(&s_ppc.aux_bat.uv_ov_pin);
 
