@@ -54,6 +54,8 @@ int main(void) {
   debug_led_init(DEBUG_LED_RED);
   soft_timer_start_millis(CHAOS_DEBUG_LED_PERIOD_MS, prv_toggle, NULL, NULL);
 
+  LOG_DEBUG("hello\n");
+
   // CAN
   CANSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
