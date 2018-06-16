@@ -8,6 +8,7 @@
 #include "chaos_config.h"
 #include "chaos_events.h"
 #include "charger.h"
+#include "debug_led.h"
 #include "delay.h"
 #include "delay_service.h"
 #include "emergency_fault.h"
@@ -27,12 +28,20 @@
 #include "status.h"
 #include "wait.h"
 
+#define CHAOS_DEBUG_LED_PERIOD_MS 500
 #define CHAOS_NUM_RX_HANDLERS 10
 
 static CANStorage s_can_storage;
 static CANRxHandler s_rx_handlers[CHAOS_NUM_RX_HANDLERS];
 static EmergencyFaultStorage s_emergency_storage;
 static RelayRetryServiceStorage s_retry_storage;
+
+static void prv_toggle(SoftTimerID id, void *context) {
+  (void)id;
+  (void)context;
+  debug_led_toggle_state(DEBUG_LED_RED);
+  soft_timer_start_millis(CHAOS_DEBUG_LED_PERIOD_MS, prv_toggle, NULL, NULL);
+}
 
 int main(void) {
   // Common
@@ -42,6 +51,8 @@ int main(void) {
   gpio_init();
   gpio_it_init();
   adc_init(ADC_MODE_CONTINUOUS);
+  debug_led_init(DEBUG_LED_RED);
+  soft_timer_start_millis(CHAOS_DEBUG_LED_PERIOD_MS, prv_toggle, NULL, NULL);
 
   // CAN
   CANSettings can_settings = {
@@ -77,7 +88,7 @@ int main(void) {
     .loopback = false,
   };
   relay_init(&relay_settings);
-  relay_retry_service_init(&s_retry_storage);
+  relay_retry_service_init(&s_retry_storage, RELAY_RETRY_SERVICE_BACKOFF_MS);
 
   // Sequencer
   sequencer_fsm_init();

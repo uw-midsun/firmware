@@ -125,7 +125,7 @@ void test_ltc_afe_read_all_aux_repeated_within_tolerances(void) {
 
   for (size_t i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {
     uint16_t delta = bounds[i].max - bounds[i].min;
-    LOG_DEBUG("C%d delta %d (min %d, max %d)\n", i, delta, bounds[i].min, bounds[i].max);
+    LOG_DEBUG("C%d aux delta %d (min %d, max %d)\n", i, delta, bounds[i].min, bounds[i].max);
   }
 }
 
