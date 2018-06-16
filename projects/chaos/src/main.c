@@ -93,9 +93,6 @@ int main(void) {
   // Postpone to as late as possible so that BPS heartbeats are ready to be ACK'd.
   gpio_fsm_init(cfg);
 
-  // DEBUG
-  event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_DRIVE, 0);
-
   // Main loop
   Event e = { 0 };
   StatusCode status = NUM_STATUS_CODES;
