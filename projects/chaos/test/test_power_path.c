@@ -116,8 +116,7 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  TEST_ASSERT_OK(
-      can_init(&s_can_storage, &can_settings);
+  TEST_ASSERT_OK(can_init(&s_can_storage, &can_settings);
   TEST_ASSERT_OK(power_path_init(&s_ppc));
 }
 

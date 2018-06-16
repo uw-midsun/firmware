@@ -46,8 +46,7 @@ static StatusCode prv_init_common(PlutusSysStorage *storage, PlutusSysType type)
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },
   };
-  status_ok_or_return(can_init(&storage->can, &can_settings, storage->can_rx_handlers,
-                               SIZEOF_ARRAY(storage->can_rx_handlers)));
+  status_ok_or_return(can_init(&storage->can, &can_settings));
 
   status_ok_or_return(can_add_filter(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT));
   status_ok_or_return(can_add_filter(SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT));
