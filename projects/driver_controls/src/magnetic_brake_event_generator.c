@@ -19,6 +19,25 @@
 #include "status.h"
 #include "unity.h"
 
+static void prv_callback_channel(Ads1015Channel channel, void *context) {
+
+  //need to make storage struct  that has adsstorage, channel, data and  brake_settings rather than having so many parameters
+
+  MagneticCalibrationData data* = context;
+  int16_t reading = 0;
+  ads1015_read_raw(data->mech_brake_storage, channel, &reading);
+
+  data->min_reading = MIN(data->min_reading, reading);
+  data->max_reading = MAX(data->max_reading, reading);
+
+  int16_t average_val = (data->max_reading + data->min_reading) / 2;
+
+  int16_t percentage = percentage_converter(data, &brake_settings);
+  
+  printf("%d %d\n", average_val, percentage);
+
+}
+
 int16_t percentage_converter(MagneticCalibrationData *data, MagneticBrakeSettings *brake_settings) {
   int16_t percentage;
 
@@ -51,88 +70,31 @@ int16_t percentage_converter(MagneticCalibrationData *data, MagneticBrakeSetting
   return percentage;
 }
 
-static void input_values(MagneticCalibrationData *data, MagneticBrakeSettings *brake_settings,
-                         Ads1015Channel channel) {
-  int16_t first_samples[1000];
-  int16_t second_samples[1000];
-  int16_t temp1, temp2, temp3, temp4;
 
-  printf("%s\n",
-         "Brake sensor is calibrating, Please ensure the brake is not being pressed, wait \n "
-         "for response to continue");
+static void mech_brake_sample(int16_t percentage, int16_t allowed_range, int16_t *value_needed,
+                         Ads1015Channel channel, Ads1015Storage* storage, MagneticBrakeSettings *brake_settings, 
+                         MagneticCalibrationData* data){
 
-  delay_s(10);
+//Disables channel
+ads1015_configure_channel(storage,channel, false,
+                              NULL, NULL);
 
-  for (int i = 0; i < 1000; i++) {
-    // ads1015_read_raw(data->storage, channel, &data->reading);
-    first_samples[i] = data->percentage;
-  }
+brake_settings->percentage_threshold = 500;
+brake_settings->zero_value = 513;
+brake_settings->hundred_value = 624;
+brake_settings->min_allowed_range = 0;
+brake_settings->max_allowed_range = (1<<12);
 
-  // max in range of samples = temp 1 and 3
+//enables channel
+ads1015_configure_channel(storage, channel, true,
+                              prv_callback_channel, storage);
 
-  // min in range of samples = temp 2 and 4
-
-  for (int i = 0; i < 1000; i++) {
-    int16_t max = 0;
-    int16_t min = brake_settings->max_allowed_range;
-
-    temp1 = first_samples[i];
-    temp2 = first_samples[i];
-
-    if (temp1 > max) {
-      max = temp1;
-    }
-
-    if (temp2 < min) {
-      min = temp2;
-    }
-  }
-
-  int16_t average_lowest = (temp1 + temp2) / 2;
-  brake_settings->zero_value = average_lowest;
-  printf("%s %d\n", "zero value", brake_settings->zero_value);
-
-  printf("%s\n",
-         "Initial calibration complete, Please press and hold the brake \n"
-         "wait for response to continue");
-
-  delay_s(10);
-
-  for (int i = 0; i < 1000; i++) {
-    // ads1015_read_raw(data->storage, channel, &data->reading);
-    second_samples[i] = data->percentage;
-    printf("%s %d %d\n", "second sample", i, second_samples[i]);
-  }
-
-  for (int i = 0; i < 1000; i++) {
-    int16_t max = 0;
-    int16_t min = brake_settings->max_allowed_range;
-
-    temp3 = second_samples[i];
-    temp4 = second_samples[i];
-
-    if (temp3 > max) {
-      max = temp1;
-    }
-
-    if (temp4 < min) {
-      min = temp2;
-    }
-  }
-
-  int16_t average_highest = (temp3 + temp4) / 2;
-  brake_settings->hundred_value = average_highest;
-  printf("%s %d\n", "hundred value", brake_settings->hundred_value);
-
-  printf("%s\n", "Final calibration complete.");
-
-  delay_s(10);
 }
 
-StatusCode magnetic_brake_calibration(MagneticCalibrationData *data,
-                                      MagneticBrakeSettings *brake_settings,
-                                      Ads1015Channel channel) {
-  input_values(data, brake_settings, channel);
+StatusCode magnetic_brake_calibration(int16_t percentage, int16_t allowed_range, int16_t *value_needed,
+                         Ads1015Channel channel) {
+
+  mech_brake_sample(percentage, allowed_range, value_needed, channel);
 
   return STATUS_CODE_OK;
 }

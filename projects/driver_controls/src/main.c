@@ -43,8 +43,7 @@ static void prv_callback_channel(Ads1015Channel channel, void *context) {
 }
 
 int main(void) {
-  Ads1015Storage storage;
-
+  
   gpio_init();
   interrupt_init();
   gpio_it_init();
@@ -60,13 +59,24 @@ int main(void) {
 
   GPIOAddress ready_pin = { .port = GPIO_PORT_A, .pin = 10 };
 
-  ads1015_init(&storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
+  ads1015_init(data.mech_brake_storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
 
-  // magnetic_brake_calibration(&data, &brake_settings, ADS1015_CHANNEL_2);
+  LOG_DEBUG("Brake sensor is calibrating, Please ensure the brake is not being pressed, wait \n "
+         "for response to continue");
+  delay_s(5);
+  LOG_DEBUG("Beginning sampling\n");
+  //magnetic_brake_calibration(data.percentage, brake_settings.min_allowed_range, &brake_settings.zero_value,ADS1015_CHANNEL_2, &brake_settings);
+  LOG_DEBUG("Completed sampling\n");
+  LOG_DEBUG("Initial calibration complete, Please press and hold the brake \n"
+         "wait for response to continue");
+  delay_s(5);
+  LOG_DEBUG("Beginning sampling\n");
+  //magnetic_brake_calibration(data.percentage, brake_settings.max_allowed_range,&brake_settings.hundred_value,ADS1015_CHANNEL_2, &brake_settings);
+  LOG_DEBUG("Completed sampling\n");
 
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, prv_callback_channel, &storage);
+  //ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, prv_callback_channel, &storage);
 
-  while (true) {
+  while (true) { 
   }
 
   return 0;

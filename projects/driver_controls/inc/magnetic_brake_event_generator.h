@@ -13,16 +13,16 @@ typedef struct MagneticBrakeSettings {
 } MagneticBrakeSettings;
 
 typedef struct MagneticCalibrationData {
-  int16_t reading;     // value obtained from ads1015 in lsb
+  int16_t min_reading; 
+  int16_t max_reading;     // value obtained from ads1015 in lsb
   int16_t percentage;  // value calculated from calibration
-  Ads1015Storage *storage;
+  Ads1015Storage *mech_brake_storage;
 } MagneticCalibrationData;
 
 // this function guides the user of the module through the calibration process to retreive the
 // min/max allowed values
-StatusCode magnetic_brake_calibration(MagneticCalibrationData *data,
-                                      MagneticBrakeSettings *brake_settings,
-                                      Ads1015Channel channel);
+StatusCode magnetic_brake_calibration(int16_t percentage, int16_t allowed_range, int16_t *value_needed,
+                         Ads1015Channel channel);
 
 // this function converts the reading from lsb into percentage from 0 to 2^12
 int16_t percentage_converter(MagneticCalibrationData *data, MagneticBrakeSettings *brake_settings);
