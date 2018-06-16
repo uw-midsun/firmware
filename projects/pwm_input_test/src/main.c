@@ -20,6 +20,7 @@ int main(void) {
   pwm_init(PWM_TIMER_3, 1000);
   pwm_set_dc(PWM_TIMER_3, 50);
   gpio_init();
+  interrupt_init();
 
   GPIOAddress output = {
     .port = GPIO_PORT_C,
