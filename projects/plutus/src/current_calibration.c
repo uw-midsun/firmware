@@ -59,7 +59,7 @@ StatusCode current_calibration_sample_point(CurrentCalibrationStorage *storage,
 
   // Set the first value in the buffer if we are sampling for the zero point
   if (current == 0 && storage->buffer[0] == 0) {
-      storage->buffer[0] = point->voltage;
+    storage->buffer[0] = point->voltage;
   }
 
   return STATUS_CODE_OK;
@@ -80,10 +80,14 @@ StatusCode current_calibration_zero_reset(CurrentCalibrationStorage *storage,
   storage->buffer[storage->index] = new_offset.voltage;
 
   // Update zero point with the result of the new moving average
-  zero_point->voltage = (zero_point->voltage * storage->num_chip_resets) + storage->buffer[storage->index];
-
   if (storage->num_chip_resets < CURRENT_CALIBRATION_OFFSET_WINDOW) {
     storage->num_chip_resets++;
+  }
+
+  zero_point->voltage = 0;
+
+  for (uint8_t i = 0; i < storage->num_chip_resets; i++) {
+    zero_point->voltage += storage->buffer[i];
   }
 
   zero_point->voltage /= storage->num_chip_resets;

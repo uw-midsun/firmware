@@ -13,15 +13,17 @@
 // Arbitrary number of testing samples
 #define TEST_NUM_SAMPLES 5
 
-static volatile uint8_t s_callback_runs = 0;
+// Arbitrary test input voltage
+static int32_t s_test_input_voltage = 1100;
 
+static volatile uint8_t s_callback_runs = 0;
 static CurrentSenseStorage s_storage = { 0 };
 
 static CurrentSenseCalibrationData s_data = { .zero_point = { .voltage = 0, .current = 0 },
                                               .max_point = { .voltage = 1000, .current = 10 } };
 
 static void prv_callback(int32_t current, void *context) {
-  TEST_ASSERT_EQUAL(current * 100, TEST_INPUT_VOLTAGE);
+  TEST_ASSERT_EQUAL(current * 100, s_test_input_voltage);
   LOG_DEBUG("Current = %" PRId32 "\n", current);
 
   s_callback_runs++;
@@ -50,6 +52,7 @@ void test_current_sense(void) {
                                   .filter_mode = LTC_ADC_FILTER_50HZ_60HZ };
 
   LtcAdcStorage adc_storage = { 0 };
+  adc_storage.context = &s_test_input_voltage;
 
   TEST_ASSERT_OK(current_sense_init(&s_storage, &s_data, &adc_storage, &adc_settings));
   TEST_ASSERT_OK(current_sense_register_callback(&s_storage, prv_callback, NULL));

@@ -70,7 +70,7 @@ void test_current_calibration_reset(void) {
 
   // Reset calibration and obtain zero point
   TEST_ASSERT_OK(current_calibration_init(&s_storage, &adc_storage, &adc_settings));
-  LOG_DEBUG("Sampling zero point after reset #1 with test offset %d\n", test_offset);
+  LOG_DEBUG("Sampling zero point after reset #1 with test offset %" PRId32 "\n", test_offset);
   TEST_ASSERT_OK(current_calibration_sample_point(&s_storage, &data.zero_point, 0));
   LOG_DEBUG("Sampling finished -> { Voltage = %" PRId32 ", Current = %" PRId32 " }\n",
             data.zero_point.voltage, data.zero_point.current);
@@ -79,17 +79,23 @@ void test_current_calibration_reset(void) {
   uint16_t test_average = test_offset;
 
   // Use test offsets increasing by 100
-  for (uint8_t i = 2; i < 5; i++) {
+  for (uint8_t i = 2; i < 11; i++) {
     test_offset = i * 100;
     adc_storage.context = &test_offset;
 
     // Average formula for consectutive hundreds
-    test_average = (100 * (i + 1)) / 2;
+    if (i <= 10) {
+      test_average = ((100 * (i + 1)) / 2);
+    } else {
+      uint8_t n = i - CURRENT_CALIBRATION_OFFSET_WINDOW;
+      test_average = ((100 * (i * (i + 1) - n * (n + 1))) / 2 / CURRENT_CALIBRATION_OFFSET_WINDOW);
+    }
 
-    LOG_DEBUG("Sampling zero point after reset #%d with test offset %d\n", i + 2, test_offset);
+    LOG_DEBUG("Sampling zero point after reset #%d with test offset %" PRId32 "\n", i + 2,
+              test_offset);
     TEST_ASSERT_OK(current_calibration_zero_reset(&s_storage, &data.zero_point));
     LOG_DEBUG("Sampling finished -> { Voltage = %" PRId32 ", Current = %" PRId32 " }\n",
-               data.zero_point.voltage, data.zero_point.current);
+              data.zero_point.voltage, data.zero_point.current);
     TEST_ASSERT_EQUAL(test_average, data.zero_point.voltage);
   }
 }
