@@ -23,6 +23,7 @@ StatusCode current_calibration_init(CurrentCalibrationStorage *storage, LtcAdcSt
   storage->settings = adc_settings;
   storage->samples = 0;
   storage->voltage = 0;
+  storage->num_chip_resets = 1;
 
   return STATUS_CODE_OK;
 }
@@ -47,6 +48,26 @@ StatusCode current_calibration_sample_point(CurrentCalibrationStorage *storage,
 
   point->voltage = storage->voltage;
   point->current = current;
+
+  storage->samples = 0;
+  storage->voltage = 0;
+
+  return STATUS_CODE_OK;
+}
+
+StatusCode current_calibration_zero_reset(CurrentCalibrationStorage *storage,
+                                          CurrentSenseValue *zero_point) {
+  if (storage == NULL || zero_point == NULL) {
+    return status_code(STATUS_CODE_UNINITIALIZED);
+  }
+
+  // Obtain new offset voltage
+  CurrentSenseValue new_offset = { 0 };
+  current_calibration_sample_point(storage, &new_offset, 0);
+
+  zero_point->voltage *= storage->num_chip_resets;
+  zero_point->voltage += new_offset.voltage;
+  zero_point->voltage /= ++storage->num_chip_resets;
 
   return STATUS_CODE_OK;
 }

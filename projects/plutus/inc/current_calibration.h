@@ -14,6 +14,7 @@ typedef struct {
   LtcAdcStorage *adc_storage;
   LtcAdcSettings *settings;
   int32_t voltage;
+  uint8_t num_chip_resets;
   volatile uint8_t samples;
 } CurrentCalibrationStorage;
 
@@ -26,3 +27,6 @@ StatusCode current_calibration_init(CurrentCalibrationStorage *storage, LtcAdcSt
 // sure the points are as far apart as possible
 StatusCode current_calibration_sample_point(CurrentCalibrationStorage *storage,
                                             CurrentSenseValue *point, int32_t current);
+
+StatusCode current_calibration_zero_reset(CurrentCalibrationStorage *storage,
+                                          CurrentSenseValue *zero_point);

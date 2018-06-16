@@ -1,5 +1,7 @@
 #include <inttypes.h>
 
+// Sample routine to demonstrate usage of the current calibration module
+
 #include "current_calibration.h"
 #include "current_sense.h"
 #include "delay.h"
@@ -49,7 +51,6 @@ void test_current_calibration_sample(void) {
             data.zero_point.voltage, data.zero_point.current);
 
   // Reset calibration and obtain max point
-  TEST_ASSERT_OK(current_calibration_init(&s_storage, &adc_storage, &adc_settings));
   LOG_DEBUG("Set current to %d A\n", TEST_CURRENT_CALIBRATION_MAX);
   delay_s(TEST_CURRENT_CALIBRATION_DELAY_SECONDS);
   LOG_DEBUG("Start sampling\n");
@@ -57,4 +58,30 @@ void test_current_calibration_sample(void) {
       current_calibration_sample_point(&s_storage, &data.max_point, TEST_CURRENT_CALIBRATION_MAX));
   LOG_DEBUG("Sampling finished -> { Voltage = %" PRId32 ", Current = %" PRId32 " }\n",
             data.max_point.voltage, data.max_point.current);
+}
+
+void test_current_calibration_reset(void) {
+  CurrentCalibrationStorage s_storage = { 0 };
+  CurrentSenseCalibrationData data = { 0 };
+  LtcAdcStorage adc_storage = { 0 };
+
+  int32_t test_offset = 100;
+  adc_storage.context = &test_offset;
+
+  // Reset calibration and obtain zero point
+  TEST_ASSERT_OK(current_calibration_init(&s_storage, &adc_storage, &adc_settings));
+  LOG_DEBUG("Sampling zero point after first reset\n");
+  TEST_ASSERT_OK(current_calibration_sample_point(&s_storage, &data.zero_point, 0));
+  TEST_ASSERT_EQUAL(test_offset, data.zero_point.voltage);
+  LOG_DEBUG("Sampling finished -> { Voltage = %" PRId32 ", Current = %" PRId32 " }\n",
+            data.zero_point.voltage, data.zero_point.current);
+
+  test_offset = -100;
+  adc_storage.context = &test_offset;
+
+  LOG_DEBUG("Sampling zero point after second reset\n");
+  TEST_ASSERT_OK(current_calibration_zero_reset(&s_storage, &data.zero_point));
+  TEST_ASSERT_EQUAL(0, data.zero_point.voltage);
+  LOG_DEBUG("Sampling finished -> { Voltage = %" PRId32 ", Current = %" PRId32 " }\n",
+            data.zero_point.voltage, data.zero_point.current);
 }
