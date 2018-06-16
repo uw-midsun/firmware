@@ -44,7 +44,7 @@ void setup_test(void) {
     .rx = { GPIO_PORT_A, 11 },
     .loopback = true,
   };
-  TEST_ASSERT_OK(can_init(&s_can_storage, &can_settings);
+  TEST_ASSERT_OK(can_init(&s_can_storage, &can_settings));
 }
 
 void teardown_test(void) {}

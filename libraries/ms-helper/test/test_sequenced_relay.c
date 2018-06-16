@@ -53,8 +53,7 @@ void setup_test(void) {
     .rx = { GPIO_PORT_A, 11 },
     .loopback = true,
   };
-  TEST_ASSERT_OK(
-      can_init(&s_can, &can_settings);
+  TEST_ASSERT_OK(can_init(&s_can, &can_settings));
 
   SequencedRelaySettings relay_settings = {
     .can_msg_id = SYSTEM_CAN_MESSAGE_MOTOR_RELAY,

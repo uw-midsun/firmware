@@ -45,7 +45,7 @@ void setup_test(void) {
     .fault_event = CHARGER_EVENT_CAN_FAULT,
     .loopback = true,
   };
-  TEST_ASSERT_OK(can_init(&s_storage, &can_settings);
+  TEST_ASSERT_OK(can_init(&s_storage, &can_settings));
 
   TEST_ASSERT_OK(generic_can_network_init(&s_can));
 }
