@@ -18,18 +18,18 @@ def scrape_devices(probe, devices):
         manufacturer = usb.util.get_string(dev, dev.iManufacturer)
         product = usb.util.get_string(dev, dev.iProduct)
         serial = usb.util.get_string(dev, dev.iSerialNumber)
-        options.append(probe, ('{} {}'.format(manufacturer, product), serial))
+        options.append((probe, '{} {}'.format(manufacturer, product), serial))
     return options
 
 def get_options():
     """Retrieve connected programmers and print OpenOCD command"""
     cmsis_dap = usb.core.find(find_all=True, idProduct=0xda42, idVendor=0x1209)
-    stlink_v2 = usb.core.find(find_all=True, idProduct=0xda42, idVendor=0x1209)
+    stlink_v2 = usb.core.find(find_all=True, idProduct=0x3748, idVendor=0x0483)
     options = scrape_devices('CMSIS-DAP', cmsis_dap) + scrape_devices('STLink-V2', stlink_v2)
 
     if len(options) > 1:
         for i, (probe, name, serial) in enumerate(options):
-            print('{}: {} - {}'.format(i, probe, serial))
+            print('{}: {} - {}'.format(i, probe, serial), file=sys.stderr)
 
         print('Select device: ', end='', file=sys.stderr)
         index = int(input())
