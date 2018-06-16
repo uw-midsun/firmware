@@ -37,10 +37,6 @@ int main(void) {
     .alt_function = GPIO_AF_0,
   };
 
-  for (;;) {
-
-  }
-
   gpio_init_pin(&output, &output_settings);
   // pwm_input_init();
 }
