@@ -113,16 +113,18 @@ static void prv_tx_pop(UARTPort uart) {
 }
 
 static void prv_rx_push(UARTPort uart) {
+  UARTStorage *storage = s_port[uart].storage;
+
   uint8_t rx_data = USART_ReceiveData(s_port[uart].base);
-  fifo_push(&s_port[uart].storage->rx_fifo, &rx_data);
+  fifo_push(&storage->rx_fifo, &rx_data);
 
-  size_t num_bytes = fifo_size(&s_port[uart].storage->rx_fifo);
+  size_t num_bytes = fifo_size(&storage->rx_fifo);
   if (rx_data == '\n' || num_bytes == UART_MAX_BUFFER_LEN) {
-    uint8_t buf[UART_MAX_BUFFER_LEN + 1] = { 0 };
-    fifo_pop_arr(&s_port[uart].storage->rx_fifo, buf, num_bytes);
+    storage->rx_line_buf[num_bytes] = '\0';
+    fifo_pop_arr(&storage->rx_fifo, storage->rx_line_buf, num_bytes);
 
-    if (s_port[uart].storage->rx_handler != NULL) {
-      s_port[uart].storage->rx_handler(buf, num_bytes, s_port[uart].storage->context);
+    if (storage->rx_handler != NULL) {
+      storage->rx_handler(storage->rx_line_buf, num_bytes, storage->context);
     }
   }
 }
