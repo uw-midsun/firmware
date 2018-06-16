@@ -20,10 +20,10 @@
 #include "unity.h"
 
 static void prv_callback_channel(Ads1015Channel channel, void *context) {
+  // need to make storage struct  that has adsstorage, channel, data and  brake_settings rather than
+  // having so many parameters
 
-  //need to make storage struct  that has adsstorage, channel, data and  brake_settings rather than having so many parameters
-
-  MagneticCalibrationData data* = context;
+  MagneticCalibrationData data * = context;
   int16_t reading = 0;
   ads1015_read_raw(data->mech_brake_storage, channel, &reading);
 
@@ -33,9 +33,8 @@ static void prv_callback_channel(Ads1015Channel channel, void *context) {
   int16_t average_val = (data->max_reading + data->min_reading) / 2;
 
   int16_t percentage = percentage_converter(data, &brake_settings);
-  
-  printf("%d %d\n", average_val, percentage);
 
+  printf("%d %d\n", average_val, percentage);
 }
 
 int16_t percentage_converter(MagneticCalibrationData *data, MagneticBrakeSettings *brake_settings) {
@@ -70,30 +69,25 @@ int16_t percentage_converter(MagneticCalibrationData *data, MagneticBrakeSetting
   return percentage;
 }
 
-
 static void mech_brake_sample(int16_t percentage, int16_t allowed_range, int16_t *value_needed,
-                         Ads1015Channel channel, Ads1015Storage* storage, MagneticBrakeSettings *brake_settings, 
-                         MagneticCalibrationData* data){
+                              Ads1015Channel channel, Ads1015Storage *storage,
+                              MagneticBrakeSettings *brake_settings,
+                              MagneticCalibrationData *data) {
+  // Disables channel
+  ads1015_configure_channel(storage, channel, false, NULL, NULL);
 
-//Disables channel
-ads1015_configure_channel(storage,channel, false,
-                              NULL, NULL);
+  brake_settings->percentage_threshold = 500;
+  brake_settings->zero_value = 513;
+  brake_settings->hundred_value = 624;
+  brake_settings->min_allowed_range = 0;
+  brake_settings->max_allowed_range = (1 << 12);
 
-brake_settings->percentage_threshold = 500;
-brake_settings->zero_value = 513;
-brake_settings->hundred_value = 624;
-brake_settings->min_allowed_range = 0;
-brake_settings->max_allowed_range = (1<<12);
-
-//enables channel
-ads1015_configure_channel(storage, channel, true,
-                              prv_callback_channel, storage);
-
+  // enables channel
+  ads1015_configure_channel(storage, channel, true, prv_callback_channel, storage);
 }
 
-StatusCode magnetic_brake_calibration(int16_t percentage, int16_t allowed_range, int16_t *value_needed,
-                         Ads1015Channel channel) {
-
+StatusCode magnetic_brake_calibration(int16_t percentage, int16_t allowed_range,
+                                      int16_t *value_needed, Ads1015Channel channel) {
   mech_brake_sample(percentage, allowed_range, value_needed, channel);
 
   return STATUS_CODE_OK;
