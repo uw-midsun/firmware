@@ -6,6 +6,14 @@
 #include "wait.h"
 #include "soft_timer.h"
 
+void TIM3_IRQHandler(void) {
+  GPIOAddress green_led = {
+    .port = GPIO_PORT_C,
+    .pin = 9,
+  }
+  gpio_toggle_state(&green_led);
+}
+
 int main(void) {
   uint16_t period = 1000;
 
@@ -25,7 +33,7 @@ int main(void) {
 
   gpio_init_pin(&output, &output_settings);
 
-  uint16_t get_period = pwm_get_period(PWM_TIMER_3);
-
-  // pwm_input_init();
+  while (true) {
+    wait();
+  }
 }
