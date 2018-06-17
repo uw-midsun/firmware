@@ -21,24 +21,6 @@
 #define LIGHTS_SIGNAL_SYNC_COUNT 5
 #define LIGHTS_STROBE_BLINKER_DURATION 500
 
-static CANSettings s_can_settings = {
-  .bitrate = CAN_HW_BITRATE_500KBPS,
-  .rx_event = LIGHTS_EVENT_CAN_RX,
-  // clang-format off
-  .tx = {
-    .port = GPIO_PORT_A,
-    .pin = 12,
-  },
-  .rx = {
-    .port = GPIO_PORT_A,
-    .pin = 11,
-  },
-  // clang-format on
-  .tx_event = LIGHTS_EVENT_CAN_TX,
-  .fault_event = LIGHTS_EVENT_CAN_FAULT,
-  .loopback = false,
-};
-
 static LightsSignalFsm s_signal_fsm = { 0 };
 
 static LightsCanStorage s_lights_can_storage = { 0 };
@@ -48,6 +30,24 @@ static LightsStrobeStorage s_lights_strobe = { 0 };
 static const GPIOAddress s_board_type_address = { .port = GPIO_PORT_B, .pin = 13 };
 
 int main(void) {
+  CANSettings can_settings = {
+    .bitrate = CAN_HW_BITRATE_500KBPS,
+    .rx_event = LIGHTS_EVENT_CAN_RX,
+    // clang-format off
+    .tx = {
+      .port = GPIO_PORT_A,
+      .pin = 12,
+    },
+    .rx = {
+      .port = GPIO_PORT_A,
+      .pin = 11,
+    },
+    // clang-format on
+    .tx_event = LIGHTS_EVENT_CAN_TX,
+    .fault_event = LIGHTS_EVENT_CAN_FAULT,
+    .loopback = false,
+  };
+
   // Initialize the libraries.
   gpio_init();
   interrupt_init();
@@ -56,20 +56,38 @@ int main(void) {
 
   // Getting board type.
   GPIOState state = 0;
-  status_ok_or_return(gpio_get_state(&s_board_type_address, &state));
+
+  StatusCode status = 0;
+
+  status = gpio_get_state(&s_board_type_address, &state);
+
+  if (!status_ok(status)) {
+    LOG_DEBUG("Error getting board type.\n");
+  }
+
   LightsBoardType board_type =
       (state == GPIO_STATE_HIGH) ? LIGHTS_BOARD_TYPE_FRONT : LIGHTS_BOARD_TYPE_REAR;
   LOG_DEBUG("Board Type: %s\n", (board_type == LIGHTS_BOARD_TYPE_FRONT) ? "Front" : "Back");
   // Initialize lights_gpio.
-  status_ok_or_return(lights_gpio_config_init(board_type));
+
+  lights_gpio_config_init(board_type);
+
   LightsGpio *lights_gpio = lights_gpio_config_load();
-  lights_gpio_init(lights_gpio);
+  status = lights_gpio_init(lights_gpio);
+
+  if (!status_ok(status)) {
+    LOG_DEBUG("Error initializing lights GPIO.\n");
+  }
 
   // Initialize lights_can.
-  s_can_settings.device_id = (board_type == LIGHTS_BOARD_TYPE_FRONT)
-                                 ? SYSTEM_CAN_DEVICE_LIGHTS_FRONT
-                                 : SYSTEM_CAN_DEVICE_LIGHTS_REAR;
-  lights_can_init(&s_lights_can_storage, lights_can_config_load(), &s_can_settings);
+  can_settings.device_id = (board_type == LIGHTS_BOARD_TYPE_FRONT) ? SYSTEM_CAN_DEVICE_LIGHTS_FRONT
+                                                                   : SYSTEM_CAN_DEVICE_LIGHTS_REAR;
+
+  status = lights_can_init(&s_lights_can_storage, lights_can_config_load(), &can_settings);
+
+  if (!status_ok(status)) {
+    LOG_DEBUG("Error initializing lights CAN.\n");
+  }
 
   // Initialize lights_signal_fsm.
   lights_signal_fsm_init(&s_signal_fsm, LIGHTS_SIGNAL_BLINKER_DURATION,
@@ -77,6 +95,8 @@ int main(void) {
 
   // Initialize lights_strobe.
   lights_strobe_init(&s_lights_strobe, LIGHTS_STROBE_BLINKER_DURATION);
+
+  event_raise(LIGHTS_EVENT_SIGNAL_ON, LIGHTS_EVENT_SIGNAL_MODE_HAZARD);
 
   Event e = { 0 };
   while (true) {

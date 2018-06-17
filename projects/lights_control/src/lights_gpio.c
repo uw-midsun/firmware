@@ -63,7 +63,7 @@ StatusCode lights_gpio_process_event(const LightsGpio *lights_gpio, const Event 
   if ((e->id != LIGHTS_EVENT_GPIO_OFF) && (e->id != LIGHTS_EVENT_GPIO_ON)) {
     return STATUS_CODE_OK;
   }
-  LOG_DEBUG("Turning %s: %d\n", (e->id == LIGHTS_EVENT_GPIO_ON) ? "ON" : "OFF", e->data);
+  //LOG_DEBUG("Turning %s: %d\n", (e->id == LIGHTS_EVENT_GPIO_ON) ? "ON" : "OFF", e->data);
   LightsGpioOutputBitset output_bitset = 0;
   status_ok_or_return(prv_search_mappings_table(lights_gpio, e, &output_bitset));
   LightsGpioState state =

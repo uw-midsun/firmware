@@ -30,6 +30,8 @@ static StatusCode prv_get_event_id(LightsCanEventType event_type, EELightState s
 }
 
 static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+  LOG_DEBUG("Received a message. msg_id: %d\n", msg->msg_id);
+
   LightsCanSettings *settings = (LightsCanSettings *)context;
   // Storage for extracting message data.
   uint8_t param_1 = 0;
@@ -70,6 +72,7 @@ StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *s
 
 StatusCode lights_can_process_event(const Event *e) {
   if (e->id == LIGHTS_EVENT_SYNC) {
+    LOG_DEBUG("Transmitting a sync message.\n");
     return CAN_TRANSMIT_LIGHTS_SYNC();
   }
   return STATUS_CODE_OK;
