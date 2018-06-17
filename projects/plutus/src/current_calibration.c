@@ -3,7 +3,6 @@
 #include <string.h>
 
 #include "critical_section.h"
-#include "log.h"
 #include "wait.h"
 
 static void prv_callback(int32_t *value, void *context) {
@@ -25,10 +24,6 @@ StatusCode current_calibration_init(CurrentCalibrationStorage *storage, LtcAdcSt
   storage->settings = adc_settings;
   storage->samples = 0;
   storage->voltage = 0;
-
-  memset(storage->buffer, 0, sizeof(int32_t) * CURRENT_CALIBRATION_OFFSET_WINDOW);
-  storage->index = 0;
-  storage->num_chip_resets = 1;
 
   return STATUS_CODE_OK;
 }
@@ -56,41 +51,6 @@ StatusCode current_calibration_sample_point(CurrentCalibrationStorage *storage,
 
   storage->samples = 0;
   storage->voltage = 0;
-
-  // Set the first value in the buffer if we are sampling for the zero point
-  if (current == 0 && storage->buffer[0] == 0) {
-    storage->buffer[0] = point->voltage;
-  }
-
-  return STATUS_CODE_OK;
-}
-
-StatusCode current_calibration_zero_reset(CurrentCalibrationStorage *storage,
-                                          CurrentSenseValue *zero_point) {
-  if (storage == NULL || zero_point == NULL) {
-    return status_code(STATUS_CODE_UNINITIALIZED);
-  }
-
-  // Obtain new offset voltage
-  CurrentSenseValue new_offset = { 0 };
-  current_calibration_sample_point(storage, &new_offset, 0);
-
-  // Add new offset to buffer
-  storage->index = (storage->index + 1) % CURRENT_CALIBRATION_OFFSET_WINDOW;
-  storage->buffer[storage->index] = new_offset.voltage;
-
-  // Update zero point with the result of the new moving average
-  if (storage->num_chip_resets < CURRENT_CALIBRATION_OFFSET_WINDOW) {
-    storage->num_chip_resets++;
-  }
-
-  zero_point->voltage = 0;
-
-  for (uint8_t i = 0; i < storage->num_chip_resets; i++) {
-    zero_point->voltage += storage->buffer[i];
-  }
-
-  zero_point->voltage /= storage->num_chip_resets;
 
   return STATUS_CODE_OK;
 }

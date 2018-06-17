@@ -14,10 +14,13 @@
 #define TEST_NUM_SAMPLES 5
 
 // Arbitrary test input voltage
-static int32_t s_test_input_voltage = 1100;
+static int32_t s_test_input_voltage = 0;
 
 static volatile uint8_t s_callback_runs = 0;
+
 static CurrentSenseStorage s_storage = { 0 };
+static LtcAdcSettings s_adc_settings = { 0 };
+static LtcAdcStorage s_adc_storage = { 0 };
 
 static CurrentSenseCalibrationData s_data = { .zero_point = { .voltage = 0, .current = 0 },
                                               .max_point = { .voltage = 1000, .current = 10 } };
@@ -35,29 +38,57 @@ void setup_test(void) {
   soft_timer_init();
 
   s_callback_runs = 0;
+  s_test_input_voltage = 0;
+
+  s_adc_settings = (LtcAdcSettings){ .mosi = { GPIO_PORT_B, 15 },
+                                     .miso = { GPIO_PORT_B, 14 },
+                                     .sclk = { GPIO_PORT_B, 13 },
+                                     .cs = { GPIO_PORT_B, 12 },
+                                     .spi_port = SPI_PORT_2,
+                                     .spi_baudrate = 750000,
+                                     .filter_mode = LTC_ADC_FILTER_50HZ_60HZ };
+
+  s_adc_storage = (LtcAdcStorage){ 0 };
+  s_adc_storage.context = &s_test_input_voltage;
 }
 
 void teardown_test(void) {}
 
 void test_current_sense(void) {
-  int32_t voltage = 0;
+  s_test_input_voltage = 1000;
 
-  // Fill out ADC storage struct and initialize current sense
-  LtcAdcSettings adc_settings = { .mosi = { GPIO_PORT_B, 15 },
-                                  .miso = { GPIO_PORT_B, 14 },
-                                  .sclk = { GPIO_PORT_B, 13 },
-                                  .cs = { GPIO_PORT_B, 12 },
-                                  .spi_port = SPI_PORT_2,
-                                  .spi_baudrate = 750000,
-                                  .filter_mode = LTC_ADC_FILTER_50HZ_60HZ };
-
-  LtcAdcStorage adc_storage = { 0 };
-  adc_storage.context = &s_test_input_voltage;
-
-  TEST_ASSERT_OK(current_sense_init(&s_storage, &s_data, &adc_storage, &adc_settings));
+  TEST_ASSERT_OK(current_sense_init(&s_storage, &s_data, &s_adc_storage, &s_adc_settings));
   TEST_ASSERT_OK(current_sense_register_callback(&s_storage, prv_callback, NULL));
 
   // Wait for samples to accumulate
   while (s_callback_runs <= TEST_NUM_SAMPLES) {
+  }
+}
+
+void test_current_sense_reset(void) {
+  // Obtain the original linear relationship
+  int32_t original_slope = (s_data.max_point.voltage - s_data.zero_point.voltage) /
+                           (s_data.max_point.current - s_data.zero_point.current);
+
+  TEST_ASSERT_OK(current_sense_init(&s_storage, &s_data, &s_adc_storage, &s_adc_settings));
+
+  for (int i = 0; i < 5; i++) {
+    // Send in new test voltage and start a reset
+    s_test_input_voltage = (i + 1) * 1000;
+
+    LOG_DEBUG("Testing with offset = %" PRId32 "\n", s_test_input_voltage);
+    current_sense_zero_reset(&s_storage);
+    printf("Zero = { %" PRId32 " V, %" PRId32 " A }, Max = { %" PRId32 " V, %" PRId32 " A }\n",
+           s_data.zero_point.voltage, s_data.zero_point.current, s_data.max_point.voltage,
+           s_data.max_point.current);
+
+    TEST_ASSERT_EQUAL(s_test_input_voltage, s_data.zero_point.voltage);
+
+    // Obtain new linear relationship
+    int32_t new_slope = (s_data.max_point.voltage - s_data.zero_point.voltage) /
+                        (s_data.max_point.current - s_data.zero_point.current);
+
+    // Ensure that the new set of points maintain their relationship
+    TEST_ASSERT_EQUAL(original_slope, new_slope);
   }
 }

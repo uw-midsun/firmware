@@ -22,6 +22,7 @@ typedef struct {
   LtcAdcStorage *adc_storage;
   CurrentSenseCalibrationData *data;
   int32_t current_value;
+  volatile uint8_t samples;
   CurrentSenseCallback callback;
   void *context;
 } CurrentSenseStorage;
@@ -36,3 +37,7 @@ StatusCode current_sense_register_callback(CurrentSenseStorage *storage,
 
 // Return current in millamps
 StatusCode current_sense_get_value(CurrentSenseStorage *storage, int32_t *current);
+
+// Because the zero point for the chip changes on reset, this function can called after reset to
+// adjust the data points to make sure they maintin their linear relationship
+StatusCode current_sense_zero_reset(CurrentSenseStorage *storage);

@@ -18,10 +18,6 @@ typedef struct {
   LtcAdcSettings *settings;
   int32_t voltage;
   volatile uint8_t samples;
-
-  int32_t buffer[CURRENT_CALIBRATION_OFFSET_WINDOW];
-  uint8_t index;
-  uint8_t num_chip_resets;
 } CurrentCalibrationStorage;
 
 // Initialize current calibration
@@ -33,8 +29,3 @@ StatusCode current_calibration_init(CurrentCalibrationStorage *storage, LtcAdcSt
 // sure the points are as far apart as possible
 StatusCode current_calibration_sample_point(CurrentCalibrationStorage *storage,
                                             CurrentSenseValue *point, int32_t current);
-
-// The zero point for the chip seems to change on chip reset. The offset will be updated according
-// the moving average kept by CurrentCalibrationStorage
-StatusCode current_calibration_zero_reset(CurrentCalibrationStorage *storage,
-                                          CurrentSenseValue *zero_point);

@@ -5,12 +5,16 @@
 #include "critical_section.h"
 #include "ltc2484.h"
 
-static int32_t s_test_voltage = 0;
+static int32_t *s_test_voltage = NULL;
 
 static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
   LtcAdcStorage *storage = (LtcAdcStorage *)context;
 
-  storage->buffer.value = s_test_voltage;
+  if (s_test_voltage == NULL) {
+    storage->buffer.value = 0;
+  } else {
+    storage->buffer.value = *s_test_voltage;
+  }
 
   if (storage->callback != NULL) {
     storage->callback(&storage->buffer.value, storage->context);
@@ -27,7 +31,7 @@ StatusCode ltc_adc_init(LtcAdcStorage *storage, const LtcAdcSettings *settings) 
 
   // Since the context pointer isn't used in the x86 tests, use it to pass in a test voltage
   if (storage->context != NULL) {
-    s_test_voltage = *((int32_t *)storage->context);
+    s_test_voltage = ((int32_t *)storage->context);
   }
 
   return soft_timer_start_millis(LTC2484_MAX_CONVERSION_TIME_MS, prv_ltc_adc_read, storage,
@@ -36,7 +40,7 @@ StatusCode ltc_adc_init(LtcAdcStorage *storage, const LtcAdcSettings *settings) 
 
 StatusCode ltc2484_raw_adc_to_uv(uint8_t *spi_data, int32_t *voltage) {
   if (spi_data == NULL) {
-    *voltage = s_test_voltage;
+    *voltage = *s_test_voltage;
     return STATUS_CODE_OK;
   }
 
