@@ -18,7 +18,6 @@
 #include "wait.h"
 
 static CANStorage s_can_storage;
-static CANRxHandler s_can_rx_handlers[CHARGER_CFG_NUM_CAN_RX_HANDLERS];
 static UARTStorage s_uart_storage;
 static ChargerCanStatus s_charger_status;
 static ChargerStorage s_charger_storage;
@@ -37,7 +36,7 @@ int main(void) {
 
   // CAN
   const CANSettings *can_settings = charger_cfg_load_can_settings();
-  can_init(&s_can_storage, can_settings, s_can_rx_handlers, CHARGER_CFG_NUM_CAN_RX_HANDLERS);
+  can_init(&s_can_storage, can_settings);
 
   // UART
   UARTSettings *uart_settings = charger_cfg_load_uart_settings();
@@ -73,7 +72,7 @@ int main(void) {
     } while (status != STATUS_CODE_OK);
 
     fsm_process_event(&s_charger_fsm, &e);
-    fsm_process_event(CAN_FSM, &e);
+    can_process_event(&e);
   }
 
   return EXIT_SUCCESS;

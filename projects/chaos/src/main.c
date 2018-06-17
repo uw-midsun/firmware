@@ -8,6 +8,7 @@
 #include "chaos_config.h"
 #include "chaos_events.h"
 #include "charger.h"
+#include "debug_led.h"
 #include "delay.h"
 #include "delay_service.h"
 #include "emergency_fault.h"
@@ -27,12 +28,18 @@
 #include "status.h"
 #include "wait.h"
 
-#define CHAOS_NUM_RX_HANDLERS 10
+#define CHAOS_DEBUG_LED_PERIOD_MS 500
 
 static CANStorage s_can_storage;
-static CANRxHandler s_rx_handlers[CHAOS_NUM_RX_HANDLERS];
 static EmergencyFaultStorage s_emergency_storage;
 static RelayRetryServiceStorage s_retry_storage;
+
+static void prv_toggle(SoftTimerID id, void *context) {
+  (void)id;
+  (void)context;
+  debug_led_toggle_state(DEBUG_LED_RED);
+  soft_timer_start_millis(CHAOS_DEBUG_LED_PERIOD_MS, prv_toggle, NULL, NULL);
+}
 
 int main(void) {
   // Common
@@ -42,6 +49,8 @@ int main(void) {
   gpio_init();
   gpio_it_init();
   adc_init(ADC_MODE_CONTINUOUS);
+  debug_led_init(DEBUG_LED_RED);
+  soft_timer_start_millis(CHAOS_DEBUG_LED_PERIOD_MS, prv_toggle, NULL, NULL);
 
   // CAN
   CANSettings can_settings = {
@@ -54,7 +63,7 @@ int main(void) {
     .rx = { GPIO_PORT_A, 11 },
     .loopback = false,
   };
-  can_init(&s_can_storage, &can_settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+  can_init(&s_can_storage, &can_settings);
 
   // Heartbeats
   bps_heartbeat_init();  // Use the auto start feature to start the watchdog.
@@ -113,7 +122,7 @@ int main(void) {
     // TODO(ELEC-105): At least one of the following should respond with either a boolean true or
     // a STATUS_CODE_OK for each emitted message. Consider adding a requirement that this is the
     // case with a failure resulting in faulting into Emergency.
-    fsm_process_event(CAN_FSM, &e);
+    can_process_event(&e);
     delay_service_process_event(&e);
     emergency_fault_process_event(&s_emergency_storage, &e);
     gpio_fsm_process_event(&e);
