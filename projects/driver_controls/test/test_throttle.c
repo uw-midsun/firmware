@@ -5,10 +5,10 @@
 #include "gpio_it.h"
 #include "input_event.h"
 #include "interrupt.h"
+#include "log.h"
 #include "test_helpers.h"
 #include "throttle.h"
 #include "unity.h"
-#include "log.h"
 
 #define TEST_THROTTLE_ADC_CHANNEL_MAIN ADS1015_CHANNEL_0
 #define TEST_THROTTLE_ADC_CHANNEL_SECONDARY ADS1015_CHANNEL_1
@@ -59,7 +59,7 @@ void setup_test(void) {
   gpio_it_init();
   soft_timer_init();
   I2CSettings i2c_settings = {
-    .speed = I2C_SPEED_FAST,                    //
+    .speed = I2C_SPEED_FAST,                   //
     .scl = { .port = GPIO_PORT_B, .pin = 8 },  //
     .sda = { .port = GPIO_PORT_B, .pin = 9 },  //
   };

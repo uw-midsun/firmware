@@ -37,14 +37,14 @@ void setup_test(void) {
   gpio_it_init();
   soft_timer_init();
   I2CSettings i2c_settings = {
-    .speed = I2C_SPEED_FAST,                    //
+    .speed = I2C_SPEED_FAST,                   //
     .scl = { .port = GPIO_PORT_B, .pin = 8 },  //
     .sda = { .port = GPIO_PORT_B, .pin = 9 },  //
   };
   i2c_init(TEST_ADS1015_I2C_PORT, &i2c_settings);
   GPIOAddress ready_pin = {
     .port = GPIO_PORT_A,  //
-    .pin = 10,             //
+    .pin = 10,            //
   };
   ads1015_init(&s_storage, TEST_ADS1015_I2C_PORT, TEST_ADS1015_ADDR, &ready_pin);
 

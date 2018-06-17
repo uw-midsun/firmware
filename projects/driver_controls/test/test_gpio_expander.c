@@ -19,7 +19,7 @@ void setup_test(void) {
   gpio_it_init();
 
   I2CSettings settings = {
-    .speed = I2C_SPEED_FAST,     //
+    .speed = I2C_SPEED_FAST,    //
     .sda = { GPIO_PORT_B, 9 },  //
     .scl = { GPIO_PORT_B, 8 },  //
   };
