@@ -57,13 +57,15 @@ bool fault_monitor_process_event(FaultMonitorStorage *storage, const Event *e) {
   switch (e->id) {
     case PLUTUS_EVENT_AFE_FAULT:
       LOG_DEBUG("AFE FSM fault %d\n", e->data);
-      bps_heartbeat_raise_fault(storage->settings.bps_heartbeat, EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_FSM);
+      bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
+                                EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_FSM);
 
       // Attempt to recover from failure
       ltc_afe_request_cell_conversion(storage->settings.ltc_afe);
       break;
     case PLUTUS_EVENT_AFE_CALLBACK_RUN:
-      bps_heartbeat_clear_fault(storage->settings.bps_heartbeat, EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_FSM);
+      bps_heartbeat_clear_fault(storage->settings.bps_heartbeat,
+                                EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_FSM);
       break;
     default:
       return false;
