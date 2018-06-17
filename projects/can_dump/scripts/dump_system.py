@@ -4,23 +4,24 @@ import socket
 import struct
 import binascii
 
+DATA_POWER_STATE = ['idle', 'charge', 'drive']
+LIGHTS_ID_NAME = [
+    'High beams', 'Low beams', 'DRL', 'Brakes',
+    'Left Turn', 'Right Turn', 'Hazards', 'BPS Strobe'
+]
+
 def data_relay(state):
     """Relay state data format"""
     return 'close' if state else 'open'
 
 def data_power_state(state):
     """Power state data format"""
-    return ['idle', 'charge', 'drive'][state]
+    return DATA_POWER_STATE[state]
 
 def data_lights_state(light_id, state):
     """Lights state data format"""
-    id_name = [
-        'High beams', 'Low beams', 'DRL',
-        'Brakes', 'Left Turn', 'Right Turn',
-        'Hazards', 'BPS Strobe'
-    ][light_id]
+    id_name = LIGHTS_ID_NAME[light_id]
     state_name = 'on' if state else 'off'
-
     return '{}: {}'.format(id_name, state_name)
 
 def data_battery_vt(module, voltage, temperature):
