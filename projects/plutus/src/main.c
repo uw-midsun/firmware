@@ -17,6 +17,8 @@ static size_t s_telemetry_counter = 0;
 static void prv_periodic_tx_debug(SoftTimerID timer_id, void *context) {
   FaultMonitorResult *result = &s_fault_monitor.result;
 
+  // LOG_DEBUG("%d\n", s_telemetry_counter);
+
   // TODO(ELEC-463): Figure out why we need to delay for so long
   if (s_telemetry_counter < PLUTUS_CFG_AFE_TOTAL_CELLS) {
     CAN_TRANSMIT_BATTERY_VT(s_telemetry_counter, result->cell_voltages[s_telemetry_counter],
