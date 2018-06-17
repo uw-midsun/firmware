@@ -47,7 +47,7 @@ OPENOCD_CFG := -s $(OPENOCD_SCRIPT_DIR) \
 ifeq (,$(MACOS_SSH_USERNAME))
 
 program: $(TARGET_BINARY:$(PLATFORM_EXT)=.bin)
-	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash $<" -c shutdown
+	$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash $<" -c shutdown
 
 gdb: $(TARGET_BINARY)
 	@pkill $(OPENOCD) || true
@@ -70,7 +70,7 @@ else
 
 # VirtualBox default NAT IP
 MACOS_SSH_IP := 10.0.2.2
-MAKE_ARGS := TEST PROJECT LIBRARY PLATFORM PROBE
+MAKE_ARGS := TEST PROJECT LIBRARY PLATFORM PROBE SERIAL
 MAKE_PARAMS := $(foreach arg,$(MAKE_ARGS),$(arg)=$($(arg)))
 SSH_CMD := ssh -t $(MACOS_SSH_USERNAME)@$(MACOS_SSH_IP) "cd $(MACOS_SSH_BOX_PATH)/shared/firmware && make $(MAKECMDGOALS) $(MAKE_PARAMS)"
 

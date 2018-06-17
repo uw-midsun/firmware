@@ -7,6 +7,7 @@
 
 #define LTC_AFE_FSM_CELL_CONV_DELAY_MS 10
 #define LTC_AFE_FSM_AUX_CONV_DELAY_MS 6
+#define LTC_AFE_FSM_MAX_RETRY_COUNT 3
 
 // AFE fault event is raised with this data field
 // Just for debug - has no meaning

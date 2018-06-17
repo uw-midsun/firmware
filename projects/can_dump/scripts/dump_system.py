@@ -79,7 +79,11 @@ def parse_msg(can_id, data):
 
     msg_type_name = 'ACK' if msg_type == 1 else 'DATA'
 
-    if msg_id in MESSAGE_LOOKUP:
+    masked = [32, 18, 36]
+
+    if msg_id in masked:
+        pass
+    elif msg_id in MESSAGE_LOOKUP:
         name, fmt, data_fn = MESSAGE_LOOKUP[msg_id]
         if fmt:
             unpacked_data = struct.unpack(fmt, data)

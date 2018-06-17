@@ -6,6 +6,7 @@
 #include "calib.h"
 #include "center_console.h"
 #include "control_stalk.h"
+#include "debug_led.h"
 #include "event_queue.h"
 #include "gpio.h"
 #include "gpio_it.h"
@@ -56,7 +57,13 @@ static Ads1015Storage s_stalk_ads1015;
 static CANStorage s_can;
 static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
 
-int main() {
+static void prv_blink_timeout(SoftTimerID timer_id, void *context) {
+  debug_led_toggle_state(DEBUG_LED_YELLOW);
+
+  soft_timer_start_seconds(1, prv_blink_timeout, NULL, NULL);
+}
+
+int main(void) {
   gpio_init();
   interrupt_init();
   gpio_it_init();
@@ -122,6 +129,9 @@ int main() {
   for (size_t i = 0; i < NUM_DRIVER_CONTROLS_FSMS; i++) {
     init_fns[i](&s_fsms[i], &s_event_arbiter);
   }
+
+  debug_led_init(DEBUG_LED_YELLOW);
+  soft_timer_start_seconds(1, prv_blink_timeout, NULL, NULL);
 
   LOG_DEBUG("initialized\n");
 
