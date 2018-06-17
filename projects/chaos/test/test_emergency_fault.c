@@ -13,11 +13,8 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#define NUM_CAN_RX_HANDLERS 2
-
 static EmergencyFaultStorage s_em_storage;
 static CANStorage s_storage;
-static CANRxHandler s_rx_handlers[NUM_CAN_RX_HANDLERS];
 
 // Handler that allows for injecting ack responses.
 static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
@@ -45,7 +42,7 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  can_init(&s_storage, &settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+  can_init(&s_storage, &settings);
   emergency_fault_init(&s_em_storage);
 }
 

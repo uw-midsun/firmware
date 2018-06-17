@@ -5,8 +5,6 @@
 #include "exported_enums.h"
 #include "lights_events.h"
 
-#define LIGHTS_CAN_NUM_RX_HANDLERS 4
-
 typedef enum {
   LIGHTS_CAN_EVENT_TYPE_GPIO = 0,
   LIGHTS_CAN_EVENT_TYPE_SIGNAL,
@@ -17,7 +15,6 @@ typedef enum {
 // User uses this instance to provide storage for the module.
 typedef struct LightsCanStorage {
   CANStorage can_storage;
-  CANRxHandler rx_handlers[LIGHTS_CAN_NUM_RX_HANDLERS];
 } LightsCanStorage;
 
 // Contains all the configuration functions.
