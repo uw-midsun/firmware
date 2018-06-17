@@ -7,7 +7,6 @@
 
 #define TEST_CAN_UNKNOWN_MSG_ID 0xA
 #define TEST_CAN_DEVICE_ID 0x1
-#define TEST_CAN_NUM_RX_HANDLERS 3
 
 typedef enum {
   TEST_CAN_EVENT_RX = 10,
@@ -16,7 +15,6 @@ typedef enum {
 } TestCanEvent;
 
 static CANStorage s_can_storage;
-static CANRxHandler s_rx_handlers[TEST_CAN_NUM_RX_HANDLERS];
 
 static StatusCode prv_rx_callback(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   CANMessage *rx_msg = context;
@@ -51,7 +49,7 @@ static void prv_clock_tx(void) {
   TEST_ASSERT_OK(ret);
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_TX, e.id);
 
-  bool processed = fsm_process_event(CAN_FSM, &e);
+  bool processed = can_process_event(&e);
   TEST_ASSERT_TRUE(processed);
 }
 
@@ -71,7 +69,7 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  StatusCode ret = can_init(&s_can_storage, &can_settings, s_rx_handlers, TEST_CAN_NUM_RX_HANDLERS);
+  StatusCode ret = can_init(&s_can_storage, &can_settings);
   TEST_ASSERT_OK(ret);
 }
 
@@ -100,7 +98,7 @@ void test_can_basic(void) {
   while (event_process(&e) != STATUS_CODE_OK) {
   }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
-  bool processed = fsm_process_event(CAN_FSM, &e);
+  bool processed = can_process_event(&e);
   TEST_ASSERT_TRUE(processed);
 
   TEST_ASSERT_EQUAL(msg.msg_id, rx_msg.msg_id);
@@ -136,7 +134,7 @@ void test_can_filter(void) {
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
   TEST_ASSERT_EQUAL(1, e.data);
 
-  bool processed = fsm_process_event(CAN_FSM, &e);
+  bool processed = can_process_event(&e);
   TEST_ASSERT_TRUE(processed);
 
   TEST_ASSERT_EQUAL(msg.msg_id, rx_msg.msg_id);
@@ -172,7 +170,7 @@ void test_can_ack(void) {
   while (event_process(&e) != STATUS_CODE_OK) {
   }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
-  bool processed = fsm_process_event(CAN_FSM, &e);
+  bool processed = can_process_event(&e);
   TEST_ASSERT_TRUE(processed);
   prv_clock_tx();
 
@@ -180,7 +178,7 @@ void test_can_ack(void) {
   while (event_process(&e) != STATUS_CODE_OK) {
   }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
-  processed = fsm_process_event(CAN_FSM, &e);
+  processed = can_process_event(&e);
   TEST_ASSERT_TRUE(processed);
 
   TEST_ASSERT_EQUAL(TEST_CAN_DEVICE_ID, device_acked);
@@ -237,7 +235,7 @@ void test_can_ack_status(void) {
   while (event_process(&e) != STATUS_CODE_OK) {
   }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
-  bool processed = fsm_process_event(CAN_FSM, &e);
+  bool processed = can_process_event(&e);
   TEST_ASSERT_TRUE(processed);
   prv_clock_tx();
 
@@ -245,7 +243,7 @@ void test_can_ack_status(void) {
   while (event_process(&e) != STATUS_CODE_OK) {
   }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
-  processed = fsm_process_event(CAN_FSM, &e);
+  processed = can_process_event(&e);
   TEST_ASSERT_TRUE(processed);
 
   TEST_ASSERT_EQUAL(CAN_ACK_STATUS_UNKNOWN, ack_status);
@@ -271,7 +269,7 @@ void test_can_default(void) {
   while (event_process(&e) != STATUS_CODE_OK) {
   }
   TEST_ASSERT_EQUAL(TEST_CAN_EVENT_RX, e.id);
-  bool processed = fsm_process_event(CAN_FSM, &e);
+  bool processed = can_process_event(&e);
   TEST_ASSERT_TRUE(processed);
 
   TEST_ASSERT_EQUAL(msg.msg_id, rx_msg.msg_id);
