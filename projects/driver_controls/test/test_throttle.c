@@ -60,16 +60,16 @@ void setup_test(void) {
   soft_timer_init();
   I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,                    //
-    .scl = { .port = GPIO_PORT_B, .pin = 10 },  //
-    .sda = { .port = GPIO_PORT_B, .pin = 11 },  //
+    .scl = { .port = GPIO_PORT_B, .pin = 8 },  //
+    .sda = { .port = GPIO_PORT_B, .pin = 9 },  //
   };
-  i2c_init(I2C_PORT_2, &i2c_settings);
+  i2c_init(I2C_PORT_1, &i2c_settings);
   GPIOAddress ready_pin = {
-    .port = GPIO_PORT_B,  //
-    .pin = 2,             //
+    .port = GPIO_PORT_A,  //
+    .pin = 10,            //
   };
   event_queue_init();
-  ads1015_init(&s_ads1015_storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
+  ads1015_init(&s_ads1015_storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
   prv_set_calibration_data(&s_calibration_data);
   throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage);
 }
