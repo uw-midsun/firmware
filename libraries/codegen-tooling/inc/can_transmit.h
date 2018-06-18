@@ -171,12 +171,20 @@
     status;                                       \
   })
 
-#define CAN_TRANSMIT_BATTERY_VCT(module_id_u16, voltage_u16, current_u16, temperature_u16)        \
-  ({                                                                                              \
-    CANMessage msg = { 0 };                                                                       \
-    CAN_PACK_BATTERY_VCT(&msg, (module_id_u16), (voltage_u16), (current_u16), (temperature_u16)); \
-    StatusCode status = can_transmit(&msg, NULL);                                                 \
-    status;                                                                                       \
+#define CAN_TRANSMIT_BATTERY_VT(module_id_u16, voltage_u16, temperature_u16)      \
+  ({                                                                              \
+    CANMessage msg = { 0 };                                                       \
+    CAN_PACK_BATTERY_VT(&msg, (module_id_u16), (voltage_u16), (temperature_u16)); \
+    StatusCode status = can_transmit(&msg, NULL);                                 \
+    status;                                                                       \
+  })
+
+#define CAN_TRANSMIT_BATTERY_CURRENT(current_u32)  \
+  ({                                               \
+    CANMessage msg = { 0 };                        \
+    CAN_PACK_BATTERY_CURRENT(&msg, (current_u32)); \
+    StatusCode status = can_transmit(&msg, NULL);  \
+    status;                                        \
   })
 
 #define CAN_TRANSMIT_MOTOR_CONTROLLER_VC(mc_voltage_1_u16, mc_current_1_u16, mc_voltage_2_u16,     \

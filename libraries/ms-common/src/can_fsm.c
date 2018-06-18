@@ -25,18 +25,18 @@ static StatusCode prv_handle_data_msg(CANStorage *can_storage, const CANMessage 
 
   if (handler != NULL) {
     ret = handler->callback(rx_msg, handler->context, &ack_status);
-  }
 
-  if (CAN_MSG_IS_CRITICAL(rx_msg)) {
-    CANMessage ack = {
-      .msg_id = rx_msg->msg_id,
-      .type = CAN_MSG_TYPE_ACK,
-      .dlc = sizeof(ack_status),
-      .data = ack_status,
-    };
+    if (CAN_MSG_IS_CRITICAL(rx_msg)) {
+      CANMessage ack = {
+        .msg_id = rx_msg->msg_id,
+        .type = CAN_MSG_TYPE_ACK,
+        .dlc = sizeof(ack_status),
+        .data = ack_status,
+      };
 
-    ret = can_transmit(&ack, NULL);
-    status_ok_or_return(ret);
+      ret = can_transmit(&ack, NULL);
+      status_ok_or_return(ret);
+    }
   }
 
   return ret;

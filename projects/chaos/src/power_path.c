@@ -26,6 +26,17 @@ static bool prv_addr_eq(GPIOAddress addr1, GPIOAddress addr2) {
   return ((addr1.port == addr2.port) && (addr1.pin == addr2.pin));
 }
 
+static void prv_send(SoftTimerID timer_id, void *context) {
+  (void)timer_id;
+  PowerPathCfg *cfg = context;
+  PowerPathVCReadings aux = { 0 };
+  power_path_read_source(&cfg->aux_bat, &aux);
+  PowerPathVCReadings dcdc = { 0 };
+  power_path_read_source(&cfg->dcdc, &dcdc);
+  CAN_TRANSMIT_AUX_DCDC_VC(aux.voltage, aux.current, dcdc.voltage, dcdc.current);
+  soft_timer_start_millis(cfg->period_millis, prv_send, context, NULL);
+}
+
 // Interrupt handler for over and under voltage warnings.
 static void prv_voltage_warning(const GPIOAddress *addr, void *context) {
   PowerPathCfg *pp = context;
@@ -67,7 +78,7 @@ static void prv_adc_read(SoftTimerID timer_id, void *context) {
   pps->readings.voltage = pps->voltage_convert_fn(value);
 
   // Start the next timer.
-  soft_timer_start_millis(pps->period_millis, prv_adc_read, pps, &pps->timer_id);
+  soft_timer_start_millis(pps->period_millis, prv_adc_read, context, &pps->timer_id);
 }
 
 StatusCode power_path_init(PowerPathCfg *pp) {
@@ -90,6 +101,7 @@ StatusCode power_path_init(PowerPathCfg *pp) {
   // Register interrupts to the same function.
   const InterruptSettings it_settings = {
     .type = INTERRUPT_TYPE_INTERRUPT,
+
     .priority = INTERRUPT_PRIORITY_NORMAL,
   };
   status_ok_or_return(gpio_it_register_interrupt(&pp->aux_bat.uv_ov_pin, &it_settings,
@@ -103,6 +115,11 @@ StatusCode power_path_init(PowerPathCfg *pp) {
   status_ok_or_return(gpio_init_pin(&pp->aux_bat.current_pin, &settings));
   status_ok_or_return(gpio_init_pin(&pp->dcdc.voltage_pin, &settings));
   return gpio_init_pin(&pp->dcdc.current_pin, &settings);
+}
+
+StatusCode power_path_send_data_daemon(PowerPathCfg *pp, uint32_t period_millis) {
+  pp->period_millis = period_millis;
+  return soft_timer_start_millis(pp->period_millis, prv_send, pp, NULL);
 }
 
 StatusCode power_path_source_monitor_enable(PowerPathSource *source, uint32_t period_millis) {
@@ -123,7 +140,7 @@ StatusCode power_path_source_monitor_enable(PowerPathSource *source, uint32_t pe
 
   source->monitoring_active = true;
 
-  return soft_timer_start(source->period_millis, prv_adc_read, source, &source->timer_id);
+  return soft_timer_start_millis(source->period_millis, prv_adc_read, source, &source->timer_id);
 }
 
 StatusCode power_path_source_monitor_disable(PowerPathSource *source) {

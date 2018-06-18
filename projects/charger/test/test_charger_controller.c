@@ -20,7 +20,7 @@
 #define TEST_CHARGER_MAX_VOLTAGE 100
 #define TEST_CHARGER_MAX_CURRENT 200
 
-#define TEST_CHARGER_EXPECTED_DLC 5
+#define TEST_CHARGER_EXPECTED_DLC 8
 // NOTE: the TX and RX used for these IDs are from the perspective of the charger that is being
 // mocked. Internally, the charger controller labels these the other way around!
 #define TEST_CHARGER_EXPECTED_TX_ID 0x18FF50E5
