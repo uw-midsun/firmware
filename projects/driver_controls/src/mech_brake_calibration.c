@@ -66,7 +66,6 @@ StatusCode mech_brake_sample(MechBrakeCalibrationStorage *storage,
     samples_completed = true;
     samples_completed &=
         (storage->data[point].sample_counter >= MECH_BRAKE_CALIBRATION_NUM_SAMPLES);
-
   } while (!samples_completed);
 
   return STATUS_CODE_OK;
