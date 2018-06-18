@@ -1,3 +1,4 @@
+
 #include <stdint.h>
 #include <stdio.h>
 
@@ -13,36 +14,39 @@
 #include "input_event.h"
 #include "interrupt.h"
 #include "log.h"
-#include "magnetic_brake_event_generator.h"
+#include "mech_brake.h"
 #include "soft_timer.h"
 #include "status.h"
 #include "unity.h"
 
-static MagneticCalibrationData data;
+static MechBrakeStorage mech_brake_storage;
 
-static MagneticBrakeSettings brake_settings = {
+static MechBrakeSettings brake_settings = {
   .percentage_threshold = 500,
-  .zero_value = 513,
-  .hundred_value = 624,
   .min_allowed_range = 0,
   .max_allowed_range = (1 << 12),
+  .channel = ADS1015_CHANNEL_2,
+};
+
+static MechBrakeCalibrationData calib_data = {
+  .zero_value = 513,
+  .hundred_value = 624,
 };
 
 static void prv_callback_channel(Ads1015Channel channel, void *context) {
-  Ads1015Storage *storage = context;
+  MechBrakeStorage *storage = context;
 
-  ads1015_read_raw(storage, channel, &data.reading);
+  ads1015_read_raw(storage->settings.ads1015, channel, &mech_brake_storage.reading);
 
-  int16_t percentage = percentage_converter(&data, &brake_settings);
-  int16_t reading = data.reading;
+  int16_t percentage = percentage_converter(&mech_brake_storage);
+  int16_t reading = mech_brake_storage.reading;
 
-  printf("%d %d\n", data.reading, percentage);
+  printf("%d %d\n", mech_brake_storage.reading, percentage);
 
-  data.percentage = percentage;
+  mech_brake_storage.percentage = percentage;
 }
 
-void setup_test(void) {
-  Ads1015Storage storage;
+int main(void) {
 
   gpio_init();
   interrupt_init();
@@ -59,12 +63,14 @@ void setup_test(void) {
 
   GPIOAddress ready_pin = { .port = GPIO_PORT_A, .pin = 10 };
 
-  ads1015_init(&storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
+  mech_brake_init(&mech_brake_storage, &brake_settings, &calib_data);
 
-  // magnetic_brake_calibration(&data, &brake_settings, ADS1015_CHANNEL_2);
+  ads1015_init(mech_brake_storage.settings.ads1015, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
 
-  ads1015_configure_channel(&storage, ADS1015_CHANNEL_2, true, prv_callback_channel, &storage);
+  ads1015_configure_channel(mech_brake_storage.settings.ads1015, mech_brake_storage.settings.channel, true, prv_callback_channel, &mech_brake_storage);
 
   while (true) {
   }
+
+  return 0;
 }
