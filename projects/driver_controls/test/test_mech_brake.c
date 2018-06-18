@@ -47,7 +47,6 @@ static void prv_callback_channel(Ads1015Channel channel, void *context) {
 }
 
 int main(void) {
-
   gpio_init();
   interrupt_init();
   gpio_it_init();
@@ -67,7 +66,9 @@ int main(void) {
 
   ads1015_init(mech_brake_storage.settings.ads1015, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
 
-  ads1015_configure_channel(mech_brake_storage.settings.ads1015, mech_brake_storage.settings.channel, true, prv_callback_channel, &mech_brake_storage);
+  ads1015_configure_channel(mech_brake_storage.settings.ads1015,
+                            mech_brake_storage.settings.channel, true, prv_callback_channel,
+                            &mech_brake_storage);
 
   while (true) {
   }

@@ -21,20 +21,19 @@
 #include "unity.h"
 #include "wait.h"
 
-
-int16_t percentage_converter(MechBrakeStorage* storage) {
-
+int16_t percentage_converter(MechBrakeStorage *storage) {
   int16_t percentage;
 
   if (storage->calibration_data->zero_value > storage->calibration_data->hundred_value) {
     percentage =
-        ((storage->settings.min_allowed_range * (storage->reading - storage->calibration_data->hundred_value)) /
+        ((storage->settings.min_allowed_range *
+          (storage->reading - storage->calibration_data->hundred_value)) /
          (storage->calibration_data->hundred_value - storage->calibration_data->zero_value)) +
         storage->settings.max_allowed_range;
   } else {
-    percentage =
-        (storage->settings.max_allowed_range * (storage->reading - storage->calibration_data->zero_value)) /
-        (storage->calibration_data->hundred_value - storage->calibration_data->zero_value);
+    percentage = (storage->settings.max_allowed_range *
+                  (storage->reading - storage->calibration_data->zero_value)) /
+                 (storage->calibration_data->hundred_value - storage->calibration_data->zero_value);
   }
 
   if (percentage < storage->settings.min_allowed_range) {
@@ -55,8 +54,8 @@ int16_t percentage_converter(MechBrakeStorage* storage) {
   return percentage;
 }
 
-StatusCode mech_brake_init(MechBrakeStorage* storage, MechBrakeSettings* settings, MechBrakeCalibrationData* data){
-
+StatusCode mech_brake_init(MechBrakeStorage *storage, MechBrakeSettings *settings,
+                           MechBrakeCalibrationData *data) {
   memset(storage, 0, sizeof(*storage));
   storage->settings = *settings;
   storage->calibration_data = data;
