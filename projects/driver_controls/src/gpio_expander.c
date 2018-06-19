@@ -91,12 +91,11 @@ StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioE
 
 StatusCode gpio_expander_init_pin(GpioExpanderStorage *expander, GpioExpanderPin pin,
                                   const GPIOSettings *settings) {
-  if (pin >= NUM_GPIO_EXPANDER_PINS) {
-    return status_code(STATUS_CODE_OUT_OF_RANGE);
-  }
-
-  if (settings->resistor != GPIO_RES_NONE && settings->resistor != GPIO_RES_PULLUP) {
+  if (expander == NULL || settings == NULL ||
+      (settings->resistor != GPIO_RES_NONE && settings->resistor != GPIO_RES_PULLUP)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
+  } else if (pin >= NUM_GPIO_EXPANDER_PINS) {
+    return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 
   // Set the direction of the data I/O
@@ -113,7 +112,9 @@ StatusCode gpio_expander_init_pin(GpioExpanderStorage *expander, GpioExpanderPin
 
 StatusCode gpio_expander_get_state(GpioExpanderStorage *expander, GpioExpanderPin pin,
                                    GPIOState *state) {
-  if (pin >= NUM_GPIO_EXPANDER_PINS) {
+  if (expander == NULL || state == NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  } else if (pin >= NUM_GPIO_EXPANDER_PINS) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 
@@ -128,7 +129,9 @@ StatusCode gpio_expander_get_state(GpioExpanderStorage *expander, GpioExpanderPi
 
 StatusCode gpio_expander_set_state(GpioExpanderStorage *expander, GpioExpanderPin pin,
                                    GPIOState state) {
-  if (pin >= NUM_GPIO_EXPANDER_PINS) {
+  if (expander == NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  } else if (pin >= NUM_GPIO_EXPANDER_PINS) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 
@@ -140,7 +143,9 @@ StatusCode gpio_expander_set_state(GpioExpanderStorage *expander, GpioExpanderPi
 
 StatusCode gpio_expander_register_callback(GpioExpanderStorage *expander, GpioExpanderPin pin,
                                            GpioExpanderCallbackFn callback, void *context) {
-  if (pin >= NUM_GPIO_EXPANDER_PINS) {
+  if (expander == NULL)) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  } else if (pin >= NUM_GPIO_EXPANDER_PINS) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 

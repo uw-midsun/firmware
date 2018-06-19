@@ -13,6 +13,8 @@
 
 #define TEST_ADS1015_I2C_PORT I2C_PORT_1
 #define TEST_ADS1015_ADDR ADS1015_ADDRESS_GND
+// Arbitrary delay where we should've finished a few conversions
+#define TEST_ADS1015_CONV_DELAY_MS 10
 
 static Ads1015Storage s_storage;
 
@@ -99,7 +101,7 @@ void test_ads1015_read_invalid_input(void) {
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_0, true, NULL, NULL);
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_2, true, NULL, NULL);
 
-  delay_ms(10);
+  delay_ms(TEST_ADS1015_CONV_DELAY_MS);
 
   // Tests a correct use of the function.
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
@@ -132,7 +134,7 @@ void test_ads1015_channel_callback(void) {
                             &s_callback_called[ADS1015_CHANNEL_2]);
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_3, false, prv_callback_channel,
                             &s_callback_called[ADS1015_CHANNEL_3]);
-  delay_ms(10);
+  delay_ms(TEST_ADS1015_CONV_DELAY_MS);
   TEST_ASSERT_EQUAL(true, s_callback_called[ADS1015_CHANNEL_0]);
   TEST_ASSERT_EQUAL(false, s_callback_called[ADS1015_CHANNEL_1]);
   TEST_ASSERT_EQUAL(true, s_callback_called[ADS1015_CHANNEL_2]);
@@ -145,7 +147,7 @@ void test_ads1015_disable_enable_channel(void) {
 
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, false, NULL, NULL);
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, true, NULL, NULL);
-  delay_ms(10);
+  delay_ms(TEST_ADS1015_CONV_DELAY_MS);
   ads1015_read_converted(&s_storage, ADS1015_CHANNEL_1, &reading);
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
                     ads1015_read_converted(&s_storage, ADS1015_CHANNEL_1, &reading));
@@ -157,7 +159,7 @@ void test_ads1015_enable_disable_channel(void) {
 
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, true, NULL, NULL);
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, false, NULL, NULL);
-  delay_ms(10);
+  delay_ms(TEST_ADS1015_CONV_DELAY_MS);
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     ads1015_read_converted(&s_storage, ADS1015_CHANNEL_1, &reading));
 }
@@ -167,11 +169,11 @@ void test_ads1015_disable_already_disabled_channel(void) {
   int16_t reading = ADS1015_READ_UNSUCCESSFUL;
 
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_2, false, NULL, NULL);
-  delay_ms(10);
+  delay_ms(TEST_ADS1015_CONV_DELAY_MS);
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     ads1015_read_converted(&s_storage, ADS1015_CHANNEL_2, &reading));
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_2, true, NULL, NULL);
-  delay_ms(10);
+  delay_ms(TEST_ADS1015_CONV_DELAY_MS);
   ads1015_read_converted(&s_storage, ADS1015_CHANNEL_2, &reading);
   TEST_ASSERT_TRUE(prv_channel_reading_valid(reading));
 }
@@ -184,7 +186,7 @@ void test_ads1015_all_channels_enabled(void) {
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_1, true, NULL, NULL);
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_2, true, NULL, NULL);
   ads1015_configure_channel(&s_storage, ADS1015_CHANNEL_3, true, NULL, NULL);
-  delay_ms(10);
+  delay_ms(TEST_ADS1015_CONV_DELAY_MS);
   for (Ads1015Channel channel = 0; channel < NUM_ADS1015_CHANNELS; channel++) {
     ads1015_read_converted(&s_storage, channel, &reading);
     TEST_ASSERT_TRUE(prv_channel_reading_valid(reading));
