@@ -1,6 +1,8 @@
-#include <stdbool.h>
-
 #include "adc.h"
+
+#include <stdbool.h>
+#include <stddef.h>
+
 #include "log.h"
 #include "stm32f0xx.h"
 
@@ -89,6 +91,11 @@ void adc_init(ADCMode adc_mode) {
 
   if (adc_mode) {
     ADC_StartOfConversion(ADC1);
+  }
+
+  for (size_t i = 0; i < NUM_ADC_CHANNELS; ++i) {
+    s_adc_interrupts[i].callback = NULL;
+    s_adc_interrupts[i].context = NULL;
   }
 
   // Configure internal reference channel to run by default for voltage conversions
@@ -229,17 +236,18 @@ StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading) {
 
 void ADC1_COMP_IRQHandler() {
   if (ADC_GetITStatus(ADC1, ADC_IT_EOC)) {
-    ADCChannel current_channel = __builtin_ctz(s_adc_status.sequence);
-
     uint16_t reading = ADC_GetConversionValue(ADC1);
+    if (s_adc_status.sequence != 0) {
+      ADCChannel current_channel = __builtin_ctz(s_adc_status.sequence);
 
-    if (s_adc_interrupts[current_channel].callback != NULL) {
-      s_adc_interrupts[current_channel].callback(current_channel,
-                                                 s_adc_interrupts[current_channel].context);
+      if (s_adc_interrupts[current_channel].callback != NULL) {
+        s_adc_interrupts[current_channel].callback(current_channel,
+                                                  s_adc_interrupts[current_channel].context);
+      }
+
+      s_adc_interrupts[current_channel].reading = reading;
+      s_adc_status.sequence &= ~((uint32_t)1 << current_channel);
     }
-
-    s_adc_interrupts[current_channel].reading = reading;
-    s_adc_status.sequence &= ~((uint32_t)1 << current_channel);
   }
 
   if (ADC_GetITStatus(ADC1, ADC_IT_EOSEQ)) {
