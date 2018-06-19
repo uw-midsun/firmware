@@ -4,14 +4,10 @@
 #include <string.h>
 
 #include <stdbool.h>
-#include "adc.h"
 #include "ads1015.h"
 #include "delay.h"
-#include "event_arbiter.h"
-#include "event_queue.h"
 #include "gpio_it.h"
 #include "i2c.h"
-#include "input_event.h"
 #include "interrupt.h"
 #include "log.h"
 #include "mech_brake_calibration.h"

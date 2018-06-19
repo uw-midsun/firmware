@@ -21,36 +21,26 @@
 
 static MechBrakeStorage mech_brake_storage;
 
-static MechBrakeSettings brake_settings = {
-  .percentage_threshold = 500,
-  .min_allowed_range = 0,
-  .max_allowed_range = (1 << 12),
-  .channel = ADS1015_CHANNEL_2,
-};
-
 static MechBrakeCalibrationData calib_data = {
   .zero_value = 513,
   .hundred_value = 624,
 };
 
-static void prv_callback_channel(Ads1015Channel channel, void *context) {
-  MechBrakeStorage *storage = context;
+void setup_test(void) {
 
-  ads1015_read_raw(storage->settings.ads1015, channel, &mech_brake_storage.reading);
-
-  int16_t percentage = percentage_converter(&mech_brake_storage);
-  int16_t reading = mech_brake_storage.reading;
-
-  printf("%d %d\n", mech_brake_storage.reading, percentage);
-
-  mech_brake_storage.percentage = percentage;
-}
-
-int main(void) {
+  Ads1015Storage storage;
   gpio_init();
   interrupt_init();
   gpio_it_init();
   soft_timer_init();
+
+  MechBrakeSettings brake_settings = {
+  .percentage_threshold = 500,
+  .min_allowed_range = 0,
+  .max_allowed_range = (1 << 12),
+  .channel = ADS1015_CHANNEL_2,
+  .ads1015 = &storage,
+};
 
   I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,
@@ -62,16 +52,15 @@ int main(void) {
 
   GPIOAddress ready_pin = { .port = GPIO_PORT_A, .pin = 10 };
 
+  ads1015_init(&storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
+
   mech_brake_init(&mech_brake_storage, &brake_settings, &calib_data);
 
-  ads1015_init(mech_brake_storage.settings.ads1015, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
+}
 
-  ads1015_configure_channel(mech_brake_storage.settings.ads1015,
-                            mech_brake_storage.settings.channel, true, prv_callback_channel,
-                            &mech_brake_storage);
+void teardown_test(void) {}
 
+void test_mech_brake_loop(void) {
   while (true) {
   }
-
-  return 0;
 }

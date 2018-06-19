@@ -1,13 +1,26 @@
 #pragma once
 
+// Module for the mechanical brake.
+// Requires ADS1015 and soft timers to be initialized.
+//
+// The module reads brake inputs from ADS1015, then converts those readings into percentage data.
+// At the same time, it raises events, INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, and INPUT_EVENT_MECHANICAL_BRAKE_PRESSED
+// 
+//
+// To use the module, init the ADS1015 for the mech brake and pass its Ads1015Storage to mech_brake_init.
+// Also pass a MechBrakeCalibrationData that has been calibrated.
+
+// For the percentage conversion, the module receives peak-peak values when the brake is 
+// pressed and released, then correlates that data to percentage values and finds a linear equation between the LSB input and percentage.
+
 #include <stdint.h>
 #include "ads1015.h"
 #include "soft_timer.h"
 #include "status.h"
 
 typedef struct MechBrakeCalibrationData {
-  int16_t zero_value;     // lsb value obtained from ads1015 when brake is unpressed
-  int16_t hundred_value;  // lsb value obtained from ads105 when brake is pressed
+  int16_t zero_value;     
+  int16_t hundred_value;  
 } MechBrakeCalibrationData;
 
 typedef struct MechBrakeSettings {
@@ -28,4 +41,3 @@ typedef struct MechBrakeStorage {
 StatusCode mech_brake_init(MechBrakeStorage *mech_brake_storage, MechBrakeSettings *settings,
                            MechBrakeCalibrationData *calib_data);
 
-int16_t percentage_converter(MechBrakeStorage *storage);

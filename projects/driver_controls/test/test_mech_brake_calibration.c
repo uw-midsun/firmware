@@ -1,6 +1,5 @@
 #include "ads1015.h"
 #include "delay.h"
-#include "event_queue.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "i2c.h"
@@ -12,9 +11,12 @@
 #include "unity.h"
 
 static Ads1015Storage s_ads1015_storage;
+static MechBrakeStorage mech_brake_storage;
 static MechBrakeCalibrationStorage s_calibration_storage;
 
 void setup_test(void) {
+
+  Ads1015Storage storage;
   gpio_init();
   interrupt_init();
   gpio_it_init();
@@ -32,15 +34,15 @@ void setup_test(void) {
     .pin = 10,
   };
 
-  event_queue_init();
-  ads1015_init(&s_ads1015_storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
-
   MechBrakeSettings calib_settings = {
-    .ads1015 = &s_ads1015_storage,
+    .ads1015 = &storage,
     .channel = ADS1015_CHANNEL_2,
     .min_allowed_range = 0,
     .max_allowed_range = (1 << 12),
   };
+
+  event_queue_init();
+  ads1015_init(&storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
 
   mech_brake_calibration_init(&s_calibration_storage, &calib_settings);
 }
@@ -61,6 +63,7 @@ void test_mech_brake_calibration_run(void) {
 
   MechBrakeCalibrationData calib_data;
   mech_brake_calibration_result(&s_calibration_storage, &calib_data);
+  LOG_DEBUG("%d %d\n", calib_data.zero_value, calib_data.hundred_value);
 
   while (true) {
   }

@@ -1,39 +1,37 @@
 
-#include <limits.h>
+
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
 #include <stdbool.h>
-#include "adc.h"
 #include "ads1015.h"
 #include "delay.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
 #include "gpio_it.h"
-#include "i2c.h"
+
 #include "input_event.h"
-#include "interrupt.h"
 #include "log.h"
 #include "mech_brake.h"
 #include "soft_timer.h"
 #include "status.h"
-#include "unity.h"
 #include "wait.h"
 
-int16_t percentage_converter(MechBrakeStorage *storage) {
+// takes in LSB as input and converts it to percentage using a linear relationship
+static int16_t lsb_to_percentage_converter(MechBrakeStorage* storage) {
+
   int16_t percentage;
 
   if (storage->calibration_data->zero_value > storage->calibration_data->hundred_value) {
     percentage =
-        ((storage->settings.min_allowed_range *
-          (storage->reading - storage->calibration_data->hundred_value)) /
+        ((storage->settings.min_allowed_range * (storage->reading - storage->calibration_data->hundred_value)) /
          (storage->calibration_data->hundred_value - storage->calibration_data->zero_value)) +
         storage->settings.max_allowed_range;
   } else {
-    percentage = (storage->settings.max_allowed_range *
-                  (storage->reading - storage->calibration_data->zero_value)) /
-                 (storage->calibration_data->hundred_value - storage->calibration_data->zero_value);
+    percentage =
+        (storage->settings.max_allowed_range * (storage->reading - storage->calibration_data->zero_value)) /
+        (storage->calibration_data->hundred_value - storage->calibration_data->zero_value);
   }
 
   if (percentage < storage->settings.min_allowed_range) {
@@ -48,17 +46,35 @@ int16_t percentage_converter(MechBrakeStorage *storage) {
     event_raise(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, percentage_data);
   } else {
     uint16_t percentage_data = (uint16_t)percentage;
-    event_raise(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, percentage_data);
+    event_raise(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, percentage_data);
   }
 
   return percentage;
 }
 
-StatusCode mech_brake_init(MechBrakeStorage *storage, MechBrakeSettings *settings,
-                           MechBrakeCalibrationData *data) {
+static void prv_callback_channel(Ads1015Channel channel, void *context) {
+
+  MechBrakeStorage *storage = context;
+
+  ads1015_read_raw(storage->settings.ads1015, channel, &(storage->reading));
+
+  int16_t percentage = lsb_to_percentage_converter(storage);
+  int16_t reading = storage->reading;
+
+  LOG_DEBUG("%d %d\n", storage->reading, percentage);
+
+  storage->percentage = percentage;
+}
+
+StatusCode mech_brake_init(MechBrakeStorage* storage, MechBrakeSettings* settings, MechBrakeCalibrationData* data){
+
   memset(storage, 0, sizeof(*storage));
   storage->settings = *settings;
   storage->calibration_data = data;
+
+  ads1015_configure_channel(storage->settings.ads1015,
+                            storage->settings.channel, true, prv_callback_channel,
+                            storage);
 
   return STATUS_CODE_OK;
 }
