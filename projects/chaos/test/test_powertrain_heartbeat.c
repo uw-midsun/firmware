@@ -25,10 +25,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#define TEST_POWERTRAIN_HEARTBEAT_NUM_CAN_RX_HANDLERS 4
-
 static CANStorage s_storage;
-static CANRxHandler s_rx_handlers[TEST_POWERTRAIN_HEARTBEAT_NUM_CAN_RX_HANDLERS];
 
 void setup_test(void) {
   interrupt_init();
@@ -47,7 +44,7 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  can_init(&s_storage, &settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+  can_init(&s_storage, &settings);
   TEST_ASSERT_OK(powertrain_heartbeat_init());
 }
 
