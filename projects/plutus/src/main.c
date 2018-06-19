@@ -17,6 +17,8 @@ static size_t s_telemetry_counter = 0;
 static void prv_periodic_tx_debug(SoftTimerID timer_id, void *context) {
   FaultMonitorResult *result = &s_fault_monitor.result;
 
+  // LOG_DEBUG("%d\n", s_telemetry_counter);
+
   // TODO(ELEC-463): Figure out why we need to delay for so long
   if (s_telemetry_counter < PLUTUS_CFG_AFE_TOTAL_CELLS) {
     CAN_TRANSMIT_BATTERY_VT(s_telemetry_counter, result->cell_voltages[s_telemetry_counter],
@@ -53,8 +55,9 @@ int main(void) {
   while (true) {
     wait();
     while (status_ok(event_process(&e))) {
-      fsm_process_event(CAN_FSM, &e);
+      can_process_event(&e);
       if (board_type == PLUTUS_SYS_TYPE_MASTER) {
+        fault_monitor_process_event(&s_fault_monitor, &e);
         ltc_afe_process_event(&s_plutus.ltc_afe, &e);
       }
     }

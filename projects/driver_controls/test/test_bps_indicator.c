@@ -12,10 +12,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#define TEST_BPS_INDICATOR_NUM_RX_HANDLERS 5
-
 static CANStorage s_can_storage;
-static CANRxHandler s_rx_handlers[TEST_BPS_INDICATOR_NUM_RX_HANDLERS];
 
 static StatusCode prv_strobe_cb(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   EELightState *expected_state = context;
@@ -45,8 +42,7 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  StatusCode ret =
-      can_init(&s_can_storage, &can_settings, s_rx_handlers, TEST_BPS_INDICATOR_NUM_RX_HANDLERS);
+  StatusCode ret = can_init(&s_can_storage, &can_settings);
   TEST_ASSERT_OK(ret);
 
   bps_indicator_init();
@@ -84,21 +80,21 @@ void test_bps_indicator_fault(void) {
   // Strobe on TX
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_TX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
   // Heartbeat ACK TX
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_TX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   // Strobe on RX
   expected_state = EE_LIGHT_STATE_ON;
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_RX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
   // Heartbeat ACK RX
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_RX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   // Clear fault
   bps_indicator_clear_fault();

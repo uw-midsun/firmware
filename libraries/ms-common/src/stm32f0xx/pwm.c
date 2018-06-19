@@ -7,7 +7,7 @@
 #include "stm32f0xx_rcc.h"
 #include "stm32f0xx_tim.h"
 
-static uint16_t s_period_ms[NUM_PWM_TIMERS] = {
+static uint16_t s_period_us[NUM_PWM_TIMERS] = {
   [PWM_TIMER_1] = 0,   //
   [PWM_TIMER_3] = 0,   //
   [PWM_TIMER_14] = 0,  //
@@ -50,24 +50,24 @@ static void prv_enable_periph_clock(PWMTimer timer) {
   }
 }
 
-StatusCode pwm_init(PWMTimer timer, uint16_t period_ms) {
+StatusCode pwm_init(PWMTimer timer, uint16_t period_us) {
   if (timer >= NUM_PWM_TIMERS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid timer id");
-  } else if (period_ms == 0) {
+  } else if (period_us == 0) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Period must be greater than 0");
   }
 
   prv_enable_periph_clock(timer);
 
-  s_period_ms[timer] = period_ms;
+  s_period_us[timer] = period_us;
 
   RCC_ClocksTypeDef clocks;
   RCC_GetClocksFreq(&clocks);
 
   TIM_TimeBaseInitTypeDef tim_init = {
-    .TIM_Prescaler = (clocks.PCLK_Frequency / 1000) - 1,
+    .TIM_Prescaler = (clocks.PCLK_Frequency / 1000000) - 1,
     .TIM_CounterMode = TIM_CounterMode_Up,
-    .TIM_Period = period_ms,
+    .TIM_Period = period_us,
     .TIM_ClockDivision = TIM_CKD_DIV1,
     .TIM_RepetitionCounter = 0,
   };
@@ -83,21 +83,21 @@ uint16_t pwm_get_period(PWMTimer timer) {
   if (timer >= NUM_PWM_TIMERS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid timer id");
   }
-  return s_period_ms[timer];
+  return s_period_us[timer];
 }
 
-StatusCode pwm_set_pulse(PWMTimer timer, uint16_t pulse_width_ms) {
+StatusCode pwm_set_pulse(PWMTimer timer, uint16_t pulse_width_us) {
   if (timer >= NUM_PWM_TIMERS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid timer id");
-  } else if (s_period_ms[timer] == 0) {
+  } else if (s_period_us[timer] == 0) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "Pwm must be initialized.");
-  } else if (pulse_width_ms > s_period_ms[timer]) {
+  } else if (pulse_width_us > s_period_us[timer]) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Pulse width must be leq period.");
   }
 
   TIM_OCInitTypeDef oc_init = {
     .TIM_OCMode = TIM_OCMode_PWM1,  // Set on compare match.
-    .TIM_Pulse = pulse_width_ms,
+    .TIM_Pulse = pulse_width_us,
     .TIM_OutputState = TIM_OutputState_Enable,
     .TIM_OCPolarity = TIM_OCPolarity_High,
   };
@@ -128,7 +128,10 @@ StatusCode pwm_set_dc(PWMTimer timer, uint16_t dc) {
 
   uint16_t pulse_width = 0;
   if (dc != 0) {
-    pulse_width = ((s_period_ms[timer] + 1) * dc) / 100 - 1;
+    pulse_width = ((s_period_us[timer] + 1) * dc) / 100 - 1;
+    if (pulse_width == 0) {
+      return status_msg(STATUS_CODE_INVALID_ARGS, "Duty Cycle is not valid for given period");
+    }
   }
 
   return pwm_set_pulse(timer, pulse_width);

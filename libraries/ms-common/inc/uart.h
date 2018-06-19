@@ -9,7 +9,7 @@
 #include "status.h"
 #include "uart_mcu.h"
 
-#define UART_MAX_BUFFER_LEN 256
+#define UART_MAX_BUFFER_LEN 1024
 
 typedef void (*UARTRxHandler)(const uint8_t *rx_arr, size_t len, void *context);
 
@@ -21,6 +21,8 @@ typedef struct {
   volatile uint8_t tx_buf[UART_MAX_BUFFER_LEN];
   volatile Fifo rx_fifo;
   volatile uint8_t rx_buf[UART_MAX_BUFFER_LEN];
+
+  uint8_t rx_line_buf[UART_MAX_BUFFER_LEN + 1];
 } UARTStorage;
 
 typedef struct {

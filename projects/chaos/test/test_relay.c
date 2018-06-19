@@ -22,11 +22,9 @@
 #include "unity.h"
 
 #define TEST_RELAY_DELAY_MS 50
-#define NUM_CAN_RX_HANDLERS 2
 
 static RelayRetryServiceStorage s_relay_retry_storage;
 static CANStorage s_storage;
-static CANRxHandler s_rx_handlers[NUM_CAN_RX_HANDLERS];
 
 static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   CANAckStatus *status = context;
@@ -54,7 +52,7 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  can_init(&s_storage, &settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+  can_init(&s_storage, &settings);
 
   RelaySettings relay_settings = {
     .battery_main_power_pin = { GPIO_PORT_A, 0 },
@@ -148,7 +146,7 @@ void test_relay_cycle(void) {
         // If it is a CAN event let the CAN_FSM handle it.
         if (e.id == CHAOS_EVENT_CAN_RX || e.id == CHAOS_EVENT_CAN_TX ||
             e.id == CHAOS_EVENT_CAN_FAULT) {
-          TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+          TEST_ASSERT_TRUE(can_process_event(&e));
           can_cnt++;
         } else if (e.id == CHAOS_EVENT_MAYBE_RETRY_RELAY) {
           TEST_ASSERT_OK(relay_retry_service_update(&e));
@@ -198,7 +196,7 @@ void test_relay_retry_limit(void) {
 
     // Handle CAN message
     if (e.id == CHAOS_EVENT_CAN_RX || e.id == CHAOS_EVENT_CAN_TX || e.id == CHAOS_EVENT_CAN_FAULT) {
-      TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+      TEST_ASSERT_TRUE(can_process_event(&e));
     } else if (e.id == CHAOS_EVENT_MAYBE_RETRY_RELAY) {
       TEST_ASSERT_OK(relay_retry_service_update(&e));
     } else if (e.id != CHAOS_EVENT_RELAY_ERROR) {
@@ -232,7 +230,7 @@ void test_relay_concurrent(void) {
       status = event_process(&e);
     } while (status != STATUS_CODE_OK);
     if (e.id == CHAOS_EVENT_CAN_RX || e.id == CHAOS_EVENT_CAN_TX || e.id == CHAOS_EVENT_CAN_FAULT) {
-      TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+      TEST_ASSERT_TRUE(can_process_event(&e));
     } else {
       TEST_ASSERT_TRUE(relay_process_event(&e));
     }
@@ -245,7 +243,7 @@ void test_relay_concurrent(void) {
       status = event_process(&e);
     } while (status != STATUS_CODE_OK);
     if (e.id == CHAOS_EVENT_CAN_RX || e.id == CHAOS_EVENT_CAN_TX || e.id == CHAOS_EVENT_CAN_FAULT) {
-      TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+      TEST_ASSERT_TRUE(can_process_event(&e));
     } else {
       TEST_ASSERT_TRUE(relay_process_event(&e));
     }
@@ -260,7 +258,7 @@ void test_relay_concurrent(void) {
       status = event_process(&e);
     } while (status != STATUS_CODE_OK);
     if (e.id == CHAOS_EVENT_CAN_RX || e.id == CHAOS_EVENT_CAN_TX || e.id == CHAOS_EVENT_CAN_FAULT) {
-      TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+      TEST_ASSERT_TRUE(can_process_event(&e));
     } else {
       TEST_ASSERT_TRUE(relay_process_event(&e));
     }
@@ -275,7 +273,7 @@ void test_relay_concurrent(void) {
       status = event_process(&e);
     } while (status != STATUS_CODE_OK);
     if (e.id == CHAOS_EVENT_CAN_RX || e.id == CHAOS_EVENT_CAN_TX || e.id == CHAOS_EVENT_CAN_FAULT) {
-      TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+      TEST_ASSERT_TRUE(can_process_event(&e));
     } else {
       TEST_ASSERT_TRUE(relay_process_event(&e));
     }
@@ -290,7 +288,7 @@ void test_relay_concurrent(void) {
       status = event_process(&e);
     } while (status != STATUS_CODE_OK);
     if (e.id == CHAOS_EVENT_CAN_RX || e.id == CHAOS_EVENT_CAN_TX || e.id == CHAOS_EVENT_CAN_FAULT) {
-      TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+      TEST_ASSERT_TRUE(can_process_event(&e));
     } else {
       TEST_ASSERT_TRUE(relay_process_event(&e));
     }
@@ -303,7 +301,7 @@ void test_relay_concurrent(void) {
       status = event_process(&e);
     } while (status != STATUS_CODE_OK);
     if (e.id == CHAOS_EVENT_CAN_RX || e.id == CHAOS_EVENT_CAN_TX || e.id == CHAOS_EVENT_CAN_FAULT) {
-      TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+      TEST_ASSERT_TRUE(can_process_event(&e));
     } else {
       TEST_ASSERT_TRUE(relay_process_event(&e));
     }
