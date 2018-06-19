@@ -19,8 +19,6 @@
 #include "unity.h"
 
 #define TEST_HEARTBEAT_RX_CAN_DEVICE_ID 10
-#define NUM_TEST_HEARTBEAT_RX_RX_CAN_HANDLERS 3
-#define NUM_TEST_HEARTBEAT_RX_RX_STORAGE_HANDLERS 2
 
 typedef enum {
   TEST_HEARTBEAT_RX_RX_CAN_RX = 10,
@@ -36,7 +34,6 @@ typedef struct TestHeartbeatRxHandlerCtx {
 
 static HeartbeatRxHandlerStorage s_hb_storage;
 static CANStorage s_can_storage;
-static CANRxHandler s_rx_handlers[NUM_TEST_HEARTBEAT_RX_RX_STORAGE_HANDLERS];
 
 // CANAckRequestCb
 static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
@@ -72,8 +69,7 @@ void setup_test(void) {
     .rx = { GPIO_PORT_A, 11 },
     .loopback = true,
   };
-  TEST_ASSERT_OK(can_init(&s_can_storage, &can_settings, s_rx_handlers,
-                          NUM_TEST_HEARTBEAT_RX_RX_CAN_HANDLERS));
+  TEST_ASSERT_OK(can_init(&s_can_storage, &can_settings));
 }
 
 void teardown_test(void) {}
