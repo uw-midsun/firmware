@@ -38,12 +38,12 @@ StatusCode sequenced_relay_init(SequencedRelayStorage *storage,
 StatusCode sequenced_relay_set_state(SequencedRelayStorage *storage, EERelayState state) {
   soft_timer_cancel(storage->delay_timer);
 
-  gpio_set_state(&storage->settings.left_relay, state);
+  gpio_set_state(&storage->settings.left_relay, (GPIOState)state);
   if (state == EE_RELAY_STATE_CLOSE) {
     soft_timer_start_millis(storage->settings.delay_ms, prv_delay_cb, storage,
                             &storage->delay_timer);
   } else {
-    gpio_set_state(&storage->settings.right_relay, state);
+    gpio_set_state(&storage->settings.right_relay, (GPIOState)state);
   }
 
   return STATUS_CODE_OK;

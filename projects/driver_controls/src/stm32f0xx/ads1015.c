@@ -1,16 +1,18 @@
 #include "ads1015.h"
-// This module provides the functions for initiating ADS1015, and configuring
-// and reading from its channels. The general idea is that the ALERT/RDY pin
-// asserts whenever a conversion result is ready, and after storing the result
-// the channel is switched to the next and ADS1015 is restarted for the new conversion.
-// If no channels are enabled, the interrupt on ALERT/RDY pin is masked.
-// Channel rotation is implemented through the use of bitsets. The main bitset
-// holds the state of each channel(enable/disable). The pending bitset determines
-// the next enabled channel by the find first set operation.
+// The general idea is that the ALERT/RDY pin asserts whenever a conversion result is ready, and
+// after storing the result the channel is switched to the next and ADS1015 is restarted for the new
+// conversion. If no channels are enabled, the interrupt on ALERT/RDY pin is masked.
+//
+// Channel rotation is implemented through the use of bitsets. The main bitset holds the state of
+// each channel(enable/disable). The pending bitset determines the next enabled channel by the find
+// first set operation.
 #include <status.h>
 #include <string.h>
 #include "ads1015_def.h"
 #include "gpio_it.h"
+#include "log.h"
+
+#define ADS1015_DATA_RATE ADS1015_DATA_RATE_920
 
 // Checks if a channel is enabled (true) or disabled (false).
 static bool channel_is_enabled(Ads1015Storage *storage, Ads1015Channel channel) {
@@ -50,9 +52,24 @@ static StatusCode prv_set_channel(Ads1015Storage *storage, Ads1015Channel channe
   }
   status_ok_or_return(prv_setup_register(storage, ADS1015_ADDRESS_POINTER_CONFIG,
                                          ADS1015_CONFIG_REGISTER_MSB(channel),
-                                         ADS1015_CONFIG_REGISTER_LSB));
+                                         ADS1015_CONFIG_REGISTER_LSB(ADS1015_DATA_RATE)));
   storage->current_channel = channel;
   return STATUS_CODE_OK;
+}
+
+static void prv_watchdog(SoftTimerID timer_id, void *context) {
+  Ads1015Storage *storage = context;
+
+  if (!storage->watchdog_kicked) {
+    // No interrupt when we should've gotten one by now
+    // Mark data invalid and attempt to force a read
+    storage->data_valid = false;
+    gpio_it_trigger_interrupt(&storage->ready_pin);
+  }
+  storage->watchdog_kicked = false;
+
+  soft_timer_start_millis(ADS1015_WATCHDOG_TIMEOUT_MS, prv_watchdog, storage,
+                          &storage->watchdog_timer);
 }
 
 // This function is registered as the callback for ALRT/RDY Pin.
@@ -63,6 +80,7 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
   Ads1015Channel current_channel = storage->current_channel;
   uint8_t channel_bitset = storage->channel_bitset;
   uint8_t read_conv_register[2] = { 0, 0 };
+
   if (channel_is_enabled(storage, current_channel)) {
     prv_read_register(storage->i2c_port, storage->i2c_addr, ADS1015_ADDRESS_POINTER_CONV,
                       read_conv_register, SIZEOF_ARRAY(read_conv_register));
@@ -86,6 +104,9 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
   current_channel = __builtin_ffs(storage->pending_channel_bitset) - 1;
   // Update so that the ADS1015 reads from the next channel.
   prv_set_channel(storage, current_channel);
+
+  storage->watchdog_kicked = true;
+  storage->data_valid = true;
 }
 
 // Initiates ads1015 by setting up registers and enabling ALRT/RDY Pin.
@@ -99,13 +120,17 @@ StatusCode ads1015_init(Ads1015Storage *storage, I2CPort i2c_port, Ads1015Addres
   for (Ads1015Channel channel = 0; channel < NUM_ADS1015_CHANNELS; channel++) {
     storage->channel_readings[channel] = ADS1015_DISABLED_CHANNEL_READING;
   }
+  storage->watchdog_timer = SOFT_TIMER_INVALID_TIMER;
+  storage->watchdog_kicked = false;
+  storage->data_valid = false;
+
   storage->i2c_port = i2c_port;
   storage->i2c_addr = i2c_addr + ADS1015_I2C_BASE_ADDRESS;
   storage->ready_pin = *ready_pin;
   // Set up config register.
   status_ok_or_return(prv_setup_register(storage, ADS1015_ADDRESS_POINTER_CONFIG,
                                          ADS1015_CONFIG_REGISTER_MSB_IDLE,
-                                         ADS1015_CONFIG_REGISTER_LSB));
+                                         ADS1015_CONFIG_REGISTER_LSB(ADS1015_DATA_RATE)));
   // Set up hi/lo-thresh registers. This particular setup enables the ALRT/RDY pin.
   status_ok_or_return(prv_setup_register(storage, ADS1015_ADDRESS_POINTER_LO_THRESH,
                                          ADS1015_LO_THRESH_REGISTER_MSB,
@@ -153,6 +178,14 @@ StatusCode ads1015_configure_channel(Ads1015Storage *storage, Ads1015Channel cha
   // Unmask the interrupt if at least one channel is enabled.
   // Mask if all channels are disabled.
   status_ok_or_return(gpio_it_mask_interrupt(&storage->ready_pin, mask));
+
+  if (!mask && storage->watchdog_timer == SOFT_TIMER_INVALID_TIMER) {
+    storage->watchdog_kicked = false;
+    soft_timer_start_millis(ADS1015_WATCHDOG_TIMEOUT_MS, prv_watchdog, storage,
+                            &storage->watchdog_timer);
+  } else if (mask) {
+    soft_timer_cancel(storage->watchdog_timer);
+  }
   return STATUS_CODE_OK;
 }
 
@@ -161,6 +194,8 @@ StatusCode ads1015_read_raw(Ads1015Storage *storage, Ads1015Channel channel, int
   if (channel >= NUM_ADS1015_CHANNELS || storage == NULL || reading == NULL ||
       !channel_is_enabled(storage, channel)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
+  } else if (!storage->data_valid) {
+    return status_code(STATUS_CODE_TIMEOUT);
   }
 
   *reading = storage->channel_readings[channel];
@@ -173,6 +208,8 @@ StatusCode ads1015_read_converted(Ads1015Storage *storage, Ads1015Channel channe
   if (channel >= NUM_ADS1015_CHANNELS || storage == NULL || reading == NULL ||
       !channel_is_enabled(storage, channel)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
+  } else if (!storage->data_valid) {
+    return status_code(STATUS_CODE_TIMEOUT);
   }
 
   int16_t raw_reading = ADS1015_READ_UNSUCCESSFUL;
