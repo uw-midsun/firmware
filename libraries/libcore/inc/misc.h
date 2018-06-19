@@ -23,3 +23,6 @@
     __typeof__(b) _b = (b); \
     _a > _b ? _a : _b;      \
   })
+
+// x > 0
+#define CEIL(x, y) (1 + (((x) - 1) / (y)))
