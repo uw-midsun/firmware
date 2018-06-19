@@ -94,7 +94,6 @@ before_script:
 script:
   - make build_all PLATFORM=x86
   - make build_all PLATFORM=stm32f0xx
-  - cat build/bin/stm32f0xx/test/driver_controls/test_drive_runner.map
   - make test_all PLATFORM=x86
   - make lint
   - make pylint
