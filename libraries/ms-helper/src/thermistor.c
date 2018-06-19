@@ -29,49 +29,47 @@ StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress gpio_address,
     .alt_function = GPIO_ALTFN_ANALOG,
   };
 
-  // initialize gpio pin
   gpio_init_pin(&gpio_address, &gpio_settings);
 
-  // initialize the channel
   adc_get_channel(gpio_address, &(storage->adc_channel));
 
   // set the channel
   adc_set_channel(storage->adc_channel, true);
-  adc_init(ADC_MODE_CONTINUOUS);
   return STATUS_CODE_OK;
 }
 
-StatusCode thermistor_get_temp(ThermistorStorage *storage, uint32_t *temperature) {
+StatusCode thermistor_get_temp(ThermistorStorage *storage, uint32_t *temperature_millicelcius) {
   // fetch the voltage readings
-  uint16_t reading = 0;                // the divided voltage in millivolts
-  uint32_t thermistor_resistance = 0;  // resistance in ohms
-  uint16_t vdda = 0;                   // vdda voltage in millivolts
+  uint16_t reading = 0;                     // the divided voltage in millivolts
+  uint32_t thermistor_resistance_mOhm = 0;  // resistance in milliohms
+  uint16_t vdda = 0;                        // vdda voltage in millivolts
 
-  // get source voltage and voltage drop
+  // get source voltage and voltage drop betweeb the thermistor and other resistor
   adc_read_converted(ADC_CHANNEL_REF, &vdda);
   adc_read_converted(storage->adc_channel, &reading);
 
   if (reading == 0 || vdda == 0) {
-    return STATUS_CODE_INTERNAL_ERROR;
+    return status_msg(STATUS_CODE_INTERNAL_ERROR);
   }
-  // Make sibling resistance in Ohms
-  thermistor_resistance = (storage->sibling_resistance_ohms * 1000 / reading) *
-                          (vdda)-storage->sibling_resistance_ohms * 1000;
+  // Calculates sibling resistance in milliOhms
+  thermistor_resistance_mOhm = (storage->sibling_resistance_ohms * 1000 / reading) *
+                               (vdda)-storage->sibling_resistance_ohms * 1000;
 
-  return thermistor_calculate_temp(thermistor_resistance, temperature);
+  return thermistor_calculate_temp(thermistor_resistance_mOhm, temperature_millicelcius);
 }
 
-StatusCode thermistor_calculate_temp(uint32_t resistance, uint32_t *temperature) {
+StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_mOhm,
+                                     uint32_t *temperature_millicelcius) {
   // find the approximate target temperature from the arguments passed
   for (uint16_t i = 0; i < SIZEOF_ARRAY(s_resistance_lookup) - 1; i++) {
-    LOG_DEBUG("%u %u \n", resistance, s_resistance_lookup[i]);
     if (resistance <= s_resistance_lookup[i] && resistance >= s_resistance_lookup[i + 1]) {
       // return the temperature with the linear approximation in millicelsius
-      *temperature = ((uint32_t)i * 1000 + ((s_resistance_lookup[i] - resistance) * 1000 /
-                                            (s_resistance_lookup[i] - s_resistance_lookup[i + 1])));
+      *temperature_millicelcius =
+          ((uint32_t)i * 1000 + ((s_resistance_lookup[i] - resistance) * 1000 /
+                                 (s_resistance_lookup[i] - s_resistance_lookup[i + 1])));
       return STATUS_CODE_OK;
     }
   }
 
-  return STATUS_CODE_OUT_OF_RANGE;
+  return status_msg(STATUS_CODE_OUT_OF_RANGE);
 }

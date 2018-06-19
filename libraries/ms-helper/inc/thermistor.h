@@ -5,7 +5,7 @@
 #include "gpio.h"
 
 typedef struct {
-  uint32_t sibling_resistance_ohms;  // milliohms
+  uint32_t sibling_resistance_ohms;
 
   ADCChannel adc_channel;
 } ThermistorStorage;
@@ -15,7 +15,8 @@ StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress gpio_address,
                            uint32_t sibling_resistance_ohms);
 
 // Fetch the temperature reading in milliCelsius from the MCU's ADC
-StatusCode thermistor_get_temp(ThermistorStorage *storage, uint32_t *temperature);
+StatusCode thermistor_get_temp(ThermistorStorage *storage, uint32_t *temperature_millicelcius);
 
 // Calculate the temperature in milliCelsius from milliohms
-StatusCode thermistor_calculate_temp(uint32_t resistance, uint32_t *temperature);
+StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_mOhm,
+                                     uint32_t *temperature_millicelcius);
