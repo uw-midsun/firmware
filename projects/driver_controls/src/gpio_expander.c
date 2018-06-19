@@ -76,7 +76,7 @@ StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioE
 
     gpio_init_pin(interrupt_pin, &gpio_settings);
     gpio_it_register_interrupt(interrupt_pin, &it_settings, INTERRUPT_EDGE_FALLING,
-                              prv_interrupt_handler, expander);
+                               prv_interrupt_handler, expander);
 
     soft_timer_start_millis(GPIO_EXPANDER_POLL_PERIOD_MS, prv_poll_timeout, expander, NULL);
   }
@@ -152,7 +152,7 @@ StatusCode gpio_expander_set_state(GpioExpanderStorage *expander, GpioExpanderPi
 StatusCode gpio_expander_register_callback(GpioExpanderStorage *expander, GpioExpanderPin pin,
                                            GpioExpanderCallbackFn callback, void *context) {
   if (expander == NULL) {
-      return status_code(STATUS_CODE_INVALID_ARGS);
+    return status_code(STATUS_CODE_INVALID_ARGS);
   } else if (pin >= NUM_GPIO_EXPANDER_PINS) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
