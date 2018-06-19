@@ -9,7 +9,6 @@
 #include "test_helpers.h"
 #include "throttle.h"
 #include "unity.h"
-#include "log.h"
 
 #define TEST_THROTTLE_ADC_CHANNEL_MAIN ADS1015_CHANNEL_0
 #define TEST_THROTTLE_ADC_CHANNEL_SECONDARY ADS1015_CHANNEL_1
