@@ -26,16 +26,15 @@ StatusCode current_sense_init(CurrentSenseStorage *storage, CurrentSenseCalibrat
     return status_code(STATUS_CODE_UNINITIALIZED);
   }
 
-  // Initialize ADC and start periodic polling
-  storage->adc_storage = (LtcAdcStorage){ 0 };
-
   status_ok_or_return(ltc_adc_init(&storage->adc_storage, settings));
 
   // Store calibration parameters
   storage->data = data;
 
   // Reset data and callbacks
-  storage->value = (CurrentSenseValue){ 0 };
+  storage->value.voltage = 0;
+  storage->value.current = 0;
+
   storage->offset = 0;
   storage->callback = NULL;
   storage->context = NULL;

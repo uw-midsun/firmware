@@ -46,3 +46,5 @@ typedef union {
 
 // Parse the raw 24-bit ADC reading to a voltage measurement in uV.
 StatusCode ltc2484_raw_adc_to_uv(uint8_t *spi_data, int32_t *voltage);
+
+StatusCode ltc_adc_set_input_voltage_test(int32_t input_voltage);

@@ -15,4 +15,3 @@ $(T)_EXCLUDE_TESTS := ltc_afe ltc_adc
 endif
 
 $(T)_test_bps_heartbeat_MOCKS := sequenced_relay_set_state
-$(T)_test_ltc2484_MOCKS := ltc2484_raw_adc_to_uv

@@ -31,7 +31,7 @@ static void prv_callback(int32_t current, void *context) {
   LOG_DEBUG("Current = %" PRId32 "\n", current);
 
   s_test_input_voltage += 1000;
-  ltc_adc_set_input_voltage(s_test_input_voltage);
+  ltc_adc_set_input_voltage_test(s_test_input_voltage);
 
   s_callback_runs++;
 }
@@ -44,13 +44,15 @@ void setup_test(void) {
   s_callback_runs = 0;
   s_test_input_voltage = 0;
 
-  LtcAdcSettings adc_settings = (LtcAdcSettings){ .mosi = { GPIO_PORT_B, 15 },
-                                                  .miso = { GPIO_PORT_B, 14 },
-                                                  .sclk = { GPIO_PORT_B, 13 },
-                                                  .cs = { GPIO_PORT_B, 12 },
-                                                  .spi_port = SPI_PORT_2,
-                                                  .spi_baudrate = 750000,
-                                                  .filter_mode = LTC_ADC_FILTER_50HZ_60HZ };
+  LtcAdcSettings adc_settings = {
+    .mosi = { GPIO_PORT_B, 15 },
+    .miso = { GPIO_PORT_B, 14 },
+    .sclk = { GPIO_PORT_B, 13 },
+    .cs = { GPIO_PORT_B, 12 },
+    .spi_port = SPI_PORT_2,
+    .spi_baudrate = 750000,
+    .filter_mode = LTC_ADC_FILTER_50HZ_60HZ,
+  };
 
   TEST_ASSERT_OK(current_sense_init(&s_storage, &s_data, &adc_settings));
 }
@@ -59,7 +61,7 @@ void teardown_test(void) {}
 
 void test_current_sense(void) {
   s_test_input_voltage = 0;
-  ltc_adc_set_input_voltage(s_test_input_voltage);
+  ltc_adc_set_input_voltage_test(s_test_input_voltage);
 
   TEST_ASSERT_OK(current_sense_register_callback(&s_storage, prv_callback, NULL));
 
@@ -77,7 +79,7 @@ void test_current_sense_reset(void) {
   for (int i = 0; i < TEST_NUM_SAMPLES; i++) {
     // Send in new test voltage and start a reset
     s_test_input_voltage = (i + 1) * 1000;
-    ltc_adc_set_input_voltage(s_test_input_voltage);
+    ltc_adc_set_input_voltage_test(s_test_input_voltage);
 
     LOG_DEBUG("Testing with offset = %" PRId32 "\n", s_test_input_voltage);
 
