@@ -51,9 +51,9 @@ $($(T)_TEST_OBJ_DIR)/%.o: $($(T)_GEN_DIR)/%.c | $(T) $(dir $($(T)_TEST_RUNNERS_O
 $($(T)_TESTS): $($(T)_TEST_BIN_DIR)/%_runner$(PLATFORM_EXT): \
                  $($(T)_TEST_OBJ_DIR)/%.o $($(T)_TEST_OBJ_DIR)/%_runner.o \
                  $(call dep_to_lib,$($(T)_TEST_DEPS)) | $(T) $($(T)_TEST_BIN_DIR)
-	@echo "Building test $(notdir $@) for $(PLATFORM)"
+	@echo "Building test $(notdir $(@:%_runner$(PLATFORM_EXT)=%)) for $(PLATFORM)"
 	@$(CC) $($(firstword $|)_CFLAGS) -Wl,-Map=$(lastword $|)/$(notdir $(@:%$(PLATFORM_EXT)=%.map)) \
-    $(addprefix -Wl$(COMMA)-wrap$(COMMA),$($(firstword $|)_$(notdir $(@:%_runner=%))_MOCKS)) $^ -o $@ \
+    $(addprefix -Wl$(COMMA)-wrap$(COMMA),$($(firstword $|)_$(notdir $(@:%_runner$(PLATFORM_EXT)=%))_MOCKS)) $^ -o $@ \
     -L$(STATIC_LIB_DIR) $(addprefix -l,$(foreach lib,$($(firstword $|)_TEST_DEPS),$($(lib)_DEPS))) \
     $(LDFLAGS) $(addprefix -I,$($(firstword $|)_INC_DIRS) $(unity_INC_DIRS))
 
