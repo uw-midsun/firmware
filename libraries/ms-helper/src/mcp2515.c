@@ -31,6 +31,7 @@ static const Mcp2515RxBuffer s_rx_buffers[] = {
   { .id = MCP2515_READ_RXB1SIDH, .data = MCP2515_READ_RXB1D0, .int_flag = MCP2515_CANINT_RX1IE },
 };
 
+// SPI commands - See Table 12-1
 static void prv_reset(Mcp2515Storage *storage) {
   uint8_t payload[] = { MCP2515_CMD_RESET };
   spi_exchange(storage->spi_port, payload, sizeof(payload), NULL, 0);
@@ -50,6 +51,7 @@ static void prv_write(Mcp2515Storage *storage, uint8_t addr, uint8_t *write_data
   spi_exchange(storage->spi_port, payload, sizeof(payload), write_data, write_len);
 }
 
+// See 12.10: *addr = (data & mask) | (*addr & ~mask)
 static void prv_bit_modify(Mcp2515Storage *storage, uint8_t addr, uint8_t mask, uint8_t data) {
   uint8_t payload[] = { MCP2515_CMD_BIT_MODIFY, addr, mask, data };
   spi_exchange(storage->spi_port, payload, sizeof(payload), NULL, 0);
@@ -103,7 +105,7 @@ static void prv_handle_rx(Mcp2515Storage *storage, uint8_t int_flags) {
 
 static void prv_handle_error(Mcp2515Storage *storage, uint8_t int_flags) {
   if (int_flags & MCP2515_CANINT_EFLAG) {
-    // Do we bother recording errors?
+    // Don't bother reporting errors - just clear them
     uint8_t clear = 0x00;
     prv_write(storage, MCP2515_CTRL_REG_EFLG, &clear, 1);
     prv_write(storage, MCP2515_CTRL_REG_TEC, &clear, 1);

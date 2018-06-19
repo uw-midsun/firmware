@@ -4,7 +4,6 @@
 #include <string.h>
 #include "can_transmit.h"
 #include "critical_section.h"
-#include "log.h"
 #include "soft_timer.h"
 #include "wavesculptor.h"
 
