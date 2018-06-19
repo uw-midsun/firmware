@@ -19,19 +19,19 @@
 #include "wait.h"
 
 // takes in LSB as input and converts it to percentage using a linear relationship
-static int16_t lsb_to_percentage_converter(MechBrakeStorage* storage) {
-
+static int16_t lsb_to_percentage_converter(MechBrakeStorage *storage) {
   int16_t percentage;
 
   if (storage->calibration_data->zero_value > storage->calibration_data->hundred_value) {
     percentage =
-        ((storage->settings.min_allowed_range * (storage->reading - storage->calibration_data->hundred_value)) /
+        ((storage->settings.min_allowed_range *
+          (storage->reading - storage->calibration_data->hundred_value)) /
          (storage->calibration_data->hundred_value - storage->calibration_data->zero_value)) +
         storage->settings.max_allowed_range;
   } else {
-    percentage =
-        (storage->settings.max_allowed_range * (storage->reading - storage->calibration_data->zero_value)) /
-        (storage->calibration_data->hundred_value - storage->calibration_data->zero_value);
+    percentage = (storage->settings.max_allowed_range *
+                  (storage->reading - storage->calibration_data->zero_value)) /
+                 (storage->calibration_data->hundred_value - storage->calibration_data->zero_value);
   }
 
   if (percentage < storage->settings.min_allowed_range) {
@@ -53,7 +53,6 @@ static int16_t lsb_to_percentage_converter(MechBrakeStorage* storage) {
 }
 
 static void prv_callback_channel(Ads1015Channel channel, void *context) {
-
   MechBrakeStorage *storage = context;
 
   ads1015_read_raw(storage->settings.ads1015, channel, &(storage->reading));
@@ -66,15 +65,14 @@ static void prv_callback_channel(Ads1015Channel channel, void *context) {
   storage->percentage = percentage;
 }
 
-StatusCode mech_brake_init(MechBrakeStorage* storage, MechBrakeSettings* settings, MechBrakeCalibrationData* data){
-
+StatusCode mech_brake_init(MechBrakeStorage *storage, MechBrakeSettings *settings,
+                           MechBrakeCalibrationData *data) {
   memset(storage, 0, sizeof(*storage));
   storage->settings = *settings;
   storage->calibration_data = data;
 
-  ads1015_configure_channel(storage->settings.ads1015,
-                            storage->settings.channel, true, prv_callback_channel,
-                            storage);
+  ads1015_configure_channel(storage->settings.ads1015, storage->settings.channel, true,
+                            prv_callback_channel, storage);
 
   return STATUS_CODE_OK;
 }

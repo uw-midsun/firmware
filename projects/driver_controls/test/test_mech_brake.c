@@ -27,7 +27,6 @@ static MechBrakeCalibrationData calib_data = {
 };
 
 void setup_test(void) {
-
   Ads1015Storage storage;
   gpio_init();
   interrupt_init();
@@ -35,12 +34,12 @@ void setup_test(void) {
   soft_timer_init();
 
   MechBrakeSettings brake_settings = {
-  .percentage_threshold = 500,
-  .min_allowed_range = 0,
-  .max_allowed_range = (1 << 12),
-  .channel = ADS1015_CHANNEL_2,
-  .ads1015 = &storage,
-};
+    .percentage_threshold = 500,
+    .min_allowed_range = 0,
+    .max_allowed_range = (1 << 12),
+    .channel = ADS1015_CHANNEL_2,
+    .ads1015 = &storage,
+  };
 
   I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,
@@ -55,7 +54,6 @@ void setup_test(void) {
   ads1015_init(&storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
 
   mech_brake_init(&mech_brake_storage, &brake_settings, &calib_data);
-
 }
 
 void teardown_test(void) {}

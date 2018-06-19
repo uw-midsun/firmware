@@ -1,7 +1,5 @@
 #include "log.h"
 
-int main(void){
-
-	LOG_DEBUG("hello\n");
-	
+int main(void) {
+  LOG_DEBUG("hello\n");
 }

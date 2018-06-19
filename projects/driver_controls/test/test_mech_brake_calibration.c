@@ -15,7 +15,6 @@ static MechBrakeStorage mech_brake_storage;
 static MechBrakeCalibrationStorage s_calibration_storage;
 
 void setup_test(void) {
-
   Ads1015Storage storage;
   gpio_init();
   interrupt_init();
