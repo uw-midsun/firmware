@@ -1,43 +1,101 @@
+#include "adc.h"
 #include "gpio.h"
 #include "interrupt.h"
 #include "log.h"
-#include "soft_timer.h"
 #include "test_helpers.h"
 #include "thermistor.h"
+#include "unity.h"
+
+StatusCode TEST_MOCK(adc_read_converted)(ADCChannel adc_channel, uint16_t *reading) {
+  switch (adc_channel) {
+    case (ADC_CHANNEL_1):
+      *reading = 1500;
+      break;
+    case (ADC_CHANNEL_2):  // Lookup table will return the lowest resistance. Translates to 0
+                           // degrees
+      *reading = 806;
+      break;
+    case (ADC_CHANNEL_3):  // Lookup table will return the highest resistance. translates to 100
+                           // degrees
+      *reading = 2733;
+      break;
+    case (ADC_CHANNEL_4):
+      *reading = 3000;
+      break;
+    case (ADC_CHANNEL_REF):
+      *reading = 3000;
+      break;
+    default:
+      *reading = 1500;
+      break;
+  }
+  return STATUS_CODE_OK;
+}
+
+StatusCode TEST_MOCK(adc_get_channel)(GPIOAddress address, ADCChannel *adc_channel) {
+  *adc_channel = address.pin;
+  return STATUS_CODE_OK;
+}
+
+StatusCode TEST_MOCK(adc_set_channel)(ADCChannel adc_channel, bool new_state) {
+  return STATUS_CODE_OK;
+}
 
 void setup_test(void) {}
 
 void teardown_test(void) {}
 
-void test_thermistor(void) {
+void test_thermistor_normal(void) {
+  GPIOAddress gpio_addr = {
+    .port = GPIO_PORT_A,
+    .pin = 1,
+  };
+  ThermistorStorage storage;
+  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, 10000));
+
+  uint32_t reading = 0;
+  TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
+  TEST_ASSERT_UINT32_WITHIN(100, 25000, reading);
+  LOG_DEBUG("Temperature: %u\n", reading);
+}
+
+void test_thermistor_min_temp(void) {
+  GPIOAddress gpio_addr = {
+    .port = GPIO_PORT_A,
+    .pin = 2,
+  };
+  ThermistorStorage storage;
+
+  uint32_t reading = 0;
+  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, 10000));
+  TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
+  LOG_DEBUG("Temperature: %u\n", reading);
+  TEST_ASSERT_UINT32_WITHIN(100, 0, reading);
+}
+
+void test_thermistor_max_temp(void) {
+  GPIOAddress gpio_addr = {
+    .port = GPIO_PORT_A,
+    .pin = 3,
+  };
+  ThermistorStorage storage;
+
+  uint32_t reading = 0;
+  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, 10000));
+  TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
+  LOG_DEBUG("Temperature: %u\n", reading);
+  TEST_ASSERT_UINT32_WITHIN(100, 100000, reading);
+}
+
+void test_thermistor_out_of_range(void) {
   GPIOAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 4,
   };
-
-  GPIOSettings gpio_settings = {
-    .direction = GPIO_DIR_IN,
-    .state = GPIO_STATE_LOW,
-    .resistor = GPIO_RES_NONE,
-    .alt_function = GPIO_ALTFN_ANALOG,
-  };
-
-  ThermistorSettings settings = {
-    .sibling_resistance = 10000000,
-    .adc_channel = ADC_CHANNEL_4,
-  };
-
   ThermistorStorage storage;
 
-  // initialize gpio pin
-  gpio_init_pin(&gpio_addr, &gpio_settings);
-
-  // initialize the channel
-  adc_init(ADC_MODE_CONTINUOUS);
-
-  TEST_ASSERT_OK(thermistor_init(&storage, &settings));
-
   uint32_t reading = 0;
-  TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
-  LOG_DEBUG("Temperature: %lu\n", reading);
+  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, 10000));
+  TEST_ASSERT_NOT_OK(thermistor_get_temp(&storage, &reading));
+  LOG_DEBUG("alksdjlksa Temperature: %u\n", reading);
 }

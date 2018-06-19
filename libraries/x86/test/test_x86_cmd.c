@@ -4,11 +4,7 @@
 #include "unity.h"
 #include "x86_cmd.h"
 
-<<<<<<< HEAD
-static char s_cmd[30];
-=======
 static const char s_cmd[30];
->>>>>>> Updated thermistor_converter.c, added thermistor_converter.h and currently working on a unit test to verify that everything it works.
 static size_t s_num_args;
 
 static void prv_handler(int client_fd, const char *cmd, const char *args[], size_t num_args,
@@ -38,13 +34,10 @@ void test_x86_cmd_client(void) {
   volatile bool received = false;
   x86_cmd_register_handler("test", prv_handler, &received);
 
-<<<<<<< HEAD
-=======
   // Delay so we hopefully start the client after the RX server thread has actually initialized.
   LOG_DEBUG("Hopefully delaying a bit for the RX server to start\n");
   for (volatile uint32_t i = 0; i < 100000000; i++) {
   }
->>>>>>> Updated thermistor_converter.c, added thermistor_converter.h and currently working on a unit test to verify that everything it works.
   int client_fd = test_x86_socket_client_init(X86_CMD_SOCKET_NAME);
 
   const char *cmd = "test a b c d";
