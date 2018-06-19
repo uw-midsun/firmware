@@ -71,25 +71,23 @@ static void prv_handle_rx(Mcp2515Storage *storage, uint8_t int_flags) {
 
       // Read ID
       uint8_t id_payload[] = { MCP2515_CMD_READ_RX | rx_buf->id };
-      uint8_t read_id[5] = { 0 };
-      spi_exchange(storage->spi_port, id_payload, sizeof(id_payload), read_id, sizeof(read_id));
-
-      // Unpack ID: SIDH, SIDL, EID8, EID0, RTSnDLC
-      //
-      // STD[10:3] in SIDH[7:0], STD[2:0] in SIDL[7:5]
-      // EXT[17:16] in SIDL[1:0], EXT[15:8] in EID8[15:8], EXT[7:0] in EID0[7:0]
-      // extended bit in SIDL[3]
-      // TODO(ELEC-462): don't use magic numbers?
-      uint32_t id = (uint32_t)((read_id[0] << 3) & 0xF) | (uint32_t)((read_id[1] >> 5) & 0x3) |
-                    (uint32_t)((read_id[1] << 27) & 0x2) | (uint32_t)(read_id[2] << 19) |
-                    (uint32_t)(read_id[3] << 11);
-      bool extended = (read_id[1] >> 3) & 0x1;
+      Mcp2515IdRegs read_id_regs = { 0 };
+      spi_exchange(storage->spi_port, id_payload, sizeof(id_payload), (uint8_t *)&read_id_regs,
+                   sizeof(read_id_regs));
+      Mcp2515Id id = {
+        .sid_0_2 = read_id_regs.sidl.sid_0_2,
+        .sidh = read_id_regs.sidh,
+        .eid0 = read_id_regs.eid0,
+        .eid8 = read_id_regs.eid8,
+        .eid_16_17 = read_id_regs.sidl.eid_16_17,
+      };
+      bool extended = read_id_regs.sidl.ide;
+      size_t dlc = read_id_regs.dlc.dlc;
 
       if (!extended) {
         // Standard IDs have garbage in the extended fields
-        id &= 0x7FF;
+        id.raw &= 0x7FF;
       }
-      size_t dlc = read_id[4] & MCP2515_TXBNDLC_DLC_MASK;
 
       uint8_t data_payload[] = { MCP2515_CMD_READ_RX | rx_buf->data };
       uint64_t read_data = 0;
@@ -97,7 +95,7 @@ static void prv_handle_rx(Mcp2515Storage *storage, uint8_t int_flags) {
                    sizeof(read_data));
 
       if (storage->rx_cb != NULL) {
-        storage->rx_cb(id, extended, read_data, dlc, storage->context);
+        storage->rx_cb(id.raw, extended, read_data, dlc, storage->context);
       }
     }
   }
@@ -202,26 +200,31 @@ StatusCode mcp2515_tx(Mcp2515Storage *storage, uint32_t id, bool extended, uint6
   // ffs returns 1-indexed: (x-3)/2 -> 0b00000111 = all TXxREQ bits set
   Mcp2515TxBuffer *tx_buf = &s_tx_buffers[(tx_status - 3) / 2];
 
+  Mcp2515Id tx_id = { .raw = id };
+  Mcp2515IdRegs tx_id_regs = {
+    .sidh = tx_id.sidh,
+    .sidl = { .eid_16_17 = tx_id.eid_16_17,
+              .ide = extended,
+              .srr = false,
+              .sid_0_2 = tx_id.sid_0_2 },
+    .eid0 = tx_id.eid0,
+    .eid8 = tx_id.eid8,
+    .dlc = { .dlc = dlc, .rtr = false },
+  };
+
   // Load ID: SIDH, SIDL, EID8, EID0, RTSnDLC
-  //
-  // STD[10:3] in SIDH[7:0], STD[2:0] in SIDL[7:5]
-  // EXT[17:16] in SIDL[1:0], EXT[15:8] in EID8[15:8], EXT[7:0] in EID0[7:0]
-  // extended bit in SIDL[3]
   uint8_t id_payload[] = {
     MCP2515_CMD_LOAD_TX | tx_buf->id,
-    id >> 3,
-    id << 5 | (uint8_t)(extended << 3) | id >> 27,
-    id >> 19,
-    id >> 11,
-    dlc,
+    tx_id_regs.sidh,
+    tx_id_regs.sidl.raw,
+    tx_id_regs.eid0,
+    tx_id_regs.eid8,
+    tx_id_regs.dlc.raw,
   };
   spi_exchange(storage->spi_port, id_payload, sizeof(id_payload), NULL, 0);
 
   // Load data
-  struct {
-    uint8_t cmd;
-    uint64_t data;
-  } __attribute__((packed)) data_payload = {
+  Mcp2515LoadTxPayload data_payload = {
     .cmd = MCP2515_CMD_LOAD_TX | tx_buf->data,
     .data = data,
   };

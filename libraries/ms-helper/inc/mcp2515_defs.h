@@ -1,5 +1,6 @@
 #pragma once
 // Internal MCP2515 register definitions
+// See http://ww1.microchip.com/downloads/en/DeviceDoc/20001801H.pdf
 
 // SPI commands: Table 12-1
 #define MCP2515_CMD_RESET 0xC0
@@ -124,3 +125,46 @@
 #define MCP2515_TXBNDLC_RTR_SHIFT 6
 #define MCP2515_TXBNDLC_RTR_FRAME 0x40
 #define MCP2515_TXBNDLC_DLC_MASK 0x0F
+
+typedef struct Mcp2515LoadTxPayload {
+  uint8_t cmd;
+  uint64_t data;
+} __attribute__((packed)) Mcp2515LoadTxPayload;
+
+// TX/RX buffer ID registers - See Registers 3-3 to 3-7, 4-4 to 4-8
+typedef struct Mcp2515IdRegs {
+  uint8_t sidh;
+  union {
+    struct {
+      uint8_t eid_16_17 : 2;
+      uint8_t unimplemented : 1;
+      uint8_t ide : 1;
+      uint8_t srr : 1;
+      uint8_t sid_0_2 : 3;
+    };
+    uint8_t raw;
+  } sidl;
+  uint8_t eid8;
+  uint8_t eid0;
+  union {
+    struct {
+      uint8_t dlc : 4;
+      uint8_t reserved : 2;
+      uint8_t rtr : 1;
+      uint8_t unimplemented : 1;
+    };
+    uint8_t raw;
+  } dlc;
+} Mcp2515IdRegs;
+
+typedef union Mcp2515Id {
+  struct {
+    uint32_t sid_0_2 : 3;
+    uint32_t sidh : 8;
+    uint32_t eid0 : 8;
+    uint32_t eid8 : 8;
+    uint32_t eid_16_17 : 2;
+    uint32_t padding : 3;
+  };
+  uint32_t raw;
+} Mcp2515Id;
