@@ -1,3 +1,7 @@
+// In the case of a timeout, we attempt to recover by manually clocking SCL. The idea is that
+// if the bus is locked up, a slave is likely holding SDA low in the middle of a transaction.
+// By clocking SCL, we hopefully complete the slave's transaction and transition it into an idle
+// state for the next valid transaction.
 #include "i2c.h"
 #include <stdbool.h>
 #include "critical_section.h"
@@ -29,7 +33,6 @@
 typedef struct {
   uint32_t periph;
   I2C_TypeDef *base;
-
   I2CSettings settings;
 } I2CPortData;
 

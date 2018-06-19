@@ -7,6 +7,7 @@
 
 #define LTC_AFE_FSM_CELL_CONV_DELAY_MS 10
 #define LTC_AFE_FSM_AUX_CONV_DELAY_MS 6
+// Maximum number of retry attempts to read cell/aux data once triggered
 #define LTC_AFE_FSM_MAX_RETRY_COUNT 3
 
 // AFE fault event is raised with this data field

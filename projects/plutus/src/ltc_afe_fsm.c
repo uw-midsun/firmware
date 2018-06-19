@@ -61,7 +61,8 @@ static void prv_afe_trigger_cell_conv_output(struct FSM *fsm, const Event *e, vo
   if (status_ok(ret)) {
     soft_timer_start_millis(LTC_AFE_FSM_CELL_CONV_DELAY_MS, prv_cell_conv_timeout, NULL, NULL);
   } else {
-    event_raise_priority(EVENT_PRIORITY_HIGHEST, PLUTUS_EVENT_AFE_FAULT, LTC_AFE_FSM_FAULT_TRIGGER_CELL_CONV);
+    event_raise_priority(EVENT_PRIORITY_HIGHEST, PLUTUS_EVENT_AFE_FAULT,
+                         LTC_AFE_FSM_FAULT_TRIGGER_CELL_CONV);
   }
 }
 
@@ -79,10 +80,10 @@ static void prv_afe_read_cells_output(struct FSM *fsm, const Event *e, void *con
     }
   } else if (afe->retry_count < LTC_AFE_FSM_MAX_RETRY_COUNT) {
     afe->retry_count++;
-    LOG_DEBUG("retry %d (cell)\n", afe->retry_count);
     soft_timer_start_millis(LTC_AFE_FSM_CELL_CONV_DELAY_MS, prv_cell_conv_timeout, NULL, NULL);
   } else {
-    event_raise_priority(EVENT_PRIORITY_HIGHEST, PLUTUS_EVENT_AFE_FAULT, LTC_AFE_FSM_FAULT_READ_ALL_CELLS);
+    event_raise_priority(EVENT_PRIORITY_HIGHEST, PLUTUS_EVENT_AFE_FAULT,
+                         LTC_AFE_FSM_FAULT_READ_ALL_CELLS);
   }
 }
 
@@ -94,7 +95,8 @@ static void prv_afe_trigger_aux_conv_output(struct FSM *fsm, const Event *e, voi
     afe->aux_index = device_cell;
     soft_timer_start_millis(LTC_AFE_FSM_AUX_CONV_DELAY_MS, prv_aux_conv_timeout, afe, NULL);
   } else {
-    event_raise_priority(EVENT_PRIORITY_HIGHEST, PLUTUS_EVENT_AFE_FAULT, LTC_AFE_FSM_FAULT_TRIGGER_AUX_CONV);
+    event_raise_priority(EVENT_PRIORITY_HIGHEST, PLUTUS_EVENT_AFE_FAULT,
+                         LTC_AFE_FSM_FAULT_TRIGGER_AUX_CONV);
   }
 }
 
@@ -110,11 +112,10 @@ static void prv_afe_read_aux_output(struct FSM *fsm, const Event *e, void *conte
   } else if (afe->retry_count < LTC_AFE_FSM_MAX_RETRY_COUNT) {
     // Attempt to retry the read after delaying
     afe->retry_count++;
-    LOG_DEBUG("retry %d (aux)\n", afe->retry_count);
     soft_timer_start_millis(LTC_AFE_FSM_AUX_CONV_DELAY_MS, prv_aux_conv_timeout, afe, NULL);
   } else {
-    LOG_DEBUG("bad read %d (c%d)\n", ret, device_cell);
-    event_raise_priority(EVENT_PRIORITY_HIGHEST, PLUTUS_EVENT_AFE_FAULT, LTC_AFE_FSM_FAULT_READ_AUX);
+    event_raise_priority(EVENT_PRIORITY_HIGHEST, PLUTUS_EVENT_AFE_FAULT,
+                         LTC_AFE_FSM_FAULT_READ_AUX);
   }
 }
 
