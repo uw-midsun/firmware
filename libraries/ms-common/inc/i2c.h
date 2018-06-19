@@ -1,7 +1,7 @@
 #pragma once
 // Blocking I2C master driver
 // Requires GPIO to be initialized
-
+//
 // Supports 7-bit addresses, does not support fast mode plus
 #include <stddef.h>
 #include <stdint.h>
