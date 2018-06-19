@@ -1,27 +1,16 @@
 #include "gpio.h"
-#include "interrupt.h"
 #include "pwm.h"
 #include "pwm_input.h"
-#include "stm32f0xx.h"
-#include "wait.h"
-#include "soft_timer.h"
-
-void TIM3_IRQHandler(void) {
-  GPIOAddress green_led = {
-    .port = GPIO_PORT_C,
-    .pin = 9,
-  };
-  gpio_toggle_state(&green_led);
-}
 
 int main(void) {
-  uint16_t period = 1000;
 
+  // Set a PWM signal of 1000ms with a duty cycle of 50%
+  // Should blink for half a second
   pwm_init(PWM_TIMER_3, 1000);
   pwm_set_dc(PWM_TIMER_3, 50);
   gpio_init();
-  interrupt_init();
 
+// Use port for Green LED
   GPIOAddress output = {
     .port = GPIO_PORT_C,
     .pin = 9,
@@ -29,12 +18,15 @@ int main(void) {
 
   GPIOSettings output_settings = {
     .direction = GPIO_DIR_OUT,
-    .state = GPIO_STATE_HIGH,
+    .alt_function = GPIO_ALTFN_0;
   };
 
   gpio_init_pin(&output, &output_settings);
 
+  // TODO: Initialize PWM input on another pin and test using jumper wire
+
+  // Pray this works
   while (true) {
-    wait();
   }
+
 }
