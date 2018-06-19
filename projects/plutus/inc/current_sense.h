@@ -19,17 +19,18 @@ typedef struct {
 } CurrentSenseCalibrationData;
 
 typedef struct {
-  LtcAdcStorage *adc_storage;
+  LtcAdcStorage adc_storage;
   CurrentSenseCalibrationData *data;
-  int32_t current_value;
-  volatile uint8_t samples;
+  CurrentSenseValue value;
+  int32_t offset;
   CurrentSenseCallback callback;
   void *context;
 } CurrentSenseStorage;
 
-// Initialize the current sense module. Requires CurrentSenseLineData to be calibrated beforehand
+// Initialize the current sense module. Requires CurrentSenseLineData to be calibrated beforehand.
+// LtcAdcStorage does not need to be initialized
 StatusCode current_sense_init(CurrentSenseStorage *storage, CurrentSenseCalibrationData *data,
-                              LtcAdcStorage *adc_storage, LtcAdcSettings *settings);
+                              LtcAdcSettings *settings);
 
 // Register a callback to run when new data is available
 StatusCode current_sense_register_callback(CurrentSenseStorage *storage,
@@ -38,6 +39,6 @@ StatusCode current_sense_register_callback(CurrentSenseStorage *storage,
 // Return current in millamps
 StatusCode current_sense_get_value(CurrentSenseStorage *storage, int32_t *current);
 
-// Because the zero point for the chip changes on reset, this function can called after reset to
-// adjust the data points to make sure they maintin their linear relationship
+// Because the zero point for the chip changes on reset, this function can be called after reset to
+// adjust the data points to make sure they maintain their linear relationship
 StatusCode current_sense_zero_reset(CurrentSenseStorage *storage);
