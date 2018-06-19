@@ -6,7 +6,7 @@
 #include "thermistor.h"
 #include "unity.h"
 
-#define TEMPERATURE_TOLERANCE = 50;
+#define TEMPERATURE_TOLERANCE 50
 
 StatusCode TEST_MOCK(adc_read_converted)(ADCChannel adc_channel, uint16_t *reading) {
   switch (adc_channel) {

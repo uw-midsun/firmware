@@ -9,5 +9,3 @@
 $(T)_DEPS := ms-common 
 
 $(T)_test_thermistor_MOCKS := adc_read_converted adc_get_channel adc_set_channel
-
-

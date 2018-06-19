@@ -18,5 +18,5 @@ StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress gpio_address,
 StatusCode thermistor_get_temp(ThermistorStorage *storage, uint32_t *temperature_millicelcius);
 
 // Calculate the temperature in milliCelsius from milliohms
-StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_mOhm,
+StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_milliohms,
                                      uint32_t *temperature_millicelcius);
