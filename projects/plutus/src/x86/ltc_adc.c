@@ -32,10 +32,6 @@ StatusCode ltc_adc_init(LtcAdcStorage *storage, const LtcAdcSettings *settings) 
                                  &storage->buffer.timer_id);
 }
 
-StatusCode ltc2484_raw_adc_to_uv(uint8_t *spi_data, int32_t *voltage) {
-  return STATUS_CODE_UNIMPLEMENTED;
-}
-
 StatusCode ltc_adc_register_callback(LtcAdcStorage *storage, LtcAdcCallback callback,
                                      void *context) {
   if (storage == NULL) {
@@ -50,7 +46,7 @@ StatusCode ltc_adc_register_callback(LtcAdcStorage *storage, LtcAdcCallback call
   return STATUS_CODE_OK;
 }
 
-StatusCode ltc_adc_set_input_voltage(int32_t input_voltage) {
+StatusCode ltc_adc_set_input_voltage_test(int32_t input_voltage) {
   s_test_voltage = input_voltage;
 
   return STATUS_CODE_OK;
