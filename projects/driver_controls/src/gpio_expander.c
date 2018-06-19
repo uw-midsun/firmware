@@ -144,8 +144,9 @@ StatusCode gpio_expander_set_state(GpioExpanderStorage *expander, GpioExpanderPi
 StatusCode gpio_expander_register_callback(GpioExpanderStorage *expander, GpioExpanderPin pin,
                                            GpioExpanderCallbackFn callback, void *context) {
   if (expander == NULL)) {
-    return status_code(STATUS_CODE_INVALID_ARGS);
-  } else if (pin >= NUM_GPIO_EXPANDER_PINS) {
+      return status_code(STATUS_CODE_INVALID_ARGS);
+    }
+  else if (pin >= NUM_GPIO_EXPANDER_PINS) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 
