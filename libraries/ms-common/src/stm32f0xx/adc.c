@@ -242,7 +242,7 @@ void ADC1_COMP_IRQHandler() {
 
       if (s_adc_interrupts[current_channel].callback != NULL) {
         s_adc_interrupts[current_channel].callback(current_channel,
-                                                  s_adc_interrupts[current_channel].context);
+                                                   s_adc_interrupts[current_channel].context);
       }
 
       s_adc_interrupts[current_channel].reading = reading;
