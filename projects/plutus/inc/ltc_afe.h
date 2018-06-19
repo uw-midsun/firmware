@@ -75,6 +75,7 @@ typedef struct LtcAfeStorage {
 
   // Only used for storage in the FSM so we store data for the correct cells
   uint16_t aux_index;
+  uint16_t retry_count;
 
   uint16_t cell_voltages[PLUTUS_CFG_AFE_TOTAL_CELLS];
   uint16_t aux_voltages[PLUTUS_CFG_AFE_TOTAL_CELLS];
