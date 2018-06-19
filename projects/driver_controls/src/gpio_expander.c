@@ -81,8 +81,6 @@ StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioE
     soft_timer_start_millis(GPIO_EXPANDER_POLL_PERIOD_MS, prv_poll_timeout, expander, NULL);
   }
 
-  soft_timer_start_millis(GPIO_EXPANDER_POLL_PERIOD_MS, prv_poll_timeout, expander, NULL);
-
   // Set default configuration: input, interrupt on change, active-low interrupt
   uint8_t cfg[] = {
     0xFF,  // IODIR

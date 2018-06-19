@@ -1,5 +1,4 @@
 #include "ltc_afe_fsm.h"
-#include "log.h"
 #include "ltc_afe_impl.h"
 #include "plutus_event.h"
 #include "soft_timer.h"

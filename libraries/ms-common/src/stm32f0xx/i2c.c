@@ -5,7 +5,6 @@
 #include "i2c.h"
 #include <stdbool.h>
 #include "critical_section.h"
-#include "delay.h"
 #include "log.h"
 #include "stm32f0xx.h"
 
