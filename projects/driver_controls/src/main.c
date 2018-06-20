@@ -16,6 +16,7 @@
 #include "power_distribution_controller.h"
 #include "soft_timer.h"
 #include "throttle.h"
+#include "bps_indicator.h"
 
 #include "cruise_fsm.h"
 #include "direction_fsm.h"
@@ -103,7 +104,7 @@ int main() {
   drive_output_init(drive_output_global(), INPUT_EVENT_DRIVE_WATCHDOG_FAULT,
                     INPUT_EVENT_DRIVE_UPDATE_REQUESTED);
 
-  // TODO(ELEC-455): Add BPS fault handler
+  bps_indicator_init();
 
   // Powertrain heartbeat
   heartbeat_rx_register_handler(&s_powertrain_heartbeat, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,

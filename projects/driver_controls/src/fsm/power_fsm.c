@@ -17,7 +17,6 @@
 #include "drive_output.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
-#include "fault_handler.h"
 #include "input_event.h"
 #include "log.h"
 #include "power_distribution_controller.h"
@@ -103,26 +102,7 @@ static bool prv_guard_off(const Event *e) {
 }
 
 // Power FSM output functions
-static void prv_drive_output(FSM *fsm, const Event *e, void *context) {
-  EventArbiterGuard *guard = fsm->context;
-  power_distribution_controller_send_update(EE_POWER_STATE_DRIVE);
-
-  // Allow all events and begin sending periodic drive commands
-  drive_output_set_enabled(drive_output_global(), true);
-  event_arbiter_set_guard_fn(guard, NULL);
-}
-
-static void prv_fault_output(FSM *fsm, const Event *e, void *context) {
-  EventArbiterGuard *guard = fsm->context;
-
-  fault_handler_clear_fault();
-
-  // Disable periodic drive output updates if not running
-  drive_output_set_enabled(drive_output_global(), false);
-  event_arbiter_set_guard_fn(guard, prv_guard_off);
-}
-
-static void prv_idle_output(FSM *fsm, const Event *e, void *context) {
+static void prv_off_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   power_distribution_controller_send_update(EE_POWER_STATE_IDLE);
 
@@ -132,6 +112,31 @@ static void prv_idle_output(FSM *fsm, const Event *e, void *context) {
   // Disable periodic drive output updates if not running
   drive_output_set_enabled(drive_output_global(), false);
   event_arbiter_set_guard_fn(guard, prv_guard_off);
+
+  event_raise(INPUT_EVENT_POWER_STATE_OFF, 0);
+}
+
+static void prv_drive_output(FSM *fsm, const Event *e, void *context) {
+  EventArbiterGuard *guard = fsm->context;
+  power_distribution_controller_send_update(EE_POWER_STATE_DRIVE);
+
+  // Allow all events and begin sending periodic drive commands
+  drive_output_set_enabled(drive_output_global(), true);
+  event_arbiter_set_guard_fn(guard, NULL);
+
+  event_raise(INPUT_EVENT_POWER_STATE_DRIVE, 0);
+}
+
+static void prv_fault_output(FSM *fsm, const Event *e, void *context) {
+  EventArbiterGuard *guard = fsm->context;
+
+  bps_indicator_set_fault();
+
+  // Disable periodic drive output updates if not running
+  drive_output_set_enabled(drive_output_global(), false);
+  event_arbiter_set_guard_fn(guard, prv_guard_off);
+
+  event_raise(INPUT_EVENT_POWER_STATE_FAULT, 0);
 }
 
 static void prv_charge_output(FSM *fsm, const Event *e, void *context) {
@@ -141,12 +146,14 @@ static void prv_charge_output(FSM *fsm, const Event *e, void *context) {
   // Disable periodic drive output updates if not running
   drive_output_set_enabled(drive_output_global(), false);
   event_arbiter_set_guard_fn(guard, prv_guard_off);
+
+  event_raise(INPUT_EVENT_POWER_STATE_CHARGE, 0);
 }
 
 StatusCode power_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
   // TODO(ELEC-354): could use just a mechanical brake guard in state_off?
-  fsm_state_init(state_off, prv_idle_output);
-  fsm_state_init(state_off_brake, prv_idle_output);
+  fsm_state_init(state_off, prv_off_output);
+  fsm_state_init(state_off_brake, prv_off_output);
   fsm_state_init(state_charging, prv_charge_output);
   fsm_state_init(state_charging_brake, prv_charge_output);
   fsm_state_init(state_on, prv_drive_output);

@@ -16,7 +16,7 @@ static StatusCode prv_handle_motor_velocity(const CANMessage *msg, void *context
   // If we ever overflow we have bigger problems
   cruise->current_speed_cms = MAX((left + right) / 2, 0);
 
-  return STATUS_CODE_OK;
+  return event_raise(INPUT_EVENT_SPEED_UPDATE, (uint16_t)cruise->current_speed_cms);
 }
 
 static void prv_timer_cb(SoftTimerID timer_id, void *context) {
