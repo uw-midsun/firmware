@@ -33,7 +33,6 @@ typedef enum {
 
 typedef struct PlutusSysStorage {
   CANStorage can;
-  CANRxHandler can_rx_handlers[PLUTUS_CFG_NUM_CAN_RX_HANDLERS];
   LtcAfeStorage ltc_afe;
   LtcAdcStorage ltc_adc;
   BpsHeartbeatStorage bps_heartbeat;

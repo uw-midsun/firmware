@@ -24,9 +24,9 @@ if [[ $? -ne 0 ]]; then
 fi
 
 if [[ $(whoami) == 'vagrant' || $MS_RUN_NATIVE ]]; then
-  make lint
+  make lint && make pylint
 else
-  vagrant ssh -c 'cd shared/firmware; make lint'
+  vagrant ssh -c 'cd shared/firmware; make lint && make pylint'
 fi
 
 if [[ $? -ne 0 ]]; then

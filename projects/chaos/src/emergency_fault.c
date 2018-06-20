@@ -18,6 +18,8 @@ static StatusCode prv_ack_handler(CANMessageID msg_id, uint16_t device, CANAckSt
 // SoftTimerCallback
 static void prv_send(SoftTimerID id, void *context) {
   (void)id;
+  EmergencyFaultStorage *storage = context;
+  storage->id = SOFT_TIMER_INVALID_TIMER;
   CANAckRequest req = {
     .callback = prv_ack_handler,
     .context = context,
@@ -32,15 +34,13 @@ static StatusCode prv_ack_handler(CANMessageID msg_id, uint16_t device, CANAckSt
   // Ignore this as there should only be one receiver.
   (void)msg_id;
   (void)device;
-  (void)num_remaining;
   EmergencyFaultStorage *storage = context;
-  if (status != CAN_ACK_STATUS_OK) {
-    // Backoff to avoid spamming the CAN Bus.
-    soft_timer_start_millis(EMERGENCY_FAULT_BACKOFF_MS, prv_send, NULL, &storage->id);
-  } else {
+  if (num_remaining == 0 && status == CAN_ACK_STATUS_OK) {
     // Ack was received so stop trying to send.
-    storage->id = SOFT_TIMER_INVALID_TIMER;
     storage->keep_trying = false;
+  } else if (storage->keep_trying) {
+    // Backoff to avoid spamming the CAN Bus.
+    soft_timer_start_millis(EMERGENCY_FAULT_BACKOFF_MS, prv_send, context, &storage->id);
   }
   return STATUS_CODE_OK;
 }

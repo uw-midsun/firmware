@@ -3,7 +3,7 @@
 #include "can_msg.h"
 #include "fifo.h"
 
-#define CAN_FIFO_SIZE 10
+#define CAN_FIFO_SIZE 32
 
 typedef struct CANFifo {
   Fifo fifo;

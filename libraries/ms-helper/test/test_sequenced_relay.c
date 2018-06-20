@@ -11,7 +11,6 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#define TEST_SEQUENCED_RELAY_NUM_RX_HANDLERS 5
 #define TEST_SEQUENCED_RELAY_CAN_DEVICE_ID 0x1
 
 #define TEST_SEQUENCED_RELAY_LEFT \
@@ -21,7 +20,6 @@
 #define TEST_SEQUENCED_RELAY_DELAY_MS 10
 
 static CANStorage s_can;
-static CANRxHandler s_rx_handlers[TEST_SEQUENCED_RELAY_NUM_RX_HANDLERS];
 static SequencedRelayStorage s_sequenced_relay;
 
 typedef enum {
@@ -55,8 +53,7 @@ void setup_test(void) {
     .rx = { GPIO_PORT_A, 11 },
     .loopback = true,
   };
-  TEST_ASSERT_OK(
-      can_init(&s_can, &can_settings, s_rx_handlers, TEST_SEQUENCED_RELAY_NUM_RX_HANDLERS));
+  TEST_ASSERT_OK(can_init(&s_can, &can_settings));
 
   SequencedRelaySettings relay_settings = {
     .can_msg_id = SYSTEM_CAN_MESSAGE_MOTOR_RELAY,
