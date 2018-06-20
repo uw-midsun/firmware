@@ -1,5 +1,6 @@
 #include "ads1015.h"
 #include "delay.h"
+#include "event_arbiter.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "i2c.h"
@@ -9,8 +10,6 @@
 #include "mech_brake_calibration.h"
 #include "soft_timer.h"
 #include "unity.h"
-#include "event_arbiter.h"
-
 
 static Ads1015Storage s_ads1015_storage;
 static MechBrakeStorage mech_brake_storage;

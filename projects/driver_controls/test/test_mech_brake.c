@@ -49,7 +49,7 @@ void setup_test(void) {
 
   i2c_init(I2C_PORT_2, &i2c_settings);
 
-  GPIOAddress ready_pin = {.port = GPIO_PORT_A, .pin = 10 };
+  GPIOAddress ready_pin = { .port = GPIO_PORT_A, .pin = 10 };
 
   ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
 
