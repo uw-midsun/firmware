@@ -2,11 +2,9 @@
 //
 // - INPUT_EVENT_POWER_STATE_*
 // - INPUT_EVENT_MECHANICAL_BRAKE_*
-// - INPUT_EVENT_CENTER_CONSOLE_DIRECTION_*
+// - INPUT_EVENT_DIRECTION_STATE_*
 // - INPUT_EVENT_PEDAL_*
 // - INPUT_EVENT_SPEED_UPDATE
-//
-// On power state updates, we clear all fields
 #include "brake_signal.h"
 #include <stdbool.h>
 #include <string.h>
@@ -43,8 +41,6 @@ bool brake_signal_process_event(const Event *e) {
     case INPUT_EVENT_POWER_STATE_DRIVE:
     case INPUT_EVENT_POWER_STATE_CHARGE:
     case INPUT_EVENT_POWER_STATE_FAULT:
-      // Clear all states on power state update - direction starts neutral, all others are periodic
-      s_brake_state.input_state.raw = 0;
       s_brake_state.input_state.power_state = e->id == INPUT_EVENT_POWER_STATE_DRIVE;
       break;
 
@@ -53,10 +49,10 @@ bool brake_signal_process_event(const Event *e) {
       s_brake_state.input_state.mech_brake = e->id == INPUT_EVENT_MECHANICAL_BRAKE_PRESSED;
       break;
 
-    case INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE:
-    case INPUT_EVENT_CENTER_CONSOLE_DIRECTION_NEUTRAL:
-    case INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE:
-      s_brake_state.input_state.direction = e->id != INPUT_EVENT_CENTER_CONSOLE_DIRECTION_NEUTRAL;
+    case INPUT_EVENT_DIRECTION_STATE_NEUTRAL:
+    case INPUT_EVENT_DIRECTION_STATE_FORWARD:
+    case INPUT_EVENT_DIRECTION_STATE_REVERSE:
+      s_brake_state.input_state.direction = e->id != INPUT_EVENT_DIRECTION_STATE_NEUTRAL;
       break;
 
     case INPUT_EVENT_PEDAL_ACCEL:

@@ -15,7 +15,6 @@
 // (Power == Drive) &&
 //  (Mech Brake == Engaged ||
 //   (Direction != Neutral && Throttle == Brake && Speed > x))
-//
 #include "event_queue.h"
 #include "status.h"
 
