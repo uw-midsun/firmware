@@ -3,8 +3,6 @@
 // Calibrates the mechanical brake through user-controlled procedure.
 // Requires ADS1015 and soft timers to be initialized.
 //
-// This module is expected to be driven through a calibration FSM.
-//
 // Module goals:
 // * Determine the peak-peak values when the brake is fully pressed and released
 // * Find equation for lsb/percentage
@@ -12,7 +10,7 @@
 //
 //
 // Tolerances:
-// percentage tolerance that determines when to rasie an event
+// percentage tolerance that determines when to raise an event
 
 #define MECH_BRAKE_CALIBRATION_NUM_SAMPLES 1000
 

@@ -47,11 +47,11 @@ void setup_test(void) {
     .sda = { .port = GPIO_PORT_B, .pin = 9 },
   };
 
-  i2c_init(I2C_PORT_1, &i2c_settings);
+  i2c_init(I2C_PORT_2, &i2c_settings);
 
-  GPIOAddress ready_pin = { .port = GPIO_PORT_A, .pin = 10 };
+  GPIOAddress ready_pin = {.port = GPIO_PORT_A, .pin = 10 };
 
-  ads1015_init(&storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
+  ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
 
   mech_brake_init(&mech_brake_storage, &brake_settings, &calib_data);
 }
