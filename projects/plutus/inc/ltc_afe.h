@@ -75,6 +75,7 @@ typedef struct LtcAfeStorage {
 
   // Only used for storage in the FSM so we store data for the correct cells
   uint16_t aux_index;
+  uint16_t retry_count;
 
   uint16_t cell_voltages[PLUTUS_CFG_AFE_TOTAL_CELLS];
   uint16_t aux_voltages[PLUTUS_CFG_AFE_TOTAL_CELLS];
@@ -105,6 +106,9 @@ typedef struct LtcAfeStorage {
 // |settings.cell_result_cb| and |settings.aux_result_cb| will be called when the corresponding
 // conversion is completed.
 StatusCode ltc_afe_init(LtcAfeStorage *afe, const LtcAfeSettings *settings);
+
+StatusCode ltc_afe_set_result_cbs(LtcAfeStorage *afe, LtcAfeResultCallback cell_result_cb,
+                                  LtcAfeResultCallback aux_result_cb, void *context);
 
 // Raises trigger conversion events. These events must be processed.
 StatusCode ltc_afe_request_cell_conversion(LtcAfeStorage *afe);

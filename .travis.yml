@@ -96,4 +96,5 @@ script:
   - make build_all PLATFORM=stm32f0xx
   - make test_all PLATFORM=x86
   - make lint
+  - make pylint
   - make test_format

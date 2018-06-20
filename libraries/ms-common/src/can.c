@@ -39,8 +39,7 @@ void prv_bus_error_handler(void *context);
 
 static CANStorage *s_can_storage;
 
-StatusCode can_init(CANStorage *storage, const CANSettings *settings, CANRxHandler *rx_handlers,
-                    size_t num_rx_handlers) {
+StatusCode can_init(CANStorage *storage, const CANSettings *settings) {
   if (settings->device_id >= CAN_MSG_MAX_DEVICES) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: Invalid device ID");
   }
@@ -57,7 +56,8 @@ StatusCode can_init(CANStorage *storage, const CANSettings *settings, CANRxHandl
   status_ok_or_return(can_fifo_init(&s_can_storage->tx_fifo));
   status_ok_or_return(can_fifo_init(&s_can_storage->rx_fifo));
   status_ok_or_return(can_ack_init(&s_can_storage->ack_requests));
-  status_ok_or_return(can_rx_init(&s_can_storage->rx_handlers, rx_handlers, num_rx_handlers));
+  status_ok_or_return(can_rx_init(&s_can_storage->rx_handlers, s_can_storage->rx_handler_storage,
+                                  SIZEOF_ARRAY(s_can_storage->rx_handler_storage)));
 
   CANHwSettings can_hw_settings = {
     .bitrate = settings->bitrate,
@@ -127,12 +127,13 @@ StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request)
   return can_fifo_push(&s_can_storage->tx_fifo, msg);
 }
 
-FSM *can_get_fsm(void) {
+bool can_process_event(const Event *e) {
   if (s_can_storage == NULL) {
-    return NULL;
+    LOG_WARN("CAN Storage uninitialized\n");
+    return false;
   }
 
-  return &s_can_storage->fsm;
+  return fsm_process_event(&s_can_storage->fsm, e);
 }
 
 void prv_tx_handler(void *context) {

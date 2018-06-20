@@ -3,6 +3,7 @@
 #include "drive_can.h"
 #include "generic_can_uart.h"
 #include "gpio.h"
+#include "heartbeat_rx.h"
 #include "interrupt.h"
 #include "mc_cfg.h"
 #include "motor_controller.h"
@@ -19,9 +20,9 @@ typedef enum {
 static MotorControllerStorage s_controller_storage;
 static GenericCanUart s_can_uart;
 static CANStorage s_can_storage;
-static CANRxHandler s_rx_handlers[MC_CFG_NUM_CAN_RX_HANDLERS];
 static UARTStorage s_uart_storage;
 static SequencedRelayStorage s_relay_storage;
+static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
 
 static void prv_setup_system_can(void) {
   CANSettings can_settings = {
@@ -35,7 +36,7 @@ static void prv_setup_system_can(void) {
     .loopback = false,
   };
 
-  can_init(&s_can_storage, &can_settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+  can_init(&s_can_storage, &can_settings);
 }
 
 static void prv_setup_motor_can(void) {
@@ -87,10 +88,13 @@ int main(void) {
 
   sequenced_relay_init(&s_relay_storage, &relay_settings);
 
+  heartbeat_rx_register_handler(&s_powertrain_heartbeat, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
+                                heartbeat_rx_auto_ack_handler, NULL);
+
   while (true) {
     Event e = { 0 };
     while (status_ok(event_process(&e))) {
-      fsm_process_event(CAN_FSM, &e);
+      can_process_event(&e);
     }
 
     wait();

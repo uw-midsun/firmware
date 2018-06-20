@@ -38,6 +38,7 @@ PROBE=cmsis-dap
 OPENOCD_SCRIPT_DIR := /usr/share/openocd/scripts/
 OPENOCD_CFG := -s $(OPENOCD_SCRIPT_DIR) \
                -f interface/$(PROBE).cfg -f target/stm32f0x.cfg \
+               -c "$$(python3 $(SCRIPT_DIR)/select_programmer.py $(SERIAL))" \
                -f $(SCRIPT_DIR)/stm32f0-openocd.cfg
 
 # Platform targets
@@ -55,6 +56,7 @@ gdb: $(TARGET_BINARY)
 	@pkill $(OPENOCD)
 
 define session_wrapper
+pkill $(OPENOCD) || true
 setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
 $1; pkill $(OPENOCD)
 endef
@@ -68,7 +70,7 @@ else
 
 # VirtualBox default NAT IP
 MACOS_SSH_IP := 10.0.2.2
-MAKE_ARGS := TEST PROJECT LIBRARY PLATFORM PROBE
+MAKE_ARGS := TEST PROJECT LIBRARY PLATFORM PROBE SERIAL
 MAKE_PARAMS := $(foreach arg,$(MAKE_ARGS),$(arg)=$($(arg)))
 SSH_CMD := ssh -t $(MACOS_SSH_USERNAME)@$(MACOS_SSH_IP) "cd $(MACOS_SSH_BOX_PATH)/shared/firmware && make $(MAKECMDGOALS) $(MAKE_PARAMS)"
 

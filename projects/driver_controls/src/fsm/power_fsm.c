@@ -13,6 +13,7 @@
 
 #include "power_fsm.h"
 
+#include "bps_indicator.h"
 #include "drive_output.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
@@ -124,6 +125,9 @@ static void prv_fault_output(FSM *fsm, const Event *e, void *context) {
 static void prv_idle_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   power_distribution_controller_send_update(EE_POWER_STATE_IDLE);
+
+  // Clear BPS indicators
+  bps_indicator_clear_fault();
 
   // Disable periodic drive output updates if not running
   drive_output_set_enabled(drive_output_global(), false);
