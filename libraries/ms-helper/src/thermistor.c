@@ -19,9 +19,10 @@ static const uint32_t s_resistance_lookup[] = {
   999300,   973800,
 };
 
-StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress gpio_address,
-                           uint32_t sibling_resistance_ohms) {
+StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gpio_address,
+                           uint32_t sibling_resistance_ohms, bool is_thermistor_first) {
   storage->sibling_resistance_ohms = sibling_resistance_ohms;
+  storage->is_thermistor_first = is_thermistor_first;
   GPIOSettings gpio_settings = {
     .direction = GPIO_DIR_IN,
     .state = GPIO_STATE_LOW,
@@ -29,9 +30,9 @@ StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress gpio_address,
     .alt_function = GPIO_ALTFN_ANALOG,
   };
 
-  gpio_init_pin(&gpio_address, &gpio_settings);
+  gpio_init_pin(&thermistor_gpio_address, &gpio_settings);
 
-  adc_get_channel(gpio_address, &(storage->adc_channel));
+  adc_get_channel(thermistor_gpio_address, &(storage->adc_channel));
 
   // set the channel
   adc_set_channel(storage->adc_channel, true);
@@ -51,10 +52,15 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint32_t *temperature
   if (reading == 0 || vdda == 0) {
     return status_msg(STATUS_CODE_INTERNAL_ERROR, "No vdda voltage or voltage drop detected.");
   }
-  // Calculates sibling resistance in milliOhms
-  thermistor_resistance_milliohms = (storage->sibling_resistance_ohms * 1000 / reading) *
-                                    (vdda)-storage->sibling_resistance_ohms * 1000;
-
+  // Calculates sibling resistance in milliOhms based on the order of the thermistor and its sibling
+  // resistor
+  if (storage->is_thermistor_first) {
+    thermistor_resistance_milliohms =
+        (uint32_t)(vdda - reading) / reading * storage->sibling_resistance_ohms * 1000;
+  } else {
+    thermistor_resistance_milliohms = (storage->sibling_resistance_ohms * 1000 / reading) *
+                                      (vdda)-storage->sibling_resistance_ohms * 1000;
+  }
   return thermistor_calculate_temp(thermistor_resistance_milliohms, temperature_millicelcius);
 }
 

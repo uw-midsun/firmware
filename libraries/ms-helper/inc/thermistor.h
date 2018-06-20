@@ -6,13 +6,13 @@
 
 typedef struct {
   uint32_t sibling_resistance_ohms;
-
+  bool is_thermistor_first;
   ADCChannel adc_channel;
 } ThermistorStorage;
 
-// Initialize the thermistor interfaces
-StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress gpio_address,
-                           uint32_t sibling_resistance_ohms);
+// Initialize the thermistor GPIO pins, and adc channels
+StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gpio_address,
+                           uint32_t sibling_resistance_ohms, bool is_thermistor_first);
 
 // Fetch the temperature reading in milliCelsius from the MCU's ADC
 StatusCode thermistor_get_temp(ThermistorStorage *storage, uint32_t *temperature_millicelcius);

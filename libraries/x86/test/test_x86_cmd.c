@@ -4,7 +4,7 @@
 #include "unity.h"
 #include "x86_cmd.h"
 
-static const char s_cmd[30];
+static char s_cmd[30];
 static size_t s_num_args;
 
 static void prv_handler(int client_fd, const char *cmd, const char *args[], size_t num_args,
