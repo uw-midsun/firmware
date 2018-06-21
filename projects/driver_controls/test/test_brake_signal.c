@@ -2,18 +2,18 @@
 #include "can.h"
 #include "can_unpack.h"
 #include "event_queue.h"
+#include "exported_enums.h"
+#include "input_event.h"
 #include "interrupt.h"
 #include "log.h"
+#include "ms_test_helpers.h"
 #include "test_helpers.h"
 #include "unity.h"
-#include "exported_enums.h"
-#include "ms_test_helpers.h"
-#include "input_event.h"
 
 #define TEST_BRAKE_SIGNAL_CLOCK_EVENT(event_id, event_data) \
-  ({                                            \
+  ({                                                        \
     Event _e = { .id = (event_id), .data = (event_data) };  \
-    brake_signal_process_event(&_e);            \
+    brake_signal_process_event(&_e);                        \
   })
 
 #define TEST_BRAKE_SIGNAL_EXPECT_STATE(state)                         \

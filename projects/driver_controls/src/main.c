@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "bps_indicator.h"
 #include "calib.h"
 #include "center_console.h"
 #include "control_stalk.h"
@@ -16,7 +17,6 @@
 #include "power_distribution_controller.h"
 #include "soft_timer.h"
 #include "throttle.h"
-#include "bps_indicator.h"
 
 #include "cruise_fsm.h"
 #include "direction_fsm.h"

@@ -29,7 +29,7 @@ static void prv_hazard_on_output(FSM *fsm, const Event *e, void *context) {
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_SIGNAL_HAZARD, EE_LIGHT_STATE_OFF);
 }
 
-StatusCode hazard_light_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
+StatusCode hazards_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_hazard_on, prv_hazard_on_output);
   fsm_state_init(state_hazard_off, prv_hazard_off_output);
 
