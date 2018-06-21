@@ -8,7 +8,6 @@
 // * Find equation for lsb/percentage
 // * Raise events based on data read from sensor
 
-
 #define MECH_BRAKE_CALIBRATION_NUM_SAMPLES 1000
 
 typedef enum {

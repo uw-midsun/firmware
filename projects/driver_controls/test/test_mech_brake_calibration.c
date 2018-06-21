@@ -1,6 +1,7 @@
 
-// Note : Although this is structured as a test, it is the actual calibration sequence for the mechanical brake.
-// It is meant to be used only once to retreive the values when the brake is pressed and unpressed.
+// Note : Although this is structured as a test, it is the actual calibration sequence for the
+// mechanical brake. It is meant to be used only once to retreive the values when the brake is
+// pressed and unpressed.
 
 #include "ads1015.h"
 #include "delay.h"

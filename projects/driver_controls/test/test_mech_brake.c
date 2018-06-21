@@ -59,6 +59,5 @@ void teardown_test(void) {}
 
 void test_mech_brake_loop(void) {
   while (true) {
-
   }
 }
