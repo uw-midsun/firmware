@@ -92,6 +92,7 @@ static void prv_off_output(FSM *fsm, const Event *e, void *context) {
   event_arbiter_set_guard_fn(guard, prv_guard_off);
 
   event_raise(INPUT_EVENT_POWER_STATE_OFF, 0);
+  LOG_DEBUG("Off\n");
 }
 
 static void prv_drive_output(FSM *fsm, const Event *e, void *context) {
@@ -110,19 +111,6 @@ static void prv_drive_output(FSM *fsm, const Event *e, void *context) {
 static void prv_fault_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
 
-  // Indicate fault
-  bps_indicator_set_fault();
-
-  // Disable periodic drive output updates if not running
-  drive_output_set_enabled(drive_output_global(), false);
-  event_arbiter_set_guard_fn(guard, prv_guard_off);
-
-  LOG_DEBUG("Fault\n");
-}
-
-static void prv_fault_output(FSM *fsm, const Event *e, void *context) {
-  EventArbiterGuard *guard = fsm->context;
-
   bps_indicator_set_fault();
 
   // Disable periodic drive output updates if not running
@@ -130,7 +118,7 @@ static void prv_fault_output(FSM *fsm, const Event *e, void *context) {
   event_arbiter_set_guard_fn(guard, prv_guard_off);
 
   event_raise(INPUT_EVENT_POWER_STATE_FAULT, 0);
-  LOG_DEBUG("Idle\n");
+  LOG_DEBUG("Fault\n");
 }
 
 static void prv_charge_output(FSM *fsm, const Event *e, void *context) {

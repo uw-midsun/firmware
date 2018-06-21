@@ -5,6 +5,7 @@
 #include "can_unpack.h"
 #include "input_event.h"
 #include "misc.h"
+#include "log.h"
 
 static CruiseStorage s_cruise_storage;
 
@@ -23,10 +24,7 @@ static StatusCode prv_handle_motor_velocity(const CANMessage *msg, void *context
 static void prv_timer_cb(SoftTimerID timer_id, void *context) {
   CruiseStorage *cruise = context;
 
-  cruise->target_speed_cms += cruise->offset_cms;
-  // We could cancel the timer if either limit was hit
-  cruise->target_speed_cms = MAX(0, cruise->target_speed_cms);
-  cruise->target_speed_cms = MIN(CRUISE_MAX_TARGET_CMS, cruise->target_speed_cms);
+  cruise_set_target_cms(cruise, cruise->target_speed_cms + cruise->offset_cms);
 
   // __builtin_clz(0) has undefined behavior, so we increment first
   size_t index = 32 - (size_t)__builtin_clz(++cruise->repeat_counter);
@@ -53,6 +51,9 @@ StatusCode cruise_set_target_cms(CruiseStorage *cruise, int16_t target) {
   }
 
   cruise->target_speed_cms = target;
+  cruise->target_speed_cms = MAX(0, cruise->target_speed_cms);
+  cruise->target_speed_cms = MIN(CRUISE_MAX_TARGET_CMS, cruise->target_speed_cms);
+
   return CAN_TRANSMIT_CRUISE_TARGET(cruise->target_speed_cms);
 }
 
@@ -82,7 +83,7 @@ bool cruise_handle_event(CruiseStorage *cruise, const Event *e) {
       soft_timer_start(1, prv_timer_cb, cruise, &cruise->repeat_timer);
       break;
     case INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED:
-      cruise->target_speed_cms = cruise->current_speed_cms;
+      cruise_set_target_cms(cruise, cruise->current_speed_cms);
       break;
     default:
       return false;
