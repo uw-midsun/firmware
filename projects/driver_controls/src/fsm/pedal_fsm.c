@@ -41,7 +41,10 @@ FSM_STATE_TRANSITION(state_accel) {
 static void prv_update_drive_output(void) {
   ThrottlePosition position = { 0 };
   // TODO(ELEC-431): Could just remove UPDATE_REQUESTED transitions and use the actual events + data
-  throttle_get_position(throttle_global(), &position);
+  StatusCode status = throttle_get_position(throttle_global(), &position);
+  if (!status_ok(status)) {
+    return;
+  }
 
   const int16_t zone_multiplier[NUM_THROTTLE_ZONES] = {
     [THROTTLE_ZONE_BRAKE] = -1,

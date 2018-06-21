@@ -1,13 +1,21 @@
 #pragma once
-// Module for using ADS1015.
-//  I2C, GPIO and Interrupt should be initialized.
-// The user also needs to create a struct ADS1015Storage which would persist accross functions.
-// Start the ads1015 using ads1015_init and then configure channels using ads1015_config_channel.
-// Read raw and converted values using ads1015_read_raw and ads1015_read_converted.
+// Module for interacting with the ADS1015 ADC over I2C.
+// I2C, GPIO, Interrupt, and Soft Timers should be initialized.
+//
+// The ADS1015 supports a conversion ready pin that we use as an interrupt.
+//
+// Uses a watchdog to detect if the ADS1015 has stopped triggering interrupts. Although we use
+// GPIO interrupts to detect conversion ready, it seems like it's possible for us to miss it
+// during bus glitching. This forces an interrupt if we haven't triggered within a few conversion
+// periods.
 #include <stdbool.h>
 #include "gpio.h"
 #include "i2c.h"
+#include "soft_timer.h"
 #include "status.h"
+
+// Arbitrary watchdog timeout period
+#define ADS1015_WATCHDOG_TIMEOUT_MS 1
 
 typedef enum {
   ADS1015_ADDRESS_GND = 0,
@@ -38,6 +46,10 @@ typedef struct Ads1015Storage {
   uint8_t pending_channel_bitset;
   Ads1015Callback channel_callback[NUM_ADS1015_CHANNELS];
   void *callback_context[NUM_ADS1015_CHANNELS];
+
+  SoftTimerID watchdog_timer;
+  bool watchdog_kicked;
+  bool data_valid;
 } Ads1015Storage;
 
 // Initiates ads1015 by setting up registers and enabling ALRT/RDY Pin.
