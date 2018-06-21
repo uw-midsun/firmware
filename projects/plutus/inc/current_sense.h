@@ -23,6 +23,7 @@ typedef struct {
   CurrentSenseCalibrationData *data;
   CurrentSenseValue value;
   int32_t offset;
+  volatile bool offset_flag;
   CurrentSenseCallback callback;
   void *context;
 } CurrentSenseStorage;
@@ -36,7 +37,7 @@ StatusCode current_sense_init(CurrentSenseStorage *storage, const CurrentSenseCa
 StatusCode current_sense_register_callback(CurrentSenseStorage *storage,
                                            CurrentSenseCallback callback, void *context);
 
-// Returns current value according to calibration units
+// Returns current value in microamps
 StatusCode current_sense_get_value(CurrentSenseStorage *storage, int32_t *current);
 
 // Call after chip reset to update zero offset value

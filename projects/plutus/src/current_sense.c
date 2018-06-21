@@ -8,15 +8,18 @@
 static void prv_calculate_current(int32_t *value, void *context) {
   CurrentSenseStorage *storage = (CurrentSenseStorage *)context;
 
+  // Update the offset if the flag is set
+  if (storage->offset_flag) {
+    storage->offset = *value - storage->data->zero_point.voltage;
+    storage->offset_flag = false;
+  }
+
   // Formula for calculating calibrated current. Draws slope between given calibrated
   // points, and uses the result as well as the voltage offset to calculate current
-  int32_t x_min = storage->data->zero_point.voltage + storage->offset;
-  int32_t x_max = storage->data->max_point.voltage + storage->offset;
-  int32_t y_min = storage->data->zero_point.current;
-  int32_t y_max = storage->data->max_point.current;
-
   storage->value.voltage = *value;
-  storage->value.current = (y_max - y_min) * (*value - x_min) / (x_max - x_min);
+  storage->value.current = (storage->data->max_point.current - storage->data->zero_point.current) *
+                           (*value - storage->data->zero_point.voltage - storage->offset) /
+                           (storage->data->max_point.voltage - storage->data->zero_point.voltage);
 
   if (storage->callback != NULL) {
     storage->callback(storage->value.current, storage->context);
@@ -39,6 +42,7 @@ StatusCode current_sense_init(CurrentSenseStorage *storage, const CurrentSenseCa
   storage->value.current = 0;
 
   storage->offset = 0;
+  storage->offset_flag = false;
   storage->callback = NULL;
   storage->context = NULL;
 
@@ -79,7 +83,8 @@ StatusCode current_sense_zero_reset(CurrentSenseStorage *storage) {
     return status_code(STATUS_CODE_UNINITIALIZED);
   }
 
-  storage->offset = storage->value.voltage - storage->data->zero_point.voltage;
+  // The next conversion is guaranteed to sample the shunt at 0 amps, so we set an offset flag
+  storage->offset_flag = true;
 
   return STATUS_CODE_OK;
 }

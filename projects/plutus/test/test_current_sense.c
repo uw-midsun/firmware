@@ -76,30 +76,18 @@ void test_current_sense_reset(void) {
   int32_t original_slope = (s_data.max_point.voltage - s_data.zero_point.voltage) /
                            (s_data.max_point.current - s_data.zero_point.current);
 
-  for (int i = 0; i < TEST_CURRENT_SENSE_NUM_SAMPLES; i++) {
-    // Send in new test voltage and start a reset
-    s_test_input_voltage = (i + 1) * 1000;
-    test_ltc_adc_set_input_voltage(s_test_input_voltage);
+  // Set an offset by passing in a test input voltage
+  test_ltc_adc_set_input_voltage(1000);
+  current_sense_zero_reset(&s_storage);
 
-    LOG_DEBUG("Testing with offset = %" PRId32 "\n", s_test_input_voltage);
+  LOG_DEBUG("Testing with offset = %" PRId32 "\n", s_test_input_voltage);
 
-    // Delay so that the offset appears in the sample data
-    delay_ms(LTC2484_MAX_CONVERSION_TIME_MS);
-    current_sense_zero_reset(&s_storage);
+  // Delay so that the offset appears in the sample data
+  delay_ms(LTC2484_MAX_CONVERSION_TIME_MS);
 
-    // Start a new cycle with the input voltage being equal to the offset. A current of zero
-    // should be seen
-    delay_ms(LTC2484_MAX_CONVERSION_TIME_MS);
+  // Since the input signal is exactly equal to the offset, the current must be equal to zero
+  int32_t current;
+  current_sense_get_value(&s_storage, &current);
 
-    int32_t current = 0;
-    current_sense_get_value(&s_storage, &current);
-    TEST_ASSERT_EQUAL(0, current);
-
-    // Obtain new linear relationship
-    int32_t new_slope = (s_data.max_point.voltage - s_data.zero_point.voltage) /
-                        (s_data.max_point.current - s_data.zero_point.current);
-
-    // Ensure that the new set of points maintain their relationship
-    TEST_ASSERT_EQUAL(original_slope, new_slope);
-  }
+  TEST_ASSERT_EQUAL(0, current);
 }
