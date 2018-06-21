@@ -39,9 +39,11 @@ static void prv_no_signal_output(FSM *fsm, const Event *e, void *context) {
 
 static void prv_left_signal_output(FSM *fsm, const Event *e, void *context) {
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_SIGNAL_LEFT, EE_LIGHT_STATE_ON);
+  CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_SIGNAL_RIGHT, EE_LIGHT_STATE_OFF);
 }
 
 static void prv_right_signal_output(FSM *fsm, const Event *e, void *context) {
+  CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_SIGNAL_LEFT, EE_LIGHT_STATE_OFF);
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_SIGNAL_RIGHT, EE_LIGHT_STATE_ON);
 }
 
