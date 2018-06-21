@@ -148,7 +148,7 @@ int main(void) {
         case INPUT_EVENT_CAN_TX:
           break;
         default:
-        LOG_DEBUG("e %d %d\n", e.id, e.data);
+          LOG_DEBUG("e %d %d\n", e.id, e.data);
       }
 #endif
       can_process_event(&e);
