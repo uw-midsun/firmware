@@ -6,6 +6,7 @@
 #include "calib.h"
 #include "center_console.h"
 #include "control_stalk.h"
+#include "debug_led.h"
 #include "event_queue.h"
 #include "gpio.h"
 #include "gpio_it.h"
@@ -56,7 +57,13 @@ static Ads1015Storage s_stalk_ads1015;
 static CANStorage s_can;
 static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
 
-int main() {
+static void prv_blink_timeout(SoftTimerID timer_id, void *context) {
+  debug_led_toggle_state(DEBUG_LED_GREEN);
+
+  soft_timer_start_seconds(1, prv_blink_timeout, NULL, NULL);
+}
+
+int main(void) {
   gpio_init();
   interrupt_init();
   gpio_it_init();
@@ -76,6 +83,11 @@ int main() {
     .loopback = false,
   };
   can_init(&s_can, &can_settings);
+
+  can_add_filter(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT);
+  can_add_filter(SYSTEM_CAN_MESSAGE_POWER_STATE);
+  can_add_filter(SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT);
+  can_add_filter(SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY);
 
   const I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,    //
@@ -104,8 +116,8 @@ int main() {
   drive_output_init(drive_output_global(), INPUT_EVENT_DRIVE_WATCHDOG_FAULT,
                     INPUT_EVENT_DRIVE_UPDATE_REQUESTED);
 
+  // BPS heartbeat
   bps_indicator_init();
-
   // Powertrain heartbeat
   heartbeat_rx_register_handler(&s_powertrain_heartbeat, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
                                 heartbeat_rx_auto_ack_handler, NULL);
@@ -118,10 +130,27 @@ int main() {
     init_fns[i](&s_fsms[i], &s_event_arbiter);
   }
 
+  debug_led_init(DEBUG_LED_GREEN);
+  soft_timer_start_seconds(1, prv_blink_timeout, NULL, NULL);
+
+  LOG_DEBUG("Driver Controls initialized\n");
+
   Event e;
   while (true) {
-    // TODO(ELEC-461): figure out why I2C seems to die when the motors are running
     if (status_ok(event_process(&e))) {
+#ifdef DC_CFG_DEBUG_PRINT_EVENTS
+      switch (e.id) {
+        case INPUT_EVENT_PEDAL_ACCEL:
+        case INPUT_EVENT_PEDAL_COAST:
+        case INPUT_EVENT_PEDAL_BRAKE:
+        case INPUT_EVENT_DRIVE_UPDATE_REQUESTED:
+        case INPUT_EVENT_CAN_RX:
+        case INPUT_EVENT_CAN_TX:
+          break;
+        default:
+          LOG_DEBUG("e %d %d\n", e.id, e.data);
+      }
+#endif
       can_process_event(&e);
       power_distribution_controller_retry(&e);
       cruise_handle_event(cruise_global(), &e);

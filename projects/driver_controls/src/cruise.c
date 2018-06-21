@@ -1,6 +1,7 @@
 #include "cruise.h"
 #include "can.h"
 #include "can_msg_defs.h"
+#include "can_transmit.h"
 #include "can_unpack.h"
 #include "input_event.h"
 #include "misc.h"
@@ -52,7 +53,7 @@ StatusCode cruise_set_target_cms(CruiseStorage *cruise, int16_t target) {
   }
 
   cruise->target_speed_cms = target;
-  return STATUS_CODE_OK;
+  return CAN_TRANSMIT_CRUISE_TARGET(cruise->target_speed_cms);
 }
 
 int16_t cruise_get_target_cms(CruiseStorage *cruise) {

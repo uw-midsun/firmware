@@ -60,6 +60,7 @@ static void prv_forward_output(FSM *fsm, const Event *e, void *context) {
 
   if (e->id != INPUT_EVENT_DRIVE_UPDATE_REQUESTED) {
     event_raise(INPUT_EVENT_DIRECTION_STATE_FORWARD, 0);
+    LOG_DEBUG("Forward\n");
   }
 }
 
@@ -71,6 +72,7 @@ static void prv_neutral_output(FSM *fsm, const Event *e, void *context) {
 
   if (e->id != INPUT_EVENT_DRIVE_UPDATE_REQUESTED) {
     event_raise(INPUT_EVENT_DIRECTION_STATE_NEUTRAL, 0);
+    LOG_DEBUG("Neutral\n");
   }
 }
 
@@ -82,6 +84,7 @@ static void prv_reverse_output(FSM *fsm, const Event *e, void *context) {
 
   if (e->id != INPUT_EVENT_DRIVE_UPDATE_REQUESTED) {
     event_raise(INPUT_EVENT_DIRECTION_STATE_REVERSE, 0);
+    LOG_DEBUG("Reverse\n");
   }
 }
 
