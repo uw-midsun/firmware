@@ -46,7 +46,7 @@ static void prv_update_drive_output(void) {
     return;
   }
 
-  const int16_t zone_multiplier[NUM_THROTTLE_ZONES + 1] = {
+  const int16_t zone_multiplier[NUM_THROTTLE_ZONES] = {
     [THROTTLE_ZONE_BRAKE] = -1,
     [THROTTLE_ZONE_COAST] = 0,
     [THROTTLE_ZONE_ACCEL] = 1,

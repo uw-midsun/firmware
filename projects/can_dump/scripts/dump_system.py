@@ -79,7 +79,7 @@ def parse_msg(can_id, data):
 
     msg_type_name = 'ACK' if msg_type == 1 else 'DATA'
 
-    masked = [32, 18, 36]
+    masked = []
 
     if msg_id in masked:
         pass

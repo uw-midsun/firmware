@@ -61,7 +61,7 @@ static void prv_forward_output(FSM *fsm, const Event *e, void *context) {
   event_arbiter_set_guard_fn(guard, NULL);
 
   if (e->id != INPUT_EVENT_DRIVE_UPDATE_REQUESTED) {
-    LOG_DEBUG("forward\n");
+    LOG_DEBUG("Forward\n");
   }
 }
 
@@ -72,7 +72,7 @@ static void prv_neutral_output(FSM *fsm, const Event *e, void *context) {
   event_arbiter_set_guard_fn(guard, prv_guard_prevent_cruise);
 
   if (e->id != INPUT_EVENT_DRIVE_UPDATE_REQUESTED) {
-    LOG_DEBUG("neutral\n");
+    LOG_DEBUG("Neutral\n");
   }
 }
 
@@ -83,7 +83,7 @@ static void prv_reverse_output(FSM *fsm, const Event *e, void *context) {
   event_arbiter_set_guard_fn(guard, prv_guard_prevent_cruise);
 
   if (e->id != INPUT_EVENT_DRIVE_UPDATE_REQUESTED) {
-    LOG_DEBUG("reverse\n");
+    LOG_DEBUG("Reverse\n");
   }
 }
 

@@ -43,6 +43,7 @@ static bool prv_guard_engaged(const Event *e) {
 
 static bool prv_guard_disengaged(const Event *e) {
   // The brake must be engaged in order for gear shifts to happen.
+  // We allow shifting into neutral at any time.
   switch (e->id) {
     case INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE:
     case INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE:

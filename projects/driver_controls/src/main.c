@@ -133,22 +133,24 @@ int main(void) {
   debug_led_init(DEBUG_LED_YELLOW);
   soft_timer_start_seconds(1, prv_blink_timeout, NULL, NULL);
 
-  LOG_DEBUG("initialized\n");
+  LOG_DEBUG("Driver Controls initialized\n");
 
   Event e;
   while (true) {
     if (status_ok(event_process(&e))) {
-      // switch (e.id) {
-      //   case INPUT_EVENT_PEDAL_ACCEL:
-      //   case INPUT_EVENT_PEDAL_COAST:
-      //   case INPUT_EVENT_PEDAL_BRAKE:
-      //   case INPUT_EVENT_DRIVE_UPDATE_REQUESTED:
-      //   case INPUT_EVENT_CAN_RX:
-      //   case INPUT_EVENT_CAN_TX:
-      //     break;
-      //   default:
-      //   LOG_DEBUG("e %d %d\n", e.id, e.data);
-      // }
+#ifdef DC_CFG_DEBUG_PRINT_EVENTS
+      switch (e.id) {
+        case INPUT_EVENT_PEDAL_ACCEL:
+        case INPUT_EVENT_PEDAL_COAST:
+        case INPUT_EVENT_PEDAL_BRAKE:
+        case INPUT_EVENT_DRIVE_UPDATE_REQUESTED:
+        case INPUT_EVENT_CAN_RX:
+        case INPUT_EVENT_CAN_TX:
+          break;
+        default:
+        LOG_DEBUG("e %d %d\n", e.id, e.data);
+      }
+#endif
       can_process_event(&e);
       power_distribution_controller_retry(&e);
       cruise_handle_event(cruise_global(), &e);
