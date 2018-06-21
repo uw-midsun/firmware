@@ -4,8 +4,8 @@
 #include "can_transmit.h"
 #include "can_unpack.h"
 #include "input_event.h"
-#include "misc.h"
 #include "log.h"
+#include "misc.h"
 
 static CruiseStorage s_cruise_storage;
 
