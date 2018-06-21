@@ -5,7 +5,7 @@
 // Assumes the LEDs are as follows:
 // Blue: PB5
 // Blue: PB4
-// Yellow: PB3
+// Green: PB3
 // Red: PA15
 #include <stdbool.h>
 #include "gpio.h"
