@@ -58,7 +58,7 @@ static CANStorage s_can;
 static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
 
 static void prv_blink_timeout(SoftTimerID timer_id, void *context) {
-  debug_led_toggle_state(DEBUG_LED_YELLOW);
+  debug_led_toggle_state(DEBUG_LED_GREEN);
 
   soft_timer_start_seconds(1, prv_blink_timeout, NULL, NULL);
 }
@@ -130,7 +130,7 @@ int main(void) {
     init_fns[i](&s_fsms[i], &s_event_arbiter);
   }
 
-  debug_led_init(DEBUG_LED_YELLOW);
+  debug_led_init(DEBUG_LED_GREEN);
   soft_timer_start_seconds(1, prv_blink_timeout, NULL, NULL);
 
   LOG_DEBUG("Driver Controls initialized\n");
