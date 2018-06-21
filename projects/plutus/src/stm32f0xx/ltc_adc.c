@@ -134,6 +134,6 @@ StatusCode ltc_adc_register_callback(LtcAdcStorage *storage, LtcAdcCallback call
   return STATUS_CODE_OK;
 }
 
-StatusCode ltc_adc_set_input_voltage_test(int32_t input_voltage) {
+StatusCode test_ltc_adc_set_input_voltage(int32_t input_voltage) {
   return status_code(STATUS_CODE_UNIMPLEMENTED);
 }

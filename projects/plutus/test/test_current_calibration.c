@@ -1,7 +1,4 @@
 #include <inttypes.h>
-
-// Sample routine to demonstrate usage of the current calibration module
-
 #include "current_calibration.h"
 #include "current_sense.h"
 #include "delay.h"

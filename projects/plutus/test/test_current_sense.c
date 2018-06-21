@@ -13,7 +13,7 @@
 #include "unity.h"
 
 // Arbitrary number of testing samples
-#define TEST_NUM_SAMPLES 10
+#define TEST_CURRENT_SENSE_NUM_SAMPLES 10
 
 // Arbitrary test input voltage
 static int32_t s_test_input_voltage = 0;
@@ -31,7 +31,7 @@ static void prv_callback(int32_t current, void *context) {
   LOG_DEBUG("Current = %" PRId32 "\n", current);
 
   s_test_input_voltage += 1000;
-  ltc_adc_set_input_voltage_test(s_test_input_voltage);
+  test_ltc_adc_set_input_voltage(s_test_input_voltage);
 
   s_callback_runs++;
 }
@@ -61,13 +61,13 @@ void teardown_test(void) {}
 
 void test_current_sense(void) {
   s_test_input_voltage = 0;
-  ltc_adc_set_input_voltage_test(s_test_input_voltage);
+  test_ltc_adc_set_input_voltage(s_test_input_voltage);
 
   TEST_ASSERT_OK(current_sense_register_callback(&s_storage, prv_callback, NULL));
 
   // Collect samples and tests that the readings fit the linear relationship defined by the
   // calibration data
-  while (s_callback_runs <= TEST_NUM_SAMPLES) {
+  while (s_callback_runs <= TEST_CURRENT_SENSE_NUM_SAMPLES) {
   }
 }
 
@@ -76,10 +76,10 @@ void test_current_sense_reset(void) {
   int32_t original_slope = (s_data.max_point.voltage - s_data.zero_point.voltage) /
                            (s_data.max_point.current - s_data.zero_point.current);
 
-  for (int i = 0; i < TEST_NUM_SAMPLES; i++) {
+  for (int i = 0; i < TEST_CURRENT_SENSE_NUM_SAMPLES; i++) {
     // Send in new test voltage and start a reset
     s_test_input_voltage = (i + 1) * 1000;
-    ltc_adc_set_input_voltage_test(s_test_input_voltage);
+    test_ltc_adc_set_input_voltage(s_test_input_voltage);
 
     LOG_DEBUG("Testing with offset = %" PRId32 "\n", s_test_input_voltage);
 
@@ -87,7 +87,13 @@ void test_current_sense_reset(void) {
     delay_ms(LTC2484_MAX_CONVERSION_TIME_MS);
     current_sense_zero_reset(&s_storage);
 
-    TEST_ASSERT_EQUAL(s_test_input_voltage, s_storage.offset + s_data.zero_point.voltage);
+    // Start a new cycle with the input voltage being equal to the offset. A current of zero
+    // should be seen
+    delay_ms(LTC2484_MAX_CONVERSION_TIME_MS);
+
+    int32_t current = 0;
+    current_sense_get_value(&s_storage, &current);
+    TEST_ASSERT_EQUAL(0, current);
 
     // Obtain new linear relationship
     int32_t new_slope = (s_data.max_point.voltage - s_data.zero_point.voltage) /

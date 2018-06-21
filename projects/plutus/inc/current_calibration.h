@@ -8,9 +8,6 @@
 // Must be less than 128, or overflow may occur
 #define CURRENT_CALIBRATION_SAMPLES 10
 
-// Window for moving offset average
-#define CURRENT_CALIBRATION_OFFSET_WINDOW 10
-
 static_assert(CURRENT_CALIBRATION_SAMPLES < 128, "Sample limit too large. May cause overflow");
 
 typedef struct {
@@ -24,8 +21,8 @@ typedef struct {
 StatusCode current_calibration_init(CurrentCalibrationStorage *storage, LtcAdcStorage *adc_storage,
                                     LtcAdcSettings *adc_settings);
 
-// Samples adc readings at specified current(milliamps) in order to obtain data for two-point
+// Samples adc readings at the specified current in order to obtain data for two-point
 // calibration. Function will block until completion. For optimal results, make
-// sure the points are as far apart as possible
+// sure the points are as far apart as possible.
 StatusCode current_calibration_sample_point(CurrentCalibrationStorage *storage,
                                             CurrentSenseValue *point, int32_t current);
