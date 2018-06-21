@@ -7,10 +7,7 @@
 // * Determine the peak-peak values when the brake is fully pressed and released
 // * Find equation for lsb/percentage
 // * Raise events based on data read from sensor
-//
-//
-// Tolerances:
-// percentage tolerance that determines when to raise an event
+
 
 #define MECH_BRAKE_CALIBRATION_NUM_SAMPLES 1000
 

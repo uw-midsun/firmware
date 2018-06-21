@@ -1,5 +1,18 @@
-#include "log.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 
+#include "calib.h"
+#include "center_console.h"
+#include "control_stalk.h"
+#include "event_queue.h"
+#include "gpio.h"
+#include "gpio_it.h"
+#include "heartbeat_rx.h"
+#include "i2c.h"
+#include "input_event.h"
+#include "interrupt.h"
+#include "log.h"
 #include "power_distribution_controller.h"
 #include "soft_timer.h"
 #include "throttle.h"
