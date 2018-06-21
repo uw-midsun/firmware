@@ -35,5 +35,5 @@ StatusCode mech_brake_calibration_init(MechBrakeCalibrationStorage *storage,
 
 StatusCode mech_brake_sample(MechBrakeCalibrationStorage *storage, MechBrakeCalibrationPoint point);
 
-StatusCode mech_brake_get_calib_data(MechBrakeCalibrationStorage *storage, MechBrakeCalibrationData *calib_data);
-
+StatusCode mech_brake_get_calib_data(MechBrakeCalibrationStorage *storage,
+                                     MechBrakeCalibrationData *calib_data);

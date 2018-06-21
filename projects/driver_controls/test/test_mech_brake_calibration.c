@@ -40,7 +40,7 @@ void setup_test(void) {
     .pin = 10,
   };
 
-   const MechBrakeSettings calib_settings = {
+  const MechBrakeSettings calib_settings = {
     .ads1015 = &storage,
     .channel = ADS1015_CHANNEL_2,
     .min_allowed_range = 0,
@@ -66,7 +66,7 @@ void test_mech_brake_calibration_run(void) {
   LOG_DEBUG("Beginning sampling\n");
   mech_brake_sample(&s_calibration_storage, MECH_BRAKE_CALIBRATION_POINT_PRESSED);
   LOG_DEBUG("Completed sampling\n");
-  
+
   MechBrakeCalibrationData calib_data;
   mech_brake_get_calib_data(&s_calibration_storage, &calib_data);
 

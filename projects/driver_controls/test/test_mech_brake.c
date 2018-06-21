@@ -16,8 +16,8 @@
 #include "mech_brake.h"
 #include "soft_timer.h"
 #include "status.h"
-#include "unity.h"
 #include "test_helpers.h"
+#include "unity.h"
 
 static MechBrakeStorage s_mech_brake_storage;
 static Ads1015Storage s_ads1015_storage;
@@ -28,7 +28,6 @@ static MechBrakeCalibrationData s_calib_data = {
 };
 
 void setup_test() {
-
   LOG_DEBUG("hello\n");
   gpio_init();
   interrupt_init();
@@ -57,7 +56,8 @@ void setup_test() {
 
   TEST_ASSERT_OK(mech_brake_init(&s_mech_brake_storage, &brake_settings, &s_calib_data));
 
-  while (true) {}
+  while (true) {
+  }
 }
 
 void teardown_test(void) {}

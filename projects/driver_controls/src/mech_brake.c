@@ -66,12 +66,10 @@ static void prv_callback_channel(Ads1015Channel channel, void *context) {
 
 StatusCode mech_brake_init(MechBrakeStorage *storage, MechBrakeSettings *settings,
                            MechBrakeCalibrationData *data) {
-
-
   if (storage == NULL || data == NULL || settings == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
-  
+
   memset(storage, 0, sizeof(*storage));
   storage->settings = *settings;
   storage->calibration_data = data;
@@ -80,7 +78,5 @@ StatusCode mech_brake_init(MechBrakeStorage *storage, MechBrakeSettings *setting
   LOG_DEBUG("ch %d\n", storage->settings.channel);
 
   return ads1015_configure_channel(storage->settings.ads1015, storage->settings.channel, true,
-                            prv_callback_channel, storage);
-
+                                   prv_callback_channel, storage);
 }
-

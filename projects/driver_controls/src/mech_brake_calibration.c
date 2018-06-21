@@ -29,7 +29,6 @@ static void prv_callback_channel(Ads1015Channel ads1015_channel, void *context) 
     data->sample_counter++;
     data->min_reading = MIN(data->min_reading, reading);
     data->max_reading = MAX(data->max_reading, reading);
-
   }
 }
 
@@ -69,8 +68,8 @@ StatusCode mech_brake_sample(MechBrakeCalibrationStorage *storage,
   return STATUS_CODE_OK;
 }
 
-StatusCode mech_brake_get_calib_data(MechBrakeCalibrationStorage *storage, MechBrakeCalibrationData *calib_data){
-  
+StatusCode mech_brake_get_calib_data(MechBrakeCalibrationStorage *storage,
+                                     MechBrakeCalibrationData *calib_data) {
   if (storage == NULL || calib_data == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -82,12 +81,9 @@ StatusCode mech_brake_get_calib_data(MechBrakeCalibrationStorage *storage, MechB
 
   int16_t average_unpressed_value = (max_unpressed_reading + min_unpressed_reading) / 2;
   int16_t average_pressed_value = (max_pressed_reading + min_pressed_reading) / 2;
-  
+
   calib_data->zero_value = average_unpressed_value;
   calib_data->hundred_value = average_pressed_value;
 
   return STATUS_CODE_OK;
 }
-
-
-
