@@ -17,47 +17,52 @@
 #include "soft_timer.h"
 #include "status.h"
 #include "unity.h"
+#include "test_helpers.h"
 
-static MechBrakeStorage mech_brake_storage;
+static MechBrakeStorage s_mech_brake_storage;
+static Ads1015Storage s_ads1015_storage;
 
-static MechBrakeCalibrationData calib_data = {
+static MechBrakeCalibrationData s_calib_data = {
   .zero_value = 513,
   .hundred_value = 624,
 };
 
-void setup_test(void) {
-  Ads1015Storage storage;
+void setup_test() {
+
+  LOG_DEBUG("hello\n");
   gpio_init();
   interrupt_init();
   gpio_it_init();
   soft_timer_init();
 
-  MechBrakeSettings brake_settings = {
-    .percentage_threshold = 500,
-    .min_allowed_range = 0,
-    .max_allowed_range = (1 << 12),
-    .channel = ADS1015_CHANNEL_2,
-    .ads1015 = &storage,
-  };
-
-  I2CSettings i2c_settings = {
+  const I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,
     .scl = { .port = GPIO_PORT_B, .pin = 8 },
     .sda = { .port = GPIO_PORT_B, .pin = 9 },
   };
 
-  i2c_init(I2C_PORT_2, &i2c_settings);
+  i2c_init(I2C_PORT_1, &i2c_settings);
 
   GPIOAddress ready_pin = { .port = GPIO_PORT_A, .pin = 10 };
 
-  ads1015_init(&storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
+  TEST_ASSERT_OK(ads1015_init(&s_ads1015_storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin));
 
-  mech_brake_init(&mech_brake_storage, &brake_settings, &calib_data);
+  const MechBrakeSettings brake_settings = {
+    .percentage_threshold = 500,
+    .min_allowed_range = 0,
+    .max_allowed_range = (1 << 12),
+    .channel = ADS1015_CHANNEL_2,
+    .ads1015 = &s_ads1015_storage,
+  };
+
+  TEST_ASSERT_OK(mech_brake_init(&s_mech_brake_storage, &brake_settings, &s_calib_data));
+
+  while (true) {}
 }
 
 void teardown_test(void) {}
 
-void test_mech_brake_loop(void) {
+void test_mech_brake_loop() {
   while (true) {
   }
 }

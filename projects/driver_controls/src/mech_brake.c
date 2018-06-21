@@ -1,6 +1,6 @@
 
 
-#include <stdint.h>
+// #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -19,7 +19,7 @@
 #include "wait.h"
 
 // takes in LSB as input and converts it to percentage using a linear relationship
-static int16_t lsb_to_percentage_converter(MechBrakeStorage *storage) {
+static int16_t prv_lsb_to_percentage_converter(MechBrakeStorage *storage) {
   int16_t percentage;
 
   if (storage->calibration_data->zero_value > storage->calibration_data->hundred_value) {
@@ -42,11 +42,9 @@ static int16_t lsb_to_percentage_converter(MechBrakeStorage *storage) {
 
   // add code to see if the percentage is greater than max allowed value
   if (percentage > storage->settings.percentage_threshold) {
-    uint16_t percentage_data = (uint16_t)percentage;
-    event_raise(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, percentage_data);
+    event_raise(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, (uint16_t)percentage);
   } else {
-    uint16_t percentage_data = (uint16_t)percentage;
-    event_raise(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, percentage_data);
+    event_raise(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, (uint16_t)percentage);
   }
 
   return percentage;
@@ -55,24 +53,34 @@ static int16_t lsb_to_percentage_converter(MechBrakeStorage *storage) {
 static void prv_callback_channel(Ads1015Channel channel, void *context) {
   MechBrakeStorage *storage = context;
 
-  ads1015_read_raw(storage->settings.ads1015, channel, &(storage->reading));
+  StatusCode ret = ads1015_read_raw(storage->settings.ads1015, channel, &(storage->reading));
+  if (!status_ok(ret)) {
+    LOG_DEBUG("C%d bad status %d\n", channel, ret);
+  }
 
-  int16_t percentage = lsb_to_percentage_converter(storage);
-  int16_t reading = storage->reading;
+  int16_t percentage = prv_lsb_to_percentage_converter(storage);
 
-  LOG_DEBUG("%d %d\n", storage->reading, percentage);
-
+  LOG_DEBUG("C%d: %d %d\n", channel, storage->reading, percentage);
   storage->percentage = percentage;
 }
 
 StatusCode mech_brake_init(MechBrakeStorage *storage, MechBrakeSettings *settings,
                            MechBrakeCalibrationData *data) {
+
+
+  if (storage == NULL || data == NULL || settings == NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+  
   memset(storage, 0, sizeof(*storage));
   storage->settings = *settings;
   storage->calibration_data = data;
 
-  ads1015_configure_channel(storage->settings.ads1015, storage->settings.channel, true,
+  LOG_DEBUG("%p -> %p\n", settings->ads1015, storage->settings.ads1015);
+  LOG_DEBUG("ch %d\n", storage->settings.channel);
+
+  return ads1015_configure_channel(storage->settings.ads1015, storage->settings.channel, true,
                             prv_callback_channel, storage);
 
-  return STATUS_CODE_OK;
 }
+

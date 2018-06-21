@@ -19,13 +19,14 @@
 static Ads1015Storage s_ads1015_storage;
 static MechBrakeStorage mech_brake_storage;
 static MechBrakeCalibrationStorage s_calibration_storage;
+Ads1015Storage storage;
 
 void setup_test(void) {
-  Ads1015Storage storage;
   gpio_init();
   interrupt_init();
   gpio_it_init();
   soft_timer_init();
+
   I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,
     .scl = { .port = GPIO_PORT_B, .pin = 8 },
@@ -39,7 +40,7 @@ void setup_test(void) {
     .pin = 10,
   };
 
-  MechBrakeSettings calib_settings = {
+   const MechBrakeSettings calib_settings = {
     .ads1015 = &storage,
     .channel = ADS1015_CHANNEL_2,
     .min_allowed_range = 0,
@@ -65,9 +66,10 @@ void test_mech_brake_calibration_run(void) {
   LOG_DEBUG("Beginning sampling\n");
   mech_brake_sample(&s_calibration_storage, MECH_BRAKE_CALIBRATION_POINT_PRESSED);
   LOG_DEBUG("Completed sampling\n");
-
+  
   MechBrakeCalibrationData calib_data;
-  mech_brake_calibration_result(&s_calibration_storage, &calib_data);
+  mech_brake_get_calib_data(&s_calibration_storage, &calib_data);
+
   LOG_DEBUG("%d %d\n", calib_data.zero_value, calib_data.hundred_value);
 
   while (true) {

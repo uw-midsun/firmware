@@ -15,7 +15,7 @@
 #include "status.h"
 
 // Arbitrary watchdog timeout period
-#define ADS1015_WATCHDOG_TIMEOUT_MS 1
+#define ADS1015_WATCHDOG_TIMEOUT_MS 100
 
 typedef enum {
   ADS1015_ADDRESS_GND = 0,
@@ -48,8 +48,8 @@ typedef struct Ads1015Storage {
   void *callback_context[NUM_ADS1015_CHANNELS];
 
   SoftTimerID watchdog_timer;
-  bool watchdog_kicked;
-  bool data_valid;
+  volatile bool watchdog_kicked;
+  volatile bool data_valid;
 } Ads1015Storage;
 
 // Initiates ads1015 by setting up registers and enabling ALRT/RDY Pin.
