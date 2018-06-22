@@ -23,11 +23,11 @@ static volatile uint8_t s_callback_runs = 0;
 static CurrentSenseStorage s_storage = { 0 };
 
 static const CurrentSenseCalibrationData s_data = {
-  .zero_point = { .voltage = 0, .current = 0 }, .max_point = { .voltage = 1000, .current = 10 }
+  .zero_point = { .voltage = 0, .current = 0 }, .max_point = { .voltage = 1000, .current = 1000000 }
 };
 
 static void prv_callback(int32_t current, void *context) {
-  TEST_ASSERT_EQUAL(current * 100, s_test_input_voltage);
+  TEST_ASSERT_EQUAL(current / 1000, s_test_input_voltage);
   LOG_DEBUG("Current = %" PRId32 "\n", current);
 
   s_test_input_voltage += 1000;
