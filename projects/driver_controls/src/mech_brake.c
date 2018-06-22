@@ -2,6 +2,7 @@
 // #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 
 #include <stdbool.h>
 #include "ads1015.h"
@@ -10,7 +11,6 @@
 #include "event_queue.h"
 #include "gpio_it.h"
 
-#include <limits.h>
 #include "exported_enums.h"
 #include "input_event.h"
 #include "log.h"
