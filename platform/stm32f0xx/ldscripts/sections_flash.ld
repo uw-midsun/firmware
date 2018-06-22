@@ -16,12 +16,12 @@ SECTIONS
         KEEP(*(.isr_vector))            /* Startup code */
     . = ALIGN(4);
     } >FLASH
-    
+
     /* the program code is stored in the .text section, which goes to Flash */
     .text :
     {
         . = ALIGN(4);
-        
+        *(.hardfault)              /* Hardfault handlers */
         *(.text)                   /* normal code */
         *(.text.*)                 /* -ffunction-sections code */
         *(.rodata)                 /* read-only data (constants) */
@@ -32,13 +32,13 @@ SECTIONS
     /* Necessary KEEP sections (see http://sourceware.org/ml/newlib/2005/msg00255.html) */
     KEEP (*(.init))
     KEEP (*(.fini))
-    
+
         . = ALIGN(4);
         _etext = .;
         /* This is used by the startup in order to initialize the .data section */
         _sidata = _etext;
     } >FLASH
-    
+
     /* This is the initialized data section
     The program executes knowing that the data is in the RAM
     but the loader puts the initial values in the FLASH (inidata).
@@ -49,7 +49,7 @@ SECTIONS
         /* This is used by the startup in order to initialize the .data secion */
         _sdata = . ;
         _data = . ;
-        
+
         *(.data)
         *(.data.*)
         *(.RAMtext)
@@ -58,7 +58,7 @@ SECTIONS
         /* This is used by the startup in order to initialize the .data secion */
         _edata = . ;
     } >RAM
-    
+
     /* This is the uninitialized data section */
     .bss :
     {
@@ -70,7 +70,7 @@ SECTIONS
         *(.bss)
         *(.bss.*) /* patched by elias - allows the use of -fdata-sections */
         *(COMMON)
-        
+
         . = ALIGN(4);
         /* This is used by the startup in order to initialize the .bss secion */
      _ebss = . ;
@@ -82,15 +82,15 @@ SECTIONS
         . = ALIGN(4);
         KEEP (*(.eh_frame))
     } >RAM
-    
+
     PROVIDE ( end = _ebss );
     PROVIDE ( _end = _ebss );
-    
+
     __exidx_start = .;
     __exidx_end = .;
-    
+
     /* after that it's only debugging information. */
-    
+
     /* remove the debugging information from the standard libraries */
     /DISCARD/ :
     {

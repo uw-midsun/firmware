@@ -5,19 +5,6 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-static GPIOAddress address[] = { {
-                                     GPIO_PORT_A,  //
-                                     0,            //
-                                 },
-                                 {
-                                     GPIO_PORT_A,  //
-                                     1,            //
-                                 },
-                                 {
-                                     GPIO_PORT_A,  //
-                                     2,            //
-                                 } };
-
 static volatile uint8_t s_callback_runs = 0;
 static volatile bool s_callback_ran = false;
 
@@ -47,6 +34,19 @@ void setup_test() {
     GPIO_RES_NONE,      //
     GPIO_ALTFN_ANALOG,  //
   };
+
+  GPIOAddress address[] = { {
+                                GPIO_PORT_A,  //
+                                0,            //
+                            },
+                            {
+                                GPIO_PORT_A,  //
+                                1,            //
+                            },
+                            {
+                                GPIO_PORT_A,  //
+                                2,            //
+                            } };
 
   gpio_init();
   interrupt_init();
@@ -91,7 +91,7 @@ void test_set_callback(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_register_callback(ADC_CHANNEL_2, prv_callback, NULL));
 }
 
-void test_single() {
+void test_single(void) {
   uint16_t reading;
 
   // Initialize the ADC to single mode and configure the channels
@@ -148,7 +148,7 @@ void test_continuous() {
   TEST_ASSERT_TRUE(s_callback_runs > 0);
 }
 
-void test_read_single() {
+void test_read_single(void) {
   // Check that both the raw readings and converted readings are within the expected range
   adc_init(ADC_MODE_SINGLE);
 
@@ -158,7 +158,7 @@ void test_read_single() {
   prv_adc_check_range(ADC_CHANNEL_0);
 }
 
-void test_read_continuous() {
+void test_read_continuous(void) {
   // Check that both the raw readings and converted readings are within the expected range
   adc_init(ADC_MODE_CONTINUOUS);
 

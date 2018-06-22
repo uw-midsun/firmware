@@ -13,8 +13,8 @@
 #include "event_queue.h"
 #include "status.h"
 
-#define POWERTRAIN_HEARTBEAT_MS 500
-#define POWERTRAIN_HEARTBEAT_WATCHDOG_MS 1050
+#define POWERTRAIN_HEARTBEAT_MS 1000
+#define POWERTRAIN_HEARTBEAT_WATCHDOG_MS 2100
 
 // Sets up powertrain heartbeat
 StatusCode powertrain_heartbeat_init(void);

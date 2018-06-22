@@ -52,7 +52,7 @@ int _write(int fd, char *ptr, int len) {
   return len;
 }
 
-__attribute__((naked)) void HardFault_Handler(void) {
+__attribute__((naked, section(".hardfault"))) void HardFault_Handler(void) {
   // Get the appropriate stack pointer, depending on our mode,
   // and use it as the parameter to the C handler. This function
   // will never return
@@ -71,7 +71,7 @@ __attribute__((naked)) void HardFault_Handler(void) {
       ".syntax divided\n");
 }
 
-__attribute__((used)) void HardFault_HandlerC(uint32_t *hardfault_args) {
+__attribute__((used, section(".hardfault"))) void HardFault_HandlerC(uint32_t *hardfault_args) {
   volatile uint32_t stacked_r0;
   volatile uint32_t stacked_r1;
   volatile uint32_t stacked_r2;
