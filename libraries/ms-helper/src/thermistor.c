@@ -3,9 +3,6 @@
 #include <stdint.h>
 #include "log.h"
 
-// The fixed resistance
-#define FIXED_RESISTANCE_OHMS 10000
-
 // src: https://www.murata.com/en-global/products/productdata/8796836626462/NTHCG83.txt
 // Expected resistance in milliohms for a given temperature in celsius
 static const uint32_t s_resistance_lookup[] = {
@@ -48,7 +45,7 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint32_t *temperature
   uint32_t thermistor_resistance_milliohms = 0;  // resistance in milliohms
   uint16_t vdda = 0;                             // vdda voltage in millivolts
 
-  // get source voltage and voltage drop between the thermistor and other resistor
+  // get source voltage and node voltage of the voltage divider
   status_ok_or_return(adc_read_converted(ADC_CHANNEL_REF, &vdda));
   status_ok_or_return(adc_read_converted(storage->adc_channel, &reading));
 
@@ -62,12 +59,12 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint32_t *temperature
 
   // Calculates thermistor resistance in milliOhms based on the position of thermistor and the fixed
   // resistor
-  if (storage->position == PRECEEDING) {
+  if (storage->position == THERMISTOR_POSITION_R1) {
     thermistor_resistance_milliohms =
-        ((uint32_t)(vdda - reading)) * (uint32_t)FIXED_RESISTANCE_OHMS / reading * 1000;
+        ((uint32_t)(vdda - reading)) * (uint32_t)THERMISTOR_FIXED_RESISTANCE_OHMS / reading * 1000;
   } else {
     thermistor_resistance_milliohms =
-        ((uint32_t)FIXED_RESISTANCE_OHMS * reading) / (uint32_t)(vdda - reading) * 1000;
+        ((uint32_t)THERMISTOR_FIXED_RESISTANCE_OHMS * reading) / (uint32_t)(vdda - reading) * 1000;
   }
   return thermistor_calculate_temp(thermistor_resistance_milliohms, temperature_millicelcius);
 }

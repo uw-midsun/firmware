@@ -1,7 +1,6 @@
 #include <inttypes.h>
 #include "adc.h"
 #include "gpio.h"
-#include "interrupt.h"
 #include "log.h"
 #include "test_helpers.h"
 #include "thermistor.h"
@@ -11,6 +10,8 @@
 
 // The tests cases return different voltage values depending on the inputted adc channel inputs
 // Each value is used for a different test case
+// Channel 0~3 used for thermistor = R1. Channel 4~6 used for thermistor = R2. Channel 7 & REF used
+// for producing errors.
 StatusCode TEST_MOCK(adc_read_converted)(ADCChannel adc_channel, uint16_t *reading) {
   switch (adc_channel) {
     case (ADC_CHANNEL_0):
@@ -60,7 +61,7 @@ void setup_test(void) {}
 
 void teardown_test(void) {}
 
-// Tests thermistor calculations with thermistor proceeding its fixed resistor
+// Tests thermistor calculations with thermistor = R2
 // Tests the thermistor at a standard temperature(10 degrees)
 void test_thermistor_normal(void) {
   GPIOAddress gpio_addr = {
@@ -68,7 +69,7 @@ void test_thermistor_normal(void) {
     .pin = 1,
   };
   ThermistorStorage storage;
-  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, PROCEEDING));
+  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
 
   uint32_t reading = 0;
   TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
@@ -85,7 +86,7 @@ void test_thermistor_min_temp(void) {
   ThermistorStorage storage;
 
   uint32_t reading = 0;
-  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, PROCEEDING));
+  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
   TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST32 "\n", reading / 1000);
   TEST_ASSERT_UINT32_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 0, reading);
@@ -100,20 +101,20 @@ void test_thermistor_max_temp(void) {
   ThermistorStorage storage;
 
   uint32_t reading = 0;
-  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, PROCEEDING));
+  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
   TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST32 "\n", reading / 1000);
   TEST_ASSERT_UINT32_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 100000, reading);
 }
 
-// Tests thermistor calculations with thermistor preceeding its fixed resistor
+// Tests thermistor calculations with thermistor = R1
 void test_thermistor_normal_alt(void) {
   GPIOAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 4,
   };
   ThermistorStorage storage;
-  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, PRECEEDING));
+  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R1));
 
   uint32_t reading = 0;
   TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
@@ -129,7 +130,7 @@ void test_thermistor_min_temp_alt(void) {
   ThermistorStorage storage;
 
   uint32_t reading = 0;
-  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, PRECEEDING));
+  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R1));
   TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST32 "\n", reading / 1000);
   TEST_ASSERT_UINT32_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 0, reading);
@@ -143,7 +144,7 @@ void test_thermistor_max_temp_alt(void) {
   ThermistorStorage storage;
 
   uint32_t reading = 0;
-  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, PRECEEDING));
+  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R1));
   TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST32 "\n", reading / 1000);
   TEST_ASSERT_UINT32_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 100000, reading);
@@ -158,7 +159,7 @@ void test_thermistor_exceed_range(void) {
   ThermistorStorage storage;
 
   uint32_t reading = 0;
-  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, PROCEEDING));
+  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
   TEST_ASSERT_NOT_OK(thermistor_get_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST32 "\n", reading / 1000);
 }
@@ -172,7 +173,7 @@ void test_thermistor_under_range(void) {
   ThermistorStorage storage;
 
   uint32_t reading = 0;
-  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, PROCEEDING));
+  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
   // Adds one millivolt as to not trigger the NULL read case
   reading++;
   TEST_ASSERT_NOT_OK(thermistor_get_temp(&storage, &reading));
@@ -188,7 +189,7 @@ void test_zero_node_voltage(void) {
   ThermistorStorage storage;
 
   uint32_t reading = 0;
-  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, PROCEEDING));
+  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
   TEST_ASSERT_NOT_OK(thermistor_get_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST32 "\n", reading / 1000);
 }

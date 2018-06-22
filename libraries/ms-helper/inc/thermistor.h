@@ -1,17 +1,20 @@
 #pragma once
 // Thermistor Reading interface for NXRT15XH103FA1B (10k Ohm NTC)
 // Requires ADC, GPIO and Interrupts to be initialized.
+//
+// The thermistor and its fixed resistor forms a voltage divider.
+// A temperature value ranging from 0~100 degrees is calculated from the voltage divider.
 #include "adc.h"
 #include "gpio.h"
 
-// The thermistor and its fixed resistor forms a voltage divider.
-// A temperature value ranging from 0~100 degrees is calculated from the voltage divider.
+// A 10KOhm resistor is used as the fixed value
+#define THERMISTOR_FIXED_RESISTANCE_OHMS 10000
 
 // ThermistorPosition indicates which resistor the node voltage is measured from
-// ex: VDDA ---> R1 ---> Thermistor (Proceeding) --- GND
+// ex: VDDA ---> R1 ---> R2 ---> GND
 typedef enum {
-  PRECEEDING = 0,  // Measured from R1
-  PROCEEDING,      // Measured from thermistor
+  THERMISTOR_POSITION_R1 = 0,
+  THERMISTOR_POSITION_R2,
   NUM_THERMISTOR_POSITIONS,
 } ThermistorPosition;
 
@@ -20,7 +23,7 @@ typedef struct ThermistorStorage {
   ADCChannel adc_channel;
 } ThermistorStorage;
 
-// Initialize the thermistor GPIO pins, and adc channels
+// Initializes the GPIO pin and ADC Channel associated with the thermistor
 StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gpio,
                            ThermistorPosition position);
 
