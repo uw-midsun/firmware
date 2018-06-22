@@ -6,6 +6,8 @@
 
 #include "status.h"
 
+#define SOFT_TIMER_MIN_TIME_US 50
+
 #define SOFT_TIMER_MAX_TIMERS 25
 #define SOFT_TIMER_INVALID_TIMER (SOFT_TIMER_MAX_TIMERS)
 

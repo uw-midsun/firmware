@@ -5,6 +5,7 @@
 // This tradeoff is worth it for faster interrupts.
 #include "soft_timer.h"
 #include <string.h>
+#include "critical_section.h"
 #include "objpool.h"
 #include "stm32f0xx.h"
 
@@ -51,6 +52,9 @@ void soft_timer_init(void) {
 // Seems to take around 5us to start a timer
 StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, void *context,
                             SoftTimerID *timer_id) {
+  if (duration_us < SOFT_TIMER_MIN_TIME_US) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Soft timer too short!");
+  }
   SoftTimer *node = objpool_get_node(&s_timers.pool);
   if (node == NULL) {
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "Out of software timers.");
@@ -67,10 +71,13 @@ StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, vo
     *timer_id = SOFT_TIMER_GET_ID(node);
   }
 
+  bool crit = critical_section_start();
   bool head = prv_insert_timer(node);
   if (head) {
-    prv_update_timer();
+    TIM_SetCompare1(TIM2, s_timers.head->expiry_us);
+    TIM_CCxCmd(TIM2, TIM_Channel_1, TIM_CCx_Enable);
   }
+  critical_section_end(crit);
 
   return STATUS_CODE_OK;
 }
@@ -80,8 +87,9 @@ bool soft_timer_cancel(SoftTimerID timer_id) {
     return false;
   }
 
-  // Technically should be protected?
+  bool crit = critical_section_start();
   prv_remove_timer(&s_storage[timer_id]);
+  critical_section_end(crit);
   return true;
 }
 
@@ -189,10 +197,10 @@ static void prv_update_timer(void) {
 
   // Loop through any timers that have expired and fire their callbacks.
   // The magic offset is most likely the time it takes for the comparison
-  // and for the compare register to update. (2us)
+  // and for the compare register to update. (10 us)
   while (active_timer != NULL && (active_timer->expiry_rollover_count < s_timers.rollover_count ||
                                   (active_timer->expiry_rollover_count == s_timers.rollover_count &&
-                                   active_timer->expiry_us <= TIM_GetCounter(TIM2) + 2))) {
+                                   active_timer->expiry_us <= TIM_GetCounter(TIM2) + 10))) {
     active_timer->callback(SOFT_TIMER_GET_ID(active_timer), active_timer->context);
 
     prv_remove_timer(active_timer);
