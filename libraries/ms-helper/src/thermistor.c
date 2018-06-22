@@ -1,9 +1,12 @@
 #include "thermistor.h"
+#include <limits.h>
 #include <stdint.h>
 #include "log.h"
 
+#define SIBLING_RESISTANCE 10000
+
 // src: https://www.murata.com/en-global/products/productdata/8796836626462/NTHCG83.txt
-// expected resistance in milliohms for a given temperature in celsius
+// Expected resistance in milliohms for a given temperature in celsius
 static const uint32_t s_resistance_lookup[] = {
   27218600, 26076000, 24987700, 23950900, 22962900, 22021100, 21123000, 20266600, 19449500,
   18669800, 17925500, 17213900, 16534400, 15885600, 15265800, 14673500, 14107500, 13566400,
@@ -19,10 +22,9 @@ static const uint32_t s_resistance_lookup[] = {
   999300,   973800,
 };
 
-StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gpio_address,
-                           uint32_t sibling_resistance_ohms, bool is_thermistor_first) {
-  storage->sibling_resistance_ohms = sibling_resistance_ohms;
-  storage->is_thermistor_first = is_thermistor_first;
+StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gpio,
+                           Thermistor_Position position) {
+  storage->position = position;
   GPIOSettings gpio_settings = {
     .direction = GPIO_DIR_IN,
     .state = GPIO_STATE_LOW,
@@ -30,9 +32,9 @@ StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gp
     .alt_function = GPIO_ALTFN_ANALOG,
   };
 
-  gpio_init_pin(&thermistor_gpio_address, &gpio_settings);
+  gpio_init_pin(&thermistor_gpio, &gpio_settings);
 
-  adc_get_channel(thermistor_gpio_address, &(storage->adc_channel));
+  adc_get_channel(thermistor_gpio, &(storage->adc_channel));
 
   // set the channel
   adc_set_channel(storage->adc_channel, true);
@@ -46,20 +48,26 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint32_t *temperature
   uint16_t vdda = 0;                             // vdda voltage in millivolts
 
   // get source voltage and voltage drop betweeb the thermistor and other resistor
-  adc_read_converted(ADC_CHANNEL_REF, &vdda);
-  adc_read_converted(storage->adc_channel, &reading);
+  status_ok_or_return(adc_read_converted(ADC_CHANNEL_REF, &vdda));
+  status_ok_or_return(adc_read_converted(storage->adc_channel, &reading));
 
-  if (reading == 0 || vdda == 0) {
-    return status_msg(STATUS_CODE_INTERNAL_ERROR, "No vdda voltage or voltage drop detected.");
+  if (vdda == 0) {
+    *temperature_millicelcius = UINT_MAX;
+    return status_msg(STATUS_CODE_INTERNAL_ERROR, "No source voltage detected.");
   }
+  if (reading == 0) {
+    *temperature_millicelcius = UINT_MAX;
+    return status_msg(STATUS_CODE_INTERNAL_ERROR, "No node voltage detected.");
+  }
+
   // Calculates sibling resistance in milliOhms based on the order of the thermistor and its sibling
   // resistor
-  if (storage->is_thermistor_first) {
+  if (storage->position == PRECEEDING) {
     thermistor_resistance_milliohms =
-        (uint32_t)(vdda - reading) / reading * storage->sibling_resistance_ohms * 1000;
+        ((uint32_t)(vdda - reading)) * (uint32_t)SIBLING_RESISTANCE / reading * 1000;
   } else {
-    thermistor_resistance_milliohms = (storage->sibling_resistance_ohms * 1000 / reading) *
-                                      (vdda)-storage->sibling_resistance_ohms * 1000;
+    thermistor_resistance_milliohms =
+        ((uint32_t)SIBLING_RESISTANCE * reading) / (uint32_t)(vdda - reading) * 1000;
   }
   return thermistor_calculate_temp(thermistor_resistance_milliohms, temperature_millicelcius);
 }
@@ -77,6 +85,7 @@ StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_milliohms,
       return STATUS_CODE_OK;
     }
   }
-
+  // Sets the returned temperature to be absurdly large
+  *temperature_millicelcius = UINT_MAX;
   return status_msg(STATUS_CODE_OUT_OF_RANGE, "Temperature out of lookup table range.");
 }
