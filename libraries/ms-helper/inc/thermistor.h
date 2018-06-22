@@ -7,7 +7,7 @@
 #include "adc.h"
 #include "gpio.h"
 
-// A 10KOhm resistor is used as the fixed value
+// A 10kOhm resistor is used as the fixed value
 #define THERMISTOR_FIXED_RESISTANCE_OHMS 10000
 
 // ThermistorPosition indicates which resistor the node voltage is measured from
