@@ -193,3 +193,28 @@ void test_zero_node_voltage(void) {
   TEST_ASSERT_NOT_OK(thermistor_get_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST32 "\n", reading / 1000);
 }
+
+// Testing the temperature search function
+void test_temperature_calculation(void) {
+  uint32_t temperature = 0;
+  // 10 Degrees
+  thermistor_calculate_temp(17925500, &temperature);
+  TEST_ASSERT_UINT32_WITHIN(200, 10000, temperature);
+
+  // 25 Degrees
+  thermistor_calculate_temp(10000000, &temperature);
+  TEST_ASSERT_UINT32_WITHIN(200, 25000, temperature);
+
+  // 50 Degrees
+  thermistor_calculate_temp(4160900, &temperature);
+  TEST_ASSERT_UINT32_WITHIN(200, 50000, temperature);
+
+  // 75 Degrees
+  thermistor_calculate_temp(1924500, &temperature);
+  TEST_ASSERT_UINT32_WITHIN(200, 75000, temperature);
+
+  // 90 Degrees
+  thermistor_calculate_temp(1268000, &temperature);
+  LOG_DEBUG("Temperature: %" PRIuLEAST32 "\n", temperature);
+  TEST_ASSERT_UINT32_WITHIN(200, 90000, temperature);
+}
