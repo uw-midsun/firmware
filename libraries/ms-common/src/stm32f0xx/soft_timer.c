@@ -6,6 +6,7 @@
 #include "soft_timer.h"
 #include <string.h>
 #include "critical_section.h"
+#include "misc.h"
 #include "objpool.h"
 #include "stm32f0xx.h"
 
@@ -211,7 +212,8 @@ static void prv_update_timer(void) {
   // and reenable compares. In the case where there aren't any timers registered, the compare
   // channel is disabled until a new timer is added.
   if (s_timers.head != NULL) {
-    TIM_SetCompare1(TIM2, s_timers.head->expiry_us);
+    TIM_SetCompare1(TIM2, MAX(s_timers.head->expiry_us, 
+          TIM_GetCounter(TIM2) + SOFT_TIMER_MIN_TIME_US);
     TIM_CCxCmd(TIM2, TIM_Channel_1, TIM_CCx_Enable);
   }
 }
