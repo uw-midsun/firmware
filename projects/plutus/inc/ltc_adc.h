@@ -56,3 +56,6 @@ StatusCode ltc_adc_init(LtcAdcStorage *storage, const LtcAdcSettings *settings);
 // Register a callback to be run whenever there is new data
 StatusCode ltc_adc_register_callback(LtcAdcStorage *storage, LtcAdcCallback callback,
                                      void *context);
+
+// Exposed for testing
+StatusCode test_ltc_adc_set_input_voltage(int32_t input_voltage);

@@ -54,7 +54,7 @@ void setup_test(void) {
     .filter_mode = LTC_ADC_FILTER_50HZ_60HZ,
   };
 
-  TEST_ASSERT_OK(current_sense_init(&s_storage, &s_data, &adc_settings));
+  TEST_ASSERT_OK(current_sense_init(&s_storage, s_data, &adc_settings));
 }
 
 void teardown_test(void) {}

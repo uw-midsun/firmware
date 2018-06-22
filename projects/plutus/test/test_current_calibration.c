@@ -34,6 +34,7 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_current_calibration_sample(void) {
+  // Calibration routing demonstration
   CurrentCalibrationStorage s_storage = { 0 };
   CurrentSenseCalibrationData data = { 0 };
   LtcAdcStorage adc_storage = { 0 };

@@ -20,17 +20,16 @@ typedef struct {
 
 typedef struct {
   LtcAdcStorage adc_storage;
-  CurrentSenseCalibrationData *data;
+  CurrentSenseCalibrationData data;
   CurrentSenseValue value;
   int32_t offset;
-  volatile bool offset_flag;
+  bool offset_flag;
   CurrentSenseCallback callback;
   void *context;
 } CurrentSenseStorage;
 
-// Initialize the current sense module. Requires |data| to be calibrated beforehand. The units of
-// current used by the module will depend on the units used by |data|
-StatusCode current_sense_init(CurrentSenseStorage *storage, const CurrentSenseCalibrationData *data,
+// Initialize the current sense module. Requires |data| to be calibrated beforehand.
+StatusCode current_sense_init(CurrentSenseStorage *storage, const CurrentSenseCalibrationData data,
                               const LtcAdcSettings *settings);
 
 // Register a callback to run when new data is available
