@@ -9,14 +9,12 @@
 #include "throttle.h"
 
 // Pedal FSM state definitions
-
 // We only really care about braking vs. not braking, but keep the 3 states just to be explicit
 FSM_DECLARE_STATE(state_brake);
 FSM_DECLARE_STATE(state_coast);
 FSM_DECLARE_STATE(state_accel);
 
 // Pedal FSM transition table definitions
-
 FSM_STATE_TRANSITION(state_brake) {
   FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_brake);
 
@@ -38,6 +36,7 @@ FSM_STATE_TRANSITION(state_accel) {
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_COAST, state_coast);
 }
 
+// Pedal FSM output functions
 static void prv_update_drive_output(void) {
   ThrottlePosition position = { 0 };
   // TODO(ELEC-431): Could just remove UPDATE_REQUESTED transitions and use the actual events + data
