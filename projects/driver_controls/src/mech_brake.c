@@ -1,8 +1,8 @@
 
 // #include <stdint.h>
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
-#include <limits.h>
 
 #include <stdbool.h>
 #include "ads1015.h"
