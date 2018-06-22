@@ -3,7 +3,8 @@
 #include <stdint.h>
 #include "log.h"
 
-#define SIBLING_RESISTANCE 10000
+// The fixed resistance
+#define FIXED_RESISTANCE_OHMS 10000
 
 // src: https://www.murata.com/en-global/products/productdata/8796836626462/NTHCG83.txt
 // Expected resistance in milliohms for a given temperature in celsius
@@ -23,7 +24,7 @@ static const uint32_t s_resistance_lookup[] = {
 };
 
 StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gpio,
-                           Thermistor_Position position) {
+                           ThermistorPosition position) {
   storage->position = position;
   GPIOSettings gpio_settings = {
     .direction = GPIO_DIR_IN,
@@ -47,27 +48,26 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint32_t *temperature
   uint32_t thermistor_resistance_milliohms = 0;  // resistance in milliohms
   uint16_t vdda = 0;                             // vdda voltage in millivolts
 
-  // get source voltage and voltage drop betweeb the thermistor and other resistor
+  // get source voltage and voltage drop between the thermistor and other resistor
   status_ok_or_return(adc_read_converted(ADC_CHANNEL_REF, &vdda));
   status_ok_or_return(adc_read_converted(storage->adc_channel, &reading));
 
   if (vdda == 0) {
     *temperature_millicelcius = UINT_MAX;
     return status_msg(STATUS_CODE_INTERNAL_ERROR, "No source voltage detected.");
-  }
-  if (reading == 0) {
+  } else if (reading == 0) {
     *temperature_millicelcius = UINT_MAX;
     return status_msg(STATUS_CODE_INTERNAL_ERROR, "No node voltage detected.");
   }
 
-  // Calculates sibling resistance in milliOhms based on the order of the thermistor and its sibling
+  // Calculates thermistor resistance in milliOhms based on the position of thermistor and the fixed
   // resistor
   if (storage->position == PRECEEDING) {
     thermistor_resistance_milliohms =
-        ((uint32_t)(vdda - reading)) * (uint32_t)SIBLING_RESISTANCE / reading * 1000;
+        ((uint32_t)(vdda - reading)) * (uint32_t)FIXED_RESISTANCE_OHMS / reading * 1000;
   } else {
     thermistor_resistance_milliohms =
-        ((uint32_t)SIBLING_RESISTANCE * reading) / (uint32_t)(vdda - reading) * 1000;
+        ((uint32_t)FIXED_RESISTANCE_OHMS * reading) / (uint32_t)(vdda - reading) * 1000;
   }
   return thermistor_calculate_temp(thermistor_resistance_milliohms, temperature_millicelcius);
 }

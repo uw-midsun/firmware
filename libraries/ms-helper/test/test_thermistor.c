@@ -9,34 +9,35 @@
 
 #define THERMISTOR_TEMPERATURE_TOLERANCE 100
 
-// The tests cases return different test values depending on the inputted adc channel inputs
+// The tests cases return different voltage values depending on the inputted adc channel inputs
+// Each value is used for a different test case
 StatusCode TEST_MOCK(adc_read_converted)(ADCChannel adc_channel, uint16_t *reading) {
   switch (adc_channel) {
     case (ADC_CHANNEL_0):
-      *reading = 2900;
+      *reading = 2900;  // Used for testing out of range temperatures
       break;
     case (ADC_CHANNEL_1):
-      *reading = 1926;
+      *reading = 1926;  // Used for testing a normal temperature calculation
       break;
     case (ADC_CHANNEL_2):
-      *reading = 2193;
+      *reading = 2193;  // Tests lower bound of the temperature lookup table
       break;
     case (ADC_CHANNEL_3):
-      *reading = 267;
+      *reading = 267;  // Tests upper bound of the temperature lookup table
       break;
     case (ADC_CHANNEL_4):
-      *reading = 1074;
+      *reading = 1074;  // Used for testing a normal temperature calculation
       break;
     case (ADC_CHANNEL_5):
-      *reading = 807;
+      *reading = 807;  // Tests lower bound of the temperature lookup table
       break;
     case (ADC_CHANNEL_6):
-      *reading = 2733;
+      *reading = 2733;  // Tests upper bound of the temperature lookup table
       break;
-    case (ADC_CHANNEL_7):
+    case (ADC_CHANNEL_7):  // Used to test out of bound lookup table values
       *reading = 0;
       break;
-    case (ADC_CHANNEL_REF):
+    case (ADC_CHANNEL_REF):  // The VDDA voltage used for these test scenarios
       *reading = 3000;
       break;
     default:
@@ -59,7 +60,7 @@ void setup_test(void) {}
 
 void teardown_test(void) {}
 
-// Tests thermistor calculations with thermistor proceeding its sibling resistor
+// Tests thermistor calculations with thermistor proceeding its fixed resistor
 // Tests the thermistor at a standard temperature(10 degrees)
 void test_thermistor_normal(void) {
   GPIOAddress gpio_addr = {
@@ -105,7 +106,7 @@ void test_thermistor_max_temp(void) {
   TEST_ASSERT_UINT32_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 100000, reading);
 }
 
-// Tests thermistor calculations with thermistor preceeding its sibling resistor
+// Tests thermistor calculations with thermistor preceeding its fixed resistor
 void test_thermistor_normal_alt(void) {
   GPIOAddress gpio_addr = {
     .port = GPIO_PORT_A,

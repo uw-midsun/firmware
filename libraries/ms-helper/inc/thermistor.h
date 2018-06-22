@@ -4,21 +4,25 @@
 #include "adc.h"
 #include "gpio.h"
 
-// The thermistor and the sibling resistor are connected in series circuit.
-// Thermistor Position is the position of the thermistor realtive to its sibling resistor.
-typedef enum {
-  PRECEEDING = 0,
-  PROCEEDING,
-} Thermistor_Position;
+// The thermistor and its fixed resistor forms a voltage divider.
+// A temperature value ranging from 0~100 degrees is calculated from the voltage divider.
 
-typedef struct {
-  Thermistor_Position position;
+// ThermistorPosition indicates which resistor the node voltage is measured from
+// ex: VDDA ---> R1 ---> Thermistor (Proceeding) --- GND
+typedef enum {
+  PRECEEDING = 0,  // Measured from R1
+  PROCEEDING,      // Measured from thermistor
+  NUM_THERMISTOR_POSITIONS,
+} ThermistorPosition;
+
+typedef struct ThermistorStorage {
+  ThermistorPosition position;
   ADCChannel adc_channel;
 } ThermistorStorage;
 
 // Initialize the thermistor GPIO pins, and adc channels
 StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gpio,
-                           Thermistor_Position position);
+                           ThermistorPosition position);
 
 // Fetch the temperature reading in milliCelsius from the MCU's ADC
 StatusCode thermistor_get_temp(ThermistorStorage *storage, uint32_t *temperature_millicelcius);
