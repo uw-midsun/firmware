@@ -2,10 +2,8 @@
 #include <stddef.h>
 
 #include "can_hw.h"
-#include "can_transmit.h"
 #include "can_uart.h"
 #include "delay.h"
-#include "event_queue.h"
 #include "gpio.h"
 #include "interrupt.h"
 #include "log.h"
@@ -24,16 +22,6 @@
 
 static UARTStorage s_uart_storage;
 
-static uint8_t s_data[3] = { 0, 1, 2 };
-
-static void prv_send(SoftTimerID id, void *context) {
-  (void)id;
-  (void)context;
-
-  can_hw_transmit(4, false, s_data, 3);
-  soft_timer_start_millis(1000, prv_send, NULL, NULL);
-}
-
 static void prv_init_periph(void) {
   gpio_init();
   interrupt_init();
@@ -51,14 +39,13 @@ static void prv_init_periph(void) {
     .tx = { .port = GPIO_PORT_A, .pin = 12 },  //
     .rx = { .port = GPIO_PORT_A, .pin = 11 },  //
     .bitrate = CAN_SLAVE_CAN_BITRATE,          //
-    .loopback = true,                          //
+    .loopback = false,                         //
   };
 
   can_hw_init(&can_hw_settings);
 }
 
 int main(void) {
-  event_queue_init();
   prv_init_periph();
 
   CanUart can_uart = {
@@ -68,8 +55,6 @@ int main(void) {
   };
   can_uart_init(&can_uart);
   can_uart_enable_passthrough(&can_uart);
-
-  soft_timer_start_millis(1000, prv_send, NULL, NULL);
 
   while (true) {
     wait();
