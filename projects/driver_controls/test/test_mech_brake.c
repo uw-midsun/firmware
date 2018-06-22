@@ -55,9 +55,7 @@ void setup_test() {
   TEST_ASSERT_OK(mech_brake_init(&s_mech_brake_storage, &brake_settings, &s_calib_data));
 
   while (true) {
-  
-}
-
+  }
 }
 
 void teardown_test(void) {}
