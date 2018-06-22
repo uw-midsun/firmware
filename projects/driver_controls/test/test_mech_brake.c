@@ -23,12 +23,11 @@ static MechBrakeStorage s_mech_brake_storage;
 static Ads1015Storage s_ads1015_storage;
 
 static MechBrakeCalibrationData s_calib_data = {
-  .zero_value = 513,
-  .hundred_value = 624,
+  .zero_value = 336,
+  .hundred_value = 730,
 };
 
 void setup_test() {
-  LOG_DEBUG("hello\n");
   gpio_init();
   interrupt_init();
   gpio_it_init();
@@ -47,9 +46,8 @@ void setup_test() {
   TEST_ASSERT_OK(ads1015_init(&s_ads1015_storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin));
 
   const MechBrakeSettings brake_settings = {
-    .percentage_threshold = 500,
-    .min_allowed_range = 0,
-    .max_allowed_range = (1 << 12),
+    .brake_pressed_threshold = 500,
+    .tolerance = 2,
     .channel = ADS1015_CHANNEL_2,
     .ads1015 = &s_ads1015_storage,
   };
@@ -57,12 +55,14 @@ void setup_test() {
   TEST_ASSERT_OK(mech_brake_init(&s_mech_brake_storage, &brake_settings, &s_calib_data));
 
   while (true) {
-  }
+  
+}
+
 }
 
 void teardown_test(void) {}
 
-void test_mech_brake_loop() {
+void test_mech_brake_loop(void) {
   while (true) {
   }
 }

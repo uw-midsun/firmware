@@ -43,8 +43,6 @@ void setup_test(void) {
   const MechBrakeSettings calib_settings = {
     .ads1015 = &storage,
     .channel = ADS1015_CHANNEL_2,
-    .min_allowed_range = 0,
-    .max_allowed_range = (1 << 12),
   };
 
   event_queue_init();

@@ -1,5 +1,4 @@
 
-
 // #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -17,51 +16,58 @@
 #include "soft_timer.h"
 #include "status.h"
 #include "wait.h"
+#include "exported_enums.h"
+#include <limits.h>
+
 
 // takes in LSB as input and converts it to percentage using a linear relationship
-static int16_t prv_lsb_to_percentage_converter(MechBrakeStorage *storage) {
-  int16_t percentage;
+static StatusCode prv_lsb_to_percentage(MechBrakeStorage *storage, int16_t reading, int16_t *percentage) {
+  
+  int16_t input_percent = INT16_MAX;
 
-  if (storage->calibration_data->zero_value > storage->calibration_data->hundred_value) {
-    percentage =
-        ((storage->settings.min_allowed_range *
-          (storage->reading - storage->calibration_data->hundred_value)) /
-         (storage->calibration_data->hundred_value - storage->calibration_data->zero_value)) +
-        storage->settings.max_allowed_range;
-  } else {
-    percentage = (storage->settings.max_allowed_range *
-                  (storage->reading - storage->calibration_data->zero_value)) /
+  input_percent = (EE_DRIVE_OUTPUT_DENOMINATOR *
+                  (reading - storage->calibration_data->zero_value)) /
                  (storage->calibration_data->hundred_value - storage->calibration_data->zero_value);
+  
+  int16_t lower_bound = -1 * storage->settings.tolerance * EE_DRIVE_OUTPUT_DENOMINATOR /100 ;
+  int16_t upper_bound =  EE_DRIVE_OUTPUT_DENOMINATOR + storage->settings.tolerance*EE_DRIVE_OUTPUT_DENOMINATOR/100;
+  
+  if(input_percent < lower_bound || input_percent > upper_bound){
+    return status_code(STATUS_CODE_OUT_OF_RANGE);
+  }
+ 
+  if (input_percent < 0) {
+    input_percent = 0;
+  } else if (input_percent > EE_DRIVE_OUTPUT_DENOMINATOR) {
+    input_percent = EE_DRIVE_OUTPUT_DENOMINATOR;
   }
 
-  if (percentage < storage->settings.min_allowed_range) {
-    percentage = storage->settings.min_allowed_range;
-  } else if (percentage > storage->settings.max_allowed_range) {
-    percentage = storage->settings.max_allowed_range;
-  }
+  *percentage = MIN(input_percent, EE_DRIVE_OUTPUT_DENOMINATOR);
 
-  // add code to see if the percentage is greater than max allowed value
-  if (percentage > storage->settings.percentage_threshold) {
-    event_raise(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, (uint16_t)percentage);
-  } else {
-    event_raise(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, (uint16_t)percentage);
-  }
+  return STATUS_CODE_OK;
 
-  return percentage;
 }
 
 static void prv_callback_channel(Ads1015Channel channel, void *context) {
-  MechBrakeStorage *storage = context;
 
-  StatusCode ret = ads1015_read_raw(storage->settings.ads1015, channel, &(storage->reading));
-  if (!status_ok(ret)) {
-    LOG_DEBUG("C%d bad status %d\n", channel, ret);
+  MechBrakeStorage *storage = context;
+  int16_t percentage = INT16_MAX;
+  StatusCode ret = mech_brake_get_percentage(storage, &percentage);
+
+  if (status_ok(ret)) {
+     if (percentage > storage->settings.brake_pressed_threshold) {
+      event_raise(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, (uint16_t)percentage);
+    } else {
+      event_raise(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, (uint16_t)percentage);
+    }
   }
 
-  int16_t percentage = prv_lsb_to_percentage_converter(storage);
-
-  LOG_DEBUG("C%d: %d %d\n", channel, storage->reading, percentage);
-  storage->percentage = percentage;
+  if (status_ok(ret)){
+    LOG_DEBUG("C%d: %d\n", channel, percentage);
+  }
+  else {
+    LOG_DEBUG("invalid\n");
+  }
 }
 
 StatusCode mech_brake_init(MechBrakeStorage *storage, MechBrakeSettings *settings,
@@ -74,9 +80,17 @@ StatusCode mech_brake_init(MechBrakeStorage *storage, MechBrakeSettings *setting
   storage->settings = *settings;
   storage->calibration_data = data;
 
-  LOG_DEBUG("%p -> %p\n", settings->ads1015, storage->settings.ads1015);
-  LOG_DEBUG("ch %d\n", storage->settings.channel);
-
   return ads1015_configure_channel(storage->settings.ads1015, storage->settings.channel, true,
                                    prv_callback_channel, storage);
+}
+
+StatusCode mech_brake_get_percentage(MechBrakeStorage *storage, int16_t *percentage){
+  int16_t reading = INT16_MAX;
+  StatusCode ret = ads1015_read_raw(storage->settings.ads1015, storage->settings.channel, &reading);
+  if (!status_ok(ret)) {
+    LOG_DEBUG("C%d bad status %d\n", storage->settings.channel, ret);
+  }
+
+  return prv_lsb_to_percentage(storage, reading, percentage);
+
 }

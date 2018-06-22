@@ -5,7 +5,8 @@
 //
 // The module reads brake inputs from ADS1015, then converts those readings into percentage data.
 // At the same time, it raises events, INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, and
-// INPUT_EVENT_MECHANICAL_BRAKE_PRESSED
+// INPUT_EVENT_MECHANICAL_BRAKE_PRESSED. These events contain a percentage value that corresponds 
+// to the input reading of the adc.
 //
 // For the percentage conversion, the module receives peak-peak values when the brake is
 // pressed and released, then correlates that data to percentage values and finds a linear equation
@@ -23,18 +24,17 @@ typedef struct MechBrakeCalibrationData {
 
 typedef struct MechBrakeSettings {
   Ads1015Storage *ads1015;
-  int16_t min_allowed_range;     // min allowed percentage value, usually 0
-  int16_t max_allowed_range;     // max allowed percentage value, (1<<12)
-  int16_t percentage_threshold;  // value above which the brake_pressed event is raised
+  int16_t brake_pressed_threshold;  // value above which the brake_pressed event is raised and below which the brake_unpressed event is raised
+  int16_t tolerance;  
   Ads1015Channel channel;
 } MechBrakeSettings;
 
 typedef struct MechBrakeStorage {
-  int16_t reading;
-  int16_t percentage;
   MechBrakeCalibrationData *calibration_data;
   MechBrakeSettings settings;
 } MechBrakeStorage;
 
 StatusCode mech_brake_init(MechBrakeStorage *mech_brake_storage, MechBrakeSettings *settings,
                            MechBrakeCalibrationData *calib_data);
+
+StatusCode mech_brake_get_percentage(MechBrakeStorage *storage, int16_t *percentage);
