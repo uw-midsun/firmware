@@ -19,7 +19,7 @@ static void prv_calculate_current(int32_t *value, void *context) {
   storage->value.voltage = *value;
   storage->value.current = (*value - storage->data->zero_point.voltage - storage->offset) *
                            ((storage->data->max_point.current - storage->data->zero_point.current) /
-                           (storage->data->max_point.voltage - storage->data->zero_point.voltage));
+                            (storage->data->max_point.voltage - storage->data->zero_point.voltage));
 
   if (storage->callback != NULL) {
     storage->callback(storage->value.current, storage->context);
