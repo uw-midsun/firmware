@@ -11,7 +11,7 @@
 
 #define DRIVE_OUTPUT_CRUISE_DISABLED_SPEED 0
 // Arbitrary timeout - all data should be updated at least once within this timeout period
-#define DRIVE_OUTPUT_WATCHDOG_MS 500
+#define DRIVE_OUTPUT_WATCHDOG_MS 1000
 // How often to request state updates and broadcast drive commands
 #define DRIVE_OUTPUT_BROADCAST_MS 100
 
@@ -25,6 +25,7 @@ typedef enum {
 
 typedef struct DriveOutputStorage {
   int16_t data[NUM_DRIVE_OUTPUT_SOURCES];
+  int16_t pedal_requested_data;
   EventID fault_event;
   EventID update_req_event;
   SoftTimerID watchdog_timer;
