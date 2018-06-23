@@ -53,13 +53,11 @@ static void prv_callback_channel(Ads1015Channel channel, void *context) {
   StatusCode ret = mech_brake_get_percentage(storage, &percentage);
 
   if (status_ok(ret)) {
-
     if (percentage > storage->settings.brake_pressed_threshold) {
       event_raise(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, (uint16_t)percentage);
-      }
-     else {
+    } else {
       event_raise(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, (uint16_t)percentage);
-      }
+    }
   }
 }
 
@@ -78,13 +76,12 @@ StatusCode mech_brake_init(MechBrakeStorage *storage, MechBrakeSettings *setting
 }
 
 StatusCode mech_brake_get_percentage(MechBrakeStorage *storage, int16_t *percentage) {
-
   if (storage == NULL || percentage == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
   int16_t reading = INT16_MIN;
   ads1015_read_raw(storage->settings.ads1015, storage->settings.channel, &reading);
-  
+
   return prv_lsb_to_percentage(storage, reading, percentage);
 }
