@@ -78,7 +78,8 @@ StatusCode current_sense_register_callback(CurrentSenseStorage *storage,
   return STATUS_CODE_OK;
 }
 
-StatusCode current_sense_get_value(CurrentSenseStorage *storage, bool *data_valid, int32_t *current) {
+StatusCode current_sense_get_value(CurrentSenseStorage *storage, bool *data_valid,
+                                   int32_t *current) {
   if (storage == NULL || current == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -88,6 +89,7 @@ StatusCode current_sense_get_value(CurrentSenseStorage *storage, bool *data_vali
   }
 
   *data_valid = storage->data_valid;
+  storage->data_valid = false;
 
   return STATUS_CODE_OK;
 }

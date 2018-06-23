@@ -32,15 +32,15 @@ typedef struct {
 } CurrentSenseStorage;
 
 // Initialize the current sense module. Requires |data| to be calibrated beforehand.
-StatusCode current_sense_init(CurrentSenseStorage *storage,
-                              const CurrentSenseCalibrationData *data,
+StatusCode current_sense_init(CurrentSenseStorage *storage, const CurrentSenseCalibrationData *data,
                               const LtcAdcSettings *settings);
 
 // Register a callback to run when new data is available
 StatusCode current_sense_register_callback(CurrentSenseStorage *storage,
                                            CurrentSenseCallback callback, void *context);
 
-// Returns current value in microamps
+// Returns the most recent current sample in uA. Can only be called once per valid converion, or
+// |data_valid| will return as false
 StatusCode current_sense_get_value(CurrentSenseStorage *storage, bool *data_valid,
                                    int32_t *current);
 

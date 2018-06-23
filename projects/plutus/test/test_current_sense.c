@@ -102,6 +102,9 @@ void test_current_sense_reset(void) {
   TEST_ASSERT_TRUE(valid);
   TEST_ASSERT_TRUE(current < 0);
 
+  current_sense_get_value(&s_storage, &valid, &current);
+  TEST_ASSERT_FALSE(valid);
+
   // Test with positive current
   test_ltc_adc_set_input_voltage(1100);
   delay_ms(LTC2484_MAX_CONVERSION_TIME_MS);
@@ -109,4 +112,7 @@ void test_current_sense_reset(void) {
 
   TEST_ASSERT_TRUE(valid);
   TEST_ASSERT_TRUE(current > 0);
+
+  current_sense_get_value(&s_storage, &valid, &current);
+  TEST_ASSERT_FALSE(valid);
 }

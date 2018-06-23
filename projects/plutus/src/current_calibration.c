@@ -25,6 +25,8 @@ StatusCode current_calibration_init(CurrentCalibrationStorage *storage, LtcAdcSt
   storage->samples = 0;
   storage->voltage = 0;
 
+  status_ok_or_return(ltc_adc_init(storage->adc_storage, storage->settings));
+
   return STATUS_CODE_OK;
 }
 
@@ -34,7 +36,6 @@ StatusCode current_calibration_sample_point(CurrentCalibrationStorage *storage,
     return status_code(STATUS_CODE_UNINITIALIZED);
   }
 
-  status_ok_or_return(ltc_adc_init(storage->adc_storage, storage->settings));
   status_ok_or_return(ltc_adc_register_callback(storage->adc_storage, prv_callback, storage));
 
   while (storage->samples < CURRENT_CALIBRATION_SAMPLES) {
