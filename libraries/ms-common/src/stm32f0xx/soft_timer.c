@@ -212,15 +212,22 @@ static void prv_update_timer(void) {
   // and reenable compares. In the case where there aren't any timers registered, the compare
   // channel is disabled until a new timer is added.
   if (s_timers.head != NULL) {
+    // We enforce a minimum interval between interrupts. To compute whether to use the next expiry
+    // or the minimum interval we need to handle the rollover case.
     uint32_t curr_time = TIM_GetCounter(TIM2);
     uint32_t min_interval_time = curr_time + SOFT_TIMER_MIN_TIME_US;
     bool min_interval_rollover = min_interval_time < curr_time;
-    bool next_expiry_rollover = s_timers.head->expiry_rollover_count;
+    bool next_expiry_rollover =
+        s_timers.head->expiry_rollover_count > s_storage->expiry_rollover_count;
     if (min_interval_rollover == next_expiry_rollover) {
+      // If both the minimum interval occurs after a rollover and the next head expiry is also after
+      // a rollover or neither occurs after a rollover then take the latest one.
       TIM_SetCompare1(TIM2, MAX(s_timers.head->expiry_us, min_interval_time));
     } else {
-      TIM_SetCompare1(TIM2,
-                      (min_interval_rollover > next_expiry_rollover) ? min_interval : next expiry);
+      // If the minimum occurs after a rollover but the head expiry doesn't then it is by definition
+      // later so we use the minimum interval time. Conversely, we take the head expiry time if it
+      // occurs after a rollover.
+      TIM_SetCompare1(TIM2, (min_interval_rollover) ? min_interval_time : s_timers.head->expiry_us);
     }
     TIM_CCxCmd(TIM2, TIM_Channel_1, TIM_CCx_Enable);
   }
