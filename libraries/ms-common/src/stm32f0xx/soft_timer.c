@@ -212,8 +212,29 @@ static void prv_update_timer(void) {
   // and reenable compares. In the case where there aren't any timers registered, the compare
   // channel is disabled until a new timer is added.
   if (s_timers.head != NULL) {
-    TIM_SetCompare1(TIM2,
-                    MAX(s_timers.head->expiry_us, TIM_GetCounter(TIM2) + SOFT_TIMER_MIN_TIME_US));
+    uint32_t curr_time = TIM_GetCounter(TIM2);
+    uint32_t min_interval_time = curr_time + SOFT_TIMER_MIN_TIME_US;
+    if (min_interval_time < curr_time) {
+      // Min interval rollover case.
+      if (s_timers.head->expiry_rollover_count > s_storage->expiry_rollover_count) {
+        // Both the min interval and target occur on the rollover so take the later one.
+        TIM_SetCompare1(TIM2, MAX(s_timers.head->expiry_us, min_interval_time));
+      } else {
+        // The min interval by definition must be longer as the head is on the current rollover and
+        // the min interval is not.
+        TIM_SetCompare1(TIM2, min_interval_time);
+      }
+    } else {
+      // Min interval non-rollover case.
+      if (s_timers.head->expiry_rollover_count > s_storage->expiry_rollover_count) {
+        // The min interval isn't rolled over but the head is so use the head.
+        TIM_SetCompare1(TIM2, s_timers.head->expiry_us);
+      } else {
+        // Neither is rolled over so take the later one.
+        TIM_SetCompare1(TIM2, MAX(s_timers.head->expiry_us, min_interval_time));
+      }
+    }
+
     TIM_CCxCmd(TIM2, TIM_Channel_1, TIM_CCx_Enable);
   }
 }
