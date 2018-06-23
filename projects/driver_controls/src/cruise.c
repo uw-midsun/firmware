@@ -13,8 +13,8 @@ static StatusCode prv_handle_motor_velocity(const CANMessage *msg, void *context
                                             CANAckStatus *ack_reply) {
   CruiseStorage *cruise = context;
 
-  int32_t left = 0, right = 0;
-  CAN_UNPACK_MOTOR_VELOCITY(msg, (uint32_t *)&left, (uint32_t *)&right);
+  int16_t left = 0, right = 0;
+  CAN_UNPACK_MOTOR_VELOCITY(msg, (uint16_t *)&left, (uint16_t *)&right);
   // If we ever overflow we have bigger problems
   cruise->current_speed_cms = MAX((left + right) / 2, 0);
 

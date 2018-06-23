@@ -74,7 +74,7 @@ void test_cruise_can(void) {
 
   // Handle negative velocity properly
   LOG_DEBUG("Negative velocity (average positive)\n");
-  CAN_TRANSMIT_MOTOR_VELOCITY((uint32_t)-10, 20);
+  CAN_TRANSMIT_MOTOR_VELOCITY((uint16_t)-10, 20);
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
   TEST_ASSERT_TRUE(cruise_handle_event(cruise, &event_set));
   TEST_ASSERT_OK(event_process(&e));
@@ -85,7 +85,7 @@ void test_cruise_can(void) {
 
   // If average velocity is negative, cap to 0 (ex. reversing)
   LOG_DEBUG("Negative velocity (cap to 0)\n");
-  CAN_TRANSMIT_MOTOR_VELOCITY((uint32_t)-40, (uint32_t)-40);
+  CAN_TRANSMIT_MOTOR_VELOCITY((uint16_t)-40, (uint16_t)-40);
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
   TEST_ASSERT_TRUE(cruise_handle_event(cruise, &event_set));
   TEST_ASSERT_OK(event_process(&e));
