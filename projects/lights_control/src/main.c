@@ -96,8 +96,6 @@ int main(void) {
   // Initialize lights_strobe.
   lights_strobe_init(&s_lights_strobe, LIGHTS_STROBE_BLINKER_DURATION);
 
-  event_raise(LIGHTS_EVENT_SIGNAL_ON, LIGHTS_EVENT_SIGNAL_MODE_HAZARD);
-
   Event e = { 0 };
   while (true) {
     while (event_process(&e) == STATUS_CODE_OK) {
