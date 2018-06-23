@@ -80,7 +80,7 @@ bool cruise_handle_event(CruiseStorage *cruise, const Event *e) {
       }
 
       // Immediately run callback - note that we require a delay > 0 or it might not run
-      soft_timer_start(1, prv_timer_cb, cruise, &cruise->repeat_timer);
+      soft_timer_start(SOFT_TIMER_MIN_TIME_US, prv_timer_cb, cruise, &cruise->repeat_timer);
       break;
     case INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED:
       cruise_set_target_cms(cruise, cruise->current_speed_cms);
