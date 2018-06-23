@@ -55,7 +55,6 @@ static void prv_raise_event_cb(GpioExpanderPin pin, GPIOState state, void *conte
   }
 }
 
-
 static bool prv_handle_power_state(CenterConsoleStorage *storage, const Event *e) {
   GPIOState output_states[NUM_CENTER_CONSOLE_OUTPUTS] = { 0 };
   // Power update - reset all LEDs
@@ -89,7 +88,8 @@ static bool prv_handle_power_state(CenterConsoleStorage *storage, const Event *e
 }
 
 static bool prv_handle_direction(CenterConsoleStorage *storage, const Event *e) {
-  GPIOState drive_led = GPIO_STATE_HIGH, neutral_led = GPIO_STATE_HIGH, reverse_led = GPIO_STATE_HIGH;
+  GPIOState drive_led = GPIO_STATE_HIGH, neutral_led = GPIO_STATE_HIGH,
+            reverse_led = GPIO_STATE_HIGH;
 
   switch (e->id) {
     case INPUT_EVENT_DIRECTION_STATE_FORWARD:
@@ -160,7 +160,8 @@ StatusCode center_console_init(CenterConsoleStorage *storage, GpioExpanderStorag
 
   for (size_t i = 0; i < NUM_CENTER_CONSOLE_INPUTS; i++) {
     status_ok_or_return(gpio_expander_init_pin(input_expander, i, &in_settings));
-    status_ok_or_return(gpio_expander_register_callback(input_expander, i, prv_raise_event_cb, storage));
+    status_ok_or_return(
+        gpio_expander_register_callback(input_expander, i, prv_raise_event_cb, storage));
   }
 
   for (size_t i = 0; i < NUM_CENTER_CONSOLE_OUTPUTS; i++) {
@@ -169,7 +170,6 @@ StatusCode center_console_init(CenterConsoleStorage *storage, GpioExpanderStorag
 
   return STATUS_CODE_OK;
 }
-
 
 bool center_console_process_event(CenterConsoleStorage *storage, const Event *e) {
   if (storage == NULL) {
