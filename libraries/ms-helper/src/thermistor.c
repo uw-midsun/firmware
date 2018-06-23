@@ -64,7 +64,8 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint16_t *temperature
     thermistor_resistance_milliohms =
         ((uint32_t)THERMISTOR_FIXED_RESISTANCE_OHMS * reading) / (uint32_t)(vdda - reading) * 1000;
   }
-  return thermistor_calculate_temp(thermistor_resistance_milliohms, (uint16_t*)temperature_millicelcius);
+  return thermistor_calculate_temp(thermistor_resistance_milliohms,
+                                   (uint16_t *)temperature_millicelcius);
 }
 
 StatusCode thermistor_calculate_temp(uint16_t thermistor_resistance_ohms,
@@ -76,9 +77,11 @@ StatusCode thermistor_calculate_temp(uint16_t thermistor_resistance_ohms,
     if (thermistor_resistance_milliohms <= s_resistance_lookup[i] &&
         thermistor_resistance_milliohms >= s_resistance_lookup[i + 1]) {
       // Return the temperature with the linear approximation in hundreds of millicelsius
-      *temperature_millicelcius = (uint16_t)
-          ((uint32_t)i * 1000 + ((s_resistance_lookup[i] - thermistor_resistance_milliohms) * 1000 /
-                                 (s_resistance_lookup[i] - s_resistance_lookup[i + 1]))) / 100;
+      *temperature_millicelcius =
+          (uint16_t)((uint32_t)i * 1000 +
+                     ((s_resistance_lookup[i] - thermistor_resistance_milliohms) * 1000 /
+                      (s_resistance_lookup[i] - s_resistance_lookup[i + 1]))) /
+          100;
       return STATUS_CODE_OK;
     }
   }
