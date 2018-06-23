@@ -24,6 +24,7 @@ int main(void) {
   gpio_init_pin(&output, &output_settings);
 
   // TODO: Initialize PWM input on another pin and test using jumper wire
+  // Use TIM1_CH2 to use pin PA9
 
   // Pray this works
   for (;;) {
