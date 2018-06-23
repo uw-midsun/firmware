@@ -39,3 +39,4 @@ StatusCode mech_brake_init(MechBrakeStorage *mech_brake_storage, MechBrakeSettin
                            MechBrakeCalibrationData *calib_data);
 
 StatusCode mech_brake_get_percentage(MechBrakeStorage *storage, int16_t *percentage);
+
