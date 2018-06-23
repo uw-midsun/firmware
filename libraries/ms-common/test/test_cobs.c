@@ -1,19 +1,77 @@
 #include "cobs.h"
-#include "unity.h"
 #include "log.h"
+#include "test_helpers.h"
+#include "unity.h"
+
+#define TEST_COBS_MAX_BUFFER_SIZE 300
+
+static void prv_encode_decode(const uint8_t *data, size_t data_len) {
+  uint8_t encoded_data[COBS_MAX_ENCODED_LEN(TEST_COBS_MAX_BUFFER_SIZE)];
+  uint8_t decoded_data[COBS_MAX_ENCODED_LEN(TEST_COBS_MAX_BUFFER_SIZE)];
+
+  size_t encoded_len = SIZEOF_ARRAY(encoded_data);
+  TEST_ASSERT_OK(cobs_encode(data, data_len, encoded_data, &encoded_len));
+  LOG_DEBUG("Encoded %ld bytes into %ld bytes\n", data_len, encoded_len);
+  size_t decoded_len = SIZEOF_ARRAY(decoded_data);
+  TEST_ASSERT_OK(cobs_decode(encoded_data, encoded_len, decoded_data, &decoded_len));
+  LOG_DEBUG("Decoded %ld bytes into %ld bytes (original %ld bytes)\n", encoded_len, decoded_len,
+            data_len);
+
+  TEST_ASSERT_EQUAL(data_len, decoded_len);
+  TEST_ASSERT_EQUAL_UINT8_ARRAY(data, decoded_data, data_len);
+}
 
 void setup_test(void) {}
 void teardown_test(void) {}
 
-void test_cobs_encode(void) {
-  uint8_t data[] = { 0x1, 0x2, 0x0, 0x4, 0x5, 0x8, 0x0, 0x0, 0xFF, 0xF5 };
-  uint8_t encoded_data[COBS_MAX_ENCODED_LEN(SIZEOF_ARRAY(data))];
+void test_cobs_all_zero(void) {
+  uint8_t data[] = { 0, 0, 0, 0, 0 };
+  prv_encode_decode(data, SIZEOF_ARRAY(data));
+}
 
-  size_t encoded_len = SIZEOF_ARRAY(encoded_data);
-  cobs_encode(data, SIZEOF_ARRAY(data), encoded_data, &encoded_len);
+void test_cobs_no_zero_short(void) {
+  uint8_t data[] = { 1, 2, 3, 4, 5 };
+  prv_encode_decode(data, SIZEOF_ARRAY(data));
+}
 
-  LOG_DEBUG("Original %ld bytes, encoded %ld\n", SIZEOF_ARRAY(data), encoded_len);
-  for (size_t i = 0; i < encoded_len; i++) {
-    printf("%ld: 0x%x\n", i, encoded_data[i]);
+void test_cobs_trailing_zero(void) {
+  uint8_t data[] = { 1, 2, 3, 4, 5, 0 };
+  prv_encode_decode(data, SIZEOF_ARRAY(data));
+}
+
+void test_cobs_leading_zero(void) {
+  uint8_t data[] = { 0, 1, 2, 3, 4, 5 };
+  prv_encode_decode(data, SIZEOF_ARRAY(data));
+}
+
+void test_cobs_consecutive_zeros(void) {
+  uint8_t data[] = { 0, 1, 2, 0, 0, 3, 0, 4, 5, 0 };
+  prv_encode_decode(data, SIZEOF_ARRAY(data));
+}
+
+void test_cobs_long_non_zero_no_code(void) {
+  // Long run of non-zero bytes, but not long enough to hit the special case
+  uint8_t data[253] = { 0 };
+  for (size_t i = 0; i < SIZEOF_ARRAY(data); i++) {
+    data[i] = i + 1;
   }
+  prv_encode_decode(data, SIZEOF_ARRAY(data));
+}
+
+void test_cobs_long_non_zero_code(void) {
+  // Long run of non-zero bytes - hit the special case
+  uint8_t data[254] = { 0 };
+  for (size_t i = 0; i < SIZEOF_ARRAY(data); i++) {
+    data[i] = i + 1;
+  }
+  prv_encode_decode(data, SIZEOF_ARRAY(data));
+}
+
+void test_cobs_long_non_zero_code_more_data(void) {
+  // Long run of non-zero bytes - hit the special case + more data
+  uint8_t data[255] = { 0 };
+  for (size_t i = 0; i < SIZEOF_ARRAY(data); i++) {
+    data[i] = i + 1;
+  }
+  prv_encode_decode(data, SIZEOF_ARRAY(data));
 }
