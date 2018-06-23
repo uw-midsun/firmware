@@ -18,9 +18,6 @@
 // Arbitrary test input voltage
 static int32_t s_test_input_voltage = 0;
 
-// Test state for mocking adc miso pin
-static GPIOState s_test_miso_state = GPIO_STATE_LOW;
-
 static volatile uint8_t s_callback_runs = 0;
 static CurrentSenseStorage s_storage = { 0 };
 
@@ -33,15 +30,6 @@ static LtcAdcSettings s_adc_settings = {
   .spi_baudrate = 750000,
   .filter_mode = LTC_ADC_FILTER_50HZ_60HZ,
 };
-
-StatusCode TEST_MOCK(gpio_get_state)(const GPIOAddress *address, GPIOState *input_state) {
-  if ((address->port == s_adc_settings.miso.port) && (address->pin == s_adc_settings.miso.pin)) {
-    *input_state = s_test_miso_state;
-    return STATUS_CODE_OK;
-  }
-
-  return gpio_get_state(address, input_state);
-}
 
 static void prv_callback(int32_t current, void *context) {
   LOG_DEBUG("Current = %" PRId32 "\n", current);
@@ -129,11 +117,9 @@ void test_current_sense_reset(void) {
 }
 
 void test_current_sense_fault_callback(void) {
-  // Set the miso line high so that the fault callback will run
-  s_test_miso_state = GPIO_STATE_HIGH;
-
-  // Register callback
-  TEST_ASSERT_OK(current_sense_register_callback(&s_storage, NULL, prv_fault_callback, NULL));
+  // Register callback with non-null pointer in order to force a fault
+  TEST_ASSERT_OK(
+      current_sense_register_callback(&s_storage, NULL, prv_fault_callback, &s_test_input_voltage));
 
   // Collect samples and tests that the readings fit the linear relationship defined by the
   // calibration data

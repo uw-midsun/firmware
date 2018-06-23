@@ -3,12 +3,14 @@
 #include <string.h>
 
 #include "critical_section.h"
+#include "status.h"
 #include "wait.h"
 
 static void prv_calculate_current(int32_t *value, void *context) {
   CurrentSenseStorage *storage = (CurrentSenseStorage *)context;
+  Status status = status_get();
 
-  if (value == NULL) {
+  if (status.code == STATUS_CODE_TIMEOUT) {
     storage->data_valid = false;
     if (storage->fault_callback != NULL) {
       storage->fault_callback(storage->value.current, storage->context);

@@ -3,28 +3,24 @@
 // x86 module for mocking current sense data
 
 #include "critical_section.h"
+#include "current_sense.h"
 #include "ltc2484.h"
 
 static int32_t s_test_voltage = 0;
 
 static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
   LtcAdcStorage *storage = (LtcAdcStorage *)context;
+  CurrentSenseStorage *current_sense = (CurrentSenseStorage *)context;
 
-  GPIOState state = NUM_GPIO_STATES;
-  gpio_get_state(&storage->miso, &state);
-
-  if (state != GPIO_STATE_LOW) {
+  if (current_sense->context != NULL) {
     storage->buffer.status = status_code(STATUS_CODE_TIMEOUT);
-
-    if (storage->callback != NULL) {
-      storage->callback(NULL, storage->context);
-    }
   } else {
+    storage->buffer.status = STATUS_CODE_OK;
     storage->buffer.value = s_test_voltage;
+  }
 
-    if (storage->callback != NULL) {
-      storage->callback(&storage->buffer.value, storage->context);
-    }
+  if (storage->callback != NULL) {
+    storage->callback(&storage->buffer.value, storage->context);
   }
 
   soft_timer_start_millis(LTC2484_MAX_CONVERSION_TIME_MS, prv_ltc_adc_read, storage,
