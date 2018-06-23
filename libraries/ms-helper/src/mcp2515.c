@@ -69,7 +69,7 @@ static void prv_handle_rx(Mcp2515Storage *storage, uint8_t int_flags) {
   for (size_t i = 0; i < SIZEOF_ARRAY(s_rx_buffers); i++) {
     Mcp2515RxBuffer *rx_buf = &s_rx_buffers[i];
     if (int_flags & rx_buf->int_flag) {
-      // message RX
+      // Message RX
 
       // Read ID
       uint8_t id_payload[] = { MCP2515_CMD_READ_RX | rx_buf->id };
@@ -119,7 +119,7 @@ static void prv_handle_int(const GPIOAddress *address, void *context) {
   uint8_t int_flags = 0;
   prv_read(storage, MCP2515_CTRL_REG_CANINTF, &int_flags, 1);
 
-  // either RX or error
+  // Either RX or error
   prv_handle_rx(storage, int_flags);
   prv_handle_error(storage, int_flags);
 }
