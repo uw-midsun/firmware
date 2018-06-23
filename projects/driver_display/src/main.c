@@ -1,56 +1,53 @@
 #include <stddef.h>
-#include <stdint.h>
 #include <stdio.h>
 
-#include "adc.h"
-#include "crc32.h"
-#include "critical_section.h"
-#include "delay.h"
-#include "flash.h"
-#include "gpio.h"
 #include "interrupt.h"
-#include "pwm.h"
-#include "soft_timer.h"
 
 #include "driver_display_brightness.h"
-#include "driver_display_config.h"
-
-void timer_callback(SoftTimerID timer_id, void *context) {}
 
 int main(void) {
-  // Enable various peripherals
+  // Init everything to be used
   interrupt_init();
   soft_timer_init();
   gpio_init();
-  flash_init();
-  crc32_init();
-
   adc_init(ADC_MODE_CONTINUOUS);
 
-  // Configure the driver display gpios
-  driver_display_config();
-  GPIOAddress adc_address = driver_display_config_get_adc();
+  // Populate data for brightness module (temporarily here before calibration is implemented)
+  DriverDisplayBrightnessScreenData screen_data[] = {
+    [DRIVER_DISPLAY_SCREEN1] = { .address = { GPIO_PORT_A, 7 },
+                                 .settings = { .direction = GPIO_DIR_OUT,
+                                               .state = GPIO_STATE_HIGH,
+                                               .resistor = GPIO_RES_PULLUP,
+                                               .alt_function = GPIO_ALTFN_4 },
+                                 .timer = PWM_TIMER_14,
+                                 .frequency_hz = DRIVER_DISPLAY_CONFIG_SCREEN1_FREQ_HZ },
+    [DRIVER_DISPLAY_SCREEN2] = { .address = { GPIO_PORT_A, 4 },
+                                 .settings = { .direction = GPIO_DIR_OUT,
+                                               .state = GPIO_STATE_HIGH,
+                                               .resistor = GPIO_RES_PULLUP,
+                                               .alt_function = GPIO_ALTFN_4 },
+                                 .timer = PWM_TIMER_14,
+                                 .frequency_hz = DRIVER_DISPLAY_CONFIG_SCREEN2_FREQ_HZ }
+  };
 
-  // CONFIG MODE CURRENTLY COMMENTED OUT (uncomment to config the max and min values of the
-  // photodiode) Would need to be run but currently no GPIO set to active the config mode
-  // driver_display_brightness_calibration(adc_address);
+  DriverDisplayBrightnessSensorData sensor_data = { .address = { .port = GPIO_PORT_A, .pin = 0 },
+                                                    .settings = { .direction = GPIO_DIR_IN,
+                                                                  .state = GPIO_STATE_LOW,
+                                                                  .resistor = GPIO_RES_NONE,
+                                                                  .alt_function =
+                                                                      GPIO_ALTFN_ANALOG },
+                                                    .max = 4095,
+                                                    .min = 0,
+                                                    .percent_reading = 50 };
 
-  // Start the soft timer
-  uint8_t reading;
-  driver_display_brightness_init();
-  soft_timer_start_seconds(DRIVER_DISPLAY_CONFIG_REFRESH_PERIOD, timer_callback, (void *)&reading,
-                           DRIVER_DISPLAY_CONFIG_REFRESH_TIMER);
+  DriverDisplayBrightnessData brightness_data = { .screen_data = screen_data,
+                                                  .sensor_data = sensor_data };
 
-  // Begin superloop
+  // Initialize the brightness module
+  driver_display_brightness_init(&brightness_data);
+
   while (true) {
-    // Read the value (need to add delay so it's not reading every moment)
-    // Will probably have a refresh rate of something like every 5s
-    if (soft_timer_remaining_time(DRIVER_DISPLAY_CONFIG_REFRESH_TIMER) == 0) {
-      // When the timer runs out restart it and read the brightness values
-      soft_timer_start_seconds(DRIVER_DISPLAY_CONFIG_REFRESH_PERIOD, timer_callback,
-                               (void *)&reading, DRIVER_DISPLAY_CONFIG_REFRESH_TIMER);
-      driver_display_brightness_read(adc_address);
-    }
+    // Do stuff
   }
   return 0;
 }

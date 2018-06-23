@@ -1,26 +1,43 @@
 #pragma once
 // Module used to control the brightness of the driver display screens.
-// The display configuration must be called first to initialize the GPIO pins to be used (e.g. ADC,
-// PWM).
+// Also defines display screen parameters such as frequency and number of screens
 
 #include "adc.h"
 #include "gpio.h"
 #include "pwm.h"
-#include "pwm_mcu.h"
+#include "soft_timer.h"
+
+#define DRIVER_DISPLAY_CONFIG_NUM_SCREENS 2
+
+#define DRIVER_DISPLAY_CONFIG_SCREEN1_FREQ_HZ 30000  // Frequency in Hz (subject to change)
+#define DRIVER_DISPLAY_CONFIG_SCREEN2_FREQ_HZ 30000  // Frequency in Hz (subject to change)
+
+#define DRIVER_DISPLAY_CONFIG_REFRESH_PERIOD 5
+
+typedef enum {
+  DRIVER_DISPLAY_SCREEN1 = 0,
+  DRIVER_DISPLAY_SCREEN2,
+} DriverDisplayBrightnessScreen;
 
 typedef struct {
-  uint16_t max_brightness;
-  uint16_t min_brightness;
-  uint16_t range_brightness;
-  void *persistStorage;
+  GPIOAddress address;
+  GPIOSettings settings;
+  PWMTimer timer;
+  uint16_t frequency_hz;  // frequency in Hz
+} DriverDisplayBrightnessScreenData;
+
+typedef struct {
+  GPIOAddress address;
+  GPIOSettings settings;
+  ADCChannel channel;
+  uint16_t max;
+  uint16_t min;
+  uint16_t percent_reading;
+} DriverDisplayBrightnessSensorData;
+
+typedef struct {
+  DriverDisplayBrightnessScreenData *screen_data;
+  DriverDisplayBrightnessSensorData sensor_data;
 } DriverDisplayBrightnessData;
 
-void driver_display_brightness_calibration(GPIOAddress adc_address);
-
-void driver_display_brightness_init();
-
-void driver_display_brightness_config(GPIOAddress adc_address);
-
-void driver_display_brightness_callback(ADCChannel adc_channel, void *context);
-
-void driver_display_brightness_read(GPIOAddress adc_address);
+void driver_display_brightness_init(DriverDisplayBrightnessData *brightness_data);
