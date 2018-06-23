@@ -90,7 +90,7 @@ StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *co
   return STATUS_CODE_OK;
 }
 
-StatusCode uart_set_delimiter(UARTPort uart, char delimiter) {
+StatusCode uart_set_delimiter(UARTPort uart, uint8_t delimiter) {
   s_port[uart].storage->delimiter = delimiter;
 
   return STATUS_CODE_OK;

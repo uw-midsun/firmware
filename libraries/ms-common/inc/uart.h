@@ -46,7 +46,7 @@ StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *co
 
 // Sets the delimiter used to break up lines between callbacks
 // Note that the default delimiter is \n
-StatusCode uart_set_delimiter(UARTPort uart, char delimiter);
+StatusCode uart_set_delimiter(UARTPort uart, uint8_t delimiter);
 
 // Non-blocking TX
 StatusCode uart_tx(UARTPort uart, uint8_t *tx_data, size_t len);
