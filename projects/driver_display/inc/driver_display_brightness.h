@@ -11,11 +11,11 @@
 typedef enum {
   DRIVER_DISPLAY_BRIGHTNESS_SCREEN1 = 0,
   DRIVER_DISPLAY_BRIGHTNESS_SCREEN2,
-  DRIVER_DISPLAY_BRIGHTNESS_NUM_SCREENS
+  NUM_DRIVER_DISPLAY_BRIGHTNESS_SCREENS
 } DriverDisplayBrightnessScreen;
 
 typedef struct DriverDisplayBrightnessSettings {
-  GPIOAddress *screen_address;
+  GPIOAddress screen_address[NUM_DRIVER_DISPLAY_BRIGHTNESS_SCREENS];
   GPIOAddress adc_address;
   PWMTimer timer;
   uint16_t frequency_hz;
@@ -28,14 +28,10 @@ typedef struct DriverDisplayBrightnessCalibrationData {
 } DriverDisplayBrightnessCalibrationData;
 
 typedef struct DriverDisplayBrightnessStorage {
-  DriverDisplayBrightnessSettings settings;
-  DriverDisplayBrightnessCalibrationData calibration_data;
-  uint16_t percent_reading;
+  DriverDisplayBrightnessSettings *settings;
+  DriverDisplayBrightnessCalibrationData *calibration_data;
   ADCChannel adc_channel;
 } DriverDisplayBrightnessStorage;
 
-DriverDisplayBrightnessStorage *driver_display_brightness_global(void);
-
-StatusCode driver_display_brightness_init(DriverDisplayBrightnessStorage *storage,
-                                          DriverDisplayBrightnessSettings settings,
-                                          DriverDisplayBrightnessCalibrationData calibration_data);
+StatusCode driver_display_brightness_init(const DriverDisplayBrightnessSettings *settings,
+                                          DriverDisplayBrightnessCalibrationData *calibration_data);
