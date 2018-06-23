@@ -7,7 +7,7 @@
 #include "status.h"
 
 // If the adc has not produced valid data (i.e. timeout), then |current| will be a null pointer
-typedef void (*CurrentSenseCallback)(int32_t *current, void *context);
+typedef void (*CurrentSenseCallback)(int32_t current, void *context);
 
 typedef struct {
   int32_t voltage;
@@ -28,6 +28,7 @@ typedef struct {
   int32_t offset;
   bool offset_pending;
   CurrentSenseCallback callback;
+  CurrentSenseCallback fault_callback;  // Called in the event of an adc timeout
   void *context;
 } CurrentSenseStorage;
 
@@ -37,7 +38,8 @@ StatusCode current_sense_init(CurrentSenseStorage *storage, const CurrentSenseCa
 
 // Register a callback to run when new data is available
 StatusCode current_sense_register_callback(CurrentSenseStorage *storage,
-                                           CurrentSenseCallback callback, void *context);
+                                           CurrentSenseCallback callback,
+                                           CurrentSenseCallback fault_callback, void *context);
 
 // Returns the most recent current sample in uA. Can only be called once per valid converion, or
 // |data_valid| will return as false

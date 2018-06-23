@@ -10,8 +10,8 @@ static void prv_calculate_current(int32_t *value, void *context) {
 
   if (value == NULL) {
     storage->data_valid = false;
-    if (storage->callback != NULL) {
-      storage->callback(NULL, storage->context);
+    if (storage->fault_callback != NULL) {
+      storage->fault_callback(storage->value.current, storage->context);
     }
     return;
   }
@@ -31,7 +31,7 @@ static void prv_calculate_current(int32_t *value, void *context) {
 
   storage->data_valid = true;
   if (storage->callback != NULL) {
-    storage->callback(&storage->value.current, storage->context);
+    storage->callback(storage->value.current, storage->context);
   }
 }
 
@@ -65,7 +65,8 @@ StatusCode current_sense_init(CurrentSenseStorage *storage, const CurrentSenseCa
 
 // Register a callback to run when new data is available
 StatusCode current_sense_register_callback(CurrentSenseStorage *storage,
-                                           CurrentSenseCallback callback, void *context) {
+                                           CurrentSenseCallback callback,
+                                           CurrentSenseCallback fault_callback, void *context) {
   if (storage == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -73,6 +74,7 @@ StatusCode current_sense_register_callback(CurrentSenseStorage *storage,
   bool disabled = critical_section_start();
   storage->callback = callback;
   storage->context = context;
+  storage->fault_callback = fault_callback;
   critical_section_end(disabled);
 
   return STATUS_CODE_OK;
@@ -89,7 +91,6 @@ StatusCode current_sense_get_value(CurrentSenseStorage *storage, bool *data_vali
   }
 
   *data_valid = storage->data_valid;
-  storage->data_valid = false;
 
   return STATUS_CODE_OK;
 }

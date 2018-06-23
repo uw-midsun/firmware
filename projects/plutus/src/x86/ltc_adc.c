@@ -10,10 +10,21 @@ static int32_t s_test_voltage = 0;
 static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
   LtcAdcStorage *storage = (LtcAdcStorage *)context;
 
-  storage->buffer.value = s_test_voltage;
+  GPIOState state = NUM_GPIO_STATES;
+  gpio_get_state(&storage->miso, &state);
 
-  if (storage->callback != NULL) {
-    storage->callback(&storage->buffer.value, storage->context);
+  if (state != GPIO_STATE_LOW) {
+    storage->buffer.status = status_code(STATUS_CODE_TIMEOUT);
+
+    if (storage->callback != NULL) {
+      storage->callback(NULL, storage->context);
+    }
+  } else {
+    storage->buffer.value = s_test_voltage;
+
+    if (storage->callback != NULL) {
+      storage->callback(&storage->buffer.value, storage->context);
+    }
   }
 
   soft_timer_start_millis(LTC2484_MAX_CONVERSION_TIME_MS, prv_ltc_adc_read, storage,
@@ -24,6 +35,8 @@ StatusCode ltc_adc_init(LtcAdcStorage *storage, const LtcAdcSettings *settings) 
   if (storage == NULL || settings->filter_mode >= NUM_LTC_ADC_FILTER_MODES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
+
+  storage->miso = settings->miso;
 
   // Initialize test voltage to zero
   s_test_voltage = 0;
