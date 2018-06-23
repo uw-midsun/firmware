@@ -12,14 +12,14 @@ static StatusCode prv_handle_heartbeat_ack(CANMessageID msg_id, uint16_t device,
   if (status != CAN_ACK_STATUS_OK) {
     // We missed an ACK - fault after some grace period
     storage->ack_fail_counter++;
-    debug_led_set_state(DEBUG_LED_YELLOW, false);
+    debug_led_set_state(DEBUG_LED_GREEN, false);
 
     if (storage->ack_fail_counter >= PLUTUS_CFG_HEARTBEAT_MAX_ACK_FAILS) {
       return bps_heartbeat_raise_fault(storage, EE_BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT);
     }
   } else if (num_remaining == 0) {
     // Received all ACKs as expected
-    debug_led_set_state(DEBUG_LED_YELLOW, true);
+    debug_led_set_state(DEBUG_LED_GREEN, true);
 
     storage->ack_fail_counter = 0;
     return bps_heartbeat_clear_fault(storage, EE_BPS_HEARTBEAT_FAULT_SOURCE_ACK_TIMEOUT);
@@ -67,7 +67,7 @@ StatusCode bps_heartbeat_init(BpsHeartbeatStorage *storage, SequencedRelayStorag
   // Turn the red LED on if we've faulted
   debug_led_init(DEBUG_LED_RED);
   // Turn the yellow LED on if we're receiving ACKs
-  debug_led_init(DEBUG_LED_YELLOW);
+  debug_led_init(DEBUG_LED_GREEN);
 
   return soft_timer_start_millis(storage->period_ms * BPS_HEARTBEAT_STARTUP_DELAY_MULTIPLIER,
                                  prv_periodic_heartbeat, storage, NULL);

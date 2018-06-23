@@ -5,13 +5,13 @@
 #include "gpio_it.h"
 #include "input_event.h"
 #include "interrupt.h"
+#include "log.h"
 #include "test_helpers.h"
 #include "throttle.h"
 #include "unity.h"
 
 #define TEST_THROTTLE_ADC_CHANNEL_MAIN ADS1015_CHANNEL_0
 #define TEST_THROTTLE_ADC_CHANNEL_SECONDARY ADS1015_CHANNEL_1
-#define THROTTLE_UPDATE_PERIOD_US (1000 * THROTTLE_UPDATE_PERIOD_MS)
 
 static Ads1015Storage s_ads1015_storage;
 static ThrottleStorage s_throttle_storage;
@@ -53,31 +53,23 @@ static void prv_set_calibration_data(ThrottleCalibrationData *data) {
   data->channel_secondary = TEST_THROTTLE_ADC_CHANNEL_SECONDARY;
 }
 
-static void prv_clock_past_desync(void) {
-  Event e;
-  for (size_t i = 0; i < THROTTLE_MAX_DESYNC_COUNT; i++) {
-    delay_us(THROTTLE_UPDATE_PERIOD_US);
-    TEST_ASSERT_OK(event_process(&e));
-  }
-}
-
 void setup_test(void) {
   gpio_init();
   interrupt_init();
   gpio_it_init();
   soft_timer_init();
   I2CSettings i2c_settings = {
-    .speed = I2C_SPEED_FAST,                    //
-    .scl = { .port = GPIO_PORT_B, .pin = 10 },  //
-    .sda = { .port = GPIO_PORT_B, .pin = 11 },  //
+    .speed = I2C_SPEED_FAST,                   //
+    .scl = { .port = GPIO_PORT_B, .pin = 8 },  //
+    .sda = { .port = GPIO_PORT_B, .pin = 9 },  //
   };
-  i2c_init(I2C_PORT_2, &i2c_settings);
+  i2c_init(I2C_PORT_1, &i2c_settings);
   GPIOAddress ready_pin = {
-    .port = GPIO_PORT_B,  //
-    .pin = 2,             //
+    .port = GPIO_PORT_A,  //
+    .pin = 10,            //
   };
   event_queue_init();
-  ads1015_init(&s_ads1015_storage, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin);
+  ads1015_init(&s_ads1015_storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
   prv_set_calibration_data(&s_calibration_data);
   throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage);
 }
@@ -112,7 +104,7 @@ void test_throttle_reading_in_brake_zone(void) {
   s_mocked_reading_main =
       (s_threshes_main[THROTTLE_ZONE_BRAKE].max + s_threshes_main[THROTTLE_ZONE_BRAKE].min) / 2;
   s_mocked_reading_secondary = s_mocked_reading_main / 2;
-  delay_us(THROTTLE_UPDATE_PERIOD_US);
+  delay_ms(THROTTLE_UPDATE_PERIOD_MS);
   TEST_ASSERT_OK(throttle_get_position(&s_throttle_storage, &position));
   TEST_ASSERT_EQUAL(THROTTLE_ZONE_BRAKE, position.zone);
   event_process(&e);
@@ -127,7 +119,7 @@ void test_throttle_reading_in_coast_zone(void) {
   s_mocked_reading_main =
       (s_threshes_main[THROTTLE_ZONE_COAST].max + s_threshes_main[THROTTLE_ZONE_COAST].min) / 2;
   s_mocked_reading_secondary = s_mocked_reading_main / 2;
-  delay_us(THROTTLE_UPDATE_PERIOD_US);
+  delay_ms(THROTTLE_UPDATE_PERIOD_MS);
   TEST_ASSERT_OK(throttle_get_position(&s_throttle_storage, &position));
   TEST_ASSERT_EQUAL(THROTTLE_ZONE_COAST, position.zone);
   event_process(&e);
@@ -142,7 +134,7 @@ void test_throttle_reading_in_accel_zone(void) {
   s_mocked_reading_main =
       (s_threshes_main[THROTTLE_ZONE_ACCEL].max + s_threshes_main[THROTTLE_ZONE_ACCEL].min) / 2;
   s_mocked_reading_secondary = s_mocked_reading_main / 2;
-  delay_us(THROTTLE_UPDATE_PERIOD_US);
+  delay_ms(THROTTLE_UPDATE_PERIOD_MS);
   TEST_ASSERT_OK(throttle_get_position(&s_throttle_storage, &position));
   TEST_ASSERT_EQUAL(THROTTLE_ZONE_ACCEL, position.zone);
   event_process(&e);
@@ -156,7 +148,7 @@ void test_throttle_reading_at_bottom_thresh_valid(void) {
   // At the very bottom of the brake zone.
   s_mocked_reading_main = s_threshes_main[THROTTLE_ZONE_BRAKE].min;
   s_mocked_reading_secondary = s_mocked_reading_main / 2;
-  delay_us(THROTTLE_UPDATE_PERIOD_US);
+  delay_ms(THROTTLE_UPDATE_PERIOD_MS);
   TEST_ASSERT_OK(throttle_get_position(&s_throttle_storage, &position));
   TEST_ASSERT_EQUAL(THROTTLE_ZONE_BRAKE, position.zone);
   event_process(&e);
@@ -170,7 +162,7 @@ void test_throttle_reading_at_bottom_thresh_invalid(void) {
   // Right below the brake zone and out of bound.
   s_mocked_reading_main = s_threshes_main[THROTTLE_ZONE_BRAKE].min - 1;
   s_mocked_reading_secondary = s_mocked_reading_main / 2;
-  delay_us(THROTTLE_UPDATE_PERIOD_US);
+  delay_ms(THROTTLE_UPDATE_PERIOD_MS);
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&s_throttle_storage, &position));
   event_process(&e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_FAULT, e.id);
@@ -183,7 +175,7 @@ void test_throttle_reading_at_top_thresh_valid(void) {
   // At the very top of accel zone.
   s_mocked_reading_main = s_threshes_main[THROTTLE_ZONE_ACCEL].max;
   s_mocked_reading_secondary = s_mocked_reading_main / 2;
-  delay_us(THROTTLE_UPDATE_PERIOD_US);
+  delay_ms(THROTTLE_UPDATE_PERIOD_MS);
   TEST_ASSERT_OK(throttle_get_position(&s_throttle_storage, &position));
   TEST_ASSERT_EQUAL(THROTTLE_ZONE_ACCEL, position.zone);
   event_process(&e);
@@ -197,7 +189,7 @@ void test_throttle_reading_at_top_thresh_invalid(void) {
   // Just above the accel zone and not within bounds.
   s_mocked_reading_main = s_threshes_main[THROTTLE_ZONE_ACCEL].max + 1;
   s_mocked_reading_secondary = s_mocked_reading_main / 2;
-  delay_us(THROTTLE_UPDATE_PERIOD_US);
+  delay_ms(THROTTLE_UPDATE_PERIOD_MS);
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&s_throttle_storage, &position));
   event_process(&e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_FAULT, e.id);
@@ -218,7 +210,7 @@ void test_throttle_secondary_reading_on_edge_valid(void) {
                                 s_line[THROTTLE_CHANNEL_SECONDARY].full_brake_reading) /
                                    2 +
                                TEST_THROTTLE_TOLERANCE;
-  delay_us(THROTTLE_UPDATE_PERIOD_US);
+  delay_ms(THROTTLE_UPDATE_PERIOD_MS);
   TEST_ASSERT_OK(throttle_get_position(&s_throttle_storage, &position));
   TEST_ASSERT_EQUAL(THROTTLE_ZONE_COAST, position.zone);
   event_process(&e);
@@ -232,7 +224,7 @@ void test_throttle_secondary_reading_on_edge_valid(void) {
                                 s_line[THROTTLE_CHANNEL_SECONDARY].full_brake_reading) /
                                    2 -
                                TEST_THROTTLE_TOLERANCE;
-  delay_us(THROTTLE_UPDATE_PERIOD_US);
+  delay_ms(THROTTLE_UPDATE_PERIOD_MS);
   TEST_ASSERT_OK(throttle_get_position(&s_throttle_storage, &position));
   TEST_ASSERT_EQUAL(THROTTLE_ZONE_COAST, position.zone);
   event_process(&e);
@@ -255,8 +247,7 @@ void test_throttle_secondary_reading_on_edge_invalid(void) {
                                 s_line[THROTTLE_CHANNEL_SECONDARY].full_brake_reading) /
                                    2 +
                                TEST_THROTTLE_TOLERANCE + 1;
-  prv_clock_past_desync();
-  delay_us(THROTTLE_UPDATE_PERIOD_US);
+  delay_ms(THROTTLE_UPDATE_PERIOD_MS);
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&s_throttle_storage, &position));
   event_process(&e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_FAULT, e.id);
@@ -269,7 +260,7 @@ void test_throttle_secondary_reading_on_edge_invalid(void) {
                                 s_line[THROTTLE_CHANNEL_SECONDARY].full_brake_reading) /
                                    2 -
                                TEST_THROTTLE_TOLERANCE - 1;
-  delay_us(THROTTLE_UPDATE_PERIOD_US);
+  delay_ms(THROTTLE_UPDATE_PERIOD_MS);
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&s_throttle_storage, &position));
   event_process(&e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_FAULT, e.id);
@@ -282,7 +273,7 @@ void test_throttle_event_fault_out_of_bound(void) {
   // Out of bound case.
   s_mocked_reading_main = s_threshes_main[THROTTLE_ZONE_ACCEL].max * 2;
   s_mocked_reading_secondary = s_mocked_reading_main / 2;
-  delay_us(THROTTLE_UPDATE_PERIOD_US);
+  delay_ms(THROTTLE_UPDATE_PERIOD_MS);
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&s_throttle_storage, &position));
   event_process(&e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_FAULT, e.id);
@@ -296,8 +287,7 @@ void test_throttle_event_fault_out_of_sync(void) {
   s_mocked_reading_main =
       (s_threshes_main[THROTTLE_ZONE_ACCEL].max + s_threshes_main[THROTTLE_ZONE_ACCEL].min) / 2;
   s_mocked_reading_secondary = s_mocked_reading_main / 3;
-  prv_clock_past_desync();
-  delay_us(THROTTLE_UPDATE_PERIOD_US);
+  delay_ms(THROTTLE_UPDATE_PERIOD_MS);
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&s_throttle_storage, &position));
   event_process(&e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_FAULT, e.id);
@@ -309,7 +299,7 @@ void test_throttle_event_fault_stale_main_channel(void) {
 
   // Turning off main channel to produce the stale reading case.
   ads1015_configure_channel(&s_ads1015_storage, TEST_THROTTLE_ADC_CHANNEL_MAIN, false, NULL, NULL);
-  delay_us(THROTTLE_UPDATE_PERIOD_US);
+  delay_ms(THROTTLE_UPDATE_PERIOD_MS);
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&s_throttle_storage, &position));
   event_process(&e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_FAULT, e.id);
@@ -322,8 +312,7 @@ void test_throttle_event_fault_stale_secondary_channel(void) {
   // Turning off second channel to produce the stale reading case.
   ads1015_configure_channel(&s_ads1015_storage, TEST_THROTTLE_ADC_CHANNEL_SECONDARY, false, NULL,
                             NULL);
-  prv_clock_past_desync();
-  delay_us(THROTTLE_UPDATE_PERIOD_US);
+  delay_ms(THROTTLE_UPDATE_PERIOD_MS);
   TEST_ASSERT_EQUAL(STATUS_CODE_TIMEOUT, throttle_get_position(&s_throttle_storage, &position));
   event_process(&e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_FAULT, e.id);

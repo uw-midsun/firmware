@@ -5,7 +5,7 @@
 // Assumes the LEDs are as follows:
 // Blue: PB5
 // Blue: PB4
-// Yellow: PB3
+// Green: PB3
 // Red: PA15
 #include <stdbool.h>
 #include "gpio.h"
@@ -14,7 +14,7 @@
 typedef enum {
   DEBUG_LED_BLUE_A,
   DEBUG_LED_BLUE_B,
-  DEBUG_LED_YELLOW,
+  DEBUG_LED_GREEN,
   DEBUG_LED_RED,
   NUM_DEBUG_LEDS,
 } DebugLed;

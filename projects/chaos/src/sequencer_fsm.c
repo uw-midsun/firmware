@@ -262,12 +262,12 @@ static bool prv_sequencer_setup_common(void) {
 
 // FSM Transitions
 static void prv_sequencer_state_emergency(FSM *fsm, const Event *e, void *context) {
-  LOG_DEBUG("Emergency\n");
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
     return;
   }
+  LOG_DEBUG("Emergency\n");
   prv_add_filter(CHAOS_EVENT_RELAY_ERROR);
   prv_add_filter(CHAOS_EVENT_RELAY_OPENED);
   event_raise(CHAOS_EVENT_SET_RELAY_RETRIES, RELAY_RETRY_SERVICE_UNLIMITED_ATTEMPTS);
@@ -276,36 +276,36 @@ static void prv_sequencer_state_emergency(FSM *fsm, const Event *e, void *contex
 }
 
 static void prv_sequencer_state_idle(FSM *fsm, const Event *e, void *context) {
-  LOG_DEBUG("Idle\n");
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
     return;
   }
+  LOG_DEBUG("Idle\n");
   event_raise(CHAOS_EVENT_SET_RELAY_RETRIES, RELAY_RETRY_SERVICE_DEFAULT_ATTEMPTS);
   sequencer_init((SequencerStorage *)context, (SequencerEventPair *)s_idle_events,
                  SIZEOF_ARRAY(s_idle_events));
 }
 
 static void prv_sequencer_state_charge(FSM *fsm, const Event *e, void *context) {
-  LOG_DEBUG("Charge\n");
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
     return;
   }
+  LOG_DEBUG("Charge\n");
   event_raise(CHAOS_EVENT_SET_RELAY_RETRIES, RELAY_RETRY_SERVICE_DEFAULT_ATTEMPTS);
   sequencer_init((SequencerStorage *)context, (SequencerEventPair *)s_charge_events,
                  SIZEOF_ARRAY(s_charge_events));
 }
 
 static void prv_sequencer_state_drive(FSM *fsm, const Event *e, void *context) {
-  LOG_DEBUG("Drive\n");
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
     return;
   }
+  LOG_DEBUG("Drive\n");
   event_raise(CHAOS_EVENT_SET_RELAY_RETRIES, RELAY_RETRY_SERVICE_DEFAULT_ATTEMPTS);
   sequencer_init((SequencerStorage *)context, (SequencerEventPair *)s_drive_events,
                  SIZEOF_ARRAY(s_drive_events));
