@@ -2,7 +2,6 @@
 #include "log.h"
 #include "test_helpers.h"
 #include "unity.h"
-#include <inttypes.h>
 
 #define TEST_COBS_MAX_BUFFER_SIZE 300
 
