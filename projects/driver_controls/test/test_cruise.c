@@ -46,13 +46,13 @@ void test_cruise_basic(void) {
   // Target should now be higher
   Event e = { .id = INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_PLUS };
   cruise_handle_event(cruise, &e);
-  delay_ms(1);
+  delay_ms(5);
   TEST_ASSERT(target < cruise_get_target_cms(cruise));
 
   // We should never have a negative cruise target
   e.id = INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_MINUS;
   cruise_handle_event(cruise, &e);
-  delay_ms(1);
+  delay_ms(5);
   TEST_ASSERT_EQUAL(0, cruise_get_target_cms(cruise));
 }
 
