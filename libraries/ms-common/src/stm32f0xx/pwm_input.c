@@ -9,8 +9,8 @@
 
 // This is probably not up to par with coding standards
 // Will change once functionality is confirmed
-static int period = 0;
-static int dc = 0;
+static uint32_t period = 0;
+static uint32_t dc = 0;
 
 StatusCode pwm_input_init() {
   RCC_APB2PeriphClockCmd(RCC_APB1Periph_TIM1, ENABLE);
@@ -34,13 +34,24 @@ StatusCode pwm_input_init() {
 }
 
 StatusCode pwm_input_handle_interrupt() {
-  return STATUS_CODE_UNIMPLEMENTED;
+  TIM_ClearITPendingBit(TIM1, TIM_IT_CC2);
+  uint32_t IC2Value = TIM_GetCapture2(TIM1);
+
+  if (IC2Value != 0) {
+    dc = (TIM_GetCapture1(TIM2) * 100) / IC2Value;
+    period = IC2Value;
+  } else {
+    dc = 0;
+    period = 0;
+  }
+
+  return STATUS_CODE_OK;
 }
 
-StatusCode pwm_input_get_period() {
-  return STATUS_CODE_UNIMPLEMENTED;
+uint32_t pwm_input_get_period() {
+  return period;
 }
 
-StatusCode pwm_input_get_dc() {
-  return STATUS_CODE_UNIMPLEMENTED;
+uint32_t pwm_input_get_dc() {
+  return return dc;
 }

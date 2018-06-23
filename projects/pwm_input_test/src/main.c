@@ -1,6 +1,11 @@
 #include "gpio.h"
 #include "pwm.h"
 #include "pwm_input.h"
+#include "interrupt.h"
+
+TIM1_IRQHandler(void) {
+  pwm_input_handle_interrupt();
+}
 
 int main(void) {
 
@@ -9,6 +14,8 @@ int main(void) {
   pwm_init(PWM_TIMER_3, 1000);
   pwm_set_dc(PWM_TIMER_3, 50);
   gpio_init();
+  interrupt_init();
+  pwm_input_init();
 
 // Use port for Green LED
   GPIOAddress output = {
@@ -23,11 +30,11 @@ int main(void) {
 
   gpio_init_pin(&output, &output_settings);
 
-  // TODO: Initialize PWM input on another pin and test using jumper wire
   // Use TIM1_CH2 to use pin PA9
 
   // Pray this works
   for (;;) {
+
   }
 
 }
