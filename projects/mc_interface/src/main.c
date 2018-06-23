@@ -61,7 +61,7 @@ int main(void) {
 
   // clang-format off
   MotorControllerSettings mc_settings = {
-    .can_uart = (GenericCan *)&s_can_uart,
+    .motor_can = (GenericCan *)&s_can_uart,
     .ids = {
       [MOTOR_CONTROLLER_LEFT] = {
           .motor_controller = MC_CFG_MOTOR_CAN_ID_MC_LEFT,

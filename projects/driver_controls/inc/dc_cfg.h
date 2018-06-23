@@ -1,6 +1,8 @@
 #pragma once
 // Driver controls config file
 
+// #define DC_CFG_DEBUG_PRINT_EVENTS
+
 #define DC_CFG_CAN_DEVICE_ID SYSTEM_CAN_DEVICE_DRIVER_CONTROLS
 #define DC_CFG_CAN_BITRATE CAN_HW_BITRATE_500KBPS
 #define DC_CFG_CAN_RX \
