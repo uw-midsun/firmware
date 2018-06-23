@@ -6,38 +6,36 @@
 #include "gpio.h"
 #include "pwm.h"
 #include "soft_timer.h"
-
-#define DRIVER_DISPLAY_CONFIG_NUM_SCREENS 2
-
-#define DRIVER_DISPLAY_CONFIG_SCREEN1_FREQ_HZ 30000  // Frequency in Hz (subject to change)
-#define DRIVER_DISPLAY_CONFIG_SCREEN2_FREQ_HZ 30000  // Frequency in Hz (subject to change)
-
-#define DRIVER_DISPLAY_CONFIG_REFRESH_PERIOD 5
+#include "status.h"
 
 typedef enum {
-  DRIVER_DISPLAY_SCREEN1 = 0,
-  DRIVER_DISPLAY_SCREEN2,
+  DRIVER_DISPLAY_BRIGHTNESS_SCREEN1 = 0,
+  DRIVER_DISPLAY_BRIGHTNESS_SCREEN2,
+  DRIVER_DISPLAY_BRIGHTNESS_NUM_SCREENS
 } DriverDisplayBrightnessScreen;
 
-typedef struct {
-  GPIOAddress address;
-  GPIOSettings settings;
+typedef struct DriverDisplayBrightnessSettings{
+  GPIOAddress* screen_address;
+  GPIOAddress adc_address;
   PWMTimer timer;
-  uint16_t frequency_hz;  // frequency in Hz
-} DriverDisplayBrightnessScreenData;
+  uint16_t frequency_hz;
+  uint32_t update_period_s;
+} DriverDisplayBrightnessSettings;
 
-typedef struct {
-  GPIOAddress address;
-  GPIOSettings settings;
-  ADCChannel channel;
+typedef struct DriverDisplayBrightnessCalibrationData{
   uint16_t max;
   uint16_t min;
+} DriverDisplayBrightnessCalibrationData;
+
+typedef struct DriverDisplayBrightnessStorage{
+  DriverDisplayBrightnessSettings settings;
+  DriverDisplayBrightnessCalibrationData calibration_data;
   uint16_t percent_reading;
-} DriverDisplayBrightnessSensorData;
+  ADCChannel adc_channel;
+} DriverDisplayBrightnessStorage;
 
-typedef struct {
-  DriverDisplayBrightnessScreenData *screen_data;
-  DriverDisplayBrightnessSensorData sensor_data;
-} DriverDisplayBrightnessData;
 
-void driver_display_brightness_init(DriverDisplayBrightnessData *brightness_data);
+DriverDisplayBrightnessStorage *driver_display_brightness_global(void);
+
+StatusCode driver_display_brightness_init(DriverDisplayBrightnessStorage* storage, DriverDisplayBrightnessSettings settings,
+  DriverDisplayBrightnessCalibrationData calibration_data);
