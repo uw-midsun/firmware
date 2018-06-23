@@ -7,7 +7,7 @@
 //
 // We encode the data by replacing the trailing zero byte and prepending the number of non-zero
 // bytes + 1, resulting in an implicit zero. In the case where there are 254 non-zero bytes, we use
-// 0xFF to represent 254 data bytes not followed by a zero. Since there are no now zeros in the
+// 0xFF to represent 254 data bytes not followed by a zero. Since there are now no zeros in the
 // encoded form, we can use it as a packet delimiter.
 #include "cobs.h"
 #include <stddef.h>

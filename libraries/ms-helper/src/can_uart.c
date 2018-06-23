@@ -39,14 +39,16 @@ typedef struct CanUartPacket {
 static void prv_rx_uart(const uint8_t *rx_arr, size_t len, void *context) {
   CanUart *can_uart = context;
 
-  if (len > COBS_MAX_ENCODED_LEN(sizeof(CanUartPacket))) {
+  // Need to add an extra 0 for the packet delimiter
+  if (len > (COBS_MAX_ENCODED_LEN(sizeof(CanUartPacket)) + 1)) {
     // No way this packet is valid
     return;
   }
 
   uint8_t decoded_data[COBS_MAX_ENCODED_LEN(sizeof(CanUartPacket))];
   size_t decoded_len = SIZEOF_ARRAY(decoded_data);
-  StatusCode ret = cobs_decode(rx_arr, len, decoded_data, &decoded_len);
+  // Don't include the packet delimiter
+  StatusCode ret = cobs_decode(rx_arr, len - 1, decoded_data, &decoded_len);
 
   CanUartPacket packet;
   if (decoded_len != sizeof(packet)) {
