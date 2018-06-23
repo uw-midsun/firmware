@@ -18,7 +18,7 @@ int main(void) {
 
   GPIOSettings output_settings = {
     .direction = GPIO_DIR_OUT,
-    .alt_function = GPIO_ALTFN_0;
+    .alt_function = GPIO_ALTFN_0
   };
 
   gpio_init_pin(&output, &output_settings);
@@ -26,7 +26,7 @@ int main(void) {
   // TODO: Initialize PWM input on another pin and test using jumper wire
 
   // Pray this works
-  while (true) {
+  for (;;) {
   }
 
 }
