@@ -37,7 +37,7 @@ StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gp
   return STATUS_CODE_OK;
 }
 
-StatusCode thermistor_get_temp(ThermistorStorage *storage, uint32_t *temperature_millicelcius) {
+StatusCode thermistor_get_temp(ThermistorStorage *storage, uint16_t *temperature_millicelcius) {
   // Fetch the voltage readings
   uint16_t reading = 0;                          // the divided voltage in millivolts
   uint32_t thermistor_resistance_milliohms = 0;  // resistance in milliohms
@@ -48,10 +48,10 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint32_t *temperature
   status_ok_or_return(adc_read_converted(storage->adc_channel, &reading));
 
   if (vdda == 0) {
-    *temperature_millicelcius = UINT_MAX;
+    *temperature_millicelcius = MB_LEN_MAX;
     return status_msg(STATUS_CODE_INTERNAL_ERROR, "No source voltage detected.");
   } else if (reading == 0) {
-    *temperature_millicelcius = UINT_MAX;
+    *temperature_millicelcius = MB_LEN_MAX;
     return status_msg(STATUS_CODE_INTERNAL_ERROR, "No node voltage detected.");
   }
 
@@ -64,23 +64,25 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint32_t *temperature
     thermistor_resistance_milliohms =
         ((uint32_t)THERMISTOR_FIXED_RESISTANCE_OHMS * reading) / (uint32_t)(vdda - reading) * 1000;
   }
-  return thermistor_calculate_temp(thermistor_resistance_milliohms, temperature_millicelcius);
+  return thermistor_calculate_temp(thermistor_resistance_milliohms, (uint16_t*)temperature_millicelcius);
 }
 
-StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_milliohms,
-                                     uint32_t *temperature_millicelcius) {
+StatusCode thermistor_calculate_temp(uint16_t thermistor_resistance_ohms,
+                                     uint16_t *temperature_millicelcius) {
+  // Approximate temperature in milliohms
+  uint32_t thermistor_resistance_milliohms = (uint32_t)thermistor_resistance_ohms * 1000;
   // Find the approximate target temperature from the arguments passed
   for (uint16_t i = 0; i < SIZEOF_ARRAY(s_resistance_lookup) - 1; i++) {
     if (thermistor_resistance_milliohms <= s_resistance_lookup[i] &&
         thermistor_resistance_milliohms >= s_resistance_lookup[i + 1]) {
-      // Return the temperature with the linear approximation in millicelsius
-      *temperature_millicelcius =
+      // Return the temperature with the linear approximation in hundreds of millicelsius
+      *temperature_millicelcius = (uint16_t)
           ((uint32_t)i * 1000 + ((s_resistance_lookup[i] - thermistor_resistance_milliohms) * 1000 /
-                                 (s_resistance_lookup[i] - s_resistance_lookup[i + 1])));
+                                 (s_resistance_lookup[i] - s_resistance_lookup[i + 1]))) / 100;
       return STATUS_CODE_OK;
     }
   }
   // Sets the returned temperature to be absurdly large
-  *temperature_millicelcius = UINT_MAX;
+  *temperature_millicelcius = MB_LEN_MAX;
   return status_msg(STATUS_CODE_OUT_OF_RANGE, "Temperature out of lookup table range.");
 }

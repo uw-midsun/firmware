@@ -71,10 +71,10 @@ void test_thermistor_normal(void) {
   ThermistorStorage storage;
   TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
 
-  uint32_t reading = 0;
+  uint16_t reading = 0;
   TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
-  TEST_ASSERT_UINT32_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 10000, reading);
-  LOG_DEBUG("Temperature: %" PRIuLEAST32 "\n", reading / 1000);
+  TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 10000, reading);
+  LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading / 1000);
 }
 
 // Tests the lower bound of the resistance-temperature lookup table (0 deg)
@@ -85,11 +85,11 @@ void test_thermistor_min_temp(void) {
   };
   ThermistorStorage storage;
 
-  uint32_t reading = 0;
+  uint16_t reading = 0;
   TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
   TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
-  LOG_DEBUG("Temperature: %" PRIuLEAST32 "\n", reading / 1000);
-  TEST_ASSERT_UINT32_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 0, reading);
+  LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading / 1000);
+  TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 0, reading);
 }
 
 // Tests the upper bound of the resistance-temperature lookup table (100 deg)
@@ -100,11 +100,11 @@ void test_thermistor_max_temp(void) {
   };
   ThermistorStorage storage;
 
-  uint32_t reading = 0;
+  uint16_t reading = 0;
   TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
   TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
-  LOG_DEBUG("Temperature: %" PRIuLEAST32 "\n", reading / 1000);
-  TEST_ASSERT_UINT32_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 100000, reading);
+  LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading / 1000);
+  TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 100000, reading);
 }
 
 // Tests thermistor calculations with thermistor = R1
@@ -116,10 +116,10 @@ void test_thermistor_normal_alt(void) {
   ThermistorStorage storage;
   TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R1));
 
-  uint32_t reading = 0;
+  uint16_t reading = 0;
   TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
-  TEST_ASSERT_UINT32_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 10000, reading);
-  LOG_DEBUG("Temperature: %" PRIuLEAST32 "\n", reading / 1000);
+  TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 10000, reading);
+  LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading / 1000);
 }
 
 void test_thermistor_min_temp_alt(void) {
@@ -129,11 +129,11 @@ void test_thermistor_min_temp_alt(void) {
   };
   ThermistorStorage storage;
 
-  uint32_t reading = 0;
+  uint16_t reading = 0;
   TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R1));
   TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
-  LOG_DEBUG("Temperature: %" PRIuLEAST32 "\n", reading / 1000);
-  TEST_ASSERT_UINT32_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 0, reading);
+  LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading / 1000);
+  TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 0, reading);
 }
 
 void test_thermistor_max_temp_alt(void) {
@@ -143,11 +143,11 @@ void test_thermistor_max_temp_alt(void) {
   };
   ThermistorStorage storage;
 
-  uint32_t reading = 0;
+  uint16_t reading = 0;
   TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R1));
   TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
-  LOG_DEBUG("Temperature: %" PRIuLEAST32 "\n", reading / 1000);
-  TEST_ASSERT_UINT32_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 100000, reading);
+  LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading / 1000);
+  TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 100000, reading);
 }
 
 // Tests for a temperature greater the lookup tables ranges
@@ -158,10 +158,10 @@ void test_thermistor_exceed_range(void) {
   };
   ThermistorStorage storage;
 
-  uint32_t reading = 0;
+  uint16_t reading = 0;
   TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
   TEST_ASSERT_NOT_OK(thermistor_get_temp(&storage, &reading));
-  LOG_DEBUG("Temperature: %" PRIuLEAST32 "\n", reading / 1000);
+  LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading / 1000);
 }
 
 // Tests for a temperature smaller than the lookup tables ranges
@@ -172,12 +172,12 @@ void test_thermistor_under_range(void) {
   };
   ThermistorStorage storage;
 
-  uint32_t reading = 0;
+  uint16_t reading = 0;
   TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
   // Adds one millivolt as to not trigger the NULL read case
   reading++;
   TEST_ASSERT_NOT_OK(thermistor_get_temp(&storage, &reading));
-  LOG_DEBUG("Temperature: %" PRIuLEAST32 "\n", reading / 1000);
+  LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading / 1000);
 }
 
 // Tests for NULL node voltage reading
@@ -188,33 +188,33 @@ void test_zero_node_voltage(void) {
   };
   ThermistorStorage storage;
 
-  uint32_t reading = 0;
+  uint16_t reading = 0;
   TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
   TEST_ASSERT_NOT_OK(thermistor_get_temp(&storage, &reading));
-  LOG_DEBUG("Temperature: %" PRIuLEAST32 "\n", reading / 1000);
+  LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading / 1000);
 }
 
 // Testing the temperature search function
 void test_temperature_calculation(void) {
-  uint32_t temperature = 0;
+  uint16_t temperature = 0;
   // 10 Degrees
-  thermistor_calculate_temp(17925500, &temperature);
-  TEST_ASSERT_UINT32_WITHIN(200, 10000, temperature);
+  thermistor_calculate_temp(17925, &temperature);
+  TEST_ASSERT_UINT16_WITHIN(200, 10000, temperature);
 
   // 25 Degrees
-  thermistor_calculate_temp(10000000, &temperature);
-  TEST_ASSERT_UINT32_WITHIN(200, 25000, temperature);
+  thermistor_calculate_temp(10000, &temperature);
+  TEST_ASSERT_UINT16_WITHIN(200, 25000, temperature);
 
   // 50 Degrees
-  thermistor_calculate_temp(4160900, &temperature);
-  TEST_ASSERT_UINT32_WITHIN(200, 50000, temperature);
+  thermistor_calculate_temp(4160, &temperature);
+  TEST_ASSERT_UINT16_WITHIN(200, 50000, temperature);
 
   // 75 Degrees
-  thermistor_calculate_temp(1924500, &temperature);
-  TEST_ASSERT_UINT32_WITHIN(200, 75000, temperature);
+  thermistor_calculate_temp(1924, &temperature);
+  TEST_ASSERT_UINT16_WITHIN(200, 75000, temperature);
 
   // 90 Degrees
-  thermistor_calculate_temp(1268000, &temperature);
-  LOG_DEBUG("Temperature: %" PRIuLEAST32 "\n", temperature);
-  TEST_ASSERT_UINT32_WITHIN(200, 90000, temperature);
+  thermistor_calculate_temp(1268, &temperature);
+  LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", temperature);
+  TEST_ASSERT_UINT16_WITHIN(200, 90000, temperature);
 }
