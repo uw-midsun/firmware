@@ -53,5 +53,5 @@ uint32_t pwm_input_get_period() {
 }
 
 uint32_t pwm_input_get_dc() {
-  return return dc;
+  return dc;
 }
