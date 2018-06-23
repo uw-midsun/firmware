@@ -2,6 +2,7 @@
 #include "log.h"
 #include "test_helpers.h"
 #include "unity.h"
+#include <inttypes.h>
 
 #define TEST_COBS_MAX_BUFFER_SIZE 300
 
@@ -11,10 +12,10 @@ static void prv_encode_decode(const uint8_t *data, size_t data_len) {
 
   size_t encoded_len = SIZEOF_ARRAY(encoded_data);
   TEST_ASSERT_OK(cobs_encode(data, data_len, encoded_data, &encoded_len));
-  LOG_DEBUG("Encoded %ld bytes into %ld bytes\n", data_len, encoded_len);
+  LOG_DEBUG("Encoded %zu bytes into %zu bytes\n", data_len, encoded_len);
   size_t decoded_len = SIZEOF_ARRAY(decoded_data);
   TEST_ASSERT_OK(cobs_decode(encoded_data, encoded_len, decoded_data, &decoded_len));
-  LOG_DEBUG("Decoded %ld bytes into %ld bytes (original %ld bytes)\n", encoded_len, decoded_len,
+  LOG_DEBUG("Decoded %zu bytes into %zu bytes (original %zu bytes)\n", encoded_len, decoded_len,
             data_len);
 
   TEST_ASSERT_EQUAL(data_len, decoded_len);
