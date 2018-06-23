@@ -56,6 +56,11 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
   if (state != GPIO_STATE_LOW) {
     // MISO should have gone low, signaling that the conversion has finished
     storage->buffer.status = status_code(STATUS_CODE_TIMEOUT);
+
+    // Pass null pointer into callback to indicate invalid data
+    if (storage->callback != NULL) {
+      storage->callback(NULL, storage->context);
+    }
   } else {
     // Keep the previous mode and don't do anything special (ie. send a command
     // byte equal to 0). Since our SPI driver sends 0x00 by default, we can

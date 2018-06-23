@@ -8,10 +8,18 @@
 static void prv_calculate_current(int32_t *value, void *context) {
   CurrentSenseStorage *storage = (CurrentSenseStorage *)context;
 
+  if (value == NULL) {
+    storage->data_valid = false;
+    if (storage->callback != NULL) {
+      storage->callback(NULL, storage->context);
+    }
+    return;
+  }
+
   // Update the offset if the flag is set
-  if (storage->offset_flag) {
+  if (storage->offset_pending) {
     storage->offset = *value - storage->data.zero_point.voltage;
-    storage->offset_flag = false;
+    storage->offset_pending = false;
   }
 
   // Formula for calculating calibrated current. Draws slope between given calibrated
@@ -21,12 +29,13 @@ static void prv_calculate_current(int32_t *value, void *context) {
                            ((storage->data.max_point.current - storage->data.zero_point.current) /
                             (storage->data.max_point.voltage - storage->data.zero_point.voltage));
 
+  storage->data_valid = true;
   if (storage->callback != NULL) {
-    storage->callback(storage->value.current, storage->context);
+    storage->callback(&storage->value.current, storage->context);
   }
 }
 
-StatusCode current_sense_init(CurrentSenseStorage *storage, const CurrentSenseCalibrationData data,
+StatusCode current_sense_init(CurrentSenseStorage *storage, const CurrentSenseCalibrationData *data,
                               const LtcAdcSettings *settings) {
   if (storage == NULL || settings == NULL) {
     return status_code(STATUS_CODE_UNINITIALIZED);
@@ -35,14 +44,15 @@ StatusCode current_sense_init(CurrentSenseStorage *storage, const CurrentSenseCa
   status_ok_or_return(ltc_adc_init(&storage->adc_storage, settings));
 
   // Store calibration parameters
-  storage->data = data;
+  storage->data = *data;
 
   // Reset data and callbacks
   storage->value.voltage = 0;
   storage->value.current = 0;
+  storage->data_valid = false;
 
   storage->offset = 0;
-  storage->offset_flag = false;
+  storage->offset_pending = false;
   storage->callback = NULL;
   storage->context = NULL;
 
@@ -68,12 +78,16 @@ StatusCode current_sense_register_callback(CurrentSenseStorage *storage,
   return STATUS_CODE_OK;
 }
 
-StatusCode current_sense_get_value(CurrentSenseStorage *storage, int32_t *current) {
+StatusCode current_sense_get_value(CurrentSenseStorage *storage, bool *data_valid, int32_t *current) {
   if (storage == NULL || current == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  *current = storage->value.current;
+  if (storage->data_valid == true) {
+    *current = storage->value.current;
+  }
+
+  *data_valid = storage->data_valid;
 
   return STATUS_CODE_OK;
 }
@@ -84,7 +98,7 @@ StatusCode current_sense_zero_reset(CurrentSenseStorage *storage) {
   }
 
   // The next conversion is guaranteed to sample the shunt at 0 amps, so we set an offset flag
-  storage->offset_flag = true;
+  storage->offset_pending = true;
 
   return STATUS_CODE_OK;
 }

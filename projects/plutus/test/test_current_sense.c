@@ -26,9 +26,10 @@ static const CurrentSenseCalibrationData s_data = {
   .zero_point = { .voltage = 0, .current = 0 }, .max_point = { .voltage = 1000, .current = 1000000 }
 };
 
-static void prv_callback(int32_t current, void *context) {
-  TEST_ASSERT_EQUAL(current / 1000, s_test_input_voltage);
-  LOG_DEBUG("Current = %" PRId32 "\n", current);
+static void prv_callback(int32_t *current, void *context) {
+  TEST_ASSERT_NOT_EQUAL(NULL, current);
+  TEST_ASSERT_EQUAL(*current / 1000, s_test_input_voltage);
+  LOG_DEBUG("Current = %" PRId32 "\n", *current);
 
   s_test_input_voltage += 1000;
   test_ltc_adc_set_input_voltage(s_test_input_voltage);
@@ -54,7 +55,7 @@ void setup_test(void) {
     .filter_mode = LTC_ADC_FILTER_50HZ_60HZ,
   };
 
-  TEST_ASSERT_OK(current_sense_init(&s_storage, s_data, &adc_settings));
+  TEST_ASSERT_OK(current_sense_init(&s_storage, &s_data, &adc_settings));
 }
 
 void teardown_test(void) {}
@@ -87,7 +88,25 @@ void test_current_sense_reset(void) {
 
   // Since the input signal is exactly equal to the offset, the current must be equal to zero
   int32_t current;
-  current_sense_get_value(&s_storage, &current);
+  bool valid;
+  current_sense_get_value(&s_storage, &valid, &current);
 
+  TEST_ASSERT_TRUE(valid);
   TEST_ASSERT_EQUAL(0, current);
+
+  // Test with negative current
+  test_ltc_adc_set_input_voltage(900);
+  delay_ms(LTC2484_MAX_CONVERSION_TIME_MS);
+  current_sense_get_value(&s_storage, &valid, &current);
+
+  TEST_ASSERT_TRUE(valid);
+  TEST_ASSERT_TRUE(current < 0);
+
+  // Test with positive current
+  test_ltc_adc_set_input_voltage(1100);
+  delay_ms(LTC2484_MAX_CONVERSION_TIME_MS);
+  current_sense_get_value(&s_storage, &valid, &current);
+
+  TEST_ASSERT_TRUE(valid);
+  TEST_ASSERT_TRUE(current > 0);
 }
