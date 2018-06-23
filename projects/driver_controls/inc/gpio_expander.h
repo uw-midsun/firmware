@@ -51,7 +51,8 @@ typedef struct GpioExpanderStorage {
   GPIOAddress int_pin;
 } GpioExpanderStorage;
 
-// Initialize the expander with an address to connect to its INT pin
+// Initialize the expander with an address to connect to its INT pin.
+// If |interrupt_pin| is NULL, it assumes the IO expander is output-only.
 StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioExpanderAddress addr,
                               const GPIOAddress *interrupt_pin);
 

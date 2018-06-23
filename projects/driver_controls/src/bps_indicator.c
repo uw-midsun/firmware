@@ -6,6 +6,7 @@
 #include "debug_led.h"
 #include "exported_enums.h"
 #include "input_event.h"
+#include "center_console.h"
 
 static StatusCode prv_handle_heartbeat(const CANMessage *msg, void *context,
                                        CANAckStatus *ack_reply) {
