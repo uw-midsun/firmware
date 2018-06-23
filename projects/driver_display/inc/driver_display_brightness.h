@@ -33,5 +33,6 @@ typedef struct DriverDisplayBrightnessStorage {
   ADCChannel adc_channel;
 } DriverDisplayBrightnessStorage;
 
-StatusCode driver_display_brightness_init(const DriverDisplayBrightnessSettings *settings,
-                                          DriverDisplayBrightnessCalibrationData *calibration_data);
+StatusCode driver_display_brightness_init(
+    DriverDisplayBrightnessStorage *storage, const DriverDisplayBrightnessSettings *settings,
+    const DriverDisplayBrightnessCalibrationData *calibration_data);

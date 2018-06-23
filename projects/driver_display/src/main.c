@@ -4,6 +4,8 @@
 #include "interrupt.h"
 
 #include "driver_display_brightness.h"
+#include "driver_display_calibration.h"
+#include "driver_display_config.h"
 
 int main(void) {
   // Init everything to be used
@@ -12,21 +14,17 @@ int main(void) {
   gpio_init();
   adc_init(ADC_MODE_CONTINUOUS);
 
+  DriverDisplayBrightnessCalibrationData calibration_data = { 0 };
+  driver_display_calibration_init(driver_display_config_load(), &calibration_data);
+
+  /*
   // Populate data for brightness module (temporarily here before calibration is implemented)
-
-  DriverDisplayBrightnessSettings settings = {
-    .screen_address = { [DRIVER_DISPLAY_BRIGHTNESS_SCREEN1] = { GPIO_PORT_A, 7 },
-                        [DRIVER_DISPLAY_BRIGHTNESS_SCREEN2] = { GPIO_PORT_A, 4 } },
-    .adc_address = { .port = GPIO_PORT_A, .pin = 0 },
-    .timer = PWM_TIMER_14,
-    .frequency_hz = 30000,
-    .update_period_s = 5
-  };
-
   const DriverDisplayBrightnessCalibrationData calibration_data = { .max = 4095, .min = 0 };
 
   // Initialize the brightness module
-  driver_display_brightness_init(&settings, &calibration_data);
+  DriverDisplayBrightnessStorage storage;
+  driver_display_brightness_init(&storage, driver_display_config_load(), &calibration_data);
+  */
 
   while (true) {
     // Do stuff

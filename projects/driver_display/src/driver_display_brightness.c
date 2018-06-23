@@ -13,8 +13,6 @@ static void prv_adjust_brightness(DriverDisplayBrightnessStorage *storage) {
   uint16_t percent_reading = (((reading - storage->calibration_data->min) * 100) /
                               (storage->calibration_data->max - storage->calibration_data->min));
 
-  printf("adc reading: %u \n", percent_reading);
-
   // Temp for debugging
   // printf("adc reading: %u \n", storage.percent_reading);
 
@@ -41,13 +39,12 @@ static void prv_brightness_callback(ADCChannel adc_channel, void *context) {
 }
 
 StatusCode driver_display_brightness_init(
-    const DriverDisplayBrightnessSettings *settings,
-    DriverDisplayBrightnessCalibrationData *calibration_data) {
+    DriverDisplayBrightnessStorage *storage, const DriverDisplayBrightnessSettings *settings,
+    const DriverDisplayBrightnessCalibrationData *calibration_data) {
   printf("initialized \n");
 
-  DriverDisplayBrightnessStorage storage;
-  storage.calibration_data = calibration_data;
-  storage.settings = settings;
+  storage->calibration_data = calibration_data;
+  storage->settings = settings;
 
   GPIOSettings pwm_settings = { .direction = GPIO_DIR_OUT,
                                 .state = GPIO_STATE_HIGH,
@@ -68,12 +65,12 @@ StatusCode driver_display_brightness_init(
 
   // Init the ADC pin (All screens currently controlled by single sensor)
   gpio_init_pin(&settings->adc_address, &adc_settings);
-  adc_get_channel(settings->adc_address, &storage.adc_channel);
-  adc_set_channel(storage.adc_channel, true);
+  adc_get_channel(settings->adc_address, &storage->adc_channel);
+  adc_set_channel(storage->adc_channel, true);
 
   uint16_t reading;
-  adc_register_callback(storage.adc_channel, prv_brightness_callback, &reading);
+  adc_register_callback(storage->adc_channel, prv_brightness_callback, &reading);
 
-  return soft_timer_start_seconds(settings->update_period_s, prv_timer_callback, (void *)&storage,
+  return soft_timer_start_seconds(settings->update_period_s, prv_timer_callback, (void *)storage,
                                   NULL);
 }
