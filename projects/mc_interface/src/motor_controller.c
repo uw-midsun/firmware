@@ -79,7 +79,7 @@ static void prv_periodic_tx(SoftTimerID timer_id, void *context) {
     }
     msg.data = can_data.raw;
 
-    generic_can_tx(storage->settings.can_uart, &msg);
+    generic_can_tx(storage->settings.motor_can, &msg);
   }
   storage->timeout_counter++;
 
@@ -98,13 +98,13 @@ StatusCode motor_controller_init(MotorControllerStorage *controller,
 
   // Only bother registering the bus measurement handler for the first motor controller since
   // that's all we care about
-  generic_can_register_rx(controller->settings.can_uart, prv_bus_measurement_rx,
+  generic_can_register_rx(controller->settings.motor_can, prv_bus_measurement_rx,
                           GENERIC_CAN_EMPTY_MASK, can_id.raw, false, controller);
 
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
     can_id.device_id = controller->settings.ids[i].motor_controller;
     can_id.msg_id = WAVESCULPTOR_MEASUREMENT_ID_VELOCITY;
-    generic_can_register_rx(controller->settings.can_uart, prv_velocity_measurement_rx,
+    generic_can_register_rx(controller->settings.motor_can, prv_velocity_measurement_rx,
                             GENERIC_CAN_EMPTY_MASK, can_id.raw, false, controller);
   }
 
