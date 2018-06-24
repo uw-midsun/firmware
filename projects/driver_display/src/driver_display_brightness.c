@@ -10,12 +10,21 @@ static void prv_adjust_brightness(DriverDisplayBrightnessStorage *storage) {
 
   // Convert the raw reading into a percentage of max reading to then be passed into pwm_set_dc to
   // adjust brightness accordingly
-  uint16_t percent_reading = (((reading - storage->calibration_data->min) * 10) /
-                              (storage->calibration_data->max - storage->calibration_data->min)) *
-                             10;
+  uint16_t percent_reading;
+  // Bounds the percent reading to 0-100
+  if (reading < storage->calibration_data->min) {
+    percent_reading = 0;
+  } else {
+    percent_reading = (((reading - storage->calibration_data->min) * 10) /
+                       (storage->calibration_data->max - storage->calibration_data->min)) *
+                      10;
+    if (percent_reading > 100) {
+      percent_reading = 100;
+    }
+  }
 
   // Temp for debugging
-  // printf("adc reading: %u \n", percent_reading);
+  printf("adc reading: %u \n", percent_reading);
 
   // Set the screen brightness through PWM change
   for (uint8_t i = 0; i < NUM_DRIVER_DISPLAY_BRIGHTNESS_SCREENS; i++) {
@@ -43,6 +52,10 @@ static void prv_brightness_callback(ADCChannel adc_channel, void *context) {
 StatusCode driver_display_brightness_init(
     DriverDisplayBrightnessStorage *storage, const DriverDisplayBrightnessSettings *settings,
     const DriverDisplayBrightnessCalibrationData *calibration_data) {
+  if (storage == NULL || calibration_data == NULL || settings == NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+
   storage->calibration_data = calibration_data;
   storage->settings = settings;
 
@@ -53,9 +66,10 @@ StatusCode driver_display_brightness_init(
 
   // Init the pwm for each screen
   for (uint8_t i = 0; i < NUM_DRIVER_DISPLAY_BRIGHTNESS_SCREENS; i++) {
-    gpio_init_pin(&settings->screen_address[i], &pwm_settings);
-    pwm_init_hz(settings->timer, settings->frequency_hz);
-    pwm_set_dc(settings->timer, 50);  // set the screen brightness to 50% initially
+    status_ok_or_return(gpio_init_pin(&settings->screen_address[i], &pwm_settings));
+    status_ok_or_return(pwm_init_hz(settings->timer, settings->frequency_hz));
+    status_ok_or_return(
+        pwm_set_dc(settings->timer, 50));  // set the screen brightness to 50% initially
   }
 
   GPIOSettings adc_settings = { .direction = GPIO_DIR_IN,
@@ -64,12 +78,13 @@ StatusCode driver_display_brightness_init(
                                 .alt_function = GPIO_ALTFN_ANALOG };
 
   // Init the ADC pin (All screens currently controlled by single sensor)
-  gpio_init_pin(&settings->adc_address, &adc_settings);
-  adc_get_channel(settings->adc_address, &storage->adc_channel);
-  adc_set_channel(storage->adc_channel, true);
+  status_ok_or_return(gpio_init_pin(&settings->adc_address, &adc_settings));
+  status_ok_or_return(adc_get_channel(settings->adc_address, &storage->adc_channel));
+  status_ok_or_return(adc_set_channel(storage->adc_channel, true));
 
   uint16_t reading;
-  adc_register_callback(storage->adc_channel, prv_brightness_callback, &reading);
+  status_ok_or_return(
+      adc_register_callback(storage->adc_channel, prv_brightness_callback, &reading));
 
   return soft_timer_start_seconds(settings->update_period_s, prv_timer_callback, (void *)storage,
                                   NULL);

@@ -37,7 +37,7 @@ typedef struct DriverDisplayBrightnessStorage {
 // Initializes the brightness module
 // GPIOs, PWM and ADC should be initialized beforehand.
 // Controls all display screen brightness levels and automatically adjusts based on ambient
-// brightness
+// brightness.
 StatusCode driver_display_brightness_init(
     DriverDisplayBrightnessStorage *storage, const DriverDisplayBrightnessSettings *settings,
     const DriverDisplayBrightnessCalibrationData *calibration_data);

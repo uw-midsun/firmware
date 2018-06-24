@@ -15,15 +15,15 @@ int main(void) {
   adc_init(ADC_MODE_CONTINUOUS);
 
   // Test calibration
-  DriverDisplayCalibrationStorage calibration_storage;
-  DriverDisplayBrightnessCalibrationData data;
+  DriverDisplayCalibrationStorage calibration_storage = { 0 };
+  DriverDisplayBrightnessCalibrationData data = { 0 };
   driver_display_calibration_init(driver_display_config_load(), &data, &calibration_storage);
   driver_display_calibration_lower_bound(&calibration_storage);
   driver_display_calibration_upper_bound(&calibration_storage);
 
   // Temp for debugging
-  // printf("upper bound: %d \n", calibration_storage.data->max);
-  // printf("lower bound: %d \n", calibration_storage.data->min);
+  printf("upper bound: %d \n", calibration_storage.data->max);
+  printf("lower bound: %d \n", calibration_storage.data->min);
 
   // Test brightness module
   // Initialize the brightness module
