@@ -26,18 +26,9 @@ typedef struct {
   GPIOAddress *pin_tx;
   GPIOAddress *pin_power;
   GPIOAddress *pin_on_off;
-  volatile bool gps_active;         // Keeps track of whether the GPS is sending data or not
-  volatile bool gps_desired_state;  // Keeps track of whether we want the GPS to be active or not
   UARTStorage uart_storage;
   volatile char gga_data[GPS_MAX_NMEA_LENGTH];  // Stores raw NMEA messages sent by the chip
 } GpsSettings;
 
 // Initialized the GPS module
 StatusCode gps_init();
-
-// Shuts the GPS module down
-StatusCode gps_clean_up();
-
-// Sets: gga_message to the last received GGA message
-// Returns: a bool with the GPS' current state (active/inactive)
-bool gps_get_gga(char *gga_message);

@@ -1,9 +1,11 @@
 #include "xbee.h"
+#include "fifo.h"
+#include "uart.h"
 
 static const UARTPort s_xbee_port = XBEE_UART_PORT;
 
 static UARTSettings s_xbee_settings = {
-  .baudrate = 9600,  // Baurate to be changed
+  .baudrate = 115200,
   .tx = { .port = GPIO_PORT_B, .pin = 10 },
   .rx = { .port = GPIO_PORT_B, .pin = 11 },
   .alt_fn = GPIO_ALTFN_4,
