@@ -26,7 +26,7 @@ static Ads1015Storage s_ads1015_storage;
 
 #define TEST_MECH_BRAKE_TOLERANCE 2
 
-static MechBrakeCalibrationData s_calib_data = {
+const MechBrakeCalibrationData s_calib_data = {
   .zero_value = 0,
   .hundred_value = 1 << 12,
 };
@@ -56,16 +56,16 @@ void setup_test() {
 
   const I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,
-    .scl = { .port = GPIO_PORT_B, .pin = 8 },
-    .sda = { .port = GPIO_PORT_B, .pin = 9 },
+    .scl = DC_CFG_I2C_BUS_SCL,
+    .sda = DC_CFG_I2C_BUS_SDA,
   };
 
-  i2c_init(I2C_PORT_1, &i2c_settings);
+  i2c_init(DC_CFG_I2C_BUS_PORT, &i2c_settings);
   event_queue_init();
 
   GPIOAddress ready_pin = DC_CFG_PEDAL_ADC_RDY_PIN;
 
-  ads1015_init(&s_ads1015_storage, I2C_PORT_1, DC_CFG_PEDAL_ADC_ADDR, &ready_pin);
+  ads1015_init(&s_ads1015_storage, DC_CFG_I2C_BUS_PORT, DC_CFG_PEDAL_ADC_ADDR, &ready_pin);
 
   mech_brake_init(&s_mech_brake_storage, &brake_settings, &s_calib_data);
 }

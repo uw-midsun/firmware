@@ -29,11 +29,11 @@ void setup_test(void) {
 
   I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,
-    .scl = { .port = GPIO_PORT_B, .pin = 8 },
-    .sda = { .port = GPIO_PORT_B, .pin = 9 },
+    .scl = DC_CFG_I2C_BUS_SCL,
+    .sda = DC_CFG_I2C_BUS_SDA,
   };
 
-  i2c_init(I2C_PORT_1, &i2c_settings);
+  i2c_init(DC_CFG_I2C_BUS_PORT, &i2c_settings);
 
   GPIOAddress ready_pin = DC_CFG_PEDAL_ADC_RDY_PIN;
 
@@ -43,7 +43,7 @@ void setup_test(void) {
   };
 
   event_queue_init();
-  ads1015_init(&storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
+  ads1015_init(&storage, DC_CFG_I2C_BUS_PORT, DC_CFG_PEDAL_ADC_ADDR, &ready_pin);
 
   mech_brake_calibration_init(&s_calibration_storage, &calib_settings);
 }
