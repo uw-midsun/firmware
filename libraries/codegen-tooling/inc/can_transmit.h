@@ -179,12 +179,12 @@
     status;                                                                       \
   })
 
-#define CAN_TRANSMIT_BATTERY_CURRENT(current_u32)  \
-  ({                                               \
-    CANMessage msg = { 0 };                        \
-    CAN_PACK_BATTERY_CURRENT(&msg, (current_u32)); \
-    StatusCode status = can_transmit(&msg, NULL);  \
-    status;                                        \
+#define CAN_TRANSMIT_BATTERY_AGGREGATE_VC(voltage_u32, current_u32)    \
+  ({                                                                   \
+    CANMessage msg = { 0 };                                            \
+    CAN_PACK_BATTERY_AGGREGATE_VC(&msg, (voltage_u32), (current_u32)); \
+    StatusCode status = can_transmit(&msg, NULL);                      \
+    status;                                                            \
   })
 
 #define CAN_TRANSMIT_MOTOR_CONTROLLER_VC(mc_voltage_1_u16, mc_current_1_u16, mc_voltage_2_u16,     \
@@ -197,10 +197,10 @@
     status;                                                                                        \
   })
 
-#define CAN_TRANSMIT_MOTOR_VELOCITY(vehicle_velocity_left_u32, vehicle_velocity_right_u32)    \
+#define CAN_TRANSMIT_MOTOR_VELOCITY(vehicle_velocity_left_u16, vehicle_velocity_right_u16)    \
   ({                                                                                          \
     CANMessage msg = { 0 };                                                                   \
-    CAN_PACK_MOTOR_VELOCITY(&msg, (vehicle_velocity_left_u32), (vehicle_velocity_right_u32)); \
+    CAN_PACK_MOTOR_VELOCITY(&msg, (vehicle_velocity_left_u16), (vehicle_velocity_right_u16)); \
     StatusCode status = can_transmit(&msg, NULL);                                             \
     status;                                                                                   \
   })

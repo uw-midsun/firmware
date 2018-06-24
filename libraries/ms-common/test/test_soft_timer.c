@@ -122,7 +122,7 @@ void test_soft_timer_cancelled_timer(void) {
   TEST_ASSERT_OK(ret);
   TEST_ASSERT_NOT_EQUAL(SOFT_TIMER_INVALID_TIMER, id_long);
 
-  ret = soft_timer_start(10, prv_timeout_cb, (void *)&cb_id_short, &id_short);
+  ret = soft_timer_start(SOFT_TIMER_MIN_TIME_US, prv_timeout_cb, (void *)&cb_id_short, &id_short);
   TEST_ASSERT_OK(ret);
   TEST_ASSERT_NOT_EQUAL(SOFT_TIMER_INVALID_TIMER, id_short);
 
@@ -198,4 +198,9 @@ void test_soft_timer_exhausted(void) {
   }
 
   TEST_ASSERT_FALSE(soft_timer_inuse());
+}
+
+void test_soft_timer_too_short(void) {
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
+                    soft_timer_start(SOFT_TIMER_MIN_TIME_US - 1, prv_timeout_cb, NULL, NULL));
 }

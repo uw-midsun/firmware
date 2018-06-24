@@ -50,12 +50,8 @@ void setup_test(void) {
 
 void teardown_test(void) {}
 
-void test_bps_indicator_fault(void) {
+void test_bps_indicator_heartbeat(void) {
   Event e = { 0 };
-  volatile CANAckStatus rx_status = NUM_CAN_ACK_STATUSES;
-  EELightState expected_state = NUM_EE_LIGHT_STATES;
-
-  can_register_rx_handler(SYSTEM_CAN_MESSAGE_LIGHTS_STATE, prv_strobe_cb, &expected_state);
 
   // Send BPS heartbeat good - make sure we receive an ACK and nothing happened
   CANAckRequest ack_request = {
@@ -71,35 +67,29 @@ void test_bps_indicator_fault(void) {
 
   // Send BPS heartbeat not good
   CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, EE_BPS_HEARTBEAT_STATE_FAULT_KILLSWITCH);
-
-  // Event gets raised in ACK, so split BPS Heartbeat/ACK
+  // Event is raised during ACK, so split up the processing
+  // BPS heartbeat TX + RX
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
-  // Should raise a BPS fault event
-  MS_TEST_HELPER_AWAIT_EVENT(e);
+
+  // Raise BPS fault event
+  TEST_ASSERT_OK(event_process(&e));
   TEST_ASSERT_EQUAL(INPUT_EVENT_BPS_FAULT, e.id);
-  // Strobe on TX
-  MS_TEST_HELPER_AWAIT_EVENT(e);
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_TX, e.id);
-  TEST_ASSERT_TRUE(can_process_event(&e));
-  // Heartbeat ACK TX
-  MS_TEST_HELPER_AWAIT_EVENT(e);
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_TX, e.id);
-  TEST_ASSERT_TRUE(can_process_event(&e));
 
-  // Strobe on RX
+  // BPS heartbeat ACK TX/RX
+  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
+}
+
+void test_bps_indicator_fault(void) {
+  EELightState expected_state = NUM_EE_LIGHT_STATES;
+  can_register_rx_handler(SYSTEM_CAN_MESSAGE_LIGHTS_STATE, prv_strobe_cb, &expected_state);
+
+  // Set fault - start strobes
   expected_state = EE_LIGHT_STATE_ON;
-  MS_TEST_HELPER_AWAIT_EVENT(e);
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_RX, e.id);
-  TEST_ASSERT_TRUE(can_process_event(&e));
-  // Heartbeat ACK RX
-  MS_TEST_HELPER_AWAIT_EVENT(e);
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CAN_RX, e.id);
-  TEST_ASSERT_TRUE(can_process_event(&e));
+  TEST_ASSERT_OK(bps_indicator_set_fault());
+  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
 
-  // Clear fault
-  bps_indicator_clear_fault();
-
-  // Should have cleared strobe
+  // Clear fault - should have cleared strobe
   expected_state = EE_LIGHT_STATE_OFF;
+  bps_indicator_clear_fault();
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
 }
