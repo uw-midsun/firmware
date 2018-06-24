@@ -27,7 +27,7 @@ static MechBrakeCalibrationData s_calibration_data;
 
 #define TEST_MECH_BRAKE_TOLERANCE 2
 #define TEST_MECH_BRAKE_ZERO_VALUE 0
-#define TEST_MECH_BRAKE_HUNDRED_VALUE 1<<12
+#define TEST_MECH_BRAKE_HUNDRED_VALUE 1 << 12
 
 // Readings used as fake inputs.
 static int16_t s_mocked_reading;
@@ -46,8 +46,8 @@ StatusCode TEST_MOCK(ads1015_read_raw)(Ads1015Storage *storage, Ads1015Channel c
   return STATUS_CODE_OK;
 }
 
-//Initializes the calibration data from static data
-static void prv_set_calibration_data(MechBrakeCalibrationData *data){
+// Initializes the calibration data from static data
+static void prv_set_calibration_data(MechBrakeCalibrationData *data) {
   data->zero_value = TEST_MECH_BRAKE_ZERO_VALUE;
   data->hundred_value = TEST_MECH_BRAKE_HUNDRED_VALUE;
 }

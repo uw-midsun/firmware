@@ -66,5 +66,4 @@ void test_mech_brake_calibration_run(void) {
   mech_brake_get_calib_data(&s_calibration_storage, &calib_data);
 
   LOG_DEBUG("%d %d\n", calib_data.zero_value, calib_data.hundred_value);
-
 }
