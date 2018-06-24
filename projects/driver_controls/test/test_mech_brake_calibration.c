@@ -67,6 +67,4 @@ void test_mech_brake_calibration_run(void) {
 
   LOG_DEBUG("%d %d\n", calib_data.zero_value, calib_data.hundred_value);
 
-  while (true) {
-  }
 }
