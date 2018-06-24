@@ -7,3 +7,9 @@
 
 # Specify the libraries you want to include
 $(T)_DEPS := ms-common
+
+ifeq (x86,$(PLATFORM))
+$(T)_EXCLUDE_TESTS := mcp2515
+endif
+
+$(T)_test_thermistor_MOCKS := adc_read_converted adc_get_channel adc_set_channel

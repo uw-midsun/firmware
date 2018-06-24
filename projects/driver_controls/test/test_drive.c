@@ -5,6 +5,9 @@
 #include "drive_output.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
+#include "hazards_fsm.h"
+#include "headlight_fsm.h"
+#include "horn_fsm.h"
 #include "input_event.h"
 #include "interrupt.h"
 #include "log.h"
@@ -13,14 +16,26 @@
 #include "power_fsm.h"
 #include "soft_timer.h"
 #include "test_helpers.h"
+#include "turn_signal_fsm.h"
 #include "unity.h"
 
 // Tests interaction between the drive output module and power/direction/pedal FSMs
 
-#define TEST_DRIVE_CLOCK_EVENT(event_id, should_succeed)                                    \
-  {                                                                                         \
-    Event e = { .id = event_id };                                                           \
-    TEST_ASSERT_EQUAL(should_succeed, event_arbiter_process_event(&s_arbiter_storage, &e)); \
+#define TEST_DRIVE_CLOCK_EVENT(event_id, should_succeed)                                      \
+  {                                                                                           \
+    Event e = { .id = (event_id) };                                                           \
+    TEST_ASSERT_EQUAL((should_succeed), event_arbiter_process_event(&s_arbiter_storage, &e)); \
+    if ((should_succeed) &&                                                                   \
+        (e.id == INPUT_EVENT_CENTER_CONSOLE_POWER || e.id == INPUT_EVENT_BPS_FAULT ||         \
+         e.id == INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE ||                                \
+         e.id == INPUT_EVENT_CENTER_CONSOLE_DIRECTION_NEUTRAL ||                              \
+         e.id == INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE ||                              \
+         e.id == INPUT_EVENT_MECHANICAL_BRAKE_PRESSED ||                                      \
+         e.id == INPUT_EVENT_MECHANICAL_BRAKE_RELEASED)) {                                    \
+      if (status_ok(event_process(&e))) {                                                     \
+        event_arbiter_process_event(&s_arbiter_storage, &e);                                  \
+      }                                                                                       \
+    }                                                                                         \
   }
 
 typedef enum {
@@ -29,6 +44,10 @@ typedef enum {
   TEST_DRIVE_FSM_PEDAL,
   TEST_DRIVE_FSM_DIRECTION,
   TEST_DRIVE_FSM_MECH_BRAKE,
+  TEST_DRIVE_FSM_HEADLIGHT,
+  TEST_DRIVE_FSM_TURN_SIGNALS,
+  TEST_DRIVE_FSM_HAZARDS,
+  TEST_DRIVE_FSM_HORN,
   NUM_TEST_DRIVE_FSMS
 } TestDriveFsm;
 
@@ -63,6 +82,11 @@ void setup_test(void) {
   pedal_fsm_init(&s_fsms[TEST_DRIVE_FSM_PEDAL], &s_arbiter_storage);
   direction_fsm_init(&s_fsms[TEST_DRIVE_FSM_DIRECTION], &s_arbiter_storage);
   mechanical_brake_fsm_init(&s_fsms[TEST_DRIVE_FSM_MECH_BRAKE], &s_arbiter_storage);
+
+  turn_signal_fsm_init(&s_fsms[TEST_DRIVE_FSM_TURN_SIGNALS], &s_arbiter_storage);
+  horn_fsm_init(&s_fsms[TEST_DRIVE_FSM_HORN], &s_arbiter_storage);
+  hazards_fsm_init(&s_fsms[TEST_DRIVE_FSM_HAZARDS], &s_arbiter_storage);
+  headlight_fsm_init(&s_fsms[TEST_DRIVE_FSM_HEADLIGHT], &s_arbiter_storage);
 }
 
 void teardown_test(void) {}
@@ -248,10 +272,11 @@ void test_drive_revert_cruise(void) {
 
   LOG_DEBUG("Turning car off\n");
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_POWER, true);
-
+  prv_dump_fsms();
   LOG_DEBUG("Turning car back on\n");
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_POWER, true);
+  prv_dump_fsms();
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
 
