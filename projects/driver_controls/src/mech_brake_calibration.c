@@ -53,7 +53,7 @@ StatusCode mech_brake_sample(MechBrakeCalibrationStorage *storage,
   };
   storage->sample_point = point;
 
-  // enables channel
+  // Enables channel
   ads1015_configure_channel(storage->settings.ads1015, storage->settings.channel, true,
                             prv_callback_channel, storage);
 

@@ -1,5 +1,4 @@
 
-// #include <stdint.h>
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
@@ -50,24 +49,29 @@ static void prv_callback_channel(Ads1015Channel channel, void *context) {
   }
 }
 
-StatusCode mech_brake_init(MechBrakeStorage *storage, MechBrakeSettings *settings,
+StatusCode mech_brake_init(MechBrakeStorage *storage, const MechBrakeSettings *settings,
                            const MechBrakeCalibrationData *data) {
   if (storage == NULL || data == NULL || settings == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   memset(storage, 0, sizeof(*storage));
-  storage->settings = *settings;
   storage->calibration_data = data;
+  storage->channel = settings->channel;
+  storage->ads1015 = settings->ads1015;
 
+
+  // Since the minimun value of the position is expected to be 0, the lower bound is the negative value of the tolerance.
+  // and upper bound is EE_DRIVE_OUTPUT_DENOMINATOR plus the tolerance.
   storage->lower_bound =
-      -1 * storage->settings.bounds_tolerance * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
+      -1 * settings->bounds_tolerance * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
   storage->upper_bound = EE_DRIVE_OUTPUT_DENOMINATOR +
-                         storage->settings.bounds_tolerance * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
+                         settings->bounds_tolerance * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
+
 
   storage->threshold_position =
-      storage->settings.brake_pressed_threshold * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
+      settings->brake_pressed_threshold * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
 
-  return ads1015_configure_channel(storage->settings.ads1015, storage->settings.channel, true,
+  return ads1015_configure_channel(storage->ads1015, storage->channel, true,
                                    prv_callback_channel, storage);
 }
 
@@ -79,6 +83,6 @@ StatusCode mech_brake_get_position(MechBrakeStorage *storage, int16_t *position)
   int16_t reading = INT16_MIN;
 
   status_ok_or_return(
-      ads1015_read_raw(storage->settings.ads1015, storage->settings.channel, &reading));
+      ads1015_read_raw(storage->ads1015, storage->channel, &reading));
   return prv_lsb_to_position(storage, reading, position);
 }

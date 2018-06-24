@@ -19,6 +19,7 @@
 #include "status.h"
 #include "test_helpers.h"
 #include "unity.h"
+#include "exported_enums.h"
 
 static MechBrakeStorage s_mech_brake_storage;
 static Ads1015Storage s_ads1015_storage;
@@ -30,7 +31,7 @@ static MechBrakeCalibrationData s_calib_data = {
   .hundred_value = 1 << 12,
 };
 
-// input reading used as a fake input
+// Input reading used as a fake input.
 static int16_t s_mocked_reading;
 
 const MechBrakeSettings brake_settings = {
@@ -93,6 +94,7 @@ void test_mech_brake_get_percentage_invalid_args(void) {
 
 void test_mech_brake_percentage_in_released_zone(void) {
   int16_t position = 0;
+  // The brake_pressed_threshold is 50% and a reading of 400 is 9%.
   s_mocked_reading = 400;
   Event e;
 
@@ -104,8 +106,8 @@ void test_mech_brake_percentage_in_released_zone(void) {
 
 void test_mech_brake_percentage_in_pressed_zone(void) {
   int16_t position = 0;
-
-  s_mocked_reading = 600;
+  // The brake_pressed_threshold is 50% and a reading of 400 is 73%.
+  s_mocked_reading = 3000;
   Event e;
 
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
@@ -117,6 +119,7 @@ void test_mech_brake_percentage_in_pressed_zone(void) {
 void test_mech_brake_percentage_below_bounds(void) {
   int16_t position = 0;
 
+  // The bounds_tolerance is 2%, so the lower_bound for the position is -81.
   s_mocked_reading = -1000;
   Event e;
 
@@ -127,8 +130,8 @@ void test_mech_brake_percentage_below_bounds(void) {
 
 void test_mech_brake_percentage_above_bounds(void) {
   int16_t position = 0;
-
-  s_mocked_reading = 2 << 12;
+  // The bounds_tolerance is 2%, so the upper_bound for the position is 4177.
+  s_mocked_reading = EE_DRIVE_OUTPUT_DENOMINATOR + 1000;
   Event e;
 
   TEST_ASSERT_EQUAL(STATUS_CODE_OUT_OF_RANGE,
@@ -138,7 +141,7 @@ void test_mech_brake_percentage_above_bounds(void) {
 
 void test_mech_brake_percentage_within_lower_tolerance(void) {
   int16_t position = 0;
-
+  // This is just within the lower bound of -81.
   s_mocked_reading = -80;
   Event e;
 
@@ -150,7 +153,7 @@ void test_mech_brake_percentage_within_lower_tolerance(void) {
 
 void test_mech_brake_percentage_within_upper_tolerance(void) {
   int16_t position = 0;
-
+  // This is just within the upper bound of 4177.
   s_mocked_reading = 4176;
   Event e;
 

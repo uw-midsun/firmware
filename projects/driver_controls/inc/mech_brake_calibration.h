@@ -24,16 +24,16 @@ typedef struct MechBrakeCalibrationPointData {
 
 typedef struct MechBrakeCalibrationStorage {
   MechBrakeSettings settings;
-
   MechBrakeCalibrationPoint sample_point;
-
   MechBrakeCalibrationPointData data[NUM_MECH_CALIBRATION_POINTS];
 } MechBrakeCalibrationStorage;
 
+// Expects settings.ads1015 to be initialized. Iniializes storage->settings from *settings.
 StatusCode mech_brake_calibration_init(MechBrakeCalibrationStorage *storage,
                                        MechBrakeSettings *settings);
-
+// Samples the position at a specified point.
 StatusCode mech_brake_sample(MechBrakeCalibrationStorage *storage, MechBrakeCalibrationPoint point);
 
+// Retrieves the calibrated values.
 StatusCode mech_brake_get_calib_data(MechBrakeCalibrationStorage *storage,
                                      MechBrakeCalibrationData *calib_data);
