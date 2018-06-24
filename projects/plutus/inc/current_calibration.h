@@ -1,7 +1,9 @@
 #pragma once
 
 // LTC 2484 calibration module. Samples at fixed points in order to obtain data
-// for two-point current calibration
+// for two-point current calibration. To use, call current_calibration_sample_point()
+// to obtain samples at both a known zero and a known max, which will generate two reference
+// points that will allow for the calculation of current from an adc sample
 
 // Requires gpio, interrupts, and soft timers to be initialized
 

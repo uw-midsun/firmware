@@ -32,12 +32,12 @@ typedef struct {
   LtcAdcStorage adc_storage;
   CurrentSenseCalibrationData data;
   CurrentSenseValue value;
-  bool data_valid;
   int32_t offset;
-  bool offset_pending;
   CurrentSenseCallback callback;
   CurrentSenseFaultCallback fault_callback;
   void *context;
+  bool offset_pending;
+  bool data_valid;
 } CurrentSenseStorage;
 
 // Initialize the current sense module. Requires |data| to be calibrated beforehand.

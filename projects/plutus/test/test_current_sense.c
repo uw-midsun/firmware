@@ -19,6 +19,8 @@
 static int32_t s_test_input_voltage = 0;
 
 static volatile uint8_t s_callback_runs = 0;
+static volatile bool s_callback_fault = false;
+
 static CurrentSenseStorage s_storage = { 0 };
 
 static LtcAdcSettings s_adc_settings = {
@@ -45,10 +47,7 @@ static void prv_callback(int32_t current, void *context) {
 
 static void prv_fault_callback(void *context) {
   LOG_DEBUG("Fault callback\n");
-
-  if (s_callback_runs < TEST_CURRENT_SENSE_NUM_SAMPLES) {
-    s_callback_runs++;
-  }
+  s_callback_fault = true;
 }
 
 void setup_test(void) {
@@ -119,8 +118,6 @@ void test_current_sense_fault_callback(void) {
 
   // Collect samples and tests that the readings fit the linear relationship defined by the
   // calibration data
-  while (s_callback_runs < TEST_CURRENT_SENSE_NUM_SAMPLES) {
+  while (!s_callback_fault) {
   }
-
-  TEST_ASSERT_EQUAL(TEST_CURRENT_SENSE_NUM_SAMPLES, s_callback_runs);
 }
