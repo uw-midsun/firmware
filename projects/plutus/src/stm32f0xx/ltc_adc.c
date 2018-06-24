@@ -59,7 +59,7 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
 
     // Pass null pointer into callback to indicate invalid data
     if (storage->fault_callback != NULL) {
-      storage->fault_callback(storage->context);
+      storage->fault_callback(storage->fault_context);
     }
   } else {
     // Keep the previous mode and don't do anything special (ie. send a command
@@ -91,7 +91,9 @@ StatusCode ltc_adc_init(LtcAdcStorage *storage, const LtcAdcSettings *settings) 
   storage->buffer.status = STATUS_CODE_UNINITIALIZED;
   storage->buffer.value = INT16_MAX;
   storage->callback = NULL;
+  storage->fault_callback = NULL;
   storage->context = NULL;
+  storage->fault_context = NULL;
   storage->spi_port = settings->spi_port;
   storage->cs = settings->cs;
   storage->miso = settings->miso;
@@ -139,6 +141,20 @@ StatusCode ltc_adc_register_callback(LtcAdcStorage *storage, LtcAdcCallback call
   return STATUS_CODE_OK;
 }
 
-StatusCode test_ltc_adc_set_input_voltage(int32_t input_voltage) {
-  return status_code(STATUS_CODE_UNIMPLEMENTED);
+StatusCode ltc_adc_register_fault_callback(LtcAdcStorage *storage,
+                                           LtcAdcFaultCallback fault_callback, void *context) {
+  if (storage == NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+
+  bool disabled = critical_section_start();
+  storage->fault_callback = fault_callback;
+  storage->fault_context = context;
+  critical_section_end(disabled);
+
+  return STATUS_CODE_OK;
 }
+
+void test_ltc_adc_set_input_voltage(int32_t input_voltage) {}
+
+void test_ltc_adc_set_fault_status(bool fault_state) {}
