@@ -37,7 +37,7 @@ StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gp
   return STATUS_CODE_OK;
 }
 
-StatusCode thermistor_get_temp(ThermistorStorage *storage, uint16_t *deci_celsius) {
+StatusCode thermistor_get_temp(ThermistorStorage *storage, uint16_t *temperature_dc) {
   // Fetch the voltage readings
   uint16_t reading = 0;                     // the divided voltage in millivolts
   uint32_t thermistor_resistance_ohms = 0;  // resistance in milliohms
@@ -48,10 +48,10 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint16_t *deci_celsiu
   status_ok_or_return(adc_read_converted(storage->adc_channel, &reading));
 
   if (vdda == 0) {
-    *deci_celsius = UINT16_MAX;
+    *temperature_dc = UINT16_MAX;
     return status_msg(STATUS_CODE_INTERNAL_ERROR, "No source voltage detected.");
   } else if (reading == 0) {
-    *deci_celsius = UINT16_MAX;
+    *temperature_dc = UINT16_MAX;
     return status_msg(STATUS_CODE_INTERNAL_ERROR, "No node voltage detected.");
   }
 
@@ -64,16 +64,17 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint16_t *deci_celsiu
     thermistor_resistance_ohms =
         ((uint32_t)THERMISTOR_FIXED_RESISTANCE_OHMS * reading) / (uint32_t)(vdda - reading);
   }
-  return thermistor_calculate_temp(thermistor_resistance_ohms, (uint16_t *)deci_celsius);
+  return thermistor_calculate_temp(thermistor_resistance_ohms, (uint16_t *)temperature_dc);
 }
 
-StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms, uint16_t *deci_celsius) {
+StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms,
+                                     uint16_t *temperature_dc) {
   // Find the approximate target temperature from the arguments passed
   for (uint16_t i = 0; i < SIZEOF_ARRAY(s_resistance_lookup) - 1; i++) {
     if (thermistor_resistance_ohms * 1000 <= s_resistance_lookup[i] &&
         thermistor_resistance_ohms * 1000 >= s_resistance_lookup[i + 1]) {
-      // Return the temperature with the linear approximation in decicelsius
-      *deci_celsius = (uint16_t)(
+      // Return the temperature with the linear approximation in deciCelsius
+      *temperature_dc = (uint16_t)(
           ((uint32_t)i * 1000 + ((s_resistance_lookup[i] - thermistor_resistance_ohms * 1000) *
                                  1000 / (s_resistance_lookup[i] - s_resistance_lookup[i + 1]))) /
           100);
@@ -81,6 +82,6 @@ StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms, uint16
     }
   }
   // Sets the returned temperature to be absurdly large
-  *deci_celsius = UINT16_MAX;
+  *temperature_dc = UINT16_MAX;
   return status_msg(STATUS_CODE_OUT_OF_RANGE, "Temperature out of lookup table range.");
 }
