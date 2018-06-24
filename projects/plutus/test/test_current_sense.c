@@ -118,6 +118,8 @@ void test_current_sense_fault_callback(void) {
 
   // Collect samples and tests that the readings fit the linear relationship defined by the
   // calibration data
-  while (!s_callback_fault) {
-  }
+
+  delay_ms(100);
+
+  TEST_ASSERT_TRUE(s_callback_fault);
 }
