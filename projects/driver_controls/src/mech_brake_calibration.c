@@ -57,13 +57,14 @@ StatusCode mech_brake_sample(MechBrakeCalibrationStorage *storage,
   ads1015_configure_channel(storage->settings.ads1015, storage->settings.channel, true,
                             prv_callback_channel, storage);
 
-  bool samples_completed = false;
-  do {
+  while (storage->data[point].sample_counter < MECH_BRAKE_CALIBRATION_NUM_SAMPLES) {
     wait();
-    samples_completed = true;
-    samples_completed &=
-        (storage->data[point].sample_counter >= MECH_BRAKE_CALIBRATION_NUM_SAMPLES);
-  } while (!samples_completed);
+  }
+
+  int16_t max_reading = storage->data[point].max_reading;
+  int16_t min_reading = storage->data[point].min_reading;
+
+  storage->data[point].average_value = (max_reading+min_reading)/2;
 
   return STATUS_CODE_OK;
 }
@@ -74,16 +75,8 @@ StatusCode mech_brake_get_calib_data(MechBrakeCalibrationStorage *storage,
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  int16_t max_unpressed_reading = storage->data[MECH_BRAKE_CALIBRATION_POINT_UNPRESSED].max_reading;
-  int16_t min_unpressed_reading = storage->data[MECH_BRAKE_CALIBRATION_POINT_UNPRESSED].min_reading;
-  int16_t max_pressed_reading = storage->data[MECH_BRAKE_CALIBRATION_POINT_PRESSED].max_reading;
-  int16_t min_pressed_reading = storage->data[MECH_BRAKE_CALIBRATION_POINT_PRESSED].min_reading;
-
-  int16_t average_unpressed_value = (max_unpressed_reading + min_unpressed_reading) / 2;
-  int16_t average_pressed_value = (max_pressed_reading + min_pressed_reading) / 2;
-
-  calib_data->zero_value = average_unpressed_value;
-  calib_data->hundred_value = average_pressed_value;
+  calib_data->zero_value = storage->data[MECH_BRAKE_CALIBRATION_POINT_UNPRESSED].average_value;
+  calib_data->hundred_value = storage->data[MECH_BRAKE_CALIBRATION_POINT_PRESSED].average_value;
 
   return STATUS_CODE_OK;
 }

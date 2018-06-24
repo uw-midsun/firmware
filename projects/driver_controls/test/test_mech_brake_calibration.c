@@ -55,12 +55,12 @@ void teardown_test(void) {}
 
 void test_mech_brake_calibration_run(void) {
   LOG_DEBUG("Please ensure the brake is not being pressed.\n");
-  delay_s(10);
+  delay_s(7);
   LOG_DEBUG("Beginning sampling\n");
   mech_brake_sample(&s_calibration_storage, MECH_BRAKE_CALIBRATION_POINT_UNPRESSED);
   LOG_DEBUG("Completed sampling\n");
   LOG_DEBUG("Please press and hold the brake\n");
-  delay_s(10);
+  delay_s(7);
   LOG_DEBUG("Beginning sampling\n");
   mech_brake_sample(&s_calibration_storage, MECH_BRAKE_CALIBRATION_POINT_PRESSED);
   LOG_DEBUG("Completed sampling\n");

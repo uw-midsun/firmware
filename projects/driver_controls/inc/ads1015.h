@@ -48,8 +48,8 @@ typedef struct Ads1015Storage {
   void *callback_context[NUM_ADS1015_CHANNELS];
 
   SoftTimerID watchdog_timer;
-  volatile bool watchdog_kicked;
-  volatile bool data_valid;
+  bool watchdog_kicked;
+  bool data_valid;
 } Ads1015Storage;
 
 // Initiates ads1015 by setting up registers and enabling ALRT/RDY Pin.

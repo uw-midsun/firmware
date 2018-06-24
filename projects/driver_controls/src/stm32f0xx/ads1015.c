@@ -63,7 +63,6 @@ static void prv_watchdog(SoftTimerID timer_id, void *context) {
   if (!storage->watchdog_kicked) {
     // No interrupt when we should've gotten one by now
     // Mark data invalid and attempt to force a read
-    __asm("BKPT #0\n");
     storage->data_valid = false;
     gpio_it_trigger_interrupt(&storage->ready_pin);
   }

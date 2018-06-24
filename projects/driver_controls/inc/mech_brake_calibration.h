@@ -18,6 +18,7 @@ typedef enum {
 typedef struct MechBrakeCalibrationPointData {
   int16_t min_reading;
   int16_t max_reading;
+  int16_t average_value;
   volatile uint32_t sample_counter;
 } MechBrakeCalibrationPointData;
 
@@ -27,6 +28,7 @@ typedef struct MechBrakeCalibrationStorage {
   MechBrakeCalibrationPoint sample_point;
 
   MechBrakeCalibrationPointData data[NUM_MECH_CALIBRATION_POINTS];
+
 } MechBrakeCalibrationStorage;
 
 StatusCode mech_brake_calibration_init(MechBrakeCalibrationStorage *storage,
