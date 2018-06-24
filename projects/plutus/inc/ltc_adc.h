@@ -66,4 +66,7 @@ StatusCode ltc_adc_register_fault_callback(LtcAdcStorage *storage,
                                            LtcAdcFaultCallback fault_callback, void *context);
 
 // Exposed for testing
-StatusCode test_ltc_adc_set_input_voltage(int32_t input_voltage);
+void test_ltc_adc_set_input_voltage(int32_t input_voltage);
+
+// Enable or disable forced faulting
+void test_ltc_adc_set_fault_status(bool fault_state);

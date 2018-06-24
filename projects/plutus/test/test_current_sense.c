@@ -62,6 +62,7 @@ void setup_test(void) {
   CurrentSenseCalibrationData s_data = { .zero_point = { .voltage = 0, .current = 0 },
                                          .max_point = { .voltage = 1000, .current = 1000000 } };
 
+  test_ltc_adc_set_fault_status(false);
   TEST_ASSERT_OK(current_sense_init(&s_storage, &s_data, &s_adc_settings));
 }
 
@@ -112,9 +113,10 @@ void test_current_sense_reset(void) {
 }
 
 void test_current_sense_fault_callback(void) {
-  // Register callback with non-null pointer in order to force a fault
+  // Register callback and force a fault
+  test_ltc_adc_set_fault_status(true);
   TEST_ASSERT_OK(
-      current_sense_register_callback(&s_storage, NULL, prv_fault_callback, &s_test_input_voltage));
+      current_sense_register_callback(&s_storage, NULL, prv_fault_callback, NULL));
 
   // Collect samples and tests that the readings fit the linear relationship defined by the
   // calibration data

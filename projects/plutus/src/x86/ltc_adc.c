@@ -7,24 +7,24 @@
 #include "ltc2484.h"
 
 static int32_t s_test_voltage = 0;
+static bool s_fault_flag = false;
 
 static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
-  CurrentSenseStorage *current_sense = (CurrentSenseStorage *)context;
+  LtcAdcStorage *storage = (LtcAdcStorage *)context;
 
-  if (current_sense->context != NULL) {
-    if (current_sense->adc_storage.fault_callback != NULL) {
-      current_sense->adc_storage.fault_callback(current_sense->adc_storage.context);
+  if (s_fault_flag) {
+    if (storage->fault_callback != NULL) {
+      storage->fault_callback(storage->context);
     }
   } else {
-    current_sense->adc_storage.buffer.value = s_test_voltage;
-    if (current_sense->adc_storage.callback != NULL) {
-      current_sense->adc_storage.callback(&current_sense->adc_storage.buffer.value,
-                                          current_sense->adc_storage.context);
+    storage->buffer.value = s_test_voltage;
+    if (storage->callback != NULL) {
+      storage->callback(&storage->buffer.value, storage->context);
     }
   }
 
   soft_timer_start_millis(LTC2484_MAX_CONVERSION_TIME_MS, prv_ltc_adc_read,
-                          &current_sense->adc_storage, &current_sense->adc_storage.buffer.timer_id);
+                          storage, &storage->buffer.timer_id);
 }
 
 StatusCode ltc_adc_init(LtcAdcStorage *storage, const LtcAdcSettings *settings) {
@@ -69,8 +69,10 @@ StatusCode ltc_adc_register_fault_callback(LtcAdcStorage *storage,
   return STATUS_CODE_OK;
 }
 
-StatusCode test_ltc_adc_set_input_voltage(int32_t input_voltage) {
+void test_ltc_adc_set_input_voltage(int32_t input_voltage) {
   s_test_voltage = input_voltage;
+}
 
-  return STATUS_CODE_OK;
+void test_ltc_adc_set_fault_status(bool fault_state) {
+  s_fault_flag = fault_state;
 }
