@@ -19,13 +19,12 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
     current_sense->adc_storage.buffer.value = s_test_voltage;
     if (current_sense->adc_storage.callback != NULL) {
       current_sense->adc_storage.callback(&current_sense->adc_storage.buffer.value,
-                                       current_sense->adc_storage.context);
+                                          current_sense->adc_storage.context);
     }
   }
 
   soft_timer_start_millis(LTC2484_MAX_CONVERSION_TIME_MS, prv_ltc_adc_read,
-                          &current_sense->adc_storage,
-                          &current_sense->adc_storage.buffer.timer_id);
+                          &current_sense->adc_storage, &current_sense->adc_storage.buffer.timer_id);
 }
 
 StatusCode ltc_adc_init(LtcAdcStorage *storage, const LtcAdcSettings *settings) {

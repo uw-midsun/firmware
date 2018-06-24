@@ -37,7 +37,7 @@ typedef struct {
   bool offset_pending;
   CurrentSenseCallback callback;
   CurrentSenseFaultCallback fault_callback;
-  
+
   // Separate context pointers for different callbacks
   void *context;
   void *fault_context;
@@ -45,16 +45,14 @@ typedef struct {
 
 // Initialize the current sense module. Requires |data| to be calibrated beforehand.
 // |settings| does not need to persist
-StatusCode current_sense_init(CurrentSenseStorage *storage,
-                              const CurrentSenseCalibrationData *data,
+StatusCode current_sense_init(CurrentSenseStorage *storage, const CurrentSenseCalibrationData *data,
                               const LtcAdcSettings *settings);
 
 // Register a callback to run after each sample, along with a fault callback to run when
 // an adc fault occurs
 StatusCode current_sense_register_callback(CurrentSenseStorage *storage,
                                            CurrentSenseCallback callback,
-                                           CurrentSenseFaultCallback fault_callback,
-                                           void *context);
+                                           CurrentSenseFaultCallback fault_callback, void *context);
 
 // Returns the most recent current sample in uA. The status code returned will indcate if
 // the data was obtained from a valid conversion sample
