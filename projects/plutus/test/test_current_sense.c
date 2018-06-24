@@ -115,8 +115,7 @@ void test_current_sense_reset(void) {
 void test_current_sense_fault_callback(void) {
   // Register callback and force a fault
   test_ltc_adc_set_fault_status(true);
-  TEST_ASSERT_OK(
-      current_sense_register_callback(&s_storage, NULL, prv_fault_callback, NULL));
+  TEST_ASSERT_OK(current_sense_register_callback(&s_storage, NULL, prv_fault_callback, NULL));
 
   // Collect samples and tests that the readings fit the linear relationship defined by the
   // calibration data

@@ -23,8 +23,8 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
     }
   }
 
-  soft_timer_start_millis(LTC2484_MAX_CONVERSION_TIME_MS, prv_ltc_adc_read,
-                          storage, &storage->buffer.timer_id);
+  soft_timer_start_millis(LTC2484_MAX_CONVERSION_TIME_MS, prv_ltc_adc_read, storage,
+                          &storage->buffer.timer_id);
 }
 
 StatusCode ltc_adc_init(LtcAdcStorage *storage, const LtcAdcSettings *settings) {
