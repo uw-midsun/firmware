@@ -6,7 +6,7 @@
 #include "thermistor.h"
 #include "unity.h"
 
-#define THERMISTOR_TEMPERATURE_TOLERANCE 5
+#define THERMISTOR_TEMPERATURE_TOLERANCE_DECICELSIUS 5
 
 // The tests cases return different voltage values depending on the inputted adc channel inputs
 // Each value is used for a different test case
@@ -74,7 +74,7 @@ void test_thermistor_normal(void) {
   uint16_t reading = 0;
   TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading);
-  TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 100, reading);
+  TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE_DECICELSIUS, 100, reading);
 }
 
 // Tests the lower bound of the resistance-temperature lookup table (0 deg)
@@ -89,7 +89,7 @@ void test_thermistor_min_temp(void) {
   TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
   TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading);
-  TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 0, reading);
+  TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE_DECICELSIUS, 0, reading);
 }
 
 // Tests the upper bound of the resistance-temperature lookup table (100 deg)
@@ -104,7 +104,7 @@ void test_thermistor_max_temp(void) {
   TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
   TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading);
-  TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 1000, reading);
+  TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE_DECICELSIUS, 1000, reading);
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -121,7 +121,7 @@ void test_thermistor_normal_alt(void) {
 
   uint16_t reading = 0;
   TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
-  TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 100, reading);
+  TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE_DECICELSIUS, 100, reading);
   LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading);
 }
 
@@ -137,7 +137,7 @@ void test_thermistor_min_temp_alt(void) {
   TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R1));
   TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading);
-  TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 0, reading);
+  TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE_DECICELSIUS, 0, reading);
 }
 
 // Tests the upper bound of the resistance-temperature lookup table (100 deg)
@@ -152,7 +152,7 @@ void test_thermistor_max_temp_alt(void) {
   TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R1));
   TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading);
-  TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE, 1000, reading);
+  TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE_DECICELSIUS, 1000, reading);
 }
 
 // Tests for a temperature greater the lookup tables ranges
