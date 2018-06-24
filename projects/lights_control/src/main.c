@@ -19,6 +19,7 @@
 
 #define LIGHTS_SIGNAL_BLINKER_DURATION 500
 #define LIGHTS_SIGNAL_SYNC_COUNT 5
+#define LIGHTS_SIGNAL_NO_SYNC 0
 #define LIGHTS_STROBE_BLINKER_DURATION 500
 
 static LightsSignalFsm s_signal_fsm = { 0 };
@@ -32,17 +33,9 @@ static const GPIOAddress s_board_type_address = { .port = GPIO_PORT_B, .pin = 13
 int main(void) {
   CANSettings can_settings = {
     .bitrate = CAN_HW_BITRATE_500KBPS,
+    .tx = { .port = GPIO_PORT_A, .pin = 12 },
+    .rx = { .port = GPIO_PORT_A, .pin = 11 },
     .rx_event = LIGHTS_EVENT_CAN_RX,
-    // clang-format off
-    .tx = {
-      .port = GPIO_PORT_A,
-      .pin = 12,
-    },
-    .rx = {
-      .port = GPIO_PORT_A,
-      .pin = 11,
-    },
-    // clang-format on
     .tx_event = LIGHTS_EVENT_CAN_TX,
     .fault_event = LIGHTS_EVENT_CAN_FAULT,
     .loopback = false,
@@ -55,11 +48,9 @@ int main(void) {
   event_queue_init();
 
   // Getting board type.
-  GPIOState state = 0;
+  GPIOState state = NUM_GPIO_STATES;
 
-  StatusCode status = 0;
-
-  status = gpio_get_state(&s_board_type_address, &state);
+  StatusCode status = gpio_get_state(&s_board_type_address, &state);
 
   if (!status_ok(status)) {
     LOG_DEBUG("Error getting board type.\n");
@@ -90,8 +81,9 @@ int main(void) {
   }
 
   // Initialize lights_signal_fsm.
-  lights_signal_fsm_init(&s_signal_fsm, LIGHTS_SIGNAL_BLINKER_DURATION,
-                         (board_type == LIGHTS_BOARD_TYPE_FRONT) ? 0 : LIGHTS_SIGNAL_SYNC_COUNT);
+  lights_signal_fsm_init(
+      &s_signal_fsm, LIGHTS_SIGNAL_BLINKER_DURATION,
+      (board_type == LIGHTS_BOARD_TYPE_FRONT) ? LIGHTS_SIGNAL_NO_SYNC : LIGHTS_SIGNAL_SYNC_COUNT);
 
   // Initialize lights_strobe.
   lights_strobe_init(&s_lights_strobe, LIGHTS_STROBE_BLINKER_DURATION);
