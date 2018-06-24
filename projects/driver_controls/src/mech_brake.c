@@ -20,7 +20,7 @@
 #include "wait.h"
 
 static StatusCode prv_lsb_to_position(MechBrakeStorage *storage, int16_t reading,
-                                        int16_t *position) {
+                                      int16_t *position) {
   int16_t input_position = INT16_MAX;
 
   input_position =
@@ -59,11 +59,13 @@ StatusCode mech_brake_init(MechBrakeStorage *storage, MechBrakeSettings *setting
   storage->settings = *settings;
   storage->calibration_data = data;
 
-  storage->lower_bound = -1 * storage->settings.bounds_tolerance * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
-  storage->upper_bound =
-      EE_DRIVE_OUTPUT_DENOMINATOR + storage->settings.bounds_tolerance * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
+  storage->lower_bound =
+      -1 * storage->settings.bounds_tolerance * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
+  storage->upper_bound = EE_DRIVE_OUTPUT_DENOMINATOR +
+                         storage->settings.bounds_tolerance * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
 
-  storage->threshold_position = storage->settings.brake_pressed_threshold * EE_DRIVE_OUTPUT_DENOMINATOR/100;
+  storage->threshold_position =
+      storage->settings.brake_pressed_threshold * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
 
   return ads1015_configure_channel(storage->settings.ads1015, storage->settings.channel, true,
                                    prv_callback_channel, storage);
@@ -76,7 +78,7 @@ StatusCode mech_brake_get_position(MechBrakeStorage *storage, int16_t *position)
 
   int16_t reading = INT16_MIN;
 
-  status_ok_or_return(ads1015_read_raw(storage->settings.ads1015, storage->settings.channel, &reading));
+  status_ok_or_return(
+      ads1015_read_raw(storage->settings.ads1015, storage->settings.channel, &reading));
   return prv_lsb_to_position(storage, reading, position);
-
 }

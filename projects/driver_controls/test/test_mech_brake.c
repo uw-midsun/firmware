@@ -5,6 +5,7 @@
 #include "adc.h"
 #include "ads1015.h"
 #include "ads1015_def.h"
+#include "dc_cfg.h"
 #include "delay.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
@@ -18,7 +19,6 @@
 #include "status.h"
 #include "test_helpers.h"
 #include "unity.h"
-#include "dc_cfg.h"
 
 static MechBrakeStorage s_mech_brake_storage;
 static Ads1015Storage s_ads1015_storage;
@@ -27,7 +27,7 @@ static Ads1015Storage s_ads1015_storage;
 
 static MechBrakeCalibrationData s_calib_data = {
   .zero_value = 0,
-  .hundred_value = 1<<12,
+  .hundred_value = 1 << 12,
 };
 
 // input reading used as a fake input
@@ -88,8 +88,7 @@ void test_mech_brake_get_percentage_invalid_args(void) {
   int16_t percentage;
   // Check for null pointers.
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, mech_brake_get_position(NULL, &percentage));
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
-                    mech_brake_get_position(&s_mech_brake_storage, NULL));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, mech_brake_get_position(&s_mech_brake_storage, NULL));
 }
 
 void test_mech_brake_percentage_in_released_zone(void) {

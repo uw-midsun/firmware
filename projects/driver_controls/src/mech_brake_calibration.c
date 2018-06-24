@@ -64,7 +64,7 @@ StatusCode mech_brake_sample(MechBrakeCalibrationStorage *storage,
   int16_t max_reading = storage->data[point].max_reading;
   int16_t min_reading = storage->data[point].min_reading;
 
-  storage->data[point].average_value = (max_reading+min_reading)/2;
+  storage->data[point].average_value = (max_reading + min_reading) / 2;
 
   return STATUS_CODE_OK;
 }
