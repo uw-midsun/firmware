@@ -1,6 +1,9 @@
 #pragma once
 
-// LTC 2484 calibration module
+// LTC 2484 calibration module. Samples at fixed points in order to obtain data
+// for two-point current calibration
+
+// Requires gpio, interrupts, and soft timers to be initialized
 
 #include <assert.h>
 #include "current_sense.h"
