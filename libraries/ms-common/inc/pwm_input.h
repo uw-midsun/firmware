@@ -15,6 +15,6 @@ StatusCode pwm_input_init();
 // Handle IRQHandler
 StatusCode pwm_input_handle_interrupt();
 
-StatusCode pwm_input_get_period();
+uint32_t pwm_input_get_period();
 
-StatusCode pwm_input_get_dc();
+uint32_t pwm_input_get_dc();

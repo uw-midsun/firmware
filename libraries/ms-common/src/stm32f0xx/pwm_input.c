@@ -13,7 +13,7 @@ static uint32_t period = 0;
 static uint32_t dc = 0;
 
 StatusCode pwm_input_init() {
-  RCC_APB2PeriphClockCmd(RCC_APB1Periph_TIM1, ENABLE);
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);
 
   TIM_ICInitTypeDef tim_icinit = {
     .TIM_Channel = TIM_Channel_2,
@@ -28,7 +28,7 @@ StatusCode pwm_input_init() {
   TIM_SelectSlaveMode(TIM1, TIM_SlaveMode_Reset);
   TIM_SelectMasterSlaveMode(TIM1, TIM_MasterSlaveMode_Enable);
   TIM_Cmd(TIM1, ENABLE);
-  TIM_ITConfig(TIM1, TIM_IT_CC2, ENABLE)
+  TIM_ITConfig(TIM1, TIM_IT_CC2, ENABLE);
 
   return STATUS_CODE_OK;
 }
