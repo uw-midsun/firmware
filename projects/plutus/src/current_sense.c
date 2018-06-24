@@ -33,7 +33,7 @@ static void prv_fault_handle(void *context) {
 
   storage->data_valid = false;
   if (storage->fault_callback != NULL) {
-    storage->fault_callback(context);
+    storage->fault_callback(storage->fault_context);
   }
   return;
 }
@@ -92,7 +92,7 @@ StatusCode current_sense_get_value(CurrentSenseStorage *storage, int32_t *curren
   }
 
   if (storage->data_valid == false) {
-    return STATUS_CODE_TIMEOUT;
+    return status_code(STATUS_CODE_TIMEOUT);
   }
 
   *current = storage->value.current;

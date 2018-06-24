@@ -10,7 +10,10 @@
 #include "ltc_adc.h"
 #include "status.h"
 
+// Runs when a valid sample has been taken
 typedef void (*CurrentSenseCallback)(int32_t current, void *context);
+
+// Runs when an adc fault has occured
 typedef void (*CurrentSenseFaultCallback)(void *context);
 
 // Voltage-current point used for calculations
@@ -34,7 +37,10 @@ typedef struct {
   bool offset_pending;
   CurrentSenseCallback callback;
   CurrentSenseFaultCallback fault_callback;
+  
+  // Separate context pointers for different callbacks
   void *context;
+  void *fault_context;
 } CurrentSenseStorage;
 
 // Initialize the current sense module. Requires |data| to be calibrated beforehand.
