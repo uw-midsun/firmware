@@ -28,7 +28,6 @@ typedef struct MechBrakeCalibrationStorage {
   MechBrakeCalibrationPoint sample_point;
 
   MechBrakeCalibrationPointData data[NUM_MECH_CALIBRATION_POINTS];
-
 } MechBrakeCalibrationStorage;
 
 StatusCode mech_brake_calibration_init(MechBrakeCalibrationStorage *storage,
