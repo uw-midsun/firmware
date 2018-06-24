@@ -119,7 +119,7 @@ void test_current_sense_fault_callback(void) {
   // Collect samples and tests that the readings fit the linear relationship defined by the
   // calibration data
 
-  delay_ms(100);
+  delay_ms(LTC2484_MAX_CONVERSION_TIME_MS);
 
   TEST_ASSERT_TRUE(s_callback_fault);
 }
