@@ -3,7 +3,7 @@
 #include "pwm_input.h"
 #include "interrupt.h"
 
-TIM1_IRQHandler(void) {
+void TIM1_IRQHandler(void) {
   pwm_input_handle_interrupt();
 }
 
