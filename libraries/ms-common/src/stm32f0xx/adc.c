@@ -22,6 +22,7 @@ typedef struct ADCInterrupt {
 typedef struct ADCStatus {
   uint32_t sequence;
   bool continuous;
+  volatile bool conv_complete;
 } ADCStatus;
 
 static ADCInterrupt s_adc_interrupts[NUM_ADC_CHANNELS];
@@ -189,8 +190,9 @@ StatusCode adc_read_raw(ADCChannel adc_channel, uint16_t *reading) {
   }
 
   if (!s_adc_status.continuous) {
+    s_adc_status.conv_complete = false;
     ADC_StartOfConversion(ADC1);
-    while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOSEQ)) {
+    while (!s_adc_status.conv_complete) {
     }
   }
 
@@ -252,6 +254,7 @@ void ADC1_COMP_IRQHandler() {
 
   if (ADC_GetITStatus(ADC1, ADC_IT_EOSEQ)) {
     s_adc_status.sequence = ADC1->CHSELR;
+    s_adc_status.conv_complete = true;
     ADC_ClearITPendingBit(ADC1, ADC_IT_EOSEQ);
   }
 }
