@@ -15,7 +15,6 @@ int main(void) {
   pwm_set_dc(PWM_TIMER_3, 50);
   gpio_init();
   interrupt_init();
-  pwm_input_init();
 
 // Use port for Green LED
   GPIOAddress output = {
@@ -29,6 +28,19 @@ int main(void) {
   };
 
   gpio_init_pin(&output, &output_settings);
+
+  GPIOAddress input = {
+    .port = GPIO_PORT_A,
+    .pin = 9
+  };
+
+  GPIOSettings input_settings = {
+    .direction = GPIO_DIR_IN,
+    .alt_function = GPIO_ALTFN_2
+  };
+
+  gpio_init_pin(&input, &input_settings);
+  pwm_input_init();
 
   // Use TIM1_CH2 to use pin PA9
 
