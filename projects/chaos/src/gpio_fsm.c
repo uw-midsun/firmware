@@ -10,7 +10,7 @@
 #include "gpio_seq.h"
 #include "misc.h"
 
-#define GPIO_FSM_SLEW_RATE_US 10
+#define GPIO_FSM_SLEW_RATE_US SOFT_TIMER_MIN_TIME_US
 
 static FSM s_gpio_fsm;
 
