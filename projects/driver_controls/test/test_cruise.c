@@ -46,13 +46,13 @@ void test_cruise_basic(void) {
   // Target should now be higher
   Event e = { .id = INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_PLUS };
   cruise_handle_event(cruise, &e);
-  delay_ms(1);
+  delay_ms(5);
   TEST_ASSERT(target < cruise_get_target_cms(cruise));
 
   // We should never have a negative cruise target
   e.id = INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_MINUS;
   cruise_handle_event(cruise, &e);
-  delay_ms(1);
+  delay_ms(5);
   TEST_ASSERT_EQUAL(0, cruise_get_target_cms(cruise));
 }
 
@@ -74,7 +74,7 @@ void test_cruise_can(void) {
 
   // Handle negative velocity properly
   LOG_DEBUG("Negative velocity (average positive)\n");
-  CAN_TRANSMIT_MOTOR_VELOCITY((uint32_t)-10, 20);
+  CAN_TRANSMIT_MOTOR_VELOCITY((uint16_t)-10, 20);
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
   TEST_ASSERT_TRUE(cruise_handle_event(cruise, &event_set));
   TEST_ASSERT_OK(event_process(&e));
@@ -85,7 +85,7 @@ void test_cruise_can(void) {
 
   // If average velocity is negative, cap to 0 (ex. reversing)
   LOG_DEBUG("Negative velocity (cap to 0)\n");
-  CAN_TRANSMIT_MOTOR_VELOCITY((uint32_t)-40, (uint32_t)-40);
+  CAN_TRANSMIT_MOTOR_VELOCITY((uint16_t)-40, (uint16_t)-40);
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
   TEST_ASSERT_TRUE(cruise_handle_event(cruise, &event_set));
   TEST_ASSERT_OK(event_process(&e));

@@ -25,7 +25,11 @@ static void prv_periodic_tx_debug(SoftTimerID timer_id, void *context) {
                             result->temp_voltages[s_telemetry_counter]);
     s_telemetry_counter++;
   } else if (s_telemetry_counter == PLUTUS_CFG_AFE_TOTAL_CELLS) {
-    CAN_TRANSMIT_BATTERY_CURRENT((uint32_t)result->current);
+    uint32_t total_voltage = 0;
+    for (size_t i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {
+      total_voltage += result->cell_voltages[i];
+    }
+    CAN_TRANSMIT_BATTERY_AGGREGATE_VC(total_voltage, (uint32_t)result->current);
     s_telemetry_counter = 0;
   }
 
