@@ -23,6 +23,7 @@ typedef struct {
   volatile uint8_t rx_buf[UART_MAX_BUFFER_LEN];
 
   uint8_t rx_line_buf[UART_MAX_BUFFER_LEN + 1];
+  char delimiter;
 } UARTStorage;
 
 typedef struct {
@@ -42,6 +43,10 @@ StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage
 
 // Overrides any currently set handler
 StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *context);
+
+// Sets the delimiter used to break up lines between callbacks
+// Note that the default delimiter is \n
+StatusCode uart_set_delimiter(UARTPort uart, uint8_t delimiter);
 
 // Non-blocking TX
 StatusCode uart_tx(UARTPort uart, uint8_t *tx_data, size_t len);
