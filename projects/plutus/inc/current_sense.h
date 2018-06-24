@@ -1,14 +1,19 @@
 #pragma once
 
 // Current sense module for the LTC2484 ADC.
+
 // Requires gpio, interrupts, and soft timers to be initialized
+
+// In the event of an fault in sampling data from the adc (i.e. a disconnection occurs), fault
+// callbacks can be defined to handle erroneous behaviour
 
 #include "ltc_adc.h"
 #include "status.h"
 
-// If the adc has not produced valid data (i.e. timeout), then |current| will be a null pointer
 typedef void (*CurrentSenseCallback)(int32_t current, void *context);
+typedef void (*CurrentSenseFaultCallback)(void *context);
 
+// Voltage-current point used for calculations
 typedef struct {
   int32_t voltage;
   int32_t current;
@@ -28,23 +33,27 @@ typedef struct {
   int32_t offset;
   bool offset_pending;
   CurrentSenseCallback callback;
-  CurrentSenseCallback fault_callback;  // Called in the event of an adc timeout
+  CurrentSenseFaultCallback fault_callback;
   void *context;
 } CurrentSenseStorage;
 
 // Initialize the current sense module. Requires |data| to be calibrated beforehand.
-StatusCode current_sense_init(CurrentSenseStorage *storage, const CurrentSenseCalibrationData *data,
+// |settings| does not need to persist
+StatusCode current_sense_init(CurrentSenseStorage *storage,
+                              const CurrentSenseCalibrationData *data,
                               const LtcAdcSettings *settings);
 
-// Register a callback to run when new data is available
+// Register a callback to run after each sample, along with a fault callback to run when
+// an adc fault occurs
 StatusCode current_sense_register_callback(CurrentSenseStorage *storage,
                                            CurrentSenseCallback callback,
-                                           CurrentSenseCallback fault_callback, void *context);
+                                           CurrentSenseFaultCallback fault_callback,
+                                           void *context);
 
-// Returns the most recent current sample in uA. Can only be called once per valid converion, or
-// |data_valid| will return as false
-StatusCode current_sense_get_value(CurrentSenseStorage *storage, bool *data_valid,
-                                   int32_t *current);
+// Returns the most recent current sample in uA. The status code returned will indcate if
+// the data was obtained from a valid conversion sample
+StatusCode current_sense_get_value(CurrentSenseStorage *storage, int32_t *current);
 
-// Call after chip reset to update zero offset value
+// Because the zero-point changes each time the chip is reset, this function can be used to
+// ensure the calibration data does not skew the output due to an offset mismatch
 StatusCode current_sense_zero_reset(CurrentSenseStorage *storage);

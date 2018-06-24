@@ -8,15 +8,6 @@
 
 static void prv_calculate_current(int32_t *value, void *context) {
   CurrentSenseStorage *storage = (CurrentSenseStorage *)context;
-  Status status = status_get();
-
-  if (status.code == STATUS_CODE_TIMEOUT) {
-    storage->data_valid = false;
-    if (storage->fault_callback != NULL) {
-      storage->fault_callback(storage->value.current, storage->context);
-    }
-    return;
-  }
 
   // Update the offset if the flag is set
   if (storage->offset_pending) {
@@ -35,6 +26,16 @@ static void prv_calculate_current(int32_t *value, void *context) {
   if (storage->callback != NULL) {
     storage->callback(storage->value.current, storage->context);
   }
+}
+
+static void prv_fault_handle(void *context) {
+  CurrentSenseStorage *storage = (CurrentSenseStorage *)context;
+
+  storage->data_valid = false;
+  if (storage->fault_callback != NULL) {
+    storage->fault_callback(context);
+  }
+  return;
 }
 
 StatusCode current_sense_init(CurrentSenseStorage *storage, const CurrentSenseCalibrationData *data,
@@ -61,6 +62,8 @@ StatusCode current_sense_init(CurrentSenseStorage *storage, const CurrentSenseCa
   // Register callbacks
   status_ok_or_return(
       ltc_adc_register_callback(&storage->adc_storage, prv_calculate_current, storage));
+  status_ok_or_return(
+      ltc_adc_register_fault_callback(&storage->adc_storage, prv_fault_handle, storage));
 
   return STATUS_CODE_OK;
 }
@@ -68,7 +71,8 @@ StatusCode current_sense_init(CurrentSenseStorage *storage, const CurrentSenseCa
 // Register a callback to run when new data is available
 StatusCode current_sense_register_callback(CurrentSenseStorage *storage,
                                            CurrentSenseCallback callback,
-                                           CurrentSenseCallback fault_callback, void *context) {
+                                           CurrentSenseFaultCallback fault_callback,
+                                           void *context) {
   if (storage == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -82,17 +86,16 @@ StatusCode current_sense_register_callback(CurrentSenseStorage *storage,
   return STATUS_CODE_OK;
 }
 
-StatusCode current_sense_get_value(CurrentSenseStorage *storage, bool *data_valid,
-                                   int32_t *current) {
+StatusCode current_sense_get_value(CurrentSenseStorage *storage, int32_t *current) {
   if (storage == NULL || current == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  if (storage->data_valid == true) {
-    *current = storage->value.current;
+  if (storage->data_valid == false) {
+    return STATUS_CODE_TIMEOUT;
   }
 
-  *data_valid = storage->data_valid;
+  *current = storage->value.current;
 
   return STATUS_CODE_OK;
 }

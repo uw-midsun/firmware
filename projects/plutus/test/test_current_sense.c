@@ -43,7 +43,7 @@ static void prv_callback(int32_t current, void *context) {
   }
 }
 
-static void prv_fault_callback(int32_t current, void *context) {
+static void prv_fault_callback(void *context) {
   LOG_DEBUG("Fault callback\n");
 
   if (s_callback_runs < TEST_CURRENT_SENSE_NUM_SAMPLES) {
@@ -93,26 +93,21 @@ void test_current_sense_reset(void) {
 
   // Since the input signal is exactly equal to the offset, the current must be equal to zero
   int32_t current;
-  bool valid;
-  current_sense_get_value(&s_storage, &valid, &current);
-
-  TEST_ASSERT_TRUE(valid);
+  TEST_ASSERT_OK(current_sense_get_value(&s_storage, &current));
   TEST_ASSERT_EQUAL(0, current);
 
   // Test with negative current
   test_ltc_adc_set_input_voltage(900);
   delay_ms(LTC2484_MAX_CONVERSION_TIME_MS);
-  current_sense_get_value(&s_storage, &valid, &current);
+  TEST_ASSERT_OK(current_sense_get_value(&s_storage, &current));
 
-  TEST_ASSERT_TRUE(valid);
   TEST_ASSERT_TRUE(current < 0);
 
   // Test with positive current
   test_ltc_adc_set_input_voltage(1100);
   delay_ms(LTC2484_MAX_CONVERSION_TIME_MS);
-  current_sense_get_value(&s_storage, &valid, &current);
+  TEST_ASSERT_OK(current_sense_get_value(&s_storage, &current));
 
-  TEST_ASSERT_TRUE(valid);
   TEST_ASSERT_TRUE(current > 0);
 }
 

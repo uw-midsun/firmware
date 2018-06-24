@@ -67,7 +67,7 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_ltc_adc_characterize_ripple(void) {
-  TEST_ASSERT_OK(ltc_adc_register_callback(&s_adc, prv_adc_callback, (void *)&s_storage));
+  TEST_ASSERT_OK(ltc_adc_register_callback(&s_adc, prv_adc_callback, NULL, (void *)&s_storage));
 
   while (s_storage.samples < TEST_LTC_ADC_NUM_SAMPLES) {
     // block until TEST_LTC_ADC_NUM_SAMPLES samples have been taken
