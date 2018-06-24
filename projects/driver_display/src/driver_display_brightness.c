@@ -10,11 +10,12 @@ static void prv_adjust_brightness(DriverDisplayBrightnessStorage *storage) {
 
   // Convert the raw reading into a percentage of max reading to then be passed into pwm_set_dc to
   // adjust brightness accordingly
-  uint16_t percent_reading = (((reading - storage->calibration_data->min) * 100) /
-                              (storage->calibration_data->max - storage->calibration_data->min));
+  uint16_t percent_reading = (((reading - storage->calibration_data->min) * 10) /
+                              (storage->calibration_data->max - storage->calibration_data->min)) *
+                             10;
 
   // Temp for debugging
-  // printf("adc reading: %u \n", storage.percent_reading);
+  // printf("adc reading: %u \n", percent_reading);
 
   // Set the screen brightness through PWM change
   for (uint8_t i = 0; i < NUM_DRIVER_DISPLAY_BRIGHTNESS_SCREENS; i++) {
@@ -27,6 +28,7 @@ static void prv_adjust_brightness(DriverDisplayBrightnessStorage *storage) {
 static void prv_timer_callback(SoftTimerID timer_id, void *context) {
   DriverDisplayBrightnessStorage *storage = (DriverDisplayBrightnessStorage *)context;
   prv_adjust_brightness(storage);
+
   // Schedule new timer
   soft_timer_start_seconds(storage->settings->update_period_s, prv_timer_callback, (void *)storage,
                            NULL);
@@ -41,8 +43,6 @@ static void prv_brightness_callback(ADCChannel adc_channel, void *context) {
 StatusCode driver_display_brightness_init(
     DriverDisplayBrightnessStorage *storage, const DriverDisplayBrightnessSettings *settings,
     const DriverDisplayBrightnessCalibrationData *calibration_data) {
-  printf("initialized \n");
-
   storage->calibration_data = calibration_data;
   storage->settings = settings;
 

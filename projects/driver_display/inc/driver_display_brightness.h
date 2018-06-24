@@ -1,6 +1,7 @@
 #pragma once
 // Module used to control the brightness of the driver display screens.
-// Also defines display screen parameters such as frequency and number of screens
+// Requires pwm, gpios and soft timers to be initialized before the module can be run.
+// Calibration module must be run to update upper and lower bounds of calibration data
 
 #include "adc.h"
 #include "gpio.h"
@@ -33,6 +34,10 @@ typedef struct DriverDisplayBrightnessStorage {
   ADCChannel adc_channel;
 } DriverDisplayBrightnessStorage;
 
+// Initializes the brightness module
+// GPIOs, PWM and ADC should be initialized beforehand.
+// Controls all display screen brightness levels and automatically adjusts based on ambient
+// brightness
 StatusCode driver_display_brightness_init(
     DriverDisplayBrightnessStorage *storage, const DriverDisplayBrightnessSettings *settings,
     const DriverDisplayBrightnessCalibrationData *calibration_data);
