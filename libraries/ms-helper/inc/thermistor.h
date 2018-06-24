@@ -27,9 +27,8 @@ typedef struct ThermistorStorage {
 StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gpio,
                            ThermistorPosition position);
 
-// Fetch the temperature reading in milliCelsius from the MCU's ADC
-StatusCode thermistor_get_temp(ThermistorStorage *storage, uint16_t *temperature_millicelcius);
+// Fetch the temperature reading in decicelsius from the MCU's ADC
+StatusCode thermistor_get_temp(ThermistorStorage *storage, uint16_t *deci_celsius);
 
-// Calculate the temperature in hundreds of milliCelsius from ohms
-StatusCode thermistor_calculate_temp(uint16_t thermistor_resistance_ohms,
-                                     uint16_t *temperature_millicelcius);
+// Calculate the temperature in decicelsius from ohms
+StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms, uint16_t *deci_celsius);
