@@ -23,7 +23,7 @@
 
 static MechBrakeStorage s_mech_brake_storage;
 static Ads1015Storage s_ads1015_storage;
-static MechBrakeCalibrationData s_calibration_data;
+MechBrakeCalibrationData s_calibration_data;
 
 #define TEST_MECH_BRAKE_TOLERANCE 2
 #define TEST_MECH_BRAKE_ZERO_VALUE 0

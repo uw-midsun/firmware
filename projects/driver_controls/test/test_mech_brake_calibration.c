@@ -15,6 +15,7 @@
 #include "mech_brake_calibration.h"
 #include "soft_timer.h"
 #include "unity.h"
+#include "dc_cfg.h"
 
 static Ads1015Storage s_ads1015_storage;
 static MechBrakeStorage mech_brake_storage;
