@@ -34,6 +34,7 @@ typedef struct {
   // Callback that is run whenever we encounter an adc fault
   LtcAdcFaultCallback fault_callback;
   void *context;
+  void *fault_context;
 
   GPIOAddress cs;
   GPIOAddress miso;

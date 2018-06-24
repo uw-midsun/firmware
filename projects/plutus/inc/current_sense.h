@@ -37,10 +37,7 @@ typedef struct {
   bool offset_pending;
   CurrentSenseCallback callback;
   CurrentSenseFaultCallback fault_callback;
-
-  // Separate context pointers for different callbacks
   void *context;
-  void *fault_context;
 } CurrentSenseStorage;
 
 // Initialize the current sense module. Requires |data| to be calibrated beforehand.

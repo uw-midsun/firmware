@@ -55,7 +55,6 @@ StatusCode ltc_adc_register_callback(LtcAdcStorage *storage, LtcAdcCallback call
   return STATUS_CODE_OK;
 }
 
-// Register a callback to be run whenever there is a fault
 StatusCode ltc_adc_register_fault_callback(LtcAdcStorage *storage,
                                            LtcAdcFaultCallback fault_callback, void *context) {
   if (storage == NULL) {
@@ -64,7 +63,7 @@ StatusCode ltc_adc_register_fault_callback(LtcAdcStorage *storage,
 
   bool disabled = critical_section_start();
   storage->fault_callback = fault_callback;
-  storage->context = context;
+  storage->fault_context = context;
   critical_section_end(disabled);
 
   return STATUS_CODE_OK;

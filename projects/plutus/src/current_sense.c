@@ -33,7 +33,7 @@ static void prv_fault_handle(void *context) {
 
   storage->data_valid = false;
   if (storage->fault_callback != NULL) {
-    storage->fault_callback(storage->fault_context);
+    storage->fault_callback(storage->context);
   }
   return;
 }
