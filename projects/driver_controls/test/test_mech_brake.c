@@ -9,6 +9,7 @@
 #include "delay.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
+#include "exported_enums.h"
 #include "gpio_it.h"
 #include "i2c.h"
 #include "input_event.h"
@@ -19,7 +20,6 @@
 #include "status.h"
 #include "test_helpers.h"
 #include "unity.h"
-#include "exported_enums.h"
 
 static MechBrakeStorage s_mech_brake_storage;
 static Ads1015Storage s_ads1015_storage;

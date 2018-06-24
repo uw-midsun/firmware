@@ -59,20 +59,17 @@ StatusCode mech_brake_init(MechBrakeStorage *storage, const MechBrakeSettings *s
   storage->channel = settings->channel;
   storage->ads1015 = settings->ads1015;
 
-
-  // Since the minimun value of the position is expected to be 0, the lower bound is the negative value of the tolerance.
-  // and upper bound is EE_DRIVE_OUTPUT_DENOMINATOR plus the tolerance.
-  storage->lower_bound =
-      -1 * settings->bounds_tolerance * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
-  storage->upper_bound = EE_DRIVE_OUTPUT_DENOMINATOR +
-                         settings->bounds_tolerance * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
-
+  // Since the minimun value of the position is expected to be 0, the lower bound is the negative
+  // value of the tolerance. and upper bound is EE_DRIVE_OUTPUT_DENOMINATOR plus the tolerance.
+  storage->lower_bound = -1 * settings->bounds_tolerance * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
+  storage->upper_bound =
+      EE_DRIVE_OUTPUT_DENOMINATOR + settings->bounds_tolerance * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
 
   storage->threshold_position =
       settings->brake_pressed_threshold * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
 
-  return ads1015_configure_channel(storage->ads1015, storage->channel, true,
-                                   prv_callback_channel, storage);
+  return ads1015_configure_channel(storage->ads1015, storage->channel, true, prv_callback_channel,
+                                   storage);
 }
 
 StatusCode mech_brake_get_position(MechBrakeStorage *storage, int16_t *position) {
@@ -82,7 +79,6 @@ StatusCode mech_brake_get_position(MechBrakeStorage *storage, int16_t *position)
 
   int16_t reading = INT16_MIN;
 
-  status_ok_or_return(
-      ads1015_read_raw(storage->ads1015, storage->channel, &reading));
+  status_ok_or_return(ads1015_read_raw(storage->ads1015, storage->channel, &reading));
   return prv_lsb_to_position(storage, reading, position);
 }

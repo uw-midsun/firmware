@@ -25,10 +25,11 @@ typedef struct MechBrakeCalibrationData {
 
 typedef struct MechBrakeSettings {
   Ads1015Storage *ads1015;
-  // Value above which the brake_pressed event is raised and below which the brake_unpressed event is raised.
-  int16_t brake_pressed_threshold;  
+  // Value above which the brake_pressed event is raised and below which the brake_unpressed event
+  // is raised.
+  int16_t brake_pressed_threshold;
   // A tolerance between 0 - 100 for the lower and upper bound of the position.
-  int16_t bounds_tolerance;  
+  int16_t bounds_tolerance;
   Ads1015Channel channel;
 } MechBrakeSettings;
 
@@ -37,9 +38,9 @@ typedef struct MechBrakeStorage {
   Ads1015Storage *ads1015;
   Ads1015Channel channel;
   // minimun value of the position based on the tolerance value.
-  int16_t lower_bound;  
+  int16_t lower_bound;
   // maximum value of the position based on the tolerance value.
-  int16_t upper_bound;  
+  int16_t upper_bound;
   int16_t threshold_position;
 } MechBrakeStorage;
 
