@@ -62,13 +62,13 @@ void test_throttle_calibration_run(void) {
   throttle_calibration_sample(&s_calibration_storage, THROTTLE_CALIBRATION_POINT_FULL_ACCEL);
   LOG_DEBUG("Completed sampling\n");
 
-  DcCalibBlob *calib_blob = calib_blob();
-  throttle_calibration_result(&s_calibration_storage, &calib_blob->throttle_calib);
+  DcCalibBlob *dc_calib_blob = calib_blob();
+  throttle_calibration_result(&s_calibration_storage, &dc_calib_blob->throttle_calib);
 
   LOG_DEBUG("Stored throttle calib data\n");
   calib_commit();
 
-  throttle_init(&s_throttle_storage, &calib_blob->throttle_calib, &s_ads1015_storage);
+  throttle_init(&s_throttle_storage, &dc_calib_blob->throttle_calib, &s_ads1015_storage);
 
   while (true) {
     ThrottlePosition position = { .zone = NUM_THROTTLE_ZONES };
