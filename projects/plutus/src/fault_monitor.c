@@ -36,16 +36,35 @@ static void prv_extract_aux_result(uint16_t *result_arr, size_t len, void *conte
   // }
 }
 
-static void prv_extract_current(int32_t *value, void *context) {
+static void prv_extract_current(int32_t value, void *context) {
   FaultMonitorStorage *storage = context;
 
-  storage->result.current = *value;
+  storage->result.current = value;
+  storage->result.charging = storage->result.current < storage->min_charge_current;
+
+  if (storage->result.current > storage->charge_current_limit || storage->result.current < storage->discharge_current_limit) {
+    bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
+                            EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC);
+  } else {
+    bps_heartbeat_clear_fault(storage->settings.bps_heartbeat,
+                            EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC);
+  }
+}
+
+static void prv_handle_adc_timeout(void *context) {
+  FaultMonitorStorage *storage = context;
+
+  bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
+                            EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC);
 }
 
 StatusCode fault_monitor_init(FaultMonitorStorage *storage, const FaultMonitorSettings *settings) {
   storage->settings = *settings;
+  storage->charge_current_limit = settings->overcurrent_charge * 1000;
+  storage->discharge_current_limit = settings->overcurrent_discharge * -1000;
+  storage->min_charge_current = -1 * settings->charge_current_deadzone;
 
-  ltc_adc_register_callback(storage->settings.ltc_adc, prv_extract_current, storage);
+  current_sense_register_callback(storage->settings.current_sense, prv_extract_current, prv_handle_adc_timeout, storage);
 
   ltc_afe_set_result_cbs(storage->settings.ltc_afe, prv_extract_cell_result, prv_extract_aux_result,
                          storage);

@@ -1,5 +1,5 @@
 #pragma once
-// #define PLUTUS_CFG_DEBUG_PACK
+#define PLUTUS_CFG_DEBUG_PACK
 // #define PLUTUS_CFG_STANDALONE
 
 #include "adc_cfg.h"

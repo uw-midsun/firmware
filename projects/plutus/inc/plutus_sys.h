@@ -21,8 +21,8 @@
 #include "can.h"
 #include "heartbeat_rx.h"
 #include "killswitch.h"
-#include "ltc_adc.h"
 #include "ltc_afe.h"
+#include "current_sense.h"
 #include "sequenced_relay.h"
 
 typedef enum {
@@ -34,7 +34,7 @@ typedef enum {
 typedef struct PlutusSysStorage {
   CANStorage can;
   LtcAfeStorage ltc_afe;
-  LtcAdcStorage ltc_adc;
+  CurrentSenseStorage current_sense;
   BpsHeartbeatStorage bps_heartbeat;
   SequencedRelayStorage relay;
 

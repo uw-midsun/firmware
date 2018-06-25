@@ -45,7 +45,7 @@ typedef enum {
 
 static GpioExpanderStorage s_console_expander;
 static CenterConsoleStorage s_console;
-static CalibStorage s_calib;
+static DcCalibBlob s_calib_blob;
 static Ads1015Storage s_pedal_ads1015;
 static EventArbiterStorage s_event_arbiter;
 static FSM s_fsms[NUM_DRIVER_CONTROLS_FSMS];
@@ -70,7 +70,7 @@ int main(void) {
   soft_timer_init();
   event_queue_init();
 
-  calib_init(&s_calib);
+  calib_init(&s_calib_blob, sizeof(s_calib_blob));
 
   const CANSettings can_settings = {
     .device_id = DC_CFG_CAN_DEVICE_ID,
@@ -110,7 +110,8 @@ int main(void) {
 
   GPIOAddress pedal_ads1015_ready = DC_CFG_PEDAL_ADC_RDY_PIN;
   ads1015_init(&s_pedal_ads1015, DC_CFG_I2C_BUS_PORT, DC_CFG_PEDAL_ADC_ADDR, &pedal_ads1015_ready);
-  throttle_init(throttle_global(), &calib_blob(&s_calib)->throttle_calib, &s_pedal_ads1015);
+  DcCalibBlob *calib_blob = calib_blob();
+  throttle_init(throttle_global(), &calib_blob->throttle_calib, &s_pedal_ads1015);
 
   cruise_init(cruise_global());
   drive_output_init(drive_output_global(), INPUT_EVENT_DRIVE_WATCHDOG_FAULT,

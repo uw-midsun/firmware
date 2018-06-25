@@ -45,15 +45,20 @@ int main(void) {
     const FaultMonitorSettings fault_settings = {
       .bps_heartbeat = &s_plutus.bps_heartbeat,
       .ltc_afe = &s_plutus.ltc_afe,
-      .ltc_adc = &s_plutus.ltc_adc,
+      .current_sense = &s_plutus.current_sense,
 
       .overvoltage = PLUTUS_CFG_CELL_OVERVOLTAGE,
       .undervoltage = PLUTUS_CFG_CELL_UNDERVOLTAGE,
+
+      .overcurrent_charge = PLUTUS_CFG_OVERCURRENT_DISCHARGE,
+      .overcurrent_discharge = PLUTUS_CFG_OVERCURRENT_CHARGE,
     };
 
     fault_monitor_init(&s_fault_monitor, &fault_settings);
     soft_timer_start_millis(PLUTUS_CFG_TELEMETRY_PERIOD_MS, prv_periodic_tx_debug, NULL, NULL);
   }
+
+  current_sense_zero_reset(&s_plutus.current_sense);
 
   Event e = { 0 };
   while (true) {
