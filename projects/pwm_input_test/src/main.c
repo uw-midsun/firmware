@@ -44,7 +44,7 @@ int main(void) {
 
   // Pray this works
   for (;;) {
-    wait();
+    
   }
 
 }
