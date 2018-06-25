@@ -3,9 +3,9 @@
 #include <string.h>
 
 #include "critical_section.h"
+#include "log.h"
 #include "status.h"
 #include "wait.h"
-#include "log.h"
 
 static void prv_calculate_current(int32_t *value, void *context) {
   CurrentSenseStorage *storage = (CurrentSenseStorage *)context;

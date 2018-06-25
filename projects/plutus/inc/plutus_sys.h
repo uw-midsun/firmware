@@ -19,10 +19,10 @@
 // * Killswitch bypass
 #include "bps_heartbeat.h"
 #include "can.h"
+#include "current_sense.h"
 #include "heartbeat_rx.h"
 #include "killswitch.h"
 #include "ltc_afe.h"
-#include "current_sense.h"
 #include "sequenced_relay.h"
 
 typedef enum {

@@ -5,9 +5,9 @@
 #include "gpio_it.h"
 #include "interrupt.h"
 #include "killswitch.h"
+#include "plutus_calib.h"
 #include "plutus_event.h"
 #include "soft_timer.h"
-#include "plutus_calib.h"
 
 // Board-specific details
 typedef struct PlutusSysSpecifics {
@@ -133,7 +133,8 @@ StatusCode plutus_sys_init(PlutusSysStorage *storage, PlutusSysType type) {
       .spi_baudrate = PLUTUS_CFG_CURRENT_SENSE_SPI_BAUDRATE,  //
       .filter_mode = LTC_ADC_FILTER_50HZ_60HZ,                //
     };
-    status_ok_or_return(current_sense_init(&storage->current_sense, &calib_blob.current_calib, &adc_settings));
+    status_ok_or_return(
+        current_sense_init(&storage->current_sense, &calib_blob.current_calib, &adc_settings));
 
     status_ok_or_return(bps_heartbeat_init(&storage->bps_heartbeat, &storage->relay,
                                            PLUTUS_CFG_HEARTBEAT_PERIOD_MS,

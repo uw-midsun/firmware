@@ -1,5 +1,6 @@
 #include "ads1015.h"
 #include "calib.h"
+#include "dc_calib.h"
 #include "delay.h"
 #include "event_queue.h"
 #include "gpio.h"
@@ -11,7 +12,6 @@
 #include "throttle.h"
 #include "throttle_calibration.h"
 #include "unity.h"
-#include "dc_calib.h"
 
 static Ads1015Storage s_ads1015_storage;
 static ThrottleStorage s_throttle_storage;
