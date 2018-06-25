@@ -4,21 +4,21 @@
 // pressed and unpressed.
 
 #include "ads1015.h"
+#include "dc_calib.h"
 #include "dc_cfg.h"
 #include "delay.h"
 #include "event_arbiter.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "i2c.h"
+#include "input_event.h"
 #include "interrupt.h"
 #include "log.h"
 #include "mech_brake.h"
 #include "mech_brake_calibration.h"
 #include "soft_timer.h"
-#include "unity.h"
 #include "test_helpers.h"
-#include "dc_calib.h"
-#include "input_event.h"
+#include "unity.h"
 
 static Ads1015Storage s_ads1015_storage;
 static MechBrakeStorage s_mech_brake_storage;
@@ -69,7 +69,8 @@ void test_mech_brake_calibration_run(void) {
 
   mech_brake_get_calib_data(&s_calibration_storage, &s_calib_blob.mech_brake_calib);
 
-  LOG_DEBUG("%d %d\n", s_calib_blob.mech_brake_calib.zero_value, s_calib_blob.mech_brake_calib.hundred_value);
+  LOG_DEBUG("%d %d\n", s_calib_blob.mech_brake_calib.zero_value,
+            s_calib_blob.mech_brake_calib.hundred_value);
 }
 
 void test_mech_brake_calibration_verify(void) {
@@ -78,7 +79,8 @@ void test_mech_brake_calibration_verify(void) {
     .channel = ADS1015_CHANNEL_2,
   };
 
-  TEST_ASSERT_OK(mech_brake_init(&s_mech_brake_storage, &calib_settings, &s_calib_blob.mech_brake_calib));
+  TEST_ASSERT_OK(
+      mech_brake_init(&s_mech_brake_storage, &calib_settings, &s_calib_blob.mech_brake_calib));
   Event e = { 0 };
   while (true) {
     if (status_ok(event_process(&e))) {
