@@ -15,7 +15,7 @@
 #include "status.h"
 
 // Arbitrary watchdog timeout period
-#define ADS1015_WATCHDOG_TIMEOUT_MS 1
+#define ADS1015_WATCHDOG_TIMEOUT_MS 100
 
 typedef enum {
   ADS1015_ADDRESS_GND = 0,
