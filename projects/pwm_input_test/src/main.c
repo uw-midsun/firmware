@@ -1,6 +1,7 @@
 #include "gpio.h"
 #include "pwm.h"
 #include "pwm_input.h"
+#include "wait.h"
 
 void TIM1_IRQHandler(void) {
   pwm_input_handle_interrupt();
@@ -44,7 +45,7 @@ int main(void) {
 
   // Pray this works
   for (;;) {
-    
+    wait();
   }
 
 }
