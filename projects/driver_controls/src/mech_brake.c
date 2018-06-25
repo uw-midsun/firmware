@@ -59,12 +59,12 @@ StatusCode mech_brake_init(MechBrakeStorage *storage, const MechBrakeSettings *s
 
   // Since the minimun value of the position is expected to be 0, the lower bound is the negative
   // value of the tolerance. and upper bound is EE_DRIVE_OUTPUT_DENOMINATOR plus the tolerance.
-  storage->lower_bound = -1 * settings->bounds_tolerance * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
+  storage->lower_bound = -1 * settings->bounds_tolerance_percentage * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
   storage->upper_bound =
-      EE_DRIVE_OUTPUT_DENOMINATOR + settings->bounds_tolerance * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
+      EE_DRIVE_OUTPUT_DENOMINATOR + settings->bounds_tolerance_percentage * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
 
   storage->threshold_position =
-      settings->brake_pressed_threshold * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
+      settings->brake_pressed_threshold_percentage * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
 
   return ads1015_configure_channel(storage->ads1015, storage->channel, true, prv_callback_channel,
                                    storage);

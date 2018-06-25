@@ -24,14 +24,14 @@
 static MechBrakeStorage s_mech_brake_storage;
 static Ads1015Storage s_ads1015_storage;
 
-#define TEST_MECH_BRAKE_TOLERANCE 2
+#define TEST_MECH_BRAKE_TOLERANCE_PERCENTAGE 2
 
 // Readings used as fake inputs.
 static int16_t s_mocked_reading;
 
 const MechBrakeSettings brake_settings = {
-  .brake_pressed_threshold = 50,
-  .bounds_tolerance = 2,
+  .brake_pressed_threshold_percentage = 50,
+  .bounds_tolerance_percentage = 2,
   .channel = ADS1015_CHANNEL_2,
   .ads1015 = &s_ads1015_storage,
 };
@@ -60,7 +60,7 @@ void setup_test() {
 
   const MechBrakeCalibrationData s_calibration_data = {
     .zero_value = 0,
-    .hundred_value = 1 << 12,
+    .hundred_value = EE_DRIVE_OUTPUT_DENOMINATOR,
   };
 
   mech_brake_init(&s_mech_brake_storage, &brake_settings, &s_calibration_data);
@@ -71,7 +71,7 @@ void teardown_test(void) {}
 void test_mech_brake_init_invalid_args(void) {
   const MechBrakeCalibrationData s_calibration_data_test = {
     .zero_value = 0,
-    .hundred_value = 1 << 12,
+    .hundred_value = EE_DRIVE_OUTPUT_DENOMINATOR,
   };
   // Test with valid arguments.
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_init(&s_mech_brake_storage, &brake_settings,
