@@ -59,8 +59,8 @@ void setup_test() {
   ads1015_init(&s_ads1015_storage, DC_CFG_I2C_BUS_PORT, DC_CFG_PEDAL_ADC_ADDR, &ready_pin);
 
   const MechBrakeCalibrationData s_calibration_data = {
-  .zero_value = 0,
-  .hundred_value = 1<<12,
+    .zero_value = 0,
+    .hundred_value = 1 << 12,
   };
 
   mech_brake_init(&s_mech_brake_storage, &brake_settings, &s_calibration_data);
@@ -69,14 +69,13 @@ void setup_test() {
 void teardown_test(void) {}
 
 void test_mech_brake_init_invalid_args(void) {
-
   const MechBrakeCalibrationData s_calibration_data_test = {
-  .zero_value = 0,
-  .hundred_value = 1 << 12,
+    .zero_value = 0,
+    .hundred_value = 1 << 12,
   };
   // Test with valid arguments.
-  TEST_ASSERT_EQUAL(STATUS_CODE_OK,
-                    mech_brake_init(&s_mech_brake_storage, &brake_settings, &s_calibration_data_test));
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_init(&s_mech_brake_storage, &brake_settings,
+                                                    &s_calibration_data_test));
   // Check for null pointers on each parameter.
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     mech_brake_init(NULL, &brake_settings, &s_calibration_data_test));
