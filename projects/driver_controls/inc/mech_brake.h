@@ -25,8 +25,8 @@ typedef struct MechBrakeCalibrationData {
 
 typedef struct MechBrakeSettings {
   Ads1015Storage *ads1015;
-  // Percentage value above which the brake_pressed event is raised and below which the brake_unpressed event
-  // is raised.
+  // Percentage value above which the brake_pressed event is raised and below which the
+  // brake_unpressed event is raised.
   int16_t brake_pressed_threshold_percentage;
   // Percentage tolerance for the lower and upper bound of the position.
   int16_t bounds_tolerance_percentage;
