@@ -1,7 +1,6 @@
 #include "gpio.h"
 #include "pwm.h"
 #include "pwm_input.h"
-#include "interrupt.h"
 
 void TIM1_IRQHandler(void) {
   pwm_input_handle_interrupt();
@@ -14,7 +13,6 @@ int main(void) {
   pwm_init(PWM_TIMER_3, 1000);
   pwm_set_dc(PWM_TIMER_3, 50);
   gpio_init();
-  interrupt_init();
 
 // Use port for Green LED
   GPIOAddress output = {
@@ -46,7 +44,7 @@ int main(void) {
 
   // Pray this works
   for (;;) {
-
+    wait();
   }
 
 }

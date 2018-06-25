@@ -5,6 +5,7 @@
 #include "gpio.h"
 #include "stm32f0xx_rcc.h"
 #include "stm32f0xx_tim.h"
+#include "stm32f0xx_interrupt.h"
 
 
 // This is probably not up to par with coding standards
@@ -13,7 +14,10 @@ static uint32_t period = 0;
 static uint32_t dc = 0;
 
 StatusCode pwm_input_init() {
+  stm32f0xx_interrupt_init();
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);
+
+  stm32f0xx_interrupt_nvic_enable(TIM1_CC_IRQn, 0);
 
   TIM_ICInitTypeDef tim_icinit = {
     .TIM_Channel = TIM_Channel_2,
