@@ -91,7 +91,7 @@ int main(void) {
   Event e = { 0 };
   while (true) {
     while (event_process(&e) == STATUS_CODE_OK) {
-      fsm_process_event(CAN_FSM, &e);
+      can_process_event(&e);
       lights_can_process_event(&e);
       lights_gpio_process_event(lights_gpio, &e);
       lights_signal_fsm_process_event(&s_signal_fsm, &e);
