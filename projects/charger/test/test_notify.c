@@ -22,12 +22,10 @@
 
 #define TEST_NOTIFY_PERIOD_S 1
 #define TEST_NOTIFY_WATCHDOG_PERIOD_S 2
-#define TEST_NOTIFY_NUM_CAN_RX_HANDLERS 4
 
 static EEChargerSetRelayState s_response;
 static GenericCanNetwork s_generic_can;
 static CANStorage s_can_storage;
-static CANRxHandler s_rx_handlers[TEST_NOTIFY_NUM_CAN_RX_HANDLERS];
 
 // GenericCanRxCb
 static void prv_callback(const GenericCanMsg *msg, void *context) {
@@ -53,8 +51,7 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  TEST_ASSERT_OK(
-      can_init(&can_settings, &s_can_storage, s_rx_handlers, TEST_NOTIFY_NUM_CAN_RX_HANDLERS));
+  TEST_ASSERT_OK(can_init(&s_can_storage, &can_settings));
   TEST_ASSERT_OK(generic_can_network_init(&s_generic_can));
   TEST_ASSERT_OK(
       generic_can_register_rx((GenericCan *)&s_generic_can, prv_callback, GENERIC_CAN_EMPTY_MASK,
@@ -97,7 +94,7 @@ void test_notify(void) {
       status = event_process(&e);
     } while (status != STATUS_CODE_OK);
     if (e.id == CHARGER_EVENT_CAN_RX || e.id == CHARGER_EVENT_CAN_TX) {
-      TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+      TEST_ASSERT_TRUE(can_process_event(&e));
     }
   }
 

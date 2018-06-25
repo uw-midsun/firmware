@@ -27,16 +27,24 @@ FSM_STATE_TRANSITION(cruise_on) {
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, cruise_off);
   // If the throttle enters the brake zone, consider the throttle as released
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_BRAKE, cruise_on_brake);
+
+  // Revert back to cruise off on power off/fault
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, cruise_off);
+  FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, cruise_off);
 }
 
 FSM_STATE_TRANSITION(cruise_on_brake) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, cruise_on);
+  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, cruise_on_brake);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_CANCEL, cruise_off);
   // Exit cruise if the mechanical brake is pressed or the throttle is pressed to
   // the accel zone after entering the brake zone.
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, cruise_off);
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_ACCEL, cruise_off);
+
+  // Revert back to cruise off on power off/fault
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, cruise_off);
+  FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, cruise_off);
 }
 
 static void prv_cruise_off_output(FSM *fsm, const Event *e, void *context) {

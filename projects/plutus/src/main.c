@@ -1,37 +1,62 @@
 #include <stddef.h>
 
-#include "gpio.h"
-#include "interrupt.h"
+#include "delay.h"
 #include "log.h"
-#include "ltc_afe.h"
-#include "plutus_config.h"
-#include "soft_timer.h"
-#include "spi.h"
+#include "plutus_cfg.h"
+
+#include "can_transmit.h"
+#include "fault_monitor.h"
+#include "plutus_sys.h"
+#include "wait.h"
+
+static PlutusSysStorage s_plutus;
+static FaultMonitorStorage s_fault_monitor;
+
+static size_t s_telemetry_counter = 0;
+
+static void prv_periodic_tx_debug(SoftTimerID timer_id, void *context) {
+  FaultMonitorResult *result = &s_fault_monitor.result;
+
+  // TODO(ELEC-463): Figure out why we need to delay for so long
+  if (s_telemetry_counter < PLUTUS_CFG_AFE_TOTAL_CELLS) {
+    CAN_TRANSMIT_BATTERY_VT(s_telemetry_counter, result->cell_voltages[s_telemetry_counter],
+                            result->temp_voltages[s_telemetry_counter]);
+    s_telemetry_counter++;
+  } else if (s_telemetry_counter == PLUTUS_CFG_AFE_TOTAL_CELLS) {
+    CAN_TRANSMIT_BATTERY_CURRENT((uint32_t)result->current);
+    s_telemetry_counter = 0;
+  }
+
+  soft_timer_start_millis(PLUTUS_CFG_TELEMETRY_PERIOD_MS, prv_periodic_tx_debug, NULL, NULL);
+}
 
 int main(void) {
-  gpio_init();
-  interrupt_init();
-  soft_timer_init();
+  PlutusSysType board_type = plutus_sys_get_type();
+  plutus_sys_init(&s_plutus, board_type);
+  LOG_DEBUG("Board type: %d\n", board_type);
 
-  LtcAfeSettings afe_settings = {
-    .mosi = { GPIO_PORT_A, 7 },  //
-    .miso = { GPIO_PORT_A, 6 },  //
-    .sclk = { GPIO_PORT_A, 5 },  //
-    .cs = { GPIO_PORT_A, 4 },    //
+  if (board_type == PLUTUS_SYS_TYPE_MASTER) {
+    const FaultMonitorSettings fault_settings = {
+      .bps_heartbeat = &s_plutus.bps_heartbeat,
+      .ltc_afe = &s_plutus.ltc_afe,
+      .ltc_adc = &s_plutus.ltc_adc,
 
-    .spi_port = SPI_PORT_1,
-    .spi_baudrate = 250000,  //
-    .adc_mode = LTC_AFE_ADC_MODE_27KHZ,
-  };
+      .overvoltage = PLUTUS_CFG_CELL_OVERVOLTAGE,
+      .undervoltage = PLUTUS_CFG_CELL_UNDERVOLTAGE,
+    };
 
-  ltc_afe_init(&afe_settings);
+    fault_monitor_init(&s_fault_monitor, &fault_settings);
+    soft_timer_start_millis(PLUTUS_CFG_TELEMETRY_PERIOD_MS, prv_periodic_tx_debug, NULL, NULL);
+  }
 
+  Event e = { 0 };
   while (true) {
-    uint16_t voltages[LTC6804_CELLS_PER_DEVICE * PLUTUS_AFE_DEVICES_IN_CHAIN] = { 0 };
-    size_t len = SIZEOF_ARRAY(voltages);
-    StatusCode status = ltc_afe_read_all_voltage(&afe_settings, voltages, len);
-    if (status != STATUS_CODE_OK) {
-      LOG_DEBUG("Invalid status\n");
+    wait();
+    while (status_ok(event_process(&e))) {
+      can_process_event(&e);
+      if (board_type == PLUTUS_SYS_TYPE_MASTER) {
+        ltc_afe_process_event(&s_plutus.ltc_afe, &e);
+      }
     }
   }
 }

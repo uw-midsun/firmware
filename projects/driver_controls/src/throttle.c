@@ -15,6 +15,7 @@
 #include <string.h>
 #include "event_queue.h"
 #include "input_event.h"
+#include "log.h"
 
 static ThrottleStorage s_throttle_storage;
 

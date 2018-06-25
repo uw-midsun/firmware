@@ -61,6 +61,7 @@ FSM_DECLARE_STATE(relay_closed);
 FSM_DECLARE_STATE(relay_opening);
 
 FSM_STATE_TRANSITION(relay_opened) {
+  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_OPEN_RELAY, prv_guard_select_relay, relay_opening);
   FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_CLOSE_RELAY, prv_guard_select_relay, relay_closing);
 }
 
@@ -72,6 +73,7 @@ FSM_STATE_TRANSITION(relay_closing) {
 
 FSM_STATE_TRANSITION(relay_closed) {
   FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_OPEN_RELAY, prv_guard_select_relay, relay_opening);
+  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_CLOSE_RELAY, prv_guard_select_relay, relay_closing);
 }
 
 FSM_STATE_TRANSITION(relay_opening) {
