@@ -7,6 +7,7 @@
 // and call the registered RX handler.
 #include "uart.h"
 #include <string.h>
+#include "critical_section.h"
 #include "stm32f0xx.h"
 
 // basic idea: tx is stored in a buffer, interrupt-driven
@@ -52,6 +53,7 @@ StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage
 
   s_port[uart].storage->rx_handler = settings->rx_handler;
   s_port[uart].storage->context = settings->context;
+  s_port[uart].storage->delimiter = '\n';
   fifo_init(&s_port[uart].storage->tx_fifo, s_port[uart].storage->tx_buf);
   fifo_init(&s_port[uart].storage->rx_fifo, s_port[uart].storage->rx_buf);
 
@@ -80,8 +82,16 @@ StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage
 }
 
 StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *context) {
+  bool disabled = critical_section_start();
   s_port[uart].storage->rx_handler = rx_handler;
   s_port[uart].storage->context = context;
+  critical_section_end(disabled);
+
+  return STATUS_CODE_OK;
+}
+
+StatusCode uart_set_delimiter(UARTPort uart, uint8_t delimiter) {
+  s_port[uart].storage->delimiter = delimiter;
 
   return STATUS_CODE_OK;
 }
@@ -110,16 +120,18 @@ static void prv_tx_pop(UARTPort uart) {
 }
 
 static void prv_rx_push(UARTPort uart) {
+  UARTStorage *storage = s_port[uart].storage;
+
   uint8_t rx_data = USART_ReceiveData(s_port[uart].base);
-  fifo_push(&s_port[uart].storage->rx_fifo, &rx_data);
+  fifo_push(&storage->rx_fifo, &rx_data);
 
-  size_t num_bytes = fifo_size(&s_port[uart].storage->rx_fifo);
-  if (rx_data == '\n' || num_bytes == UART_MAX_BUFFER_LEN) {
-    uint8_t buf[UART_MAX_BUFFER_LEN + 1] = { 0 };
-    fifo_pop_arr(&s_port[uart].storage->rx_fifo, buf, num_bytes);
+  size_t num_bytes = fifo_size(&storage->rx_fifo);
+  if (rx_data == storage->delimiter || num_bytes == UART_MAX_BUFFER_LEN) {
+    storage->rx_line_buf[num_bytes] = '\0';
+    fifo_pop_arr(&storage->rx_fifo, storage->rx_line_buf, num_bytes);
 
-    if (s_port[uart].storage->rx_handler != NULL) {
-      s_port[uart].storage->rx_handler(buf, num_bytes, s_port[uart].storage->context);
+    if (storage->rx_handler != NULL) {
+      storage->rx_handler(storage->rx_line_buf, num_bytes, storage->context);
     }
   }
 }
@@ -133,6 +145,9 @@ static void prv_handle_irq(UARTPort uart) {
   if (USART_GetITStatus(s_port[uart].base, USART_IT_RXNE) == SET) {
     prv_rx_push(uart);
   }
+
+  // Clear overrun flag
+  USART_ClearITPendingBit(s_port[uart].base, USART_IT_ORE);
 }
 
 void USART1_IRQHandler(void) {

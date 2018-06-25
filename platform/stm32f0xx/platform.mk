@@ -38,21 +38,25 @@ PROBE=cmsis-dap
 OPENOCD_SCRIPT_DIR := /usr/share/openocd/scripts/
 OPENOCD_CFG := -s $(OPENOCD_SCRIPT_DIR) \
                -f interface/$(PROBE).cfg -f target/stm32f0x.cfg \
+               -c "$$(python3 $(SCRIPT_DIR)/select_programmer.py $(SERIAL))" \
                -f $(SCRIPT_DIR)/stm32f0-openocd.cfg
 
 # Platform targets
 .PHONY: program gdb target
 
-program: $(GDB_TARGET:$(PLATFORM_EXT)=.bin)
+ifeq (,$(MACOS_SSH_USERNAME))
+
+program: $(TARGET_BINARY:$(PLATFORM_EXT)=.bin)
 	@$(OPENOCD) $(OPENOCD_CFG) -c "stm_flash $<" -c shutdown
 
-gdb: $(GDB_TARGET)
+gdb: $(TARGET_BINARY)
 	@pkill $(OPENOCD) || true
 	@setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
 	@$(GDB) $< -x "$(SCRIPT_DIR)/gdb_flash"
 	@pkill $(OPENOCD)
 
 define session_wrapper
+pkill $(OPENOCD) || true
 setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
 $1; pkill $(OPENOCD)
 endef
@@ -61,3 +65,37 @@ endef
 define test_run
 clear && $(GDB) $1 -x "$(SCRIPT_DIR)/gdb_flash" -ex "b LoopForever" -ex "c" -ex "set confirm off" -ex "q"
 endef
+
+else
+
+# VirtualBox default NAT IP
+MACOS_SSH_IP := 10.0.2.2
+MAKE_ARGS := TEST PROJECT LIBRARY PLATFORM PROBE SERIAL
+MAKE_PARAMS := $(foreach arg,$(MAKE_ARGS),$(arg)=$($(arg)))
+SSH_CMD := ssh -t $(MACOS_SSH_USERNAME)@$(MACOS_SSH_IP) "bash -c 'cd $(MACOS_SSH_BOX_PATH)/shared/firmware && make $(MAKECMDGOALS) $(MAKE_PARAMS)'"
+
+.PHONY: unsupported run_ssh
+
+# Use additional dependencies - hopefully they run first, otherwise we'll build unnecessarily
+# Unfortunately this only works part of the time
+test_all: unsupported
+test: run_ssh
+
+# Host is macOS so we can't pass the programmer through - do it all through SSH
+program gdb:
+	@echo "Running command through SSH"
+	@$(SSH_CMD)
+
+ifneq (,$(TEST))
+run_ssh:
+	@echo "Running command through SSH"
+	@$(SSH_CMD:make=make -o $(TARGET_BINARY))
+else
+run_ssh: unsupported
+endif
+
+unsupported:
+	@echo "Please specify a single test to run."
+	@echo "Consecutive tests for STM32F0xx are not supported on a macOS host." && false
+
+endif

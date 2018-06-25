@@ -20,7 +20,6 @@
 
 static GenericCanNetwork s_can;
 static CANStorage s_storage;
-static CANRxHandler s_rx_handlers[NUM_GENERIC_CAN_RX_HANDLERS];
 
 // GenericCanRxCb
 static void prv_can_rx_callback(const GenericCanMsg *msg, void *context) {
@@ -46,7 +45,7 @@ void setup_test(void) {
     .fault_event = CHARGER_EVENT_CAN_FAULT,
     .loopback = true,
   };
-  TEST_ASSERT_OK(can_init(&can_settings, &s_storage, s_rx_handlers, NUM_GENERIC_CAN_RX_HANDLERS));
+  TEST_ASSERT_OK(can_init(&s_storage, &can_settings));
 
   TEST_ASSERT_OK(generic_can_network_init(&s_can));
 }
@@ -82,13 +81,13 @@ void test_generic_can(void) {
     status = event_process(&e);
   } while (status != STATUS_CODE_OK);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_CAN_TX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
   // RX
   do {
     status = event_process(&e);
   } while (status != STATUS_CODE_OK);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_CAN_RX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
   // Callback is triggered.
   TEST_ASSERT_EQUAL(1, counter);
 
@@ -103,13 +102,13 @@ void test_generic_can(void) {
     status = event_process(&e);
   } while (status != STATUS_CODE_OK);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_CAN_TX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
   // RX
   do {
     status = event_process(&e);
   } while (status != STATUS_CODE_OK);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_CAN_RX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
   // Callback isn't triggered.
   TEST_ASSERT_EQUAL(1, counter);
 }

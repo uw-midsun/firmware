@@ -15,6 +15,7 @@ typedef void (*X86SocketHandler)(struct X86SocketThread *thread, int client_fd, 
 
 typedef struct X86SocketThread {
   pthread_t thread;
+  pthread_barrier_t barrier;
   pthread_mutex_t keep_alive;
   const char *module_name;
   X86SocketHandler handler;
@@ -33,3 +34,6 @@ StatusCode x86_socket_broadcast(X86SocketThread *thread, const char *tx_data, si
 
 // Write to specific client
 StatusCode x86_socket_write(int client_fd, const char *tx_data, size_t tx_len);
+
+// Creates a client that connects to the specified module socket, returning the file descriptor
+int test_x86_socket_client_init(const char *module_name);

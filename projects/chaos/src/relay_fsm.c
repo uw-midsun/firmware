@@ -9,8 +9,11 @@
 #include "can_msg_defs.h"
 #include "can_transmit.h"
 #include "chaos_events.h"
+#include "critical_section.h"
 #include "event_queue.h"
+#include "exported_enums.h"
 #include "fsm.h"
+#include "gpio.h"
 #include "misc.h"
 #include "relay_id.h"
 #include "status.h"
@@ -18,12 +21,12 @@
 typedef struct RelayFsmAckCtx {
   RelayId id;
   EventID event_id;
-  uint8_t retries;
 } RelayFsmAckCtx;
 
 typedef struct RelayFsmCtx {
   RelayFsmAckCtx ack_ctx;
   CANAckRequest request;
+  GPIOAddress power_pin;
 } RelayFsmCtx;
 
 static RelayFsmCtx s_fsm_ctxs[NUM_RELAY_FSMS];
@@ -37,20 +40,15 @@ static bool prv_guard_select_relay(const FSM *fsm, const Event *e, void *context
 
 static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
                                    uint16_t num_remaining, void *context) {
+  (void)msg_id;
+  (void)device;
+  (void)num_remaining;
   RelayFsmAckCtx *ack_ctx = context;
   if (status != CAN_ACK_STATUS_OK) {
-    if (ack_ctx->retries < RELAY_FSM_MAX_RETRIES) {
-      ack_ctx->retries++;
-      event_raise(CHAOS_EVENT_RETRY_RELAY, ack_ctx->id);
-    } else {
-      ack_ctx->retries = 0;
-      event_raise(CHAOS_EVENT_RELAY_ERROR, ack_ctx->id);
-    }
+    event_raise(CHAOS_EVENT_MAYBE_RETRY_RELAY, ack_ctx->id);
   } else {
-    ack_ctx->retries = 0;
     event_raise(ack_ctx->event_id, ack_ctx->id);
   }
-
   return STATUS_CODE_OK;
 }
 
@@ -63,21 +61,25 @@ FSM_DECLARE_STATE(relay_closed);
 FSM_DECLARE_STATE(relay_opening);
 
 FSM_STATE_TRANSITION(relay_opened) {
+  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_OPEN_RELAY, prv_guard_select_relay, relay_opening);
   FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_CLOSE_RELAY, prv_guard_select_relay, relay_closing);
 }
 
 FSM_STATE_TRANSITION(relay_closing) {
   FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_RELAY_CLOSED, prv_guard_select_relay, relay_closed);
   FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_RETRY_RELAY, prv_guard_select_relay, relay_closing);
+  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_RELAY_ERROR, prv_guard_select_relay, relay_opened);
 }
 
 FSM_STATE_TRANSITION(relay_closed) {
   FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_OPEN_RELAY, prv_guard_select_relay, relay_opening);
+  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_CLOSE_RELAY, prv_guard_select_relay, relay_closing);
 }
 
 FSM_STATE_TRANSITION(relay_opening) {
   FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_RELAY_OPENED, prv_guard_select_relay, relay_opened);
   FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_RETRY_RELAY, prv_guard_select_relay, relay_opening);
+  FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_RELAY_ERROR, prv_guard_select_relay, relay_closed);
 }
 
 static void prv_relay_transmit(RelayId id, RelayState state, const CANAckRequest *ack_request) {
@@ -88,13 +90,16 @@ static void prv_relay_transmit(RelayId id, RelayState state, const CANAckRequest
     case RELAY_ID_SOLAR_MASTER_REAR:
       CAN_TRANSMIT_SOLAR_RELAY_REAR(ack_request, state);
       return;
-    case RELAY_ID_BATTERY:
-      CAN_TRANSMIT_BATTERY_RELAY(ack_request, state);
+    case RELAY_ID_BATTERY_MAIN:
+      CAN_TRANSMIT_BATTERY_RELAY_MAIN(ack_request, state);
       return;
-    case RELAY_ID_MAIN_POWER:
-      CAN_TRANSMIT_MAIN_RELAY(ack_request, state);
+    case RELAY_ID_BATTERY_SLAVE:
+      CAN_TRANSMIT_BATTERY_RELAY_SLAVE(ack_request, state);
       return;
-    case NUM_RELAY_IDS:
+    case RELAY_ID_MOTORS:
+      CAN_TRANSMIT_MOTOR_RELAY(ack_request, state);
+      return;
+    case NUM_RELAY_IDS:  // Falls through.
     default:
       return;
   }
@@ -102,14 +107,30 @@ static void prv_relay_transmit(RelayId id, RelayState state, const CANAckRequest
 
 static void prv_opening(FSM *fsm, const Event *e, void *context) {
   RelayFsmCtx *relay_ctx = context;
+  // Check that the GPIO pin is in |GPIO_STATE_HIGH| before opening. If it is already off we assume
+  // the relay to be opened already.
+  GPIOState state = GPIO_STATE_LOW;
+  gpio_get_state(&relay_ctx->power_pin, &state);
+  if (state == GPIO_STATE_LOW) {
+    event_raise(CHAOS_EVENT_RELAY_OPENED, relay_ctx->ack_ctx.id);
+    return;
+  }
   relay_ctx->ack_ctx.event_id = CHAOS_EVENT_RELAY_OPENED;
-  prv_relay_transmit(relay_ctx->ack_ctx.id, RELAY_STATE_OPEN, &relay_ctx->request);
+  prv_relay_transmit(relay_ctx->ack_ctx.id, (RelayState)EE_RELAY_STATE_OPEN, &relay_ctx->request);
 }
 
 static void prv_closing(FSM *fsm, const Event *e, void *context) {
   RelayFsmCtx *relay_ctx = context;
+  // Check that the GPIO pin is in |GPIO_STATE_HIGH| before closing. If it is already off this
+  // action is an error and we raise it as such, this will reset us to the open state.
+  GPIOState state = GPIO_STATE_LOW;
+  gpio_get_state(&relay_ctx->power_pin, &state);
+  if (state == GPIO_STATE_LOW) {
+    event_raise(CHAOS_EVENT_RELAY_ERROR, relay_ctx->ack_ctx.id);
+    return;
+  }
   relay_ctx->ack_ctx.event_id = CHAOS_EVENT_RELAY_CLOSED;
-  prv_relay_transmit(relay_ctx->ack_ctx.id, RELAY_STATE_CLOSE, &relay_ctx->request);
+  prv_relay_transmit(relay_ctx->ack_ctx.id, (RelayState)EE_RELAY_STATE_CLOSE, &relay_ctx->request);
 }
 
 void relay_fsm_init(void) {
@@ -120,15 +141,16 @@ void relay_fsm_init(void) {
 }
 
 StatusCode relay_fsm_create(FSM *fsm, RelayId relay_id, const char *fsm_name,
-                            uint32_t ack_device_bitset) {
+                            const GPIOAddress *addr, uint32_t ack_device_bitset) {
   if (relay_id > NUM_RELAY_IDS) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
   s_fsm_ctxs[relay_id].ack_ctx.id = relay_id;
-  s_fsm_ctxs[relay_id].ack_ctx.retries = 0;
   s_fsm_ctxs[relay_id].request.callback = prv_ack_callback;
   s_fsm_ctxs[relay_id].request.expected_bitset = ack_device_bitset;
   s_fsm_ctxs[relay_id].request.context = &s_fsm_ctxs[relay_id].ack_ctx;
+  s_fsm_ctxs[relay_id].power_pin.port = addr->port;
+  s_fsm_ctxs[relay_id].power_pin.pin = addr->pin;
   fsm_init(fsm, fsm_name, &relay_opened, &s_fsm_ctxs[relay_id]);
   return STATUS_CODE_OK;
 }
