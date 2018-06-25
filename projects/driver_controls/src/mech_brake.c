@@ -21,17 +21,15 @@
 static StatusCode prv_lsb_to_position(MechBrakeStorage *storage, int16_t reading,
                                       int16_t *position) {
   int16_t input_position = INT16_MAX;
-
   input_position =
-      (EE_DRIVE_OUTPUT_DENOMINATOR * (reading - storage->calibration_data->zero_value)) /
-      (storage->calibration_data->hundred_value - storage->calibration_data->zero_value);
+      (EE_DRIVE_OUTPUT_DENOMINATOR * (reading - storage->calibration_data.zero_value)) /
+      (storage->calibration_data.hundred_value - storage->calibration_data.zero_value);
 
   if (input_position < storage->lower_bound || input_position > storage->upper_bound) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 
   *position = MIN(MAX(0, input_position), EE_DRIVE_OUTPUT_DENOMINATOR);
-
   return STATUS_CODE_OK;
 }
 
@@ -55,7 +53,7 @@ StatusCode mech_brake_init(MechBrakeStorage *storage, const MechBrakeSettings *s
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   memset(storage, 0, sizeof(*storage));
-  storage->calibration_data = data;
+  storage->calibration_data = *data;
   storage->channel = settings->channel;
   storage->ads1015 = settings->ads1015;
 

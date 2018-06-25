@@ -34,7 +34,7 @@ typedef struct MechBrakeSettings {
 } MechBrakeSettings;
 
 typedef struct MechBrakeStorage {
-  MechBrakeCalibrationData *calibration_data;
+  MechBrakeCalibrationData calibration_data;
   Ads1015Storage *ads1015;
   Ads1015Channel channel;
   // minimun value of the position based on the tolerance value.

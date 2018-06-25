@@ -23,11 +23,8 @@
 
 static MechBrakeStorage s_mech_brake_storage;
 static Ads1015Storage s_ads1015_storage;
-MechBrakeCalibrationData s_calibration_data;
 
 #define TEST_MECH_BRAKE_TOLERANCE 2
-#define TEST_MECH_BRAKE_ZERO_VALUE 0
-#define TEST_MECH_BRAKE_HUNDRED_VALUE 1 << 12
 
 // Readings used as fake inputs.
 static int16_t s_mocked_reading;
@@ -46,12 +43,6 @@ StatusCode TEST_MOCK(ads1015_read_raw)(Ads1015Storage *storage, Ads1015Channel c
   return STATUS_CODE_OK;
 }
 
-// Initializes the calibration data from static data
-static void prv_set_calibration_data(MechBrakeCalibrationData *data) {
-  data->zero_value = TEST_MECH_BRAKE_ZERO_VALUE;
-  data->hundred_value = TEST_MECH_BRAKE_HUNDRED_VALUE;
-}
-
 void setup_test() {
   gpio_init();
   interrupt_init();
@@ -66,29 +57,39 @@ void setup_test() {
   event_queue_init();
   GPIOAddress ready_pin = DC_CFG_PEDAL_ADC_RDY_PIN;
   ads1015_init(&s_ads1015_storage, DC_CFG_I2C_BUS_PORT, DC_CFG_PEDAL_ADC_ADDR, &ready_pin);
-  prv_set_calibration_data(&s_calibration_data);
+
+  const MechBrakeCalibrationData s_calibration_data = {
+  .zero_value = 0,
+  .hundred_value = 1<<12,
+  };
+
   mech_brake_init(&s_mech_brake_storage, &brake_settings, &s_calibration_data);
 }
 
 void teardown_test(void) {}
 
 void test_mech_brake_init_invalid_args(void) {
+
+  const MechBrakeCalibrationData s_calibration_data_test = {
+  .zero_value = 0,
+  .hundred_value = 1 << 12,
+  };
   // Test with valid arguments.
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
-                    mech_brake_init(&s_mech_brake_storage, &brake_settings, &s_calibration_data));
+                    mech_brake_init(&s_mech_brake_storage, &brake_settings, &s_calibration_data_test));
   // Check for null pointers on each parameter.
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
-                    mech_brake_init(NULL, &brake_settings, &s_calibration_data));
+                    mech_brake_init(NULL, &brake_settings, &s_calibration_data_test));
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
-                    mech_brake_init(&s_mech_brake_storage, NULL, &s_calibration_data));
+                    mech_brake_init(&s_mech_brake_storage, NULL, &s_calibration_data_test));
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     mech_brake_init(&s_mech_brake_storage, &brake_settings, NULL));
 }
 
 void test_mech_brake_get_percentage_invalid_args(void) {
-  int16_t percentage;
+  int16_t position;
   // Check for null pointers.
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, mech_brake_get_position(NULL, &percentage));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, mech_brake_get_position(NULL, &position));
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, mech_brake_get_position(&s_mech_brake_storage, NULL));
 }
 
@@ -106,7 +107,7 @@ void test_mech_brake_percentage_in_released_zone(void) {
 
 void test_mech_brake_percentage_in_pressed_zone(void) {
   int16_t position = 0;
-  // The brake_pressed_threshold is 50%,a reading of 400 is 73%.
+  // The brake_pressed_threshold is 50%,a reading of 3000 is 73%.
   s_mocked_reading = 3000;
   Event e;
 
@@ -154,7 +155,7 @@ void test_mech_brake_percentage_within_lower_tolerance(void) {
 void test_mech_brake_percentage_within_upper_tolerance(void) {
   int16_t position = 0;
   // This is just within the upper bound of 4177.
-  s_mocked_reading = 4176;
+  s_mocked_reading = 4167;
   Event e;
 
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
