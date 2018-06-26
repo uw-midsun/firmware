@@ -28,9 +28,10 @@ def data_battery_vt(module, voltage, temperature):
     """Battery V/T data format"""
     return 'C{}: {:.1f}mV aux {:.1f}mV'.format(module, voltage / 10, temperature / 10)
 
-def data_battery_voltage_current(voltage, current):
-    """Battery total voltage/current data format"""
-    return '{:.4f}V {:.4f}mA'.format(voltage / 10000, current / 1000)
+def data_battery_current(raw_lsbs):
+    """Battery Current data format"""
+    # Note that this is just an estimation - it should be updated once we have current calibration
+    return '~{}uA'.format(raw_lsbs / 2)
 
 def data_dump(*args):
     """Generic data dump format"""
@@ -52,7 +53,7 @@ MESSAGE_LOOKUP = {
     23: ('Lights Sync', '', data_dump),
     24: ('Lights State', '<BB', data_lights_state),
     32: ('Battery V/T', '<HHH', data_battery_vt),
-    33: ('Battery Voltage/Current', '<ii', data_battery_voltage_current),
+    33: ('Battery Current', '<i', data_battery_current),
     36: ('Motor Velocity', '<ii', data_dump),
     43: ('Aux & DC/DC V/C', '<HHHH', data_dump),
 }
@@ -78,7 +79,7 @@ def parse_msg(can_id, data):
 
     msg_type_name = 'ACK' if msg_type == 1 else 'DATA'
 
-    masked = [32]
+    masked = []
 
     if msg_id in masked:
         pass
