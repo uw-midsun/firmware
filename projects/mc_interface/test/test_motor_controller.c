@@ -220,8 +220,6 @@ void test_motor_controller_watchdog(void) {
   motor_controller_set_throttle(&s_storage, 100, EE_DRIVE_OUTPUT_DIRECTION_FORWARD);
   delay_ms(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS * 2);
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
-    LOG_DEBUG("%ld: %.4f %.2f\n", i, s_drive_cmds[i].motor_current_percentage,
-              s_drive_cmds[i].motor_velocity_ms);
     TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_DRIVE_OUTPUT_DENOMINATOR,
                             s_drive_cmds[i].motor_current_percentage);
     TEST_ASSERT_EQUAL_FLOAT(WAVESCULPTOR_FORWARD_VELOCITY, s_drive_cmds[i].motor_velocity_ms);
@@ -230,8 +228,6 @@ void test_motor_controller_watchdog(void) {
   LOG_DEBUG("Delaying until timeout\n");
   delay_ms(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS * (MOTOR_CONTROLLER_WATCHDOG_COUNTER + 1));
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
-    LOG_DEBUG("%ld: %.4f %.2f\n", i, s_drive_cmds[i].motor_current_percentage,
-              s_drive_cmds[i].motor_velocity_ms);
     TEST_ASSERT_EQUAL_FLOAT(0.0f, s_drive_cmds[i].motor_current_percentage);
     TEST_ASSERT_EQUAL_FLOAT(0.0f, s_drive_cmds[i].motor_velocity_ms);
   }
