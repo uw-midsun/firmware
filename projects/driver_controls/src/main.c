@@ -30,6 +30,7 @@
 #include "turn_signal_fsm.h"
 #include "hazards_fsm.h"
 #include "horn_fsm.h"
+#include "brake_signal.h"
 
 #include "cruise.h"
 #include "drive_output.h"

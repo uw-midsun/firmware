@@ -104,7 +104,6 @@ static void prv_drive_output(FSM *fsm, const Event *e, void *context) {
   event_arbiter_set_guard_fn(guard, NULL);
 
   event_raise(INPUT_EVENT_POWER_STATE_DRIVE, 0);
-
   LOG_DEBUG("Drive\n");
 }
 
@@ -125,13 +124,13 @@ static void prv_charge_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   power_distribution_controller_send_update(EE_POWER_STATE_CHARGE);
 
-  LOG_DEBUG("Charging\n");
-
   // Disable periodic drive output updates if not running
   drive_output_set_enabled(drive_output_global(), false);
-  event_arbiter_set_guard_fn(guard, prv_guard_off);
+  // Allow lights, etc to turn on
+  event_arbiter_set_guard_fn(guard, NULL);
 
   event_raise(INPUT_EVENT_POWER_STATE_CHARGE, 0);
+  LOG_DEBUG("Charging\n");
 }
 
 StatusCode power_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
