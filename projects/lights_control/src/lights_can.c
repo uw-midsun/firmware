@@ -30,8 +30,6 @@ static StatusCode prv_get_event_id(LightsCanEventType event_type, EELightState s
 }
 
 static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
-  LOG_DEBUG("Received a message. msg_id: %d\n", msg->msg_id);
-
   LightsCanSettings *settings = (LightsCanSettings *)context;
   // Storage for extracting message data.
   uint8_t param_1 = 0;
@@ -57,6 +55,9 @@ StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *s
                            const CANSettings *can_settings) {
   // Initialize CAN.
   status_ok_or_return(can_init(&storage->can_storage, can_settings));
+  // Specify filters.
+  status_ok_or_return(can_add_filter(SYSTEM_CAN_MESSAGE_LIGHTS_SYNC));
+  status_ok_or_return(can_add_filter(SYSTEM_CAN_MESSAGE_LIGHTS_STATE));
   // Initialize CAN RX handlers.
   status_ok_or_return(
       can_register_rx_handler(SYSTEM_CAN_MESSAGE_LIGHTS_STATE, prv_rx_handler, settings));

@@ -17,10 +17,9 @@
 #include "lights_signal_fsm.h"
 #include "lights_strobe.h"
 
-#define LIGHTS_SIGNAL_BLINKER_DURATION 500
-#define LIGHTS_SIGNAL_SYNC_COUNT 5
-#define LIGHTS_SIGNAL_NO_SYNC 0
-#define LIGHTS_STROBE_BLINKER_DURATION 500
+#define LIGHTS_CONTROL_SIGNAL_BLINKER_DURATION 500
+#define LIGHTS_CONTROL_SIGNAL_SYNC_COUNT 5
+#define LIGHTS_CONTROL_STROBE_BLINKER_DURATION 500
 
 static LightsSignalFsm s_signal_fsm = { 0 };
 
@@ -39,6 +38,16 @@ int main(void) {
     .tx_event = LIGHTS_EVENT_CAN_TX,
     .fault_event = LIGHTS_EVENT_CAN_FAULT,
     .loopback = false,
+  };
+
+  uint16_t device_id_lookup[NUM_LIGHTS_BOARD_TYPES] = {
+    [LIGHTS_BOARD_TYPE_FRONT] = SYSTEM_CAN_DEVICE_LIGHTS_FRONT,
+    [LIGHTS_BOARD_TYPE_REAR] = SYSTEM_CAN_DEVICE_LIGHTS_REAR,
+  };
+
+  uint8_t sync_count_lookup[NUM_LIGHTS_BOARD_TYPES] = {
+    [LIGHTS_BOARD_TYPE_FRONT] = LIGHTS_SIGNAL_FSM_NO_SYNC,
+    [LIGHTS_BOARD_TYPE_REAR] = LIGHTS_CONTROL_SIGNAL_SYNC_COUNT,
   };
 
   // Initialize the libraries.
@@ -71,8 +80,7 @@ int main(void) {
   }
 
   // Initialize lights_can.
-  can_settings.device_id = (board_type == LIGHTS_BOARD_TYPE_FRONT) ? SYSTEM_CAN_DEVICE_LIGHTS_FRONT
-                                                                   : SYSTEM_CAN_DEVICE_LIGHTS_REAR;
+  can_settings.device_id = device_id_lookup[board_type];
 
   status = lights_can_init(&s_lights_can_storage, lights_can_config_load(), &can_settings);
 
@@ -81,12 +89,11 @@ int main(void) {
   }
 
   // Initialize lights_signal_fsm.
-  lights_signal_fsm_init(
-      &s_signal_fsm, LIGHTS_SIGNAL_BLINKER_DURATION,
-      (board_type == LIGHTS_BOARD_TYPE_FRONT) ? LIGHTS_SIGNAL_NO_SYNC : LIGHTS_SIGNAL_SYNC_COUNT);
+  lights_signal_fsm_init(&s_signal_fsm, LIGHTS_CONTROL_SIGNAL_BLINKER_DURATION,
+                         sync_count_lookup[board_type]);
 
   // Initialize lights_strobe.
-  lights_strobe_init(&s_lights_strobe, LIGHTS_STROBE_BLINKER_DURATION);
+  lights_strobe_init(&s_lights_strobe, LIGHTS_CONTROL_STROBE_BLINKER_DURATION);
 
   Event e = { 0 };
   while (true) {
