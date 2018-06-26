@@ -4,10 +4,12 @@
 // pressed and unpressed.
 
 #include "ads1015.h"
+#include "crc32.h"
 #include "dc_calib.h"
 #include "dc_cfg.h"
 #include "delay.h"
 #include "event_arbiter.h"
+#include "flash.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "i2c.h"
@@ -19,8 +21,6 @@
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
-#include "crc32.h"
-#include "flash.h"
 
 static Ads1015Storage s_ads1015_storage;
 static MechBrakeStorage s_mech_brake_storage;

@@ -30,9 +30,9 @@
 #include "drive_output.h"
 
 #include "can.h"
+#include "crc32.h"
 #include "dc_calib.h"
 #include "dc_cfg.h"
-#include "crc32.h"
 #include "flash.h"
 
 typedef StatusCode (*DriverControlsFsmInitFn)(FSM *fsm, EventArbiterStorage *storage);

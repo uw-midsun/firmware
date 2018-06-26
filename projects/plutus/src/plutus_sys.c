@@ -1,6 +1,8 @@
 #include "plutus_sys.h"
 #include <string.h>
+#include "crc32.h"
 #include "event_queue.h"
+#include "flash.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "interrupt.h"
@@ -8,8 +10,6 @@
 #include "plutus_calib.h"
 #include "plutus_event.h"
 #include "soft_timer.h"
-#include "crc32.h"
-#include "flash.h"
 
 // Board-specific details
 typedef struct PlutusSysSpecifics {

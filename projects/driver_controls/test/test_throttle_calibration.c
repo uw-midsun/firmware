@@ -1,8 +1,10 @@
 #include "ads1015.h"
 #include "calib.h"
+#include "crc32.h"
 #include "dc_calib.h"
 #include "delay.h"
 #include "event_queue.h"
+#include "flash.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "i2c.h"
@@ -12,8 +14,6 @@
 #include "throttle.h"
 #include "throttle_calibration.h"
 #include "unity.h"
-#include "crc32.h"
-#include "flash.h"
 
 static Ads1015Storage s_ads1015_storage;
 static ThrottleStorage s_throttle_storage;

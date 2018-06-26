@@ -1,8 +1,10 @@
 #include <inttypes.h>
 #include "calib.h"
+#include "crc32.h"
 #include "current_calibration.h"
 #include "current_sense.h"
 #include "delay.h"
+#include "flash.h"
 #include "gpio.h"
 #include "interrupt.h"
 #include "log.h"
@@ -10,8 +12,6 @@
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
-#include "flash.h"
-#include "crc32.h"
 
 // The module does not know what current the adc readings correspond to, so keep an arbitrary
 // max point for testing
