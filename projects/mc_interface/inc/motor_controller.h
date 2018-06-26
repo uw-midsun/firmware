@@ -85,9 +85,9 @@ StatusCode motor_controller_init(MotorControllerStorage *controller,
 
 // Override the callbacks that are called when information is received from the motor controllers
 StatusCode motor_controller_set_update_cbs(MotorControllerStorage *controller,
-                                            MotorControllerSpeedCb speed_cb,
-                                          MotorControllerBusMeasurementCb bus_measurement_cb,
-                                          void *context);
+                                           MotorControllerSpeedCb speed_cb,
+                                           MotorControllerBusMeasurementCb bus_measurement_cb,
+                                           void *context);
 
 // Switch the motor controllers to throttle control
 // |throttle| should be -EE_DRIVE_OUTPUT_DENOMINATOR to EE_DRIVE_OUTPUT_DENOMINATOR

@@ -113,12 +113,14 @@ StatusCode motor_controller_init(MotorControllerStorage *controller,
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
     can_id.device_id = controller->settings.ids[i].motor_controller;
     can_id.msg_id = WAVESCULPTOR_MEASUREMENT_ID_VELOCITY;
-    status_ok_or_return(generic_can_register_rx(controller->settings.motor_can, prv_velocity_measurement_rx,
-                            GENERIC_CAN_EMPTY_MASK, can_id.raw, false, controller));
+    status_ok_or_return(generic_can_register_rx(controller->settings.motor_can,
+                                                prv_velocity_measurement_rx, GENERIC_CAN_EMPTY_MASK,
+                                                can_id.raw, false, controller));
 
     can_id.msg_id = WAVESCULPTOR_MEASUREMENT_ID_BUS;
-    status_ok_or_return(generic_can_register_rx(controller->settings.motor_can, prv_bus_measurement_rx,
-                            GENERIC_CAN_EMPTY_MASK, can_id.raw, false, controller));
+    status_ok_or_return(generic_can_register_rx(controller->settings.motor_can,
+                                                prv_bus_measurement_rx, GENERIC_CAN_EMPTY_MASK,
+                                                can_id.raw, false, controller));
   }
 
   return soft_timer_start_millis(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS, prv_periodic_tx, controller,
@@ -127,9 +129,9 @@ StatusCode motor_controller_init(MotorControllerStorage *controller,
 
 // Override the callbacks that are called when information is received from the motor controllers
 StatusCode motor_controller_set_update_cbs(MotorControllerStorage *controller,
-                                          MotorControllerSpeedCb speed_cb,
-                                          MotorControllerBusMeasurementCb bus_measurement_cb,
-                                          void *context) {
+                                           MotorControllerSpeedCb speed_cb,
+                                           MotorControllerBusMeasurementCb bus_measurement_cb,
+                                           void *context) {
   bool disabled = critical_section_start();
   controller->settings.speed_cb = speed_cb;
   controller->settings.bus_measurement_cb = bus_measurement_cb;
