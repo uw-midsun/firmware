@@ -26,11 +26,11 @@
 #include "pedal_fsm.h"
 #include "power_fsm.h"
 
-#include "headlight_fsm.h"
-#include "turn_signal_fsm.h"
-#include "hazards_fsm.h"
-#include "horn_fsm.h"
 #include "brake_signal.h"
+#include "hazards_fsm.h"
+#include "headlight_fsm.h"
+#include "horn_fsm.h"
+#include "turn_signal_fsm.h"
 
 #include "cruise.h"
 #include "drive_output.h"
@@ -136,8 +136,9 @@ int main(void) {
 
   event_arbiter_init(&s_event_arbiter);
   DriverControlsFsmInitFn init_fns[] = {
-    cruise_fsm_init, direction_fsm_init, mechanical_brake_fsm_init, pedal_fsm_init, power_fsm_init,
-    headlight_fsm_init, turn_signal_fsm_init, hazards_fsm_init, horn_fsm_init,
+    cruise_fsm_init,      direction_fsm_init, mechanical_brake_fsm_init,
+    pedal_fsm_init,       power_fsm_init,     headlight_fsm_init,
+    turn_signal_fsm_init, hazards_fsm_init,   horn_fsm_init,
   };
   for (size_t i = 0; i < NUM_DRIVER_CONTROLS_FSMS; i++) {
     init_fns[i](&s_fsms[i], &s_event_arbiter);
