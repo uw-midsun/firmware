@@ -19,6 +19,8 @@
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
+#include "crc32.h"
+#include "flash.h"
 
 static Ads1015Storage s_ads1015_storage;
 static MechBrakeStorage s_mech_brake_storage;
@@ -30,6 +32,8 @@ void setup_test(void) {
   interrupt_init();
   gpio_it_init();
   soft_timer_init();
+  crc32_init();
+  flash_init();
 
   I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,

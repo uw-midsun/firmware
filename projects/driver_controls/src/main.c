@@ -32,6 +32,8 @@
 #include "can.h"
 #include "dc_calib.h"
 #include "dc_cfg.h"
+#include "crc32.h"
+#include "flash.h"
 
 typedef StatusCode (*DriverControlsFsmInitFn)(FSM *fsm, EventArbiterStorage *storage);
 
@@ -71,6 +73,8 @@ int main(void) {
   gpio_it_init();
   soft_timer_init();
   event_queue_init();
+  crc32_init();
+  flash_init();
 
   calib_init(&s_calib_blob, sizeof(s_calib_blob));
 

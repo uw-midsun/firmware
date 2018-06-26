@@ -8,6 +8,8 @@
 #include "plutus_calib.h"
 #include "plutus_event.h"
 #include "soft_timer.h"
+#include "crc32.h"
+#include "flash.h"
 
 // Board-specific details
 typedef struct PlutusSysSpecifics {
@@ -119,6 +121,9 @@ StatusCode plutus_sys_init(PlutusSysStorage *storage, PlutusSysType type) {
       .aux_bitset = PLUTUS_CFG_AUX_BITSET_ARR,
     };
     status_ok_or_return(ltc_afe_init(&storage->ltc_afe, &afe_settings));
+
+    crc32_init();
+    flash_init();
 
     PlutusCalibBlob calib_blob = { 0 };
     calib_init(&calib_blob, sizeof(calib_blob));

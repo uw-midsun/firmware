@@ -10,6 +10,8 @@
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
+#include "flash.h"
+#include "crc32.h"
 
 // The module does not know what current the adc readings correspond to, so keep an arbitrary
 // max point for testing
@@ -21,6 +23,8 @@ void setup_test(void) {
   gpio_init();
   interrupt_init();
   soft_timer_init();
+  crc32_init();
+  flash_init();
 }
 
 void teardown_test(void) {}
