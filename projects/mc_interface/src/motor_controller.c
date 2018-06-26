@@ -18,32 +18,49 @@
 // - current = braking force
 
 static void prv_bus_measurement_rx(const GenericCanMsg *msg, void *context) {
-  // This should only be registered to the controller deemed to be the source of truth during cruise
   MotorControllerStorage *storage = context;
+  WaveSculptorCanId can_id = { .raw = msg->id };
   WaveSculptorCanData can_data = { .raw = msg->data };
 
-  // copy setpoint
-  storage->cruise_current_percentage =
-      fabsf(can_data.bus_measurement.bus_current / storage->settings.max_bus_current);
-  storage->cruise_is_braking = (can_data.bus_measurement.bus_current < 0.0f);
+  for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
+    if (can_id.device_id == storage->settings.ids[i].motor_controller) {
+      storage->bus_measurement[i].bus_voltage = (int16_t)(can_data.bus_measurement.bus_voltage);
+      storage->bus_measurement[i].bus_current = (int16_t)(can_data.bus_measurement.bus_current);
+      storage->bus_rx_bitset |= 1 << i;
+
+      if (i == 0) {
+        // This controller is deemed to be the source of truth during cruise - copy setpoint
+        storage->cruise_current_percentage =
+            fabsf(can_data.bus_measurement.bus_current / storage->settings.max_bus_current);
+        storage->cruise_is_braking = (can_data.bus_measurement.bus_current < 0.0f);
+      }
+    }
+  }
+
+  if (storage->bus_rx_bitset == (1 << NUM_MOTOR_CONTROLLERS) - 1) {
+    // Received speed from all motor controllers - clear bitset and broadcast
+    storage->bus_rx_bitset = 0;
+    storage->settings.bus_measurement_cb(storage->bus_measurement, NUM_MOTOR_CONTROLLERS,
+                                         storage->settings.context);
+  }
 }
 
 static void prv_velocity_measurement_rx(const GenericCanMsg *msg, void *context) {
   MotorControllerStorage *storage = context;
+  WaveSculptorCanId can_id = { .raw = msg->id };
+  WaveSculptorCanData can_data = { .raw = msg->data };
 
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
-    WaveSculptorCanId can_id = { .raw = msg->id };
     if (can_id.device_id == storage->settings.ids[i].motor_controller) {
-      WaveSculptorCanData can_data = { .raw = msg->data };
       storage->speed_cms[i] = (int16_t)(can_data.velocity_measurement.vehicle_velocity_ms * 100);
-      storage->rx_bitset |= 1 << i;
+      storage->speed_rx_bitset |= 1 << i;
       break;
     }
   }
 
-  if (storage->rx_bitset == (1 << NUM_MOTOR_CONTROLLERS) - 1) {
+  if (storage->speed_rx_bitset == (1 << NUM_MOTOR_CONTROLLERS) - 1) {
     // Received speed from all motor controllers - clear bitset and broadcast
-    storage->rx_bitset = 0;
+    storage->speed_rx_bitset = 0;
     storage->settings.speed_cb(storage->speed_cms, NUM_MOTOR_CONTROLLERS,
                                storage->settings.context);
   }
@@ -91,31 +108,31 @@ StatusCode motor_controller_init(MotorControllerStorage *controller,
   memset(controller, 0, sizeof(*controller));
   controller->settings = *settings;
 
-  WaveSculptorCanId can_id = {
-    .device_id = controller->settings.ids[0].motor_controller,
-    .msg_id = WAVESCULPTOR_MEASUREMENT_ID_BUS,
-  };
-
-  // Only bother registering the bus measurement handler for the first motor controller since
-  // that's all we care about
-  generic_can_register_rx(controller->settings.motor_can, prv_bus_measurement_rx,
-                          GENERIC_CAN_EMPTY_MASK, can_id.raw, false, controller);
+  WaveSculptorCanId can_id = { 0 };
 
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
     can_id.device_id = controller->settings.ids[i].motor_controller;
     can_id.msg_id = WAVESCULPTOR_MEASUREMENT_ID_VELOCITY;
-    generic_can_register_rx(controller->settings.motor_can, prv_velocity_measurement_rx,
-                            GENERIC_CAN_EMPTY_MASK, can_id.raw, false, controller);
+    status_ok_or_return(generic_can_register_rx(controller->settings.motor_can, prv_velocity_measurement_rx,
+                            GENERIC_CAN_EMPTY_MASK, can_id.raw, false, controller));
+
+    can_id.msg_id = WAVESCULPTOR_MEASUREMENT_ID_BUS;
+    status_ok_or_return(generic_can_register_rx(controller->settings.motor_can, prv_bus_measurement_rx,
+                            GENERIC_CAN_EMPTY_MASK, can_id.raw, false, controller));
   }
 
   return soft_timer_start_millis(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS, prv_periodic_tx, controller,
                                  NULL);
 }
 
-StatusCode motor_controller_set_speed_cb(MotorControllerStorage *controller,
-                                         MotorControllerSpeedCb speed_cb, void *context) {
+// Override the callbacks that are called when information is received from the motor controllers
+StatusCode motor_controller_set_update_cbs(MotorControllerStorage *controller,
+                                          MotorControllerSpeedCb speed_cb,
+                                          MotorControllerBusMeasurementCb bus_measurement_cb,
+                                          void *context) {
   bool disabled = critical_section_start();
   controller->settings.speed_cb = speed_cb;
+  controller->settings.bus_measurement_cb = bus_measurement_cb;
   controller->settings.context = context;
   critical_section_end(disabled);
 
