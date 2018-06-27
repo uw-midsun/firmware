@@ -3,6 +3,8 @@
 #include "log.h"
 #include "plutus_event.h"
 
+static int s_i = 0;
+
 static void prv_extract_cell_result(uint16_t *result_arr, size_t len, void *context) {
   FaultMonitorStorage *storage = context;
 
@@ -10,16 +12,23 @@ static void prv_extract_cell_result(uint16_t *result_arr, size_t len, void *cont
 
   memcpy(storage->result.cell_voltages, result_arr, sizeof(storage->result.cell_voltages));
 
+  storage->result.total_voltage = 0;
+  bool fault = false;
   for (size_t i = 0; i < len; i++) {
+    storage->result.total_voltage += result_arr[i];
     if (result_arr[i] < storage->settings.undervoltage ||
         result_arr[i] > storage->settings.overvoltage) {
-      bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
-                                EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
-      return;
+      fault = true;
     }
   }
 
-  bps_heartbeat_clear_fault(storage->settings.bps_heartbeat, EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+  if (fault) {
+    bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
+                              EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+  } else {
+    bps_heartbeat_clear_fault(storage->settings.bps_heartbeat,
+                              EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+  }
 }
 
 static void prv_extract_aux_result(uint16_t *result_arr, size_t len, void *context) {

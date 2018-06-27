@@ -38,6 +38,8 @@ FSM_STATE_TRANSITION(afe_trigger_aux_conv) {
 FSM_STATE_TRANSITION(afe_read_aux) {
   FSM_ADD_GUARDED_TRANSITION(PLUTUS_EVENT_AFE_TRIGGER_AUX_CONV, prv_all_aux_complete,
                              afe_aux_complete);
+  FSM_ADD_TRANSITION(PLUTUS_EVENT_AFE_AUX_CONV_COMPLETE, afe_read_aux);
+
   FSM_ADD_TRANSITION(PLUTUS_EVENT_AFE_TRIGGER_AUX_CONV, afe_trigger_aux_conv);
   FSM_ADD_TRANSITION(PLUTUS_EVENT_AFE_FAULT, afe_idle);
 }
