@@ -1,6 +1,8 @@
 #pragma once
 // BPS heartbeat - sends periodic heartbeat CAN messages containing the fault state
-// Requires soft timers, CAN to be initialized
+// Requires soft timers, CAN, event queue to be initialized
+//
+// Raises PLUTUS_EVENT_BPS_FAULT on fault with the data field set to the fault bitset
 #include "exported_enums.h"
 #include "sequenced_relay.h"
 
