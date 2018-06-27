@@ -6,6 +6,7 @@
 #include "interrupt.h"
 #include "killswitch.h"
 #include "plutus_event.h"
+#include "fans.h"
 #include "soft_timer.h"
 
 // Board-specific details
@@ -65,14 +66,11 @@ static StatusCode prv_init_common(PlutusSysStorage *storage, PlutusSysType type)
                                                     SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
                                                     heartbeat_rx_auto_ack_handler, NULL));
 
-  // TODO(ELEC-439): drive fans using PWM
-  GPIOSettings fan_settings = {
-    .direction = GPIO_DIR_OUT,
-    .state = GPIO_STATE_HIGH,
+  const FansSettings fan_settings = {
+    .relays = &storage->relay,
+    .fans = PLUTUS_CFG_FANS,
   };
-  GPIOAddress fan_1 = PLUTUS_CFG_FAN_1, fan_2 = PLUTUS_CFG_FAN_2;
-  gpio_init_pin(&fan_1, &fan_settings);
-  gpio_init_pin(&fan_2, &fan_settings);
+  status_ok_or_return(fans_init(&fan_settings));
 
   return STATUS_CODE_OK;
 }

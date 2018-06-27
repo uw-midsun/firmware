@@ -41,13 +41,10 @@
   { .port = GPIO_PORT_B, .pin = 4 }
 
 // Fans
-#define PLUTUS_CFG_FAN_1 \
-  { .port = GPIO_PORT_A, .pin = 10 }
-#define PLUTUS_CFG_FAN_2 \
-  { .port = GPIO_PORT_A, .pin = 9 }
-#define PLUTUS_CFG_FAN_PWM_TIM PWM_TIMER_1
-// ~26kHz
-#define PLUTUS_CFG_FAN_PWM_PERIOD_US 38
+#define PLUTUS_CFG_FANS \
+  {{ .port = GPIO_PORT_A, .pin = 10 }, \
+   { .port = GPIO_PORT_A, .pin = 9 }}
+#define PLUTUS_CFG_NUM_FANS 2
 
 // CAN
 #define PLUTUS_CFG_CAN_BITRATE CAN_HW_BITRATE_500KBPS
