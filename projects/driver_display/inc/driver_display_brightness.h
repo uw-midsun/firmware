@@ -1,11 +1,11 @@
 #pragma once
 // Module used to control the brightness levels of the driver display screens.
-// The module periodically samples adc values from the photosensor 
+// The module periodically samples adc values from the photosensor
 // and adjusts the brightness levels accordingly through PWM
-//  
+//
 // This module requires pwm, gpios and soft timers to be initialized before it can be run.
 // Calibration module must be run to update upper and lower bounds of calibration data
-// Note that the brightness levels are bounded from 0-100% and values are capped to that range 
+// Note that the brightness levels are bounded from 0-100% and values are capped to that range
 // to ensure that we do not have over 100% brightness
 
 #include "adc.h"
