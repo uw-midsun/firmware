@@ -5,10 +5,10 @@
 #include "plutus_cfg.h"
 
 #include "can_transmit.h"
+#include "fans.h"
 #include "fault_monitor.h"
 #include "plutus_event.h"
 #include "plutus_sys.h"
-#include "fans.h"
 #include "wait.h"
 
 static PlutusSysStorage s_plutus;

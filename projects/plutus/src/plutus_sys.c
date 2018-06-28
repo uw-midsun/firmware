@@ -2,6 +2,7 @@
 #include <string.h>
 #include "crc32.h"
 #include "event_queue.h"
+#include "fans.h"
 #include "flash.h"
 #include "gpio.h"
 #include "gpio_it.h"
@@ -9,7 +10,6 @@
 #include "killswitch.h"
 #include "plutus_calib.h"
 #include "plutus_event.h"
-#include "fans.h"
 #include "soft_timer.h"
 
 // Board-specific details

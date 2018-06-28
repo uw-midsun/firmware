@@ -3,11 +3,11 @@
 // Requires event queue, GPIO, sequenced relays to be initialized.
 //
 // Fans will be on if relays are closed or latched after fault unless explicitly cleared.
-#include "gpio.h"
-#include "event_queue.h"
 #include <stddef.h>
-#include "sequenced_relay.h"
+#include "event_queue.h"
+#include "gpio.h"
 #include "plutus_cfg.h"
+#include "sequenced_relay.h"
 
 typedef struct FansSettings {
   SequencedRelayStorage *relays;
