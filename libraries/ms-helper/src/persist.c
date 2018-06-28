@@ -51,7 +51,7 @@ static void prv_periodic_commit(SoftTimerID timer_id, void *context) {
                           &persist->timer_id);
 }
 
-StatusCode persist_init(PersistStorage *persist, FlashPage page, void *blob, size_t blob_size) {
+StatusCode persist_init(PersistStorage *persist, FlashPage page, void *blob, size_t blob_size, bool overwrite) {
   if (blob_size > FLASH_PAGE_BYTES || page >= NUM_FLASH_PAGES) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   } else if (blob_size % FLASH_WRITE_BYTES != 0) {
@@ -97,10 +97,15 @@ StatusCode persist_init(PersistStorage *persist, FlashPage page, void *blob, siz
               (uint32_t)persist->flash_addr);
     persist_commit(persist);
   } else if (header.size_bytes != persist->blob_size) {
-    LOG_DEBUG("Mismatched blob sizes! Invalidating old section\n");
-    persist->prev_flash_addr = persist->flash_addr;
-    persist->flash_addr += sizeof(header) + header.size_bytes;
-    persist_commit(persist);
+    if (overwrite) {
+      LOG_DEBUG("Mismatched blob sizes! Invalidating old section\n");
+      persist->prev_flash_addr = persist->flash_addr;
+      persist->flash_addr += sizeof(header) + header.size_bytes;
+      persist_commit(persist);
+    } else {
+      LOG_DEBUG("Mismatched blob sizes! Failed to init persist layer\n");
+      return status_code(STATUS_CODE_INTERNAL_ERROR);
+    }
   } else {
     LOG_DEBUG("Found valid section at 0x%" PRIx32 " (0x%" PRIx32 " bytes), loading data\n",
               (uint32_t)persist->flash_addr, (uint32_t)header.size_bytes);

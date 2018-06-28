@@ -7,6 +7,7 @@
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
+#include <string.h>
 
 #define TEST_PERSIST_FLASH_PAGE (NUM_FLASH_PAGES - 1)
 
@@ -33,7 +34,7 @@ void teardown_test(void) {
 void test_persist_new(void) {
   TestPersistData data = { .foo = 0x12345678, .bar = &s_persist };
 
-  StatusCode ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &data, sizeof(data));
+  StatusCode ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &data, sizeof(data), false);
   TEST_ASSERT_OK(ret);
 }
 
@@ -41,7 +42,7 @@ void test_persist_load_existing(void) {
   TestPersistData data = { .foo = 0x12345678, .bar = &s_persist };
 
   LOG_DEBUG("Creating initial persist\n");
-  StatusCode ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &data, sizeof(data));
+  StatusCode ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &data, sizeof(data), false);
   TEST_ASSERT_OK(ret);
 
   // Force some extra commits to simulate multiple changes
@@ -54,7 +55,7 @@ void test_persist_load_existing(void) {
 
   LOG_DEBUG("Setting up new persist layer\n");
   TestPersistData new_data = { 0 };
-  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &new_data, sizeof(new_data));
+  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &new_data, sizeof(new_data), false);
   TEST_ASSERT_OK(ret);
 
   TEST_ASSERT_EQUAL(data.foo, new_data.foo);
@@ -69,7 +70,7 @@ void test_persist_load_existing(void) {
 
   // Readback
   LOG_DEBUG("Reading back changed data\n");
-  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &data, sizeof(data));
+  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &data, sizeof(data), false);
   TEST_ASSERT_OK(ret);
 
   TEST_ASSERT_EQUAL(new_data.foo, data.foo);
@@ -83,7 +84,7 @@ void test_persist_full_page(void) {
   }
 
   LOG_DEBUG("Initializing persist layer\n");
-  StatusCode ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &data, sizeof(data));
+  StatusCode ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &data, sizeof(data), false);
   TEST_ASSERT_OK(ret);
 
   // Should be able to persist more than the maximum number of sections
@@ -97,7 +98,7 @@ void test_persist_full_page(void) {
   // Should load post-erase properly
   LOG_DEBUG("Loading persist data\n");
   uint32_t new_data[SIZEOF_ARRAY(data)] = { 0 };
-  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &new_data, sizeof(new_data));
+  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &new_data, sizeof(new_data), false);
   TEST_ASSERT_OK(ret);
 
   TEST_ASSERT_EQUAL_HEX32_ARRAY(data, new_data, SIZEOF_ARRAY(data));
@@ -106,33 +107,51 @@ void test_persist_full_page(void) {
 void test_persist_size_change(void) {
   uint32_t data[4] = { 0x1, 0x2, 0x3, 0x4 };
   LOG_DEBUG("Initializing persist layer with size %" PRIu32 "\n", (uint32_t)sizeof(data));
-  StatusCode ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &data, sizeof(data));
+  StatusCode ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &data, sizeof(data), false);
   TEST_ASSERT_OK(ret);
 
   uint32_t small_data[2] = { 0x4, 0x5 };
   LOG_DEBUG("Initializing persist layer with size %" PRIu32 "\n", (uint32_t)sizeof(small_data));
-  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &small_data, sizeof(small_data));
-  TEST_ASSERT_OK(ret);
+  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &small_data, sizeof(small_data), false);
+  TEST_ASSERT_NOT_OK(ret);
 
-  // Make sure the blob data was not overwritten
+  // Make sure the mismatched blob data was not overwritten
   TEST_ASSERT_EQUAL(0x4, small_data[0]);
   TEST_ASSERT_EQUAL(0x5, small_data[1]);
 
+  uint32_t readback_small[2] = { 0 };
+  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &readback_small, sizeof(readback_small), false);
+  TEST_ASSERT_NOT_OK(ret);
+
+  TEST_ASSERT_EQUAL(0x0, readback_small[0]);
+  TEST_ASSERT_EQUAL(0x0, readback_small[1]);
+
   // Switch back to larger data size
   LOG_DEBUG("Initializing persist layer with size %" PRIu32 "\n", (uint32_t)sizeof(data));
-  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &data, sizeof(data));
+  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &data, sizeof(data), false);
   TEST_ASSERT_OK(ret);
 
   TEST_ASSERT_EQUAL(data[0], 0x1);
   TEST_ASSERT_EQUAL(data[1], 0x2);
   TEST_ASSERT_EQUAL(data[2], 0x3);
   TEST_ASSERT_EQUAL(data[3], 0x4);
+
+  LOG_DEBUG("Overwriting persist layer with size %" PRIu32 "\n", (uint32_t)sizeof(small_data));
+  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &small_data, sizeof(small_data), true);
+  TEST_ASSERT_OK(ret);
+
+  memset(readback_small, 0, sizeof(readback_small));
+  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &readback_small, sizeof(readback_small), false);
+  TEST_ASSERT_OK(ret);
+
+  TEST_ASSERT_EQUAL(0x4, readback_small[0]);
+  TEST_ASSERT_EQUAL(0x5, readback_small[1]);
 }
 
 void test_persist_change_periodic(void) {
   uint32_t data[4] = { 0 };
   LOG_DEBUG("Initializing persist layer with 0s\n");
-  StatusCode ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &data, sizeof(data));
+  StatusCode ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &data, sizeof(data), false);
   TEST_ASSERT_OK(ret);
 
   // Change the blob data
@@ -147,7 +166,7 @@ void test_persist_change_periodic(void) {
   // Reload the persist layer
   LOG_DEBUG("Reloading persist layer\n");
   uint32_t readback[SIZEOF_ARRAY(data)] = { 0 };
-  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &readback, sizeof(readback));
+  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &readback, sizeof(readback), false);
   TEST_ASSERT_OK(ret);
 
   TEST_ASSERT_EQUAL_HEX32_ARRAY(data, readback, SIZEOF_ARRAY(data));
@@ -158,7 +177,7 @@ void test_persist_periodic_ctrl(void) {
 
   uint32_t data[4] = { 0 };
   LOG_DEBUG("Initializing persist layer with 0s\n");
-  StatusCode ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &data, sizeof(data));
+  StatusCode ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &data, sizeof(data), false);
   TEST_ASSERT_OK(ret);
 
   LOG_DEBUG("Disabling periodic commit\n");
@@ -178,7 +197,7 @@ void test_persist_periodic_ctrl(void) {
   LOG_DEBUG("Reloading persist layer\n");
   uint32_t old_data[4] = { 0 };
   uint32_t readback[SIZEOF_ARRAY(data)] = { 0 };
-  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &readback, sizeof(readback));
+  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &readback, sizeof(readback), false);
   TEST_ASSERT_OK(ret);
 
   TEST_ASSERT_EQUAL_HEX32_ARRAY(old_data, readback, SIZEOF_ARRAY(old_data));
