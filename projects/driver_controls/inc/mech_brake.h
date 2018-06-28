@@ -52,3 +52,7 @@ StatusCode mech_brake_init(MechBrakeStorage *mech_brake_storage, const MechBrake
 
 // Gets the current position of the mech_brake and writes that value to *position
 StatusCode mech_brake_get_position(MechBrakeStorage *storage, int16_t *position);
+
+// Returns a pointer to the global throttle storage.
+// Note that this only exists because our FSMs already use their context pointers for event arbiters
+MechBrakeStorage *mech_brake_global(void);

@@ -1,13 +1,13 @@
 #pragma once
 // Monitor voltage/current/temperature for faults
-// Requires LTC AFE, LTC ADC, BPS heartbeat to be initialized
+// Requires LTC AFE, current sense, BPS heartbeat to be initialized
 #include "bps_heartbeat.h"
-#include "ltc_adc.h"
+#include "current_sense.h"
 #include "ltc_afe.h"
 
 typedef struct FaultMonitorSettings {
   LtcAfeStorage *ltc_afe;
-  LtcAdcStorage *ltc_adc;
+  CurrentSenseStorage *current_sense;
   BpsHeartbeatStorage *bps_heartbeat;
 
   // In 100uV (0.1mV)
@@ -18,20 +18,29 @@ typedef struct FaultMonitorSettings {
   uint16_t overtemp_charge;
   uint16_t overtemp_discharge;
 
-  // In mA
+  // In mA - all values should be positive
   int32_t overcurrent_charge;
   int32_t overcurrent_discharge;
+  // Minimum charge current before we consider it as charging
+  int32_t charge_current_deadzone;
 } FaultMonitorSettings;
 
 typedef struct FaultMonitorResult {
   uint16_t cell_voltages[PLUTUS_CFG_AFE_TOTAL_CELLS];
   uint16_t temp_voltages[PLUTUS_CFG_AFE_TOTAL_CELLS];
+  uint32_t total_voltage;
   int32_t current;
+  bool charging;
 } FaultMonitorResult;
 
 typedef struct FaultMonitorStorage {
   FaultMonitorSettings settings;
   FaultMonitorResult result;
+
+  // in uA
+  int32_t charge_current_limit;
+  int32_t discharge_current_limit;
+  int32_t min_charge_current;
 } FaultMonitorStorage;
 
 // |storage| should persist. |settings.ltc_afe| and |settings.bps_heartbeat| should be initialized.

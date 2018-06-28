@@ -14,7 +14,7 @@
 #include "status.h"
 
 #define POWERTRAIN_HEARTBEAT_MS 1000
-#define POWERTRAIN_HEARTBEAT_WATCHDOG_MS 2100
+#define POWERTRAIN_HEARTBEAT_WATCHDOG_MS 4100
 
 // Sets up powertrain heartbeat
 StatusCode powertrain_heartbeat_init(void);
