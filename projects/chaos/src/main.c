@@ -13,6 +13,7 @@
 #include "delay_service.h"
 #include "emergency_fault.h"
 #include "event_queue.h"
+#include "fan_control.h"
 #include "gpio.h"
 #include "gpio_fsm.h"
 #include "gpio_it.h"
@@ -126,6 +127,7 @@ int main(void) {
     // case with a failure resulting in faulting into Emergency.
     can_process_event(&e);
     delay_service_process_event(&e);
+    fan_control_process_event(&e);
     emergency_fault_process_event(&s_emergency_storage, &e);
     gpio_fsm_process_event(&e);
     powertrain_heartbeat_process_event(&e);
