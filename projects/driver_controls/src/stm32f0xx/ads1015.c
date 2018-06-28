@@ -89,6 +89,9 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
     storage->channel_readings[current_channel] =
         ((read_conv_register[0] << 8) | read_conv_register[1]) >>
         ADS1015_NUM_RESERVED_BITS_CONV_REG;
+
+    storage->data_valid = true;
+
     // Runs the users callback if not NULL.
     if (storage->channel_callback[current_channel] != NULL) {
       storage->channel_callback[current_channel](current_channel,
@@ -106,7 +109,6 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
   prv_set_channel(storage, current_channel);
 
   storage->watchdog_kicked = true;
-  storage->data_valid = true;
 }
 
 // Initiates ads1015 by setting up registers and enabling ALRT/RDY Pin.
