@@ -144,8 +144,8 @@ lint:
 pylint:
 	@echo "Linting *.py in $(MAKE_DIR), $(PLATFORMS_DIR), $(PROJ_DIR), $(LIB_DIR)"
 	@echo "Excluding libraries: $(IGNORE_CLEANUP_LIBS)"
-	@find $(MAKE_DIR) $(PLATFORMS_DIR) -iname "*.py" -print | xargs -r pylint --disable=F0401
-	@$(FIND:"*.[ch]"="*.py") | xargs -r pylint --disable=F0401
+	@find $(MAKE_DIR) $(PLATFORMS_DIR) -iname "*.py" -print | xargs -r pylint --disable=F0401 --disable=duplicate-code
+	@$(FIND:"*.[ch]"="*.py") | xargs -r pylint --disable=F0401 --disable=duplicate-code
 
 # Formats libraries and projects, excludes IGNORE_CLEANUP_LIBS
 format:

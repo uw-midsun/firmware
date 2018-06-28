@@ -12,7 +12,7 @@
 #include "exported_enums.h"
 #include "generic_can.h"
 
-#define MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS 50
+#define MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS 200
 // Arbitrary timeout after 5 TX periods without receiving a setpoint update
 #define MOTOR_CONTROLLER_WATCHDOG_COUNTER 5
 
@@ -35,7 +35,7 @@ typedef enum {
 typedef uint32_t MotorControllerCanId;
 
 typedef struct MotorControllerSettings {
-  GenericCan *can_uart;
+  GenericCan *motor_can;
   struct {
     // WaveSculptor address
     MotorControllerCanId motor_controller;
@@ -67,7 +67,7 @@ typedef struct MotorControllerStorage {
   size_t timeout_counter;
 } MotorControllerStorage;
 
-// |settings.can_uart| should be initialized to an instance of CAN UART
+// |settings.motor_can| should be initialized.
 StatusCode motor_controller_init(MotorControllerStorage *controller,
                                  const MotorControllerSettings *settings);
 

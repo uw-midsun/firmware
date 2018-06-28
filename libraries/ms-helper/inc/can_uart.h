@@ -1,10 +1,11 @@
 #pragma once
+// Generic CAN HW <-> UART protocol
+// Requires CAN HW, UART to be initialized
+//
+// Uses COBS encoding to frame packets - 0x00 is used as a delimiter
 #include "can_hw.h"
 #include "status.h"
 #include "uart.h"
-
-// Generic CAN HW <-> UART protocol
-// Requires CAN HW, UART to be initialized
 
 // Process RX'd CAN message from UART
 struct CanUart;
