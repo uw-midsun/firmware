@@ -66,6 +66,7 @@ StatusCode driver_display_calibration_bounds(DriverDisplayCalibrationStorage *st
 
   storage->sample_count = 0;
   storage->sample_sum = 0;
+  storage->reading_ok_flag = true;
 
   // Starting calibration after pins have been initialized and adc is set up
   // Temp for debugging
@@ -75,7 +76,7 @@ StatusCode driver_display_calibration_bounds(DriverDisplayCalibrationStorage *st
   status_ok_or_return(soft_timer_start_millis(DRIVER_DISPLAY_CALIBRATION_PERIOD_MS,
                                               prv_timer_callback, storage, NULL));
 
-  while (storage->sample_count < DRIVER_DISPLAY_CALIBRATION_SAMPLE_SIZE) {
+  while ((storage->sample_count) < DRIVER_DISPLAY_CALIBRATION_SAMPLE_SIZE) {
     // wait for process to collect samples
     if (storage->reading_ok_flag == false) {
       return status_code(STATUS_CODE_INTERNAL_ERROR);

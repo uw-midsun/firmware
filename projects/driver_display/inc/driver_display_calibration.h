@@ -19,9 +19,9 @@ typedef enum {
 typedef struct DriverDisplayCalibrationStorage {
   ADCChannel adc_channel;
   DriverDisplayBrightnessCalibrationData *data;
-  bool reading_ok_flag;
-  uint64_t sample_sum;
-  uint16_t sample_count;
+  volatile bool reading_ok_flag;
+  volatile uint64_t sample_sum;
+  volatile uint16_t sample_count;
 } DriverDisplayCalibrationStorage;
 
 // Initializes the calibration module

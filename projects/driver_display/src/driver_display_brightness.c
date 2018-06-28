@@ -59,6 +59,7 @@ StatusCode driver_display_brightness_init(
 
   storage->calibration_data = calibration_data;
   storage->settings = settings;
+  storage->reading_ok_flag = true;
 
   GPIOSettings pwm_settings = { .direction = GPIO_DIR_OUT,
                                 .state = GPIO_STATE_HIGH,
