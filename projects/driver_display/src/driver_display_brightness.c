@@ -7,7 +7,7 @@
 static void prv_adjust_brightness(DriverDisplayBrightnessStorage *storage) {
   uint16_t reading;
   adc_read_raw(storage->adc_channel, &reading);
-
+  
   // Convert the raw reading into a percentage of max reading to then be passed into pwm_set_dc to
   // adjust brightness accordingly
   uint16_t percent_reading;
@@ -43,7 +43,7 @@ static void prv_timer_callback(SoftTimerID timer_id, void *context) {
                            NULL);
 }
 
-static void prv_brightness_callback(ADCChannel adc_channel, void *context) {
+static void prv_adc_callback(ADCChannel adc_channel, void *context) {
   uint16_t *adc_reading = (uint16_t *)context;
   // Read raw value from adc_channel and return
   adc_read_raw(adc_channel, adc_reading);
@@ -68,8 +68,8 @@ StatusCode driver_display_brightness_init(
   for (uint8_t i = 0; i < NUM_DRIVER_DISPLAY_BRIGHTNESS_SCREENS; i++) {
     status_ok_or_return(gpio_init_pin(&settings->screen_address[i], &pwm_settings));
     status_ok_or_return(pwm_init_hz(settings->timer, settings->frequency_hz));
-    status_ok_or_return(
-        pwm_set_dc(settings->timer, 50));  // set the screen brightness to 50% initially
+    // set the screen brightness to 50% initially
+    status_ok_or_return(pwm_set_dc(settings->timer, 50));
   }
 
   GPIOSettings adc_settings = { .direction = GPIO_DIR_IN,
@@ -84,7 +84,7 @@ StatusCode driver_display_brightness_init(
 
   uint16_t reading;
   status_ok_or_return(
-      adc_register_callback(storage->adc_channel, prv_brightness_callback, &reading));
+      adc_register_callback(storage->adc_channel, prv_adc_callback, &reading));
 
   return soft_timer_start_seconds(settings->update_period_s, prv_timer_callback, (void *)storage,
                                   NULL);

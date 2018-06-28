@@ -54,6 +54,7 @@ StatusCode driver_display_calibration_upper_bound(DriverDisplayCalibrationStorag
     delay_ms(10);  // Delay to prevent overflow
   }
 
+  // Average out the values to obtain upper threshold
   storage->data->max = sum / count;
   return STATUS_CODE_OK;
 }
@@ -78,6 +79,7 @@ StatusCode driver_display_calibration_lower_bound(DriverDisplayCalibrationStorag
     delay_ms(10);  // Delay to prevent overflow
   }
 
+  // Average out the values to obtain lower threshold
   storage->data->min = sum / count;
   return STATUS_CODE_OK;
 }
