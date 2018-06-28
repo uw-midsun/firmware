@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "critical_section.h"
+#include "log.h"
 #include "status.h"
 #include "wait.h"
 
