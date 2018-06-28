@@ -18,7 +18,7 @@
 #define CAN_SLAVE_UART_RX \
   { .port = GPIO_PORT_B, .pin = 11 }
 #define CAN_SLAVE_UART_ALTFN GPIO_ALTFN_4
-#define CAN_SLAVE_CAN_BITRATE CAN_HW_BITRATE_500KBPS
+#define CAN_SLAVE_CAN_BITRATE CAN_HW_BITRATE_250KBPS
 
 static UARTStorage s_uart_storage;
 

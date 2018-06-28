@@ -40,13 +40,14 @@ static void prv_command_rx(const GenericCanMsg *msg, void *context) {
   generic_can_msg_to_can_message(msg, &can_msg);
   EEChargerSetRelayState relay_state = 0;
   CAN_UNPACK_CHARGER_SET_RELAY_STATE(&can_msg, (uint8_t *)&relay_state);
-  if (relay_state == EE_CHARGER_SET_RELAY_STATE_CLOSE) {
+  if (relay_state == EE_CHARGER_SET_RELAY_STATE_OPEN) {
     LOG_DEBUG("Start received\n");
     event_raise(CHARGER_EVENT_START_CHARGING, 0);
     prv_kick_watchdog();
   } else {
     LOG_DEBUG("Stop received\n");
-    event_raise(CHARGER_EVENT_STOP_CHARGING, 0);
+    event_raise(CHARGER_EVENT_START_CHARGING, 0);
+    prv_kick_watchdog();
   }
 }
 

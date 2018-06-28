@@ -13,6 +13,7 @@
 #include "generic_can.h"
 #include "generic_can_msg.h"
 #include "log.h"
+#include "misc.h"
 #include "status.h"
 
 #define CHARGER_PERIOD_US 1000000  // 1 Second as defined in datasheet.
@@ -51,13 +52,13 @@ static void prv_rx_handler(const GenericCanMsg *msg, void *context) {
     .raw_data = msg->data,
   };
   *s_charger_status = data.data_impl.status_flags;
-  LOG_DEBUG("Current: %u\n", data.data_impl.current);
-  LOG_DEBUG("Voltage: %u\n", data.data_impl.voltage);
-  LOG_DEBUG("Comms: %u\n", data.data_impl.status_flags.comms_state);
-  LOG_DEBUG("HW Fault: %u\n", data.data_impl.status_flags.hw_fault);
-  LOG_DEBUG("Input voltage: %u\n", data.data_impl.status_flags.input_voltage);
-  LOG_DEBUG("Over temp: %u\n", data.data_impl.status_flags.over_temp);
-  LOG_DEBUG("Starting state: %u\n", data.data_impl.status_flags.starting_state);
+  LOG_DEBUG("Current: %u\n", SWAP_UINT16(data.data_impl.current));
+  LOG_DEBUG("Voltage: %u\n", SWAP_UINT16(data.data_impl.voltage));
+  // LOG_DEBUG("Comms: %u\n", data.data_impl.status_flags.comms_state);
+  // LOG_DEBUG("HW Fault: %u\n", data.data_impl.status_flags.hw_fault);
+  // LOG_DEBUG("Input voltage: %u\n", data.data_impl.status_flags.input_voltage);
+  // LOG_DEBUG("Over temp: %u\n", data.data_impl.status_flags.over_temp);
+  // LOG_DEBUG("Starting state: %u\n", data.data_impl.status_flags.starting_state);
 
   // Check for statuses
   if (!charger_controller_is_safe()) {

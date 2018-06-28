@@ -14,7 +14,7 @@
 
 static CANSettings s_can_settings = {
   .device_id = SYSTEM_CAN_DEVICE_CHARGER,
-  .bitrate = CAN_HW_BITRATE_250KBPS,
+  .bitrate = CAN_HW_BITRATE_500KBPS,
   .tx = { GPIO_PORT_A, 12 },
   .rx = { GPIO_PORT_A, 11 },
   .rx_event = CHARGER_EVENT_CAN_RX,
