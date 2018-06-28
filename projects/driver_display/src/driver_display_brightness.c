@@ -4,9 +4,11 @@
 
 #include "driver_display_brightness.h"
 
-static void prv_adjust_brightness(DriverDisplayBrightnessStorage *storage) {
+static void prv_timer_callback(SoftTimerID timer_id, void *context) {
+  DriverDisplayBrightnessStorage *storage = (DriverDisplayBrightnessStorage *)context;
+
   uint16_t reading;
-  adc_read_raw(storage->adc_channel, &reading);
+  StatusCode primary_status = adc_read_raw(storage->adc_channel, &reading);
 
   // Convert the raw reading into a percentage of max reading to then be passed into pwm_set_dc to
   // adjust brightness accordingly
@@ -27,20 +29,19 @@ static void prv_adjust_brightness(DriverDisplayBrightnessStorage *storage) {
   printf("adc reading: %u \n", percent_reading);
 
   // Set the screen brightness through PWM change
-  for (uint8_t i = 0; i < NUM_DRIVER_DISPLAY_BRIGHTNESS_SCREENS; i++) {
-    // Currently all screens are controlled by single photo sensor (they will have synchronized
-    // brightness levels)
-    pwm_set_dc(storage->settings->timer, percent_reading);
-  }
-}
-
-static void prv_timer_callback(SoftTimerID timer_id, void *context) {
-  DriverDisplayBrightnessStorage *storage = (DriverDisplayBrightnessStorage *)context;
-  prv_adjust_brightness(storage);
-
+  // Currently all screens are controlled by single photo sensor (they will have synchronized
+  // brightness levels)
+  StatusCode secondary_status = pwm_set_dc(storage->settings->timer, percent_reading);
   // Schedule new timer
-  soft_timer_start_seconds(storage->settings->update_period_s, prv_timer_callback, (void *)storage,
-                           NULL);
+  StatusCode tertiary_status = soft_timer_start_seconds(storage->settings->update_period_s,
+                                                        prv_timer_callback, storage, NULL);
+
+  // Check if anything has failed and set appropriate flag
+  if (status_ok(primary_status) && status_ok(secondary_status) && status_ok(tertiary_status)) {
+    storage->reading_ok_flag = true;
+  } else {
+    storage->reading_ok_flag = false;
+  }
 }
 
 static void prv_adc_callback(ADCChannel adc_channel, void *context) {
@@ -85,6 +86,5 @@ StatusCode driver_display_brightness_init(
   uint16_t reading;
   status_ok_or_return(adc_register_callback(storage->adc_channel, prv_adc_callback, &reading));
 
-  return soft_timer_start_seconds(settings->update_period_s, prv_timer_callback, (void *)storage,
-                                  NULL);
+  return soft_timer_start_seconds(settings->update_period_s, prv_timer_callback, storage, NULL);
 }

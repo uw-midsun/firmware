@@ -3,6 +3,7 @@
 
 #include "delay.h"
 #include "interrupt.h"
+#include "log.h"
 
 #include "driver_display_brightness.h"
 #include "driver_display_brightness_config.h"
@@ -21,28 +22,33 @@ int main(void) {
   gpio_init();
   adc_init(ADC_MODE_CONTINUOUS);
 
-  // Test can <-> uart
-  uart_init(DRIVER_DISPLAY_CONFIG_UART_PORT, driver_display_config_load_uart(), &s_uart_storage);
+  // Init can <-> uart
+  const CanUart *can_uart = driver_display_config_load_can_uart();
+  uart_init(can_uart->uart, driver_display_config_load_uart(), &s_uart_storage);
   can_hw_init(driver_display_config_load_can());
-  can_uart_init(driver_display_config_load_can_uart());
-  can_uart_enable_passthrough(driver_display_config_load_can_uart());
+  can_uart_init(can_uart);
+  can_uart_enable_passthrough(can_uart);
 
   // Test calibration
+  // TODO(ELEC-434): add persist layer so that the calibration does not need to be run everytime
   driver_display_calibration_init(driver_display_brightness_config_load(), &s_calibration_data,
                                   &s_calibration_storage);
-  driver_display_calibration_lower_bound(&s_calibration_storage);
-  driver_display_calibration_upper_bound(&s_calibration_storage);
+  driver_display_calibration_bounds(&s_calibration_storage, DRIVER_DISPLAY_CALIBRATION_UPPER_BOUND);
+  driver_display_calibration_bounds(&s_calibration_storage, DRIVER_DISPLAY_CALIBRATION_LOWER_BOUND);
 
   // Temp for debugging
   // printf("upper bound: %d \n", calibration_storage.data->max);
   // printf("lower bound: %d \n", calibration_storage.data->min);
 
-  // Test brightness module
+  // Init brightness module
   driver_display_brightness_init(&s_brightness_storage, driver_display_brightness_config_load(),
                                  &s_calibration_data);
 
   while (true) {
-    // Do stuff
+    // If the photodiode information was unable to be read
+    if (s_brightness_storage.reading_ok_flag == false) {
+      LOG_CRITICAL("Failed to read photosensor ADC");
+    }
   }
   return 0;
 }

@@ -8,13 +8,6 @@
 #include "uart.h"
 
 #define DRIVER_DISPLAY_CONFIG_UART_BAUDRATE 115200
-#define DRIVER_DISPLAY_CONFIG_UART_PORT UART_PORT_3
-#define DRIVER_DISPLAY_CONFIG_UART_TX \
-  { .port = GPIO_PORT_B, .pin = 10 }
-#define DRIVER_DISPLAY_CONFIG_UART_RX \
-  { .port = GPIO_PORT_B, .pin = 11 }
-#define DRIVER_DISPLAY_CONFIG_UART_ALTFN GPIO_ALTFN_4
-#define DRIVER_DISPLAY_CONFIG_CAN_BITRATE CAN_HW_BITRATE_500KBPS
 
 // Load uart settings for uart initialization
 UARTSettings *driver_display_config_load_uart(void);

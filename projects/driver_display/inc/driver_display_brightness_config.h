@@ -5,7 +5,7 @@
 #include "driver_display_brightness.h"
 
 // Frequency for the screens (All the same frequency)
-#define DRIVER_DISPLAY_CONFIG_SCREEN_FREQ_HZ 30000
+#define DRIVER_DISPLAY_CONFIG_SCREEN_FREQ_HZ 10000
 // Period of time before sampling the photodiode information
 #define DRIVER_DISPLAY_CONFIG_UPDATE_PERIOD_S 5
 
