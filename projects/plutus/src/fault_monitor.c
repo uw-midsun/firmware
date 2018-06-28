@@ -3,8 +3,6 @@
 #include "log.h"
 #include "plutus_event.h"
 
-static int s_i = 0;
-
 static void prv_extract_cell_result(uint16_t *result_arr, size_t len, void *context) {
   FaultMonitorStorage *storage = context;
 
@@ -69,6 +67,7 @@ static void prv_handle_adc_timeout(void *context) {
 
 StatusCode fault_monitor_init(FaultMonitorStorage *storage, const FaultMonitorSettings *settings) {
   storage->settings = *settings;
+  // Convert mA to uA
   storage->charge_current_limit = settings->overcurrent_charge * 1000;
   storage->discharge_current_limit = settings->overcurrent_discharge * -1000;
   storage->min_charge_current = -1 * settings->charge_current_deadzone;

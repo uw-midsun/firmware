@@ -10,7 +10,7 @@
 // Load any stored data into |blob|. |blob| should persist.
 StatusCode calib_init(void *blob, size_t blob_size);
 
-// Store any changes to the calib blob.
+// Store any changes to the calibration blob.
 StatusCode calib_commit(void);
 
 // Retrieve persisted calibration data.
