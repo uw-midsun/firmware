@@ -115,9 +115,9 @@
   can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_PLUTUS, SYSTEM_CAN_MESSAGE_BATTERY_VT, 6, \
                     (module_id_u16), (voltage_u16), (temperature_u16), CAN_PACK_IMPL_EMPTY)
 
-#define CAN_PACK_BATTERY_CURRENT(msg_ptr, current_u32)                                          \
-  can_pack_impl_u32((msg_ptr), SYSTEM_CAN_DEVICE_PLUTUS, SYSTEM_CAN_MESSAGE_BATTERY_CURRENT, 4, \
-                    (current_u32), CAN_PACK_IMPL_EMPTY)
+#define CAN_PACK_BATTERY_AGGREGATE_VC(msg_ptr, voltage_u32, current_u32)                          \
+  can_pack_impl_u32((msg_ptr), SYSTEM_CAN_DEVICE_PLUTUS, SYSTEM_CAN_MESSAGE_BATTERY_AGGREGATE_VC, \
+                    8, (voltage_u32), (current_u32))
 
 #define CAN_PACK_MOTOR_CONTROLLER_VC(msg_ptr, mc_voltage_1_u16, mc_current_1_u16,  \
                                      mc_voltage_2_u16, mc_current_2_u16)           \
@@ -125,10 +125,10 @@
                     SYSTEM_CAN_MESSAGE_MOTOR_CONTROLLER_VC, 8, (mc_voltage_1_u16), \
                     (mc_current_1_u16), (mc_voltage_2_u16), (mc_current_2_u16))
 
-#define CAN_PACK_MOTOR_VELOCITY(msg_ptr, vehicle_velocity_left_u32, vehicle_velocity_right_u32) \
-  can_pack_impl_u32((msg_ptr), SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,                              \
-                    SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY, 8, (vehicle_velocity_left_u32),          \
-                    (vehicle_velocity_right_u32))
+#define CAN_PACK_MOTOR_VELOCITY(msg_ptr, vehicle_velocity_left_u16, vehicle_velocity_right_u16) \
+  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,                              \
+                    SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY, 4, (vehicle_velocity_left_u16),          \
+                    (vehicle_velocity_right_u16), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_MOTOR_ANGULAR_FREQUENCY(msg_ptr, angular_freq_left_u32, angular_freq_right_u32) \
   can_pack_impl_u32((msg_ptr), SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,                               \

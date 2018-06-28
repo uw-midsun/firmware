@@ -9,4 +9,4 @@
 #define TEST_ASSERT_NOT_OK(code) TEST_ASSERT_NOT_EQUAL(STATUS_CODE_OK, (code))
 
 // Mocking
-#define TEST_MOCK(func) __wrap_##func
+#define TEST_MOCK(func) __attribute__((used)) __wrap_##func

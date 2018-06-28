@@ -1,7 +1,10 @@
 #include "ads1015.h"
 #include "calib.h"
+#include "crc32.h"
+#include "dc_calib.h"
 #include "delay.h"
 #include "event_queue.h"
+#include "flash.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "i2c.h"
@@ -15,13 +18,16 @@
 static Ads1015Storage s_ads1015_storage;
 static ThrottleStorage s_throttle_storage;
 static ThrottleCalibrationStorage s_calibration_storage;
-static CalibStorage s_calib;
+static DcCalibBlob s_calib_blob;
 
 void setup_test(void) {
   gpio_init();
   interrupt_init();
   gpio_it_init();
   soft_timer_init();
+  crc32_init();
+  flash_init();
+
   I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,                   //
     .sda = { .port = GPIO_PORT_B, .pin = 9 },  //
@@ -44,7 +50,7 @@ void setup_test(void) {
   };
   throttle_calibration_init(&s_calibration_storage, &calib_settings);
 
-  calib_init(&s_calib);
+  calib_init(&s_calib_blob, sizeof(s_calib_blob));
 }
 
 void teardown_test(void) {}
@@ -61,12 +67,13 @@ void test_throttle_calibration_run(void) {
   throttle_calibration_sample(&s_calibration_storage, THROTTLE_CALIBRATION_POINT_FULL_ACCEL);
   LOG_DEBUG("Completed sampling\n");
 
-  throttle_calibration_result(&s_calibration_storage, &calib_blob(&s_calib)->throttle_calib);
+  DcCalibBlob *dc_calib_blob = calib_blob();
+  throttle_calibration_result(&s_calibration_storage, &dc_calib_blob->throttle_calib);
 
   LOG_DEBUG("Stored throttle calib data\n");
-  calib_commit(&s_calib);
+  calib_commit();
 
-  throttle_init(&s_throttle_storage, &calib_blob(&s_calib)->throttle_calib, &s_ads1015_storage);
+  throttle_init(&s_throttle_storage, &dc_calib_blob->throttle_calib, &s_ads1015_storage);
 
   while (true) {
     ThrottlePosition position = { .zone = NUM_THROTTLE_ZONES };
