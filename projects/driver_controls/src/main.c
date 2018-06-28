@@ -26,6 +26,12 @@
 #include "pedal_fsm.h"
 #include "power_fsm.h"
 
+#include "brake_signal.h"
+#include "hazards_fsm.h"
+#include "headlight_fsm.h"
+#include "horn_fsm.h"
+#include "turn_signal_fsm.h"
+
 #include "cruise.h"
 #include "drive_output.h"
 
@@ -43,7 +49,11 @@ typedef enum {
   DRIVER_CONTROLS_FSM_PEDAL,
   DRIVER_CONTROLS_FSM_DIRECTION,
   DRIVER_CONTROLS_FSM_MECH_BRAKE,
-  NUM_DRIVER_CONTROLS_FSMS
+  DRIVER_CONTROLS_FSM_HEADLIGHT,
+  DRIVER_CONTROLS_FSM_TURN_SIGNALS,
+  DRIVER_CONTROLS_FSM_HAZARDS,
+  DRIVER_CONTROLS_FSM_HORN,
+  NUM_DRIVER_CONTROLS_FSMS,
 } DriverControlsFsm;
 
 static GpioExpanderStorage s_console_expander;
@@ -103,17 +113,22 @@ int main(void) {
 
   i2c_init(DC_CFG_I2C_BUS_PORT, &i2c_settings);
 
+#ifndef DC_CFG_DISABLE_CENTER_CONSOLE
   GPIOAddress console_int_pin = DC_CFG_CONSOLE_IO_INT_PIN;
   gpio_expander_init(&s_console_expander, DC_CFG_I2C_BUS_PORT, DC_CFG_CONSOLE_IO_ADDR,
                      &console_int_pin);
   center_console_init(&s_console, &s_console_expander);
+#endif
 
+#ifndef DC_CFG_DISABLE_CONTROL_STALK
   GPIOAddress stalk_int_pin = DC_CFG_STALK_IO_INT_PIN;
   GPIOAddress stalk_ready_pin = DC_CFG_STALK_ADC_RDY_PIN;
   gpio_expander_init(&s_stalk_expander, DC_CFG_I2C_BUS_PORT, DC_CFG_STALK_IO_ADDR, &stalk_int_pin);
   ads1015_init(&s_stalk_ads1015, DC_CFG_I2C_BUS_PORT, DC_CFG_STALK_ADC_ADDR, &stalk_ready_pin);
   control_stalk_init(&s_stalk, &s_stalk_ads1015, &s_stalk_expander);
+#endif
 
+#ifndef DC_CFG_DISABLE_PEDAL
   GPIOAddress pedal_ads1015_ready = DC_CFG_PEDAL_ADC_RDY_PIN;
   ads1015_init(&s_pedal_ads1015, DC_CFG_I2C_BUS_PORT, DC_CFG_PEDAL_ADC_ADDR, &pedal_ads1015_ready);
   DcCalibBlob *dc_calib_blob = calib_blob();
@@ -130,6 +145,7 @@ int main(void) {
   cruise_init(cruise_global());
   drive_output_init(drive_output_global(), INPUT_EVENT_DRIVE_WATCHDOG_FAULT,
                     INPUT_EVENT_DRIVE_UPDATE_REQUESTED);
+#endif
 
   // BPS heartbeat
   bps_indicator_init();
@@ -137,9 +153,13 @@ int main(void) {
   heartbeat_rx_register_handler(&s_powertrain_heartbeat, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
                                 heartbeat_rx_auto_ack_handler, NULL);
 
+  brake_signal_init();
+
   event_arbiter_init(&s_event_arbiter);
   DriverControlsFsmInitFn init_fns[] = {
-    cruise_fsm_init, direction_fsm_init, mechanical_brake_fsm_init, pedal_fsm_init, power_fsm_init,
+    cruise_fsm_init,      direction_fsm_init, mechanical_brake_fsm_init,
+    pedal_fsm_init,       power_fsm_init,     headlight_fsm_init,
+    turn_signal_fsm_init, hazards_fsm_init,   horn_fsm_init,
   };
   for (size_t i = 0; i < NUM_DRIVER_CONTROLS_FSMS; i++) {
     init_fns[i](&s_fsms[i], &s_event_arbiter);
@@ -170,6 +190,7 @@ int main(void) {
       power_distribution_controller_retry(&e);
       cruise_handle_event(cruise_global(), &e);
       event_arbiter_process_event(&s_event_arbiter, &e);
+      brake_signal_process_event(&e);
     }
   }
 }
