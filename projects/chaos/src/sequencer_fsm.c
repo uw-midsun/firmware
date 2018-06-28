@@ -6,6 +6,7 @@
 #include "chaos_events.h"
 #include "delay_service.h"
 #include "event_queue.h"
+#include "exported_enums.h"
 #include "fsm.h"
 #include "log.h"
 #include "misc.h"
@@ -351,7 +352,7 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event) {
     // If we aren't in the emergency state we need to switch to that state. This event will not be
     // raised in the emergency state.
     return event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_EMERGENCY,
-                                SEQUENCER_EMPTY_DATA);
+                                EE_POWER_DISTRIBUTION_FAULT_REASON_RELAY_RETRY_EXPIRY);
   }
 
   // Filter to only handled events. Those in the range
@@ -373,7 +374,7 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event) {
     // If we are stuck go to the emergency state.
     LOG_DEBUG("Emergency: sequence failed.");
     return event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_EMERGENCY,
-                                SEQUENCER_EMPTY_DATA);
+                                EE_POWER_DISTRIBUTION_FAULT_REASON_SEQUENCE_RETRY_EXPIRY);
   }
   if (sequencer_complete(&s_storage)) {
     LOG_DEBUG("Sequence Complete\n");
