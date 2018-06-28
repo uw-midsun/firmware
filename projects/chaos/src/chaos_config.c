@@ -84,10 +84,11 @@ static ChaosConfig s_config = {
   .front_lights_power = { GPIO_PORT_B, 2 },
   .battery_box_power = { GPIO_PORT_B, 0 },
   .motor_interface_power = { GPIO_PORT_A, 7 },
-  .rear_lights_power = { GPIO_PORT_B, 9 },
-  .pjb_fan = { GPIO_PORT_A, 6 },
-  .spare_protected_power = { GPIO_PORT_B, 1 },
-  .spare_unprotected_power = { GPIO_PORT_B, 9 },
+  .rear_lights_power = { GPIO_PORT_B, 15 },
+  .pjb_fan = { GPIO_PORT_B, 9 },
+  .charger_power = { GPIO_PORT_B, 7 },
+  .spare_protected_power = { GPIO_PORT_A, 6 },
+  .spare_unprotected_power = { GPIO_PORT_B, 1 },
 };
 // clang-format on
 
