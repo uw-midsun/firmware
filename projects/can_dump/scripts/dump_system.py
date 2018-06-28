@@ -33,7 +33,7 @@ def data_battery_vt(module, voltage, temperature):
 
 def data_battery_voltage_current(voltage, current):
     """Battery total voltage/current data format"""
-    return '{:.4f}V {:.4f}mA'.format(voltage / 10000, current / 1000)
+    return '{:.4f}V {:.4f}A'.format(voltage / 10000, current / 1000000)
 
 def data_dump(*args):
     """Generic data dump format"""
