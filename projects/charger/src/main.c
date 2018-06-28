@@ -12,6 +12,7 @@
 #include "gpio.h"
 #include "gpio_it.h"
 #include "interrupt.h"
+#include "log.h"
 #include "notify.h"
 #include "soft_timer.h"
 #include "uart.h"
@@ -26,6 +27,8 @@ static FSM s_charger_fsm;
 // TODO(ELEC-355): Add support for polling the ADC/PWM signal from the charging station.
 
 int main(void) {
+  LOG_DEBUG("Hello\n");
+
   // Generic Libraries
   event_queue_init();
   interrupt_init();
@@ -58,6 +61,8 @@ int main(void) {
 
   // FSM
   charger_fsm_init(&s_charger_fsm);
+
+  LOG_DEBUG("Ready\n");
 
   StatusCode status = NUM_STATUS_CODES;
   Event e = { 0 };

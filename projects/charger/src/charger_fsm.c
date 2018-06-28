@@ -5,6 +5,7 @@
 #include "charger_controller.h"
 #include "charger_events.h"
 #include "fsm.h"
+#include "log.h"
 #include "notify.h"
 
 static bool prv_safe_charging_guard(const FSM *fsm, const Event *e, void *context) {
@@ -45,6 +46,7 @@ static void prv_state_disconnected(FSM *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
   (void)context;
+  LOG_DEBUG("Disconnected\n");
   // No need for requests since the device is disconnected. Don't request charging.
   charger_controller_set_state(CHARGER_STATE_STOP);
   notify_cease();
@@ -54,6 +56,7 @@ static void prv_state_connected(FSM *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
   (void)context;
+  LOG_DEBUG("Connected\n");
   // Request charging but don't start the charger.
   charger_controller_set_state(CHARGER_STATE_STOP);
   notify_post();
@@ -63,6 +66,7 @@ static void prv_state_charging(FSM *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
   (void)context;
+  LOG_DEBUG("Charging\n");
   // Start the charger and continue to request permissions.
   charger_controller_set_state(CHARGER_STATE_START);
 }
