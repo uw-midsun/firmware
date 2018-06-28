@@ -75,6 +75,8 @@ void test_mech_brake_calibration_run(void) {
 
   LOG_DEBUG("%d %d\n", s_calib_blob.mech_brake_calib.zero_value,
             s_calib_blob.mech_brake_calib.hundred_value);
+
+  calib_commit();
 }
 
 void test_mech_brake_calibration_verify(void) {
