@@ -163,10 +163,6 @@ void test_drive_charge(void) {
   LOG_DEBUG("Ensuring that no drive commands were sent\n");
   StatusCode ret = event_process(&e);
   TEST_ASSERT_NOT_OK(ret);
-
-  // Make sure we don't allow any movement during charging
-  LOG_DEBUG("Pressing the pedal should do nothing\n");
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, false);
 }
 
 void test_drive_cruise(void) {
