@@ -191,6 +191,7 @@ void test_ads1015_all_channels_enabled(void) {
     ads1015_read_converted(&s_storage, channel, &reading);
     TEST_ASSERT_TRUE(prv_channel_reading_valid(reading));
     TEST_ASSERT_EQUAL(STATUS_CODE_OK, ads1015_read_converted(&s_storage, channel, &reading));
+    LOG_DEBUG("C%d: %d\n", channel, reading);
   }
 }
 
