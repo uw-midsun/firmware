@@ -36,7 +36,10 @@
 #include "drive_output.h"
 
 #include "can.h"
+#include "crc32.h"
+#include "dc_calib.h"
 #include "dc_cfg.h"
+#include "flash.h"
 
 typedef StatusCode (*DriverControlsFsmInitFn)(FSM *fsm, EventArbiterStorage *storage);
 
@@ -55,8 +58,9 @@ typedef enum {
 
 static GpioExpanderStorage s_console_expander;
 static CenterConsoleStorage s_console;
-static CalibStorage s_calib;
+static DcCalibBlob s_calib_blob;
 static Ads1015Storage s_pedal_ads1015;
+static MechBrakeStorage s_mech_brake;
 static EventArbiterStorage s_event_arbiter;
 static FSM s_fsms[NUM_DRIVER_CONTROLS_FSMS];
 
@@ -79,8 +83,10 @@ int main(void) {
   gpio_it_init();
   soft_timer_init();
   event_queue_init();
+  crc32_init();
+  flash_init();
 
-  calib_init(&s_calib);
+  calib_init(&s_calib_blob, sizeof(s_calib_blob));
 
   const CANSettings can_settings = {
     .device_id = DC_CFG_CAN_DEVICE_ID,
@@ -125,7 +131,16 @@ int main(void) {
 #ifndef DC_CFG_DISABLE_PEDAL
   GPIOAddress pedal_ads1015_ready = DC_CFG_PEDAL_ADC_RDY_PIN;
   ads1015_init(&s_pedal_ads1015, DC_CFG_I2C_BUS_PORT, DC_CFG_PEDAL_ADC_ADDR, &pedal_ads1015_ready);
-  throttle_init(throttle_global(), &calib_blob(&s_calib)->throttle_calib, &s_pedal_ads1015);
+  DcCalibBlob *dc_calib_blob = calib_blob();
+  throttle_init(throttle_global(), &dc_calib_blob->throttle_calib, &s_pedal_ads1015);
+
+  const MechBrakeSettings mech_brake_settings = {
+    .ads1015 = &s_pedal_ads1015,
+    .brake_pressed_threshold_percentage = 5,
+    .bounds_tolerance_percentage = 5,
+    .channel = ADS1015_CHANNEL_2,
+  };
+  mech_brake_init(mech_brake_global(), &mech_brake_settings, &dc_calib_blob->mech_brake_calib);
 
   cruise_init(cruise_global());
   drive_output_init(drive_output_global(), INPUT_EVENT_DRIVE_WATCHDOG_FAULT,
