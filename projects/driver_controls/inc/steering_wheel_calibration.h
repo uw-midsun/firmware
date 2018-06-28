@@ -8,32 +8,32 @@
 // to calculate the midpoint and the range of the respective boundaries
 // in order to allow for representation of read ADC input in percentage form
 
-#include "rotary_sensor.h"
+#include "steering_wheel.h"
 
 // Contains calibration boundary point information - necessary for calculating
 // midpoint and range
-typedef struct RotarySensorCalibrationPointData {
+typedef struct SteeringWheelCalibrationPointData {
   uint16_t min_reading;
   uint16_t max_reading;
-} RotarySensorCalibrationPointData;
+} SteeringWheelCalibrationPointData;
 
-typedef struct RotarySensorCalibrationSettings {
+typedef struct SteeringWheelCalibrationSettings {
   ADCChannel adc_channel;
-} RotarySensorCalibrationSettings;
+} SteeringWheelCalibrationSettings;
 
-typedef struct RotarySensorCalibrationStorage {
-  RotarySensorCalibrationPointData data;
-  RotarySensorCalibrationSettings settings;
-} RotarySensorCalibrationStorage;
+typedef struct SteeringWheelCalibrationStorage {
+  SteeringWheelCalibrationPointData data;
+  SteeringWheelCalibrationSettings settings;
+} SteeringWheelCalibrationStorage;
 
 // Initializes sensor calibration (empties storage data and sets pre-defined settings)
-StatusCode rotary_sensor_calib_init(RotarySensorCalibrationStorage *storage,
-                                    RotarySensorCalibrationSettings *settings);
+StatusCode steering_wheel_calib_init(SteeringWheelCalibrationStorage *storage,
+                                    SteeringWheelCalibrationSettings *settings);
 
 // Clears calibration data before populating it with appropriate key values
 // Taken and modified from a calibrated calibration storage
-StatusCode rotary_sensor_calib_result(RotarySensorCalibrationStorage *sensor_storage,
-                                      RotarySensorCalibrationData *sensor_calib_data);
+StatusCode steering_wheel_calib_result(SteeringWheelCalibrationStorage *sensor_storage,
+                                      SteeringWheelCalibrationData *sensor_calib_data);
 
 // Takes storage in order ot acquire channel from settings
 // Takes an independent reading to allow for freedom to set max or min bound
