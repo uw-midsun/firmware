@@ -74,12 +74,14 @@ static void prv_fake_velocity_measurement(MotorControllerCanId id, float velocit
 }
 
 static void prv_handle_speed(int16_t speed_cms[], size_t num_speeds, void *context) {
+  TEST_ASSERT_EQUAL(NUM_MOTOR_CONTROLLERS, num_speeds);
   int16_t *speed_arr = context;
   memcpy(speed_arr, speed_cms, sizeof(int16_t) * num_speeds);
 }
 
 static void prv_handle_bus_measurements(MotorControllerBusMeasurement bus_measurements[],
                                         size_t num_measurements, void *context) {
+  TEST_ASSERT_EQUAL(NUM_MOTOR_CONTROLLERS, num_measurements);
   MotorControllerBusMeasurement *measurement_arr = context;
   memcpy(measurement_arr, bus_measurements,
          sizeof(MotorControllerBusMeasurement) * num_measurements);
