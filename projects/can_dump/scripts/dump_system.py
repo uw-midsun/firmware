@@ -54,6 +54,8 @@ MESSAGE_LOOKUP = {
     19: ('Cruise Target', '<B', data_dump),
     23: ('Lights Sync', '', data_dump),
     24: ('Lights State', '<BB', data_lights_state),
+    26: ('Charger state', '<B', data_dump),
+    27: ('Charger relay', '<B', data_relay),
     32: ('Battery V/T', '<HHH', data_battery_vt),
     33: ('Battery Voltage/Current', '<ii', data_battery_voltage_current),
     36: ('Motor Velocity', '<ii', data_dump),
@@ -81,7 +83,7 @@ def parse_msg(can_id, data):
 
     msg_type_name = 'ACK' if msg_type == 1 else 'DATA'
 
-    masked = []
+    masked = [32]
 
     if msg_id in masked:
         pass
