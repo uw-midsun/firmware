@@ -7,7 +7,7 @@
 static void prv_adjust_brightness(DriverDisplayBrightnessStorage *storage) {
   uint16_t reading;
   adc_read_raw(storage->adc_channel, &reading);
-  
+
   // Convert the raw reading into a percentage of max reading to then be passed into pwm_set_dc to
   // adjust brightness accordingly
   uint16_t percent_reading;
@@ -83,8 +83,7 @@ StatusCode driver_display_brightness_init(
   status_ok_or_return(adc_set_channel(storage->adc_channel, true));
 
   uint16_t reading;
-  status_ok_or_return(
-      adc_register_callback(storage->adc_channel, prv_adc_callback, &reading));
+  status_ok_or_return(adc_register_callback(storage->adc_channel, prv_adc_callback, &reading));
 
   return soft_timer_start_seconds(settings->update_period_s, prv_timer_callback, (void *)storage,
                                   NULL);
