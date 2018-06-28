@@ -136,14 +136,10 @@ def main_serial():
             rtr = header >> 25 & 0x1
             dlc = header >> 28 & 0xF
 
-            can_id = int.from_bytes(line[4:8], 'little')
-            data = int.from_bytes(line[8:16], 'little')
+            can_id = int.from_bytes(line[4:8], 'little') & 0x7FF
+            data = line[8:8 + dlc]
 
-            if can_id != count:
-                print('Expected id {} got {}'.format(count, can_id))
-                count = can_id
-            count += 1
-            print('{}: id 0x{:x} (size {})'.format(marker, can_id, dlc))
+            parse_msg(can_id, data)
 
 def main_socketcan():
     """Main entry point"""
