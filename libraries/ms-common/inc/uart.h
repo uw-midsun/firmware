@@ -9,7 +9,7 @@
 #include "status.h"
 #include "uart_mcu.h"
 
-#define UART_MAX_BUFFER_LEN 1024
+#define UART_MAX_BUFFER_LEN 256
 
 typedef void (*UARTRxHandler)(const uint8_t *rx_arr, size_t len, void *context);
 

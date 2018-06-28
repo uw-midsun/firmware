@@ -76,4 +76,5 @@ void charger_fsm_init(FSM *fsm) {
   fsm_state_init(state_connected, prv_state_connected);
   fsm_state_init(state_charging, prv_state_charging);
   fsm_init(fsm, "ChargerFSM", &state_disconnected, NULL);
+  event_raise(CHARGER_EVENT_CONNECTED, 0);
 }
