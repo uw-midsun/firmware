@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """ Dumps motor CAN information from SocketCAN """
+from cobs import cobs
 import socket
 import struct
+import serial
 import binascii
+import serial.tools.list_ports
 
 DATA_POWER_STATE = ['idle', 'charge', 'drive']
 LIGHTS_ID_NAME = [
@@ -99,7 +102,50 @@ def parse_msg(can_id, data):
         print('{} from {} ({}): 0x{}'.format(msg_id, source_id, msg_type_name,
                                              binascii.hexlify(data).decode('ascii')))
 
-def main():
+def main_serial():
+    def readline(a_serial, eol=b'\x00'):
+        leneol = len(eol)
+        line = bytearray()
+        while True:
+            c = a_serial.read(1)
+            if c:
+                line += c
+                if line[-leneol:] == eol:
+                    break
+            else:
+                break
+        return bytes(line)
+
+    ports = [comport.device for comport in serial.tools.list_ports.grep('usbserial')]
+
+    count = 0
+    with serial.Serial(ports[0], 115200) as ser:
+        while True:
+            encoded_line = readline(ser)
+            try:
+                line = cobs.decode(encoded_line[:-1])
+            except cobs.DecodeError:
+                continue
+
+            if len(line) != 16:
+                print('Invalid line (len {})'.format(len(line)))
+                continue
+            header = int.from_bytes(line[0:4], 'little')
+            marker = header & 0xFFF
+            extended = header >> 24 & 0x1
+            rtr = header >> 25 & 0x1
+            dlc = header >> 28 & 0xF
+
+            can_id = int.from_bytes(line[4:8], 'little')
+            data = int.from_bytes(line[8:16], 'little')
+
+            if can_id != count:
+                print('Expected id {} got {}'.format(count, can_id))
+                count = can_id
+            count += 1
+            print('{}: id 0x{:x} (size {})'.format(marker, can_id, dlc))
+
+def main_socketcan():
     """Main entry point"""
     sock = socket.socket(socket.PF_CAN, socket.SOCK_RAW, socket.CAN_RAW)
     sock.bind(("slcan0",))
@@ -114,4 +160,4 @@ def main():
         parse_msg(can_id, data)
 
 if __name__ == '__main__':
-    main()
+    main_serial()
