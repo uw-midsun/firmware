@@ -132,7 +132,5 @@ __attribute__((used, section(".hardfault"))) void HardFault_HandlerC(uint32_t *h
   printf("MMAR: 0x%lx\n", _MMAR);
   printf("BFAR: 0x%lx\n", _BFAR);
 
-  while (1) {
-  }
   __asm("BKPT #0\n");  // Break into the debugger
 }

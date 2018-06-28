@@ -6,7 +6,6 @@
 #include "can.h"
 #include "can_uart.h"
 #include "generic_can.h"
-#include "log.h"
 #include "objpool.h"
 #include "soft_timer.h"
 #include "status.h"
@@ -22,13 +21,12 @@ static void prv_can_interval_timer_cb(SoftTimerID id, void *context) {
 }
 
 static void prv_init_can_interval(void *object, void *context) {
-  LOG_DEBUG("Obj Valid %d\n", object != NULL);
   (void)context;
-  // CanInterval *interval = object;
-  // interval->period = 0;
-  // interval->timer_id = SOFT_TIMER_INVALID_TIMER;
-  // memset(&interval->msg, 0, sizeof(GenericCanMsg));
-  // interval->can = NULL;
+  CanInterval *interval = object;
+  interval->period = 0;
+  interval->timer_id = SOFT_TIMER_INVALID_TIMER;
+  memset(&interval->msg, 0, sizeof(GenericCanMsg));
+  interval->can = NULL;
 }
 
 void can_interval_init(void) {
