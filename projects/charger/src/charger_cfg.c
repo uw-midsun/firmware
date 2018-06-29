@@ -29,13 +29,13 @@ CANSettings *charger_cfg_load_can_settings(void) {
 }
 
 static Mcp2515Settings s_mcp2515_settings = {
-  .spi_port = SPI_PORT_1,
+  .spi_port = SPI_PORT_2,
   .baudrate = 750000,
-  .mosi = { .port = GPIO_PORT_A, 7 },
-  .miso = { .port = GPIO_PORT_A, 6 },
-  .sclk = { .port = GPIO_PORT_A, 5 },
-  .cs = { .port = GPIO_PORT_A, 4 },
-  .int_pin = { .port = GPIO_PORT_A, 3 },
+  .mosi = { .port = GPIO_PORT_B, 15 },
+  .miso = { .port = GPIO_PORT_B, 14 },
+  .sclk = { .port = GPIO_PORT_B, 13 },
+  .cs = { .port = GPIO_PORT_B, 12 },
+  .int_pin = { .port = GPIO_PORT_A, 8 },
   .loopback = false,
 };
 
@@ -56,7 +56,7 @@ static ChargerSettings s_charger_settings = {
   .can = (GenericCan *)&s_can_storage,
   .can_mcp2515 = (GenericCan *)&s_can_mcp2515_storage,
   .relay_control_pin = { GPIO_PORT_A, 9 },
-  .relay_control_pin_seconday = { GPIO_PORT_B, 9 },
+  .relay_control_pin_secondary = { GPIO_PORT_B, 9 },
   .pilot_select_pin = { GPIO_PORT_A, 2 },
 };
 

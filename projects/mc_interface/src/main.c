@@ -1,14 +1,14 @@
 #include "can.h"
 #include "can_msg_defs.h"
 #include "drive_can.h"
-#include "generic_can_uart.h"
+#include "generic_can_mcp2515.h"
 #include "gpio.h"
 #include "heartbeat_rx.h"
 #include "interrupt.h"
 #include "mc_cfg.h"
+#include "mcp2515.h"
 #include "motor_controller.h"
 #include "sequenced_relay.h"
-#include "uart.h"
 #include "wait.h"
 
 typedef enum {
@@ -18,9 +18,8 @@ typedef enum {
 } MotorEvent;
 
 static MotorControllerStorage s_controller_storage;
-static GenericCanUart s_can_uart;
+static GenericCanMcp2515 s_can_mcp2515;
 static CANStorage s_can_storage;
-static UARTStorage s_uart_storage;
 static SequencedRelayStorage s_relay_storage;
 static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
 
@@ -40,15 +39,18 @@ static void prv_setup_system_can(void) {
 }
 
 static void prv_setup_motor_can(void) {
-  UARTSettings uart_settings = {
-    .baudrate = MC_CFG_CAN_UART_BAUDRATE,
-    .tx = MC_CFG_CAN_UART_TX,
-    .rx = MC_CFG_CAN_UART_RX,
-    .alt_fn = MC_CFG_CAN_UART_ALTFN,
+  Mcp2515Settings mcp2515_settings = {
+    .spi_port = SPI_PORT_2,
+    .baudrate = 750000,
+    .mosi = { .port = GPIO_PORT_B, 15 },
+    .miso = { .port = GPIO_PORT_B, 14 },
+    .sclk = { .port = GPIO_PORT_B, 13 },
+    .cs = { .port = GPIO_PORT_B, 12 },
+    .int_pin = { .port = GPIO_PORT_A, 8 },
+    .loopback = false,
   };
-  uart_init(MC_CFG_CAN_UART_PORT, &uart_settings, &s_uart_storage);
 
-  generic_can_uart_init(&s_can_uart, MC_CFG_CAN_UART_PORT);
+  generic_can_mcp2515_init(&s_can_mcp2515, &mcp2515_settings);
 }
 
 int main(void) {
@@ -61,7 +63,7 @@ int main(void) {
 
   // clang-format off
   MotorControllerSettings mc_settings = {
-    .motor_can = (GenericCan *)&s_can_uart,
+    .motor_can = (GenericCan *)&s_can_mcp2515,
     .ids = {
       [MOTOR_CONTROLLER_LEFT] = {
           .motor_controller = MC_CFG_MOTOR_CAN_ID_MC_LEFT,
