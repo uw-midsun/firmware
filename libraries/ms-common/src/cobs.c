@@ -65,10 +65,7 @@ StatusCode cobs_decode(const uint8_t *encoded, size_t encoded_len, uint8_t *deco
   while (encoded < encoded_end) {
     uint8_t code = *encoded++;
     uint8_t len = code - 1;
-    if (code == 0) {
-      break;
-    }
-    if (encoded + len > encoded_end) {
+    if (code == 0 || encoded + len > encoded_end) {
       return status_code(STATUS_CODE_INTERNAL_ERROR);
     }
     memcpy(decoded_ptr, encoded, len);
