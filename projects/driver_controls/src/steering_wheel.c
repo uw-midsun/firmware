@@ -11,20 +11,31 @@
 #include "log.h"
 #include "soft_timer.h"
 
-static uint16_t prv_get_wheel_percentage(uint16_t reading, uint16_t range, uint16_t midpoint) {
-  return (reading * 100) / range;
+static StatusCode prv_get_wheel_percentage(SteeringWheelStorage *steering_wheel_storage,
+                                           uint16_t reading) {
+  int16_t percentage =
+      (int16_t)((reading - steering_wheel_storage->calibration_data->wheel_midpoint) * 100 /
+                 steering_wheel_storage->calibration_data->wheel_midpoint);
+
+  if (percentage > 100 || percentage < -100) {
+    return STATUS_CODE_OUT_OF_RANGE;
+  }
+  steering_wheel_storage->wheel_steering_percent = percentage;
+  return STATUS_CODE_OK;
 }
 
-static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) {
-  SteeringWheelStorage *storage = context;
-  uint16_t wheel_reading = INT16_MAX;
-
-  StatusCode read_status = adc_read_raw(storage->calibration_data->wheel_channel, &wheel_reading);
-
+StatusCode steering_wheel_get_position(SteeringWheelStorage *steering_wheel_storage) {
+  if (steering_wheel_storage == NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+  uint16_t reading = 0;
+  StatusCode read_status =
+      adc_read_raw(steering_wheel_storage->calibration_data->wheel_channel, &reading);
+prv_get_wheel_percentage(steering_wheel_storage, reading);
   if (status_ok(read_status)) {
-    storage->wheel_steering_percent =
-        prv_get_wheel_percentage(wheel_reading, storage->calibration_data->wheel_range,
-                                 storage->calibration_data->wheel_midpoint);
+    return prv_get_wheel_percentage(steering_wheel_storage, reading);
+  } else {
+    return read_status;
   }
 }
 
@@ -36,9 +47,7 @@ StatusCode steering_wheel_init(SteeringWheelStorage *storage,
   memset(storage, 0, sizeof(*storage));
 
   storage->calibration_data = calibration_data;
-
-  return soft_timer_start_millis(steering_wheel_UPDATE_PERIOD_MS, prv_raise_event_timer_callback,
-                                 storage, NULL);
+  return STATUS_CODE_OK;
 }
 
 // SteeringWheelCalibrationData *steering_wheel_calib_data =

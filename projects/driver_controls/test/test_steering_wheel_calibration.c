@@ -43,13 +43,13 @@ void test_steering_wheel(void) {
   delay_s(7);
   prv_calc_boundary(s_calibration_storage.settings.adc_channel,
                     &s_calibration_storage.data.min_reading);
-  LOG_DEBUG(" %d \n",s_calibration_storage.data.min_reading);
+  LOG_DEBUG(" %d \n", s_calibration_storage.data.min_reading);
 
   LOG_DEBUG("Please fully turn the wheel in the clockwise direction \n");
   delay_s(7);
   prv_calc_boundary(s_calibration_storage.settings.adc_channel,
                     &s_calibration_storage.data.max_reading);
-  LOG_DEBUG(" %d \n",s_calibration_storage.data.max_reading);
+  LOG_DEBUG(" %d \n", s_calibration_storage.data.max_reading);
 
   SteeringWheelCalibrationData calib_data;
   steering_wheel_calib_result(&s_calibration_storage, &calib_data);
@@ -58,5 +58,4 @@ void test_steering_wheel(void) {
   LOG_DEBUG("Midpoint: %d \n", calib_data.wheel_midpoint);
   LOG_DEBUG("Max-bound %d \n", calib_data.max_bound);
   LOG_DEBUG("Min-bound: %d \n", calib_data.min_bound);
-
 }
