@@ -6,11 +6,12 @@
 #include "can_msg_defs.h"
 #include "charger_controller.h"
 #include "charger_events.h"
+#include "generic_can_mcp2515.h"
 #include "generic_can_network.h"
-#include "generic_can_uart.h"
 #include "gpio.h"
+#include "mcp2515.h"
+#include "spi_mcu.h"
 #include "status.h"
-#include "uart.h"
 
 static CANSettings s_can_settings = {
   .device_id = SYSTEM_CAN_DEVICE_CHARGER,
@@ -27,21 +28,19 @@ CANSettings *charger_cfg_load_can_settings(void) {
   return &s_can_settings;
 }
 
-static UARTSettings s_uart_settings = {
-  .baudrate = 115200,
-  .rx_handler = NULL,
-  .context = NULL,
-  .tx = { GPIO_PORT_B, 10 },
-  .rx = { GPIO_PORT_B, 11 },
-  .alt_fn = GPIO_ALTFN_4,
+static Mcp2515Settings s_mcp2515_settings = {
+  .spi_port = SPI_PORT_1,
+  .baudrate = 750000,
+  .mosi = { .port = GPIO_PORT_A, 7 },
+  .miso = { .port = GPIO_PORT_A, 6 },
+  .sclk = { .port = GPIO_PORT_A, 5 },
+  .cs = { .port = GPIO_PORT_A, 4 },
+  .int_pin = { .port = GPIO_PORT_A, 3 },
+  .loopback = false,
 };
 
-UARTSettings *charger_cfg_load_uart_settings(void) {
-  return &s_uart_settings;
-}
-
-UARTPort charger_cfg_load_uart_port(void) {
-  return UART_PORT_3;
+Mcp2515Settings *charger_cfg_load_mcp2515_settings(void) {
+  return &s_mcp2515_settings;
 }
 
 GPIOAddress charger_cfg_load_charger_pin(void) {
@@ -49,18 +48,18 @@ GPIOAddress charger_cfg_load_charger_pin(void) {
 }
 
 static GenericCanNetwork s_can_storage;
-static GenericCanUart s_can_uart_storage;
+static GenericCanMcp2515 s_can_mcp2515_storage;
 
 static ChargerSettings s_charger_settings = {
   .max_voltage = 1512,  // 151.2 V
   .max_current = 1224,  // 122.4 A
   .can = (GenericCan *)&s_can_storage,
-  .can_uart = (GenericCan *)&s_can_uart_storage,
+  .can_mcp2515 = (GenericCan *)&s_can_mcp2515_storage,
 };
 
 StatusCode charger_cfg_init_settings(void) {
   status_ok_or_return(generic_can_network_init(&s_can_storage));
-  return generic_can_uart_init(&s_can_uart_storage, charger_cfg_load_uart_port());
+  return generic_can_mcp2515_init(&s_can_mcp2515_storage, charger_cfg_load_mcp2515_settings());
 }
 
 ChargerSettings *charger_cfg_load_settings(void) {
