@@ -14,7 +14,7 @@
   { .port = GPIO_PORT_B, .pin = 3 }
 #define MC_CFG_RELAY_RIGHT \
   { .port = GPIO_PORT_B, .pin = 9 }
-#define MC_CFG_RELAY_DELAY_MS 100
+#define MC_CFG_RELAY_DELAY_MS 1000
 
 #define MC_CFG_MOTOR_CAN_ID_DC_LEFT 0x01
 #define MC_CFG_MOTOR_CAN_ID_DC_RIGHT 0x02
