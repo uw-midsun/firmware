@@ -11,7 +11,10 @@ static void prv_delay_cb(SoftTimerID timer_id, void *context) {
   storage->delay_timer = SOFT_TIMER_INVALID_TIMER;
   // We only bother with the delay if we're closing the relays, so assume it's closing
   gpio_set_state(&storage->settings.right_relay, GPIO_STATE_HIGH);
-  storage->settings.update_cb(EE_RELAY_STATE_CLOSE, storage->settings.context);
+
+  if (storage->settings.update_cb != NULL) {
+    storage->settings.update_cb(EE_RELAY_STATE_CLOSE, storage->settings.context);
+  }
 }
 
 static StatusCode prv_handle_relay_rx(SystemCanMessage msg_id, uint8_t state, void *context) {
@@ -67,7 +70,9 @@ StatusCode sequenced_relay_set_state(SequencedRelayStorage *storage, EERelayStat
                             &storage->delay_timer);
   } else {
     gpio_set_state(&storage->settings.right_relay, (GPIOState)state);
-    storage->settings.update_cb(state, storage->settings.context);
+    if (storage->settings.update_cb != NULL) {
+      storage->settings.update_cb(state, storage->settings.context);
+    }
   }
 
   return STATUS_CODE_OK;
