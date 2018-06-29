@@ -39,6 +39,7 @@ static void prv_raise_event_cb(GpioExpanderPin pin, GPIOState state, void *conte
 
 static bool prv_handle_power_state(CenterConsoleStorage *storage, const Event *e) {
   GPIOState output_states[NUM_CENTER_CONSOLE_OUTPUTS] = { 0 };
+  GPIOState charge_led = GPIO_STATE_HIGH;
   // Power update - reset all LEDs
   for (size_t i = 0; i < NUM_CENTER_CONSOLE_OUTPUTS; i++) {
     output_states[i] = GPIO_STATE_HIGH;
@@ -53,6 +54,8 @@ static bool prv_handle_power_state(CenterConsoleStorage *storage, const Event *e
       output_states[CENTER_CONSOLE_OUTPUT_BPS_FAULT_LED] = GPIO_STATE_LOW;
       break;
     case INPUT_EVENT_POWER_STATE_CHARGE:
+      charge_led = GPIO_STATE_LOW;
+      // Fall-though - power LED should also be on
     case INPUT_EVENT_POWER_STATE_DRIVE:
       // Power LED on
       output_states[CENTER_CONSOLE_OUTPUT_POWER_LED] = GPIO_STATE_LOW;
@@ -65,6 +68,7 @@ static bool prv_handle_power_state(CenterConsoleStorage *storage, const Event *e
   for (size_t i = 0; i < NUM_CENTER_CONSOLE_OUTPUTS; i++) {
     gpio_expander_set_state(storage->output_expander, i, output_states[i]);
   }
+  gpio_expander_set_state(storage->input_expander, GPIO_EXPANDER_PIN_7, charge_led);
 
   return true;
 }
@@ -138,6 +142,7 @@ StatusCode center_console_init(CenterConsoleStorage *storage, GpioExpanderStorag
   }
 
   storage->output_expander = output_expander;
+  storage->input_expander = input_expander;
 
   const GPIOSettings in_settings = { .direction = GPIO_DIR_IN, .resistor = GPIO_RES_PULLUP };
   const GPIOSettings out_settings = { .direction = GPIO_DIR_OUT, .state = GPIO_STATE_HIGH };
@@ -151,6 +156,8 @@ StatusCode center_console_init(CenterConsoleStorage *storage, GpioExpanderStorag
   for (size_t i = 0; i < NUM_CENTER_CONSOLE_OUTPUTS; i++) {
     status_ok_or_return(gpio_expander_init_pin(output_expander, i, &out_settings));
   }
+
+  gpio_expander_init_pin(input_expander, GPIO_EXPANDER_PIN_7, &out_settings);
 
   return STATUS_CODE_OK;
 }
