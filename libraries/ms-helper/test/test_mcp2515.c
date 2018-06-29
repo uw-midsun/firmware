@@ -42,13 +42,13 @@ void setup_test(void) {
   s_dlc = 0;
 
   const Mcp2515Settings mcp2515_settings = {
-    .spi_port = SPI_PORT_1,
+    .spi_port = SPI_PORT_2,
     .baudrate = 750000,
-    .mosi = { .port = GPIO_PORT_A, 7 },
-    .miso = { .port = GPIO_PORT_A, 6 },
-    .sclk = { .port = GPIO_PORT_A, 5 },
-    .cs = { .port = GPIO_PORT_A, 4 },
-    .int_pin = { .port = GPIO_PORT_A, 3 },
+    .mosi = { .port = GPIO_PORT_B, 15 },
+    .miso = { .port = GPIO_PORT_B, 14 },
+    .sclk = { .port = GPIO_PORT_B, 13 },
+    .cs = { .port = GPIO_PORT_B, 12 },
+    .int_pin = { .port = GPIO_PORT_A, 8 },
 
     .loopback = true,
     .rx_cb = prv_handle_rx,
