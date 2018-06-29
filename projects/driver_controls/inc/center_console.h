@@ -16,9 +16,9 @@
 // and updates the center console LEDs appropriately. Assumes LEDs are active-low.
 #include <assert.h>
 #include <stdint.h>
+#include "event_queue.h"
 #include "gpio_expander.h"
 #include "soft_timer.h"
-#include "event_queue.h"
 
 typedef enum {
   CENTER_CONSOLE_INPUT_POWER = 0,

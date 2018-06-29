@@ -118,7 +118,8 @@ int main(void) {
   GPIOAddress console_int_pin = DC_CFG_CONSOLE_IO_INT_PIN;
   gpio_expander_init(&s_console_expander, DC_CFG_I2C_BUS_PORT, DC_CFG_CONSOLE_IO_ADDR,
                      &console_int_pin);
-  gpio_expander_init(&s_console_expander_out, DC_CFG_I2C_BUS_PORT, DC_CFG_CONSOLE_IO_OUT_ADDR, NULL);
+  gpio_expander_init(&s_console_expander_out, DC_CFG_I2C_BUS_PORT, DC_CFG_CONSOLE_IO_OUT_ADDR,
+                     NULL);
   center_console_init(&s_console, &s_console_expander, &s_console_expander_out);
 #endif
 
