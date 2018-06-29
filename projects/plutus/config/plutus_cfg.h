@@ -41,13 +41,12 @@
   { .port = GPIO_PORT_B, .pin = 4 }
 
 // Fans
-#define PLUTUS_CFG_FANS                   \
-  {                                       \
-    { .port = GPIO_PORT_A, .pin = 10 }, { \
-      .port = GPIO_PORT_A, .pin = 9       \
-    }                                     \
-  }
+// clang-format off
+#define PLUTUS_CFG_FANS                 \
+  { { .port = GPIO_PORT_A, .pin = 10 }, \
+    {.port = GPIO_PORT_A, .pin = 9 } }
 #define PLUTUS_CFG_NUM_FANS 2
+// clang-format on
 
 // CAN
 #define PLUTUS_CFG_CAN_BITRATE CAN_HW_BITRATE_500KBPS
