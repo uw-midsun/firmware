@@ -17,8 +17,6 @@ static DriverDisplayBrightnessStorage s_brightness_storage;
 
 int main(void) {
   // Init everything to be used
-  LOG_DEBUG("starting");
-
   interrupt_init();
   soft_timer_init();
   gpio_init();
@@ -46,7 +44,8 @@ int main(void) {
   driver_display_brightness_init(&s_brightness_storage, driver_display_brightness_config_load(),
                                  &s_calibration_data);
 
-  while (true) {  // If the photodiode information was unable to be read
+  while (true) {
+    // If the photodiode information was unable to be read
     /*if (s_brightness_storage.reading_ok_flag == false) {
       LOG_DEBUG("Failed to read photosensor ADC");
     }*/
