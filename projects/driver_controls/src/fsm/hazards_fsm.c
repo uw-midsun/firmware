@@ -23,10 +23,12 @@ FSM_STATE_TRANSITION(state_hazard_on) {
 // Hazard light FSM output function
 static void prv_hazard_off_output(FSM *fsm, const Event *e, void *context) {
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_SIGNAL_HAZARD, EE_LIGHT_STATE_ON);
+  event_raise(INPUT_EVENT_HAZARDS_STATE_OFF, 0);
 }
 
 static void prv_hazard_on_output(FSM *fsm, const Event *e, void *context) {
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_SIGNAL_HAZARD, EE_LIGHT_STATE_OFF);
+  event_raise(INPUT_EVENT_HAZARDS_STATE_ON, 0);
 }
 
 StatusCode hazards_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
