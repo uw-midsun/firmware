@@ -44,7 +44,7 @@ Mcp2515Settings *charger_cfg_load_mcp2515_settings(void) {
 }
 
 GPIOAddress charger_cfg_load_charger_pin(void) {
-  return ((GPIOAddress){ GPIO_PORT_A, 15 });
+  return ((GPIOAddress){ GPIO_PORT_A, 7 });
 }
 
 static GenericCanNetwork s_can_storage;

@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "adc.h"
 #include "can.h"
 #include "can_interval.h"
 #include "charger_cfg.h"
@@ -31,6 +32,7 @@ int main(void) {
   gpio_it_init();
   soft_timer_init();
   can_interval_init();
+  adc_init(ADC_MODE_CONTINUOUS);
 
   // CAN
   const CANSettings *can_settings = charger_cfg_load_can_settings();

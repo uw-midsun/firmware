@@ -1,9 +1,12 @@
 #pragma once
-// Module for interfacing with the charger state pin.
-// Requires: event_queue, interrupts, gpio and gpio_it to be initialized
+// Module for interfacing with the charger proximity pin..
+// Requires: event_queue, gpio, soft timers and ADC.
 
 #include "gpio.h"
 #include "status.h"
 
-// Inits the charger pin and configures an interrupt.
+#define CHARGER_PIN_POLL_PERIOD_MS 1500
+
+// Inits the charger proximity pin and configures a soft timer to periodically check the ADC.
+// Address is expected to persist.
 StatusCode charger_pin_init(const GPIOAddress *address);
