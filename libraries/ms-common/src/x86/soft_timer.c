@@ -83,6 +83,9 @@ void soft_timer_init(void) {
 
 StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, void *context,
                             SoftTimerID *timer_id) {
+  if (duration_us < SOFT_TIMER_MIN_TIME_US) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Soft timer too short!");
+  }
   // Start a critical section to prevent this section from being broken.
   const bool critical = critical_section_start();
   for (uint32_t i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {

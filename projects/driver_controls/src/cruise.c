@@ -13,8 +13,8 @@ static StatusCode prv_handle_motor_velocity(const CANMessage *msg, void *context
                                             CANAckStatus *ack_reply) {
   CruiseStorage *cruise = context;
 
-  int32_t left = 0, right = 0;
-  CAN_UNPACK_MOTOR_VELOCITY(msg, (uint32_t *)&left, (uint32_t *)&right);
+  int16_t left = 0, right = 0;
+  CAN_UNPACK_MOTOR_VELOCITY(msg, (uint16_t *)&left, (uint16_t *)&right);
   // If we ever overflow we have bigger problems
   cruise->current_speed_cms = MAX((left + right) / 2, 0);
 
@@ -80,7 +80,7 @@ bool cruise_handle_event(CruiseStorage *cruise, const Event *e) {
       }
 
       // Immediately run callback - note that we require a delay > 0 or it might not run
-      soft_timer_start(1, prv_timer_cb, cruise, &cruise->repeat_timer);
+      soft_timer_start(SOFT_TIMER_MIN_TIME_US, prv_timer_cb, cruise, &cruise->repeat_timer);
       break;
     case INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED:
       cruise_set_target_cms(cruise, cruise->current_speed_cms);

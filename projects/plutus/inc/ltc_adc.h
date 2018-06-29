@@ -24,13 +24,17 @@ typedef struct {
 } LtcAdcStorageBuffer;
 
 typedef void (*LtcAdcCallback)(int32_t *value, void *context);
+typedef void (*LtcAdcFaultCallback)(void *context);
 
 typedef struct {
   // Storage buffer managed by the driver
   LtcAdcStorageBuffer buffer;
   // Callback that is run whenever new data is available
   LtcAdcCallback callback;
+  // Callback that is run whenever we encounter an adc fault
+  LtcAdcFaultCallback fault_callback;
   void *context;
+  void *fault_context;
 
   GPIOAddress cs;
   GPIOAddress miso;
@@ -56,3 +60,13 @@ StatusCode ltc_adc_init(LtcAdcStorage *storage, const LtcAdcSettings *settings);
 // Register a callback to be run whenever there is new data
 StatusCode ltc_adc_register_callback(LtcAdcStorage *storage, LtcAdcCallback callback,
                                      void *context);
+
+// Register a callback to be run whenever there is a fault
+StatusCode ltc_adc_register_fault_callback(LtcAdcStorage *storage,
+                                           LtcAdcFaultCallback fault_callback, void *context);
+
+// Exposed for testing
+void test_ltc_adc_set_input_voltage(int32_t input_voltage);
+
+// Enable or disable forced faulting
+void test_ltc_adc_set_fault_status(bool fault_state);

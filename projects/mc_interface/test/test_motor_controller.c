@@ -96,7 +96,7 @@ void setup_test(void) {
 
   // clang-format off
   const MotorControllerSettings mc_settings = {
-    .can_uart = (GenericCan *)&s_can,
+    .motor_can = (GenericCan *)&s_can,
     .ids = {
       [MOTOR_CONTROLLER_LEFT] = {
           .motor_controller = TEST_MOTOR_CONTROLLER_CAN_ID_MC_LEFT,
