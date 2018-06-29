@@ -70,7 +70,7 @@ StatusCode fans_init(const FansSettings *settings) {
     status_ok_or_return(gpio_init_pin(&s_fan_storage.settings.fans[i], &gpio_settings));
   }
 
-  status_ok_return(
+  status_ok_or_return(
       can_register_rx_handler(SYSTEM_CAN_MESSAGE_FAN_CONTROL, prv_handle_fan_ctrl, NULL));
   return sequenced_relay_set_update_cb(s_fan_storage.settings.relays, prv_update_relay, NULL);
 }
