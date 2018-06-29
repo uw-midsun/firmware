@@ -62,13 +62,8 @@ static bool prv_handle_power_state(CenterConsoleStorage *storage, const Event *e
       return false;
   }
 
-  LOG_DEBUG("hello\n");
   for (size_t i = 0; i < NUM_CENTER_CONSOLE_OUTPUTS; i++) {
-    LOG_DEBUG("%d -> %d\n", i, output_states[i]);
-    StatusCode ret = gpio_expander_set_state(storage->output_expander, i, output_states[i]);
-    if (!status_ok(ret)) {
-      LOG_DEBUG("sad %d\n", ret);
-    }
+    gpio_expander_set_state(storage->output_expander, i, output_states[i]);
   }
 
   return true;
@@ -171,6 +166,5 @@ bool center_console_process_event(CenterConsoleStorage *storage, const Event *e)
   processed |= prv_handle_headlights(storage, e);
   processed |= prv_handle_hazards(storage, e);
 
-  LOG_DEBUG("Processing %d -> success %d\n", e->id, processed);
   return processed;
 }
