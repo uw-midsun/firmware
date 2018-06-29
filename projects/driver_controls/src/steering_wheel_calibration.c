@@ -11,6 +11,7 @@
 #include "log.h"
 #include "soft_timer.h"
 
+// Initializes calibration storage with predefined settings
 StatusCode steering_wheel_calib_init(SteeringWheelCalibrationStorage *storage,
                                      SteeringWheelCalibrationSettings *settings) {
   memset(storage, 0, sizeof(*storage));
@@ -18,7 +19,7 @@ StatusCode steering_wheel_calib_init(SteeringWheelCalibrationStorage *storage,
 
   return STATUS_CODE_OK;
 }
-
+// calculations for range, boundary, and midpoint
 void prv_calc_boundary(ADCChannel read_channel, uint16_t *boundary_reading) {
   adc_read_raw(read_channel, boundary_reading);
 }
@@ -30,7 +31,8 @@ static uint16_t prv_calc_range(SteeringWheelCalibrationPointData channel_data) {
 static uint16_t prv_calc_midpoint(SteeringWheelCalibrationPointData point_data) {
   return (point_data.max_reading + point_data.min_reading) / 2;
 }
-
+// primary calibration function, calibrates the steering_wheel calibration data
+// From calibration storage
 StatusCode steering_wheel_calib_result(SteeringWheelCalibrationStorage *storage,
                                        SteeringWheelCalibrationData *calib_data) {
   memset(calib_data, 0, sizeof(*calib_data));

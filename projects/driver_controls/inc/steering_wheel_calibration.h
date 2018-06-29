@@ -1,12 +1,14 @@
 #pragma once
 
-// Module for wheel wheel calibration
+// Module for wheel calibration
 //
 // The goal of this module is to perform a calibration on the
-// wheel wheel, obtaining the high and low bound of the wheel
-// wheel. Upon acquiring wheel wheel boundaries, it is expected
+// wheel, obtaining the high and low bound of the
+// wheel. Upon acquiring wheel boundaries, it is expected
 // to calculate the midpoint and the range of the respective boundaries
 // in order to allow for representation of read ADC input in percentage form
+
+// Requires steering_wheel.h in order to use steering_wheel calibration data struct
 
 #include "steering_wheel.h"
 
