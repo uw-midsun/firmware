@@ -16,7 +16,7 @@ static const EventID s_events[NUM_CENTER_CONSOLE_INPUTS] = {
   INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE,
   INPUT_EVENT_CENTER_CONSOLE_DRL,
   INPUT_EVENT_CENTER_CONSOLE_LOWBEAMS,
-  INPUT_EVENT_CENTER_CONSOLE_HAZARDS_PRESSED,
+  INPUT_EVENT_CENTER_CONSOLE_HAZARDS_RELEASED,
   INPUT_EVENT_CENTER_CONSOLE_POWER,
 };
 
@@ -106,6 +106,7 @@ static bool prv_handle_headlights(CenterConsoleStorage *storage, const Event *e)
       lowbeam_led = GPIO_STATE_LOW;
       break;
     case INPUT_EVENT_HEADLIGHT_STATE_HIGHBEAM:
+    case INPUT_EVENT_HEADLIGHT_STATE_OFF:
       // Highbeam has no indicator, but turn off the DRL and lowbeam indicators
       break;
     default:
@@ -124,8 +125,8 @@ static bool prv_handle_hazards(CenterConsoleStorage *storage, const Event *e) {
     return false;
   }
 
-  GPIOState state = e->id == INPUT_EVENT_HAZARDS_STATE_ON ? GPIO_STATE_LOW : GPIO_STATE_HIGH;
-  gpio_expander_set_state(storage->output_expander, CENTER_CONSOLE_OUTPUT_DRL_LED, state);
+  GPIOState state = (e->id == INPUT_EVENT_HAZARDS_STATE_ON) ? GPIO_STATE_HIGH : GPIO_STATE_LOW;
+  gpio_expander_set_state(storage->output_expander, CENTER_CONSOLE_OUTPUT_HAZARDS_LED, state);
 
   return true;
 }
