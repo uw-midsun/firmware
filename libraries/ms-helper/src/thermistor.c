@@ -1,5 +1,6 @@
 #include "thermistor.h"
 #include <limits.h>
+#include <math.h>
 #include <stdint.h>
 #include "log.h"
 
@@ -84,4 +85,22 @@ StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms,
   // Sets the returned temperature to be absurdly large
   *temperature_dc = UINT16_MAX;
   return status_msg(STATUS_CODE_OUT_OF_RANGE, "Temperature out of lookup table range.");
+}
+
+StatusCode thermistor_calculate_resistance(uint16_t temperature_dc,
+                                           uint16_t *thermistor_resistor_ohms){
+if (temperature_dc > 1000) {
+  return status_msg(STATUS_CODE_OUT_OF_RANGE,
+                    "Input temperature, exceeds lookup table ranges (0-100 deg).");
+} else if (temperature_dc == 1000) {
+  // For the higher lookup edge case
+  *thermistor_resistor_ohms = s_resistance_lookup[100] / 1000;
+} else {
+  uint16_t lower_temp = temperature_dc / 10;
+  *thermistor_resistor_ohms =
+      (s_resistance_lookup[lower_temp] * 10 +
+      (s_resistance_lookup[lower_temp + 1] - s_resistance_lookup[lower_temp]) *
+          (temperature_dc % 10)) / 10000;
+}
+return STATUS_CODE_OK;
 }
