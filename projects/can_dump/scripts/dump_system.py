@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-""" Dumps motor CAN information from SocketCAN """
-from cobs import cobs
+""" Dumps CAN information from SocketCAN/serial """
+import argparse
+import binascii
 import socket
 import struct
 import serial
-import binascii
 import serial.tools.list_ports
+from cobs import cobs
 
 DATA_POWER_STATE = ['idle', 'charge', 'drive']
 LIGHTS_ID_NAME = [
@@ -83,7 +84,7 @@ def parse_msg(can_id, data):
 
     msg_type_name = 'ACK' if msg_type == 1 else 'DATA'
 
-    masked = [32]
+    masked = []
 
     if msg_id in masked:
         pass
@@ -107,38 +108,67 @@ def parse_msg(can_id, data):
         print('{} from {} ({}): 0x{}'.format(msg_id, source_id, msg_type_name,
                                              binascii.hexlify(data).decode('ascii')))
 
-def main_serial():
-    def readline(a_serial, eol=b'\x00'):
+def select_device():
+    """User-provided serial device selector.
+
+    Args:
+        None
+
+    Returns:
+        The selected serial device as ListPortInfo.
+    """
+    while True:
+        print('Pick the serial device:')
+        ports = serial.tools.list_ports.comports()
+        for i, port in enumerate(ports):
+            print('{}: {}'.format(i, port))
+
+        try:
+            chosen_port = ports[int(input())]
+            print('Selected {}'.format(chosen_port))
+            return chosen_port
+        except IndexError:
+            print('Invalid index!')
+            continue
+
+def main_serial(device):
+    """Main entry point for serial interface"""
+    def readline(ser, eol=b'\x00'):
+        """Readline with arbitrary EOL delimiter
+
+        Args:
+            ser: Serial device to read
+            eol: Bytes to use a EOL delimiter
+
+        Returns:
+            All data read from the device until the EOL delimiter was found.
+        """
         leneol = len(eol)
         line = bytearray()
         while True:
-            c = a_serial.read(1)
-            if c:
-                line += c
+            read_char = ser.read(1)
+            if read_char:
+                line += read_char
                 if line[-leneol:] == eol:
                     break
             else:
                 break
         return bytes(line)
 
-    ports = [comport.device for comport in serial.tools.list_ports.grep('usbserial')]
-
-    count = 0
-    with serial.Serial(ports[0], 115200) as ser:
+    with serial.Serial(device, 115200) as ser:
         while True:
             encoded_line = readline(ser)
             try:
                 line = cobs.decode(encoded_line[:-1])
             except cobs.DecodeError:
+                print('COBS decode error (len {})'.format(len(line)))
                 continue
 
             if len(line) != 16:
                 print('Invalid line (len {})'.format(len(line)))
                 continue
+
             header = int.from_bytes(line[0:4], 'little')
-            marker = header & 0xFFF
-            extended = header >> 24 & 0x1
-            rtr = header >> 25 & 0x1
             dlc = header >> 28 & 0xF
 
             can_id = int.from_bytes(line[4:8], 'little') & 0x7FF
@@ -147,7 +177,7 @@ def main_serial():
             parse_msg(can_id, data)
 
 def main_socketcan():
-    """Main entry point"""
+    """Main entry point for SocketCAN"""
     sock = socket.socket(socket.PF_CAN, socket.SOCK_RAW, socket.CAN_RAW)
     sock.bind(("slcan0",))
     fmt = "<IB3x8s"
@@ -160,5 +190,17 @@ def main_socketcan():
 
         parse_msg(can_id, data)
 
+def main():
+    """Main entry point"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument('device', help='Serial device or "slcan0"')
+    args = parser.parse_args()
+
+    if args.device == 'slcan0':
+        main_socketcan()
+    else:
+        main_serial(args.device)
+
+
 if __name__ == '__main__':
-    main_serial()
+    main()
