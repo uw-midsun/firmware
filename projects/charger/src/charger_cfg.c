@@ -55,6 +55,9 @@ static ChargerSettings s_charger_settings = {
   .max_current = 1224,  // 122.4 A
   .can = (GenericCan *)&s_can_storage,
   .can_mcp2515 = (GenericCan *)&s_can_mcp2515_storage,
+  .relay_control_pin = { GPIO_PORT_A, 9 },
+  .relay_control_pin_seconday = { GPIO_PORT_B, 9 },
+  .pilot_select_pin = { GPIO_PORT_A, 2 },
 };
 
 StatusCode charger_cfg_init_settings(void) {

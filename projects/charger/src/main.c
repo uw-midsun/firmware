@@ -14,11 +14,9 @@
 #include "interrupt.h"
 #include "notify.h"
 #include "soft_timer.h"
-#include "uart.h"
 #include "wait.h"
 
 static CANStorage s_can_storage;
-static UARTStorage s_uart_storage;
 static ChargerCanStatus s_charger_status;
 static ChargerStorage s_charger_storage;
 static FSM s_charger_fsm;

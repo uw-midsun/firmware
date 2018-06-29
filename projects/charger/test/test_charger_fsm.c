@@ -52,7 +52,7 @@ void test_charger_fsm_transitions(void) {
     .max_voltage = TEST_CHARGER_MAX_VOLTAGE,
     .max_current = TEST_CHARGER_MAX_CURRENT,
     .can = can,  // Use pure HW can for both CAN and CAN UART since Extended support is needed.
-    .can_uart = can,
+    .can_mcp2515 = can,
   };
   ChargerStorage storage;
   // Init these because they need to be not because they will be used.
