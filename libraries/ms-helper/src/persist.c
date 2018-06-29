@@ -51,7 +51,8 @@ static void prv_periodic_commit(SoftTimerID timer_id, void *context) {
                           &persist->timer_id);
 }
 
-StatusCode persist_init(PersistStorage *persist, FlashPage page, void *blob, size_t blob_size, bool overwrite) {
+StatusCode persist_init(PersistStorage *persist, FlashPage page, void *blob, size_t blob_size,
+                        bool overwrite) {
   if (blob_size > FLASH_PAGE_BYTES || page >= NUM_FLASH_PAGES) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   } else if (blob_size % FLASH_WRITE_BYTES != 0) {

@@ -1,4 +1,5 @@
 #include <inttypes.h>
+#include <string.h>
 #include "crc32.h"
 #include "delay.h"
 #include "interrupt.h"
@@ -7,7 +8,6 @@
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
-#include <string.h>
 
 #define TEST_PERSIST_FLASH_PAGE (NUM_FLASH_PAGES - 1)
 
@@ -120,7 +120,8 @@ void test_persist_size_change(void) {
   TEST_ASSERT_EQUAL(0x5, small_data[1]);
 
   uint32_t readback_small[2] = { 0 };
-  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &readback_small, sizeof(readback_small), false);
+  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &readback_small, sizeof(readback_small),
+                     false);
   TEST_ASSERT_NOT_OK(ret);
 
   TEST_ASSERT_EQUAL(0x0, readback_small[0]);
@@ -141,7 +142,8 @@ void test_persist_size_change(void) {
   TEST_ASSERT_OK(ret);
 
   memset(readback_small, 0, sizeof(readback_small));
-  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &readback_small, sizeof(readback_small), false);
+  ret = persist_init(&s_persist, TEST_PERSIST_FLASH_PAGE, &readback_small, sizeof(readback_small),
+                     false);
   TEST_ASSERT_OK(ret);
 
   TEST_ASSERT_EQUAL(0x4, readback_small[0]);
