@@ -10,7 +10,6 @@
 #include "soft_timer.h"
 #include "uart.h"
 #include "wait.h"
-#include "debug_led.h"
 
 #define CAN_SLAVE_UART_BAUDRATE 115200
 #define CAN_SLAVE_UART_PORT UART_PORT_3
@@ -40,24 +39,10 @@ static void prv_init_periph(void) {
     .tx = { .port = GPIO_PORT_A, .pin = 12 },  //
     .rx = { .port = GPIO_PORT_A, .pin = 11 },  //
     .bitrate = CAN_SLAVE_CAN_BITRATE,          //
-    .loopback = true,                         //
+    .loopback = false,                         //
   };
 
   can_hw_init(&can_hw_settings);
-}
-
-#include <stdlib.h>
-static void prv_periodic_tick(SoftTimerID timer_id, void *context) {
-  static uint32_t s_id = 0;
-  uint16_t data[4] = { rand(), rand(), rand(), rand() };
-  uint32_t id = s_id++ % 0x800;
-  size_t dlc = (size_t)rand() % 9;
-  can_hw_transmit(id, false, (uint8_t *)&data, dlc);
-  printf("TX 0x%lx (size %d)\n", id, dlc);
-
-  debug_led_toggle_state(DEBUG_LED_RED);
-
-  soft_timer_start_millis(50, prv_periodic_tick, NULL, NULL);
 }
 
 int main(void) {
@@ -70,10 +55,6 @@ int main(void) {
   };
   can_uart_init(&can_uart);
   can_uart_enable_passthrough(&can_uart);
-
-  debug_led_init(DEBUG_LED_RED);
-
-  soft_timer_start_millis(50, prv_periodic_tick, NULL, NULL);
 
   while (true) {
     wait();
