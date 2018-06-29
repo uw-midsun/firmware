@@ -12,7 +12,7 @@
 #include "exported_enums.h"
 #include "generic_can.h"
 
-#define MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS 200
+#define MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS 50
 // Arbitrary timeout after 5 TX periods without receiving a setpoint update
 #define MOTOR_CONTROLLER_WATCHDOG_COUNTER 5
 
