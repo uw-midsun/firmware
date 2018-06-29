@@ -136,7 +136,6 @@ StatusCode center_console_init(CenterConsoleStorage *storage, GpioExpanderStorag
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  storage->hold_timer = SOFT_TIMER_INVALID_TIMER;
   const GPIOSettings in_settings = { .direction = GPIO_DIR_IN };
   const GPIOSettings out_settings = { .direction = GPIO_DIR_OUT };
 
@@ -160,8 +159,8 @@ bool center_console_process_event(CenterConsoleStorage *storage, const Event *e)
 
   bool processed = false;
 
-  processed |= prv_update_power_state(storage, e);
-  processed |= prv_update_direction(storage, e);
+  processed |= prv_handle_power_state(storage, e);
+  processed |= prv_handle_direction(storage, e);
   processed |= prv_handle_headlights(storage, e);
   processed |= prv_handle_hazards(storage, e);
 
