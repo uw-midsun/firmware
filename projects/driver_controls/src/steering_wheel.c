@@ -17,19 +17,19 @@ static uint16_t prv_get_wheel_percentage(uint16_t reading, uint16_t range, uint1
 
 static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) {
   SteeringWheelStorage *storage = context;
-  uint16_t sensor_reading = INT16_MAX;
+  uint16_t wheel_reading = INT16_MAX;
 
-  StatusCode read_status = adc_read_raw(storage->calibration_data->sensor_channel, &sensor_reading);
+  StatusCode read_status = adc_read_raw(storage->calibration_data->wheel_channel, &wheel_reading);
 
   if (status_ok(read_status)) {
-    storage->sensor_steering_percent =
-        prv_get_wheel_percentage(sensor_reading, storage->calibration_data->rotary_midpoint,
-                                 storage->calibration_data->rotary_midpoint);
+    storage->wheel_steering_percent =
+        prv_get_wheel_percentage(wheel_reading, storage->calibration_data->wheel_range,
+                                 storage->calibration_data->wheel_midpoint);
   }
 }
 
 StatusCode steering_wheel_init(SteeringWheelStorage *storage,
-                              SteeringWheelCalibrationData *calibration_data) {
+                               SteeringWheelCalibrationData *calibration_data) {
   if (storage == NULL || calibration_data == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }

@@ -12,7 +12,7 @@
 #include "soft_timer.h"
 
 StatusCode steering_wheel_calib_init(SteeringWheelCalibrationStorage *storage,
-                                    SteeringWheelCalibrationSettings *settings) {
+                                     SteeringWheelCalibrationSettings *settings) {
   memset(storage, 0, sizeof(*storage));
   storage->settings = *settings;
 
@@ -32,12 +32,13 @@ static uint16_t prv_calc_midpoint(SteeringWheelCalibrationPointData point_data) 
 }
 
 StatusCode steering_wheel_calib_result(SteeringWheelCalibrationStorage *storage,
-                                      SteeringWheelCalibrationData *calib_data) {
+                                       SteeringWheelCalibrationData *calib_data) {
   memset(calib_data, 0, sizeof(*calib_data));
 
-  calib_data->sensor_channel = storage->settings.adc_channel;
-  calib_data->rotary_range = prv_calc_range(storage->data);
-  calib_data->rotary_midpoint = prv_calc_midpoint(storage->data);
-
+  calib_data->wheel_channel = storage->settings.adc_channel;
+  calib_data->wheel_range = prv_calc_range(storage->data);
+  calib_data->wheel_midpoint = prv_calc_midpoint(storage->data);
+  calib_data->max_bound = storage->data.max_reading;
+  calib_data->min_bound = storage->data.min_reading;
   return STATUS_CODE_OK;
 }
