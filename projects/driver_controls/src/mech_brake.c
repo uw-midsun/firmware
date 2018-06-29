@@ -18,6 +18,8 @@
 #include "status.h"
 #include "wait.h"
 
+static MechBrakeStorage s_mech_brake;
+
 static StatusCode prv_lsb_to_position(MechBrakeStorage *storage, int16_t reading,
                                       int16_t *position) {
   int16_t input_position = INT16_MAX;
@@ -80,4 +82,8 @@ StatusCode mech_brake_get_position(MechBrakeStorage *storage, int16_t *position)
 
   status_ok_or_return(ads1015_read_raw(storage->ads1015, storage->channel, &reading));
   return prv_lsb_to_position(storage, reading, position);
+}
+
+MechBrakeStorage *mech_brake_global(void) {
+  return &s_mech_brake;
 }

@@ -20,6 +20,15 @@
 // is received from all motor controllers.
 typedef void (*MotorControllerSpeedCb)(int16_t speed_cms[], size_t num_speeds, void *context);
 
+// Called with arrays of reported bus voltages (V) and currents (A) when a new set of information
+// is received from all motor controllers.
+typedef struct MotorControllerBusMeasurement {
+  int16_t bus_voltage;  // V
+  int16_t bus_current;  // A
+} MotorControllerBusMeasurement;
+typedef void (*MotorControllerBusMeasurementCb)(MotorControllerBusMeasurement measurements[],
+                                                size_t num_measurements, void *context);
+
 typedef enum {
   MOTOR_CONTROLLER_LEFT,
   MOTOR_CONTROLLER_RIGHT,
@@ -47,6 +56,7 @@ typedef struct MotorControllerSettings {
   float max_bus_current;
 
   MotorControllerSpeedCb speed_cb;
+  MotorControllerBusMeasurementCb bus_measurement_cb;
   void *context;
 } MotorControllerSettings;
 
@@ -62,7 +72,9 @@ typedef struct MotorControllerStorage {
   MotorControllerMode target_mode;
 
   int16_t speed_cms[NUM_MOTOR_CONTROLLERS];
-  uint8_t rx_bitset;
+  MotorControllerBusMeasurement bus_measurement[NUM_MOTOR_CONTROLLERS];
+  uint8_t speed_rx_bitset;
+  uint8_t bus_rx_bitset;
 
   size_t timeout_counter;
 } MotorControllerStorage;
@@ -71,10 +83,11 @@ typedef struct MotorControllerStorage {
 StatusCode motor_controller_init(MotorControllerStorage *controller,
                                  const MotorControllerSettings *settings);
 
-// Override the speed callback that is called when reported vehicle speed is received from the
-// motor controllers
-StatusCode motor_controller_set_speed_cb(MotorControllerStorage *controller,
-                                         MotorControllerSpeedCb speed_cb, void *context);
+// Override the callbacks that are called when information is received from the motor controllers
+StatusCode motor_controller_set_update_cbs(MotorControllerStorage *controller,
+                                           MotorControllerSpeedCb speed_cb,
+                                           MotorControllerBusMeasurementCb bus_measurement_cb,
+                                           void *context);
 
 // Switch the motor controllers to throttle control
 // |throttle| should be -EE_DRIVE_OUTPUT_DENOMINATOR to EE_DRIVE_OUTPUT_DENOMINATOR
