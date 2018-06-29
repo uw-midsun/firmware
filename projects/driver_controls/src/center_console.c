@@ -41,7 +41,7 @@ static bool prv_handle_power_state(CenterConsoleStorage *storage, const Event *e
   GPIOState output_states[NUM_CENTER_CONSOLE_OUTPUTS] = { 0 };
   // Power update - reset all LEDs
   for (size_t i = 0; i < NUM_CENTER_CONSOLE_OUTPUTS; i++) {
-    output_states[i] = GPIO_STATE_LOW;
+    output_states[i] = GPIO_STATE_HIGH;
   }
 
   switch (e->id) {
@@ -62,8 +62,13 @@ static bool prv_handle_power_state(CenterConsoleStorage *storage, const Event *e
       return false;
   }
 
+  LOG_DEBUG("hello\n");
   for (size_t i = 0; i < NUM_CENTER_CONSOLE_OUTPUTS; i++) {
-    gpio_expander_set_state(storage->output_expander, i, output_states[i]);
+    LOG_DEBUG("%d -> %d\n", i, output_states[i]);
+    StatusCode ret = gpio_expander_set_state(storage->output_expander, i, output_states[i]);
+    if (!status_ok(ret)) {
+      LOG_DEBUG("sad %d\n", ret);
+    }
   }
 
   return true;
@@ -136,8 +141,10 @@ StatusCode center_console_init(CenterConsoleStorage *storage, GpioExpanderStorag
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
+  storage->output_expander = output_expander;
+
   const GPIOSettings in_settings = { .direction = GPIO_DIR_IN, .resistor = GPIO_RES_PULLUP };
-  const GPIOSettings out_settings = { .direction = GPIO_DIR_OUT };
+  const GPIOSettings out_settings = { .direction = GPIO_DIR_OUT, .state = GPIO_STATE_HIGH };
 
   for (size_t i = 0; i < NUM_CENTER_CONSOLE_INPUTS; i++) {
     status_ok_or_return(gpio_expander_init_pin(input_expander, i, &in_settings));
@@ -164,5 +171,6 @@ bool center_console_process_event(CenterConsoleStorage *storage, const Event *e)
   processed |= prv_handle_headlights(storage, e);
   processed |= prv_handle_hazards(storage, e);
 
+  LOG_DEBUG("Processing %d -> success %d\n", e->id, processed);
   return processed;
 }
