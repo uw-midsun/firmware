@@ -28,7 +28,8 @@ static void prv_wait_conv(void) {
   Event e = { 0 };
   do {
     MS_TEST_HELPER_AWAIT_EVENT(e);
-    ltc_afe_process_event(&s_afe, &e);
+    TEST_ASSERT_NOT_EQUAL(PLUTUS_EVENT_AFE_FAULT, e.id);
+    TEST_ASSERT_TRUE(ltc_afe_process_event(&s_afe, &e));
   } while (e.id != PLUTUS_EVENT_AFE_CALLBACK_RUN);
 }
 

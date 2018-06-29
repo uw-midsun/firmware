@@ -6,6 +6,7 @@
 #include "exported_enums.h"
 #include "input_event.h"
 #include "log.h"
+#include "mech_brake.h"
 
 // Mechanical Brake FSM state definitions
 FSM_DECLARE_STATE(state_engaged);
@@ -55,16 +56,20 @@ static void prv_engaged_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   event_arbiter_set_guard_fn(guard, prv_guard_engaged);
 
-  drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_MECH_BRAKE,
-                      EE_DRIVE_OUTPUT_DENOMINATOR);
+  int16_t position = INT16_MAX;
+  if (status_ok(mech_brake_get_position(mech_brake_global(), &position))) {
+    drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_MECH_BRAKE, position);
+  }
 }
 
 static void prv_disengaged_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   event_arbiter_set_guard_fn(guard, prv_guard_disengaged);
 
-  // TODO(ELEC-350): Implement mech brake
-  drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_MECH_BRAKE, 0);
+  int16_t position = INT16_MAX;
+  if (status_ok(mech_brake_get_position(mech_brake_global(), &position))) {
+    drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_MECH_BRAKE, position);
+  }
 }
 
 StatusCode mechanical_brake_fsm_init(FSM *fsm, EventArbiterStorage *storage) {

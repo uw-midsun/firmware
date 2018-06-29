@@ -76,6 +76,12 @@
                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                  \
                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
+#define CAN_PACK_FAN_CONTROL(msg_ptr, state_u8)                                               \
+  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_CHAOS, SYSTEM_CAN_MESSAGE_FAN_CONTROL, 1,     \
+                   (state_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,             \
+                   CAN_PACK_IMPL_EMPTY)
+
 #define CAN_PACK_LIGHTS_SYNC(msg_ptr) \
   can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_LIGHTS_REAR, SYSTEM_CAN_MESSAGE_LIGHTS_SYNC)
 
