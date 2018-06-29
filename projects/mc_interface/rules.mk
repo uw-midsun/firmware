@@ -9,5 +9,5 @@
 $(T)_DEPS := ms-common ms-helper
 
 $(T)_test_drive_can_MOCKS := motor_controller_set_throttle motor_controller_set_cruise \
-                             motor_controller_set_speed_cb
+                             motor_controller_set_update_cbs
 

@@ -58,7 +58,7 @@ MESSAGE_LOOKUP = {
     27: ('Charger relay', '<B', data_relay),
     32: ('Battery V/T', '<HHH', data_battery_vt),
     33: ('Battery Voltage/Current', '<ii', data_battery_voltage_current),
-    36: ('Motor Velocity', '<ii', data_dump),
+    36: ('Motor Velocity', '<hh', data_dump),
     43: ('Aux & DC/DC V/C', '<HHHH', data_dump),
 }
 
@@ -90,7 +90,11 @@ def parse_msg(can_id, data):
     elif msg_id in MESSAGE_LOOKUP:
         name, fmt, data_fn = MESSAGE_LOOKUP[msg_id]
         if fmt:
-            unpacked_data = struct.unpack(fmt, data)
+            try:
+                unpacked_data = struct.unpack(fmt, data)
+            except struct.error:
+                print('Invalid {}'.format(msg_id))
+                return
         else:
             unpacked_data = []
 

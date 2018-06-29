@@ -51,7 +51,7 @@ static void prv_rx_uart(const uint8_t *rx_arr, size_t len, void *context) {
   StatusCode ret = cobs_decode(rx_arr, len - 1, decoded_data, &decoded_len);
 
   CanUartPacket packet;
-  if (decoded_len != sizeof(packet)) {
+  if (!status_ok(ret) || decoded_len != sizeof(packet)) {
     // This is not valid
     return;
   }
