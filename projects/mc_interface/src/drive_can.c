@@ -3,6 +3,8 @@
 #include "can.h"
 #include "can_transmit.h"
 #include "can_unpack.h"
+#include "log.h"
+#include "debug_led.h"
 
 static StatusCode prv_handle_drive(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   MotorControllerStorage *controller = context;
@@ -17,6 +19,8 @@ static StatusCode prv_handle_drive(const CANMessage *msg, void *context, CANAckS
       mech_brake < 0 || mech_brake > EE_DRIVE_OUTPUT_DENOMINATOR) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
+
+  debug_led_toggle_state(DEBUG_LED_BLUE_A);
 
   // if (mech_brake > EE_DRIVE_OUTPUT_MECH_THRESHOLD) {
   //   // Mechanical brake is active - force into coast/regen
@@ -43,6 +47,7 @@ static void prv_handle_bus_measurement(MotorControllerBusMeasurement measurement
 }
 
 StatusCode drive_can_init(MotorControllerStorage *controller) {
+  debug_led_init(DEBUG_LED_BLUE_A);
   motor_controller_set_update_cbs(controller, prv_handle_speed, prv_handle_bus_measurement, NULL);
   return can_register_rx_handler(SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT, prv_handle_drive, controller);
 }

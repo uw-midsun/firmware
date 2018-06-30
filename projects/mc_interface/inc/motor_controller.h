@@ -14,7 +14,7 @@
 
 #define MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS 50
 // Arbitrary timeout after 5 TX periods without receiving a setpoint update
-#define MOTOR_CONTROLLER_WATCHDOG_COUNTER 5
+#define MOTOR_CONTROLLER_WATCHDOG_COUNTER 20
 
 // Called with an array of reported vehicle speeds in cm/s when a new set of information
 // is received from all motor controllers.

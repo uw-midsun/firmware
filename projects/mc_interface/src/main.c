@@ -10,6 +10,8 @@
 #include "motor_controller.h"
 #include "sequenced_relay.h"
 #include "wait.h"
+#include "soft_timer.h"
+#include "debug_led.h"
 
 typedef enum {
   MOTOR_EVENT_SYSTEM_CAN_RX = 0,
@@ -53,6 +55,18 @@ static void prv_setup_motor_can(void) {
   generic_can_mcp2515_init(&s_can_mcp2515, &mcp2515_settings);
 }
 
+static void prv_periodic_cb(SoftTimerID timer_id, void *context) {
+  debug_led_toggle_state(DEBUG_LED_RED);
+
+  const CANMessage msg = {
+    .msg_id = SYSTEM_CAN_MESSAGE_MOTOR_ANGULAR_FREQUENCY,
+    .dlc = 0
+  };
+  can_transmit(&msg, NULL);
+
+  soft_timer_start_seconds(1, prv_periodic_cb, NULL, NULL);
+}
+
 int main(void) {
   interrupt_init();
   gpio_init();
@@ -60,6 +74,8 @@ int main(void) {
   event_queue_init();
   prv_setup_system_can();
   prv_setup_motor_can();
+
+  debug_led_init(DEBUG_LED_RED);
 
   // clang-format off
   MotorControllerSettings mc_settings = {
@@ -92,6 +108,8 @@ int main(void) {
 
   heartbeat_rx_register_handler(&s_powertrain_heartbeat, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
                                 heartbeat_rx_auto_ack_handler, NULL);
+
+  soft_timer_start_seconds(1, prv_periodic_cb, NULL, NULL);
 
   while (true) {
     Event e = { 0 };

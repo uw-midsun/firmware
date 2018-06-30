@@ -11,7 +11,7 @@
 #define MC_CFG_CAN_UART_BAUDRATE 115200
 
 #define MC_CFG_RELAY_LEFT \
-  { .port = GPIO_PORT_B, .pin = 3 }
+  { .port = GPIO_PORT_A, .pin = 9 }
 #define MC_CFG_RELAY_RIGHT \
   { .port = GPIO_PORT_B, .pin = 9 }
 #define MC_CFG_RELAY_DELAY_MS 1000
