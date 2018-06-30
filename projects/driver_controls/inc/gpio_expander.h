@@ -11,7 +11,7 @@
 #include "i2c.h"
 #include "soft_timer.h"
 
-#define GPIO_EXPANDER_POLL_PERIOD_MS 100
+#define GPIO_EXPANDER_POLL_PERIOD_MS 10
 
 #define GPIO_EXPANDER_STABILITY_MEASURE 5
 
