@@ -52,6 +52,7 @@ typedef struct GpioExpanderStorage {
   GpioExpanderCallback callbacks[NUM_GPIO_EXPANDER_PINS];
   uint8_t prev_state;
   uint8_t stability_count[NUM_GPIO_EXPANDER_ADDRESSES];
+  uint8_t last_stable;
 } GpioExpanderStorage;
 
 // Initialize the expander with an address to connect to its INT pin.

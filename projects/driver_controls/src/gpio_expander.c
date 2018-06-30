@@ -13,29 +13,24 @@ static void prv_poll_timeout(SoftTimerID timer_id, void *context) {
   i2c_read_reg(expander->port, expander->addr, MCP23008_GPIO, &gpio, 1);
 
   uint8_t changed = expander->prev_state ^ gpio;
-
+  expander->prev_state = gpio;
   // Looping through every single bit, and adjusting the count accordingly.
   for (uint8_t i = 0; i < NUM_GPIO_EXPANDER_ADDRESSES; i++) {
     if (changed & (1 << i)) {
-      // If changed, and we weren't counting before, we'll start counting.
-      // otherwise, we'll reset to 0.
-      if (expander->stability_count[i] == 0) {
-        expander->stability_count[i] = 1;
-      } else {
-        expander->stability_count[i] = 0;
-      }
-      // If not changed, and we were counting before we'll increment the count.
-      // Otherwise we wouldn't do anything.
+      expander->stability_count[i] = 0;
     } else {
-      if (expander->stability_count[i] != 0) {
-        expander->stability_count[i]++;
-        if (expander->stability_count[i] == GPIO_EXPANDER_STABILITY_MEASURE) {
-          // If after increment any of the pins reach their steady count, fire callbacks.
+      expander->stability_count[i]++;
+      if (expander->stability_count[i] == GPIO_EXPANDER_STABILITY_MEASURE) {
+        // If after increment any of the pins reach their steady count, fire callbacks.
+        uint8_t last_bit = (expander->last_stable >> i) & 1;
+        uint8_t current_bit = (gpio >> i) & 1;
+        if (last_bit != current_bit) {
           if (expander->callbacks[i].func != NULL) {
             expander->callbacks[i].func(i, (gpio >> i) & 1, expander->callbacks[i].context);
           }
-          expander->stability_count[i] = 0;
+          expander->last_stable ^= (1 << i);
         }
+        expander->stability_count[i] = 0;
       }
     }
   }
