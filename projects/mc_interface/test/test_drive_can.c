@@ -10,7 +10,6 @@
 #include "unity.h"
 
 #define TEST_DRIVE_CAN_DEVICE_ID 0x1
-#define TEST_DRIVE_CAN_NUM_RX_HANDLERS 2
 
 typedef enum {
   TEST_DRIVE_CAN_EVENT_RX = 10,
@@ -19,7 +18,6 @@ typedef enum {
 } TestDriveCanEvent;
 
 static CANStorage s_can_storage;
-static CANRxHandler s_rx_handlers[TEST_DRIVE_CAN_NUM_RX_HANDLERS];
 
 static int16_t s_throttle;
 static EEDriveOutputDirection s_direction;
@@ -40,8 +38,10 @@ void TEST_MOCK(motor_controller_set_cruise)(MotorControllerStorage *controller, 
   s_speed_cms = speed_cms;
 }
 
-void TEST_MOCK(motor_controller_set_speed_cb)(MotorControllerStorage *controller,
-                                              MotorControllerSpeedCb speed_cb, void *context) {}
+void TEST_MOCK(motor_controller_set_update_cbs)(MotorControllerStorage *controller,
+                                                MotorControllerSpeedCb speed_cb,
+                                                MotorControllerBusMeasurementCb bus_measurement_cb,
+                                                void *context) {}
 
 void setup_test(void) {
   event_queue_init();
@@ -59,8 +59,7 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  StatusCode ret =
-      can_init(&s_can_storage, &can_settings, s_rx_handlers, TEST_DRIVE_CAN_NUM_RX_HANDLERS);
+  StatusCode ret = can_init(&s_can_storage, &can_settings);
   TEST_ASSERT_OK(ret);
 
   drive_can_init(NULL);

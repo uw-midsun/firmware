@@ -13,11 +13,8 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#define NUM_CAN_RX_HANDLERS 2
-
 static EmergencyFaultStorage s_em_storage;
 static CANStorage s_storage;
-static CANRxHandler s_rx_handlers[NUM_CAN_RX_HANDLERS];
 
 // Handler that allows for injecting ack responses.
 static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
@@ -35,8 +32,8 @@ void setup_test(void) {
   soft_timer_init();
 
   CANSettings settings = {
-    .device_id = SYSTEM_CAN_DEVICE_CHAOS,
-    .bitrate = CAN_HW_BITRATE_125KBPS,
+    .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,
+    .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,
     .tx_event = CHAOS_EVENT_CAN_TX,
     .fault_event = CHAOS_EVENT_CAN_FAULT,
@@ -45,7 +42,8 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  can_init(&s_storage, &settings, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
+  can_init(&s_storage, &settings);
+  emergency_fault_init(&s_em_storage);
 }
 
 void teardown_test(void) {}
@@ -61,6 +59,7 @@ void test_emergency_fault(void) {
   Event e = { .id = CHAOS_EVENT_SEQUENCE_EMERGENCY, .data = 0 };
   emergency_fault_process_event(&s_em_storage, &e);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
+  delay_ms(EMERGENCY_FAULT_BACKOFF_MS);
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
 
   // Fail once then succeed
@@ -70,6 +69,7 @@ void test_emergency_fault(void) {
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
   ack_status = CAN_ACK_STATUS_OK;
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
+  delay_ms(EMERGENCY_FAULT_BACKOFF_MS);
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
 
   // Fail until cancelled.
@@ -78,8 +78,9 @@ void test_emergency_fault(void) {
   emergency_fault_process_event(&s_em_storage, &e);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
   e.id = CHAOS_EVENT_SEQUENCE_IDLE;
   emergency_fault_process_event(&s_em_storage, &e);
-  delay_ms(EMERGENCY_FAULT_BACKOFF_MS * 2);
+  delay_ms(EMERGENCY_FAULT_BACKOFF_MS * 3);
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
 }

@@ -36,13 +36,15 @@ static void prv_copy_drive_cmd(const GenericCanMsg *msg, void *context) {
          drive_cmd->motor_current_percentage, drive_cmd->motor_velocity_ms);
 }
 
-static void prv_fake_bus_measurement(float bus_current) {
+static void prv_fake_bus_measurement(MotorControllerCanId id, float bus_voltage,
+                                     float bus_current) {
   // Build fake bus measurement from motor controller
   WaveSculptorCanId can_id = {
-    .device_id = TEST_MOTOR_CONTROLLER_CAN_ID_MC_LEFT,
+    .device_id = id,
     .msg_id = WAVESCULPTOR_MEASUREMENT_ID_BUS,
   };
   WaveSculptorCanData can_data = { 0 };
+  can_data.bus_measurement.bus_voltage = bus_voltage;
   can_data.bus_measurement.bus_current = bus_current;
   GenericCanMsg motor_bus_msg = {
     .id = can_id.raw,
@@ -72,9 +74,17 @@ static void prv_fake_velocity_measurement(MotorControllerCanId id, float velocit
 }
 
 static void prv_handle_speed(int16_t speed_cms[], size_t num_speeds, void *context) {
+  TEST_ASSERT_EQUAL(NUM_MOTOR_CONTROLLERS, num_speeds);
   int16_t *speed_arr = context;
-  speed_arr[0] = speed_cms[0];
-  speed_arr[1] = speed_cms[1];
+  memcpy(speed_arr, speed_cms, sizeof(int16_t) * num_speeds);
+}
+
+static void prv_handle_bus_measurements(MotorControllerBusMeasurement bus_measurements[],
+                                        size_t num_measurements, void *context) {
+  TEST_ASSERT_EQUAL(NUM_MOTOR_CONTROLLERS, num_measurements);
+  MotorControllerBusMeasurement *measurement_arr = context;
+  memcpy(measurement_arr, bus_measurements,
+         sizeof(MotorControllerBusMeasurement) * num_measurements);
 }
 
 void setup_test(void) {
@@ -96,7 +106,7 @@ void setup_test(void) {
 
   // clang-format off
   const MotorControllerSettings mc_settings = {
-    .can_uart = (GenericCan *)&s_can,
+    .motor_can = (GenericCan *)&s_can,
     .ids = {
       [MOTOR_CONTROLLER_LEFT] = {
           .motor_controller = TEST_MOTOR_CONTROLLER_CAN_ID_MC_LEFT,
@@ -110,7 +120,7 @@ void setup_test(void) {
     .max_bus_current = TEST_MOTOR_CONTROLLER_MAX_BUS_CURRENT,
   };
   // clang-format on
-  motor_controller_init(&s_storage, &mc_settings);
+  TEST_ASSERT_OK(motor_controller_init(&s_storage, &mc_settings));
 
   MotorControllerCanId dc_ids[NUM_MOTOR_CONTROLLERS] = {
     TEST_MOTOR_CONTROLLER_CAN_ID_DC_LEFT,
@@ -121,8 +131,9 @@ void setup_test(void) {
       .device_id = dc_ids[i],
       .msg_id = WAVESCULPTOR_CMD_ID_DRIVE,
     };
-    generic_can_register_rx((GenericCan *)&s_can, prv_copy_drive_cmd, GENERIC_CAN_EMPTY_MASK,
-                            can_id.raw, false, &s_drive_cmds[i]);
+    TEST_ASSERT_OK(generic_can_register_rx((GenericCan *)&s_can, prv_copy_drive_cmd,
+                                           GENERIC_CAN_EMPTY_MASK, can_id.raw, false,
+                                           &s_drive_cmds[i]));
   }
 
   memset(s_drive_cmds, 0, sizeof(s_drive_cmds));
@@ -227,7 +238,7 @@ void test_motor_controller_watchdog(void) {
 void test_motor_controller_cruise(void) {
   motor_controller_set_cruise(&s_storage, 45);
   // Pretend we're accelerating - left motor controller sends bus measurement of 50A
-  prv_fake_bus_measurement(50.0f);
+  prv_fake_bus_measurement(TEST_MOTOR_CONTROLLER_CAN_ID_MC_LEFT, 123.0f, 50.0f);
   delay_ms(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS * 2);
 
   // Primary controller should use velocity setpoint
@@ -240,7 +251,7 @@ void test_motor_controller_cruise(void) {
   TEST_ASSERT_EQUAL_FLOAT(WAVESCULPTOR_FORWARD_VELOCITY, s_drive_cmds[1].motor_velocity_ms);
 
   // Pretend we're braking
-  prv_fake_bus_measurement(-50.0f);
+  prv_fake_bus_measurement(TEST_MOTOR_CONTROLLER_CAN_ID_MC_LEFT, 123.0f, -50.0f);
   delay_ms(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS * 2);
 
   // Primary controller should use velocity setpoint
@@ -255,7 +266,7 @@ void test_motor_controller_cruise(void) {
 
 void test_motor_controller_speed(void) {
   int16_t speed_arr[NUM_MOTOR_CONTROLLERS] = { 0 };
-  motor_controller_set_speed_cb(&s_storage, prv_handle_speed, speed_arr);
+  motor_controller_set_update_cbs(&s_storage, prv_handle_speed, NULL, speed_arr);
 
   prv_fake_velocity_measurement(TEST_MOTOR_CONTROLLER_CAN_ID_MC_LEFT, 10.0f);
   prv_fake_velocity_measurement(TEST_MOTOR_CONTROLLER_CAN_ID_MC_RIGHT, -10.0f);
@@ -264,4 +275,19 @@ void test_motor_controller_speed(void) {
 
   TEST_ASSERT_EQUAL(1000, speed_arr[0]);
   TEST_ASSERT_EQUAL(-1000, speed_arr[1]);
+}
+
+void test_motor_controller_bus_measurement(void) {
+  MotorControllerBusMeasurement measurement_arr[NUM_MOTOR_CONTROLLERS] = { 0 };
+  motor_controller_set_update_cbs(&s_storage, NULL, prv_handle_bus_measurements, measurement_arr);
+
+  prv_fake_bus_measurement(TEST_MOTOR_CONTROLLER_CAN_ID_MC_LEFT, 123.45f, 67.89f);
+  prv_fake_bus_measurement(TEST_MOTOR_CONTROLLER_CAN_ID_MC_RIGHT, 98.76f, -45.67f);
+
+  delay_ms(10);
+
+  TEST_ASSERT_EQUAL(123, measurement_arr[0].bus_voltage);
+  TEST_ASSERT_EQUAL(67, measurement_arr[0].bus_current);
+  TEST_ASSERT_EQUAL(98, measurement_arr[1].bus_voltage);
+  TEST_ASSERT_EQUAL(-45, measurement_arr[1].bus_current);
 }

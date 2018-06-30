@@ -3,16 +3,16 @@
 #include "mechanical_brake_fsm.h"
 #include "drive_output.h"
 #include "event_arbiter.h"
+#include "exported_enums.h"
 #include "input_event.h"
 #include "log.h"
+#include "mech_brake.h"
 
 // Mechanical Brake FSM state definitions
-
 FSM_DECLARE_STATE(state_engaged);
 FSM_DECLARE_STATE(state_disengaged);
 
 // Mechanical Brake FSM transition table definitions
-
 FSM_STATE_TRANSITION(state_engaged) {
   FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_engaged);
 
@@ -28,7 +28,6 @@ FSM_STATE_TRANSITION(state_disengaged) {
 }
 
 // Mechanical Brake FSM arbiter functions
-
 static bool prv_guard_engaged(const Event *e) {
   // While the brakes are engaged, the car shouldn't allow the car to enter cruise control.
   // Motor controller interface should ignore throttle state if mechanical brake is engaged.
@@ -42,9 +41,10 @@ static bool prv_guard_engaged(const Event *e) {
 
 static bool prv_guard_disengaged(const Event *e) {
   // The brake must be engaged in order for gear shifts to happen.
+  // We allow shifting into neutral at any time.
   switch (e->id) {
-    case INPUT_EVENT_DIRECTION_SELECTOR_DRIVE:
-    case INPUT_EVENT_DIRECTION_SELECTOR_REVERSE:
+    case INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE:
+    case INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE:
       return false;
     default:
       return true;
@@ -52,20 +52,24 @@ static bool prv_guard_disengaged(const Event *e) {
 }
 
 // Mechanical Brake FSM output functions
-
 static void prv_engaged_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   event_arbiter_set_guard_fn(guard, prv_guard_engaged);
 
-  drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_MECH_BRAKE, 0);
+  int16_t position = INT16_MAX;
+  if (status_ok(mech_brake_get_position(mech_brake_global(), &position))) {
+    drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_MECH_BRAKE, position);
+  }
 }
 
 static void prv_disengaged_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   event_arbiter_set_guard_fn(guard, prv_guard_disengaged);
 
-  // TODO(ELEC-350): Implement mech brake
-  drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_MECH_BRAKE, 0);
+  int16_t position = INT16_MAX;
+  if (status_ok(mech_brake_get_position(mech_brake_global(), &position))) {
+    drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_MECH_BRAKE, position);
+  }
 }
 
 StatusCode mechanical_brake_fsm_init(FSM *fsm, EventArbiterStorage *storage) {

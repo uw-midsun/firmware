@@ -12,13 +12,22 @@
 #include "exported_enums.h"
 #include "generic_can.h"
 
-#define MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS 50
+#define MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS 200
 // Arbitrary timeout after 5 TX periods without receiving a setpoint update
 #define MOTOR_CONTROLLER_WATCHDOG_COUNTER 5
 
 // Called with an array of reported vehicle speeds in cm/s when a new set of information
 // is received from all motor controllers.
 typedef void (*MotorControllerSpeedCb)(int16_t speed_cms[], size_t num_speeds, void *context);
+
+// Called with arrays of reported bus voltages (V) and currents (A) when a new set of information
+// is received from all motor controllers.
+typedef struct MotorControllerBusMeasurement {
+  int16_t bus_voltage;  // V
+  int16_t bus_current;  // A
+} MotorControllerBusMeasurement;
+typedef void (*MotorControllerBusMeasurementCb)(MotorControllerBusMeasurement measurements[],
+                                                size_t num_measurements, void *context);
 
 typedef enum {
   MOTOR_CONTROLLER_LEFT,
@@ -35,7 +44,7 @@ typedef enum {
 typedef uint32_t MotorControllerCanId;
 
 typedef struct MotorControllerSettings {
-  GenericCan *can_uart;
+  GenericCan *motor_can;
   struct {
     // WaveSculptor address
     MotorControllerCanId motor_controller;
@@ -47,6 +56,7 @@ typedef struct MotorControllerSettings {
   float max_bus_current;
 
   MotorControllerSpeedCb speed_cb;
+  MotorControllerBusMeasurementCb bus_measurement_cb;
   void *context;
 } MotorControllerSettings;
 
@@ -62,19 +72,22 @@ typedef struct MotorControllerStorage {
   MotorControllerMode target_mode;
 
   int16_t speed_cms[NUM_MOTOR_CONTROLLERS];
-  uint8_t rx_bitset;
+  MotorControllerBusMeasurement bus_measurement[NUM_MOTOR_CONTROLLERS];
+  uint8_t speed_rx_bitset;
+  uint8_t bus_rx_bitset;
 
   size_t timeout_counter;
 } MotorControllerStorage;
 
-// |settings.can_uart| should be initialized to an instance of CAN UART
+// |settings.motor_can| should be initialized.
 StatusCode motor_controller_init(MotorControllerStorage *controller,
                                  const MotorControllerSettings *settings);
 
-// Override the speed callback that is called when reported vehicle speed is received from the
-// motor controllers
-StatusCode motor_controller_set_speed_cb(MotorControllerStorage *controller,
-                                         MotorControllerSpeedCb speed_cb, void *context);
+// Override the callbacks that are called when information is received from the motor controllers
+StatusCode motor_controller_set_update_cbs(MotorControllerStorage *controller,
+                                           MotorControllerSpeedCb speed_cb,
+                                           MotorControllerBusMeasurementCb bus_measurement_cb,
+                                           void *context);
 
 // Switch the motor controllers to throttle control
 // |throttle| should be -EE_DRIVE_OUTPUT_DENOMINATOR to EE_DRIVE_OUTPUT_DENOMINATOR

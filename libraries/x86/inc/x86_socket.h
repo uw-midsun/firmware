@@ -15,6 +15,7 @@ typedef void (*X86SocketHandler)(struct X86SocketThread *thread, int client_fd, 
 
 typedef struct X86SocketThread {
   pthread_t thread;
+  pthread_barrier_t barrier;
   pthread_mutex_t keep_alive;
   const char *module_name;
   X86SocketHandler handler;

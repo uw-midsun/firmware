@@ -114,10 +114,10 @@ ROOT := $(shell pwd)
 
 # MAKE PROJECT
 
-.PHONY: all lint format build build_all
+.PHONY: all lint pylint format build build_all
 
 # Actually calls the make
-all: build lint
+all: build lint pylint
 
 # Includes platform-specific configurations
 include $(PLATFORMS_DIR)/$(PLATFORM)/platform.mk
@@ -135,13 +135,17 @@ FIND := find $(PROJ_DIR) $(LIB_DIR) \
 				-iname "*.[ch]" -print
 
 # Lints libraries and projects, excludes IGNORE_CLEANUP_LIBS
-# Disable import error
 lint:
 	@echo "Linting *.[ch] in $(PROJ_DIR), $(LIB_DIR)"
 	@echo "Excluding libraries: $(IGNORE_CLEANUP_LIBS)"
 	@$(FIND) | xargs -r python2 lint.py
-	@echo "Linting *.py in $(MAKE_DIR), $(PROJ_DIR)"
-	@find $(MAKE_DIR) $(PROJ_DIR) -iname "*.py" -print | xargs -r pylint --disable=F0401
+
+# Disable import error
+pylint:
+	@echo "Linting *.py in $(MAKE_DIR), $(PLATFORMS_DIR), $(PROJ_DIR), $(LIB_DIR)"
+	@echo "Excluding libraries: $(IGNORE_CLEANUP_LIBS)"
+	@find $(MAKE_DIR) $(PLATFORMS_DIR) -iname "*.py" -print | xargs -r pylint --disable=F0401 --disable=duplicate-code
+	@$(FIND:"*.[ch]"="*.py") | xargs -r pylint --disable=F0401 --disable=duplicate-code
 
 # Formats libraries and projects, excludes IGNORE_CLEANUP_LIBS
 format:
