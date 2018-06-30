@@ -17,7 +17,7 @@ static const EventID s_events[NUM_CENTER_CONSOLE_INPUTS] = {
   INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE,
   INPUT_EVENT_CENTER_CONSOLE_DRL,
   INPUT_EVENT_CENTER_CONSOLE_LOWBEAMS,
-  INPUT_EVENT_CENTER_CONSOLE_HAZARDS_PRESSED,
+  INPUT_EVENT_CENTER_CONSOLE_HAZARDS_RELEASED,
 };
 
 static void prv_raise_event_cb(GpioExpanderPin pin, GPIOState state, void *context) {
@@ -27,7 +27,7 @@ static void prv_raise_event_cb(GpioExpanderPin pin, GPIOState state, void *conte
     case CENTER_CONSOLE_INPUT_HAZARDS:
       if (state == GPIO_STATE_HIGH) {
         // Only hazards is non-latching
-        event_raise(INPUT_EVENT_CENTER_CONSOLE_HAZARDS_RELEASED, 0);
+        event_raise(INPUT_EVENT_CENTER_CONSOLE_HAZARDS_PRESSED, 0);
       }
       // Fall-through
     default:

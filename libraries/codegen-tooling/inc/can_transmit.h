@@ -115,6 +115,14 @@
     status;                                          \
   })
 
+#define CAN_TRANSMIT_FAN_CONTROL(state_u8)        \
+  ({                                              \
+    CANMessage msg = { 0 };                       \
+    CAN_PACK_FAN_CONTROL(&msg, (state_u8));       \
+    StatusCode status = can_transmit(&msg, NULL); \
+    status;                                       \
+  })
+
 #define CAN_TRANSMIT_LIGHTS_SYNC()                \
   ({                                              \
     CANMessage msg = { 0 };                       \
