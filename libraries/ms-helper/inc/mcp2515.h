@@ -35,6 +35,7 @@ typedef struct Mcp2515Storage {
   SPIPort spi_port;
   Mcp2515RxCb rx_cb;
   void *context;
+  GPIOAddress int_pin;
 } Mcp2515Storage;
 
 // Initializes the MCP2515 CAN controller.
@@ -46,3 +47,5 @@ StatusCode mcp2515_register_rx_cb(Mcp2515Storage *storage, Mcp2515RxCb rx_cb, vo
 // Transmits a CAN message.
 StatusCode mcp2515_tx(Mcp2515Storage *storage, uint32_t id, bool extended, uint64_t data,
                       size_t dlc);
+
+void mcp2515_poll(Mcp2515Storage *storage);

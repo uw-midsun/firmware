@@ -100,6 +100,7 @@ StatusCode direction_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
   }
 
   fsm_init(fsm, "Direction FSM", &state_neutral, guard);
+  event_raise(INPUT_EVENT_DIRECTION_STATE_NEUTRAL, 0);
 
   return STATUS_CODE_OK;
 }

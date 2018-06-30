@@ -19,56 +19,56 @@
 // - velocity = 0
 // - current = braking force
 
-// static void prv_bus_measurement_rx(const GenericCanMsg *msg, void *context) {
-//   LOG_DEBUG("bus measurement rx\n");
-//   MotorControllerStorage *storage = context;
-//   WaveSculptorCanId can_id = { .raw = msg->id };
-//   WaveSculptorCanData can_data = { .raw = msg->data };
+static void prv_bus_measurement_rx(const GenericCanMsg *msg, void *context) {
+  MotorControllerStorage *storage = context;
+  WaveSculptorCanId can_id = { .raw = msg->id };
+  WaveSculptorCanData can_data = { .raw = msg->data };
 
-//   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
-//     if (can_id.device_id == storage->settings.ids[i].motor_controller) {
-//       storage->bus_measurement[i].bus_voltage = (int16_t)(can_data.bus_measurement.bus_voltage);
-//       storage->bus_measurement[i].bus_current = (int16_t)(can_data.bus_measurement.bus_current);
-//       storage->bus_rx_bitset |= 1 << i;
+  // LOG_DEBUG("bus measurement rx 0x%x\n", can_id.device_id);
+  for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
+    if (can_id.device_id == storage->settings.ids[i].motor_controller) {
+      storage->bus_measurement[i].bus_voltage = (int16_t)(can_data.bus_measurement.bus_voltage);
+      storage->bus_measurement[i].bus_current = (int16_t)(can_data.bus_measurement.bus_current);
+      storage->bus_rx_bitset |= 1 << i;
 
-//       if (i == 0) {
-//         // This controller is deemed to be the source of truth during cruise - copy setpoint
-//         storage->cruise_current_percentage =
-//             fabsf(can_data.bus_measurement.bus_current / storage->settings.max_bus_current);
-//         storage->cruise_is_braking = (can_data.bus_measurement.bus_current < 0.0f);
-//       }
-//     }
-//   }
+      if (i == 0) {
+        // This controller is deemed to be the source of truth during cruise - copy setpoint
+        storage->cruise_current_percentage =
+            fabsf(can_data.bus_measurement.bus_current / storage->settings.max_bus_current);
+        storage->cruise_is_braking = (can_data.bus_measurement.bus_current < 0.0f);
+      }
+    }
+  }
 
-//   if (storage->bus_rx_bitset == (1 << NUM_MOTOR_CONTROLLERS) - 1) {
-//     // Received speed from all motor controllers - clear bitset and broadcast
-//     storage->bus_rx_bitset = 0;
-//     storage->settings.bus_measurement_cb(storage->bus_measurement, NUM_MOTOR_CONTROLLERS,
-//                                          storage->settings.context);
-//   }
-// }
+  if (storage->bus_rx_bitset == (1 << NUM_MOTOR_CONTROLLERS) - 1) {
+    // Received speed from all motor controllers - clear bitset and broadcast
+    storage->bus_rx_bitset = 0;
+    storage->settings.bus_measurement_cb(storage->bus_measurement, NUM_MOTOR_CONTROLLERS,
+                                         storage->settings.context);
+  }
+}
 
-// static void prv_velocity_measurement_rx(const GenericCanMsg *msg, void *context) {
-//   LOG_DEBUG("velocity measurement rx\n");
-//   MotorControllerStorage *storage = context;
-//   WaveSculptorCanId can_id = { .raw = msg->id };
-//   WaveSculptorCanData can_data = { .raw = msg->data };
+static void prv_velocity_measurement_rx(const GenericCanMsg *msg, void *context) {
+  MotorControllerStorage *storage = context;
+  WaveSculptorCanId can_id = { .raw = msg->id };
+  WaveSculptorCanData can_data = { .raw = msg->data };
 
-//   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
-//     if (can_id.device_id == storage->settings.ids[i].motor_controller) {
-//       storage->speed_cms[i] = (int16_t)(can_data.velocity_measurement.vehicle_velocity_ms * 100);
-//       storage->speed_rx_bitset |= 1 << i;
-//       break;
-//     }
-//   }
+  // LOG_DEBUG("velocity measurement rx 0x%x\n", can_id.device_id);
+  for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
+    if (can_id.device_id == storage->settings.ids[i].motor_controller) {
+      storage->speed_cms[i] = (int16_t)(can_data.velocity_measurement.vehicle_velocity_ms * 100);
+      storage->speed_rx_bitset |= 1 << i;
+      break;
+    }
+  }
 
-//   if (storage->speed_rx_bitset == (1 << NUM_MOTOR_CONTROLLERS) - 1) {
-//     // Received speed from all motor controllers - clear bitset and broadcast
-//     storage->speed_rx_bitset = 0;
-//     storage->settings.speed_cb(storage->speed_cms, NUM_MOTOR_CONTROLLERS,
-//                                storage->settings.context);
-//   }
-// }
+  if (storage->speed_rx_bitset == (1 << NUM_MOTOR_CONTROLLERS) - 1) {
+    // Received speed from all motor controllers - clear bitset and broadcast
+    storage->speed_rx_bitset = 0;
+    storage->settings.speed_cb(storage->speed_cms, NUM_MOTOR_CONTROLLERS,
+                               storage->settings.context);
+  }
+}
 
 static void prv_periodic_tx(SoftTimerID timer_id, void *context) {
   MotorControllerStorage *storage = context;
@@ -104,6 +104,8 @@ static void prv_periodic_tx(SoftTimerID timer_id, void *context) {
   }
   storage->timeout_counter++;
 
+  debug_led_toggle_state(DEBUG_LED_GREEN);
+
   soft_timer_start_millis(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS, prv_periodic_tx, storage, NULL);
 }
 
@@ -115,20 +117,19 @@ StatusCode motor_controller_init(MotorControllerStorage *controller,
   WaveSculptorCanId can_id = { 0 };
 
   debug_led_init(DEBUG_LED_GREEN);
-  debug_led_set_state(DEBUG_LED_GREEN, false);
 
-  // for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
-  //   can_id.device_id = controller->settings.ids[i].motor_controller;
-  //   can_id.msg_id = WAVESCULPTOR_MEASUREMENT_ID_VELOCITY;
-  //   status_ok_or_return(generic_can_register_rx(controller->settings.motor_can,
-  //                                               prv_velocity_measurement_rx, GENERIC_CAN_EMPTY_MASK,
-  //                                               can_id.raw, false, controller));
+  for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
+    can_id.device_id = controller->settings.ids[i].motor_controller;
+    can_id.msg_id = WAVESCULPTOR_MEASUREMENT_ID_VELOCITY;
+    status_ok_or_return(generic_can_register_rx(controller->settings.motor_can,
+                                                prv_velocity_measurement_rx, GENERIC_CAN_EMPTY_MASK,
+                                                can_id.raw, false, controller));
 
-  //   can_id.msg_id = WAVESCULPTOR_MEASUREMENT_ID_BUS;
-  //   status_ok_or_return(generic_can_register_rx(controller->settings.motor_can,
-  //                                               prv_bus_measurement_rx, GENERIC_CAN_EMPTY_MASK,
-  //                                               can_id.raw, false, controller));
-  // }
+    can_id.msg_id = WAVESCULPTOR_MEASUREMENT_ID_BUS;
+    status_ok_or_return(generic_can_register_rx(controller->settings.motor_can,
+                                                prv_bus_measurement_rx, GENERIC_CAN_EMPTY_MASK,
+                                                can_id.raw, false, controller));
+  }
 
   return soft_timer_start_millis(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS, prv_periodic_tx, controller,
                                  NULL);

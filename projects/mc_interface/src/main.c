@@ -12,6 +12,8 @@
 #include "wait.h"
 #include "soft_timer.h"
 #include "debug_led.h"
+#include "gpio_it.h"
+#include "log.h"
 
 typedef enum {
   MOTOR_EVENT_SYSTEM_CAN_RX = 0,
@@ -43,12 +45,13 @@ static void prv_setup_system_can(void) {
 static void prv_setup_motor_can(void) {
   Mcp2515Settings mcp2515_settings = {
     .spi_port = SPI_PORT_2,
-    .baudrate = 3000000,
+    .baudrate = 6000000,
     .mosi = { .port = GPIO_PORT_B, 15 },
     .miso = { .port = GPIO_PORT_B, 14 },
     .sclk = { .port = GPIO_PORT_B, 13 },
     .cs = { .port = GPIO_PORT_B, 12 },
     .int_pin = { .port = GPIO_PORT_A, 8 },
+
     .loopback = false,
   };
 
@@ -64,12 +67,15 @@ static void prv_periodic_cb(SoftTimerID timer_id, void *context) {
   };
   can_transmit(&msg, NULL);
 
+  mcp2515_tx(s_can_mcp2515.mcp2515, 0x123, 0, 0x1122334455667788, 8);
+
   soft_timer_start_seconds(1, prv_periodic_cb, NULL, NULL);
 }
 
 int main(void) {
   interrupt_init();
   gpio_init();
+  gpio_it_init();
   soft_timer_init();
   event_queue_init();
   prv_setup_system_can();
@@ -111,13 +117,16 @@ int main(void) {
 
   soft_timer_start_seconds(1, prv_periodic_cb, NULL, NULL);
 
+  LOG_DEBUG("hello\n");
+
   while (true) {
     Event e = { 0 };
     while (status_ok(event_process(&e))) {
       can_process_event(&e);
     }
 
-    wait();
+    // wait();
+    mcp2515_poll(s_can_mcp2515.mcp2515);
   }
 
   return 0;
