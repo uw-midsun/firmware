@@ -55,6 +55,7 @@ static bool prv_handle_power_state(CenterConsoleStorage *storage, const Event *e
     case INPUT_EVENT_POWER_STATE_CHARGE:
       charge_led = GPIO_STATE_LOW;
       // Fall-though - power LED should also be on
+      __attribute__((fallthrough));
     case INPUT_EVENT_POWER_STATE_DRIVE:
       // Power LED on
       output_states[CENTER_CONSOLE_OUTPUT_POWER_LED] = GPIO_STATE_LOW;

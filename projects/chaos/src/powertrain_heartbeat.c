@@ -9,6 +9,7 @@
 #include "can_transmit.h"
 #include "chaos_events.h"
 #include "event_queue.h"
+#include "exported_enums.h"
 #include "log.h"
 #include "soft_timer.h"
 #include "status.h"
@@ -33,7 +34,8 @@ static void prv_hb_watchdog(SoftTimerID timer_id, void *context) {
   (void)context;
   s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
   LOG_DEBUG("Emergency: Powertrain Watchdog\n");
-  event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, 0);
+  event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY,
+              EE_POWER_DISTRIBUTION_FAULT_REASON_POWERTRAIN_HB_WATCHDOG);
   if (s_interval_id != SOFT_TIMER_INVALID_TIMER) {
     soft_timer_cancel(s_interval_id);
     s_interval_id = SOFT_TIMER_INVALID_TIMER;
