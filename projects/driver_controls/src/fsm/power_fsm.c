@@ -20,25 +20,31 @@
 #include "input_event.h"
 #include "log.h"
 #include "power_distribution_controller.h"
+#include "mech_brake.h"
+
+static bool prv_guard_mech_brake(const FSM *fsm, const Event *e, void *context) {
+  int16_t position = INT16_MAX;
+  StatusCode ret = mech_brake_get_position(mech_brake_global(), &position);
+  if (status_ok(ret)) {
+    LOG_DEBUG("mech brake position %d -> %d\n", position, position > EE_DRIVE_OUTPUT_MECH_THRESHOLD);
+    return position > EE_DRIVE_OUTPUT_MECH_THRESHOLD;
+  }
+
+  LOG_DEBUG("mech brake not ok %d\n", ret);
+
+  return false;
+}
 
 // Power FSM state definitions
 FSM_DECLARE_STATE(state_off);
-FSM_DECLARE_STATE(state_off_brake);
 FSM_DECLARE_STATE(state_charging);
 FSM_DECLARE_STATE(state_on);
 FSM_DECLARE_STATE(state_fault);
 
 // Power FSM transition table definitions
 FSM_STATE_TRANSITION(state_off) {
+  FSM_ADD_GUARDED_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, prv_guard_mech_brake, state_on);
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_charging);
-  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_off_brake);
-
-  FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
-}
-
-FSM_STATE_TRANSITION(state_off_brake) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_on);
-  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_off);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
 }
@@ -135,7 +141,6 @@ static void prv_charge_output(FSM *fsm, const Event *e, void *context) {
 
 StatusCode power_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_off, prv_off_output);
-  fsm_state_init(state_off_brake, prv_off_output);
   fsm_state_init(state_charging, prv_charge_output);
   fsm_state_init(state_on, prv_drive_output);
   fsm_state_init(state_fault, prv_fault_output);

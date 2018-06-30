@@ -43,7 +43,7 @@ static void prv_setup_system_can(void) {
 static void prv_setup_motor_can(void) {
   Mcp2515Settings mcp2515_settings = {
     .spi_port = SPI_PORT_2,
-    .baudrate = 750000,
+    .baudrate = 3000000,
     .mosi = { .port = GPIO_PORT_B, 15 },
     .miso = { .port = GPIO_PORT_B, 14 },
     .sclk = { .port = GPIO_PORT_B, 13 },

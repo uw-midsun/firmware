@@ -100,12 +100,7 @@ static void prv_periodic_tx(SoftTimerID timer_id, void *context) {
     }
     msg.data = can_data.raw;
 
-    StatusCode ret = generic_can_tx(storage->settings.motor_can, &msg);
-    if (i == 0 && !status_ok(ret)) {
-      debug_led_set_state(DEBUG_LED_GREEN, true);
-    } else if (i == 0) {
-      debug_led_set_state(DEBUG_LED_GREEN, false);
-    }
+    generic_can_tx(storage->settings.motor_can, &msg);
   }
   storage->timeout_counter++;
 

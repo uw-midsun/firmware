@@ -29,7 +29,7 @@ typedef enum {
 // Mech brake + throttle
 #define EE_DRIVE_OUTPUT_DENOMINATOR (1 << 12)
 // Arbitrary 5% minimum pressure before considering it as engaged
-#define EE_DRIVE_OUTPUT_MECH_THRESHOLD (5 * (EE_DRIVE_OUTPUT_DENOMINATOR) / 100)
+#define EE_DRIVE_OUTPUT_MECH_THRESHOLD (20 * (EE_DRIVE_OUTPUT_DENOMINATOR) / 100)
 
 typedef enum {
   EE_DRIVE_OUTPUT_DIRECTION_NEUTRAL = 0,
