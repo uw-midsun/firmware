@@ -139,7 +139,8 @@ int main(void) {
 
   const MechBrakeSettings mech_brake_settings = {
     .ads1015 = &s_pedal_ads1015,
-    .brake_pressed_threshold_percentage = 50,
+    .brake_pressed_threshold_percentage = 55,
+    .brake_unpressed_threshold_percentage = 45,
     .bounds_tolerance_percentage = 10,
     .channel = ADS1015_CHANNEL_2,
   };
