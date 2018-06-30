@@ -81,5 +81,7 @@ typedef enum {
   // Speed update
   INPUT_EVENT_SPEED_UPDATE,
 
+  INPUT_EVENT_DUMMY,
+
   NUM_INPUT_EVENTS,
 } InputEvent;

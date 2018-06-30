@@ -78,6 +78,12 @@ static void prv_blink_timeout(SoftTimerID timer_id, void *context) {
   soft_timer_start_seconds(1, prv_blink_timeout, NULL, NULL);
 }
 
+static void prv_dump_fsms(void) {
+  for (size_t i = 0; i < NUM_DRIVER_CONTROLS_FSMS; i++) {
+    printf("> %-30s%s\n", s_fsms[i].name, s_fsms[i].current_state->name);
+  }
+}
+
 int main(void) {
   gpio_init();
   interrupt_init();
@@ -139,7 +145,7 @@ int main(void) {
 
   const MechBrakeSettings mech_brake_settings = {
     .ads1015 = &s_pedal_ads1015,
-    .brake_pressed_threshold_percentage = 50,
+    .brake_pressed_threshold_percentage = 70,
     .bounds_tolerance_percentage = 10,
     .channel = ADS1015_CHANNEL_2,
   };
@@ -184,6 +190,10 @@ int main(void) {
         case INPUT_EVENT_DRIVE_UPDATE_REQUESTED:
         case INPUT_EVENT_CAN_RX:
         case INPUT_EVENT_CAN_TX:
+        case INPUT_EVENT_MECHANICAL_BRAKE_PRESSED:
+        case INPUT_EVENT_MECHANICAL_BRAKE_RELEASED:
+        case INPUT_EVENT_SPEED_UPDATE:
+        case INPUT_EVENT_PEDAL_FAULT:
           break;
         default:
           LOG_DEBUG("e %d %d\n", e.id, e.data);
@@ -191,10 +201,14 @@ int main(void) {
 #endif
       can_process_event(&e);
       power_distribution_controller_retry(&e);
-      cruise_handle_event(cruise_global(), &e);
+      // cruise_handle_event(cruise_global(), &e);
       event_arbiter_process_event(&s_event_arbiter, &e);
+      if (e.id == INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE || e.id == INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE) {
+        LOG_DEBUG("event %d\n", e.id);
+        prv_dump_fsms();
+      }
       brake_signal_process_event(&e);
-      center_console_process_event(&s_console, &e);
+      // center_console_process_event(&s_console, &e);
     }
   }
 }
