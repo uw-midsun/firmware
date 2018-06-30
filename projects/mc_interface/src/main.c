@@ -29,8 +29,8 @@ static void prv_check_precharge_relays(SoftTimerID timer_id, void *context) {
 
   GPIOState precharge_left, precharge_right;
 
-  gpio_get_state(&relay_settings->left_relay, &precharge_left);
-  gpio_get_state(&relay_settings->right_relay, &precharge_right);
+  gpio_get_state(&relay_settings->left_sense, &precharge_left);
+  gpio_get_state(&relay_settings->right_sense, &precharge_right);
 
   if ((precharge_left == GPIO_STATE_LOW) || (precharge_right == GPIO_STATE_LOW)) {
     sequenced_relay_init(&s_relay_storage, relay_settings);
@@ -98,6 +98,8 @@ int main(void) {
     .can_msg_id = SYSTEM_CAN_MESSAGE_MOTOR_RELAY,
     .left_relay = MC_CFG_RELAY_LEFT,
     .right_relay = MC_CFG_RELAY_RIGHT,
+    .left_sense = MC_CFG_SENSE_LEFT,
+    .right_sense = MC_CFG_SENSE_RIGHT,
     .delay_ms = MC_CFG_RELAY_DELAY_MS,
   };
 
