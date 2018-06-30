@@ -1,6 +1,7 @@
 #pragma once
 
 // Module for steering wheel angle percentage reading
+// Requires ADS1015 to be initialized
 //
 // The goal of this module is to convert the analog reading of a rotary
 // sensor to an accurate percentage output. This will be accomplished by
@@ -9,8 +10,9 @@
 // convert digital input (on a scale of 0 to 4095) to a scale of (-100% to 100%),
 // where -100% is the counterclockwise-most position of the wheel, and
 // 100% is the clockwise-most position of the wheel.
-//
-// Requires steering wheel calibration module
+
+// Note that to accomplish the digital to percentage conversion, a calibrated
+// SteeringWheelCalibrationData is required
 
 #include <stdbool.h>
 #include <stdio.h>
