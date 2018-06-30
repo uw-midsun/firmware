@@ -24,6 +24,21 @@ static SequencedRelayStorage s_relay_storage;
 static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
 static UARTStorage s_uart_storage;
 
+static void prv_check_precharge_relays(SoftTimerID timer_id, void *context) {
+  SequencedRelaySettings *relay_settings = (SequencedRelaySettings *)context;
+
+  GPIOState precharge_left, precharge_right;
+
+  gpio_get_state(&relay_settings->left_relay, &precharge_left);
+  gpio_get_state(&relay_settings->right_relay, &precharge_right);
+
+  if ((precharge_left == GPIO_STATE_LOW) || (precharge_right == GPIO_STATE_LOW)) {
+    sequenced_relay_init(&s_relay_storage, relay_settings);
+    soft_timer_start_millis(MC_CFG_PRECHARGE_CHECK_INTERVAL_MS, prv_check_precharge_relays,
+                            relay_settings, &relay_settings->timer_id);
+  }
+}
+
 static void prv_setup_system_can(void) {
   CANSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,
@@ -87,6 +102,8 @@ int main(void) {
   };
 
   sequenced_relay_init(&s_relay_storage, &relay_settings);
+  soft_timer_start_millis(MC_CFG_PRECHARGE_CHECK_INTERVAL_MS, prv_check_precharge_relays,
+                          &relay_settings, &relay_settings.timer_id);
 
   heartbeat_rx_register_handler(&s_powertrain_heartbeat, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
                                 heartbeat_rx_auto_ack_handler, NULL);
