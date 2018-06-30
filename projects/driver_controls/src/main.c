@@ -78,11 +78,11 @@ static void prv_blink_timeout(SoftTimerID timer_id, void *context) {
   soft_timer_start_seconds(1, prv_blink_timeout, NULL, NULL);
 }
 
-static void prv_dump_fsms(void) {
-  for (size_t i = 0; i < NUM_DRIVER_CONTROLS_FSMS; i++) {
-    printf("> %-30s%s\n", s_fsms[i].name, s_fsms[i].current_state->name);
-  }
-}
+// static void prv_dump_fsms(void) {
+//   for (size_t i = 0; i < NUM_DRIVER_CONTROLS_FSMS; i++) {
+//     printf("> %-30s%s\n", s_fsms[i].name, s_fsms[i].current_state->name);
+//   }
+// }
 
 int main(void) {
   gpio_init();
@@ -203,11 +203,11 @@ int main(void) {
       power_distribution_controller_retry(&e);
       // cruise_handle_event(cruise_global(), &e);
       event_arbiter_process_event(&s_event_arbiter, &e);
-      if (e.id == INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE || e.id == INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE) {
-        LOG_DEBUG("event %d\n", e.id);
-        prv_dump_fsms();
-      }
-      brake_signal_process_event(&e);
+      // if (e.id == INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE || e.id == INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE) {
+      //   LOG_DEBUG("event %d\n", e.id);
+      //   prv_dump_fsms();
+      // }
+      // brake_signal_process_event(&e);
       // center_console_process_event(&s_console, &e);
     }
   }
