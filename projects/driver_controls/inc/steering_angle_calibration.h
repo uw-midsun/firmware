@@ -1,41 +1,41 @@
 #pragma once
 
-// Module for wheel calibration
+// Module for angle calibration
 //
 // The goal of this module is to perform a calibration on the
-// wheel, obtaining the high and low bound of the
-// wheel. Upon acquiring wheel boundaries, it is expected
+// angle, obtaining the high and low bound of the
+// angle. Upon acquiring angle boundaries, it is expected
 // to calculate the midpoint and the range of the respective boundaries
 // in order to allow for representation of read ADC input in percentage form
 
-// Requires steering_wheel.h in order to use steering_wheel calibration data struct
+// Requires steering_angle.h in order to use steering_angle calibration data struct
 
-#include "steering_wheel.h"
+#include "steering_angle.h"
 
 // Contains calibration boundary point information - necessary for calculating
 // midpoint and range
-typedef struct SteeringWheelCalibrationPointData {
+typedef struct SteeringAngleCalibrationPointData {
   uint16_t min_reading;
   uint16_t max_reading;
-} SteeringWheelCalibrationPointData;
+} SteeringAngleCalibrationPointData;
 
-typedef struct SteeringWheelCalibrationSettings {
+typedef struct SteeringAngleCalibrationSettings {
   ADCChannel adc_channel;
-} SteeringWheelCalibrationSettings;
+} SteeringAngleCalibrationSettings;
 
-typedef struct SteeringWheelCalibrationStorage {
-  SteeringWheelCalibrationPointData data;
-  SteeringWheelCalibrationSettings settings;
-} SteeringWheelCalibrationStorage;
+typedef struct SteeringAngleCalibrationStorage {
+  SteeringAngleCalibrationPointData data;
+  SteeringAngleCalibrationSettings settings;
+} SteeringAngleCalibrationStorage;
 
-// Initializes wheel calibration (empties storage data and sets pre-defined settings)
-StatusCode steering_wheel_calib_init(SteeringWheelCalibrationStorage *storage,
-                                     SteeringWheelCalibrationSettings *settings);
+// Initializes angle calibration (empties storage data and sets pre-defined settings)
+StatusCode steering_angle_calib_init(SteeringAngleCalibrationStorage *storage,
+                                     SteeringAngleCalibrationSettings *settings);
 
 // Clears calibration data before populating it with appropriate key values
 // Taken and modified from a calibrated calibration storage
-StatusCode steering_wheel_calib_result(SteeringWheelCalibrationStorage *wheel_storage,
-                                       SteeringWheelCalibrationData *wheel_calib_data);
+StatusCode steering_angle_calib_result(SteeringAngleCalibrationStorage *angle_storage,
+                                       SteeringAngleCalibrationData *angle_calib_data);
 
 // Takes storage in order ot acquire channel from settings
 // Takes an independent reading to allow for freedom to set max or min bound
