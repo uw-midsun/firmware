@@ -11,22 +11,22 @@ static void prv_extract_cell_result(uint16_t *result_arr, size_t len, void *cont
   memcpy(storage->result.cell_voltages, result_arr, sizeof(storage->result.cell_voltages));
 
   storage->result.total_voltage = 0;
-  bool fault = false;
+  // bool fault = false;
   for (size_t i = 0; i < len; i++) {
     storage->result.total_voltage += result_arr[i];
-    if (result_arr[i] < storage->settings.undervoltage ||
-        result_arr[i] > storage->settings.overvoltage) {
-      fault = true;
-    }
+    // if (result_arr[i] < storage->settings.undervoltage ||
+    //     result_arr[i] > storage->settings.overvoltage) {
+    //   fault = true;
+    // }
   }
 
-  if (fault) {
-    bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
-                              EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
-  } else {
-    bps_heartbeat_clear_fault(storage->settings.bps_heartbeat,
-                              EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
-  }
+  // if (fault) {
+  //   bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
+  //                             EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+  // } else {
+  //   bps_heartbeat_clear_fault(storage->settings.bps_heartbeat,
+  //                             EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+  // }
 }
 
 static void prv_extract_aux_result(uint16_t *result_arr, size_t len, void *context) {
@@ -49,14 +49,14 @@ static void prv_extract_current(int32_t value, void *context) {
   storage->result.current = value;
   storage->result.charging = storage->result.current < storage->min_charge_current;
 
-  if (storage->result.current > storage->charge_current_limit ||
-      storage->result.current < storage->discharge_current_limit) {
-    bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
-                              EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC);
-  } else {
-    bps_heartbeat_clear_fault(storage->settings.bps_heartbeat,
-                              EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC);
-  }
+  // if (storage->result.current > storage->charge_current_limit ||
+  //     storage->result.current < storage->discharge_current_limit) {
+  //   bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
+  //                             EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC);
+  // } else {
+  //   bps_heartbeat_clear_fault(storage->settings.bps_heartbeat,
+  //                             EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC);
+  // }
 }
 
 static void prv_handle_adc_timeout(void *context) {

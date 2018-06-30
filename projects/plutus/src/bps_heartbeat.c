@@ -36,12 +36,13 @@ static StatusCode prv_handle_state(BpsHeartbeatStorage *storage) {
   };
 
   // Only transmit state OK if we have no ongoing faults
-  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, storage->fault_bitset);
+  // CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, storage->fault_bitset);
+  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, 0);
   debug_led_set_state(DEBUG_LED_RED, (storage->fault_bitset != EE_BPS_HEARTBEAT_STATE_OK));
 
-  if (storage->fault_bitset != EE_BPS_HEARTBEAT_STATE_OK) {
-    return sequenced_relay_set_state(storage->relay, EE_RELAY_STATE_OPEN);
-  }
+  // if (storage->fault_bitset != EE_BPS_HEARTBEAT_STATE_OK) {
+  //   return sequenced_relay_set_state(storage->relay, EE_RELAY_STATE_OPEN);
+  // }
 
   return STATUS_CODE_OK;
 }

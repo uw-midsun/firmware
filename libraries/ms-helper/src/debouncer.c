@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include "soft_timer.h"
 
-#define DEBOUNCER_INTERRUPT_MASKING_DURATION_MS 50
+#define DEBOUNCER_INTERRUPT_MASKING_DURATION_MS 500
 
 // This is the callback for the soft timer. If there is a button input, it runs the user's callback.
 static void prv_timer_callback(SoftTimerID timer_id, void *context) {
