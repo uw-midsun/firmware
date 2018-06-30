@@ -2,10 +2,10 @@
 #include <stddef.h>
 #include <string.h>
 #include "critical_section.h"
+#include "delay.h"
 #include "gpio_it.h"
 #include "log.h"
 #include "mcp2515_defs.h"
-#include "delay.h"
 
 #define MCP2515_MAX_WRITE_BUFFER_LEN 10
 
@@ -173,7 +173,8 @@ StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings
   };
   prv_write(storage, MCP2515_CTRL_REG_CNF3, registers, SIZEOF_ARRAY(registers));
 
-  prv_bit_modify(storage, MCP2515_CTRL_REG_RXB0CTRL, MCP2515_RXB0CTRL_BUKT_MASK, MCP2515_RXB0CTRL_BUKT_ROLLOVER);
+  prv_bit_modify(storage, MCP2515_CTRL_REG_RXB0CTRL, MCP2515_RXB0CTRL_BUKT_MASK,
+                 MCP2515_RXB0CTRL_BUKT_ROLLOVER);
 
   // Leave config mode
   uint8_t opmode =

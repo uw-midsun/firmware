@@ -19,14 +19,15 @@
 #include "exported_enums.h"
 #include "input_event.h"
 #include "log.h"
-#include "power_distribution_controller.h"
 #include "mech_brake.h"
+#include "power_distribution_controller.h"
 
 static bool prv_guard_mech_brake(const FSM *fsm, const Event *e, void *context) {
   int16_t position = INT16_MAX;
   StatusCode ret = mech_brake_get_position(mech_brake_global(), &position);
   if (status_ok(ret)) {
-    LOG_DEBUG("mech brake position %d -> %d\n", position, position > EE_DRIVE_OUTPUT_MECH_THRESHOLD);
+    LOG_DEBUG("mech brake position %d -> %d\n", position,
+              position > EE_DRIVE_OUTPUT_MECH_THRESHOLD);
     return position > EE_DRIVE_OUTPUT_MECH_THRESHOLD;
   }
 

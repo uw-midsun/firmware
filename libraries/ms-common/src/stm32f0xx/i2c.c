@@ -10,16 +10,16 @@
 
 // Arbitrary timeout
 #define I2C_TIMEOUT 100000
-#define I2C_TIMEOUT_WHILE_FLAG(i2c_port, flag, status)                      \
-  do {                                                                      \
-    uint32_t timeout = (I2C_TIMEOUT);                                       \
-    while (I2C_GetFlagStatus(s_port[i2c_port].base, flag) == status) {      \
-      timeout--;                                                            \
-      if (timeout == 0) {                                                   \
-        prv_recover_lockup(i2c_port);                                       \
-        return status_code(STATUS_CODE_TIMEOUT);                            \
-      }                                                                     \
-    }                                                                       \
+#define I2C_TIMEOUT_WHILE_FLAG(i2c_port, flag, status)                 \
+  do {                                                                 \
+    uint32_t timeout = (I2C_TIMEOUT);                                  \
+    while (I2C_GetFlagStatus(s_port[i2c_port].base, flag) == status) { \
+      timeout--;                                                       \
+      if (timeout == 0) {                                              \
+        prv_recover_lockup(i2c_port);                                  \
+        return status_code(STATUS_CODE_TIMEOUT);                       \
+      }                                                                \
+    }                                                                  \
   } while (0)
 
 #define I2C_STOP(i2c_port)                                   \

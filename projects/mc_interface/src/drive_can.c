@@ -3,8 +3,8 @@
 #include "can.h"
 #include "can_transmit.h"
 #include "can_unpack.h"
-#include "log.h"
 #include "debug_led.h"
+#include "log.h"
 
 static StatusCode prv_handle_drive(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   MotorControllerStorage *controller = context;

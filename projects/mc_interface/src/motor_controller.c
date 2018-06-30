@@ -4,10 +4,10 @@
 #include <string.h>
 #include "can_transmit.h"
 #include "critical_section.h"
+#include "debug_led.h"
+#include "log.h"
 #include "soft_timer.h"
 #include "wavesculptor.h"
-#include "log.h"
-#include "debug_led.h"
 
 // Torque control mode:
 // - velocity = +/-100 m/s

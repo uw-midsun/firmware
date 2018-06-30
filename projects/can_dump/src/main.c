@@ -2,19 +2,20 @@
 #include "delay.h"
 #include "generic_can.h"
 #include "generic_can_hw.h"
+#include "generic_can_mcp2515.h"
 #include "gpio.h"
+#include "gpio_it.h"
 #include "interrupt.h"
 #include "log.h"
 #include "soft_timer.h"
 #include "wait.h"
-#include "generic_can_mcp2515.h"
-#include "gpio_it.h"
 
 static GenericCanHw s_can;
 static GenericCanMcp2515 s_can_mcp2515;
 
 // static void prv_can_rx_callback(const GenericCanMsg *msg, void *context) {
-//   printf("ID %" PRIx32 " DLC %d data 0x%lx%lx\n", msg->id, (uint8_t)msg->dlc, (uint32_t)(msg->data >> 32), (uint32_t)msg->data);
+//   printf("ID %" PRIx32 " DLC %d data 0x%lx%lx\n", msg->id, (uint8_t)msg->dlc,
+//   (uint32_t)(msg->data >> 32), (uint32_t)msg->data);
 // }
 
 static void prv_mcp2515_rx(uint32_t id, bool extended, uint64_t data, size_t dlc, void *context) {
