@@ -31,7 +31,7 @@ StatusCode sequenced_relay_init(SequencedRelayStorage *storage,
   gpio_init_pin(&storage->settings.left_relay, &gpio_settings);
   gpio_init_pin(&storage->settings.right_relay, &gpio_settings);
 
-  gpio_settings.direction = GPIO_DIR_OUT;
+  gpio_settings.direction = GPIO_DIR_IN;
   gpio_init_pin(&storage->settings.left_sense, &gpio_settings);
   gpio_init_pin(&storage->settings.right_sense, &gpio_settings);
 
