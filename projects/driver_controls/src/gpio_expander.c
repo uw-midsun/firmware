@@ -6,6 +6,7 @@
 #include "mcp23008.h"
 
 static void prv_poll_timeout(SoftTimerID timer_id, void *context) {
+  (void)timer_id;
   GpioExpanderStorage *expander = context;
   uint8_t gpio = 0;
 
@@ -20,13 +21,13 @@ static void prv_poll_timeout(SoftTimerID timer_id, void *context) {
       expander->stability_count[i] = 0;
     } else {
       expander->stability_count[i]++;
-      if (expander->stability_count[i] == GPIO_EXPANDER_STABILITY_MEASURE) {
+      if (expander->stability_count[i] >= GPIO_EXPANDER_STABILITY_MEASURE) {
         // If after increment any of the pins reach their steady count, fire callbacks.
-        uint8_t last_bit = (expander->last_stable >> i) & 1;
-        uint8_t current_bit = (gpio >> i) & 1;
+        uint8_t last_bit = (expander->last_stable >> i) & 0x01;
+        uint8_t current_bit = (gpio >> i) & 0x01;
         if (last_bit != current_bit) {
           if (expander->callbacks[i].func != NULL) {
-            expander->callbacks[i].func(i, (gpio >> i) & 1, expander->callbacks[i].context);
+            expander->callbacks[i].func(i, (gpio >> i) & 0x01, expander->callbacks[i].context);
           }
           expander->last_stable ^= (1 << i);
         }
@@ -59,8 +60,10 @@ StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioE
   expander->port = port;
   expander->addr = MCP23008_ADDRESS + addr;
 
-  // If we don't have an interrupt pin registered, this will be an output-only IO expander.
+  // If we have an interrupt pin this will be an interrupt driven IO expander. Otherwise it is a
+  // output only expander.
   if (interrupt_pin != NULL) {
+    // We ignore the interrupt_pin since polling and debouncing is more consistent.
     soft_timer_start_millis(GPIO_EXPANDER_POLL_PERIOD_MS, prv_poll_timeout, expander, NULL);
   }
 
