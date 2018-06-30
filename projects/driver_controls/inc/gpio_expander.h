@@ -13,6 +13,8 @@
 
 #define GPIO_EXPANDER_POLL_PERIOD_MS 100
 
+#define GPIO_EXPANDER_STABILITY_MEASURE 5
+
 typedef enum {
   GPIO_EXPANDER_PIN_0 = 0,
   GPIO_EXPANDER_PIN_1,
@@ -49,6 +51,7 @@ typedef struct GpioExpanderStorage {
   I2CAddress addr;
   GpioExpanderCallback callbacks[NUM_GPIO_EXPANDER_PINS];
   uint8_t prev_state;
+  uint8_t stability_count[NUM_GPIO_EXPANDER_ADDRESSES];
 } GpioExpanderStorage;
 
 // Initialize the expander with an address to connect to its INT pin.
