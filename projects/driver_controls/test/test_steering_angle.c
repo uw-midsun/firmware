@@ -15,14 +15,20 @@
 
 static SteeringAngleCalibrationData s_angle_calib_data;
 static SteeringAngleStorage s_steering_angle_storage;
+static Ads1015Storage s_ads1015_storage;
 
 static int16_t s_test_reading;
+
+const SteeringAngleSettings {
+  .storage = &s_ads1015_storage
+  .channel = ADS1015_CHANNEL_3
+}
 // preset calibration data for testing purposes
 static void prv_set_calibration_data(SteeringAngleCalibrationData *calib_data) {
   calib_data->min_bound = 0;
   calib_data->max_bound = 4095;
-  calib_data->angle_range = 4095;
   calib_data->angle_midpoint = 2048;
+  calib_data->tolerance_percentage = 20;
 }
 
 void setup_test(void) {
@@ -30,16 +36,16 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
 
-  ADCChannel conversion_channel;
-  const GPIOAddress conversion_address = {
-    .port = GPIO_PORT_A,
-    .pin = 7,
+  GPIOAddress ready_pin = DC_CFG_STEERING_ADC_RDY_PIN;
+  const I2CSettings i2c_settings = {
+    .speed = I2C_SPEED_FAST,
+    .scl = DC_CFG_I2C_BUS_SCL,
+    .sda = DC_CFG_I2C_BUS_SDA,
   };
+  i2c_init(DC_CFG_I2C_BUS_PORT, &i2c_settings);
 
-  adc_init(ADC_MODE_CONTINUOUS);
-  adc_get_channel(conversion_address, &conversion_channel);
-  adc_set_channel(conversion_channel, true);
-
+  ads1015_init(s_steering_angle_storage->ads1015, DC_CFG_I2C_BUS_PORT, ADS1015_ADDRESS_GND,
+               &ready_pin);
   prv_set_calibration_data(&s_angle_calib_data);
   steering_angle_init(&s_steering_angle_storage, &s_angle_calib_data);
 }

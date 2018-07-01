@@ -13,14 +13,15 @@
 #include "steering_angle.h"
 
 // Contains calibration boundary point information - necessary for calculating
-// midpoint and range
+// midpoint/range
 typedef struct SteeringAngleCalibrationPointData {
   uint16_t min_reading;
   uint16_t max_reading;
 } SteeringAngleCalibrationPointData;
 
 typedef struct SteeringAngleCalibrationSettings {
-  ADCChannel adc_channel;
+  Ads1015Storage *ads1015;
+  Ads1015Channel adc_channel;
 } SteeringAngleCalibrationSettings;
 
 typedef struct SteeringAngleCalibrationStorage {
@@ -39,4 +40,4 @@ StatusCode steering_angle_calib_result(SteeringAngleCalibrationStorage *angle_st
 
 // Takes storage in order ot acquire channel from settings
 // Takes an independent reading to allow for freedom to set max or min bound
-void prv_calc_boundary(ADCChannel read_channel, uint16_t *boundary_reading);
+void prv_calc_boundary(SteeringAngleCalibrationStorage *storage, int16_t *boundary_reading);

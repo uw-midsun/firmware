@@ -5,7 +5,7 @@
 #include "steering_angle.h"
 #include "steering_angle_calibration.h"
 
-#include "adc.h"
+#include "ads1015.h"
 #include "gpio.h"
 #include "interrupt.h"
 #include "log.h"
@@ -20,12 +20,10 @@ StatusCode steering_angle_calib_init(SteeringAngleCalibrationStorage *storage,
   return STATUS_CODE_OK;
 }
 // calculations for range, boundary, and midpoint
-void prv_calc_boundary(ADCChannel read_channel, uint16_t *boundary_reading) {
-  adc_read_raw(read_channel, boundary_reading);
-}
-
-static uint16_t prv_calc_range(SteeringAngleCalibrationPointData channel_data) {
-  return channel_data.max_reading - channel_data.min_reading;
+void prv_calc_boundary(SteeringAngleCalibrationStorage *storage, int16_t *boundary_reading) {
+  ads1015_configure_channel(storage->settings.ads1015, storage->settings.adc_channel, true, NULL,
+                            NULL);
+  ads1015_read_raw(storage->settings.ads1015, storage->settings.adc_channel, boundary_reading);
 }
 
 static uint16_t prv_calc_midpoint(SteeringAngleCalibrationPointData point_data) {
@@ -37,10 +35,10 @@ StatusCode steering_angle_calib_result(SteeringAngleCalibrationStorage *storage,
                                        SteeringAngleCalibrationData *calib_data) {
   memset(calib_data, 0, sizeof(*calib_data));
 
-  calib_data->angle_channel = storage->settings.adc_channel;
-  calib_data->angle_range = prv_calc_range(storage->data);
+  // calib_data->angle_channel = storage->settings.adc_channel;
   calib_data->angle_midpoint = prv_calc_midpoint(storage->data);
   calib_data->max_bound = storage->data.max_reading;
   calib_data->min_bound = storage->data.min_reading;
+  calib_data->tolerance_percentage = 3;
   return STATUS_CODE_OK;
 }

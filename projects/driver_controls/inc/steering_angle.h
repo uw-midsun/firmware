@@ -19,6 +19,7 @@
 #include <stdio.h>
 
 #include "adc.h"
+#include "ads1015.h"
 #include "delay.h"
 #include "gpio.h"
 #include "interrupt.h"
@@ -28,18 +29,24 @@
 // Calibrated data from the steering angle calibration module
 typedef struct SteeringAngleCalibrationData {
   uint16_t angle_midpoint;
-  uint16_t angle_range;
   uint16_t max_bound;
   uint16_t min_bound;
-  ADCChannel angle_channel;
+  uint16_t tolerance_percentage;
 } SteeringAngleCalibrationData;
 
+typedef struct SteeringAngleSettings {
+  Ads1015Storage *ads1015;
+  Ads1015Channel adc_channel;
+} SteeringAngleSettings;
+
 typedef struct SteeringAngleStorage {
+  Ads1015Storage *ads1015;
+  Ads1015Channel adc_channel;
   int16_t angle_steering_percent;
   SteeringAngleCalibrationData *calibration_data;
 } SteeringAngleStorage;
 
 StatusCode steering_angle_init(SteeringAngleStorage *storage,
-                               SteeringAngleCalibrationData *calibration_data);
+                               SteeringAngleCalibrationData *calibration_data, SteeringAngleSettings *settings);
 
 StatusCode steering_angle_get_position(SteeringAngleStorage *storage);

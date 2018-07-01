@@ -19,19 +19,21 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
 
-  ADCChannel conversion_channel;
-  const GPIOAddress conversion_address = {
-    .port = GPIO_PORT_A,
-    .pin = 0,
+  GPIOAddress ready_pin = DC_CFG_STEERING_ADC_RDY_PIN;
+  const I2CSettings i2c_settings = {
+    .speed = I2C_SPEED_FAST,
+    .scl = DC_CFG_I2C_BUS_SCL,
+    .sda = DC_CFG_I2C_BUS_SDA,
   };
-
-  adc_init(ADC_MODE_CONTINUOUS);
-  adc_get_channel(conversion_address, &conversion_channel);
-  adc_set_channel(conversion_channel, true);
 
   SteeringAngleCalibrationSettings calib_settings = {
-    .adc_channel = conversion_channel,
+    .adc_channel = ADS1015_CHANNEL_3,
   };
+
+  i2c_init(DC_CFG_I2C_BUS_PORT, &i2c_settings);
+
+  ads1015_init(s_steering_angle_storage->ads1015, DC_CFG_I2C_BUS_PORT, ADS1015_ADDRESS_GND,
+               &ready_pin);
 
   steering_angle_calib_init(&s_calibration_storage, &calib_settings);
 }
@@ -54,7 +56,6 @@ void test_steering_angle(void) {
   SteeringAngleCalibrationData calib_data;
   steering_angle_calib_result(&s_calibration_storage, &calib_data);
   steering_angle_init(&s_steering_angle_storage, &calib_data);
-  LOG_DEBUG("Range: %d \n", calib_data.angle_range);
   LOG_DEBUG("Midpoint: %d \n", calib_data.angle_midpoint);
   LOG_DEBUG("Max-bound %d \n", calib_data.max_bound);
   LOG_DEBUG("Min-bound: %d \n", calib_data.min_bound);
