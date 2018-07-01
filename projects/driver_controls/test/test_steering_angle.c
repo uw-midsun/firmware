@@ -20,8 +20,7 @@ static Ads1015Storage s_ads1015_storage;
 static int16_t s_test_reading;
 
 const SteeringAngleSettings {
-  .storage = &s_ads1015_storage
-  .channel = ADS1015_CHANNEL_3
+  .storage = &s_ads1015_storage.channel = ADS1015_CHANNEL_3
 }
 // preset calibration data for testing purposes
 static void prv_set_calibration_data(SteeringAngleCalibrationData *calib_data) {

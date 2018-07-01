@@ -47,6 +47,7 @@ typedef struct SteeringAngleStorage {
 } SteeringAngleStorage;
 
 StatusCode steering_angle_init(SteeringAngleStorage *storage,
-                               SteeringAngleCalibrationData *calibration_data, SteeringAngleSettings *settings);
+                               SteeringAngleCalibrationData *calibration_data,
+                               SteeringAngleSettings *settings);
 
 StatusCode steering_angle_get_position(SteeringAngleStorage *storage);
