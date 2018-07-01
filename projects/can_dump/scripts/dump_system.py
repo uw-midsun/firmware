@@ -59,6 +59,7 @@ MESSAGE_LOOKUP = {
     27: ('Charger relay', '<B', data_relay),
     32: ('Battery V/T', '<HHH', data_battery_vt),
     33: ('Battery Voltage/Current', '<ii', data_battery_voltage_current),
+    35: ('Motor Bus Measurement', '<hhhh', data_dump),
     36: ('Motor Velocity', '<hh', data_dump),
     43: ('Aux & DC/DC V/C', '<HHHH', data_dump),
 }
@@ -73,7 +74,6 @@ def parse_msg(can_id, data):
     Returns:
         None
     """
-
     # System CAN ID format:
     # [0:3] Source ID
     # [4] Message Type (ACK/DATA)
