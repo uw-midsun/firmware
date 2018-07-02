@@ -13,6 +13,7 @@
 #include "event_queue.h"
 #include "status.h"
 
+#define POWERTRAIN_HEARTBEAT_SEQUENTIAL_PACKETS 5
 #define POWERTRAIN_HEARTBEAT_MS 1000
 #define POWERTRAIN_HEARTBEAT_WATCHDOG_MS 4100
 

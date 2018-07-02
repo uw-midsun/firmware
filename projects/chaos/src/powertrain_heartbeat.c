@@ -43,6 +43,7 @@ static void prv_hb_watchdog(SoftTimerID timer_id, void *context) {
 }
 
 static void prv_kick_watchdog(void) {
+  LOG_DEBUG("Kicked\n");
   if (s_watchdog_id != SOFT_TIMER_INVALID_TIMER) {
     soft_timer_cancel(s_watchdog_id);
     s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
@@ -58,6 +59,7 @@ static StatusCode prv_ack_cb(CANMessageID id, uint16_t device, CANAckStatus stat
   (void)device;
   (void)context;
   (void)status;
+  LOG_DEBUG("Ack\n");
   if (num_remaining == 0) {
     prv_kick_watchdog();
   }
@@ -76,6 +78,9 @@ static void prv_send_hb_request(SoftTimerID timer_id, void *context) {
         SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER),
   };
   CAN_TRANSMIT_POWERTRAIN_HEARTBEAT(&ack_req);
+  for (size_t i = 0; i < POWERTRAIN_HEARTBEAT_SEQUENTIAL_PACKETS - 1; i++) {
+    CAN_TRANSMIT_POWERTRAIN_HEARTBEAT(NULL);
+  }
   soft_timer_start_millis(POWERTRAIN_HEARTBEAT_MS, prv_send_hb_request, NULL, &s_interval_id);
 }
 

@@ -37,6 +37,9 @@ static StatusCode prv_handle_state(BpsHeartbeatStorage *storage) {
 
   // Only transmit state OK if we have no ongoing faults
   CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, storage->fault_bitset);
+  for (uint8_t i = 0; i < BPS_HEARTBEAT_SEQUENTIAL_PACKETS - 1; i++) {
+    CAN_TRANSMIT_BPS_HEARTBEAT(NULL, storage->fault_bitset);
+  }
   debug_led_set_state(DEBUG_LED_RED, (storage->fault_bitset != EE_BPS_HEARTBEAT_STATE_OK));
 
   if (storage->fault_bitset != EE_BPS_HEARTBEAT_STATE_OK) {

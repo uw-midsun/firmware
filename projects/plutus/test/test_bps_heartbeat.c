@@ -12,6 +12,7 @@
 #include "soft_timer.h"
 #include "test_helpers.h"
 
+#define TEST_BPS_HEARTBEAT_MESSAGES_PER_ACK 4
 #define TEST_BPS_HEARTBEAT_PERIOD_MS 50
 
 static CANStorage s_can;
@@ -77,8 +78,14 @@ void teardown_test(void) {}
 
 void test_bps_heartbeat_can(void) {
   // No faults by default - the heartbeat state should be good
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
-                                    TEST_BPS_HEARTBEAT_EVENT_CAN_RX);
+  Event e = { 0 };
+  for (size_t i = 0; i < BPS_HEARTBEAT_SEQUENTIAL_PACKETS * TEST_BPS_HEARTBEAT_MESSAGES_PER_ACK;
+       ++i) {
+    MS_TEST_HELPER_AWAIT_EVENT(e);
+    TEST_ASSERT_TRUE(can_process_event(&e));
+  }
+  // MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
+  //                                   TEST_BPS_HEARTBEAT_EVENT_CAN_RX);
   TEST_ASSERT_EQUAL(CAN_ACK_STATUS_OK, s_ack_status);
   TEST_ASSERT_EQUAL(EE_RELAY_STATE_CLOSE, s_relay_state);
   TEST_ASSERT_EQUAL(EE_BPS_HEARTBEAT_STATE_OK, s_heartbeat_state);
@@ -87,14 +94,19 @@ void test_bps_heartbeat_can(void) {
   // We support a number of grace ACK timeouts, so loop
   s_ack_status = CAN_ACK_STATUS_TIMEOUT;
 
-  for (size_t i = 0; i < PLUTUS_CFG_HEARTBEAT_MAX_ACK_FAILS; i++) {
-    MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
-                                      TEST_BPS_HEARTBEAT_EVENT_CAN_RX);
+  for (size_t i = 0; i < PLUTUS_CFG_HEARTBEAT_MAX_ACK_FAILS * BPS_HEARTBEAT_SEQUENTIAL_PACKETS *
+                             TEST_BPS_HEARTBEAT_MESSAGES_PER_ACK;
+       i++) {
+    MS_TEST_HELPER_AWAIT_EVENT(e);
+    TEST_ASSERT_TRUE(can_process_event(&e));
   }
 
   // Next BPS heartbeat will have faulted
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
-                                    TEST_BPS_HEARTBEAT_EVENT_CAN_RX);
+  for (size_t i = 0; i < BPS_HEARTBEAT_SEQUENTIAL_PACKETS * TEST_BPS_HEARTBEAT_MESSAGES_PER_ACK;
+       ++i) {
+    MS_TEST_HELPER_AWAIT_EVENT(e);
+    TEST_ASSERT_TRUE(can_process_event(&e));
+  }
   TEST_ASSERT_EQUAL(CAN_ACK_STATUS_TIMEOUT, s_ack_status);
   TEST_ASSERT_EQUAL(EE_RELAY_STATE_OPEN, s_relay_state);
   TEST_ASSERT_EQUAL(EE_BPS_HEARTBEAT_STATE_FAULT_ACK_TIMEOUT, s_heartbeat_state);
@@ -102,8 +114,12 @@ void test_bps_heartbeat_can(void) {
 
 void test_bps_heartbeat_basic(void) {
   // No faults by default - the heartbeat state should be good
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
-                                    TEST_BPS_HEARTBEAT_EVENT_CAN_RX);
+  Event e = { 0 };
+  for (size_t i = 0; i < BPS_HEARTBEAT_SEQUENTIAL_PACKETS * TEST_BPS_HEARTBEAT_MESSAGES_PER_ACK;
+       ++i) {
+    MS_TEST_HELPER_AWAIT_EVENT(e);
+    TEST_ASSERT_TRUE(can_process_event(&e));
+  }
   TEST_ASSERT_EQUAL(CAN_ACK_STATUS_OK, s_ack_status);
   TEST_ASSERT_EQUAL(EE_RELAY_STATE_CLOSE, s_relay_state);
   TEST_ASSERT_EQUAL(EE_BPS_HEARTBEAT_STATE_OK, s_heartbeat_state);
@@ -111,8 +127,11 @@ void test_bps_heartbeat_basic(void) {
   // Raise fault - immediately update
   LOG_DEBUG("Raising fault\n");
   bps_heartbeat_raise_fault(&s_bps_heartbeat, EE_BPS_HEARTBEAT_FAULT_SOURCE_KILLSWITCH);
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
-                                    TEST_BPS_HEARTBEAT_EVENT_CAN_RX);
+  for (size_t i = 0; i < BPS_HEARTBEAT_SEQUENTIAL_PACKETS * TEST_BPS_HEARTBEAT_MESSAGES_PER_ACK;
+       ++i) {
+    MS_TEST_HELPER_AWAIT_EVENT(e);
+    TEST_ASSERT_TRUE(can_process_event(&e));
+  }
   TEST_ASSERT_EQUAL(EE_RELAY_STATE_OPEN, s_relay_state);
   TEST_ASSERT_EQUAL(EE_BPS_HEARTBEAT_STATE_FAULT_KILLSWITCH, s_heartbeat_state);
 
@@ -120,8 +139,11 @@ void test_bps_heartbeat_basic(void) {
   LOG_DEBUG("Clearing fault\n");
   bps_heartbeat_clear_fault(&s_bps_heartbeat, EE_BPS_HEARTBEAT_FAULT_SOURCE_KILLSWITCH);
   delay_ms(TEST_BPS_HEARTBEAT_PERIOD_MS);
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(TEST_BPS_HEARTBEAT_EVENT_CAN_TX,
-                                    TEST_BPS_HEARTBEAT_EVENT_CAN_RX);
+  for (size_t i = 0; i < BPS_HEARTBEAT_SEQUENTIAL_PACKETS * TEST_BPS_HEARTBEAT_MESSAGES_PER_ACK;
+       ++i) {
+    MS_TEST_HELPER_AWAIT_EVENT(e);
+    TEST_ASSERT_TRUE(can_process_event(&e));
+  }
   TEST_ASSERT_EQUAL(EE_RELAY_STATE_OPEN, s_relay_state);
   TEST_ASSERT_EQUAL(EE_BPS_HEARTBEAT_STATE_OK, s_heartbeat_state);
 }
