@@ -53,7 +53,7 @@ void setup_test(void) {
   event_queue_init();
   ads1015_init(&s_ads1015_storage, DC_CFG_I2C_BUS_PORT, DC_CFG_PEDAL_ADC_ADDR, &ready_pin);
 
-  TEST_ASSERT_OK(calib_init(&s_calib_blob, sizeof(s_calib_blob)));
+  TEST_ASSERT_OK(calib_init(&s_calib_blob, sizeof(s_calib_blob), true));
   mech_brake_calibration_init(&s_calibration_storage, &calib_settings);
 }
 

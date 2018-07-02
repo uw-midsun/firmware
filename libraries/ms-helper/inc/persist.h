@@ -30,7 +30,9 @@ typedef struct PersistStorage {
 // Attempt to load stored data into the provided blob and retains the blob to commit periodically
 // Reserves the entire flash page for the persistance layer instance
 // Note that the blob must be a multiple of FLASH_WRITE_BYTES and must persist
-StatusCode persist_init(PersistStorage *persist, FlashPage page, void *blob, size_t blob_size);
+// If |overwrite| is true, the persist layer overwrites invalid blobs. Otherwise, it fails.
+StatusCode persist_init(PersistStorage *persist, FlashPage page, void *blob, size_t blob_size,
+                        bool overwrite);
 
 // Control whether the periodic commit is enabled (enabled by default)
 StatusCode persist_ctrl_periodic(PersistStorage *persist, bool enabled);

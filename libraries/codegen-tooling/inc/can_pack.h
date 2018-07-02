@@ -9,9 +9,11 @@
                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,              \
                    CAN_PACK_IMPL_EMPTY)
 
-#define CAN_PACK_POWER_DISTRIBUTION_FAULT(msg_ptr)        \
-  can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_CHAOS, \
-                      SYSTEM_CAN_MESSAGE_POWER_DISTRIBUTION_FAULT)
+#define CAN_PACK_POWER_DISTRIBUTION_FAULT(msg_ptr, reason_u8)                             \
+  can_pack_impl_u8(                                                                       \
+      (msg_ptr), SYSTEM_CAN_DEVICE_CHAOS, SYSTEM_CAN_MESSAGE_POWER_DISTRIBUTION_FAULT, 1, \
+      (reason_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,         \
+      CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_BATTERY_RELAY_MAIN(msg_ptr, relay_state_u8)                                     \
   can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_CHAOS, SYSTEM_CAN_MESSAGE_BATTERY_RELAY_MAIN, 1, \
@@ -174,6 +176,10 @@
   can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_SOLAR_MASTER_REAR,                        \
                     SYSTEM_CAN_MESSAGE_SOLAR_DATA_REAR, 8, (module_id_u16), (voltage_u16), \
                     (current_u16), (temperature_u16))
+
+#define CAN_PACK_CHARGER_INFO(msg_ptr, current_u16, voltage_u16, status_bitset_u16)           \
+  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_CHARGER, SYSTEM_CAN_MESSAGE_CHARGER_INFO, 6, \
+                    (current_u16), (voltage_u16), (status_bitset_u16), CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_LINEAR_ACCELERATION(msg_ptr)                    \
   can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_SENSOR_BOARD, \
