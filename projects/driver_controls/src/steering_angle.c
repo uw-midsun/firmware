@@ -6,15 +6,13 @@
 
 #include "ads1015.h"
 #include "delay.h"
+#include "gpio.h"
 #include "gpio_it.h"
 #include "i2c.h"
 #include "interrupt.h"
 #include "log.h"
 #include "soft_timer.h"
 #include "status.h"
-#include "unity.h"
-#include "wait.h"
-#include "dc_cfg.h"
 
 // Converts digital reading to percentage
 static StatusCode prv_get_angle_percentage(SteeringAngleStorage *steering_angle_storage,
@@ -74,12 +72,8 @@ StatusCode steering_angle_init(SteeringAngleStorage *storage,
   storage->adc_channel = settings->adc_channel;
   storage->ads1015 = settings->ads1015;
 
-  ads1015_configure_channel(storage->ads1015, storage->adc_channel, true, NULL,
-                            NULL);
+  ads1015_configure_channel(storage->ads1015, storage->adc_channel, true, NULL, NULL);
 
   delay_ms(10);
   return STATUS_CODE_OK;
 }
-
-// SteeringAngleCalibrationData *steering_angle_calib_data =
-// s_steering_angle_storage.calibration_dstatuscode(ata;

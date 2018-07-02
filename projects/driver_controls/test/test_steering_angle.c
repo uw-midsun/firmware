@@ -5,7 +5,9 @@
 #include "steering_angle_calibration.h"
 
 #include "ads1015.h"
+#include "dc_cfg.h"
 #include "delay.h"
+#include "gpio.h"
 #include "gpio_it.h"
 #include "i2c.h"
 #include "interrupt.h"
@@ -14,7 +16,6 @@
 #include "status.h"
 #include "unity.h"
 #include "wait.h"
-#include "dc_cfg.h"
 
 static SteeringAngleCalibrationData s_angle_calib_data;
 static SteeringAngleStorage s_steering_angle_storage;
@@ -23,9 +24,9 @@ static Ads1015Storage s_ads1015;
 static int16_t s_test_reading;
 
 static SteeringAngleSettings settings = {
-    .ads1015 = &s_ads1015,
-    .adc_channel = ADS1015_CHANNEL_3,
-  };
+  .ads1015 = &s_ads1015,
+  .adc_channel = ADS1015_CHANNEL_3,
+};
 
 // preset calibration data for testing purposes
 static void prv_set_calibration_data(SteeringAngleCalibrationData *calib_data) {
@@ -48,13 +49,11 @@ void setup_test(void) {
     .sda = DC_CFG_I2C_BUS_SDA,
   };
 
+  i2c_init(I2C_PORT_1, &i2c_settings);
+  ads1015_init(&s_ads1015, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
+
   steering_angle_init(&s_steering_angle_storage, &s_angle_calib_data, &settings);
   prv_set_calibration_data(&s_angle_calib_data);
-
-  i2c_init(I2C_PORT_1, &i2c_settings);
-
-  ads1015_init(&s_ads1015, I2C_PORT_1, ADS1015_ADDRESS_GND,
-               &ready_pin);
 }
 
 void teardown_test(void) {}
@@ -63,11 +62,10 @@ void test_steering_angle_init_invalid_args(void) {
   // Check for null pointers.
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
                     steering_angle_init(NULL, &s_angle_calib_data, &settings));
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, steering_angle_init(&s_steering_angle_storage, NULL,
-                                                                  &settings));
-  TEST_ASSERT_EQUAL(
-      STATUS_CODE_INVALID_ARGS,
-      steering_angle_init(&s_steering_angle_storage, &s_angle_calib_data, NULL));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
+                    steering_angle_init(&s_steering_angle_storage, NULL, &settings));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
+                    steering_angle_init(&s_steering_angle_storage, &s_angle_calib_data, NULL));
 }
 
 void test_steering_angle_get_position_invalid_args(void) {

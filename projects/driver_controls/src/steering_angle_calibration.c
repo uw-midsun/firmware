@@ -7,15 +7,13 @@
 
 #include "ads1015.h"
 #include "delay.h"
+#include "gpio.h"
 #include "gpio_it.h"
 #include "i2c.h"
 #include "interrupt.h"
 #include "log.h"
 #include "soft_timer.h"
 #include "status.h"
-#include "unity.h"
-#include "wait.h"
-#include "dc_cfg.h"
 
 // Initializes calibration storage with predefined settings
 StatusCode steering_angle_calib_init(SteeringAngleCalibrationStorage *storage,
@@ -42,11 +40,11 @@ StatusCode steering_angle_calib_result(SteeringAngleCalibrationStorage *storage,
   return STATUS_CODE_OK;
 }
 
-// Calculates boundary and checks reading status
+// Configures channel, calculates boundary and returns reading status
 StatusCode calc_boundary(SteeringAngleCalibrationStorage *storage, int16_t *boundary_reading) {
   ads1015_configure_channel(storage->settings->ads1015, storage->settings->adc_channel, true, NULL,
                             NULL);
-                              delay_ms(10);
+  delay_ms(10);
   return ads1015_read_raw(storage->settings->ads1015, storage->settings->adc_channel,
                           boundary_reading);
 }
