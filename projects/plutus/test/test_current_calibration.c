@@ -34,7 +34,7 @@ void test_current_calibration_sample(void) {
   CurrentCalibrationStorage storage = { 0 };
   PlutusCalibBlob calib_blob = { 0 };
 
-  TEST_ASSERT_OK(calib_init(&calib_blob, sizeof(calib_blob)));
+  TEST_ASSERT_OK(calib_init(&calib_blob, sizeof(calib_blob), true));
 
   const LtcAdcSettings adc_settings = {
     .mosi = { GPIO_PORT_B, 15 },
