@@ -15,12 +15,12 @@
     status;                                            \
   })
 
-#define CAN_TRANSMIT_POWER_DISTRIBUTION_FAULT(ack_ptr) \
-  ({                                                   \
-    CANMessage msg = { 0 };                            \
-    CAN_PACK_POWER_DISTRIBUTION_FAULT(&msg);           \
-    StatusCode status = can_transmit(&msg, (ack_ptr)); \
-    status;                                            \
+#define CAN_TRANSMIT_POWER_DISTRIBUTION_FAULT(ack_ptr, reason_u8) \
+  ({                                                              \
+    CANMessage msg = { 0 };                                       \
+    CAN_PACK_POWER_DISTRIBUTION_FAULT(&msg, (reason_u8));         \
+    StatusCode status = can_transmit(&msg, (ack_ptr));            \
+    status;                                                       \
   })
 
 #define CAN_TRANSMIT_BATTERY_RELAY_MAIN(ack_ptr, relay_state_u8) \
@@ -279,6 +279,14 @@
                              (temperature_u16));                                               \
     StatusCode status = can_transmit(&msg, NULL);                                              \
     status;                                                                                    \
+  })
+
+#define CAN_TRANSMIT_CHARGER_INFO(current_u16, voltage_u16, status_bitset_u16)      \
+  ({                                                                                \
+    CANMessage msg = { 0 };                                                         \
+    CAN_PACK_CHARGER_INFO(&msg, (current_u16), (voltage_u16), (status_bitset_u16)); \
+    StatusCode status = can_transmit(&msg, NULL);                                   \
+    status;                                                                         \
   })
 
 #define CAN_TRANSMIT_LINEAR_ACCELERATION()        \

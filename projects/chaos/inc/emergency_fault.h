@@ -17,6 +17,7 @@
 
 typedef struct EmergencyFaultStorage {
   SoftTimerID id;
+  uint8_t reason;
   bool keep_trying;
 } EmergencyFaultStorage;
 
