@@ -59,7 +59,7 @@ static StatusCode prv_ack_cb(CANMessageID id, uint16_t device, CANAckStatus stat
   (void)device;
   (void)context;
   (void)status;
-  LOG_DEBUG("Ack\n");
+  LOG_DEBUG("Ack %d\n", num_remaining);
   if (num_remaining == 0) {
     prv_kick_watchdog();
   }
@@ -81,6 +81,7 @@ static void prv_send_hb_request(SoftTimerID timer_id, void *context) {
   for (size_t i = 0; i < POWERTRAIN_HEARTBEAT_SEQUENTIAL_PACKETS - 1; i++) {
     CAN_TRANSMIT_POWERTRAIN_HEARTBEAT(NULL);
   }
+  LOG_DEBUG("sent\n");
   soft_timer_start_millis(POWERTRAIN_HEARTBEAT_MS, prv_send_hb_request, NULL, &s_interval_id);
 }
 

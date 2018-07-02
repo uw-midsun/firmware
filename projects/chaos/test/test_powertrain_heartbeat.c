@@ -62,7 +62,6 @@ void test_powertrain_heartbeat_watchdog(void) {
   for (size_t i = 0; i < POWERTRAIN_HEARTBEAT_SEQUENTIAL_PACKETS *
                              TEST_POWERTRAIN_HEARTBEAT_CAN_EVENTS_PER_ACK * 5;
        i++) {
-    LOG_DEBUG("Looped %ld\n", i);
     MS_TEST_HELPER_AWAIT_EVENT(e);
     TEST_ASSERT_TRUE(can_process_event(&e));
   }
