@@ -95,7 +95,7 @@ void test_angle_turn_percentage_below_bounds(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_OUT_OF_RANGE,
                     steering_angle_get_position_test(&s_steering_angle_storage, s_test_reading));
 }
-//Test for checking if extreme boundaries are considered valid
+// Test for checking if extreme boundaries are considered valid
 void test_angle_turn_percentage_within_min_bound(void) {
   s_test_reading = (s_steering_angle_storage.calibration_data->min_bound) + 1;
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
@@ -107,7 +107,7 @@ void test_angle_turn_percentage_within_max_bounds(void) {
                     steering_angle_get_position_test(&s_steering_angle_storage, s_test_reading));
 }
 
-//Test for checking if tolerance is accounted for appropriately
+// Test for checking if tolerance is accounted for appropriately
 void test_angle_turn_percentage_below_bounds_tolerance(void) {
   s_test_reading = (s_steering_angle_storage.calibration_data->min_bound) - 20;
   TEST_ASSERT_EQUAL(STATUS_CODE_OK,
