@@ -6,26 +6,25 @@
 #include "steering_angle_calibration.h"
 
 #include "ads1015.h"
-#include "gpio.h"
+#include "delay.h"
+#include "gpio_it.h"
+#include "i2c.h"
 #include "interrupt.h"
 #include "log.h"
 #include "soft_timer.h"
+#include "status.h"
+#include "unity.h"
+#include "wait.h"
+#include "dc_cfg.h"
 
 // Initializes calibration storage with predefined settings
 StatusCode steering_angle_calib_init(SteeringAngleCalibrationStorage *storage,
-                                     SteeringAngleCalibrationSettings *settings) {
+                                     SteeringAngleSettings *settings) {
   memset(storage, 0, sizeof(*storage));
-  storage->settings = *settings;
-
+  storage->settings = settings;
   return STATUS_CODE_OK;
 }
-// calculations for range, boundary, and midpoint
-void prv_calc_boundary(SteeringAngleCalibrationStorage *storage, int16_t *boundary_reading) {
-  ads1015_configure_channel(storage->settings.ads1015, storage->settings.adc_channel, true, NULL,
-                            NULL);
-  ads1015_read_raw(storage->settings.ads1015, storage->settings.adc_channel, boundary_reading);
-}
-
+// calculations for range/midpoint
 static uint16_t prv_calc_midpoint(SteeringAngleCalibrationPointData point_data) {
   return (point_data.max_reading + point_data.min_reading) / 2;
 }
@@ -41,4 +40,13 @@ StatusCode steering_angle_calib_result(SteeringAngleCalibrationStorage *storage,
   calib_data->min_bound = storage->data.min_reading;
   calib_data->tolerance_percentage = 3;
   return STATUS_CODE_OK;
+}
+
+// Calculates boundary and checks reading status
+StatusCode calc_boundary(SteeringAngleCalibrationStorage *storage, int16_t *boundary_reading) {
+  ads1015_configure_channel(storage->settings->ads1015, storage->settings->adc_channel, true, NULL,
+                            NULL);
+                              delay_ms(10);
+  return ads1015_read_raw(storage->settings->ads1015, storage->settings->adc_channel,
+                          boundary_reading);
 }

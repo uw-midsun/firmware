@@ -18,6 +18,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "i2c.h"
 #include "adc.h"
 #include "ads1015.h"
 #include "delay.h"
@@ -29,8 +30,8 @@
 // Calibrated data from the steering angle calibration module
 typedef struct SteeringAngleCalibrationData {
   uint16_t angle_midpoint;
-  uint16_t max_bound;
-  uint16_t min_bound;
+  int16_t max_bound;
+  int16_t min_bound;
   uint16_t tolerance_percentage;
 } SteeringAngleCalibrationData;
 
@@ -46,8 +47,14 @@ typedef struct SteeringAngleStorage {
   SteeringAngleCalibrationData *calibration_data;
 } SteeringAngleStorage;
 
+// stores initialized calibration data into SteeringAngleStorage's SteeringAngleCalibrationData
 StatusCode steering_angle_init(SteeringAngleStorage *storage,
                                SteeringAngleCalibrationData *calibration_data,
                                SteeringAngleSettings *settings);
 
+// Reads analog input, converts analog input to digital, and then converts
+// digital to percentage and stores value into SteeringAngleStorage
 StatusCode steering_angle_get_position(SteeringAngleStorage *storage);
+
+StatusCode steering_angle_get_position_test(SteeringAngleStorage *steering_angle_storage,
+                                            int16_t reading);
