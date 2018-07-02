@@ -16,6 +16,7 @@
     while (I2C_GetFlagStatus(s_port[i2c_port].base, flag) == status) {      \
       timeout--;                                                            \
       if (timeout == 0) {                                                   \
+        LOG_DEBUG("Timeout: %lu waiting for %d to change\n", flag, status); \
         prv_recover_lockup(i2c_port);                                       \
         return status_code(STATUS_CODE_TIMEOUT);                            \
       }                                                                     \

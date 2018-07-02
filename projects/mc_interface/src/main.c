@@ -1,19 +1,19 @@
 #include "can.h"
 #include "can_msg_defs.h"
+#include "debug_led.h"
 #include "drive_can.h"
 #include "generic_can_mcp2515.h"
 #include "gpio.h"
+#include "gpio_it.h"
 #include "heartbeat_rx.h"
 #include "interrupt.h"
+#include "log.h"
 #include "mc_cfg.h"
 #include "mcp2515.h"
 #include "motor_controller.h"
 #include "sequenced_relay.h"
-#include "wait.h"
 #include "soft_timer.h"
-#include "debug_led.h"
-#include "gpio_it.h"
-#include "log.h"
+#include "wait.h"
 
 typedef enum {
   MOTOR_EVENT_SYSTEM_CAN_RX = 0,
@@ -21,6 +21,7 @@ typedef enum {
   MOTOR_EVENT_SYSTEM_CAN_FAULT,
 } MotorEvent;
 
+static uint64_t s_data = 0;
 static MotorControllerStorage s_controller_storage;
 static GenericCanMcp2515 s_can_mcp2515;
 static CANStorage s_can_storage;
@@ -63,9 +64,11 @@ static void prv_periodic_cb(SoftTimerID timer_id, void *context) {
 
   const CANMessage msg = {
     .msg_id = SYSTEM_CAN_MESSAGE_MOTOR_ANGULAR_FREQUENCY,
-    .dlc = 0
+    .dlc = 8,
+    .data = s_data,
   };
   can_transmit(&msg, NULL);
+  s_data++;
 
   soft_timer_start_seconds(1, prv_periodic_cb, NULL, NULL);
 }
