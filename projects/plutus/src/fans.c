@@ -17,7 +17,7 @@ static FansStorage s_fan_storage;
 
 static void prv_update_fans(bool on) {
   for (size_t i = 0; i < PLUTUS_CFG_NUM_FANS; i++) {
-    gpio_set_state(&s_fan_storage.settings.fans[i], (on ? GPIO_STATE_HIGH : GPIO_STATE_LOW));
+    gpio_set_state(&s_fan_storage.settings.fans[i], ((on) ? GPIO_STATE_HIGH : GPIO_STATE_LOW));
   }
 }
 
