@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-""" Dumps motor CAN information from SocketCAN """
+""" Dumps CAN information from SocketCAN/serial """
+import argparse
+import binascii
 import socket
 import struct
-import binascii
+import serial
+import serial.tools.list_ports
+from cobs import cobs
 
 DATA_POWER_STATE = ['idle', 'charge', 'drive']
 LIGHTS_ID_NAME = [
@@ -30,7 +34,7 @@ def data_battery_vt(module, voltage, temperature):
 
 def data_battery_voltage_current(voltage, current):
     """Battery total voltage/current data format"""
-    return '{:.4f}V {:.4f}mA'.format(voltage / 10000, current / 1000)
+    return '{:.4f}V {:.4f}A'.format(voltage / 10000, current / 1000000)
 
 def data_dump(*args):
     """Generic data dump format"""
@@ -39,7 +43,7 @@ def data_dump(*args):
 # Name, struct format, data format 0, ...
 MESSAGE_LOOKUP = {
     0: ('BPS Heartbeat', '<B', data_dump),
-    1: ('Chaos Fault', '', data_dump),
+    1: ('Chaos Fault', '<B', data_dump),
     2: ('Battery relay (Main)', '<B', data_relay),
     3: ('Battery relay (Slave)', '<B', data_relay),
     4: ('Motor relay', '<B', data_relay),
@@ -51,8 +55,11 @@ MESSAGE_LOOKUP = {
     19: ('Cruise Target', '<B', data_dump),
     23: ('Lights Sync', '', data_dump),
     24: ('Lights State', '<BB', data_lights_state),
+    26: ('Charger state', '<B', data_dump),
+    27: ('Charger relay', '<B', data_relay),
     32: ('Battery V/T', '<HHH', data_battery_vt),
     33: ('Battery Voltage/Current', '<ii', data_battery_voltage_current),
+    35: ('Motor Bus Measurement', '<hhhh', data_dump),
     36: ('Motor Velocity', '<hh', data_dump),
     43: ('Aux & DC/DC V/C', '<HHHH', data_dump),
 }
@@ -67,7 +74,6 @@ def parse_msg(can_id, data):
     Returns:
         None
     """
-
     # System CAN ID format:
     # [0:3] Source ID
     # [4] Message Type (ACK/DATA)
@@ -102,8 +108,76 @@ def parse_msg(can_id, data):
         print('{} from {} ({}): 0x{}'.format(msg_id, source_id, msg_type_name,
                                              binascii.hexlify(data).decode('ascii')))
 
-def main():
-    """Main entry point"""
+def select_device():
+    """User-provided serial device selector.
+
+    Args:
+        None
+
+    Returns:
+        The selected serial device as ListPortInfo.
+    """
+    while True:
+        print('Pick the serial device:')
+        ports = serial.tools.list_ports.comports()
+        for i, port in enumerate(ports):
+            print('{}: {}'.format(i, port))
+
+        try:
+            chosen_port = ports[int(input())]
+            print('Selected {}'.format(chosen_port))
+            return chosen_port
+        except IndexError:
+            print('Invalid device!')
+            continue
+
+def main_serial(device):
+    """Main entry point for serial interface"""
+    def readline(ser, eol=b'\x00'):
+        """Readline with arbitrary EOL delimiter
+
+        Args:
+            ser: Serial device to read
+            eol: Bytes to use a EOL delimiter
+
+        Returns:
+            All data read from the device until the EOL delimiter was found.
+        """
+        leneol = len(eol)
+        line = bytearray()
+        while True:
+            read_char = ser.read(1)
+            if read_char:
+                line += read_char
+                if line[-leneol:] == eol:
+                    break
+            else:
+                break
+        return bytes(line)
+
+    with serial.Serial(device, 115200) as ser:
+        while True:
+            encoded_line = readline(ser)
+            try:
+                line = cobs.decode(encoded_line[:-1])
+            except cobs.DecodeError:
+                print('COBS decode error (len {})'.format(len(line)))
+                continue
+
+            if len(line) != 16:
+                print('Invalid line (len {})'.format(len(line)))
+                continue
+
+            header = int.from_bytes(line[0:4], 'little')
+            dlc = header >> 28 & 0xF
+
+            can_id = int.from_bytes(line[4:8], 'little') & 0x7FF
+            data = line[8:8 + dlc]
+
+            parse_msg(can_id, data)
+
+def main_socketcan():
+    """Main entry point for SocketCAN"""
     sock = socket.socket(socket.PF_CAN, socket.SOCK_RAW, socket.CAN_RAW)
     sock.bind(("slcan0",))
     fmt = "<IB3x8s"
@@ -115,6 +189,18 @@ def main():
         data = data[:length]
 
         parse_msg(can_id, data)
+
+def main():
+    """Main entry point"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument('device', help='Serial device or "slcan0"')
+    args = parser.parse_args()
+
+    if args.device == 'slcan0':
+        main_socketcan()
+    else:
+        main_serial(args.device)
+
 
 if __name__ == '__main__':
     main()
