@@ -67,8 +67,6 @@ static void prv_periodic_cb(SoftTimerID timer_id, void *context) {
   };
   can_transmit(&msg, NULL);
 
-  mcp2515_tx(s_can_mcp2515.mcp2515, 0x123, 0, 0x1122334455667788, 8);
-
   soft_timer_start_seconds(1, prv_periodic_cb, NULL, NULL);
 }
 
