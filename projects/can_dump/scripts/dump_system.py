@@ -128,7 +128,7 @@ def select_device():
             print('Selected {}'.format(chosen_port))
             return chosen_port
         except IndexError:
-            print('Invalid index!')
+            print('Invalid device!')
             continue
 
 def main_serial(device):
