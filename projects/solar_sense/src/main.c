@@ -50,44 +50,26 @@ int main(void) {
   for (size_t i = 0; i < SIZEOF_ARRAY(leds); i++) {
     gpio_init_pin(&leds[i], &led_settings);
   }
-  // Reading config register
 
   uint8_t rx_data[SOLAR_SENSE_DATA_LEN];
-  uint8_t tx_data = 0x10;
 
-  StatusCode s = i2c_write(I2C_PORT_1, SOLAR_SENSE_ADDR, &tx_data, 1);
-  delay_ms(300);
-  if (!status_ok(s)) {
-    LOG_DEBUG("WRITE UNSUCCESSFUL\n");
-  }
-
-  tx_data = 0x00;
-  s = i2c_write(I2C_PORT_1, SOLAR_SENSE_ADDR, &tx_data, 1);
-  if (!status_ok(s)) {
-    LOG_DEBUG("WRITE UNSUCCESSFUL\n");
-  }
-
-  s = i2c_read(I2C_PORT_1, SOLAR_SENSE_ADDR, rx_data, 2);
-  if (!status_ok(s)) {
-    LOG_DEBUG("READ UNSUCCESSFUL\n");
-  }
-
-  //StatusCode s = 0;
-  //for (uint8_t i = 0; i < 128; i++) {
-  //  s = i2c_read(I2C_PORT_1, i, rx_data, SOLAR_SENSE_DATA_LEN);
-  //  if (status_ok(s)) {
-  //    LOG_DEBUG("READ SUCCESSFUL");
-  //    uint8_t cfg_byte = rx_data[2];
-  //    LOG_DEBUG("cfg_byte: %02hhx\n", cfg_byte);
-  //  }
-  //}
+  StatusCode s = 0;
 
   while (true) {
+    s = i2c_read(I2C_PORT_1, SOLAR_SENSE_ADDR, rx_data, SOLAR_SENSE_DATA_LEN);
+    if (status_ok(s)) {
+      uint16_t v = 0;
+      v |= (rx_data[0] << 8);
+      v |= (rx_data[1]);
+      LOG_DEBUG("Voltage: %d\n", v);
+    } else {
+      LOG_DEBUG("Read Fail\n");
+    }
     i2c_read(I2C_PORT_1, SOLAR_SENSE_ADDR, rx_data, 1);
-    //for (size_t i = 0; i < SIZEOF_ARRAY(leds); i++) {
-    //  gpio_toggle_state(&leds[i]);
-    //  delay_ms(50);
-    //}
+    delay_ms(50);
+    for (size_t i = 0; i < SIZEOF_ARRAY(leds); i++) {
+      gpio_toggle_state(&leds[i]);
+    }
   }
   return 0;
 }
