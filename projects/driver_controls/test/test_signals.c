@@ -53,21 +53,21 @@ static void prv_dump_fsms(void) {
 }
 
 static void prv_clock_expected_lights(TestSignalsExpectedLight *lights, size_t num_lights) {
-  for (size_t i = 0; i < num_lights * 2; i++) {
+  uint8_t found_bitset = 0;
+  uint8_t expected_bitset = (1 << num_lights) - 1;
+  while (found_bitset != expected_bitset) {
     Event e = { 0 };
     MS_TEST_HELPER_AWAIT_EVENT(e);
     TEST_ASSERT(can_process_event(&e));
 
     if (e.id == INPUT_EVENT_CAN_RX) {
-      bool found = false;
       for (size_t j = 0; j < num_lights; j++) {
         if (lights[j].type == s_light_id) {
           TEST_ASSERT_EQUAL(lights[j].state, s_light_state);
-          found = true;
+          found_bitset |= 1 << j;
           break;
         }
       }
-      TEST_ASSERT(found);
     }
   }
 }

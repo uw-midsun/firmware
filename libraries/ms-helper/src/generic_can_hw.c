@@ -86,7 +86,7 @@ StatusCode generic_can_hw_init(GenericCanHw *can_hw, const CANHwSettings *settin
   s_interface.tx = prv_tx;
   s_interface.register_rx = prv_register_rx;
 
-  memset(can_hw->base.rx_storage, 0, sizeof(GenericCanRx) * NUM_GENERIC_CAN_RX_HANDLERS);
+  memset(can_hw->base.rx_storage, 0, sizeof(can_hw->base.rx_storage));
 
   can_hw->base.interface = &s_interface;
   can_hw->fault_event = fault_event;

@@ -22,6 +22,7 @@ static GenericCanMcp2515 s_can_mcp2515;
 static CANStorage s_can_storage;
 static SequencedRelayStorage s_relay_storage;
 static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
+static UARTStorage s_uart_storage;
 
 static void prv_setup_system_can(void) {
   CANSettings can_settings = {

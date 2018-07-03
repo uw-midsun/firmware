@@ -35,7 +35,14 @@ static void prv_handle_speed(int16_t speed_cms[], size_t num_speeds, void *conte
   CAN_TRANSMIT_MOTOR_VELOCITY((uint16_t)speed_cms[0], (uint16_t)speed_cms[1]);
 }
 
+static void prv_handle_bus_measurement(MotorControllerBusMeasurement measurements[],
+                                       size_t num_measurements, void *context) {
+  CAN_TRANSMIT_MOTOR_CONTROLLER_VC(
+      (uint16_t)measurements[0].bus_voltage, (uint16_t)measurements[0].bus_current,
+      (uint16_t)measurements[1].bus_voltage, (uint16_t)measurements[1].bus_current);
+}
+
 StatusCode drive_can_init(MotorControllerStorage *controller) {
-  motor_controller_set_speed_cb(controller, prv_handle_speed, NULL);
+  motor_controller_set_update_cbs(controller, prv_handle_speed, prv_handle_bus_measurement, NULL);
   return can_register_rx_handler(SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT, prv_handle_drive, controller);
 }
