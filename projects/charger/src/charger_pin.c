@@ -12,20 +12,23 @@
 #include "soft_timer.h"
 #include "status.h"
 
-#define CHARGER_PIN_CONNECTED_THRESHOLD 1700
-
 static void prv_poll_value(SoftTimerID id, void *context) {
   GPIOAddress *addr = context;
 
   ADCChannel chan = NUM_ADC_CHANNELS;
   adc_get_channel(*addr, &chan);
-  uint16_t millivolts = 0;
-  adc_read_converted(chan, &millivolts);
-  if (millivolts < CHARGER_PIN_CONNECTED_THRESHOLD) {
-    event_raise(CHARGER_EVENT_CONNECTED, 0);
-  } else {
-    event_raise(CHARGER_EVENT_DISCONNECTED, 0);
+  uint16_t millivolts = UINT16_MAX;
+  StatusCode status = adc_read_converted(chan, &millivolts);
+  // If the status is bad something happened bad during conversion. Ignore the reading.
+  // TODO(ELEC-497): Consider faulting if bad readings happen consistently?
+  if (status_ok(status)) {
+    if (millivolts < CHARGER_PIN_CONNECTED_THRESHOLD) {
+      event_raise(CHARGER_EVENT_CONNECTED, 0);
+    } else {
+      event_raise(CHARGER_EVENT_DISCONNECTED, 0);
+    }
   }
+
   soft_timer_start_millis(CHARGER_PIN_POLL_PERIOD_MS, prv_poll_value, addr, NULL);
 }
 
