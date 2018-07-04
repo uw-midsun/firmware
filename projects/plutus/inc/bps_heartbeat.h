@@ -4,6 +4,8 @@
 #include "exported_enums.h"
 #include "sequenced_relay.h"
 
+#define BPS_HEARTBEAT_SEQUENTIAL_PACKETS 5
+
 // Arbitrary multiplier to the heartbeat period for initial startup delay
 // This is necessary because Chaos takes some time to initialize before it can ACK
 #define BPS_HEARTBEAT_STARTUP_DELAY_MULTIPLIER 5

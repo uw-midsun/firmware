@@ -25,6 +25,8 @@
 #include "test_helpers.h"
 #include "unity.h"
 
+#define TEST_POWERTRAIN_HEARTBEAT_CAN_EVENTS_PER_NACK 2
+
 static CANStorage s_storage;
 
 void setup_test(void) {
@@ -35,7 +37,7 @@ void setup_test(void) {
 
   CANSettings settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
-    .bitrate = CAN_HW_BITRATE_125KBPS,
+    .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,
     .tx_event = CHAOS_EVENT_CAN_TX,
     .fault_event = CHAOS_EVENT_CAN_FAULT,
@@ -57,11 +59,12 @@ void test_powertrain_heartbeat_watchdog(void) {
   TEST_ASSERT_TRUE(powertrain_heartbeat_process_event(&e));
 
   // Send 5 times (all will have ack failures).
-  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
-  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
-  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
-  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
-  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
+  for (size_t i = 0; i < POWERTRAIN_HEARTBEAT_SEQUENTIAL_PACKETS *
+                             TEST_POWERTRAIN_HEARTBEAT_CAN_EVENTS_PER_NACK * 5;
+       i++) {
+    MS_TEST_HELPER_AWAIT_EVENT(e);
+    TEST_ASSERT_TRUE(can_process_event(&e));
+  }
 
   // Watchdog should activate.
   do {
@@ -81,7 +84,12 @@ void test_powertrain_heartbeat_stop_heartbeat(void) {
   TEST_ASSERT_TRUE(powertrain_heartbeat_process_event(&e));
 
   // Immediately send heartbeat update
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
+  for (size_t i = 0;
+       i < POWERTRAIN_HEARTBEAT_SEQUENTIAL_PACKETS * TEST_POWERTRAIN_HEARTBEAT_CAN_EVENTS_PER_NACK;
+       i++) {
+    MS_TEST_HELPER_AWAIT_EVENT(e);
+    TEST_ASSERT_TRUE(can_process_event(&e));
+  }
 
   e.id = CHAOS_EVENT_SEQUENCE_EMERGENCY;
   TEST_ASSERT_TRUE(powertrain_heartbeat_process_event(&e));
@@ -105,18 +113,27 @@ void test_powertrain_heartbeat_kick_watchdog(void) {
   // Send heartbeat - watchdog should be kicked (manually ACK message)
   msg.source_id = SYSTEM_CAN_DEVICE_PLUTUS;
   TEST_ASSERT_OK(can_ack_handle_msg(&s_storage.ack_requests, &msg));
+  msg.source_id = SYSTEM_CAN_DEVICE_PLUTUS_SLAVE;
+  TEST_ASSERT_OK(can_ack_handle_msg(&s_storage.ack_requests, &msg));
   msg.source_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS;
   TEST_ASSERT_OK(can_ack_handle_msg(&s_storage.ack_requests, &msg));
   msg.source_id = SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER;
   TEST_ASSERT_OK(can_ack_handle_msg(&s_storage.ack_requests, &msg));
 
-  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
+  for (size_t i = 0;
+       i < POWERTRAIN_HEARTBEAT_SEQUENTIAL_PACKETS * TEST_POWERTRAIN_HEARTBEAT_CAN_EVENTS_PER_NACK;
+       i++) {
+    MS_TEST_HELPER_AWAIT_EVENT(e);
+    TEST_ASSERT_TRUE(can_process_event(&e));
+  }
 
   // We will TX 4 more times before the watchdog times out
-  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
-  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
-  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
-  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
+  for (size_t i = 0; i < POWERTRAIN_HEARTBEAT_SEQUENTIAL_PACKETS *
+                             TEST_POWERTRAIN_HEARTBEAT_CAN_EVENTS_PER_NACK * 4;
+       i++) {
+    MS_TEST_HELPER_AWAIT_EVENT(e);
+    TEST_ASSERT_TRUE(can_process_event(&e));
+  }
 
   // Watchdog should trigger.
   do {

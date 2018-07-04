@@ -75,6 +75,9 @@ static void prv_send_hb_request(SoftTimerID timer_id, void *context) {
         SYSTEM_CAN_DEVICE_PLUTUS, SYSTEM_CAN_DEVICE_PLUTUS_SLAVE, SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,
         SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER),
   };
+  for (size_t i = 0; i < POWERTRAIN_HEARTBEAT_SEQUENTIAL_PACKETS - 1; i++) {
+    CAN_TRANSMIT_POWERTRAIN_HEARTBEAT(NULL);
+  }
   CAN_TRANSMIT_POWERTRAIN_HEARTBEAT(&ack_req);
   soft_timer_start_millis(POWERTRAIN_HEARTBEAT_MS, prv_send_hb_request, NULL, &s_interval_id);
 }
