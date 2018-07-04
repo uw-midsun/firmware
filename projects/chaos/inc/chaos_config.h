@@ -21,13 +21,10 @@ typedef struct ChaosConfig {
   const GPIOAddress motor_interface_power;
   const GPIOAddress rear_lights_power;
   const GPIOAddress pjb_fan;
+  const GPIOAddress charger_power;
   // Unused but available pins
   const GPIOAddress spare_protected_power;
   const GPIOAddress spare_unprotected_power;
-  // Debug LEDs
-  // const GPIOAddress led1_power;
-  // const GPIOAddress led2_power;
-  // const GPIOAddress led3_power;
 } ChaosConfig;
 
 // Returns a lazy static pointer to the global ChaosConfig struct.
