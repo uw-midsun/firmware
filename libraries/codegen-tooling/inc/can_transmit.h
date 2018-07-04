@@ -123,6 +123,22 @@
     status;                                       \
   })
 
+#define CAN_TRANSMIT_SET_DISCHARGE_BITSET(discharge_bitset_u64)  \
+  ({                                                             \
+    CANMessage msg = { 0 };                                      \
+    CAN_PACK_SET_DISCHARGE_BITSET(&msg, (discharge_bitset_u64)); \
+    StatusCode status = can_transmit(&msg, NULL);                \
+    status;                                                      \
+  })
+
+#define CAN_TRANSMIT_DISCHARGE_STATE(discharge_bitset_u64)  \
+  ({                                                        \
+    CANMessage msg = { 0 };                                 \
+    CAN_PACK_DISCHARGE_STATE(&msg, (discharge_bitset_u64)); \
+    StatusCode status = can_transmit(&msg, NULL);           \
+    status;                                                 \
+  })
+
 #define CAN_TRANSMIT_LIGHTS_SYNC()                \
   ({                                              \
     CANMessage msg = { 0 };                       \
@@ -213,12 +229,12 @@
     status;                                                                                   \
   })
 
-#define CAN_TRANSMIT_MOTOR_ANGULAR_FREQUENCY(angular_freq_left_u32, angular_freq_right_u32)    \
-  ({                                                                                           \
-    CANMessage msg = { 0 };                                                                    \
-    CAN_PACK_MOTOR_ANGULAR_FREQUENCY(&msg, (angular_freq_left_u32), (angular_freq_right_u32)); \
-    StatusCode status = can_transmit(&msg, NULL);                                              \
-    status;                                                                                    \
+#define CAN_TRANSMIT_MOTOR_DEBUG(data_u64)        \
+  ({                                              \
+    CANMessage msg = { 0 };                       \
+    CAN_PACK_MOTOR_DEBUG(&msg, (data_u64));       \
+    StatusCode status = can_transmit(&msg, NULL); \
+    status;                                       \
   })
 
 #define CAN_TRANSMIT_MOTOR_TEMPS(motor_temp_l_u32, motor_temp_r_u32)    \

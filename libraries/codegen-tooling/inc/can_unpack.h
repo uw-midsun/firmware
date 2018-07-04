@@ -70,6 +70,12 @@
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY,        \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
+#define CAN_UNPACK_SET_DISCHARGE_BITSET(msg_ptr, discharge_bitset_u64_ptr) \
+  can_unpack_impl_u64((msg_ptr), 8, (discharge_bitset_u64_ptr))
+
+#define CAN_UNPACK_DISCHARGE_STATE(msg_ptr, discharge_bitset_u64_ptr) \
+  can_unpack_impl_u64((msg_ptr), 8, (discharge_bitset_u64_ptr))
+
 #define CAN_UNPACK_LIGHTS_SYNC(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
 
 #define CAN_UNPACK_LIGHTS_STATE(msg_ptr, light_id_u8_ptr, light_state_u8_ptr)                      \
@@ -116,9 +122,8 @@
                       (vehicle_velocity_right_u16_ptr), CAN_UNPACK_IMPL_EMPTY, \
                       CAN_UNPACK_IMPL_EMPTY)
 
-#define CAN_UNPACK_MOTOR_ANGULAR_FREQUENCY(msg_ptr, angular_freq_left_u32_ptr, \
-                                           angular_freq_right_u32_ptr)         \
-  can_unpack_impl_u32((msg_ptr), 8, (angular_freq_left_u32_ptr), (angular_freq_right_u32_ptr))
+#define CAN_UNPACK_MOTOR_DEBUG(msg_ptr, data_u64_ptr) \
+  can_unpack_impl_u64((msg_ptr), 8, (data_u64_ptr))
 
 #define CAN_UNPACK_MOTOR_TEMPS(msg_ptr, motor_temp_l_u32_ptr, motor_temp_r_u32_ptr) \
   can_unpack_impl_u32((msg_ptr), 8, (motor_temp_l_u32_ptr), (motor_temp_r_u32_ptr))
