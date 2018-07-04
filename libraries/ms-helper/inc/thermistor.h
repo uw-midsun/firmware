@@ -35,4 +35,5 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint16_t *temperature
 StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms, uint16_t *temperature_dc);
 
 // Finds the resistance of the thermistor at a certain temperature
-StatusCode thermistor_calculate_resistance(uint16_t temperature_dc, uint16_t* thermistor_resistor_ohms);
+StatusCode thermistor_calculate_resistance(uint16_t temperature_dc,
+                                           uint16_t *thermistor_resistor_ohms);

@@ -224,7 +224,7 @@ void test_temperature_calculation(void) {
 }
 
 // Test temperature to resistance
-void test_resistance_lookup(void){
+void test_resistance_lookup(void) {
   uint16_t resistance = 0;
 
   // 10 Degrees
