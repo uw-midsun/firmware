@@ -2,6 +2,7 @@
 // Helper functions for the LTC6804-1
 //
 // This module is mostly exposed for the FSM. Do not use functions in this module directly.
+// Requires SPI, soft timers to be initialized
 //
 // Assumes that:
 // - a 16 channel analog MUX is attached to the GPIO outputs
