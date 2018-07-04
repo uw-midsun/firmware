@@ -46,7 +46,7 @@ StatusCode charger_set_state(EEChargerSetRelayState state) {
 }
 
 bool charger_process_event(const Event *e) {
-  if (e->id != CHAOS_EVENT_CHARGER_OPEN || e->id != CHAOS_EVENT_CHARGER_CLOSE) {
+  if (e->id != CHAOS_EVENT_CHARGER_OPEN && e->id != CHAOS_EVENT_CHARGER_CLOSE) {
     return false;
   }
 

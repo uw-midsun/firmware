@@ -8,7 +8,7 @@
 // CRX in ASCII
 #define CAN_UART_RX_MARKER 0x585243
 
-// Defined protocol: Header (u32), ID (u32), Data (u64), newline (u8)
+// Defined protocol: Header (u32), ID (u32), Data (u64), 0x00 (u8)
 // Bits  | Field
 // ------|--------------------
 // 0:23  | marker (CTX || CRX)
@@ -51,7 +51,7 @@ static void prv_rx_uart(const uint8_t *rx_arr, size_t len, void *context) {
   StatusCode ret = cobs_decode(rx_arr, len - 1, decoded_data, &decoded_len);
 
   CanUartPacket packet;
-  if (decoded_len != sizeof(packet)) {
+  if (!status_ok(ret) || decoded_len != sizeof(packet)) {
     // This is not valid
     return;
   }
