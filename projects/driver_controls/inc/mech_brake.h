@@ -6,8 +6,10 @@
 // The module reads brake inputs from ADS1015, then converts those readings into a numerator value
 // with EE_DRIVE_OUTPUT_DENOMINATOR as the denominator. This numerator value is called the position.
 // At the same time, it raises events, INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, and
-// INPUT_EVENT_MECHANICAL_BRAKE_PRESSED. These events contain the numerator value that corresponds
-// to the input reading of the ADC.
+// INPUT_EVENT_MECHANICAL_BRAKE_UNPRESSED. These events contain the numerator value that corresponds
+// to the input reading of the ADC. We use a windowed reading such that once the brake is pressed it
+// must pass a threshold to be considered as braking. Once released it must be released further than
+// the initial threshold. This mechanism mitigates fluttering about the threshold.
 //
 // For the LSB to position conversion, the module receives peak-peak values when the brake is
 // pressed and released, then correlates that data to a position value and generates a linear
