@@ -67,6 +67,7 @@ static void prv_handle_adc_timeout(void *context) {
 
 StatusCode fault_monitor_init(FaultMonitorStorage *storage, const FaultMonitorSettings *settings) {
   storage->settings = *settings;
+  storage->num_afe_faults = 0;
   // Convert mA to uA
   storage->charge_current_limit = settings->overcurrent_charge * 1000;
   storage->discharge_current_limit = settings->overcurrent_discharge * -1000;
@@ -84,14 +85,17 @@ StatusCode fault_monitor_init(FaultMonitorStorage *storage, const FaultMonitorSe
 bool fault_monitor_process_event(FaultMonitorStorage *storage, const Event *e) {
   switch (e->id) {
     case PLUTUS_EVENT_AFE_FAULT:
-      LOG_DEBUG("AFE FSM fault %d\n", e->data);
-      bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
-                                EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_FSM);
+      if (storage->num_afe_faults++ > PLUTUS_CFG_LTC_AFE_FSM_MAX_FAULTS) {
+        LOG_DEBUG("AFE FSM fault %d\n", e->data);
+        bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
+                                  EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_FSM);
+      }
 
       // Attempt to recover from failure
       ltc_afe_request_cell_conversion(storage->settings.ltc_afe);
       return true;
     case PLUTUS_EVENT_AFE_CALLBACK_RUN:
+      storage->num_afe_faults = 0;
       bps_heartbeat_clear_fault(storage->settings.bps_heartbeat,
                                 EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_FSM);
       return true;

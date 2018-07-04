@@ -36,6 +36,7 @@ typedef struct FaultMonitorResult {
 typedef struct FaultMonitorStorage {
   FaultMonitorSettings settings;
   FaultMonitorResult result;
+  size_t num_afe_faults;
 
   // in uA
   int32_t charge_current_limit;
