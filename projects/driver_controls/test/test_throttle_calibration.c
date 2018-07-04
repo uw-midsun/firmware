@@ -50,7 +50,7 @@ void setup_test(void) {
   };
   throttle_calibration_init(&s_calibration_storage, &calib_settings);
 
-  calib_init(&s_calib_blob, sizeof(s_calib_blob));
+  calib_init(&s_calib_blob, sizeof(s_calib_blob), true);
 }
 
 void teardown_test(void) {}

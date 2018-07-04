@@ -8,7 +8,7 @@
 // CRX in ASCII
 #define CAN_UART_RX_MARKER 0x585243
 
-// Defined protocol: Header (u32), ID (u32), Data (u64), newline (u8)
+// Defined protocol: Header (u32), ID (u32), Data (u64), 0x00 (u8)
 // Bits  | Field
 // ------|--------------------
 // 0:23  | marker (CTX || CRX)

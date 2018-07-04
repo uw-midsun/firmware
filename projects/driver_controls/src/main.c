@@ -86,7 +86,7 @@ int main(void) {
   crc32_init();
   flash_init();
 
-  calib_init(&s_calib_blob, sizeof(s_calib_blob));
+  calib_init(&s_calib_blob, sizeof(s_calib_blob), false);
 
   const CANSettings can_settings = {
     .device_id = DC_CFG_CAN_DEVICE_ID,
