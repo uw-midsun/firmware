@@ -84,6 +84,14 @@
                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,             \
                    CAN_PACK_IMPL_EMPTY)
 
+#define CAN_PACK_SET_DISCHARGE_BITSET(msg_ptr, discharge_bitset_u64) \
+  can_pack_impl_u64((msg_ptr), SYSTEM_CAN_DEVICE_TELEMETRY,          \
+                    SYSTEM_CAN_MESSAGE_SET_DISCHARGE_BITSET, 8, (discharge_bitset_u64))
+
+#define CAN_PACK_DISCHARGE_STATE(msg_ptr, discharge_bitset_u64)                                 \
+  can_pack_impl_u64((msg_ptr), SYSTEM_CAN_DEVICE_PLUTUS, SYSTEM_CAN_MESSAGE_DISCHARGE_STATE, 8, \
+                    (discharge_bitset_u64))
+
 #define CAN_PACK_LIGHTS_SYNC(msg_ptr) \
   can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_LIGHTS_REAR, SYSTEM_CAN_MESSAGE_LIGHTS_SYNC)
 
@@ -138,10 +146,9 @@
                     SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY, 4, (vehicle_velocity_left_u16),          \
                     (vehicle_velocity_right_u16), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
-#define CAN_PACK_MOTOR_ANGULAR_FREQUENCY(msg_ptr, angular_freq_left_u32, angular_freq_right_u32) \
-  can_pack_impl_u32((msg_ptr), SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,                               \
-                    SYSTEM_CAN_MESSAGE_MOTOR_ANGULAR_FREQUENCY, 8, (angular_freq_left_u32),      \
-                    (angular_freq_right_u32))
+#define CAN_PACK_MOTOR_DEBUG(msg_ptr, data_u64)                                                    \
+  can_pack_impl_u64((msg_ptr), SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER, SYSTEM_CAN_MESSAGE_MOTOR_DEBUG, \
+                    8, (data_u64))
 
 #define CAN_PACK_MOTOR_TEMPS(msg_ptr, motor_temp_l_u32, motor_temp_r_u32)                          \
   can_pack_impl_u32((msg_ptr), SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER, SYSTEM_CAN_MESSAGE_MOTOR_TEMPS, \
