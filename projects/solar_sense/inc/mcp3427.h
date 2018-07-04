@@ -2,6 +2,8 @@
 
 #include "i2c.h"
 
+#define MCP3427_MAX_CONVERSION_TIME_MS 200
+
 typedef enum {
   MCP3427_PIN_STATE_LOW = 0,
   MCP3427_PIN_STATE_FLOAT,
@@ -49,11 +51,19 @@ typedef struct Mcp3427Storage {
   I2CPort port;
   I2CAddress addr;
   uint8_t config;
+  Mcp3427Callback callbacks[NUM_MCP3427_CHANNELS];
+  void *contexts[NUM_MCP3427_CHANNELS];
+  Mcp3427FaultCallback fault_callback;
 } Mcp3427Storage;
+
+typedef void (*Mcp3427Callback)(int16_t *value, Mcp3427Channel channel, void *context);
+typedef void (*Mcp3427FaultCallback)(void *context);
 
 // Initializes the ADC.
 StatusCode mcp3427_init(Mcp3427Storage *storage, Mcp3427Setting *setting);
 
 // Read value from a specific channel on the ADC.
-StatusCode mcp3427_read(Mcp3427Storage *storage, Mcp3427Channel, uint16_t *data);
+StatusCode mcp3427_register_callback(Mcp3427Storage *storage, Mcp3427Channel channel, Mcp3427Callback callback, void *context);
+
+StatusCode mcp3427_register_fault_callback(Mcp3427Storage *storage, Mcp3427FaultCallback callback, void *context);
 
