@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include "log.h"
 
+// Used for converting the lookup table index with corresponding temperatures
+#define THERMISTOR_DECICELSIUS_RANGE_MAX 1000
+
 // src: https://www.murata.com/en-global/products/productdata/8796836626462/NTHCG83.txt
 // Expected resistance in milliohms for a given temperature in celsius
 static const uint32_t s_resistance_lookup[] = {
@@ -89,12 +92,12 @@ StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms,
 
 StatusCode thermistor_calculate_resistance(uint16_t temperature_dc,
                                            uint16_t *thermistor_resistor_ohms) {
-  if (temperature_dc > 1000) {
+  if (temperature_dc > THERMISTOR_DECICELSIUS_RANGE_MAX) {
     return status_msg(STATUS_CODE_OUT_OF_RANGE,
                       "Input temperature, exceeds lookup table ranges (0-100 deg).");
-  } else if (temperature_dc == 1000) {
+  } else if (temperature_dc == THERMISTOR_DECICELSIUS_RANGE_MAX) {
     // For the higher lookup edge case
-    *thermistor_resistor_ohms = s_resistance_lookup[100] / 1000;
+    *thermistor_resistor_ohms = s_resistance_lookup[THERMISTOR_DECICELSIUS_RANGE_MAX / 10] / 1000;
   } else {
     uint16_t lower_temp = temperature_dc / 10;
     *thermistor_resistor_ohms =
