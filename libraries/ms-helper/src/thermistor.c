@@ -22,7 +22,7 @@ static const uint32_t s_resistance_lookup[] = {
 };
 
 // Used for converting the lookup table index with corresponding temperatures
-#define THERMISTOR_DECICELSIUS_RANGE_MAX (sizeof(s_resistance_lookup) / sizeof(uint32_t) - 1)
+#define THERMISTOR_DECICELSIUS_RANGE_MAX (SIZEOF_ARRAY(s_resistance_lookup) - 1)
 
 StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gpio,
                            ThermistorPosition position) {
@@ -74,7 +74,7 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint16_t *temperature
 StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms,
                                      uint16_t *temperature_dc) {
   // Find the approximate target temperature from the arguments passed
-  for (uint16_t i = 0; i < SIZEOF_ARRAY(s_resistance_lookup) - 1; i++) {
+  for (uint16_t i = 0; i < THERMISTOR_DECICELSIUS_RANGE_MAX; i++) {
     if (thermistor_resistance_ohms * 1000 <= s_resistance_lookup[i] &&
         thermistor_resistance_ohms * 1000 >= s_resistance_lookup[i + 1]) {
       // Return the temperature with the linear approximation in deciCelsius
