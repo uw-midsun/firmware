@@ -1,4 +1,3 @@
-
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
@@ -41,10 +40,13 @@ static void prv_callback_channel(Ads1015Channel channel, void *context) {
   StatusCode ret = mech_brake_get_position(storage, &position);
 
   if (status_ok(ret)) {
-    if (position > storage->threshold_position) {
+    if (position > storage->pressed_threshold_position ||
+        (position > storage->unpressed_threshold_position && storage->prev_pressed)) {
       event_raise(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, (uint16_t)position);
+      storage->prev_pressed = true;
     } else {
       event_raise(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, (uint16_t)position);
+      storage->prev_pressed = false;
     }
   }
 }
@@ -59,15 +61,17 @@ StatusCode mech_brake_init(MechBrakeStorage *storage, const MechBrakeSettings *s
   storage->channel = settings->channel;
   storage->ads1015 = settings->ads1015;
 
-  // Since the minimun value of the position is expected to be 0, the lower bound is the negative
-  // value of the tolerance. and upper bound is EE_DRIVE_OUTPUT_DENOMINATOR plus the tolerance.
+  // Since the minimum value of the position is expected to be 0, the lower bound is the negative
+  // value of the tolerance and upper bound is EE_DRIVE_OUTPUT_DENOMINATOR plus the tolerance.
   storage->lower_bound =
       -1 * settings->bounds_tolerance_percentage * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
   storage->upper_bound = EE_DRIVE_OUTPUT_DENOMINATOR +
                          settings->bounds_tolerance_percentage * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
 
-  storage->threshold_position =
+  storage->pressed_threshold_position =
       settings->brake_pressed_threshold_percentage * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
+  storage->unpressed_threshold_position =
+      settings->brake_unpressed_threshold_percentage * EE_DRIVE_OUTPUT_DENOMINATOR / 100;
 
   return ads1015_configure_channel(storage->ads1015, storage->channel, true, prv_callback_channel,
                                    storage);
