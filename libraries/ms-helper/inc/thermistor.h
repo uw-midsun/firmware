@@ -37,3 +37,8 @@ StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms, uint16
 // Finds the resistance of the thermistor at a certain temperature
 StatusCode thermistor_calculate_resistance(uint16_t temperature_dc,
                                            uint16_t *thermistor_resistor_ohms);
+
+// Finds the node voltage given a temperature
+// Requires the supply voltage in units of 100 microvolts and return the node voltage in millivolts
+StatusCode thermistor_temperature_to_voltage(uint16_t temperature_dc, uint32_t supply_voltage,
+                                             uint16_t *node_voltage_milliohms);
