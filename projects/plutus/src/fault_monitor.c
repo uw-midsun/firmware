@@ -1,4 +1,4 @@
- #include "fault_monitor.h"
+#include "fault_monitor.h"
 #include <string.h>
 #include "log.h"
 #include "plutus_event.h"
@@ -73,8 +73,10 @@ StatusCode fault_monitor_init(FaultMonitorStorage *storage, const FaultMonitorSe
   storage->charge_current_limit = settings->overcurrent_charge * 1000;
   storage->discharge_current_limit = settings->overcurrent_discharge * -1000;
   storage->min_charge_current = -1 * settings->charge_current_deadzone;
-  thermistor_temperature_to_voltage(settings->overtemp_discharge, settings->overvoltage, &(storage->discharge_voltage_limit));
-  thermistor_temperature_to_voltage(settings->overtemp_charge, settings->overvoltage, &(storage->charge_voltage_limit));
+  thermistor_temperature_to_voltage(settings->overtemp_discharge, settings->overvoltage,
+                                    &(storage->discharge_voltage_limit));
+  thermistor_temperature_to_voltage(settings->overtemp_charge, settings->overvoltage,
+                                    &(storage->charge_voltage_limit));
 
   current_sense_register_callback(storage->settings.current_sense, prv_extract_current,
                                   prv_handle_adc_timeout, storage);

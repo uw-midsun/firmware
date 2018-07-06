@@ -247,8 +247,7 @@ void test_resistance_lookup(void) {
   TEST_ASSERT_UINT16_WITHIN(100, 973, resistance);
 }
 
-void test_node_voltage_calculation(void){
-
+void test_node_voltage_calculation(void) {
   // At 25 Degrees and 5V supply voltage
   uint16_t node_voltage = 0;
   thermistor_temperature_to_voltage(250, 50000, &node_voltage);

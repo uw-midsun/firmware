@@ -22,7 +22,7 @@ static const uint32_t s_resistance_lookup[] = {
 };
 
 // Used for converting the lookup table index with corresponding temperatures
-#define THERMISTOR_DECICELSIUS_RANGE_MAX (SIZEOF_ARRAY(s_resistance_lookup) - 1)
+#define THERMISTOR_LOOKUP_RANGE (SIZEOF_ARRAY(s_resistance_lookup) - 1)
 
 StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gpio,
                            ThermistorPosition position) {
@@ -74,7 +74,7 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint16_t *temperature
 StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms,
                                      uint16_t *temperature_dc) {
   // Find the approximate target temperature from the arguments passed
-  for (uint16_t i = 0; i < THERMISTOR_DECICELSIUS_RANGE_MAX; i++) {
+  for (uint16_t i = 0; i < THERMISTOR_LOOKUP_RANGE; i++) {
     if (thermistor_resistance_ohms * 1000 <= s_resistance_lookup[i] &&
         thermistor_resistance_ohms * 1000 >= s_resistance_lookup[i + 1]) {
       // Return the temperature with the linear approximation in deciCelsius
@@ -92,12 +92,12 @@ StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms,
 
 StatusCode thermistor_calculate_resistance(uint16_t temperature_dc,
                                            uint16_t *thermistor_resistor_ohms) {
-  if (temperature_dc > THERMISTOR_DECICELSIUS_RANGE_MAX * 10) {
+  if (temperature_dc > THERMISTOR_LOOKUP_RANGE * 10) {
     return status_msg(STATUS_CODE_OUT_OF_RANGE,
                       "Input temperature, exceeds lookup table ranges (0-100 deg).");
-  } else if (temperature_dc == THERMISTOR_DECICELSIUS_RANGE_MAX * 10) {
+  } else if (temperature_dc == THERMISTOR_LOOKUP_RANGE * 10) {
     // For the higher lookup edge case
-    *thermistor_resistor_ohms = s_resistance_lookup[THERMISTOR_DECICELSIUS_RANGE_MAX] / 1000;
+    *thermistor_resistor_ohms = s_resistance_lookup[THERMISTOR_LOOKUP_RANGE] / 1000;
   } else {
     uint16_t lower_temp = temperature_dc / 10;
     *thermistor_resistor_ohms =
@@ -113,9 +113,7 @@ StatusCode thermistor_temperature_to_voltage(uint16_t temperature_dc, uint32_t s
                                              uint16_t *node_voltage_milliohms) {
   uint16_t thermistor_resistance_ohms = 0;
   thermistor_calculate_resistance(temperature_dc, &thermistor_resistance_ohms);
-  *node_voltage_milliohms =
-      (uint16_t)(supply_voltage) * (thermistor_resistance_ohms) /
-                 (THERMISTOR_FIXED_RESISTANCE_OHMS + thermistor_resistance_ohms) /
-      10;
+  *node_voltage_milliohms = (uint16_t)(supply_voltage) * (thermistor_resistance_ohms) /
+                            (THERMISTOR_FIXED_RESISTANCE_OHMS + thermistor_resistance_ohms) / 10;
   return STATUS_CODE_OK;
 }
