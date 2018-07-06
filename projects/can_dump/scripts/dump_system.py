@@ -211,7 +211,7 @@ def main():
     """Main entry point"""
     parser = argparse.ArgumentParser()
     parser.add_argument('-l', '--log_dir', help='Directory for storing logs', nargs='?', default='logs')
-    parser.add_argument('-m', '--mask', help='Mask message ID from being parsed', action='append', nargs='+', default=[])
+    parser.add_argument('-m', '--mask', help='Mask message ID from being parsed', action='append', default=[])
     parser.add_argument('device', help='Serial device or "slcan0"')
     args = parser.parse_args()
 
@@ -219,6 +219,7 @@ def main():
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s,%(message)s', filename=log_file)
 
+    print('Masking IDs {}'.format(args.mask))
     if args.device == 'slcan0':
         datasource = SocketCanDataSource(masked=args.mask)
     else:
