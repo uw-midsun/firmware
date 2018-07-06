@@ -133,9 +133,7 @@ def select_device():
 
 class CanDataSource:
     def __init__(self, masked=None):
-        self.masked = masked
-        if masked is None:
-            self.masked = []
+        self.masked = masked or []
 
     @abstractmethod
     def get_packet(self):
