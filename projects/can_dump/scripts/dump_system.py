@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """ Dumps CAN information from SocketCAN/serial """
 import argparse
+from abc import abstractmethod
 import binascii
+import datetime
+import logging
+import os
 import socket
 import struct
 import serial
 import serial.tools.list_ports
-import time
 from cobs import cobs
-import datetime
-import logging
-import os
 
 DATA_POWER_STATE = ['idle', 'charge', 'drive']
 LIGHTS_ID_NAME = [
@@ -132,14 +132,20 @@ def select_device():
             continue
 
 class CanDataSource:
-    def __init__(self, masked=[]):
+    def __init__(self, masked=None):
         self.masked = masked
+        if masked is None:
+            self.masked = []
 
-    def run():
+    @abstractmethod
+    def get_packet(self):
+        pass
+
+    def run(self):
         while True:
             # CAN ID, data, DLC
             can_id, data = self.get_packet()
-            if can_id not in masked:
+            if can_id not in self.masked:
                 parse_msg(can_id, data)
 
             logging.info('{},{:x},{}'.format(can_id, data, len(data)))
@@ -151,7 +157,7 @@ class SocketCanDataSource(CanDataSource):
         self.sock = socket.socket(socket.PF_CAN, socket.SOCK_RAW, socket.CAN_RAW)
         self.sock.bind(("slcan0",))
 
-    def get_packet():
+    def get_packet(self):
         can_pkt = self.sock.recv(16)
         can_id, length, data = struct.unpack(self.CAN_FRAME_FMT, can_pkt)
         can_id &= socket.CAN_EFF_MASK
@@ -210,8 +216,9 @@ class SerialCanDataSource(CanDataSource):
 def main():
     """Main entry point"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('-l', '--log_dir', help='Directory for storing logs', nargs='?', default='logs')
-    parser.add_argument('-m', '--mask', help='Mask message ID from being parsed', action='append', default=[])
+    parser.add_argument('-l', '--log_dir', help='Directory for storing logs',
+                        nargs='?', default='logs')
+    parser.add_argument('-m', '--mask', help='Mask message ID from being parsed', action='append')
     parser.add_argument('device', help='Serial device or "slcan0"')
     args = parser.parse_args()
 
@@ -225,7 +232,7 @@ def main():
     else:
         datasource = SerialCanDataSource(masked=args.mask, device=args.device)
 
-    data_source.run()
+    datasource.run()
 
 if __name__ == '__main__':
     main()
