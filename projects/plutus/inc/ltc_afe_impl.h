@@ -32,3 +32,9 @@ StatusCode ltc_afe_impl_read_aux(LtcAfeStorage *afe, uint8_t device_cell);
 // Mark cell for discharging (takes effect after config is re-written)
 // |cell| should be [0, PLUTUS_CFG_AFE_TOTAL_CELLS)
 StatusCode ltc_afe_impl_toggle_cell_discharge(LtcAfeStorage *afe, uint16_t cell, bool discharge);
+
+// Sets the raw discharge bitsets as considered by the AFEs
+// Expects |discharge_bitset| to be an array of size |num_devices| where |num_devices| is
+// PLUTUS_CFG_AFE_DEVICES_IN_CHAIN
+StatusCode ltc_afe_impl_raw_cell_discharge(LtcAfeStorage *afe, uint16_t *discharge_bitset,
+                                           size_t num_devices);
