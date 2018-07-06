@@ -44,7 +44,8 @@ typedef struct FaultMonitorStorage {
   int32_t min_charge_current;
 
   // in millivolts
-  int32_t max_temperature_voltage_limit;
+  int16_t discharge_voltage_limit;
+  int16_t charge_voltage_limit;
 } FaultMonitorStorage;
 
 // |storage| should persist. |settings.ltc_afe| and |settings.bps_heartbeat| should be initialized.
