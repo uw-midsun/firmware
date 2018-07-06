@@ -6,7 +6,11 @@ import socket
 import struct
 import serial
 import serial.tools.list_ports
+import time
 from cobs import cobs
+import datetime
+import logging
+import os
 
 DATA_POWER_STATE = ['idle', 'charge', 'drive']
 LIGHTS_ID_NAME = [
@@ -84,11 +88,7 @@ def parse_msg(can_id, data):
 
     msg_type_name = 'ACK' if msg_type == 1 else 'DATA'
 
-    masked = []
-
-    if msg_id in masked:
-        pass
-    elif msg_id in MESSAGE_LOOKUP:
+    if msg_id in MESSAGE_LOOKUP:
         name, fmt, data_fn = MESSAGE_LOOKUP[msg_id]
         if fmt:
             try:
@@ -131,33 +131,42 @@ def select_device():
             print('Invalid device!')
             continue
 
-def main_serial(device):
-    """Main entry point for serial interface"""
-    def readline(ser, eol=b'\x00'):
-        """Readline with arbitrary EOL delimiter
+class CanDataSource:
+    def __init__(self, masked=[]):
+        self.masked = masked
 
-        Args:
-            ser: Serial device to read
-            eol: Bytes to use a EOL delimiter
-
-        Returns:
-            All data read from the device until the EOL delimiter was found.
-        """
-        leneol = len(eol)
-        line = bytearray()
+    def run():
         while True:
-            read_char = ser.read(1)
-            if read_char:
-                line += read_char
-                if line[-leneol:] == eol:
-                    break
-            else:
-                break
-        return bytes(line)
+            # CAN ID, data, DLC
+            can_id, data = self.get_packet()
+            if can_id not in masked:
+                parse_msg(can_id, data)
 
-    with serial.Serial(device, 115200) as ser:
+            logging.info('{},{:x},{}'.format(can_id, data, len(data)))
+
+class SocketCanDataSource(CanDataSource):
+    CAN_FRAME_FMT = "<IB3x8s"
+    def __init__(self, masked):
+        super().__init__(masked)
+        self.sock = socket.socket(socket.PF_CAN, socket.SOCK_RAW, socket.CAN_RAW)
+        self.sock.bind(("slcan0",))
+
+    def get_packet():
+        can_pkt = self.sock.recv(16)
+        can_id, length, data = struct.unpack(self.CAN_FRAME_FMT, can_pkt)
+        can_id &= socket.CAN_EFF_MASK
+        data = data[:length]
+
+        return can_id, data
+
+class SerialCanDataSource(CanDataSource):
+    def __init__(self, masked, device):
+        super().__init__(masked)
+        self.ser = serial.Serial(device, 115200)
+
+    def get_packet(self):
         while True:
-            encoded_line = readline(ser)
+            encoded_line = self.readline()
             try:
                 line = cobs.decode(encoded_line[:-1])
             except cobs.DecodeError:
@@ -174,33 +183,48 @@ def main_serial(device):
             can_id = int.from_bytes(line[4:8], 'little') & 0x7FF
             data = line[8:8 + dlc]
 
-            parse_msg(can_id, data)
+            yield can_id, data
 
-def main_socketcan():
-    """Main entry point for SocketCAN"""
-    sock = socket.socket(socket.PF_CAN, socket.SOCK_RAW, socket.CAN_RAW)
-    sock.bind(("slcan0",))
-    fmt = "<IB3x8s"
+    def readline(self, eol=b'\x00'):
+        """Readline with arbitrary EOL delimiter
 
-    while True:
-        can_pkt = sock.recv(16)
-        can_id, length, data = struct.unpack(fmt, can_pkt)
-        can_id &= socket.CAN_EFF_MASK
-        data = data[:length]
+        Args:
+            ser: Serial device to read
+            eol: Bytes to use a EOL delimiter
 
-        parse_msg(can_id, data)
+        Returns:
+            All data read from the device until the EOL delimiter was found.
+        """
+        leneol = len(eol)
+        line = bytearray()
+        while True:
+            read_char = self.ser.read(1)
+            if read_char:
+                line += read_char
+                if line[-leneol:] == eol:
+                    break
+            else:
+                break
+        return bytes(line)
 
 def main():
     """Main entry point"""
     parser = argparse.ArgumentParser()
+    parser.add_argument('-l', '--log_dir', help='Directory for storing logs', nargs='?', default='logs')
+    parser.add_argument('-m', '--mask', help='Mask message ID from being parsed', action='append', nargs='+', default=[])
     parser.add_argument('device', help='Serial device or "slcan0"')
     args = parser.parse_args()
 
-    if args.device == 'slcan0':
-        main_socketcan()
-    else:
-        main_serial(args.device)
+    log_file = '{}/system_can_{}.log'.format(args.log_dir, datetime.datetime.now())
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s,%(message)s', filename=log_file)
 
+    if args.device == 'slcan0':
+        datasource = SocketCanDataSource(masked=args.mask)
+    else:
+        datasource = SerialCanDataSource(masked=args.mask, device=args.device)
+
+    data_source.run()
 
 if __name__ == '__main__':
     main()
