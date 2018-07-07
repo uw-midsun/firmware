@@ -44,6 +44,7 @@ typedef enum {
 } CenterConsoleOutput;
 
 typedef struct CenterConsoleStorage {
+  GpioExpanderStorage *input_expander;
   GpioExpanderStorage *output_expander;
 } CenterConsoleStorage;
 

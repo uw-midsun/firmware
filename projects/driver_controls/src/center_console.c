@@ -16,7 +16,7 @@ static const EventID s_events[NUM_CENTER_CONSOLE_INPUTS] = {
   INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE,
   INPUT_EVENT_CENTER_CONSOLE_DRL,
   INPUT_EVENT_CENTER_CONSOLE_LOWBEAMS,
-  INPUT_EVENT_CENTER_CONSOLE_HAZARDS_PRESSED,
+  INPUT_EVENT_CENTER_CONSOLE_HAZARDS_RELEASED,
   INPUT_EVENT_CENTER_CONSOLE_POWER,
 };
 
@@ -27,7 +27,7 @@ static void prv_raise_event_cb(GpioExpanderPin pin, GPIOState state, void *conte
     case CENTER_CONSOLE_INPUT_HAZARDS:
       if (state == GPIO_STATE_HIGH) {
         // Only hazards is non-latching
-        event_raise(INPUT_EVENT_CENTER_CONSOLE_HAZARDS_RELEASED, 0);
+        event_raise(INPUT_EVENT_CENTER_CONSOLE_HAZARDS_PRESSED, 0);
       }
       // Fall-through
     default:
@@ -39,6 +39,7 @@ static void prv_raise_event_cb(GpioExpanderPin pin, GPIOState state, void *conte
 
 static bool prv_handle_power_state(CenterConsoleStorage *storage, const Event *e) {
   GPIOState output_states[NUM_CENTER_CONSOLE_OUTPUTS] = { 0 };
+  GPIOState charge_led = GPIO_STATE_HIGH;
   // Power update - reset all LEDs
   for (size_t i = 0; i < NUM_CENTER_CONSOLE_OUTPUTS; i++) {
     output_states[i] = GPIO_STATE_HIGH;
@@ -53,6 +54,8 @@ static bool prv_handle_power_state(CenterConsoleStorage *storage, const Event *e
       output_states[CENTER_CONSOLE_OUTPUT_BPS_FAULT_LED] = GPIO_STATE_LOW;
       break;
     case INPUT_EVENT_POWER_STATE_CHARGE:
+      charge_led = GPIO_STATE_LOW;
+      // Fall-though - power LED should also be on
     case INPUT_EVENT_POWER_STATE_DRIVE:
       // Power LED on
       output_states[CENTER_CONSOLE_OUTPUT_POWER_LED] = GPIO_STATE_LOW;
@@ -65,6 +68,7 @@ static bool prv_handle_power_state(CenterConsoleStorage *storage, const Event *e
   for (size_t i = 0; i < NUM_CENTER_CONSOLE_OUTPUTS; i++) {
     gpio_expander_set_state(storage->output_expander, i, output_states[i]);
   }
+  gpio_expander_set_state(storage->input_expander, GPIO_EXPANDER_PIN_7, charge_led);
 
   return true;
 }
@@ -106,6 +110,7 @@ static bool prv_handle_headlights(CenterConsoleStorage *storage, const Event *e)
       lowbeam_led = GPIO_STATE_LOW;
       break;
     case INPUT_EVENT_HEADLIGHT_STATE_HIGHBEAM:
+    case INPUT_EVENT_HEADLIGHT_STATE_OFF:
       // Highbeam has no indicator, but turn off the DRL and lowbeam indicators
       break;
     default:
@@ -124,8 +129,8 @@ static bool prv_handle_hazards(CenterConsoleStorage *storage, const Event *e) {
     return false;
   }
 
-  GPIOState state = e->id == INPUT_EVENT_HAZARDS_STATE_ON ? GPIO_STATE_LOW : GPIO_STATE_HIGH;
-  gpio_expander_set_state(storage->output_expander, CENTER_CONSOLE_OUTPUT_DRL_LED, state);
+  GPIOState state = (e->id == INPUT_EVENT_HAZARDS_STATE_ON) ? GPIO_STATE_HIGH : GPIO_STATE_LOW;
+  gpio_expander_set_state(storage->output_expander, CENTER_CONSOLE_OUTPUT_HAZARDS_LED, state);
 
   return true;
 }
@@ -137,6 +142,7 @@ StatusCode center_console_init(CenterConsoleStorage *storage, GpioExpanderStorag
   }
 
   storage->output_expander = output_expander;
+  storage->input_expander = input_expander;
 
   const GPIOSettings in_settings = { .direction = GPIO_DIR_IN, .resistor = GPIO_RES_PULLUP };
   const GPIOSettings out_settings = { .direction = GPIO_DIR_OUT, .state = GPIO_STATE_HIGH };
@@ -150,6 +156,8 @@ StatusCode center_console_init(CenterConsoleStorage *storage, GpioExpanderStorag
   for (size_t i = 0; i < NUM_CENTER_CONSOLE_OUTPUTS; i++) {
     status_ok_or_return(gpio_expander_init_pin(output_expander, i, &out_settings));
   }
+
+  gpio_expander_init_pin(input_expander, GPIO_EXPANDER_PIN_7, &out_settings);
 
   return STATUS_CODE_OK;
 }
