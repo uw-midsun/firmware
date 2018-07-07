@@ -37,11 +37,10 @@ static void prv_extract_aux_result(uint16_t *result_arr, size_t len, void *conte
   memcpy(storage->result.temp_voltages, result_arr, sizeof(storage->result.temp_voltages));
 
   bool fault = false;
+  uint16_t threshold_voltage =
+      storage->result.charging ? storage->charge_voltage_limit : storage->discharge_voltage_limit;
   for (size_t i = 0; i < len; i++) {
-    if (storage->result.charging && result_arr[i] > storage->charge_voltage_limit) {
-      fault = true;
-      break;
-    } else if (result_arr[i] > storage->discharge_voltage_limit) {
+    if (result_arr[i] > threshold_voltage) {
       fault = true;
       break;
     }
@@ -81,10 +80,10 @@ static void prv_handle_adc_timeout(void *context) {
 // Calculates the node voltage in a voltage divider
 static StatusCode temperature_to_voltage(uint16_t temperature_dc, uint32_t supply_voltage,
                                          uint16_t *node_voltage) {
-  uint16_t thermistor_resistance_ohms = 0;
-  thermistor_calculate_resistance(temperature_dc, &thermistor_resistance_ohms);
-  *node_voltage = (uint16_t)(supply_voltage) * (thermistor_resistance_ohms) /
-                  (FIXED_RESISTANCE_OHMS + thermistor_resistance_ohms);
+  uint16_t node_resistance_ohms = 0;
+  return status_code(thermistor_calculate_resistance(temperature_dc, &node_resistance_ohms));
+  *node_voltage = (uint16_t)(supply_voltage) * (node_resistance_ohms) /
+                  (FIXED_RESISTANCE_OHMS + node_resistance_ohms);
   return STATUS_CODE_OK;
 }
 

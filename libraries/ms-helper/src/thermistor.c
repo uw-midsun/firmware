@@ -4,6 +4,12 @@
 #include <stdint.h>
 #include "log.h"
 
+// Used for calculations to prevent integer overflow and loss of precision
+#define SCALING_VALUE_TEN 10
+#define SCALING_VALUE_HUNDRED 100
+#define SCALING_VALUE_THOUSAND 1000
+#define SCALING_VALUE_TEN_THOUSAND 10000
+
 // src: https://www.murata.com/en-global/products/productdata/8796836626462/NTHCG83.txt
 // Expected resistance in milliohms for a given temperature in celsius
 static const uint32_t s_resistance_lookup[] = {
@@ -75,13 +81,14 @@ StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms,
                                      uint16_t *temperature_dc) {
   // Find the approximate target temperature from the arguments passed
   for (uint16_t i = 0; i < THERMISTOR_LOOKUP_RANGE; i++) {
-    if (thermistor_resistance_ohms * 1000 <= s_resistance_lookup[i] &&
-        thermistor_resistance_ohms * 1000 >= s_resistance_lookup[i + 1]) {
+    if (thermistor_resistance_ohms * SCALING_VALUE_THOUSAND <= s_resistance_lookup[i] &&
+        thermistor_resistance_ohms * SCALING_VALUE_THOUSAND >= s_resistance_lookup[i + 1]) {
       // Return the temperature with the linear approximation in deciCelsius
       *temperature_dc = (uint16_t)(
-          ((uint32_t)i * 1000 + ((s_resistance_lookup[i] - thermistor_resistance_ohms * 1000) *
-                                 1000 / (s_resistance_lookup[i] - s_resistance_lookup[i + 1]))) /
-          100);
+          ((uint32_t)i * SCALING_VALUE_THOUSAND +
+           ((s_resistance_lookup[i] - thermistor_resistance_ohms * SCALING_VALUE_THOUSAND) *
+            SCALING_VALUE_THOUSAND / (s_resistance_lookup[i] - s_resistance_lookup[i + 1]))) /
+          SCALING_VALUE_HUNDRED);
       return STATUS_CODE_OK;
     }
   }
@@ -97,14 +104,15 @@ StatusCode thermistor_calculate_resistance(uint16_t temperature_dc,
                       "Input temperature, exceeds lookup table ranges (0-100 deg).");
   } else if (temperature_dc == THERMISTOR_LOOKUP_RANGE * 10) {
     // For the higher lookup edge case
-    *thermistor_resistor_ohms = s_resistance_lookup[THERMISTOR_LOOKUP_RANGE] / 1000;
+    *thermistor_resistor_ohms =
+        s_resistance_lookup[THERMISTOR_LOOKUP_RANGE] / SCALING_VALUE_THOUSAND;
   } else {
     uint16_t lower_temp = temperature_dc / 10;
     *thermistor_resistor_ohms =
         (s_resistance_lookup[lower_temp] * 10 +
          (s_resistance_lookup[lower_temp + 1] - s_resistance_lookup[lower_temp]) *
              (temperature_dc % 10)) /
-        10000;
+        SCALING_VALUE_TEN_THOUSAND;
   }
   return STATUS_CODE_OK;
 }
