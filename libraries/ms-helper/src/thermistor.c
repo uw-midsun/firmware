@@ -1,5 +1,6 @@
 #include "thermistor.h"
 #include <limits.h>
+#include <math.h>
 #include <stdint.h>
 #include "log.h"
 
@@ -19,6 +20,9 @@ static const uint32_t s_resistance_lookup[] = {
   1268000,  1234300,  1201600,  1170000,  1139300,  1109600,  1080700,  1052800,  1025600,
   999300,   973800,
 };
+
+// Used for converting the lookup table index with corresponding temperatures
+#define THERMISTOR_LOOKUP_RANGE (SIZEOF_ARRAY(s_resistance_lookup) - 1)
 
 StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gpio,
                            ThermistorPosition position) {
@@ -70,7 +74,7 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint16_t *temperature
 StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms,
                                      uint16_t *temperature_dc) {
   // Find the approximate target temperature from the arguments passed
-  for (uint16_t i = 0; i < SIZEOF_ARRAY(s_resistance_lookup) - 1; i++) {
+  for (uint16_t i = 0; i < THERMISTOR_LOOKUP_RANGE; i++) {
     if (thermistor_resistance_ohms * 1000 <= s_resistance_lookup[i] &&
         thermistor_resistance_ohms * 1000 >= s_resistance_lookup[i + 1]) {
       // Return the temperature with the linear approximation in deciCelsius
@@ -84,4 +88,23 @@ StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms,
   // Sets the returned temperature to be absurdly large
   *temperature_dc = UINT16_MAX;
   return status_msg(STATUS_CODE_OUT_OF_RANGE, "Temperature out of lookup table range.");
+}
+
+StatusCode thermistor_calculate_resistance(uint16_t temperature_dc,
+                                           uint16_t *thermistor_resistor_ohms) {
+  if (temperature_dc > THERMISTOR_LOOKUP_RANGE * 10) {
+    return status_msg(STATUS_CODE_OUT_OF_RANGE,
+                      "Input temperature, exceeds lookup table ranges (0-100 deg).");
+  } else if (temperature_dc == THERMISTOR_LOOKUP_RANGE * 10) {
+    // For the higher lookup edge case
+    *thermistor_resistor_ohms = s_resistance_lookup[THERMISTOR_LOOKUP_RANGE] / 1000;
+  } else {
+    uint16_t lower_temp = temperature_dc / 10;
+    *thermistor_resistor_ohms =
+        (s_resistance_lookup[lower_temp] * 10 +
+         (s_resistance_lookup[lower_temp + 1] - s_resistance_lookup[lower_temp]) *
+             (temperature_dc % 10)) /
+        10000;
+  }
+  return STATUS_CODE_OK;
 }

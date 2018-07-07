@@ -42,11 +42,24 @@ static void prv_extract_aux_result(uint16_t *result_arr, size_t len, void *conte
 
   memcpy(storage->result.temp_voltages, result_arr, sizeof(storage->result.temp_voltages));
 
-  // TODO(ELEC-439): Add temp faulting
-  // for (size_t i = 0; i < len; i++) {
-  //   bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
-  //   BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC);
-  // }
+  bool fault = false;
+  for (size_t i = 0; i < len; i++) {
+    if (storage->result.charging && result_arr[i] > storage->charge_voltage_limit) {
+      fault = true;
+      break;
+    } else if (result_arr[i] > storage->discharge_voltage_limit) {
+      fault = true;
+      break;
+    }
+  }
+
+  if (fault) {
+    bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
+                              EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+  } else {
+    bps_heartbeat_clear_fault(storage->settings.bps_heartbeat,
+                              EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+  }
 }
 
 static void prv_extract_current(int32_t value, void *context) {
@@ -71,6 +84,17 @@ static void prv_handle_adc_timeout(void *context) {
   bps_heartbeat_raise_fault(storage->settings.bps_heartbeat, EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC);
 }
 
+// Make it more of a black box? The literal should not be used
+static StatusCode thermistor_temperature_to_voltage(uint16_t temperature_dc,
+                                                    uint32_t supply_voltage,
+                                                    uint16_t *node_voltage) {
+  uint16_t thermistor_resistance_ohms = 0;
+  thermistor_calculate_resistance(temperature_dc, &thermistor_resistance_ohms);
+  *node_voltage = (uint16_t)(supply_voltage) * (thermistor_resistance_ohms) /
+                  (FIXED_THERMISTOR_RESISTANCE_OHMS + thermistor_resistance_ohms);
+  return STATUS_CODE_OK;
+}
+
 StatusCode fault_monitor_init(FaultMonitorStorage *storage, const FaultMonitorSettings *settings) {
   storage->settings = *settings;
   storage->num_afe_fsm_faults = 0;
@@ -79,6 +103,10 @@ StatusCode fault_monitor_init(FaultMonitorStorage *storage, const FaultMonitorSe
   storage->charge_current_limit = settings->overcurrent_charge * 1000;
   storage->discharge_current_limit = settings->overcurrent_discharge * -1000;
   storage->min_charge_current = -1 * settings->charge_current_deadzone;
+  thermistor_temperature_to_voltage(settings->overtemp_discharge, settings->overvoltage,
+                                    &(storage->discharge_voltage_limit));
+  thermistor_temperature_to_voltage(settings->overtemp_charge, settings->overvoltage,
+                                    &(storage->charge_voltage_limit));
 
   current_sense_register_callback(storage->settings.current_sense, prv_extract_current,
                                   prv_handle_adc_timeout, storage);
