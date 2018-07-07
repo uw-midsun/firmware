@@ -1,7 +1,0 @@
-#pragma once
-
-typedef enum {
-  LIGHTS_CONFIG_BOARD_TYPE_FRONT = 0,
-  LIGHTS_CONFIG_BOARD_TYPE_REAR,
-  NUM_LIGHTS_CONFIG_BOARD_TYPES
-} LightsConfigBoardType;

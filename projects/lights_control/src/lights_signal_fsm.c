@@ -107,11 +107,6 @@ StatusCode lights_signal_fsm_init(LightsSignalFsm *lights_signal_fsm,
 
 StatusCode lights_signal_fsm_process_event(LightsSignalFsm *lights_signal_fsm, const Event *event) {
   fsm_process_event(&lights_signal_fsm->fsm, event);
-  return STATUS_CODE_OK;
-}
-
-StatusCode lights_signal_fsm_process_sync_event(LightsSignalFsm *lights_signal_fsm,
-                                                const Event *event) {
   if (event->id == LIGHTS_EVENT_SYNC) {
     return lights_blinker_force_on(&lights_signal_fsm->blinker);
   }
