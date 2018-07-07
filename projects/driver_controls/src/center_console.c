@@ -27,7 +27,7 @@ static void prv_raise_event_cb(GpioExpanderPin pin, GPIOState state, void *conte
     case CENTER_CONSOLE_INPUT_HAZARDS:
       if (state == GPIO_STATE_HIGH) {
         // Only hazards is non-latching
-        event_raise(INPUT_EVENT_CENTER_CONSOLE_HAZARDS_PRESSED, 0);
+        event_raise(INPUT_EVENT_CENTER_CONSOLE_HAZARDS_RELEASED, 0);
       }
       // Fall-through
     default:

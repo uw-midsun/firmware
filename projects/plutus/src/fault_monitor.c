@@ -16,14 +16,20 @@ static void prv_extract_cell_result(uint16_t *result_arr, size_t len, void *cont
     storage->result.total_voltage += result_arr[i];
     if (result_arr[i] < storage->settings.undervoltage ||
         result_arr[i] > storage->settings.overvoltage) {
+      LOG_DEBUG("fault: %d\n", result_arr[i]);
       fault = true;
     }
   }
 
   if (fault) {
-    bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
-                              EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+    if (storage->num_afe_faults > PLUTUS_CFG_LTC_AFE_MAX_FAULTS) {
+      bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
+                                EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+    } else {
+      storage->num_afe_faults++;
+    }
   } else {
+    storage->num_afe_faults = 0;
     bps_heartbeat_clear_fault(storage->settings.bps_heartbeat,
                               EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
   }
@@ -67,6 +73,7 @@ static void prv_handle_adc_timeout(void *context) {
 
 StatusCode fault_monitor_init(FaultMonitorStorage *storage, const FaultMonitorSettings *settings) {
   storage->settings = *settings;
+  storage->num_afe_fsm_faults = 0;
   storage->num_afe_faults = 0;
   // Convert mA to uA
   storage->charge_current_limit = settings->overcurrent_charge * 1000;
