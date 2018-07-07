@@ -139,9 +139,9 @@ int main(void) {
 
   const MechBrakeSettings mech_brake_settings = {
     .ads1015 = &s_pedal_ads1015,
-    .brake_pressed_threshold_percentage = 55,
-    .brake_unpressed_threshold_percentage = 45,
-    .bounds_tolerance_percentage = 5,
+    .brake_pressed_threshold_percentage = EE_DRIVE_OUTPUT_MECH_BRAKE_PERCENTAGE + 5,
+    .brake_unpressed_threshold_percentage = EE_DRIVE_OUTPUT_MECH_BRAKE_PERCENTAGE - 5,
+    .bounds_tolerance_percentage = 10,
     .channel = ADS1015_CHANNEL_2,
   };
   mech_brake_init(mech_brake_global(), &mech_brake_settings, &dc_calib_blob->mech_brake_calib);
@@ -187,6 +187,7 @@ int main(void) {
         case INPUT_EVENT_CAN_TX:
         case INPUT_EVENT_MECHANICAL_BRAKE_RELEASED:
         case INPUT_EVENT_MECHANICAL_BRAKE_PRESSED:
+        case INPUT_EVENT_SPEED_UPDATE:
           break;
         default:
           LOG_DEBUG("e %d %d\n", e.id, e.data);
