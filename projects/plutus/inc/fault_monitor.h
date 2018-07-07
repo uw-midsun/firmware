@@ -6,8 +6,6 @@
 #include "ltc_afe.h"
 #include "thermistor.h"
 
-#define FIXED_THERMISTOR_RESISTANCE_OHMS 10000
-
 typedef struct FaultMonitorSettings {
   LtcAfeStorage *ltc_afe;
   CurrentSenseStorage *current_sense;
@@ -40,7 +38,8 @@ typedef struct FaultMonitorStorage {
   FaultMonitorSettings settings;
   FaultMonitorResult result;
   size_t num_afe_fsm_faults;
-  size_t num_afe_faults;
+  uint8_t cell_faults[PLUTUS_CFG_AFE_TOTAL_CELLS];
+  uint8_t temp_faults[PLUTUS_CFG_AFE_TOTAL_CELLS];
 
   // in uA
   int32_t charge_current_limit;

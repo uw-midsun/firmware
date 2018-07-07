@@ -16,20 +16,18 @@ static void prv_extract_cell_result(uint16_t *result_arr, size_t len, void *cont
     storage->result.total_voltage += result_arr[i];
     if (result_arr[i] < storage->settings.undervoltage ||
         result_arr[i] > storage->settings.overvoltage) {
-      LOG_DEBUG("cell fault: %d\n", result_arr[i]);
-      fault = true;
+      storage->cell_faults[i]++;
+      if (storage->cell_faults[i] > PLUTUS_CFG_LTC_AFE_MAX_FAULTS) {
+        bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
+                                  EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_CELL);
+        fault = true;
+      }
+    } else {
+      storage->cell_faults[i] = 0;
     }
   }
 
-  if (fault) {
-    if (storage->num_afe_faults > PLUTUS_CFG_LTC_AFE_MAX_FAULTS) {
-      bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
-                                EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_CELL);
-    } else {
-      storage->num_afe_faults++;
-    }
-  } else {
-    storage->num_afe_faults = 0;
+  if (!fault) {
     bps_heartbeat_clear_fault(storage->settings.bps_heartbeat,
                               EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_CELL);
   }
@@ -48,17 +46,24 @@ static void prv_extract_aux_result(uint16_t *result_arr, size_t len, void *conte
     threshold = storage->charge_temp_node_limit;
   }
 
+  bool fault = false;
   for (size_t i = 0; i < len; i++) {
     if (result_arr[i] > threshold) {
-      LOG_DEBUG("temp fault: %d > %d\n", result_arr[i], threshold);
-      bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
-                          EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_TEMP);
-      return;
+      storage->temp_faults[i]++;
+      if (storage->temp_faults[i] > PLUTUS_CFG_LTC_AFE_MAX_FAULTS) {
+        bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
+                            EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_TEMP);
+        fault = true;
+      }
+    } else {
+      storage->temp_faults[i] = 0;
     }
   }
 
-  bps_heartbeat_clear_fault(storage->settings.bps_heartbeat,
-                            EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_TEMP);
+  if (!fault) {
+    bps_heartbeat_clear_fault(storage->settings.bps_heartbeat,
+                              EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_TEMP);
+  }
 }
 
 static void prv_extract_current(int32_t value, void *context) {
@@ -94,8 +99,8 @@ static StatusCode prv_temp_node_voltage(uint16_t temp_dc, uint16_t *node_voltage
 
 StatusCode fault_monitor_init(FaultMonitorStorage *storage, const FaultMonitorSettings *settings) {
   storage->settings = *settings;
-  storage->num_afe_fsm_faults = 0;
-  storage->num_afe_faults = 0;
+  memset(storage->cell_faults, 0, sizeof(storage->cell_faults));
+  memset(storage->temp_faults, 0, sizeof(storage->temp_faults));
   // Convert mA to uA
   storage->charge_current_limit = settings->overcurrent_charge * 1000;
   storage->discharge_current_limit = settings->overcurrent_discharge * -1000;
