@@ -57,6 +57,7 @@ typedef enum {
 } DriverControlsFsm;
 
 static GpioExpanderStorage s_console_expander;
+static GpioExpanderStorage s_console_expander_out;
 static CenterConsoleStorage s_console;
 static DcCalibBlob s_calib_blob;
 static Ads1015Storage s_pedal_ads1015;
@@ -117,7 +118,9 @@ int main(void) {
   GPIOAddress console_int_pin = DC_CFG_CONSOLE_IO_INT_PIN;
   gpio_expander_init(&s_console_expander, DC_CFG_I2C_BUS_PORT, DC_CFG_CONSOLE_IO_ADDR,
                      &console_int_pin);
-  center_console_init(&s_console, &s_console_expander);
+  gpio_expander_init(&s_console_expander_out, DC_CFG_I2C_BUS_PORT, DC_CFG_CONSOLE_IO_OUT_ADDR,
+                     NULL);
+  center_console_init(&s_console, &s_console_expander, &s_console_expander_out);
 #endif
 
 #ifndef DC_CFG_DISABLE_CONTROL_STALK
@@ -192,6 +195,7 @@ int main(void) {
       cruise_handle_event(cruise_global(), &e);
       event_arbiter_process_event(&s_event_arbiter, &e);
       brake_signal_process_event(&e);
+      center_console_process_event(&s_console, &e);
     }
   }
 }
