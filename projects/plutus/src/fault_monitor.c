@@ -16,7 +16,7 @@ static void prv_extract_cell_result(uint16_t *result_arr, size_t len, void *cont
     storage->result.total_voltage += result_arr[i];
     if (result_arr[i] < storage->settings.undervoltage ||
         result_arr[i] > storage->settings.overvoltage) {
-      LOG_DEBUG("fault: %d\n", result_arr[i]);
+      LOG_DEBUG("cell fault: %d\n", result_arr[i]);
       fault = true;
     }
   }
@@ -24,14 +24,14 @@ static void prv_extract_cell_result(uint16_t *result_arr, size_t len, void *cont
   if (fault) {
     if (storage->num_afe_faults > PLUTUS_CFG_LTC_AFE_MAX_FAULTS) {
       bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
-                                EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+                                EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_CELL);
     } else {
       storage->num_afe_faults++;
     }
   } else {
     storage->num_afe_faults = 0;
     bps_heartbeat_clear_fault(storage->settings.bps_heartbeat,
-                              EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+                              EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_CELL);
   }
 }
 
@@ -42,11 +42,23 @@ static void prv_extract_aux_result(uint16_t *result_arr, size_t len, void *conte
 
   memcpy(storage->result.temp_voltages, result_arr, sizeof(storage->result.temp_voltages));
 
-  // TODO(ELEC-439): Add temp faulting
-  // for (size_t i = 0; i < len; i++) {
-  //   bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
-  //   BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC);
-  // }
+  // We assume a fixed resistor on the bottom - node voltage increases as temperature increases
+  uint16_t threshold = storage->discharge_temp_node_limit;
+  if (storage->result.charging) {
+    threshold = storage->charge_temp_node_limit;
+  }
+
+  for (size_t i = 0; i < len; i++) {
+    if (result_arr[i] > threshold) {
+      LOG_DEBUG("temp fault: %d > %d\n", result_arr[i], threshold);
+      bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
+                          EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_TEMP);
+      return;
+    }
+  }
+
+  bps_heartbeat_clear_fault(storage->settings.bps_heartbeat,
+                            EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_TEMP);
 }
 
 static void prv_extract_current(int32_t value, void *context) {
@@ -71,6 +83,15 @@ static void prv_handle_adc_timeout(void *context) {
   bps_heartbeat_raise_fault(storage->settings.bps_heartbeat, EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC);
 }
 
+static StatusCode prv_temp_node_voltage(uint16_t temp_dc, uint16_t *node_voltage) {
+  // We assume a fixed resistor on the bottom - node voltage increases as temperature increases
+  uint16_t thermistor_resistance_ohms = 0;
+  status_ok_or_return(thermistor_calculate_resistance(temp_dc, &thermistor_resistance_ohms));
+  *node_voltage = PLUTUS_CFG_THERMISTOR_SUPPLY * thermistor_resistance_ohms /
+                  (PLUTUS_CFG_THERMISTOR_FIXED_RESISTOR_OHMS + thermistor_resistance_ohms);
+  return STATUS_CODE_OK;
+}
+
 StatusCode fault_monitor_init(FaultMonitorStorage *storage, const FaultMonitorSettings *settings) {
   storage->settings = *settings;
   storage->num_afe_fsm_faults = 0;
@@ -79,6 +100,10 @@ StatusCode fault_monitor_init(FaultMonitorStorage *storage, const FaultMonitorSe
   storage->charge_current_limit = settings->overcurrent_charge * 1000;
   storage->discharge_current_limit = settings->overcurrent_discharge * -1000;
   storage->min_charge_current = -1 * settings->charge_current_deadzone;
+  prv_temp_node_voltage(settings->overtemp_discharge, settings->overvoltage,
+                        &storage->discharge_temp_node_limit);
+  prv_temp_node_voltage(settings->overtemp_charge, settings->overvoltage,
+                        &storage->charge_temp_node_limit);
 
   current_sense_register_callback(storage->settings.current_sense, prv_extract_current,
                                   prv_handle_adc_timeout, storage);

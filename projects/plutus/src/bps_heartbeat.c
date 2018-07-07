@@ -2,6 +2,7 @@
 #include "can_transmit.h"
 #include "debug_led.h"
 #include "log.h"
+#include "exported_enums.h"
 #include "plutus_cfg.h"
 
 static StatusCode prv_handle_heartbeat_ack(CANMessageID msg_id, uint16_t device,
@@ -36,7 +37,8 @@ static StatusCode prv_handle_state(BpsHeartbeatStorage *storage) {
   };
 
   // Only transmit state OK if we have no ongoing faults
-  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, storage->fault_bitset);
+  uint8_t mask = ((1 << NUM_EE_BPS_HEARTBEAT_FAULT_SOURCES) - 1) & ~(PLUTUS_CFG_HEARTBEAT_IGNORE_FAULTS);
+  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, storage->fault_bitset & mask);
   debug_led_set_state(DEBUG_LED_RED, (storage->fault_bitset != EE_BPS_HEARTBEAT_STATE_OK));
 
   if (storage->fault_bitset != EE_BPS_HEARTBEAT_STATE_OK) {

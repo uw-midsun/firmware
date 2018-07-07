@@ -1,6 +1,8 @@
 #pragma once
 // #define PLUTUS_CFG_DEBUG_PACK
 // #define PLUTUS_CFG_STANDALONE
+// Set this bitset to whatever faults should be ignored - use EE_BPS_HEARTBEAT_STATE_*
+#define PLUTUS_CFG_HEARTBEAT_IGNORE_FAULTS 0x00
 
 #include "adc_cfg.h"
 #include "afe_cfg.h"
@@ -10,6 +12,8 @@
 // in 100uV units
 #define PLUTUS_CFG_CELL_UNDERVOLTAGE 25000
 #define PLUTUS_CFG_CELL_OVERVOLTAGE 42000
+#define PLUTUS_CFG_THERMISTOR_SUPPLY 50000
+#define PLUTUS_CFG_THERMISTOR_FIXED_RESISTOR_OHMS 10000
 // in 0.1C units
 #define PLUTUS_CFG_OVERTEMP_DISCHARGE 600
 #define PLUTUS_CFG_OVERTEMP_CHARGE 450
