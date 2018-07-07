@@ -21,7 +21,7 @@ static void prv_timer_callback(SoftTimerID timer_id, void *context) {
       blinker->blink_count++;
     }
     if (blinker->blink_count >= blinker->blink_count_threshold) {
-      event_raise(LIGHTS_EVENT_SYNC, 0);
+      event_raise(LIGHTS_EVENT_SYNC_TX, 0);
       blinker->blink_count = 0;
     }
   }

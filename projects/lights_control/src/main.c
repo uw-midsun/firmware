@@ -99,7 +99,9 @@ int main(void) {
   while (true) {
     while (event_process(&e) == STATUS_CODE_OK) {
       can_process_event(&e);
-      lights_can_process_event(&e);
+      if (board_type == LIGHTS_BOARD_TYPE_REAR) {
+        lights_can_process_event(&e);
+      }
       lights_gpio_process_event(lights_gpio, &e);
       lights_signal_fsm_process_event(&s_signal_fsm, &e);
       lights_strobe_process_event(&s_lights_strobe, &e);

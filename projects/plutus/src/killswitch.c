@@ -10,10 +10,10 @@ static void prv_killswitch_handler(const GPIOAddress *address, void *context) {
 
   if (state == GPIO_STATE_LOW) {
     // Falling edge - killswitch was hit
-    // bps_heartbeat_raise_fault(storage, EE_BPS_HEARTBEAT_FAULT_SOURCE_KILLSWITCH);
+    bps_heartbeat_raise_fault(storage, EE_BPS_HEARTBEAT_FAULT_SOURCE_KILLSWITCH);
   } else {
     // Rising edge - killswitch was released
-    // bps_heartbeat_clear_fault(storage, EE_BPS_HEARTBEAT_FAULT_SOURCE_KILLSWITCH);
+    bps_heartbeat_clear_fault(storage, EE_BPS_HEARTBEAT_FAULT_SOURCE_KILLSWITCH);
   }
 }
 
