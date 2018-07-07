@@ -68,12 +68,13 @@ MESSAGE_LOOKUP = {
     43: ('Aux & DC/DC V/C', '<HHHH', data_dump),
 }
 
-def parse_msg(can_id, data):
+def parse_msg(can_id, data, masked):
     """Parses and prints a system CAN message.
 
     Args:
         can_id: Raw standard CAN ID.
         data: Message data. Up to 8 bytes.
+        masked: List of masked messages.
 
     Returns:
         None
@@ -88,7 +89,9 @@ def parse_msg(can_id, data):
 
     msg_type_name = 'ACK' if msg_type == 1 else 'DATA'
 
-    if msg_id in MESSAGE_LOOKUP:
+    if msg_id in masked:
+        return
+    elif msg_id in MESSAGE_LOOKUP:
         name, fmt, data_fn = MESSAGE_LOOKUP[msg_id]
         if fmt:
             try:
@@ -154,8 +157,7 @@ class CanDataSource:
         while True:
             # CAN ID, data, DLC
             can_id, data = self.get_packet()
-            if can_id not in self.masked:
-                parse_msg(can_id, data)
+            parse_msg(can_id, data, self.masked)
 
             logging.info('0x%x,0x%s,%d', can_id, data.hex(), len(data))
 
@@ -231,7 +233,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-l', '--log_dir', help='Directory for storing logs',
                         nargs='?', default='logs')
-    parser.add_argument('-m', '--mask', help='Mask message ID from being parsed', action='append')
+    parser.add_argument('-m', '--mask', help='Mask message ID from being parsed', action='append', type=int)
     parser.add_argument('device', help='Serial device or "slcan0"')
     args = parser.parse_args()
 
