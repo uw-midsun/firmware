@@ -2,7 +2,6 @@
 #include <string.h>
 #include "log.h"
 #include "plutus_event.h"
-#include "thermistor.h"
 
 static void prv_extract_cell_result(uint16_t *result_arr, size_t len, void *context) {
   FaultMonitorStorage *storage = context;
@@ -39,14 +38,12 @@ static void prv_extract_aux_result(uint16_t *result_arr, size_t len, void *conte
 
   bool fault = false;
   for (size_t i = 0; i < len; i++) {
-    if (storage->result.charging) {
-      if (result_arr[i] > storage->charge_voltage_limit) {
-        fault = true;
-      }
-    } else {
-      if (result_arr[i] > storage->discharge_voltage_limit) {
-        fault = true;
-      }
+    if (storage->result.charging && result_arr[i] > storage->charge_voltage_limit) {
+      fault = true;
+      break;
+    } else if (result_arr[i] > storage->discharge_voltage_limit) {
+      fault = true;
+      break;
     }
   }
 
@@ -81,12 +78,13 @@ static void prv_handle_adc_timeout(void *context) {
   bps_heartbeat_raise_fault(storage->settings.bps_heartbeat, EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC);
 }
 
-StatusCode thermistor_temperature_to_voltage(uint16_t temperature_dc, uint32_t supply_voltage,
-                                             uint16_t *node_voltage) {
+// Calculates the node voltage in a voltage divider
+static StatusCode temperature_to_voltage(uint16_t temperature_dc, uint32_t supply_voltage,
+                                         uint16_t *node_voltage) {
   uint16_t thermistor_resistance_ohms = 0;
   thermistor_calculate_resistance(temperature_dc, &thermistor_resistance_ohms);
   *node_voltage = (uint16_t)(supply_voltage) * (thermistor_resistance_ohms) /
-                  (THERMISTOR_FIXED_RESISTANCE_OHMS + thermistor_resistance_ohms);
+                  (FIXED_RESISTANCE_OHMS + thermistor_resistance_ohms);
   return STATUS_CODE_OK;
 }
 

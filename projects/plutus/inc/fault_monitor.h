@@ -4,6 +4,9 @@
 #include "bps_heartbeat.h"
 #include "current_sense.h"
 #include "ltc_afe.h"
+#include "thermistor.h"
+
+#define FIXED_RESISTANCE_OHMS 10000
 
 typedef struct FaultMonitorSettings {
   LtcAfeStorage *ltc_afe;
@@ -53,8 +56,3 @@ StatusCode fault_monitor_init(FaultMonitorStorage *storage, const FaultMonitorSe
 
 // Processes fault events
 bool fault_monitor_process_event(FaultMonitorStorage *storage, const Event *e);
-
-// Finds the node voltage given a temperature
-// Requires the supply voltage in units of 100 microvolts (0.1mV) and return the node voltage 0.1mV
-StatusCode thermistor_temperature_to_voltage(uint16_t temperature_dc, uint32_t supply_voltage,
-                                             uint16_t *node_voltage);
