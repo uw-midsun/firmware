@@ -108,12 +108,3 @@ StatusCode thermistor_calculate_resistance(uint16_t temperature_dc,
   }
   return STATUS_CODE_OK;
 }
-
-StatusCode thermistor_temperature_to_voltage(uint16_t temperature_dc, uint32_t supply_voltage,
-                                             uint16_t *node_voltage_milliohms) {
-  uint16_t thermistor_resistance_ohms = 0;
-  thermistor_calculate_resistance(temperature_dc, &thermistor_resistance_ohms);
-  *node_voltage_milliohms = (uint16_t)(supply_voltage) * (thermistor_resistance_ohms) /
-                            (THERMISTOR_FIXED_RESISTANCE_OHMS + thermistor_resistance_ohms) / 10;
-  return STATUS_CODE_OK;
-}
