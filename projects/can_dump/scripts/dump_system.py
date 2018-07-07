@@ -146,7 +146,7 @@ class CanDataSource:
             if can_id not in self.masked:
                 parse_msg(can_id, data)
 
-            logging.info('{},{:x},{}'.format(can_id, data, len(data)))
+            logging.info('{},{},{}'.format(can_id, data, len(data)))
 
 class SocketCanDataSource(CanDataSource):
     CAN_FRAME_FMT = "<IB3x8s"
@@ -174,11 +174,11 @@ class SerialCanDataSource(CanDataSource):
             try:
                 line = cobs.decode(encoded_line[:-1])
             except cobs.DecodeError:
-                print('COBS decode error (len {})'.format(len(line)))
+                # print('COBS decode error (len {})'.format(len(encoded_line)))
                 continue
 
             if len(line) != 16:
-                print('Invalid line (len {})'.format(len(line)))
+                # print('Invalid line (len {})'.format(len(line)))
                 continue
 
             header = int.from_bytes(line[0:4], 'little')
@@ -187,7 +187,7 @@ class SerialCanDataSource(CanDataSource):
             can_id = int.from_bytes(line[4:8], 'little') & 0x7FF
             data = line[8:8 + dlc]
 
-            yield can_id, data
+            return can_id, data
 
     def readline(self, eol=b'\x00'):
         """Readline with arbitrary EOL delimiter
