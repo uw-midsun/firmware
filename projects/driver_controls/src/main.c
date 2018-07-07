@@ -185,6 +185,8 @@ int main(void) {
         case INPUT_EVENT_DRIVE_UPDATE_REQUESTED:
         case INPUT_EVENT_CAN_RX:
         case INPUT_EVENT_CAN_TX:
+        case INPUT_EVENT_MECHANICAL_BRAKE_RELEASED:
+        case INPUT_EVENT_MECHANICAL_BRAKE_PRESSED:
           break;
         default:
           LOG_DEBUG("e %d %d\n", e.id, e.data);

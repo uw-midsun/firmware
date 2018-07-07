@@ -47,7 +47,7 @@ def data_dump(*args):
 # Name, struct format, data format 0, ...
 MESSAGE_LOOKUP = {
     0: ('BPS Heartbeat', '<B', data_dump),
-    1: ('Chaos Fault', '<B', data_dump),
+    1: ('Chaos Fault', '', data_dump),
     2: ('Battery relay (Main)', '<B', data_relay),
     3: ('Battery relay (Slave)', '<B', data_relay),
     4: ('Motor relay', '<B', data_relay),
