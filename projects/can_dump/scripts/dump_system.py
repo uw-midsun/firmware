@@ -9,7 +9,6 @@ import os
 import socket
 import struct
 import serial
-import serial.tools.list_ports
 from cobs import cobs
 
 DATA_POWER_STATE = ['idle', 'charge', 'drive']
@@ -17,6 +16,22 @@ LIGHTS_ID_NAME = [
     'High beams', 'Low beams', 'DRL', 'Brakes',
     'Left Turn', 'Right Turn', 'Hazards', 'BPS Strobe'
 ]
+HEARTBEAT_REASON_BITSET = [
+    'Killswitch', 'AFE Cell', 'AFE Temp', 'AFE FSM', 'Current', 'ACK Timeout'
+]
+
+def data_bps_heartbeat(state):
+    """BPS heartbeat data format"""
+    codes = []
+    for i, name in enumerate(HEARTBEAT_REASON_BITSET):
+        mask = 1 << i
+        if state & mask == mask:
+            codes.append(name)
+
+    if not codes:
+        return 'Ok'
+    else:
+        return '{} = {}'.format(state, ', '.join(codes))
 
 def data_relay(state):
     """Relay state data format"""
@@ -46,7 +61,7 @@ def data_dump(*args):
 
 # Name, struct format, data format 0, ...
 MESSAGE_LOOKUP = {
-    0: ('BPS Heartbeat', '<B', data_dump),
+    0: ('BPS Heartbeat', '<B', data_bps_heartbeat),
     1: ('Chaos Fault', '', data_dump),
     2: ('Battery relay (Main)', '<B', data_relay),
     3: ('Battery relay (Slave)', '<B', data_relay),
@@ -110,29 +125,6 @@ def parse_msg(can_id, data, masked):
         # Unrecognized message
         print('{} from {} ({}): 0x{}'.format(msg_id, source_id, msg_type_name,
                                              binascii.hexlify(data).decode('ascii')))
-
-def select_device():
-    """User-provided serial device selector.
-
-    Args:
-        None
-
-    Returns:
-        The selected serial device as ListPortInfo.
-    """
-    while True:
-        print('Pick the serial device:')
-        ports = serial.tools.list_ports.comports()
-        for i, port in enumerate(ports):
-            print('{}: {}'.format(i, port))
-
-        try:
-            chosen_port = ports[int(input())]
-            print('Selected {}'.format(chosen_port))
-            return chosen_port
-        except IndexError:
-            print('Invalid device!')
-            continue
 
 class CanDataSource:
     """Abstract class for CAN logger sources"""
