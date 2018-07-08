@@ -42,6 +42,7 @@ typedef struct WaveSculptorResetCmd {
 typedef enum {
   WAVESCULPTOR_MEASUREMENT_ID_BUS = 2,
   WAVESCULPTOR_MEASUREMENT_ID_VELOCITY = 3,
+  WAVESCULPTOR_MEASUREMENT_ID_STATUS = 4,
 } WaveSculptorMeasurementId;
 
 // Driver Controls Base Addr + 2
@@ -56,6 +57,13 @@ typedef struct WaveSculptorVelocityMeasurement {
   float vehicle_velocity_ms;
 } WaveSculptorVelocityMeasurement;
 
+typedef struct WavesculptorStatusInfo {
+  uint16_t limit_flags;
+  uint16_t error_flags;
+  uint16_t active_motor;
+  uint16_t reserved;
+} WavesculptorStatusInfo;
+
 typedef union WaveSculptorCanData {
   uint64_t raw;
   WaveSculptorDriveCmd drive_cmd;
@@ -63,4 +71,5 @@ typedef union WaveSculptorCanData {
   WaveSculptorResetCmd reset_cmd;
   WaveSculptorBusMeasurement bus_measurement;
   WaveSculptorVelocityMeasurement velocity_measurement;
+  WavesculptorStatusInfo status_info;
 } WaveSculptorCanData;

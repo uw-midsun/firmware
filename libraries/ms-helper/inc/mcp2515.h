@@ -15,9 +15,26 @@
 // Called on CAN messsage RX
 typedef void (*Mcp2515RxCb)(uint32_t id, bool extended, uint64_t data, size_t dlc, void *context);
 
+// Called on CAN bus error
+struct Mcp2515Errors;
+typedef void (*Mcp2515BusErrorCb)(const struct Mcp2515Errors *errors, void *context);
+
+typedef struct Mcp2515Errors {
+  uint8_t eflg;
+  uint8_t tec;
+  uint8_t rec;
+} Mcp2515Errors;
+
+typedef enum {
+  MCP2515_BITRATE_125KBPS,
+  MCP2515_BITRATE_250KBPS,
+  MCP2515_BITRATE_500KBPS,
+  NUM_MCP2515_BITRATES,
+} Mcp2515Bitrate;
+
 typedef struct Mcp2515Settings {
   SPIPort spi_port;
-  uint32_t baudrate;
+  uint32_t spi_baudrate;
   GPIOAddress mosi;
   GPIOAddress miso;
   GPIOAddress sclk;
@@ -26,23 +43,33 @@ typedef struct Mcp2515Settings {
   GPIOAddress int_pin;
 
   bool loopback;
+  Mcp2515Bitrate can_bitrate;
 
   Mcp2515RxCb rx_cb;
+  Mcp2515BusErrorCb bus_err_cb;
   void *context;
 } Mcp2515Settings;
 
 typedef struct Mcp2515Storage {
   SPIPort spi_port;
+  GPIOAddress int_pin;
+
   Mcp2515RxCb rx_cb;
+  Mcp2515BusErrorCb bus_err_cb;
   void *context;
+
+  Mcp2515Errors errors;
 } Mcp2515Storage;
 
 // Initializes the MCP2515 CAN controller.
 StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings);
 
 // Sets the CAN message RX callback.
-StatusCode mcp2515_register_rx_cb(Mcp2515Storage *storage, Mcp2515RxCb rx_cb, void *context);
+StatusCode mcp2515_register_cbs(Mcp2515Storage *storage, Mcp2515RxCb rx_cb, Mcp2515BusErrorCb bus_err_cb, void *context);
 
 // Transmits a CAN message.
 StatusCode mcp2515_tx(Mcp2515Storage *storage, uint32_t id, bool extended, uint64_t data,
                       size_t dlc);
+
+// Poll interrupt pin for updates
+void mcp2515_poll(Mcp2515Storage *storage);
