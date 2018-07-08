@@ -18,11 +18,7 @@ typedef enum {
   NUM_MCP3427_SAMPLE_RATES
 } Mcp3427SampleRate;
 
-typedef enum {
-  MCP3427_CHANNEL_1 = 0,
-  MCP3427_CHANNEL_2,
-  NUM_MCP3427_CHANNELS
-} Mcp3427Channel;
+typedef enum { MCP3427_CHANNEL_1 = 0, MCP3427_CHANNEL_2, NUM_MCP3427_CHANNELS } Mcp3427Channel;
 
 typedef enum {
   MCP3427_AMP_GAIN_1 = 0,
@@ -63,7 +59,8 @@ typedef void (*Mcp3427FaultCallback)(void *context);
 StatusCode mcp3427_init(Mcp3427Storage *storage, Mcp3427Setting *setting);
 
 // Read value from a specific channel on the ADC.
-StatusCode mcp3427_register_callback(Mcp3427Storage *storage, Mcp3427Channel channel, Mcp3427Callback callback, void *context);
+StatusCode mcp3427_register_callback(Mcp3427Storage *storage, Mcp3427Channel channel,
+                                     Mcp3427Callback callback, void *context);
 
-StatusCode mcp3427_register_fault_callback(Mcp3427Storage *storage, Mcp3427FaultCallback callback, void *context);
-
+StatusCode mcp3427_register_fault_callback(Mcp3427Storage *storage, Mcp3427FaultCallback callback,
+                                           void *context);
