@@ -107,7 +107,7 @@ int main(void) {
   can_add_filter(SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY);
 
   const I2CSettings i2c_settings = {
-    .speed = I2C_SPEED_NORMAL,    //
+    .speed = I2C_SPEED_FAST,    //
     .sda = DC_CFG_I2C_BUS_SDA,  //
     .scl = DC_CFG_I2C_BUS_SCL,  //
   };
