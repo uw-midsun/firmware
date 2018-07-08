@@ -57,7 +57,6 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
     // MISO should have gone low, signaling that the conversion has finished
     storage->buffer.status = status_code(STATUS_CODE_TIMEOUT);
 
-    // Pass null pointer into callback to indicate invalid data
     if (storage->fault_callback != NULL) {
       storage->fault_callback(storage->fault_context);
     }
@@ -72,9 +71,13 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
     StatusCode status = spi_exchange(storage->spi_port, NULL, 0, result, 4);
 
     storage->buffer.status = ltc2484_raw_adc_to_uv(result, &storage->buffer.value);
-
-    // Invoke callback with the new data
-    if (storage->callback != NULL) {
+    if (!status_ok(storage->buffer.status)) {
+      // Error - something went wrong. Most likely out of range, so definitely fault.
+      if (storage->fault_callback != NULL) {
+        storage->fault_callback(storage->fault_context);
+      }
+    } else if (storage->callback != NULL) {
+      // Got a good value - run callback
       storage->callback(&storage->buffer.value, storage->context);
     }
   }

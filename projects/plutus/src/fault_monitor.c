@@ -51,8 +51,6 @@ static void prv_extract_aux_result(uint16_t *result_arr, size_t len, void *conte
     if (result_arr[i] > threshold) {
       storage->temp_faults[i]++;
       if (storage->temp_faults[i] > PLUTUS_CFG_LTC_AFE_MAX_FAULTS) {
-        bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
-                            EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_TEMP);
         fault = true;
       }
     } else {
@@ -60,7 +58,10 @@ static void prv_extract_aux_result(uint16_t *result_arr, size_t len, void *conte
     }
   }
 
-  if (!fault) {
+  if (fault) {
+    bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
+                        EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_TEMP);
+  } else {
     bps_heartbeat_clear_fault(storage->settings.bps_heartbeat,
                               EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_TEMP);
   }
@@ -85,6 +86,8 @@ static void prv_extract_current(int32_t value, void *context) {
 static void prv_handle_adc_timeout(void *context) {
   FaultMonitorStorage *storage = context;
 
+  // Invalid current, so set it to something completely wrong.
+  storage->result.current = INT32_MAX;
   bps_heartbeat_raise_fault(storage->settings.bps_heartbeat, EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC);
 }
 
@@ -92,7 +95,7 @@ static StatusCode prv_temp_node_voltage(uint16_t temp_dc, uint16_t *node_voltage
   // We assume a fixed resistor on the bottom - node voltage increases as temperature increases
   uint16_t thermistor_resistance_ohms = 0;
   status_ok_or_return(thermistor_calculate_resistance(temp_dc, &thermistor_resistance_ohms));
-  *node_voltage = PLUTUS_CFG_THERMISTOR_SUPPLY * thermistor_resistance_ohms /
+  *node_voltage = PLUTUS_CFG_THERMISTOR_SUPPLY * PLUTUS_CFG_THERMISTOR_FIXED_RESISTOR_OHMS /
                   (PLUTUS_CFG_THERMISTOR_FIXED_RESISTOR_OHMS + thermistor_resistance_ohms);
   return STATUS_CODE_OK;
 }
