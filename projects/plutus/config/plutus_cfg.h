@@ -1,8 +1,6 @@
 #pragma once
 // #define PLUTUS_CFG_DEBUG_PACK
 // #define PLUTUS_CFG_STANDALONE
-// Set this bitset to whatever faults should be ignored - use EE_BPS_HEARTBEAT_STATE_*
-#define PLUTUS_CFG_HEARTBEAT_IGNORE_FAULTS 0x00
 
 #include "adc_cfg.h"
 #include "afe_cfg.h"
