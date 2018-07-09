@@ -10,6 +10,7 @@ import socket
 import struct
 import serial
 from cobs import cobs
+import math
 
 DATA_POWER_STATE = ['idle', 'charge', 'drive']
 LIGHTS_ID_NAME = [
@@ -49,7 +50,15 @@ def data_lights_state(light_id, state):
 
 def data_battery_vt(module, voltage, temperature):
     """Battery V/T data format"""
-    return 'C{}: {:.1f}mV aux {:.1f}mV'.format(module, voltage / 10, temperature / 10)
+    supply = 50000
+    r_fixed = 10000
+    resistance = (supply - temperature) * r_fixed / temperature
+    beta = 3380
+    r_0 = 10000
+    t_0 = 298.15
+    r_inf = r_0 * math.exp(-beta/t_0)
+    temp = beta / math.log(resistance / r_inf) - 273.15
+    return 'C{}: {:.1f}mV aux {:.1f}mV ({:.1f}C)'.format(module, voltage / 10, temperature / 10, temp)
 
 def data_battery_voltage_current(voltage, current):
     """Battery total voltage/current data format"""
