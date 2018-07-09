@@ -5,6 +5,7 @@
 #include "gpio_it.h"
 #include "log.h"
 #include "mcp2515_defs.h"
+#include "delay.h"
 
 #define MCP2515_MAX_WRITE_BUFFER_LEN 10
 
@@ -35,6 +36,8 @@ static const Mcp2515RxBuffer s_rx_buffers[] = {
 static void prv_reset(Mcp2515Storage *storage) {
   uint8_t payload[] = { MCP2515_CMD_RESET };
   spi_exchange(storage->spi_port, payload, sizeof(payload), NULL, 0);
+
+  delay_us(100);
 }
 
 static void prv_read(Mcp2515Storage *storage, uint8_t addr, uint8_t *read_data, size_t read_len) {
@@ -187,6 +190,12 @@ StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings
   uint8_t opmode =
       (settings->loopback ? MCP2515_CANCTRL_OPMODE_LOOPBACK : MCP2515_CANCTRL_OPMODE_NORMAL);
   prv_bit_modify(storage, MCP2515_CTRL_REG_CANCTRL, MCP2515_CANCTRL_OPMODE_MASK, opmode);
+
+  uint8_t readback[sizeof(registers)] = { 0 };
+  prv_read(storage, MCP2515_CTRL_REG_CNF3, readback, SIZEOF_ARRAY(readback));
+  for (size_t i = 0; i < SIZEOF_ARRAY(readback); i++) {
+    LOG_DEBUG("%d: read 0x%x\n", i, readback[i]);
+  }
 
   // Active-low interrupt pin
   const GPIOSettings gpio_settings = {

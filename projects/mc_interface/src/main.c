@@ -117,7 +117,7 @@ int main(void) {
       can_process_event(&e);
     }
 
-    wait();
+    mcp2515_poll(s_can_mcp2515.mcp2515);
   }
 
   return 0;
