@@ -19,8 +19,15 @@ static void prv_periodic_discharge_bitset(SoftTimerID timer_id, void *context) {
 
 static StatusCode prv_handle_can_bitset(const CANMessage *msg, void *context,
                                         CANAckStatus *ack_reply) {
-  uint16_t discharge_bitset[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN] = { 0 };
-  CAN_UNPACK_SET_DISCHARGE_BITSET(msg, (uint64_t *)discharge_bitset);
+  LtcAfeStorage *afe = context;
+
+  union {
+    uint16_t arr[PLUTUS_CFG_AFE_DEVICES_IN_CHAIN];
+    uint64_t raw;
+  } discharge_bitset = { 0 };
+  CAN_UNPACK_SET_DISCHARGE_BITSET(msg, &discharge_bitset.raw);
+
+  ltc_afe_impl_raw_cell_discharge(afe, discharge_bitset.arr, PLUTUS_CFG_AFE_DEVICES_IN_CHAIN);
 
   return STATUS_CODE_OK;
 }

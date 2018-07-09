@@ -72,6 +72,8 @@ MESSAGE_LOOKUP = {
     8: ('Chaos Heartbeat', '', data_dump),
     18: ('Drive Output', '<hhhh', data_dump),
     19: ('Cruise Target', '<B', data_dump),
+    21: ('Set Discharge Bitset', '<Q', data_dump),
+    22: ('Discharge Bitset', '<Q', data_dump),
     23: ('Lights Sync', '', data_dump),
     24: ('Lights State', '<BB', data_lights_state),
     26: ('Charger state', '<B', data_dump),
