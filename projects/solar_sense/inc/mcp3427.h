@@ -1,8 +1,8 @@
 #pragma once
 
 #include "i2c.h"
-
-#define MCP3427_MAX_CONVERSION_TIME_MS 200
+#include "event_queue.h"
+#include "fsm.h"
 
 typedef enum {
   MCP3427_PIN_STATE_LOW = 0,
@@ -18,7 +18,11 @@ typedef enum {
   NUM_MCP3427_SAMPLE_RATES
 } Mcp3427SampleRate;
 
-typedef enum { MCP3427_CHANNEL_1 = 0, MCP3427_CHANNEL_2, NUM_MCP3427_CHANNELS } Mcp3427Channel;
+typedef enum {
+  MCP3427_CHANNEL_1 = 0, //
+  MCP3427_CHANNEL_2, //
+  NUM_MCP3427_CHANNELS //
+} Mcp3427Channel;
 
 typedef enum {
   MCP3427_AMP_GAIN_1 = 0,
@@ -34,6 +38,9 @@ typedef enum {
   NUM_MCP3427_CONVERSION_MODES
 } Mcp3427ConversionMode;
 
+typedef void (*Mcp3427Callback)(uint32_t value, void *context);
+typedef void (*Mcp3427FaultCallback)(void *context);
+
 typedef struct Mcp3427Setting {
   Mcp3427SampleRate sample_rate;
   Mcp3427PinState Adr0;
@@ -47,20 +54,25 @@ typedef struct Mcp3427Storage {
   I2CPort port;
   I2CAddress addr;
   uint8_t config;
-  Mcp3427Callback callbacks[NUM_MCP3427_CHANNELS];
-  void *contexts[NUM_MCP3427_CHANNELS];
+  uint16_t s_sensor_data[NUM_MCP3427_CHANNELS];
+  EventID data_trigger_event;
+  EventID data_ready_event;
+  Mcp3427Callback callback;
+  void *context;
   Mcp3427FaultCallback fault_callback;
+  void *fault_context;
+  Mcp3427SampleRate sample_rate;
+  FSM fsm;
 } Mcp3427Storage;
 
-typedef void (*Mcp3427Callback)(int16_t *value, Mcp3427Channel channel, void *context);
-typedef void (*Mcp3427FaultCallback)(void *context);
-
-// Initializes the ADC.
+// Initializes the ADC by configuring the adc with the selected settings.
 StatusCode mcp3427_init(Mcp3427Storage *storage, Mcp3427Setting *setting);
 
-// Read value from a specific channel on the ADC.
-StatusCode mcp3427_register_callback(Mcp3427Storage *storage, Mcp3427Channel channel,
-                                     Mcp3427Callback callback, void *context);
+// Register a callback to be run whenever there is new data.
+StatusCode mcp3427_register_callback(Mcp3427Storage *storage,
+                Mcp3427Callback callback, void *context);
 
-StatusCode mcp3427_register_fault_callback(Mcp3427Storage *storage, Mcp3427FaultCallback callback,
-                                           void *context);
+// Register a callback to be run whenever there is a fault.
+StatusCode mcp3427_register_fault_callback(Mcp3427Storage *storage,
+                Mcp3427FaultCallback callback, void *context);
+
