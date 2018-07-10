@@ -46,7 +46,7 @@ static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckSta
       return event_raise((param_1) ? LIGHTS_EVENT_GPIO_ON : LIGHTS_EVENT_GPIO_OFF,
                          LIGHTS_EVENT_GPIO_PERIPHERAL_HORN);
     case SYSTEM_CAN_MESSAGE_LIGHTS_SYNC:
-      return event_raise(LIGHTS_EVENT_SYNC, 0);
+      return event_raise(LIGHTS_EVENT_SYNC_RX, 0);
   }
   return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid message id");
 }
@@ -58,20 +58,19 @@ StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *s
   // Specify filters.
   status_ok_or_return(can_add_filter(SYSTEM_CAN_MESSAGE_LIGHTS_SYNC));
   status_ok_or_return(can_add_filter(SYSTEM_CAN_MESSAGE_LIGHTS_STATE));
+  status_ok_or_return(can_add_filter(SYSTEM_CAN_MESSAGE_HORN));
   // Initialize CAN RX handlers.
   status_ok_or_return(
       can_register_rx_handler(SYSTEM_CAN_MESSAGE_LIGHTS_STATE, prv_rx_handler, settings));
   status_ok_or_return(
       can_register_rx_handler(SYSTEM_CAN_MESSAGE_LIGHTS_SYNC, prv_rx_handler, settings));
-  status_ok_or_return(
-      can_register_rx_handler(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT, prv_rx_handler, settings));
   status_ok_or_return(can_register_rx_handler(SYSTEM_CAN_MESSAGE_HORN, prv_rx_handler, settings));
 
   return STATUS_CODE_OK;
 }
 
 StatusCode lights_can_process_event(const Event *e) {
-  if (e->id == LIGHTS_EVENT_SYNC) {
+  if (e->id == LIGHTS_EVENT_SYNC_TX) {
     LOG_DEBUG("Transmitting a sync message.\n");
     return CAN_TRANSMIT_LIGHTS_SYNC();
   }
