@@ -126,7 +126,7 @@ StatusCode plutus_sys_init(PlutusSysStorage *storage, PlutusSysType type) {
     flash_init();
 
     PlutusCalibBlob calib_blob = { 0 };
-    calib_init(&calib_blob, sizeof(calib_blob));
+    calib_init(&calib_blob, sizeof(calib_blob), false);
 
     const LtcAdcSettings adc_settings = {
       .mosi = PLUTUS_CFG_CURRENT_SENSE_MOSI,  //

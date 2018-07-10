@@ -86,7 +86,7 @@ int main(void) {
   crc32_init();
   flash_init();
 
-  calib_init(&s_calib_blob, sizeof(s_calib_blob));
+  calib_init(&s_calib_blob, sizeof(s_calib_blob), false);
 
   const CANSettings can_settings = {
     .device_id = DC_CFG_CAN_DEVICE_ID,
@@ -136,7 +136,8 @@ int main(void) {
 
   const MechBrakeSettings mech_brake_settings = {
     .ads1015 = &s_pedal_ads1015,
-    .brake_pressed_threshold_percentage = 5,
+    .brake_pressed_threshold_percentage = 55,
+    .brake_unpressed_threshold_percentage = 45,
     .bounds_tolerance_percentage = 5,
     .channel = ADS1015_CHANNEL_2,
   };
