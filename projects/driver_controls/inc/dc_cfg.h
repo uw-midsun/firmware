@@ -1,8 +1,8 @@
 #pragma once
 // Driver controls config file
 
-#define DC_CFG_DEBUG_PRINT_EVENTS
-// #define DC_CFG_DISABLE_CENTER_CONSOLE
+// #define DC_CFG_DEBUG_PRINT_EVENTS
+#define DC_CFG_DISABLE_CENTER_CONSOLE
 // #define DC_CFG_DISABLE_CONTROL_STALK
 // #define DC_CFG_DISABLE_PEDAL
 
