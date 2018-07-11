@@ -26,7 +26,7 @@ static SolarMasterCanStorage s_solar_master_can_storage = { 0 };
 
 int main(void) {
   const I2CSettings i2c_settings = {
-    .speed = I2C_SPEED_STANDARD,     //
+    .speed = I2C_SPEED_STANDARD,      //
     .sda = SOLAR_MASTER_I2C_BUS_SDA,  //
     .scl = SOLAR_MASTER_I2C_BUS_SCL,  //
   };

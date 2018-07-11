@@ -46,7 +46,7 @@ void setup_test(void) {
   };
 
   TEST_ASSERT_OK(solar_master_can_init(&s_solar_master_can_storage, &can_settings,
-                                      SOLAR_MASTER_CONFIG_BOARD_FRONT));
+                                       SOLAR_MASTER_CONFIG_BOARD_FRONT));
 }
 
 void teardown_test(void) {}

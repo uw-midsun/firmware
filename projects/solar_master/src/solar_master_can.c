@@ -19,7 +19,7 @@ static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckSta
 }
 
 StatusCode solar_master_can_init(SolarMasterCanStorage *storage, const CANSettings *can_settings,
-                                SolarMasterConfigBoard board) {
+                                 SolarMasterConfigBoard board) {
   status_ok_or_return(can_init(&storage->can_storage, can_settings));
   storage->board = board;
   // Specify filters. Since we add filters, the handlers don't need to care about board type.

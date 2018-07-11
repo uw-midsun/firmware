@@ -8,4 +8,4 @@ typedef struct SolarMasterCanStorage {
 } SolarMasterCanStorage;
 
 StatusCode solar_master_can_init(SolarMasterCanStorage *storage, const CANSettings *can_settings,
-                                SolarMasterConfigBoard board);
+                                 SolarMasterConfigBoard board);
