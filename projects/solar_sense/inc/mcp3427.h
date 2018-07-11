@@ -54,7 +54,7 @@ typedef struct Mcp3427Storage {
   I2CPort port;
   I2CAddress addr;
   uint8_t config;
-  uint16_t s_sensor_data[NUM_MCP3427_CHANNELS];
+  uint16_t sensor_data[NUM_MCP3427_CHANNELS];
   EventID data_trigger_event;
   EventID data_ready_event;
   Mcp3427Callback callback;
