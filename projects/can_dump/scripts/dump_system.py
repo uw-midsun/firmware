@@ -64,6 +64,12 @@ def data_battery_voltage_current(voltage, current):
     """Battery total voltage/current data format"""
     return '{:.4f}V {:.4f}A'.format(voltage / 10000, current / 1000000)
 
+def data_speed(left_cms, right_cms):
+    avg_cms = left_cms + right_cms / 2
+    avg_mph = 0.0224 * avg_cms
+
+    return '{:.2f} MPH'.format(avg_mph)
+
 def data_dump(*args):
     """Generic data dump format"""
     return ' '.join(['{}'.format(arg) for arg in args])
@@ -90,7 +96,7 @@ MESSAGE_LOOKUP = {
     32: ('Battery V/T', '<HHH', data_battery_vt),
     33: ('Battery Voltage/Current', '<ii', data_battery_voltage_current),
     35: ('Motor Bus Measurement', '<hhhh', data_dump),
-    36: ('Motor Velocity', '<hh', data_dump),
+    36: ('Motor Velocity', '<hh', data_speed),
     43: ('Aux & DC/DC V/C', '<HHHH', data_dump),
 }
 
