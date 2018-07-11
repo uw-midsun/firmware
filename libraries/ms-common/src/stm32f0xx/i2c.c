@@ -9,7 +9,7 @@
 #include "stm32f0xx.h"
 
 // Arbitrary timeout
-#define I2C_TIMEOUT 100000
+#define I2C_TIMEOUT 1000
 #define I2C_TIMEOUT_WHILE_FLAG(i2c_port, flag, status)                      \
   do {                                                                      \
     uint32_t timeout = (I2C_TIMEOUT);                                       \

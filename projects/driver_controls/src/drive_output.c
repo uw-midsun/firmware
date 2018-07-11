@@ -13,13 +13,13 @@ static DriveOutputStorage s_storage;
 static void prv_watchdog_cb(SoftTimerID timer_id, void *context) {
   DriveOutputStorage *storage = context;
 
-  // We're missing at least one updated response
-  if (storage->watchdog != DRIVE_OUTPUT_VALID_WATCHDOG) {
-    // Error - raise a warning, clear stored data
-    LOG_DEBUG("Drive output watchdog: 0x%x\n", storage->watchdog);
-    memset(storage->data, 0, sizeof(storage->data));
-    event_raise_priority(EVENT_PRIORITY_HIGHEST, storage->fault_event, 0);
-  }
+  // // We're missing at least one updated response
+  // if (storage->watchdog != DRIVE_OUTPUT_VALID_WATCHDOG) {
+  //   // Error - raise a warning, clear stored data
+  //   LOG_DEBUG("Drive output watchdog: 0x%x\n", storage->watchdog);
+  //   memset(storage->data, 0, sizeof(storage->data));
+  //   event_raise_priority(EVENT_PRIORITY_HIGHEST, storage->fault_event, 0);
+  // }
 
   // Reset watchdog
   storage->watchdog = 0;
