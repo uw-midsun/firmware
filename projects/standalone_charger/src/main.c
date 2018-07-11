@@ -18,6 +18,7 @@
 #include "log.h"
 #include "can_transmit.h"
 #include "delay.h"
+#include "exported_enums.h"
 
 // 2.5V * 36 = 151.2V
 #define STANDALONE_CHARGER_MAX_VOLTAGE 1512
@@ -38,6 +39,12 @@ static StatusCode prv_handle_heartbeat(const CANMessage *msg, void *context, CAN
   };
   can_hw_transmit(bps_heartbeat_ack.raw, false, &status, sizeof(status));
 
+  uint8_t bps_state = 0;
+  CAN_UNPACK_BPS_HEARTBEAT(msg, &bps_state);
+  if (bps_state != EE_BPS_HEARTBEAT_STATE_OK) {
+    LOG_DEBUG("BPS Fault 0x%x\n", bps_state);
+  }
+
   return STATUS_CODE_OK;
 }
 
@@ -57,6 +64,10 @@ static StatusCode prv_handle_battery_vc(const CANMessage *msg, void *context, CA
 static void prv_charger_info(uint16_t voltage, uint16_t current, ChargerCanStatus status, void *context) {
   LOG_DEBUG("Charger: %d.%dV, %d.%dA (status 0x%x)\n", voltage / 10, voltage % 10, current / 10, current % 10, status.raw);
   CAN_TRANSMIT_CHARGER_INFO(voltage, current, status.raw);
+}
+
+static void prv_start_charge(SoftTimerID timer_id, void *context) {
+  charger_start(1512, 100);
 }
 
 int main(void) {
@@ -98,11 +109,9 @@ int main(void) {
   };
   charger_init(&charger_settings);
 
-  delay_s(3);
-
-  charger_start(1512, 100);
-
   LOG_DEBUG("hello\n");
+
+  soft_timer_start_seconds(5, prv_start_charge, NULL, NULL);
 
   Event e = { 0 };
   while (true) {
