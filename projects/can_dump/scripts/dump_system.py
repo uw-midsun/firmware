@@ -52,12 +52,15 @@ def data_battery_vt(module, voltage, temperature):
     """Battery V/T data format"""
     supply = 50000
     r_fixed = 10000
-    resistance = (supply - temperature) * r_fixed / temperature
-    beta = 3380
-    r_0 = 10000
-    t_0 = 298.15
-    r_inf = r_0 * math.exp(-beta/t_0)
-    temp = beta / math.log(resistance / r_inf) - 273.15
+    if temperature == 0:
+        temp = 100000
+    else:
+        resistance = (supply - temperature) * r_fixed / temperature
+        beta = 3380
+        r_0 = 10000
+        t_0 = 298.15
+        r_inf = r_0 * math.exp(-beta/t_0)
+        temp = beta / math.log(resistance / r_inf) - 273.15
     return 'C{}: {:.1f}mV aux {:.1f}mV ({:.1f}C)'.format(module, voltage / 10, temperature / 10, temp)
 
 def data_battery_voltage_current(voltage, current):
@@ -65,10 +68,15 @@ def data_battery_voltage_current(voltage, current):
     return '{:.4f}V {:.4f}A'.format(voltage / 10000, current / 1000000)
 
 def data_speed(left_cms, right_cms):
+    """Motor speed data format"""
     avg_cms = left_cms + right_cms / 2
     avg_mph = 0.0224 * avg_cms
 
     return '{:.2f} MPH'.format(avg_mph)
+
+def data_aux_dcdc_vc(aux_voltage, aux_current, dcdc_voltage, dcdc_current):
+    """Aux/DC-DC voltage/current data format"""
+    return 'Aux {:3f}V {:3f}mA DC-DC {:3f}V {:3f}mA'.format(aux_voltage / 1000, aux_current / 1000000, dcdc_voltage / 1000, dcdc_current / 1000000)
 
 def data_dump(*args):
     """Generic data dump format"""
@@ -129,7 +137,7 @@ def parse_msg(can_id, data, masked):
             try:
                 unpacked_data = struct.unpack(fmt, data)
             except struct.error:
-                print('Invalid {}'.format(msg_id))
+                print('Invalid {}: {} ({} bytes)'.format(msg_id, binascii.hexlify(data).decode('ascii'), len(data)))
                 return
         else:
             unpacked_data = []

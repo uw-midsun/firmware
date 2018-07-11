@@ -4,6 +4,7 @@
 #include "gpio_it.h"
 #include "i2c.h"
 #include "mcp23008.h"
+#include "log.h"
 
 static void prv_poll_timeout(SoftTimerID timer_id, void *context) {
   GpioExpanderStorage *expander = context;
@@ -11,20 +12,26 @@ static void prv_poll_timeout(SoftTimerID timer_id, void *context) {
 
   // Read the contents of the GPIO registers
   i2c_read_reg(expander->port, expander->addr, MCP23008_GPIO, &gpio, 1);
-
   uint8_t changed = expander->prev_state ^ gpio;
-  expander->prev_state = gpio;
 
-  // Identify all pins with a pending interrupt and execute their callbacks
-  while (changed != 0) {
-    GpioExpanderPin current_pin = (GpioExpanderPin)(__builtin_ffs(changed) - 1);
+  for (size_t i = 0; i < NUM_GPIO_EXPANDER_PINS; i++) {
+    if (changed & (1 << i)) {
+      expander->same_counter[i] = 0;
+    } else if (expander->same_counter[i] > GPIO_EXPANDER_DEBOUNCE_COUNTER) {
+      // Skip
+    } else {
+      // Only increment the counter if we're attempting to debounce or we'll overflow
+      expander->same_counter[i] = MIN(expander->same_counter[i] + 1, GPIO_EXPANDER_DEBOUNCE_COUNTER + 1);
+      // LOG_DEBUG("no change on %d -> counter = %d\n", i, expander->same_counter[i]);
 
-    if (expander->callbacks[current_pin].func != NULL) {
-      expander->callbacks[current_pin].func(current_pin, (gpio >> current_pin) & 1,
-                                            expander->callbacks[current_pin].context);
+      if (expander->same_counter[i] == GPIO_EXPANDER_DEBOUNCE_COUNTER) {
+        expander->debounced_state ^= 1 << i;
+        // LOG_DEBUG("updated debounced state %d -> %d\n", i, (expander->debounced_state >> i) & 1);
+        if (expander->callbacks[i].func != NULL) {
+          expander->callbacks[i].func(i, (expander->debounced_state >> i) & 1, expander->callbacks[i].context);
+        }
+      }
     }
-
-    changed &= ~(1 << current_pin);
   }
 
   soft_timer_start_millis(GPIO_EXPANDER_POLL_PERIOD_MS, prv_poll_timeout, expander, NULL);

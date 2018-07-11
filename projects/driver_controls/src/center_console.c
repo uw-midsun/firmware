@@ -2,22 +2,22 @@
 #include "input_event.h"
 #include "log.h"
 // Inputs are as follows:
-// * A0: Drive
-// * A1: Neutral
-// * A2: Reverse
-// * A3: DRLs
-// * A4: Lowbeams
-// * A5: Hazards
-// * A6: Power
+// * A0: Power
+// * A1: Drive
+// * A2: Neutral
+// * A3: Reverse
+// * A4: Hazards
+// * A5: Lowbeams
+// * A6: DRLs
 
 static const EventID s_events[NUM_CENTER_CONSOLE_INPUTS] = {
+  INPUT_EVENT_CENTER_CONSOLE_POWER,
   INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE,
   INPUT_EVENT_CENTER_CONSOLE_DIRECTION_NEUTRAL,
   INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE,
-  INPUT_EVENT_CENTER_CONSOLE_DRL,
-  INPUT_EVENT_CENTER_CONSOLE_LOWBEAMS,
   INPUT_EVENT_CENTER_CONSOLE_HAZARDS_PRESSED,
-  INPUT_EVENT_CENTER_CONSOLE_POWER,
+  INPUT_EVENT_CENTER_CONSOLE_LOWBEAMS,
+  INPUT_EVENT_CENTER_CONSOLE_DRL,
 };
 
 static void prv_raise_event_cb(GpioExpanderPin pin, GPIOState state, void *context) {

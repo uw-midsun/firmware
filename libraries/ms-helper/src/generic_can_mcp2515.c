@@ -3,6 +3,8 @@
 #include "generic_can_helpers.h"
 
 static Mcp2515Storage s_mcp2515;
+// For resetting the chip
+static Mcp2515Settings s_settings;
 static GenericCanInterface s_interface;
 
 static void prv_rx_handler(uint32_t id, bool extended, uint64_t data, size_t dlc, void *context) {
@@ -39,6 +41,10 @@ static StatusCode prv_register_rx(GenericCan *can, GenericCanRx rx_handler, uint
   return generic_can_helpers_register_rx(can, rx_handler, mask, filter, context, NULL);
 }
 
+static void prv_handle_bus_off(const struct Mcp2515Errors *errors, void *context) {
+  mcp2515_init(&s_mcp2515, &s_settings);
+}
+
 StatusCode generic_can_mcp2515_init(GenericCanMcp2515 *can_mcp2515,
                                     const Mcp2515Settings *settings) {
   s_interface.tx = prv_tx;
@@ -47,10 +53,11 @@ StatusCode generic_can_mcp2515_init(GenericCanMcp2515 *can_mcp2515,
   memset(can_mcp2515->base.rx_storage, 0, sizeof(can_mcp2515->base.rx_storage));
 
   can_mcp2515->mcp2515 = &s_mcp2515;
+  s_settings = *settings;
   can_mcp2515->base.interface = &s_interface;
 
   status_ok_or_return(mcp2515_init(&s_mcp2515, settings));
-  status_ok_or_return(mcp2515_register_cbs(&s_mcp2515, prv_rx_handler, NULL, can_mcp2515));
+  status_ok_or_return(mcp2515_register_cbs(&s_mcp2515, prv_rx_handler, prv_handle_bus_off, can_mcp2515));
 
   return STATUS_CODE_OK;
 }
