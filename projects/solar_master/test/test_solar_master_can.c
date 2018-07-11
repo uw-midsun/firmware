@@ -12,10 +12,10 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#include "solar_sense_can.h"
-#include "solar_sense_event.h"
+#include "solar_master_can.h"
+#include "solar_master_event.h"
 
-static SolarSenseCanStorage s_solar_sense_can_storage = { 0 };
+static SolarMasterCanStorage s_solar_master_can_storage = { 0 };
 
 static StatusCode prv_ack_request(CANMessageID msg_id, uint16_t device, CANAckStatus status,
                                   uint16_t remaining, void *context) {
@@ -40,18 +40,18 @@ void setup_test(void) {
     .rx = { .port = GPIO_PORT_A, .pin = 11 },
     .tx = { .port = GPIO_PORT_A, .pin = 12 },
     .device_id = SYSTEM_CAN_DEVICE_SOLAR_MASTER_FRONT,
-    .rx_event = SOLAR_SENSE_EVENT_CAN_RX,
-    .tx_event = SOLAR_SENSE_EVENT_CAN_TX,
-    .fault_event = SOLAR_SENSE_EVENT_CAN_FAULT,
+    .rx_event = SOLAR_MASTER_EVENT_CAN_RX,
+    .tx_event = SOLAR_MASTER_EVENT_CAN_TX,
+    .fault_event = SOLAR_MASTER_EVENT_CAN_FAULT,
   };
 
-  TEST_ASSERT_OK(solar_sense_can_init(&s_solar_sense_can_storage, &can_settings,
-                                      SOLAR_SENSE_CONFIG_BOARD_FRONT));
+  TEST_ASSERT_OK(solar_master_can_init(&s_solar_master_can_storage, &can_settings,
+                                      SOLAR_MASTER_CONFIG_BOARD_FRONT));
 }
 
 void teardown_test(void) {}
 
-void test_solar_sense_can_rx_handler(void) {
+void test_solar_master_can_rx_handler(void) {
   const CANAckRequest ack_req = {
     .callback = prv_ack_request,
     .context = NULL,
@@ -60,12 +60,12 @@ void test_solar_sense_can_rx_handler(void) {
 
   TEST_ASSERT_OK(CAN_TRANSMIT_SOLAR_RELAY_FRONT(&ack_req, EE_CHARGER_SET_RELAY_STATE_OPEN));
   // TX Relay Message.
-  MS_TEST_HELPER_CAN_TX_RX(SOLAR_SENSE_EVENT_CAN_TX, SOLAR_SENSE_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(SOLAR_MASTER_EVENT_CAN_TX, SOLAR_MASTER_EVENT_CAN_RX);
   Event e = { 0 };
   while (!status_ok(event_process(&e))) {
   }
-  TEST_ASSERT_EQUAL(SOLAR_SENSE_EVENT_RELAY_STATE, e.id);
+  TEST_ASSERT_EQUAL(SOLAR_MASTER_EVENT_RELAY_STATE, e.id);
   TEST_ASSERT_EQUAL(EE_CHARGER_SET_RELAY_STATE_OPEN, e.data);
   // ACK Relay Message.
-  MS_TEST_HELPER_CAN_TX_RX(SOLAR_SENSE_EVENT_CAN_TX, SOLAR_SENSE_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(SOLAR_MASTER_EVENT_CAN_TX, SOLAR_MASTER_EVENT_CAN_RX);
 }

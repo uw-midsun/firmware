@@ -7,8 +7,8 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#include "solar_sense_event.h"
-#include "solar_sense_relay.h"
+#include "solar_master_event.h"
+#include "solar_master_relay.h"
 
 static const GPIOAddress s_relay_address = {
   .port = GPIO_PORT_A,  //
@@ -17,26 +17,26 @@ static const GPIOAddress s_relay_address = {
 
 void setup_test(void) {
   TEST_ASSERT_OK(gpio_init());
-  TEST_ASSERT_OK(solar_sense_relay_init());
+  TEST_ASSERT_OK(solar_master_relay_init());
 }
 
 void teardown_test(void) {}
 
-void test_solar_sense_relay_init(void) {
+void test_solar_master_relay_init(void) {
   GPIOState state;
   TEST_ASSERT_OK(gpio_get_state(&s_relay_address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
 }
 
-void test_solar_sense_relay_process_event(void) {
-  Event test_event = { .id = SOLAR_SENSE_EVENT_RELAY_STATE, .data = EE_RELAY_STATE_CLOSE };
+void test_solar_master_relay_process_event(void) {
+  Event test_event = { .id = SOLAR_MASTER_EVENT_RELAY_STATE, .data = EE_RELAY_STATE_CLOSE };
   GPIOState state;
-  TEST_ASSERT_OK(solar_sense_relay_process_event(&test_event));
+  TEST_ASSERT_OK(solar_master_relay_process_event(&test_event));
   TEST_ASSERT_OK(gpio_get_state(&s_relay_address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
 
   test_event.data = EE_CHARGER_SET_RELAY_STATE_OPEN;
-  TEST_ASSERT_OK(solar_sense_relay_process_event(&test_event));
+  TEST_ASSERT_OK(solar_master_relay_process_event(&test_event));
   TEST_ASSERT_OK(gpio_get_state(&s_relay_address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
 }
