@@ -25,6 +25,7 @@
 static SolarMasterCanStorage s_solar_master_can_storage = { 0 };
 
 int main(void) {
+  // TODO(ELEC-502): Add I2C high speed support to the driver.
   const I2CSettings i2c_settings = {
     .speed = I2C_SPEED_STANDARD,      //
     .sda = SOLAR_MASTER_I2C_BUS_SDA,  //

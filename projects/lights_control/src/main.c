@@ -34,9 +34,9 @@ int main(void) {
     .bitrate = CAN_HW_BITRATE_500KBPS,
     .tx = { .port = GPIO_PORT_A, .pin = 12 },
     .rx = { .port = GPIO_PORT_A, .pin = 11 },
-    .rx_event = SOLAR_SENSE_EVENT_CAN_RX,
-    .tx_event = SOLAR_SENSE_EVENT_CAN_TX,
-    .fault_event = SOLAR_SENSE_EVENT_CAN_FAULT,
+    .rx_event = LIGHTS_EVENT_CAN_RX,
+    .tx_event = LIGHTS_EVENT_CAN_TX,
+    .fault_event = LIGHTS_EVENT_CAN_FAULT,
     .loopback = false,
   };
 

@@ -1,5 +1,7 @@
 #pragma once
 
+// Config provider for solar_master. Needs gpio to be initialized.
+
 #include "i2c.h"
 
 typedef enum {
@@ -13,6 +15,8 @@ typedef struct SolarMasterConfig {
   SolarMasterConfigBoard board;
 } SolarMasterConfig;
 
+// Reads GPIO to get the board type and adds it to the global config struct.
 StatusCode solar_master_config_init(void);
 
+// Returns a lazy static pointer to the global SolarMasterConfig struct.
 SolarMasterConfig *solar_master_config_load(void);
