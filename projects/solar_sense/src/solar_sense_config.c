@@ -17,14 +17,11 @@ StatusCode solar_sense_config_init(void) {
     LOG_DEBUG("Error getting board type.\n");
     return status_code(STATUS_CODE_INTERNAL_ERROR);
   }
-  s_config.board = (state == GPIO_STATE_HIGH) ? SOLAR_SENSE_CONFIG_BOARD_FRONT :
-                                                 SOLAR_SENSE_CONFIG_BOARD_REAR;
+  s_config.board =
+      (state == GPIO_STATE_HIGH) ? SOLAR_SENSE_CONFIG_BOARD_FRONT : SOLAR_SENSE_CONFIG_BOARD_REAR;
   return STATUS_CODE_OK;
 }
-
 
 SolarSenseConfig *solar_sense_config_load() {
   return &s_config;
 }
-
-

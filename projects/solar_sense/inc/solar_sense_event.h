@@ -7,4 +7,3 @@ typedef enum {
   SOLAR_SENSE_EVENT_RELAY_STATE,
   NUM_SOLAR_SENSE_EVENTS
 } SolarSenseEvent;
-

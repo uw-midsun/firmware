@@ -2,20 +2,19 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "can.h"
+#include "can_msg_defs.h"
 #include "gpio.h"
 #include "i2c.h"
 #include "interrupt.h"
 #include "log.h"
 #include "soft_timer.h"
-#include "can.h"
 #include "wait.h"
-#include "can_msg_defs.h"
 
-#include "solar_sense_event.h"
-#include "solar_sense_relay.h"
 #include "solar_sense_can.h"
 #include "solar_sense_config.h"
-
+#include "solar_sense_event.h"
+#include "solar_sense_relay.h"
 
 #define SOLAR_SENSE_I2C_BUS_SDA \
   { GPIO_PORT_B, 11 }

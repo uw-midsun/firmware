@@ -1,8 +1,8 @@
 #include "mcp3427.h"
-#include "mcp3427defs.h"
-#include "soft_timer.h"
 #include "fsm.h"
 #include "log.h"
+#include "mcp3427defs.h"
+#include "soft_timer.h"
 
 #define MCP3427_FSM_NAME "MCP3427 FSM"
 #define MCP3427_MAX_CONV_TIME_MS 200
@@ -33,18 +33,18 @@ FSM_STATE_TRANSITION(channel_2_readback) {
 }
 
 static void prv_raise_ready(SoftTimerID timer_id, void *context) {
-  Mcp3427Storage *storage = (Mcp3427Storage *) context;
+  Mcp3427Storage *storage = (Mcp3427Storage *)context;
   event_raise(storage->data_ready_event, 0);
 }
 
 static uint16_t s_data_mask_lookup[] = {
-  [MCP3427_SAMPLE_RATE_12_BIT] = MCP3427_DATA_MASK_12_BIT, //
-  [MCP3427_SAMPLE_RATE_14_BIT] = MCP3427_DATA_MASK_14_BIT, //
-  [MCP3427_SAMPLE_RATE_16_BIT] = MCP3427_DATA_MASK_16_BIT, //
+  [MCP3427_SAMPLE_RATE_12_BIT] = MCP3427_DATA_MASK_12_BIT,  //
+  [MCP3427_SAMPLE_RATE_14_BIT] = MCP3427_DATA_MASK_14_BIT,  //
+  [MCP3427_SAMPLE_RATE_16_BIT] = MCP3427_DATA_MASK_16_BIT,  //
 };
 
 static void prv_channel_ready(struct FSM *fsm, const Event *e, void *context) {
-  Mcp3427Storage *storage = (Mcp3427Storage *) context;
+  Mcp3427Storage *storage = (Mcp3427Storage *)context;
   uint8_t read_data[MCP3427_NUM_DATA_BYTES] = { 0 };
   StatusCode status = i2c_read(storage->port, storage->addr, read_data, MCP3427_NUM_DATA_BYTES);
   // The first byte is the config/status byte. It contains the ready bit.
@@ -62,8 +62,8 @@ static void prv_channel_ready(struct FSM *fsm, const Event *e, void *context) {
   uint16_t sensor_data = read_data[2] | (read_data[1] << 8);
   sensor_data |= s_data_mask_lookup[storage->sample_rate];
 
-  uint8_t current_channel = (storage->config & (1 << MCP3427_CH_SEL_OFFSET)) \
-          >> MCP3427_CH_SEL_OFFSET;
+  uint8_t current_channel =
+      (storage->config & (1 << MCP3427_CH_SEL_OFFSET)) >> MCP3427_CH_SEL_OFFSET;
 
   storage->sensor_data[current_channel] = sensor_data;
 
@@ -78,7 +78,7 @@ static void prv_channel_ready(struct FSM *fsm, const Event *e, void *context) {
 
 // Trigger data read. Schedule a data ready event to be raised.
 static void prv_channel_trigger(struct FSM *fsm, const Event *e, void *context) {
-  Mcp3427Storage *storage = (Mcp3427Storage *) context;
+  Mcp3427Storage *storage = (Mcp3427Storage *)context;
   // We want to trigger a read. So we set the ready bit.
   uint8_t config = storage->config;
   config |= MCP3427_RDY_MASK;
@@ -91,7 +91,6 @@ static void prv_channel_trigger(struct FSM *fsm, const Event *e, void *context) 
   soft_timer_start_millis(MCP3427_MAX_CONV_TIME_MS, prv_raise_ready, storage, NULL);
 }
 
-
 // Lookup table for selected address. (TODO: manual tbl)
 static uint8_t s_addr_lookup[NUM_MCP3427_PIN_STATES][NUM_MCP3427_PIN_STATES] = {
   { 0x0, 0x1, 0x2 },
@@ -99,7 +98,7 @@ static uint8_t s_addr_lookup[NUM_MCP3427_PIN_STATES][NUM_MCP3427_PIN_STATES] = {
   { 0x4, 0x5, 0x6 },
 };
 
-StatusCode mcp3427_init(Mcp3427Storage * storage, Mcp3427Setting *setting) {
+StatusCode mcp3427_init(Mcp3427Storage *storage, Mcp3427Setting *setting) {
   if (storage == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -121,8 +120,8 @@ StatusCode mcp3427_init(Mcp3427Storage * storage, Mcp3427Setting *setting) {
   return i2c_write(storage->port, storage->addr, &config, MCP3427_NUM_CONFIG_BYTES);
 }
 
-StatusCode mcp3427_register_callback(Mcp3427Storage *storage,
-                Mcp3427Callback callback, void *context) {
+StatusCode mcp3427_register_callback(Mcp3427Storage *storage, Mcp3427Callback callback,
+                                     void *context) {
   if (storage == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -142,4 +141,3 @@ StatusCode mcp3427_register_fault_callback(Mcp3427Storage *storage, Mcp3427Fault
   storage->fault_context = context;
   return STATUS_CODE_OK;
 }
-

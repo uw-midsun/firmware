@@ -1,8 +1,8 @@
 #pragma once
 
-#include "i2c.h"
 #include "event_queue.h"
 #include "fsm.h"
+#include "i2c.h"
 
 typedef enum {
   MCP3427_PIN_STATE_LOW = 0,
@@ -19,9 +19,9 @@ typedef enum {
 } Mcp3427SampleRate;
 
 typedef enum {
-  MCP3427_CHANNEL_1 = 0, //
-  MCP3427_CHANNEL_2, //
-  NUM_MCP3427_CHANNELS //
+  MCP3427_CHANNEL_1 = 0,  //
+  MCP3427_CHANNEL_2,      //
+  NUM_MCP3427_CHANNELS    //
 } Mcp3427Channel;
 
 typedef enum {
@@ -69,10 +69,9 @@ typedef struct Mcp3427Storage {
 StatusCode mcp3427_init(Mcp3427Storage *storage, Mcp3427Setting *setting);
 
 // Register a callback to be run whenever there is new data.
-StatusCode mcp3427_register_callback(Mcp3427Storage *storage,
-                Mcp3427Callback callback, void *context);
+StatusCode mcp3427_register_callback(Mcp3427Storage *storage, Mcp3427Callback callback,
+                                     void *context);
 
 // Register a callback to be run whenever there is a fault.
-StatusCode mcp3427_register_fault_callback(Mcp3427Storage *storage,
-                Mcp3427FaultCallback callback, void *context);
-
+StatusCode mcp3427_register_fault_callback(Mcp3427Storage *storage, Mcp3427FaultCallback callback,
+                                           void *context);

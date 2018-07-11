@@ -3,8 +3,8 @@
 // Module for controlling the relays. Processes SOLAR_SENSE_EVENT_RELAY_STATE events and takes
 // action. Requires GPIO to be initialized.
 
-#include "status.h"
 #include "event_queue.h"
+#include "status.h"
 
 // Initializes the relay GPIO pin.
 StatusCode solar_sense_relay_init(void);

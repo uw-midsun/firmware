@@ -13,10 +13,6 @@ typedef struct SolarSenseConfig {
   SolarSenseConfigBoard board;
 } SolarSenseConfig;
 
-
 StatusCode solar_sense_config_init(void);
 
 SolarSenseConfig *solar_sense_config_load(void);
-
-
-

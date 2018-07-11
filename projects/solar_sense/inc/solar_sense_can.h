@@ -1,6 +1,6 @@
 #pragma once
-#include "solar_sense_config.h"
 #include "can.h"
+#include "solar_sense_config.h"
 
 typedef struct SolarSenseCanStorage {
   SolarSenseConfigBoard board;
@@ -8,5 +8,4 @@ typedef struct SolarSenseCanStorage {
 } SolarSenseCanStorage;
 
 StatusCode solar_sense_can_init(SolarSenseCanStorage *storage, const CANSettings *can_settings,
-                SolarSenseConfigBoard board);
-
+                                SolarSenseConfigBoard board);

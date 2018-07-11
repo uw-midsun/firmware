@@ -1,24 +1,24 @@
 #include <stdint.h>
 
+#include "can.h"
+#include "can_ack.h"
+#include "can_transmit.h"
 #include "event_queue.h"
+#include "exported_enums.h"
 #include "gpio.h"
+#include "interrupt.h"
 #include "misc.h"
+#include "ms_test_helpers.h"
 #include "test_helpers.h"
 #include "unity.h"
-#include "exported_enums.h"
-#include "can.h"
-#include "ms_test_helpers.h"
-#include "can_ack.h"
-#include "interrupt.h"
-#include "can_transmit.h"
 
-#include "solar_sense_event.h"
 #include "solar_sense_can.h"
+#include "solar_sense_event.h"
 
 static SolarSenseCanStorage s_solar_sense_can_storage = { 0 };
 
 static StatusCode prv_ack_request(CANMessageID msg_id, uint16_t device, CANAckStatus status,
-                                      uint16_t remaining, void *context) {
+                                  uint16_t remaining, void *context) {
   (void)context;
   TEST_ASSERT_EQUAL(SYSTEM_CAN_DEVICE_SOLAR_MASTER_FRONT, device);
   TEST_ASSERT_EQUAL(CAN_ACK_STATUS_OK, status);
@@ -46,7 +46,7 @@ void setup_test(void) {
   };
 
   TEST_ASSERT_OK(solar_sense_can_init(&s_solar_sense_can_storage, &can_settings,
-                          SOLAR_SENSE_CONFIG_BOARD_FRONT));
+                                      SOLAR_SENSE_CONFIG_BOARD_FRONT));
 }
 
 void teardown_test(void) {}
