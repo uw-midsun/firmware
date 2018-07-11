@@ -112,7 +112,9 @@ static void prv_drive_output(FSM *fsm, const Event *e, void *context) {
 static void prv_fault_output(FSM *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
 
-  bps_indicator_set_fault();
+  if (e->id == INPUT_EVENT_BPS_FAULT && e->data) {
+    bps_indicator_set_fault();
+  }
 
   // Disable periodic drive output updates if not running
   drive_output_set_enabled(drive_output_global(), false);
