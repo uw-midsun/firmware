@@ -16,9 +16,6 @@ FSM_STATE_TRANSITION(state_hazard_off) {
 
 FSM_STATE_TRANSITION(state_hazard_on) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_HAZARDS_PRESSED, state_hazard_off);
-
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_OFF, state_hazard_off);
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_FAULT, state_hazard_off);
 }
 
 // Hazard light FSM output function

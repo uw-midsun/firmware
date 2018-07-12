@@ -75,6 +75,7 @@ static bool prv_guard_off(const Event *e) {
     case INPUT_EVENT_POWER_STATE_DRIVE:
     case INPUT_EVENT_HEADLIGHT_STATE_OFF:
     case INPUT_EVENT_HAZARDS_STATE_OFF:
+    case INPUT_EVENT_HAZARDS_STATE_ON:
       return true;
     default:
       return false;
