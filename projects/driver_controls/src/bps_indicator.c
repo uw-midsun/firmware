@@ -15,8 +15,8 @@ static StatusCode prv_handle_heartbeat(const CANMessage *msg, void *context,
 
   EEBpsHeartbeatState state = data;
   if (state != EE_BPS_HEARTBEAT_STATE_OK) {
-    uint8_t strobe_mask = ~(EE_BPS_HEARTBEAT_STATE_FAULT_KILLSWITCH | EE_BPS_HEARTBEAT_STATE_FAULT_ACK_TIMEOUT)
-    bool should_strobe = !!(state & strobe_mask)
+    uint8_t strobe_mask = EE_BPS_HEARTBEAT_STATE_FAULT_LTC_AFE_CELL | EE_BPS_HEARTBEAT_STATE_FAULT_LTC_AFE_TEMP | EE_BPS_HEARTBEAT_STATE_FAULT_LTC_AFE_FSM | EE_BPS_HEARTBEAT_STATE_FAULT_LTC_ADC;
+    bool should_strobe = !!(state & strobe_mask);
     event_raise_priority(EVENT_PRIORITY_HIGHEST, INPUT_EVENT_BPS_FAULT, should_strobe);
   }
 
