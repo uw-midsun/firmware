@@ -97,6 +97,8 @@ MESSAGE_LOOKUP = {
     33: ('Battery Voltage/Current', '<ii', data_battery_voltage_current),
     35: ('Motor Bus Measurement', '<hhhh', data_dump),
     36: ('Motor Velocity', '<hh', data_speed),
+    37: ('Motor Debug', '<HHHH', data_dump),
+    38: ('Motor Temps', '<HHHH', data_dump),
     43: ('Aux & DC/DC V/C', '<HHHH', data_dump),
 }
 

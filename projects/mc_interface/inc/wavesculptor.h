@@ -43,6 +43,8 @@ typedef enum {
   WAVESCULPTOR_MEASUREMENT_ID_BUS = 2,
   WAVESCULPTOR_MEASUREMENT_ID_VELOCITY = 3,
   WAVESCULPTOR_MEASUREMENT_ID_STATUS = 4,
+  WAVESCULPTOR_MEASUREMENT_ID_SINK_MOTOR_TEMP = 11,
+  WAVESCULPTOR_MEASUREMENT_ID_AIR_IN_CPU_TEMP = 12,
 } WaveSculptorMeasurementId;
 
 // Driver Controls Base Addr + 2
@@ -64,6 +66,16 @@ typedef struct WavesculptorStatusInfo {
   uint16_t reserved;
 } WavesculptorStatusInfo;
 
+typedef struct WavesculptorSinkMotorTempMeasurement {
+  float motor_temp;
+  float heatsink_temp;
+} WavesculptorSinkMotorTempMeasurement;
+
+typedef struct WavesculptorSinkAirInCpuTempMeasurement {
+  float cpu_temp;
+  float air_in_temp;
+} WavesculptorSinkAirInCpuTempMeasurement;
+
 typedef union WaveSculptorCanData {
   uint64_t raw;
   WaveSculptorDriveCmd drive_cmd;
@@ -72,4 +84,6 @@ typedef union WaveSculptorCanData {
   WaveSculptorBusMeasurement bus_measurement;
   WaveSculptorVelocityMeasurement velocity_measurement;
   WavesculptorStatusInfo status_info;
+  WavesculptorSinkMotorTempMeasurement sink_motor_temp;
+  WavesculptorSinkAirInCpuTempMeasurement air_in_cpu_temp;
 } WaveSculptorCanData;

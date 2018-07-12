@@ -22,12 +22,16 @@
 
 // 2.5V * 36 = 151.2V
 #define STANDALONE_CHARGER_MAX_VOLTAGE 1512
+// 22.0As
+#define STANDALONE_CHARGER_MAX_CURRENT 220
 
 static CANStorage s_can;
 static GenericCanUart s_charger_can;
 static UARTStorage s_uart;
 
 static bool s_connected;
+static bool s_bps_fault;
+static bool s_charging;
 
 static StatusCode prv_handle_heartbeat(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   // Respond to BPS heartbeat
@@ -41,6 +45,7 @@ static StatusCode prv_handle_heartbeat(const CANMessage *msg, void *context, CAN
 
   uint8_t bps_state = 0;
   CAN_UNPACK_BPS_HEARTBEAT(msg, &bps_state);
+  s_bps_fault = !!(bps_state & (EE_BPS_HEARTBEAT_STATE_FAULT_LTC_AFE_CELL | EE_BPS_HEARTBEAT_STATE_FAULT_LTC_AFE_TEMP | EE_BPS_HEARTBEAT_STATE_FAULT_LTC_AFE_FSM | EE_BPS_HEARTBEAT_STATE_FAULT_LTC_ADC));
   if (bps_state != EE_BPS_HEARTBEAT_STATE_OK) {
     LOG_DEBUG("BPS Fault 0x%x\n", bps_state);
   }
@@ -67,7 +72,7 @@ static void prv_charger_info(uint16_t voltage, uint16_t current, ChargerCanStatu
 }
 
 static void prv_start_charge(SoftTimerID timer_id, void *context) {
-  charger_start(1512, 100);
+  charger_start(STANDALONE_CHARGER_MAX_VOLTAGE, STANDALONE_CHARGER_MAX_CURRENT);
 }
 
 int main(void) {

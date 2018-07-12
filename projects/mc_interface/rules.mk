@@ -11,3 +11,5 @@ $(T)_DEPS := ms-common ms-helper
 $(T)_test_drive_can_MOCKS := motor_controller_set_throttle motor_controller_set_cruise \
                              motor_controller_set_update_cbs
 
+
+$(T)_EXCLUDE_TESTS := motor_controller drive_can

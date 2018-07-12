@@ -39,13 +39,19 @@ static void prv_handle_bus_measurement(MotorControllerBusMeasurement measurement
 }
 
 static void prv_handle_status_flags(MotorControllerStatusFlags statuses[],
-                                       size_t num_statuses, void *context) {
+                                    size_t num_statuses, void *context) {
   CANMessage msg = { 0 };
-  can_pack_impl_u16(&msg, 0, SYSTEM_CAN_MESSAGE_MOTOR_DEBUG, 8, statuses[0].limit, statuses[0].error, statuses[1].limit, statuses[1].error);
+  can_pack_impl_u16(&msg, 0, SYSTEM_CAN_MESSAGE_MC_ERROR_LIMITS, 8, statuses[0].limit, statuses[0].error, statuses[1].limit, statuses[1].error);
+  can_transmit(&msg, NULL);
+}
+
+static void prv_handle_temp(MotorControllerTempMeasurement measurements[], size_t num_measurements, void *context) {
+  CANMessage msg = { 0 };
+  can_pack_impl_u16(&msg, 0, SYSTEM_CAN_MESSAGE_MOTOR_TEMPS, 8, (uint16_t)measurements[0].heatsink_temp, (uint16_t)measurements[0].motor_temp, (uint16_t)measurements[1].heatsink_temp, (uint16_t)measurements[1].motor_temp);
   can_transmit(&msg, NULL);
 }
 
 StatusCode drive_can_init(MotorControllerStorage *controller) {
-  motor_controller_set_update_cbs(controller, prv_handle_speed, prv_handle_bus_measurement, prv_handle_status_flags, NULL);
+  motor_controller_set_update_cbs(controller, prv_handle_speed, prv_handle_bus_measurement, prv_handle_status_flags, prv_handle_temp, NULL);
   return can_register_rx_handler(SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT, prv_handle_drive, controller);
 }

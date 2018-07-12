@@ -35,6 +35,12 @@ typedef struct MotorControllerStatusFlags {
 } MotorControllerStatusFlags;
 typedef void (*MotorControllerStatusCb)(MotorControllerStatusFlags statuses[], size_t num_statuses, void *context);
 
+typedef struct MotorControllerTempMeasurement {
+  int16_t motor_temp;
+  int16_t heatsink_temp;
+} MotorControllerTempMeasurement;
+typedef void (*MotorControllerTempCb)(MotorControllerTempMeasurement measurements[], size_t num_measurements, void *context);
+
 typedef enum {
   MOTOR_CONTROLLER_LEFT,
   MOTOR_CONTROLLER_RIGHT,
@@ -64,6 +70,7 @@ typedef struct MotorControllerSettings {
   MotorControllerSpeedCb speed_cb;
   MotorControllerBusMeasurementCb bus_measurement_cb;
   MotorControllerStatusCb status_cb;
+  MotorControllerTempCb temp_cb;
   void *context;
 } MotorControllerSettings;
 
@@ -81,9 +88,11 @@ typedef struct MotorControllerStorage {
   int16_t speed_cms[NUM_MOTOR_CONTROLLERS];
   MotorControllerBusMeasurement bus_measurement[NUM_MOTOR_CONTROLLERS];
   MotorControllerStatusFlags status_flags[NUM_MOTOR_CONTROLLERS];
+  MotorControllerTempMeasurement temp_measurement[NUM_MOTOR_CONTROLLERS];
   uint8_t speed_rx_bitset;
   uint8_t bus_rx_bitset;
   uint8_t status_rx_bitset;
+  uint8_t temp_rx_bitset;
 
   size_t timeout_counter;
 } MotorControllerStorage;
@@ -97,6 +106,7 @@ StatusCode motor_controller_set_update_cbs(MotorControllerStorage *controller,
                                            MotorControllerSpeedCb speed_cb,
                                            MotorControllerBusMeasurementCb bus_measurement_cb,
                                            MotorControllerStatusCb status_cb,
+                                           MotorControllerTempCb temp_cb,
                                            void *context);
 
 // Switch the motor controllers to throttle control

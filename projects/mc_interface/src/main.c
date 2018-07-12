@@ -55,7 +55,7 @@ static void prv_setup_motor_can(void) {
     .cs = { .port = GPIO_PORT_B, 12 },
     .int_pin = { .port = GPIO_PORT_A, 8 },
 
-    .can_bitrate = MCP2515_BITRATE_500KBPS,
+    .can_bitrate = MCP2515_BITRATE_250KBPS,
     .loopback = false,
   };
 
@@ -63,7 +63,9 @@ static void prv_setup_motor_can(void) {
 }
 
 static void prv_periodic_debug(SoftTimerID timer_id, void *context) {
-  CAN_TRANSMIT_MOTOR_DEBUG(0);
+  CANMessage msg = { 0 };
+  can_pack_impl_u16(&msg, 0, SYSTEM_CAN_MESSAGE_MOTOR_DEBUG, 8, s_can_mcp2515.mcp2515->errors.eflg, s_can_mcp2515.mcp2515->errors.tec, s_can_mcp2515.mcp2515->errors.rec, 0);
+  can_transmit(&msg, NULL);
 
   soft_timer_start_seconds(1, prv_periodic_debug, NULL, NULL);
 }
