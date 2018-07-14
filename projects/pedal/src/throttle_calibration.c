@@ -3,13 +3,13 @@
 #include "log.h"
 #include "wait.h"
 
-static void prv_adc_callback(Ads1015Channel ads1015_channel, void *context) {
+static void prv_adc_callback(ADCChannel adc_channel, void *context) {
   ThrottleCalibrationStorage *storage = context;
 
   // Associate current callback's channel with the calibration channel
   ThrottleCalibrationChannel calib_channel = NUM_THROTTLE_CALIBRATION_CHANNELS;
   for (size_t i = 0; i < NUM_THROTTLE_CALIBRATION_CHANNELS; i++) {
-    if (storage->settings.adc_channel[i] == ads1015_channel) {
+    if (storage->settings.adc_channel[i] == adc_channel) {
       calib_channel = i;
       break;
     }
@@ -17,10 +17,10 @@ static void prv_adc_callback(Ads1015Channel ads1015_channel, void *context) {
 
   ThrottleCalibrationPointData *data = &storage->data[calib_channel][storage->sample_point];
   if (data->sample_counter >= THROTTLE_CALIBRATION_NUM_SAMPLES) {
-    ads1015_configure_channel(storage->settings.ads1015, ads1015_channel, false, NULL, NULL);
+    adc_set_channel(adc_channel, false);
   } else {
-    int16_t reading = 0;
-    ads1015_read_raw(storage->settings.ads1015, ads1015_channel, &reading);
+    uint16_t reading = 0;
+    adc_read_raw(adc_channel, &reading);
 
     data->sample_counter++;
     data->min_reading = MIN(data->min_reading, reading);
@@ -49,8 +49,7 @@ StatusCode throttle_calibration_sample(ThrottleCalibrationStorage *storage,
                                        ThrottleCalibrationPoint point) {
   // Disable channels
   for (size_t i = 0; i < NUM_THROTTLE_CALIBRATION_CHANNELS; i++) {
-    ads1015_configure_channel(storage->settings.ads1015, storage->settings.adc_channel[i], false,
-                              NULL, NULL);
+    adc_set_channel(storage->settings.adc_channel[i], false);
   }
 
   for (size_t i = 0; i < NUM_THROTTLE_CALIBRATION_CHANNELS; i++) {
@@ -64,8 +63,8 @@ StatusCode throttle_calibration_sample(ThrottleCalibrationStorage *storage,
 
   // Enable channels with new point data context
   for (size_t i = 0; i < NUM_THROTTLE_CALIBRATION_CHANNELS; i++) {
-    ads1015_configure_channel(storage->settings.ads1015, storage->settings.adc_channel[i], true,
-                              prv_adc_callback, storage);
+    adc_register_callback(storage->settings.adc_channel[i], prv_adc_callback, storage);
+    adc_set_channel(storage->settings.adc_channel[i], true);
   }
 
   bool samples_completed = false;

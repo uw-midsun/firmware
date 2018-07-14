@@ -12,7 +12,7 @@ void teardown_test(void) {}
 
 void test_throttle_calibration_math(void) {
   ThrottleCalibrationSettings calib_settings = {
-    .adc_channel = { ADS1015_CHANNEL_0, ADS1015_CHANNEL_1 },
+    .adc_channel = { ADC_CHANNEL_0, ADC_CHANNEL_1 },
     .zone_percentage = { 40, 10, 50 },
     .sync_safety_factor = 2,
     .bounds_tolerance_percentage = 5,

@@ -1,16 +1,15 @@
 #pragma once
 // Module for the throttle.
-// Requires ADS1015 and soft timers to be initialized.
+// Requires ADC and soft timers to be initialized.
 //
-// The module periodically reads pedal inputs from ADS1015, translates and stores them as positions.
+// The module periodically reads pedal inputs from the ADC, translates and stores them as positions.
 // At the same time, it raises events, INPUT_EVENT_PEDAL_BRAKE, _COAST, and _ACCEL which would
 // match the current position, and for the event's data field, a numerator to describe the exact
 // position of the pedal within current zone. (The numerator for coast zone is irrelevant).
 // The module also detects faulty events such as disconnections or ADS1015 malfunctioning which
 // could result in reading invalid numbers. INPUT_EVENT_PEDAL_FAULT would be raised in such cases.
 //
-// To use the module, init the ADS1015 for the pedal and pass its Ads1015Storage to throttle_init.
-// Also pass a ThrottleCalibrationData that has been calibrated.
+// To use the module, init the ADC and pass a calibrated ThrottleCalibrationData.
 // This structure holds zone thresholds for determining the state of the pedal
 // based on the reading from main channel, and two lines that approximate the voltage-position
 // graph for each channel. The main line is the main source for obtaining the position, and the
@@ -19,15 +18,14 @@
 // Look at "Math behind Throttle Module" on Confluence to see how the logic exactly works.
 //
 // At any time calling throttle_get_position will give the current position of the pedal.
-// Note that storage, pedal_ads1015_storage, and calibration_data should persist.
 
 #include <stdint.h>
-#include "ads1015.h"
 #include "soft_timer.h"
 #include "status.h"
+#include "adc.h"
 
 // The time period between every update of the pedal readings.
-#define THROTTLE_UPDATE_PERIOD_MS 10
+#define THROTTLE_UPDATE_PERIOD_MS 50
 
 // The range used for pedal's position in within a zone or the whole range.
 #define THROTTLE_DENOMINATOR (1 << 12)
@@ -74,21 +72,18 @@ typedef struct ThrottleCalibrationData {
   // Tolerance can be thought of as 1/2 of width of a band around the secondary line,
   // which describes a range of possible "secondary readings" for every single "main reading".
   int16_t tolerance;
-  Ads1015Channel channel_main;
-  Ads1015Channel channel_secondary;
+  ADCChannel channel_main;
+  ADCChannel channel_secondary;
 } ThrottleCalibrationData;
 
 typedef struct ThrottleStorage {
-  Ads1015Storage *pedal_ads1015_storage;
-  ThrottleCalibrationData *calibration_data;
+  ThrottleCalibrationData calibration_data;
   ThrottlePosition position;
   bool reading_ok_flag;
 } ThrottleStorage;
 
-// Initializes the throttle and sets calibration data.
-// Ads1015Storage *pedal_ads1015_storage should be initialized in ads1015_init beforehand.
-StatusCode throttle_init(ThrottleStorage *storage, ThrottleCalibrationData *calibration_data,
-                         Ads1015Storage *pedal_ads1015_storage);
+// Initializes the throttle and sets calibration data. |storage| should persist.
+StatusCode throttle_init(ThrottleStorage *storage, ThrottleCalibrationData *calibration_data);
 
 // Gets the current position of the pedal (writes to ThrottlePosition *position).
 StatusCode throttle_get_position(ThrottleStorage *storage, ThrottlePosition *position);

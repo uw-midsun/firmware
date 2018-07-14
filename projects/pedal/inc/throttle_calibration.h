@@ -1,6 +1,6 @@
 #pragma once
 // Calibrates the throttle through user-controlled procedure.
-// Requires ADS1015 and soft timers to be initialized.
+// Requires ADC and soft timers to be initialized.
 //
 // This module is expected to be driven through a calibration FSM.
 //
@@ -18,6 +18,7 @@
 // * Bounds tolerance: Additional percentage extension to the valid zones of our endpoints to
 //                     account for observed over/undervoltage conditions in rapid position changes.
 #include "throttle.h"
+#include "adc.h"
 
 // Arbitrary amount - seems to work pretty well
 #define THROTTLE_CALIBRATION_NUM_SAMPLES 1000
@@ -48,9 +49,8 @@ typedef struct ThrottleCalibrationPointData {
 } ThrottleCalibrationPointData;
 
 typedef struct ThrottleCalibrationSettings {
-  Ads1015Storage *ads1015;
   // Channels to consider for throttle calibration
-  Ads1015Channel adc_channel[NUM_THROTTLE_CALIBRATION_CHANNELS];
+  ADCChannel adc_channel[NUM_THROTTLE_CALIBRATION_CHANNELS];
   // Expects 0-100 for each zone, must sum to 100
   uint8_t zone_percentage[NUM_THROTTLE_ZONES];
   // Multiplier for the sync tolerance
@@ -69,8 +69,7 @@ typedef struct ThrottleCalibrationStorage {
   ThrottleCalibrationPoint sample_point;
 } ThrottleCalibrationStorage;
 
-// Expects |settings.ads1015| to be initialized. |settings| does not need to persist.
-// |settings.zone_percentage| should add up to 100.
+// |settings| does not need to persist. |settings.zone_percentage| should add up to 100.
 StatusCode throttle_calibration_init(ThrottleCalibrationStorage *storage,
                                      ThrottleCalibrationSettings *settings);
 
