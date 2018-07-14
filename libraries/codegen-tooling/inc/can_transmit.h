@@ -79,6 +79,14 @@
     status;                                            \
   })
 
+#define CAN_TRANSMIT_MOTOR_CONTROLLER_RESET()     \
+  ({                                              \
+    CANMessage msg = { 0 };                       \
+    CAN_PACK_MOTOR_CONTROLLER_RESET(&msg);        \
+    StatusCode status = can_transmit(&msg, NULL); \
+    status;                                       \
+  })
+
 #define CAN_TRANSMIT_OVUV_DCDC_AUX(dcdc_ov_flag_u8, dcdc_uv_flag_u8, aux_bat_ov_flag_u8,     \
                                    aux_bat_uv_flag_u8)                                       \
   ({                                                                                         \
