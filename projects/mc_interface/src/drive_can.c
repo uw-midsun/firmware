@@ -31,6 +31,12 @@ static StatusCode prv_handle_drive(const CANMessage *msg, void *context, CANAckS
   return STATUS_CODE_OK;
 }
 
+static StatusCode prv_handle_reset(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+  MotorControllerStorage *controller = context;
+
+  return motor_controller_trigger_reset(controller);
+}
+
 static void prv_handle_speed(int16_t speed_cms[], size_t num_speeds, void *context) {
   CAN_TRANSMIT_MOTOR_VELOCITY((uint16_t)speed_cms[0], (uint16_t)speed_cms[1]);
 }
@@ -44,5 +50,11 @@ static void prv_handle_bus_measurement(MotorControllerBusMeasurement measurement
 
 StatusCode drive_can_init(MotorControllerStorage *controller) {
   motor_controller_set_update_cbs(controller, prv_handle_speed, prv_handle_bus_measurement, NULL);
-  return can_register_rx_handler(SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT, prv_handle_drive, controller);
+  status_ok_or_return(
+      can_register_rx_handler(SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT, prv_handle_drive, controller));
+  // pull in codegen changes
+  status_ok_or_return(can_register_rx_handler(SYSTEM_CAN_MESSAGE_MOTOR_CONTROLLER_RESET,
+                                              prv_handle_reset, controller));
+
+  return STATUS_CODE_OK;
 }

@@ -97,3 +97,6 @@ StatusCode motor_controller_set_throttle(MotorControllerStorage *controller, int
 
 // Switch the motor controllers to cruise control
 StatusCode motor_controller_set_cruise(MotorControllerStorage *controller, int16_t speed_cms);
+
+// Trigger a reset of all the motor controllers
+StatusCode motor_controller_trigger_reset(MotorControllerStorage *storage);
