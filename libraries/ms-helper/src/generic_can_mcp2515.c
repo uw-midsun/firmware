@@ -55,3 +55,7 @@ StatusCode generic_can_mcp2515_init(GenericCanMcp2515 *can_mcp2515,
 
   return STATUS_CODE_OK;
 }
+
+StatusCode generic_can_mcp2515_reset(GenericCanMcp2515 *can_mcp2515) {
+  return mcp2515_reset(can_mcp2515->mcp2515);
+}

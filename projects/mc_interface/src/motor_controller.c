@@ -8,6 +8,7 @@
 #include "wavesculptor.h"
 #include "log.h"
 #include "debug_led.h"
+#include "generic_can_mcp2515.h"
 
 // Torque control mode:
 // - velocity = +/-100 m/s
@@ -100,7 +101,15 @@ static void prv_periodic_tx(SoftTimerID timer_id, void *context) {
     }
     msg.data = can_data.raw;
 
-    generic_can_tx(storage->settings.motor_can, &msg);
+    StatusCode ret = generic_can_tx(storage->settings.motor_can, &msg);
+    static size_t s_fail_counter = 0;
+    if (!status_ok(ret)) {
+      s_fail_counter++;
+      if (s_fail_counter > 10) {
+        generic_can_mcp2515_reset((GenericCanMcp2515 *)storage->settings.motor_can);
+        s_fail_counter = 0;
+      }
+    }
   }
   storage->timeout_counter++;
 
