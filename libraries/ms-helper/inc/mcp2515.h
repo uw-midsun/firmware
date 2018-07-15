@@ -36,6 +36,8 @@ typedef struct Mcp2515Storage {
   Mcp2515RxCb rx_cb;
   void *context;
   GPIOAddress int_pin;
+
+  Mcp2515Settings settings;
 } Mcp2515Storage;
 
 // Initializes the MCP2515 CAN controller.
@@ -49,3 +51,5 @@ StatusCode mcp2515_tx(Mcp2515Storage *storage, uint32_t id, bool extended, uint6
                       size_t dlc);
 
 void mcp2515_poll(Mcp2515Storage *storage);
+
+StatusCode mcp2515_reset(Mcp2515Storage *storage);

@@ -140,6 +140,7 @@ StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings
   storage->rx_cb = settings->rx_cb;
   storage->context = settings->context;
   storage->int_pin = settings->int_pin;
+  storage->settings = *settings;
 
   const SPISettings spi_settings = {
     .baudrate = settings->baudrate,
@@ -168,7 +169,7 @@ StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings
   // EFLG: clear all error flags
   const uint8_t registers[] = {
     0x05, MCP2515_CNF2_BTLMODE_CNF3 | MCP2515_CNF2_SAMPLE_3X | (0x07 << 3),
-    0x00, MCP2515_CANINT_EFLAG | MCP2515_CANINT_RX1IE | MCP2515_CANINT_RX0IE,
+    0x01, MCP2515_CANINT_EFLAG | MCP2515_CANINT_RX1IE | MCP2515_CANINT_RX0IE,
     0x00, 0x00,
   };
   prv_write(storage, MCP2515_CTRL_REG_CNF3, registers, SIZEOF_ARRAY(registers));
@@ -265,4 +266,9 @@ void mcp2515_poll(Mcp2515Storage *storage) {
   if (state == GPIO_STATE_LOW) {
     prv_handle_int(&storage->int_pin, storage);
   }
+}
+
+StatusCode mcp2515_reset(Mcp2515Storage *storage) {
+  Mcp2515Settings settings = storage->settings;
+  return mcp2515_init(storage, &settings);
 }
