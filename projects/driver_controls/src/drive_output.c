@@ -13,13 +13,13 @@ static DriveOutputStorage s_storage;
 static void prv_watchdog_cb(SoftTimerID timer_id, void *context) {
   DriveOutputStorage *storage = context;
 
-  // We're missing at least one updated response
-  if (storage->watchdog != DRIVE_OUTPUT_VALID_WATCHDOG) {
-    // Error - raise a warning, clear stored data
-    LOG_DEBUG("Drive output watchdog: 0x%x\n", storage->watchdog);
-    memset(storage->data, 0, sizeof(storage->data));
-    event_raise_priority(EVENT_PRIORITY_HIGHEST, storage->fault_event, 0);
-  }
+  // // We're missing at least one updated response
+  // if (storage->watchdog != DRIVE_OUTPUT_VALID_WATCHDOG) {
+  //   // Error - raise a warning, clear stored data
+  //   LOG_DEBUG("Drive output watchdog: 0x%x\n", storage->watchdog);
+  //   memset(storage->data, 0, sizeof(storage->data));
+  //   event_raise_priority(EVENT_PRIORITY_HIGHEST, storage->fault_event, 0);
+  // }
 
   // Reset watchdog
   storage->watchdog = 0;
@@ -33,6 +33,11 @@ static void prv_broadcast_cb(SoftTimerID timer_id, void *context) {
 
   // Note that this will usually output stale data from the previous update request
   event_raise(storage->update_req_event, 0);
+
+  // Scale regen brake
+  if (storage->data[DRIVE_OUTPUT_SOURCE_THROTTLE] < 0) {
+    storage->data[DRIVE_OUTPUT_SOURCE_THROTTLE] = 0;
+  }
 
   CAN_TRANSMIT_DRIVE_OUTPUT((uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_THROTTLE],
                             (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_DIRECTION],
@@ -85,25 +90,6 @@ StatusCode drive_output_update(DriveOutputStorage *storage, DriveOutputSource so
                                int16_t data) {
   if (source >= NUM_DRIVE_OUTPUT_SOURCES) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
-  }
-
-  if (source == DRIVE_OUTPUT_SOURCE_THROTTLE) {
-    int16_t prev_data = storage->data[source];
-    bool data_negative = data < 0, prev_negative = prev_data < 0;
-
-    int16_t abs_diff = abs(data - prev_data);
-    int16_t torque_diff = (data - prev_data) * (data_negative ? -1 : 1);
-
-    if (data == 0) {
-      // Attempting to be in coast, so don't worry about it
-    } else if ((data_negative != prev_negative && abs_diff > 1000) ||
-               (data_negative == prev_negative && torque_diff > 1000)) {
-      // Sign changed rapidly or torque increased rapidly - limit change
-      data = storage->data[source] + ((data > 0) ? 100 : -100);
-
-      data = MIN(data, EE_DRIVE_OUTPUT_DENOMINATOR);
-      data = MAX(data, -EE_DRIVE_OUTPUT_DENOMINATOR);
-    }
   }
 
   storage->data[source] = data;

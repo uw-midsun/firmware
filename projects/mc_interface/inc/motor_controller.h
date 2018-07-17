@@ -8,13 +8,13 @@
 // In cruise mode, the first motor controller is picked as a master and set to velocity control.
 // Its current reading is copied over to all other motor controllers to allow them to handle turns.
 //
-// We also require setpoint updates within ~250ms or we disable the motors as a safety precaution.
+// We also require setpoint updates within ~500ms or we disable the motors as a safety precaution.
 #include "exported_enums.h"
 #include "generic_can.h"
 
-#define MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS 200
+#define MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS 50
 // Arbitrary timeout after 5 TX periods without receiving a setpoint update
-#define MOTOR_CONTROLLER_WATCHDOG_COUNTER 5
+#define MOTOR_CONTROLLER_WATCHDOG_COUNTER 10
 
 // Called with an array of reported vehicle speeds in cm/s when a new set of information
 // is received from all motor controllers.
@@ -28,6 +28,18 @@ typedef struct MotorControllerBusMeasurement {
 } MotorControllerBusMeasurement;
 typedef void (*MotorControllerBusMeasurementCb)(MotorControllerBusMeasurement measurements[],
                                                 size_t num_measurements, void *context);
+
+typedef struct MotorControllerStatusFlags {
+  uint16_t error;
+  uint16_t limit;
+} MotorControllerStatusFlags;
+typedef void (*MotorControllerStatusCb)(MotorControllerStatusFlags statuses[], size_t num_statuses, void *context);
+
+typedef struct MotorControllerTempMeasurement {
+  int16_t motor_temp;
+  int16_t heatsink_temp;
+} MotorControllerTempMeasurement;
+typedef void (*MotorControllerTempCb)(MotorControllerTempMeasurement measurements[], size_t num_measurements, void *context);
 
 typedef enum {
   MOTOR_CONTROLLER_LEFT,
@@ -57,6 +69,8 @@ typedef struct MotorControllerSettings {
 
   MotorControllerSpeedCb speed_cb;
   MotorControllerBusMeasurementCb bus_measurement_cb;
+  MotorControllerStatusCb status_cb;
+  MotorControllerTempCb temp_cb;
   void *context;
 } MotorControllerSettings;
 
@@ -73,8 +87,12 @@ typedef struct MotorControllerStorage {
 
   int16_t speed_cms[NUM_MOTOR_CONTROLLERS];
   MotorControllerBusMeasurement bus_measurement[NUM_MOTOR_CONTROLLERS];
+  MotorControllerStatusFlags status_flags[NUM_MOTOR_CONTROLLERS];
+  MotorControllerTempMeasurement temp_measurement[NUM_MOTOR_CONTROLLERS];
   uint8_t speed_rx_bitset;
   uint8_t bus_rx_bitset;
+  uint8_t status_rx_bitset;
+  uint8_t temp_rx_bitset;
 
   size_t timeout_counter;
 } MotorControllerStorage;
@@ -87,6 +105,8 @@ StatusCode motor_controller_init(MotorControllerStorage *controller,
 StatusCode motor_controller_set_update_cbs(MotorControllerStorage *controller,
                                            MotorControllerSpeedCb speed_cb,
                                            MotorControllerBusMeasurementCb bus_measurement_cb,
+                                           MotorControllerStatusCb status_cb,
+                                           MotorControllerTempCb temp_cb,
                                            void *context);
 
 // Switch the motor controllers to throttle control

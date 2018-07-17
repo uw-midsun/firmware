@@ -4,6 +4,7 @@
 #include "bps_heartbeat.h"
 #include "current_sense.h"
 #include "ltc_afe.h"
+#include "thermistor.h"
 
 typedef struct FaultMonitorSettings {
   LtcAfeStorage *ltc_afe;
@@ -36,12 +37,18 @@ typedef struct FaultMonitorResult {
 typedef struct FaultMonitorStorage {
   FaultMonitorSettings settings;
   FaultMonitorResult result;
-  size_t num_afe_faults;
+  size_t num_afe_fsm_faults;
+  uint8_t cell_faults[PLUTUS_CFG_AFE_TOTAL_CELLS];
+  uint8_t temp_faults[PLUTUS_CFG_AFE_TOTAL_CELLS];
 
   // in uA
   int32_t charge_current_limit;
   int32_t discharge_current_limit;
   int32_t min_charge_current;
+
+  // in 100uV - node voltage of thermistors
+  uint16_t discharge_temp_node_limit;
+  uint16_t charge_temp_node_limit;
 } FaultMonitorStorage;
 
 // |storage| should persist. |settings.ltc_afe| and |settings.bps_heartbeat| should be initialized.
