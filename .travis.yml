@@ -16,6 +16,7 @@ language: c
 branches:
   only:
     - master
+    - tmp_race_branch
 
 addons:
   apt:
