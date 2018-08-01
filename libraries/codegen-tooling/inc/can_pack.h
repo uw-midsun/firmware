@@ -54,6 +54,10 @@
 #define CAN_PACK_POWERTRAIN_HEARTBEAT(msg_ptr) \
   can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_CHAOS, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT)
 
+#define CAN_PACK_MOTOR_CONTROLLER_RESET(msg_ptr)                    \
+  can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, \
+                      SYSTEM_CAN_MESSAGE_MOTOR_CONTROLLER_RESET)
+
 #define CAN_PACK_OVUV_DCDC_AUX(msg_ptr, dcdc_ov_flag_u8, dcdc_uv_flag_u8, aux_bat_ov_flag_u8, \
                                aux_bat_uv_flag_u8)                                            \
   can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_CHAOS, SYSTEM_CAN_MESSAGE_OVUV_DCDC_AUX, 4,   \

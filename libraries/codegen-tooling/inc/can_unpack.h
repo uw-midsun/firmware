@@ -45,6 +45,8 @@
 
 #define CAN_UNPACK_POWERTRAIN_HEARTBEAT(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
 
+#define CAN_UNPACK_MOTOR_CONTROLLER_RESET(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
+
 #define CAN_UNPACK_OVUV_DCDC_AUX(msg_ptr, dcdc_ov_flag_u8_ptr, dcdc_uv_flag_u8_ptr,             \
                                  aux_bat_ov_flag_u8_ptr, aux_bat_uv_flag_u8_ptr)                \
   can_unpack_impl_u8((msg_ptr), 4, (dcdc_ov_flag_u8_ptr), (dcdc_uv_flag_u8_ptr),                \
