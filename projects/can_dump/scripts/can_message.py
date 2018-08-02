@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+"""A CAN message parsing utility module
+"""
 import binascii
 import struct
 
@@ -59,46 +62,54 @@ MESSAGE_LOOKUP = {
 
 
 class CanMessage:
-  def __init__(self, can_id, can_data):
-    self._can_id = can_id
-    self._can_data = can_data
+    """A representation of a CAN Message
 
-  def parse(self):
-    # System CAN ID format:
-    # [0:3] Source ID
-    # [4] Message Type (ACK/DATA)
-    # [5:10] Message ID
-    source_id = self._can_id & 0xf
-    msg_type = (self._can_id >> 4) & 0x1
-    msg_id = (self._can_id >> 5) & 0x3f
+    This is simply a CAN ID and the CAN data
 
-    # 2018-07-18 09:07:46,826,0x401,0x1f001c98c365,6
-    # 0x401: 0b00000|100000|0|0001
-    # source_id: 1 (PLUTUS)
-    # type: 0 (CAN_MSG_TYPE_DATA)
+    """
+    def __init__(self, can_id, can_data):
+        self._can_id = can_id
+        self._can_data = can_data
 
-    # 0x13: 0b00000000000|1|0011
-    #  print('source_id: ' + str(source_id))
-    #  print('msg_id: ' + str(msg_id))
+    @property
+    def source_id(self):
+        """The source ID of a CAN message is the original sender"""
+        return self._can_id & 0xf
 
-    msg_type_name = 'ACK' if msg_type == 1 else 'DATA'
+    @property
+    def msg_type(self):
+        """Either CAN_MSG_TYPE_DATA (0) or CAN_MSG_TYPE_ACK (1)"""
+        return (self._can_id >> 4) & 0x1
 
-    if msg_id in MESSAGE_LOOKUP:
-        name, fmt, data_fn = MESSAGE_LOOKUP[msg_id]
-        if fmt:
-            try:
-                unpacked_data = struct.unpack(fmt, self._can_data)
-            except struct.error:
-                print('Invalid {}'.format(msg_id))
-                return
+    @property
+    def msg_id(self):
+        """The message ID as specified in codegen"""
+        return (self._can_id >> 5) & 0x3f
+
+    def parse(self):
+        """Parse the given CAN ID and data"""
+        # System CAN ID format:
+        # [0:3] Source ID
+        # [4] Message Type (ACK/DATA)
+        # [5:10] Message ID
+        msg_type_name = 'ACK' if self.msg_type == 1 else 'DATA'
+
+        if self.msg_id in MESSAGE_LOOKUP:
+            name, fmt, data_fn = MESSAGE_LOOKUP[self.msg_id]
+            if fmt:
+                try:
+                    unpacked_data = struct.unpack(fmt, self._can_data)
+                except struct.error:
+                    print('Invalid {}'.format(self.msg_id))
+                    return
+            else:
+                unpacked_data = []
+
+            if msg_type_name == 'ACK':
+                print('{} ACK from {}'.format(name, self.source_id))
+            else:
+                print('{}: {}'.format(name, data_fn(*unpacked_data)))
         else:
-            unpacked_data = []
-
-        if msg_type_name == 'ACK':
-            print('{} ACK from {}'.format(name, source_id))
-        else:
-            print('{}: {}'.format(name, data_fn(*unpacked_data)))
-    else:
-        # Unrecognized message
-        print('{} from {} ({}): 0x{}'.format(msg_id, source_id, msg_type_name,
-                                             binascii.hexlify(self._can_data).decode('ascii')))
+            # Unrecognized message
+            print('{} from {} ({}): 0x{}'.format(self.msg_id, self.source_id, msg_type_name,
+                                                 binascii.hexlify(self._can_data).decode('ascii')))
