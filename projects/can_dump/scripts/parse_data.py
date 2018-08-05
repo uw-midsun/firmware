@@ -10,11 +10,10 @@ def parse_data(file_name):
     log_reader = csv.reader(open(file_name, 'r'), delimiter=',')
 
     for row in log_reader:
-        # data is logged in the format (timestamp, (can_id, data, len(data)))
+        # Data is logged in the format (timestamp, (can_id, data, len(data))).
         timestamp = row[0]
         can_id = int(row[1], 16)
         can_data = int(row[2], 16)
-
         data_len = int(row[3])
 
         msg = CanMessage(can_id, can_data.to_bytes(data_len, 'big'))

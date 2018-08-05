@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""A CAN message parsing utility module
-"""
+"""A CAN message parsing utility module"""
 import binascii
 import struct
 
