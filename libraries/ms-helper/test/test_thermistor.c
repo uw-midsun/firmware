@@ -222,3 +222,27 @@ void test_temperature_calculation(void) {
   thermistor_calculate_temp(1268, &temperature);
   TEST_ASSERT_UINT16_WITHIN(200, 900, temperature);
 }
+
+// Test temperature to resistance
+void test_resistance_lookup(void) {
+  uint16_t resistance = 0;
+
+  // 10 Degrees
+  thermistor_calculate_resistance(100, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(100, 17925, resistance);
+
+  // 25 Degrees
+  thermistor_calculate_resistance(250, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(100, 10000, resistance);
+
+  // 65 Degrees
+  thermistor_calculate_resistance(650, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(100, 2586, resistance);
+
+  // Over 100 degrees
+  TEST_ASSERT_NOT_OK(thermistor_calculate_resistance(1010, &resistance));
+
+  // At exactly 100 degrees
+  thermistor_calculate_resistance(1000, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(100, 973, resistance);
+}

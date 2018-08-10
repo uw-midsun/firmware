@@ -1,7 +1,14 @@
 #include "thermistor.h"
 #include <limits.h>
+#include <math.h>
 #include <stdint.h>
 #include "log.h"
+
+// Used for calculations to prevent integer overflow and loss of precision
+#define SCALING_VALUE_TEN 10
+#define SCALING_VALUE_HUNDRED 100
+#define SCALING_VALUE_THOUSAND 1000
+#define SCALING_VALUE_TEN_THOUSAND 10000
 
 // src: https://www.murata.com/en-global/products/productdata/8796836626462/NTHCG83.txt
 // Expected resistance in milliohms for a given temperature in celsius
@@ -19,6 +26,9 @@ static const uint32_t s_resistance_lookup[] = {
   1268000,  1234300,  1201600,  1170000,  1139300,  1109600,  1080700,  1052800,  1025600,
   999300,   973800,
 };
+
+// Used for converting the lookup table index with corresponding temperatures
+#define THERMISTOR_LOOKUP_RANGE (SIZEOF_ARRAY(s_resistance_lookup) - 1)
 
 StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gpio,
                            ThermistorPosition position) {
@@ -70,18 +80,39 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint16_t *temperature
 StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms,
                                      uint16_t *temperature_dc) {
   // Find the approximate target temperature from the arguments passed
-  for (uint16_t i = 0; i < SIZEOF_ARRAY(s_resistance_lookup) - 1; i++) {
-    if (thermistor_resistance_ohms * 1000 <= s_resistance_lookup[i] &&
-        thermistor_resistance_ohms * 1000 >= s_resistance_lookup[i + 1]) {
+  for (uint16_t i = 0; i < THERMISTOR_LOOKUP_RANGE; i++) {
+    if (thermistor_resistance_ohms * SCALING_VALUE_THOUSAND <= s_resistance_lookup[i] &&
+        thermistor_resistance_ohms * SCALING_VALUE_THOUSAND >= s_resistance_lookup[i + 1]) {
       // Return the temperature with the linear approximation in deciCelsius
       *temperature_dc = (uint16_t)(
-          ((uint32_t)i * 1000 + ((s_resistance_lookup[i] - thermistor_resistance_ohms * 1000) *
-                                 1000 / (s_resistance_lookup[i] - s_resistance_lookup[i + 1]))) /
-          100);
+          ((uint32_t)i * SCALING_VALUE_THOUSAND +
+           ((s_resistance_lookup[i] - thermistor_resistance_ohms * SCALING_VALUE_THOUSAND) *
+            SCALING_VALUE_THOUSAND / (s_resistance_lookup[i] - s_resistance_lookup[i + 1]))) /
+          SCALING_VALUE_HUNDRED);
       return STATUS_CODE_OK;
     }
   }
   // Sets the returned temperature to be absurdly large
   *temperature_dc = UINT16_MAX;
   return status_msg(STATUS_CODE_OUT_OF_RANGE, "Temperature out of lookup table range.");
+}
+
+StatusCode thermistor_calculate_resistance(uint16_t temperature_dc,
+                                           uint16_t *thermistor_resistor_ohms) {
+  if (temperature_dc > THERMISTOR_LOOKUP_RANGE * 10) {
+    return status_msg(STATUS_CODE_OUT_OF_RANGE,
+                      "Input temperature, exceeds lookup table ranges (0-100 deg).");
+  } else if (temperature_dc == THERMISTOR_LOOKUP_RANGE * 10) {
+    // For the higher lookup edge case
+    *thermistor_resistor_ohms =
+        s_resistance_lookup[THERMISTOR_LOOKUP_RANGE] / SCALING_VALUE_THOUSAND;
+  } else {
+    uint16_t lower_temp = temperature_dc / 10;
+    *thermistor_resistor_ohms =
+        (s_resistance_lookup[lower_temp] * 10 +
+         (s_resistance_lookup[lower_temp + 1] - s_resistance_lookup[lower_temp]) *
+             (temperature_dc % 10)) /
+        SCALING_VALUE_TEN_THOUSAND;
+  }
+  return STATUS_CODE_OK;
 }

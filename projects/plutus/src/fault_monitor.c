@@ -36,11 +36,23 @@ static void prv_extract_aux_result(uint16_t *result_arr, size_t len, void *conte
 
   memcpy(storage->result.temp_voltages, result_arr, sizeof(storage->result.temp_voltages));
 
-  // TODO(ELEC-439): Add temp faulting
-  // for (size_t i = 0; i < len; i++) {
-  //   bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
-  //   BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC);
-  // }
+  bool fault = false;
+  uint16_t threshold_voltage =
+      storage->result.charging ? storage->charge_voltage_limit : storage->discharge_voltage_limit;
+  for (size_t i = 0; i < len; i++) {
+    if (result_arr[i] > threshold_voltage) {
+      fault = true;
+      break;
+    }
+  }
+
+  if (fault) {
+    bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
+                              EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+  } else {
+    bps_heartbeat_clear_fault(storage->settings.bps_heartbeat,
+                              EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE);
+  }
 }
 
 static void prv_extract_current(int32_t value, void *context) {
@@ -65,6 +77,16 @@ static void prv_handle_adc_timeout(void *context) {
   bps_heartbeat_raise_fault(storage->settings.bps_heartbeat, EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_ADC);
 }
 
+// Calculates the node voltage in a voltage divider
+static StatusCode temperature_to_voltage(uint16_t temperature_dc, uint32_t supply_voltage,
+                                         uint16_t *node_voltage) {
+  uint16_t node_resistance_ohms = 0;
+  return status_code(thermistor_calculate_resistance(temperature_dc, &node_resistance_ohms));
+  *node_voltage = (uint16_t)(supply_voltage) * (node_resistance_ohms) /
+                  (FIXED_RESISTANCE_OHMS + node_resistance_ohms);
+  return STATUS_CODE_OK;
+}
+
 StatusCode fault_monitor_init(FaultMonitorStorage *storage, const FaultMonitorSettings *settings) {
   storage->settings = *settings;
   storage->num_afe_faults = 0;
@@ -72,6 +94,10 @@ StatusCode fault_monitor_init(FaultMonitorStorage *storage, const FaultMonitorSe
   storage->charge_current_limit = settings->overcurrent_charge * 1000;
   storage->discharge_current_limit = settings->overcurrent_discharge * -1000;
   storage->min_charge_current = -1 * settings->charge_current_deadzone;
+  temperature_to_voltage(settings->overtemp_discharge, settings->overvoltage,
+                         &(storage->discharge_voltage_limit));
+  temperature_to_voltage(settings->overtemp_charge, settings->overvoltage,
+                         &(storage->charge_voltage_limit));
 
   current_sense_register_callback(storage->settings.current_sense, prv_extract_current,
                                   prv_handle_adc_timeout, storage);
