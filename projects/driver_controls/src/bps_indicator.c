@@ -3,6 +3,7 @@
 #include "can_msg_defs.h"
 #include "can_transmit.h"
 #include "can_unpack.h"
+#include "center_console.h"
 #include "debug_led.h"
 #include "exported_enums.h"
 #include "input_event.h"

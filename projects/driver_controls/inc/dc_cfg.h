@@ -1,7 +1,7 @@
 #pragma once
 // Driver controls config file
 
-// #define DC_CFG_DEBUG_PRINT_EVENTS
+#define DC_CFG_DEBUG_PRINT_EVENTS
 // #define DC_CFG_DISABLE_CENTER_CONSOLE
 // #define DC_CFG_DISABLE_CONTROL_STALK
 // #define DC_CFG_DISABLE_PEDAL
@@ -23,6 +23,7 @@
 #define DC_CFG_CONSOLE_IO_INT_PIN \
   { GPIO_PORT_A, 9 }
 #define DC_CFG_CONSOLE_IO_ADDR GPIO_EXPANDER_ADDRESS_1
+#define DC_CFG_CONSOLE_IO_OUT_ADDR GPIO_EXPANDER_ADDRESS_2
 
 // Control Stalk
 #define DC_CFG_STALK_IO_INT_PIN \

@@ -4,37 +4,37 @@
 #include "gpio_it.h"
 #include "i2c.h"
 #include "mcp23008.h"
+#include "log.h"
 
 static void prv_poll_timeout(SoftTimerID timer_id, void *context) {
   GpioExpanderStorage *expander = context;
-
-  // Trigger an interrupt to force an update
-  gpio_it_trigger_interrupt(&expander->int_pin);
-
-  soft_timer_start_millis(GPIO_EXPANDER_POLL_PERIOD_MS, prv_poll_timeout, expander, NULL);
-}
-
-// IO interrupt occurred
-static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
-  GpioExpanderStorage *expander = context;
-  uint8_t intf = 0;
   uint8_t gpio = 0;
 
-  // Read the contents of the interrupt flag and GPIO registers - INTCAP may have missed a change
-  i2c_read_reg(expander->port, expander->addr, MCP23008_INTF, &intf, 1);
+  // Read the contents of the GPIO registers
   i2c_read_reg(expander->port, expander->addr, MCP23008_GPIO, &gpio, 1);
+  uint8_t changed = expander->prev_state ^ gpio;
 
-  // Identify all pins with a pending interrupt and execute their callbacks
-  while (intf != 0) {
-    GpioExpanderPin current_pin = (GpioExpanderPin)(__builtin_ffs(intf) - 1);
+  for (size_t i = 0; i < NUM_GPIO_EXPANDER_PINS; i++) {
+    if (changed & (1 << i)) {
+      expander->same_counter[i] = 0;
+    } else if (expander->same_counter[i] > GPIO_EXPANDER_DEBOUNCE_COUNTER) {
+      // Skip
+    } else {
+      // Only increment the counter if we're attempting to debounce or we'll overflow
+      expander->same_counter[i] = MIN(expander->same_counter[i] + 1, GPIO_EXPANDER_DEBOUNCE_COUNTER + 1);
+      // LOG_DEBUG("no change on %d -> counter = %d\n", i, expander->same_counter[i]);
 
-    if (expander->callbacks[current_pin].func != NULL) {
-      expander->callbacks[current_pin].func(current_pin, (gpio >> current_pin) & 1,
-                                            expander->callbacks[current_pin].context);
+      if (expander->same_counter[i] == GPIO_EXPANDER_DEBOUNCE_COUNTER) {
+        expander->debounced_state ^= 1 << i;
+        // LOG_DEBUG("updated debounced state %d -> %d\n", i, (expander->debounced_state >> i) & 1);
+        if (expander->callbacks[i].func != NULL) {
+          expander->callbacks[i].func(i, (expander->debounced_state >> i) & 1, expander->callbacks[i].context);
+        }
+      }
     }
-
-    intf &= ~(1 << current_pin);
   }
+
+  soft_timer_start_millis(GPIO_EXPANDER_POLL_PERIOD_MS, prv_poll_timeout, expander, NULL);
 }
 
 // Set a specific bit in a given register
@@ -58,26 +58,9 @@ StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioE
   memset(expander, 0, sizeof(*expander));
   expander->port = port;
   expander->addr = MCP23008_ADDRESS + addr;
-  expander->int_pin.port = NUM_GPIO_PORTS;
 
   // If we don't have an interrupt pin registered, this will be an output-only IO expander.
   if (interrupt_pin != NULL) {
-    expander->int_pin = *interrupt_pin;
-
-    // Configure the interrupt pin from the MCP23008 - active-low
-    GPIOSettings gpio_settings = {
-      .direction = GPIO_DIR_IN,        //
-      .alt_function = GPIO_ALTFN_NONE  //
-    };
-    InterruptSettings it_settings = {
-      .type = INTERRUPT_TYPE_INTERRUPT,      //
-      .priority = INTERRUPT_PRIORITY_NORMAL  //
-    };
-
-    gpio_init_pin(interrupt_pin, &gpio_settings);
-    gpio_it_register_interrupt(interrupt_pin, &it_settings, INTERRUPT_EDGE_FALLING,
-                               prv_interrupt_handler, expander);
-
     soft_timer_start_millis(GPIO_EXPANDER_POLL_PERIOD_MS, prv_poll_timeout, expander, NULL);
   }
 
@@ -101,9 +84,6 @@ StatusCode gpio_expander_init_pin(GpioExpanderStorage *expander, GpioExpanderPin
     return status_code(STATUS_CODE_INVALID_ARGS);
   } else if (pin >= NUM_GPIO_EXPANDER_PINS) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
-  } else if (expander->int_pin.port == NUM_GPIO_PORTS && settings->direction != GPIO_DIR_OUT) {
-    // If there's no interrupt pin, this expander is output-only
-    return status_code(STATUS_CODE_INTERNAL_ERROR);
   }
 
   // Set the direction of the data I/O

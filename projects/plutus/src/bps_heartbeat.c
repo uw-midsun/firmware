@@ -2,6 +2,7 @@
 #include "can_transmit.h"
 #include "debug_led.h"
 #include "log.h"
+#include "exported_enums.h"
 #include "plutus_cfg.h"
 
 static StatusCode prv_handle_heartbeat_ack(CANMessageID msg_id, uint16_t device,
