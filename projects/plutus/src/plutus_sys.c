@@ -1,10 +1,13 @@
 #include "plutus_sys.h"
 #include <string.h>
+#include "crc32.h"
 #include "event_queue.h"
+#include "flash.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "interrupt.h"
 #include "killswitch.h"
+#include "plutus_calib.h"
 #include "plutus_event.h"
 #include "soft_timer.h"
 
@@ -119,6 +122,12 @@ StatusCode plutus_sys_init(PlutusSysStorage *storage, PlutusSysType type) {
     };
     status_ok_or_return(ltc_afe_init(&storage->ltc_afe, &afe_settings));
 
+    crc32_init();
+    flash_init();
+
+    PlutusCalibBlob calib_blob = { 0 };
+    calib_init(&calib_blob, sizeof(calib_blob), false);
+
     const LtcAdcSettings adc_settings = {
       .mosi = PLUTUS_CFG_CURRENT_SENSE_MOSI,  //
       .miso = PLUTUS_CFG_CURRENT_SENSE_MISO,  //
@@ -129,7 +138,8 @@ StatusCode plutus_sys_init(PlutusSysStorage *storage, PlutusSysType type) {
       .spi_baudrate = PLUTUS_CFG_CURRENT_SENSE_SPI_BAUDRATE,  //
       .filter_mode = LTC_ADC_FILTER_50HZ_60HZ,                //
     };
-    ltc_adc_init(&storage->ltc_adc, &adc_settings);
+    status_ok_or_return(
+        current_sense_init(&storage->current_sense, &calib_blob.current_calib, &adc_settings));
 
     status_ok_or_return(bps_heartbeat_init(&storage->bps_heartbeat, &storage->relay,
                                            PLUTUS_CFG_HEARTBEAT_PERIOD_MS,

@@ -8,7 +8,7 @@
 #include "status.h"
 
 #define GENERIC_CAN_EMPTY_MASK UINT32_MAX
-#define NUM_GENERIC_CAN_RX_HANDLERS 5
+#define NUM_GENERIC_CAN_RX_HANDLERS 10
 
 struct GenericCan;
 

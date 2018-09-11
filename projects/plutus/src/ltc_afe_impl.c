@@ -23,11 +23,13 @@ static uint8_t s_voltage_reg[NUM_LTC_AFE_VOLTAGE_REGISTERS] = {
 };
 
 static void prv_wakeup_idle(LtcAfeStorage *afe) {
-  gpio_set_state(&afe->cs, GPIO_STATE_LOW);
-  // ~2us delay
-  for (volatile int i = 0; i < 100; i++) {
+  // Wakeup method 2 - pair of long -1, +1 for each device
+  for (size_t i = 0; i < PLUTUS_CFG_AFE_DEVICES_IN_CHAIN; i++) {
+    gpio_set_state(&afe->cs, GPIO_STATE_LOW);
+    gpio_set_state(&afe->cs, GPIO_STATE_HIGH);
+    // Wait for 300us - greater than tWAKE, less than tIDLE
+    delay_us(300);
   }
-  gpio_set_state(&afe->cs, GPIO_STATE_HIGH);
 }
 
 static StatusCode prv_build_cmd(uint16_t command, uint8_t *cmd, size_t len) {

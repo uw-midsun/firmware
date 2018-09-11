@@ -19,7 +19,7 @@ static void prv_bps_watchdog(SoftTimerID id, void *context) {
   (void)id;
   (void)context;
   LOG_DEBUG("Emergency: BPS Watchdog\n");
-  event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, 0);
+  event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, EE_POWER_DISTRIBUTION_FAULT_REASON_BPS_HB_WATCHDOG);
   s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
 }
 
@@ -45,7 +45,7 @@ static StatusCode prv_bps_rx(const CANMessage *msg, void *context, CANAckStatus 
       soft_timer_cancel(s_watchdog_id);
       s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
     }
-    event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, 0);
+    event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, EE_POWER_DISTRIBUTION_FAULT_REASON_BPS_HB);
   } else {
     prv_kick_watchdog();
   }

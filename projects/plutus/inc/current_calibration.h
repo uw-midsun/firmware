@@ -16,14 +16,14 @@
 static_assert(CURRENT_CALIBRATION_SAMPLES < 128, "Sample limit too large. May cause overflow");
 
 typedef struct {
-  LtcAdcStorage *adc_storage;
+  LtcAdcStorage adc_storage;
   LtcAdcSettings *settings;
   int32_t voltage;
   volatile uint8_t samples;
 } CurrentCalibrationStorage;
 
 // Initialize current calibration
-StatusCode current_calibration_init(CurrentCalibrationStorage *storage, LtcAdcStorage *adc_storage,
+StatusCode current_calibration_init(CurrentCalibrationStorage *storage,
                                     LtcAdcSettings *adc_settings);
 
 // Samples adc readings at the specified current (in uA)  in order to obtain data for

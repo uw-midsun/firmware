@@ -7,12 +7,14 @@
 #include "can_ack.h"
 #include "chaos_config.h"
 #include "chaos_events.h"
+#include "chaos_flags.h"
 #include "charger.h"
 #include "debug_led.h"
 #include "delay.h"
 #include "delay_service.h"
 #include "emergency_fault.h"
 #include "event_queue.h"
+#include "fan_control.h"
 #include "gpio.h"
 #include "gpio_fsm.h"
 #include "gpio_it.h"
@@ -67,7 +69,9 @@ int main(void) {
 
   // Heartbeats
   bps_heartbeat_init();  // Use the auto start feature to start the watchdog.
+#ifdef CHAOS_FLAG_ENABLE_POWERTRAIN_HB
   powertrain_heartbeat_init();
+#endif  // CHAOS_FLAG_ENABLE_POWERTRAIN_HB
 
   // Power Path
   ChaosConfig *cfg = chaos_config_load();
@@ -126,9 +130,12 @@ int main(void) {
     // case with a failure resulting in faulting into Emergency.
     can_process_event(&e);
     delay_service_process_event(&e);
+    fan_control_process_event(&e);
     emergency_fault_process_event(&s_emergency_storage, &e);
     gpio_fsm_process_event(&e);
+#ifdef CHAOS_FLAG_ENABLE_POWERTRAIN_HB
     powertrain_heartbeat_process_event(&e);
+#endif  // CHAOS_FLAG_ENABLE_POWERTRAIN_HB
     power_path_process_event(&cfg->power_path, &e);
     charger_process_event(&e);
     relay_process_event(&e);

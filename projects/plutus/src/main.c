@@ -6,6 +6,7 @@
 
 #include "can_transmit.h"
 #include "fault_monitor.h"
+#include "plutus_event.h"
 #include "plutus_sys.h"
 #include "wait.h"
 
@@ -17,19 +18,12 @@ static size_t s_telemetry_counter = 0;
 static void prv_periodic_tx_debug(SoftTimerID timer_id, void *context) {
   FaultMonitorResult *result = &s_fault_monitor.result;
 
-  // LOG_DEBUG("%d\n", s_telemetry_counter);
-
-  // TODO(ELEC-463): Figure out why we need to delay for so long
   if (s_telemetry_counter < PLUTUS_CFG_AFE_TOTAL_CELLS) {
     CAN_TRANSMIT_BATTERY_VT(s_telemetry_counter, result->cell_voltages[s_telemetry_counter],
                             result->temp_voltages[s_telemetry_counter]);
     s_telemetry_counter++;
   } else if (s_telemetry_counter == PLUTUS_CFG_AFE_TOTAL_CELLS) {
-    uint32_t total_voltage = 0;
-    for (size_t i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {
-      total_voltage += result->cell_voltages[i];
-    }
-    CAN_TRANSMIT_BATTERY_AGGREGATE_VC(total_voltage, (uint32_t)result->current);
+    CAN_TRANSMIT_BATTERY_AGGREGATE_VC(result->total_voltage, (uint32_t)result->current);
     s_telemetry_counter = 0;
   }
 
@@ -45,15 +39,20 @@ int main(void) {
     const FaultMonitorSettings fault_settings = {
       .bps_heartbeat = &s_plutus.bps_heartbeat,
       .ltc_afe = &s_plutus.ltc_afe,
-      .ltc_adc = &s_plutus.ltc_adc,
+      .current_sense = &s_plutus.current_sense,
 
       .overvoltage = PLUTUS_CFG_CELL_OVERVOLTAGE,
       .undervoltage = PLUTUS_CFG_CELL_UNDERVOLTAGE,
+
+      .overcurrent_charge = PLUTUS_CFG_OVERCURRENT_DISCHARGE,
+      .overcurrent_discharge = PLUTUS_CFG_OVERCURRENT_CHARGE,
     };
 
     fault_monitor_init(&s_fault_monitor, &fault_settings);
     soft_timer_start_millis(PLUTUS_CFG_TELEMETRY_PERIOD_MS, prv_periodic_tx_debug, NULL, NULL);
   }
+
+  current_sense_zero_reset(&s_plutus.current_sense);
 
   Event e = { 0 };
   while (true) {

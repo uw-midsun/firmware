@@ -4,8 +4,10 @@
 #include <string.h>
 
 #include "chaos_events.h"
+#include "chaos_flags.h"
 #include "delay_service.h"
 #include "event_queue.h"
+#include "exported_enums.h"
 #include "fsm.h"
 #include "log.h"
 #include "misc.h"
@@ -88,10 +90,12 @@ static const SequencerEventPair s_emergency_events[] = {
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MOTORS },
     .response = SEQUENCER_NO_RESPONSE },
+#ifdef CHAOS_FLAG_ENABLE_SOLAR_RELAYS
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
     .response = SEQUENCER_NO_RESPONSE },
+#endif  // CHAOS_FLAG_ENABLE_SOLAR_RELAYS
   { .raise = { .id = CHAOS_EVENT_MONITOR_DISABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_BATTERY_SLAVE },
@@ -119,10 +123,12 @@ static const SequencerEventPair s_idle_events[] = {
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_MOTORS },
     .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_MOTORS } },
+#ifdef CHAOS_FLAG_ENABLE_SOLAR_RELAYS
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
     .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
     .response = { .id = CHAOS_EVENT_RELAY_OPENED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
+#endif  // CHAOS_FLAG_ENABLE_SOLAR_RELAYS
   { .raise = { .id = CHAOS_EVENT_MONITOR_DISABLE, .data = POWER_PATH_SOURCE_ID_DCDC },
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_OPEN_RELAY, .data = RELAY_ID_BATTERY_SLAVE },
@@ -161,10 +167,12 @@ static const SequencerEventPair s_charge_events[] = {
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_DELAY_MS, .data = SEQUENCER_FSM_BOOT_DELAY },
     .response = { CHAOS_EVENT_DELAY_DONE, 0 } },
+#ifdef CHAOS_FLAG_ENABLE_SOLAR_RELAYS
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
+#endif  // CHAOS_FLAG_ENABLE_SOLAR_RELAYS
   { .raise = { .id = CHAOS_EVENT_CHARGER_CLOSE, .data = SEQUENCER_EMPTY_DATA },
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_SEQUENCE_CHARGE_DONE, .data = SEQUENCER_EMPTY_DATA },
@@ -199,10 +207,12 @@ static const SequencerEventPair s_drive_events[] = {
     .response = SEQUENCER_NO_RESPONSE },
   { .raise = { .id = CHAOS_EVENT_DELAY_MS, .data = SEQUENCER_FSM_BOOT_DELAY },
     .response = { CHAOS_EVENT_DELAY_DONE, 0 } },
+#ifdef CHAOS_FLAG_ENABLE_SOLAR_RELAYS
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_REAR },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_REAR } },
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_SOLAR_MASTER_FRONT },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_SOLAR_MASTER_FRONT } },
+#endif  // CHAOS_FLAG_ENABLE_SOLAR_RELAYS
   { .raise = { .id = CHAOS_EVENT_CLOSE_RELAY, .data = RELAY_ID_MOTORS },
     .response = { .id = CHAOS_EVENT_RELAY_CLOSED, .data = RELAY_ID_MOTORS } },
   { .raise = { .id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE, .data = SEQUENCER_EMPTY_DATA },
@@ -351,7 +361,7 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event) {
     // If we aren't in the emergency state we need to switch to that state. This event will not be
     // raised in the emergency state.
     return event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_EMERGENCY,
-                                SEQUENCER_EMPTY_DATA);
+                                EE_POWER_DISTRIBUTION_FAULT_REASON_RELAY_RETRY_EXPIRY);
   }
 
   // Filter to only handled events. Those in the range
@@ -373,7 +383,7 @@ StatusCode sequencer_fsm_publish_next_event(const Event *previous_event) {
     // If we are stuck go to the emergency state.
     LOG_DEBUG("Emergency: sequence failed.");
     return event_raise_priority(EVENT_PRIORITY_HIGH, CHAOS_EVENT_SEQUENCE_EMERGENCY,
-                                SEQUENCER_EMPTY_DATA);
+                                EE_POWER_DISTRIBUTION_FAULT_REASON_SEQUENCE_RETRY_EXPIRY);
   }
   if (sequencer_complete(&s_storage)) {
     LOG_DEBUG("Sequence Complete\n");

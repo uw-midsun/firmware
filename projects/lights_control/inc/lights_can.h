@@ -2,6 +2,7 @@
 // This module is responsible for receiving CAN messages and raising events in return, or sending
 // can messages.
 #include "can.h"
+#include "can_msg_defs.h"
 #include "exported_enums.h"
 #include "lights_events.h"
 
