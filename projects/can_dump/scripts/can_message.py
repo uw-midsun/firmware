@@ -65,6 +65,9 @@ class CanMessage:
 
     This is simply a CAN ID and the CAN data
 
+    Args:
+        can_id: Raw standard CAN ID.
+        can_data: Message data. Up to 8 bytes.
     """
     def __init__(self, can_id, can_data):
         self._can_id = can_id
