@@ -132,23 +132,52 @@ def select_device():
             continue
 
 class CanDataSource:
+    """An abstract class representing a CAN data source.
+
+    A CAN data source is an interface that can be listened on for a CAN message
+    representation.
+    """
     def __init__(self, masked=None):
         self.masked = masked or []
 
     @abstractmethod
     def get_packet(self):
+        """Fetch the next packet from the CAN data source.
+
+        Args:
+            None
+
+        Returns:
+            A tuple containing the system CAN bus message ID and the message
+            data.
+        """
         pass
 
     def run(self):
+        """Start reading from the CAN data source.
+
+        This reads messages from the data source, parses each one and prints
+        to stdout, before logging into a log file until the process terminates.
+
+        Args:
+            None
+
+        Returns:
+            Does not return.
+        """
         while True:
             # CAN ID, data, DLC
             can_id, data = self.get_packet()
             if can_id not in self.masked:
                 parse_msg(can_id, data)
 
+            # pylint: disable W1202
             logging.info('{},{},{}'.format(can_id, data, len(data)))
 
 class SocketCanDataSource(CanDataSource):
+    """
+    A CAN data source that reads from a bound SocketCAN interface (slcan0)
+    """
     CAN_FRAME_FMT = "<IB3x8s"
     def __init__(self, masked):
         super().__init__(masked)
@@ -164,6 +193,9 @@ class SocketCanDataSource(CanDataSource):
         return can_id, data
 
 class SerialCanDataSource(CanDataSource):
+    """
+    A CAN datasource that reads from a bound serial port interface.
+    """
     def __init__(self, masked, device):
         super().__init__(masked)
         self.ser = serial.Serial(device, 115200)
