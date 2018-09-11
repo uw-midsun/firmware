@@ -171,8 +171,7 @@ class CanDataSource:
             if can_id not in self.masked:
                 parse_msg(can_id, data)
 
-            # pylint: disable W1202
-            logging.info('{},{},{}'.format(can_id, data, len(data)))
+            logging.info('{},{},{}'.format(can_id, data, len(data))) #pylint: disable=logging-format-interpolation
 
 class SocketCanDataSource(CanDataSource):
     """
