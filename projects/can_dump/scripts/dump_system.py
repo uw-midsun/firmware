@@ -2,7 +2,6 @@
 """ Dumps CAN information from SocketCAN/serial """
 import argparse
 from abc import abstractmethod
-import binascii
 import datetime
 import logging
 import os
