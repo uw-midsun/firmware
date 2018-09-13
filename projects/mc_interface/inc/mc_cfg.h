@@ -14,6 +14,10 @@
   { .port = GPIO_PORT_B, .pin = 3 }
 #define MC_CFG_RELAY_RIGHT \
   { .port = GPIO_PORT_B, .pin = 9 }
+#define MC_CFG_SENSE_LEFT \
+  { .port = GPIO_PORT_A, .pin = 15 }
+#define MC_CFG_SENSE_RIGHT \
+  { .port = GPIO_PORT_B, .pin = 8 }
 #define MC_CFG_RELAY_DELAY_MS 1000
 
 #define MC_CFG_MOTOR_CAN_ID_DC_LEFT 0x01
@@ -21,3 +25,5 @@
 #define MC_CFG_MOTOR_CAN_ID_MC_LEFT 0x03
 #define MC_CFG_MOTOR_CAN_ID_MC_RIGHT 0x04
 #define MC_CFG_MOTOR_MAX_BUS_CURRENT 65.0f
+
+#define MC_CFG_PRECHARGE_CHECK_INTERVAL_MS 10000

@@ -16,8 +16,11 @@ typedef struct SequencedRelaySettings {
   CANMessageID can_msg_id;
   GPIOAddress left_relay;
   GPIOAddress right_relay;
+  GPIOAddress left_sense;
+  GPIOAddress right_sense;
   // Delay between left and right relays closing
   uint32_t delay_ms;
+  SoftTimerID timer_id;
 } SequencedRelaySettings;
 
 typedef struct SequencedRelayStorage {
