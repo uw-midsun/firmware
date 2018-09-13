@@ -3,6 +3,7 @@
 #include "debug_led.h"
 #include "log.h"
 #include "plutus_cfg.h"
+#include "plutus_event.h"
 
 static StatusCode prv_handle_heartbeat_ack(CANMessageID msg_id, uint16_t device,
                                            CANAckStatus status, uint16_t num_remaining,
@@ -40,6 +41,7 @@ static StatusCode prv_handle_state(BpsHeartbeatStorage *storage) {
   debug_led_set_state(DEBUG_LED_RED, (storage->fault_bitset != EE_BPS_HEARTBEAT_STATE_OK));
 
   if (storage->fault_bitset != EE_BPS_HEARTBEAT_STATE_OK) {
+    event_raise_priority(EVENT_PRIORITY_HIGHEST, PLUTUS_EVENT_BPS_FAULT, storage->fault_bitset);
     return sequenced_relay_set_state(storage->relay, EE_RELAY_STATE_OPEN);
   }
 

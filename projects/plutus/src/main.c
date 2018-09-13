@@ -5,6 +5,7 @@
 #include "plutus_cfg.h"
 
 #include "can_transmit.h"
+#include "fans.h"
 #include "fault_monitor.h"
 #include "plutus_event.h"
 #include "plutus_sys.h"
@@ -62,6 +63,7 @@ int main(void) {
       if (board_type == PLUTUS_SYS_TYPE_MASTER) {
         fault_monitor_process_event(&s_fault_monitor, &e);
         ltc_afe_process_event(&s_plutus.ltc_afe, &e);
+        fans_process_event(&e);
       }
     }
   }
