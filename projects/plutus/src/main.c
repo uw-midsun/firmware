@@ -46,6 +46,9 @@ int main(void) {
 
       .overcurrent_charge = PLUTUS_CFG_OVERCURRENT_DISCHARGE,
       .overcurrent_discharge = PLUTUS_CFG_OVERCURRENT_CHARGE,
+
+      .overtemp_charge = PLUTUS_CFG_OVERTEMP_CHARGE,
+      .overtemp_discharge = PLUTUS_CFG_OVERTEMP_DISCHARGE,
     };
 
     fault_monitor_init(&s_fault_monitor, &fault_settings);
