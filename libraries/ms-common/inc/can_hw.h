@@ -18,7 +18,7 @@ typedef enum {
   CAN_HW_EVENT_MSG_RX,
   CAN_HW_EVENT_BUS_ERROR,
   NUM_CAN_HW_EVENTS
-} CANHwEvent;
+} CanHwEvent;
 
 typedef enum {
   CAN_HW_BUS_STATUS_OK = 0,
@@ -45,7 +45,7 @@ typedef struct CanHwSettings {
 StatusCode can_hw_init(const CanHwSettings *settings);
 
 // Registers a callback for the given event
-StatusCode can_hw_register_callback(CANHwEvent event, CanHwEventHandlerCb callback, void *context);
+StatusCode can_hw_register_callback(CanHwEvent event, CanHwEventHandlerCb callback, void *context);
 
 StatusCode can_hw_add_filter(uint32_t mask, uint32_t filter, bool extended);
 

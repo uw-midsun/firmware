@@ -88,7 +88,7 @@ StatusCode can_hw_init(const CanHwSettings *settings) {
   return STATUS_CODE_OK;
 }
 
-StatusCode can_hw_register_callback(CANHwEvent event, CanHwEventHandlerCb callback, void *context) {
+StatusCode can_hw_register_callback(CanHwEvent event, CanHwEventHandlerCb callback, void *context) {
   if (event >= NUM_CAN_HW_EVENTS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
