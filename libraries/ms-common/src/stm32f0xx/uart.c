@@ -40,12 +40,12 @@ static UartPortData s_port[] = {
                     .base = USART4 },
 };
 
-static void prv_tx_pop(UARTPort uart);
-static void prv_rx_push(UARTPort uart);
+static void prv_tx_pop(UartPort uart);
+static void prv_rx_push(UartPort uart);
 
-static void prv_handle_irq(UARTPort uart);
+static void prv_handle_irq(UartPort uart);
 
-StatusCode uart_init(UARTPort uart, UartSettings *settings, UartStorage *storage) {
+StatusCode uart_init(UartPort uart, UartSettings *settings, UartStorage *storage) {
   s_port[uart].rcc_cmd(s_port[uart].periph, ENABLE);
 
   s_port[uart].storage = storage;
@@ -81,7 +81,7 @@ StatusCode uart_init(UARTPort uart, UartSettings *settings, UartStorage *storage
   return STATUS_CODE_OK;
 }
 
-StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *context) {
+StatusCode uart_set_rx_handler(UartPort uart, UARTRxHandler rx_handler, void *context) {
   bool disabled = critical_section_start();
   s_port[uart].storage->rx_handler = rx_handler;
   s_port[uart].storage->context = context;
@@ -90,13 +90,13 @@ StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *co
   return STATUS_CODE_OK;
 }
 
-StatusCode uart_set_delimiter(UARTPort uart, uint8_t delimiter) {
+StatusCode uart_set_delimiter(UartPort uart, uint8_t delimiter) {
   s_port[uart].storage->delimiter = delimiter;
 
   return STATUS_CODE_OK;
 }
 
-StatusCode uart_tx(UARTPort uart, uint8_t *tx_data, size_t len) {
+StatusCode uart_tx(UartPort uart, uint8_t *tx_data, size_t len) {
   status_ok_or_return(fifo_push_arr(&s_port[uart].storage->tx_fifo, tx_data, len));
 
   if (USART_GetFlagStatus(s_port[uart].base, USART_FLAG_TXE) == SET) {
@@ -107,7 +107,7 @@ StatusCode uart_tx(UARTPort uart, uint8_t *tx_data, size_t len) {
   return STATUS_CODE_OK;
 }
 
-static void prv_tx_pop(UARTPort uart) {
+static void prv_tx_pop(UartPort uart) {
   if (fifo_size(&s_port[uart].storage->tx_fifo) == 0) {
     USART_ITConfig(s_port[uart].base, USART_IT_TXE, DISABLE);
     return;
@@ -119,7 +119,7 @@ static void prv_tx_pop(UARTPort uart) {
   USART_SendData(s_port[uart].base, tx_data);
 }
 
-static void prv_rx_push(UARTPort uart) {
+static void prv_rx_push(UartPort uart) {
   UartStorage *storage = s_port[uart].storage;
 
   uint8_t rx_data = USART_ReceiveData(s_port[uart].base);
@@ -136,7 +136,7 @@ static void prv_rx_push(UARTPort uart) {
   }
 }
 
-static void prv_handle_irq(UARTPort uart) {
+static void prv_handle_irq(UartPort uart) {
   if (USART_GetITStatus(s_port[uart].base, USART_IT_TXE) == SET) {
     prv_tx_pop(uart);
     USART_ClearITPendingBit(s_port[uart].base, USART_IT_TXE);

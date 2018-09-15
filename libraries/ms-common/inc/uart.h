@@ -39,14 +39,14 @@ typedef struct {
 // Assumes standard 8 N 1
 // Registers a handler to be called when a newline is encountered or the buffer is full.
 // Storage should be persistent through the program.
-StatusCode uart_init(UARTPort uart, UartSettings *settings, UartStorage *storage);
+StatusCode uart_init(UartPort uart, UartSettings *settings, UartStorage *storage);
 
 // Overrides any currently set handler
-StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *context);
+StatusCode uart_set_rx_handler(UartPort uart, UARTRxHandler rx_handler, void *context);
 
 // Sets the delimiter used to break up lines between callbacks
 // Note that the default delimiter is \n
-StatusCode uart_set_delimiter(UARTPort uart, uint8_t delimiter);
+StatusCode uart_set_delimiter(UartPort uart, uint8_t delimiter);
 
 // Non-blocking TX
-StatusCode uart_tx(UARTPort uart, uint8_t *tx_data, size_t len);
+StatusCode uart_tx(UartPort uart, uint8_t *tx_data, size_t len);

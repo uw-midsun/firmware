@@ -29,7 +29,7 @@ CANSettings *charger_cfg_load_can_settings(void);
 UartSettings *charger_cfg_load_uart_settings(void);
 
 // Returns a UART Port to configure UART CAN.
-UARTPort charger_cfg_load_uart_port(void);
+UartPort charger_cfg_load_uart_port(void);
 
 // TODO(ELEC-355): Correct this pin's usage to ADC or PWM based on what happens with the hardware.
 // Returns the GpioAddress of the charger_pin.

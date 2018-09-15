@@ -40,7 +40,7 @@ UartSettings *charger_cfg_load_uart_settings(void) {
   return &s_uart_settings;
 }
 
-UARTPort charger_cfg_load_uart_port(void) {
+UartPort charger_cfg_load_uart_port(void) {
   return UART_PORT_3;
 }
 
