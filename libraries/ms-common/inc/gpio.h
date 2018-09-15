@@ -49,14 +49,14 @@ typedef enum {
   GPIO_ALTFN_7,
   GPIO_ALTFN_ANALOG,
   NUM_GPIO_ALTFNS,
-} GPIOAltFn;
+} GpioAltFn;
 
 // GPIO settings for setting the value of a pin
 typedef struct GpioSettings {
   GpioDir direction;
   GpioState state;
   GpioRes resistor;
-  GPIOAltFn alt_function;
+  GpioAltFn alt_function;
 } GpioSettings;
 
 // Initializes GPIO globally by setting all pins to their default state. ONLY CALL ONCE or it will

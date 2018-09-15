@@ -33,7 +33,7 @@ typedef struct {
 
   GpioAddress tx;
   GpioAddress rx;
-  GPIOAltFn alt_fn;
+  GpioAltFn alt_fn;
 } UARTSettings;
 
 // Assumes standard 8 N 1
