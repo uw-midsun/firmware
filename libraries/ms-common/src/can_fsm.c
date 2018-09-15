@@ -19,7 +19,7 @@ FSM_STATE_TRANSITION(can_tx_fsm_handle) {
 }
 
 static StatusCode prv_handle_data_msg(CanStorage *can_storage, const CANMessage *rx_msg) {
-  CANRxHandler *handler = can_rx_get_handler(&can_storage->rx_handlers, rx_msg->msg_id);
+  CanRxHandler *handler = can_rx_get_handler(&can_storage->rx_handlers, rx_msg->msg_id);
   CanAckStatus ack_status = CAN_ACK_STATUS_OK;
   StatusCode ret = STATUS_CODE_OK;
 

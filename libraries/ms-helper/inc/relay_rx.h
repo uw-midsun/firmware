@@ -27,7 +27,7 @@ typedef struct RelayRxStorage {
 
 // Configures |RelayRxHandler| to be triggered when |msg_id| is received. This handler should alter
 // a relay or set of relays to match the expected state. In the event of a failure the status code
-// should propagate back to the CANRxHandler. |state_bound| is the non-inclusive upper bound on the
+// should propagate back to the CanRxHandler. |state_bound| is the non-inclusive upper bound on the
 // values the returned uint8_t can be. The configuration is stored in |storage|. If the relay is
 // already in the expected state |handler| should still return with STATUS_CODE_OK so long as there
 // are no faults.

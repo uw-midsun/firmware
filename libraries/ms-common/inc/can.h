@@ -36,7 +36,7 @@ typedef struct CanStorage {
   volatile CanFifo rx_fifo;
   CanAckRequests ack_requests;
   CanRxHandlers rx_handlers;
-  CANRxHandler rx_handler_storage[CAN_NUM_RX_HANDLERS];
+  CanRxHandler rx_handler_storage[CAN_NUM_RX_HANDLERS];
   EventId rx_event;
   EventId tx_event;
   EventId fault_event;

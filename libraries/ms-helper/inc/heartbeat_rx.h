@@ -3,7 +3,7 @@
 //
 // Requires CAN to be initialized.
 //
-// Simplifies registering a CANRxHandler such that it automatically replies in the affirmative to
+// Simplifies registering a CanRxHandler such that it automatically replies in the affirmative to
 // the message unless the registered callback returns false. Register
 // |heartbeat_rx_auto_ack_handler| to always successfully ACK.
 //

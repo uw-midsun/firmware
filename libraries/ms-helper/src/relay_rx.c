@@ -11,7 +11,7 @@
 #include "gpio.h"
 #include "status.h"
 
-// CANRxHandler
+// CanRxHandler
 static StatusCode prv_relay_rx_can_handler(const CANMessage *msg, void *context,
                                            CanAckStatus *ack_reply) {
   RelayRxStorage *storage = context;

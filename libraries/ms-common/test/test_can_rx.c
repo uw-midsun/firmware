@@ -5,7 +5,7 @@
 #define TEST_CAN_RX_NUM_HANDLERS 10
 
 static CanRxHandlers s_rx_handlers;
-static CANRxHandler s_rx_handler_storage[TEST_CAN_RX_NUM_HANDLERS];
+static CanRxHandler s_rx_handler_storage[TEST_CAN_RX_NUM_HANDLERS];
 
 static StatusCode prv_rx_callback(const CANMessage *msg, void *context, CanAckStatus *ack_reply) {
   *ack_reply = (CanAckStatus)context;
@@ -30,7 +30,7 @@ void test_can_rx_handle(void) {
   ret = can_rx_register_handler(&s_rx_handlers, 0x02, prv_rx_callback, (void *)0x03);
   TEST_ASSERT_OK(ret);
 
-  CANRxHandler *handler = NULL;
+  CanRxHandler *handler = NULL;
   handler = can_rx_get_handler(&s_rx_handlers, 0x08);
   TEST_ASSERT_NOT_NULL(handler);
   TEST_ASSERT_EQUAL(0x01, handler->context);
@@ -54,7 +54,7 @@ void test_can_rx_duplicate(void) {
   ret = can_rx_register_handler(&s_rx_handlers, 0x01, prv_rx_callback, (void *)0x01);
   TEST_ASSERT_NOT_EQUAL(STATUS_CODE_OK, ret);
 
-  CANRxHandler *handler = NULL;
+  CanRxHandler *handler = NULL;
   handler = can_rx_get_handler(&s_rx_handlers, 0x01);
   TEST_ASSERT_NOT_NULL(handler);
   TEST_ASSERT_EQUAL(0x00, handler->context);
@@ -68,7 +68,7 @@ void test_can_rx_default(void) {
   ret = can_rx_register_default_handler(&s_rx_handlers, prv_rx_callback, (void *)0xA);
   TEST_ASSERT_OK(ret);
 
-  CANRxHandler *handler = NULL;
+  CanRxHandler *handler = NULL;
   handler = can_rx_get_handler(&s_rx_handlers, 0x01);
   TEST_ASSERT_NOT_NULL(handler);
   TEST_ASSERT_EQUAL(0x00, handler->context);
