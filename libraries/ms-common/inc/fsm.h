@@ -47,13 +47,13 @@
 
 struct Fsm;
 typedef void (*FsmStateOutput)(struct Fsm *fsm, const Event *e, void *context);
-typedef void (*StateTransition)(struct Fsm *fsm, const Event *e, bool *transitioned);
+typedef void (*FsmStateTransition)(struct Fsm *fsm, const Event *e, bool *transitioned);
 typedef bool (*StateTransitionGuard)(const struct Fsm *fsm, const Event *e, void *context);
 
 typedef struct State {
   const char *name;
   FsmStateOutput output;
-  StateTransition table;
+  FsmStateTransition table;
 } FsmState;
 
 typedef struct Fsm {
