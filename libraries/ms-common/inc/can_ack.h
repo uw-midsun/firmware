@@ -56,24 +56,24 @@ typedef struct CANAckRequest {
 static_assert(SIZEOF_FIELD(CANAckRequest, expected_bitset) * CHAR_BIT >= CAN_MSG_MAX_DEVICES,
               "CAN ACK request expected bitset field not large enough to fit all CAN devices!");
 
-typedef struct CANAckPendingReq {
+typedef struct CanAckPendingReq {
   CanAckRequestCb callback;
   void *context;
   uint32_t expected_bitset;
   uint32_t response_bitset;
   SoftTimerId timer;
   CanMessageId msg_id;
-} CANAckPendingReq;
-static_assert(SIZEOF_FIELD(CANAckPendingReq, expected_bitset) * CHAR_BIT >= CAN_MSG_MAX_DEVICES,
+} CanAckPendingReq;
+static_assert(SIZEOF_FIELD(CanAckPendingReq, expected_bitset) * CHAR_BIT >= CAN_MSG_MAX_DEVICES,
               "CAN pending ACK expected bitset field not large enough to fit all CAN devices!");
-static_assert(SIZEOF_FIELD(CANAckPendingReq, expected_bitset) ==
-                  SIZEOF_FIELD(CANAckPendingReq, response_bitset),
+static_assert(SIZEOF_FIELD(CanAckPendingReq, expected_bitset) ==
+                  SIZEOF_FIELD(CanAckPendingReq, response_bitset),
               "CAN pending ACK expected bitset size not equal to response bitset size");
 
 typedef struct CanAckRequests {
   ObjectPool pool;
-  CANAckPendingReq request_nodes[CAN_ACK_MAX_REQUESTS];
-  CANAckPendingReq *active_requests[CAN_ACK_MAX_REQUESTS];
+  CanAckPendingReq request_nodes[CAN_ACK_MAX_REQUESTS];
+  CanAckPendingReq *active_requests[CAN_ACK_MAX_REQUESTS];
   size_t num_requests;
 } CanAckRequests;
 

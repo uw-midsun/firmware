@@ -23,7 +23,7 @@ StatusCode can_ack_add_request(CanAckRequests *requests, CanMessageId msg_id,
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  CANAckPendingReq *pending_ack = objpool_get_node(&requests->pool);
+  CanAckPendingReq *pending_ack = objpool_get_node(&requests->pool);
   if (pending_ack == NULL) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
@@ -52,7 +52,7 @@ StatusCode can_ack_handle_msg(CanAckRequests *requests, const CANMessage *msg) {
 
 static StatusCode prv_update_req(CanAckRequests *requests, CanMessageId msg_id,
                                  SoftTimerId timer_id, CanAckStatus status, uint16_t device) {
-  CANAckPendingReq *found_request = NULL;
+  CanAckPendingReq *found_request = NULL;
   size_t index = 0;
 
   // Requests should be in the order that they were made, and there's a higher
@@ -65,7 +65,7 @@ static StatusCode prv_update_req(CanAckRequests *requests, CanMessageId msg_id,
   // * The timer ID matches given an invalid message ID
   // * Both message and timer match given valid values for both
   for (index = 0; index < requests->num_requests; index++) {
-    CANAckPendingReq *req = requests->active_requests[index];
+    CanAckPendingReq *req = requests->active_requests[index];
     if (((req->msg_id == msg_id && timer_id == SOFT_TIMER_INVALID_TIMER) ||
          (req->timer == timer_id && msg_id == CAN_MSG_INVALID_ID) ||
          (req->msg_id == msg_id && req->timer == timer_id)) &&
