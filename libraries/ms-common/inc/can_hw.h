@@ -24,7 +24,7 @@ typedef enum {
   CAN_HW_BUS_STATUS_OK = 0,
   CAN_HW_BUS_STATUS_ERROR,
   CAN_HW_BUS_STATUS_OFF
-} CANHwBusStatus;
+} CanHwBusStatus;
 
 typedef enum {
   CAN_HW_BITRATE_125KBPS,
@@ -49,7 +49,7 @@ StatusCode can_hw_register_callback(CANHwEvent event, CANHwEventHandlerCb callba
 
 StatusCode can_hw_add_filter(uint32_t mask, uint32_t filter, bool extended);
 
-CANHwBusStatus can_hw_bus_status(void);
+CanHwBusStatus can_hw_bus_status(void);
 
 StatusCode can_hw_transmit(uint32_t id, bool extended, const uint8_t *data, size_t len);
 

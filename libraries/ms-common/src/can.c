@@ -178,7 +178,7 @@ void prv_bus_error_timeout_handler(SoftTimerId timer_id, void *context) {
   CanStorage *can_storage = context;
 
   // Note that bus errors have never been tested.
-  CANHwBusStatus status = can_hw_bus_status();
+  CanHwBusStatus status = can_hw_bus_status();
 
   if (status == CAN_HW_BUS_STATUS_OFF) {
     event_raise(can_storage->fault_event, 0);

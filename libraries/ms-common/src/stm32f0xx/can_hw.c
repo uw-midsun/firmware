@@ -118,7 +118,7 @@ StatusCode can_hw_add_filter(uint32_t mask, uint32_t filter, bool extended) {
   return STATUS_CODE_OK;
 }
 
-CANHwBusStatus can_hw_bus_status(void) {
+CanHwBusStatus can_hw_bus_status(void) {
   if (CAN_GetFlagStatus(CAN_HW_BASE, CAN_FLAG_BOF) == SET) {
     return CAN_HW_BUS_STATUS_OFF;
   } else if (CAN_GetFlagStatus(CAN_HW_BASE, CAN_FLAG_EWG) == SET ||
