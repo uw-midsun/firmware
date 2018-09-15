@@ -16,7 +16,7 @@ typedef enum {
   CHAOS_EVENT_MAYBE_RETRY_RELAY,
   CHAOS_EVENT_SET_RELAY_RETRIES,
   NUM_CHAOS_EVENTS_CAN,  // 9
-} ChaosEventsCAN;
+} ChaosEventsCan;
 
 // State transition messages in the event queue (only 1 should be in the queue at a time so order is
 // irrelevant).
