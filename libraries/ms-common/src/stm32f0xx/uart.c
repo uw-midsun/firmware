@@ -19,9 +19,9 @@ typedef struct {
   uint32_t irq;
   USART_TypeDef *base;
   UartStorage *storage;
-} UARTPortData;
+} UartPortData;
 
-static UARTPortData s_port[] = {
+static UartPortData s_port[] = {
   [UART_PORT_1] = { .rcc_cmd = RCC_APB2PeriphClockCmd,
                     .periph = RCC_APB2Periph_USART1,
                     .irq = USART1_IRQn,
