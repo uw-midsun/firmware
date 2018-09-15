@@ -27,7 +27,7 @@ CANSettings *charger_cfg_load_can_settings(void) {
   return &s_can_settings;
 }
 
-static UARTSettings s_uart_settings = {
+static UartSettings s_uart_settings = {
   .baudrate = 115200,
   .rx_handler = NULL,
   .context = NULL,
@@ -36,7 +36,7 @@ static UARTSettings s_uart_settings = {
   .alt_fn = GPIO_ALTFN_4,
 };
 
-UARTSettings *charger_cfg_load_uart_settings(void) {
+UartSettings *charger_cfg_load_uart_settings(void) {
   return &s_uart_settings;
 }
 

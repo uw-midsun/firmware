@@ -45,7 +45,7 @@ static void prv_rx_push(UARTPort uart);
 
 static void prv_handle_irq(UARTPort uart);
 
-StatusCode uart_init(UARTPort uart, UARTSettings *settings, UartStorage *storage) {
+StatusCode uart_init(UARTPort uart, UartSettings *settings, UartStorage *storage) {
   s_port[uart].rcc_cmd(s_port[uart].periph, ENABLE);
 
   s_port[uart].storage = storage;

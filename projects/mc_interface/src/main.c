@@ -40,7 +40,7 @@ static void prv_setup_system_can(void) {
 }
 
 static void prv_setup_motor_can(void) {
-  UARTSettings uart_settings = {
+  UartSettings uart_settings = {
     .baudrate = MC_CFG_CAN_UART_BAUDRATE,
     .tx = MC_CFG_CAN_UART_TX,
     .rx = MC_CFG_CAN_UART_RX,

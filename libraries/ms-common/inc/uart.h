@@ -34,12 +34,12 @@ typedef struct {
   GpioAddress tx;
   GpioAddress rx;
   GpioAltFn alt_fn;
-} UARTSettings;
+} UartSettings;
 
 // Assumes standard 8 N 1
 // Registers a handler to be called when a newline is encountered or the buffer is full.
 // Storage should be persistent through the program.
-StatusCode uart_init(UARTPort uart, UARTSettings *settings, UartStorage *storage);
+StatusCode uart_init(UARTPort uart, UartSettings *settings, UartStorage *storage);
 
 // Overrides any currently set handler
 StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *context);

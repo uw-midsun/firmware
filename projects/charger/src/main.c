@@ -39,7 +39,7 @@ int main(void) {
   can_init(&s_can_storage, can_settings);
 
   // UART
-  UARTSettings *uart_settings = charger_cfg_load_uart_settings();
+  UartSettings *uart_settings = charger_cfg_load_uart_settings();
   uart_init(charger_cfg_load_uart_port(), uart_settings, &s_uart_storage);
 
   // Charger Cfg

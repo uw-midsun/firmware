@@ -25,8 +25,8 @@
 // Returns a pointer to a static CANSettings object for Network Layer CAN.
 CANSettings *charger_cfg_load_can_settings(void);
 
-// Returns a pointer to a static UARTSettings object for UART CAN.
-UARTSettings *charger_cfg_load_uart_settings(void);
+// Returns a pointer to a static UartSettings object for UART CAN.
+UartSettings *charger_cfg_load_uart_settings(void);
 
 // Returns a UART Port to configure UART CAN.
 UARTPort charger_cfg_load_uart_port(void);

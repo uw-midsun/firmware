@@ -27,7 +27,7 @@ static void prv_init_periph(void) {
   interrupt_init();
   soft_timer_init();
 
-  UARTSettings uart_settings = {
+  UartSettings uart_settings = {
     .baudrate = CAN_SLAVE_UART_BAUDRATE,  //
     .tx = CAN_SLAVE_UART_TX,              //
     .rx = CAN_SLAVE_UART_RX,              //
