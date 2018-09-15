@@ -32,7 +32,7 @@ typedef enum {
   GPIO_RES_PULLUP,
   GPIO_RES_PULLDOWN,
   NUM_GPIO_RESES,
-} GPIORes;
+} GpioRes;
 
 // For setting the alternate function on the pin. The specific meaning of each depends on the
 // architecture and platform refer to the datasheet for the stm32f0xx for specifics. Not
@@ -55,7 +55,7 @@ typedef enum {
 typedef struct GpioSettings {
   GpioDir direction;
   GpioState state;
-  GPIORes resistor;
+  GpioRes resistor;
   GPIOAltFn alt_function;
 } GpioSettings;
 
