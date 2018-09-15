@@ -12,11 +12,11 @@ typedef enum {
   SPI_MODE_2,      // CPOL: 1 CPHA: 0
   SPI_MODE_3,      // CPOL: 1 CPHA: 1
   NUM_SPI_MODES,
-} SPIMode;
+} SpiMode;
 
 typedef struct {
   uint32_t baudrate;
-  SPIMode mode;
+  SpiMode mode;
 
   GpioAddress mosi;
   GpioAddress miso;
