@@ -104,7 +104,7 @@ StatusCode can_register_rx_handler(CanMessageId msg_id, CanRxHandlerCb handler, 
   return can_rx_register_handler(&s_can_storage->rx_handlers, msg_id, handler, context);
 }
 
-StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request) {
+StatusCode can_transmit(const CANMessage *msg, const CanAckRequest *ack_request) {
   if (s_can_storage == NULL) {
     return status_code(STATUS_CODE_UNINITIALIZED);
   } else if (msg->msg_id >= CAN_MSG_MAX_IDS) {

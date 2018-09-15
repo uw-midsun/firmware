@@ -85,7 +85,7 @@ void test_heartbeat_rx(void) {
   TEST_ASSERT_OK(heartbeat_rx_register_handler(&hb_storage, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
                                                prv_heartbeat_rx_handler, (void *)&context));
   CanAckStatus expected_status = CAN_ACK_STATUS_OK;
-  CANAckRequest req = {
+  CanAckRequest req = {
     .callback = prv_ack_callback,
     .context = &expected_status,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_HEARTBEAT_RX_CAN_DEVICE_ID),

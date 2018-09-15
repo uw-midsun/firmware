@@ -20,7 +20,7 @@ static void prv_send(SoftTimerId id, void *context) {
   (void)id;
   EmergencyFaultStorage *storage = context;
   storage->id = SOFT_TIMER_INVALID_TIMER;
-  CANAckRequest req = {
+  CanAckRequest req = {
     .callback = prv_ack_handler,
     .context = context,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_DRIVER_CONTROLS),

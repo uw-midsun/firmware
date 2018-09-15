@@ -54,7 +54,7 @@ void test_can_ack_handle_devices(void) {
     .type = CAN_MSG_TYPE_ACK,            //
     .msg_id = 0x2,                       //
   };
-  CANAckRequest ack_request = {
+  CanAckRequest ack_request = {
     .callback = prv_ack_callback,  //
     .context = &data,              //
   };
@@ -128,7 +128,7 @@ void test_can_ack_handle_devices(void) {
 void test_can_ack_expiry(void) {
   // Basic expiry test
   volatile TestResponse data = { 0 };
-  CANAckRequest ack_request = {
+  CanAckRequest ack_request = {
     .callback = prv_ack_callback,  //
     .context = &data,              //
     .expected_bitset = 0x1,        //
@@ -152,7 +152,7 @@ void test_can_ack_expiry_moved(void) {
     .type = CAN_MSG_TYPE_ACK,            //
     .msg_id = 0x4,                       //
   };
-  CANAckRequest ack_request = {
+  CanAckRequest ack_request = {
     .callback = prv_ack_callback,                                        //
     .context = &data,                                                    //
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_CAN_ACK_DEVICE_A),  //

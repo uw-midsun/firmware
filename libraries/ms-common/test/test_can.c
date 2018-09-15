@@ -152,7 +152,7 @@ void test_can_ack(void) {
     .dlc = 8,                    //
   };
 
-  CANAckRequest ack_req = {
+  CanAckRequest ack_req = {
     .callback = prv_ack_callback,                                     //
     .context = &device_acked,                                         //
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_CAN_DEVICE_ID),  //
@@ -193,7 +193,7 @@ void test_can_ack_expire(void) {
     .dlc = 8,                    //
   };
 
-  CANAckRequest ack_req = {
+  CanAckRequest ack_req = {
     .callback = prv_ack_callback_status,                              //
     .context = &ack_status,                                           //
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_CAN_DEVICE_ID),  //
@@ -218,7 +218,7 @@ void test_can_ack_status(void) {
     .dlc = 8,
   };
 
-  CANAckRequest ack_req = {
+  CanAckRequest ack_req = {
     .callback = prv_ack_callback_status,                              //
     .context = &ack_status,                                           //
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_CAN_DEVICE_ID),  //

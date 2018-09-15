@@ -68,7 +68,7 @@ static StatusCode prv_ack_cb(CanMessageId id, uint16_t device, CanAckStatus stat
 static void prv_send_hb_request(SoftTimerId timer_id, void *context) {
   (void)timer_id;
   (void)context;
-  CANAckRequest ack_req = {
+  CanAckRequest ack_req = {
     .callback = prv_ack_cb,
     .context = NULL,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(

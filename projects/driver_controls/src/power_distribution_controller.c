@@ -33,7 +33,7 @@ StatusCode power_distribution_controller_send_update(EEPowerState power_state) {
   if (power_state >= NUM_EE_POWER_STATES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
-  CANAckRequest req = {
+  CanAckRequest req = {
     .callback = prv_ack_callback,
     .context = NULL,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_CHAOS),

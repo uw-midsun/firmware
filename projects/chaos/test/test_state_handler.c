@@ -52,7 +52,7 @@ void teardown_test(void) {}
 void test_state_handler(void) {
   TEST_ASSERT_OK(state_handler_init());
   CanAckStatus expected_status = CAN_ACK_STATUS_OK;
-  CANAckRequest req = {
+  CanAckRequest req = {
     .callback = prv_ack_callback,
     .context = &expected_status,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_CHAOS),

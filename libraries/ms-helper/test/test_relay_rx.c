@@ -113,7 +113,7 @@ void test_relay_rx(void) {
                                             &context));
 
   CanAckStatus expected_status = CAN_ACK_STATUS_OK;
-  CANAckRequest req = {
+  CanAckRequest req = {
     .callback = prv_ack_callback,
     .context = &expected_status,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_RELAY_CAN_DEVICE_ID),

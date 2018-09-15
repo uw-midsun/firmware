@@ -29,7 +29,7 @@ static StatusCode prv_handle_heartbeat_ack(CanMessageId msg_id, uint16_t device,
 }
 
 static StatusCode prv_handle_state(BpsHeartbeatStorage *storage) {
-  CANAckRequest ack_request = {
+  CanAckRequest ack_request = {
     .callback = prv_handle_heartbeat_ack,
     .context = storage,
     .expected_bitset = storage->expected_bitset,

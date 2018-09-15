@@ -54,7 +54,7 @@ void test_bps_indicator_heartbeat(void) {
   Event e = { 0 };
 
   // Send BPS heartbeat good - make sure we receive an ACK and nothing happened
-  CANAckRequest ack_request = {
+  CanAckRequest ack_request = {
     .callback = NULL,
     .context = NULL,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_DRIVER_CONTROLS),

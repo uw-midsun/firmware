@@ -56,7 +56,7 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_bps_heartbeat_watchdog_kick(void) {
-  const CANAckRequest ack_req = {
+  const CanAckRequest ack_req = {
     .callback = prv_bps_ack_request,
     .context = NULL,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_CHAOS),

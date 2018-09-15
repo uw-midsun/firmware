@@ -18,7 +18,7 @@ StatusCode can_ack_init(CanAckRequests *requests) {
 }
 
 StatusCode can_ack_add_request(CanAckRequests *requests, CanMessageId msg_id,
-                               const CANAckRequest *ack_request) {
+                               const CanAckRequest *ack_request) {
   if (ack_request == NULL || ack_request->expected_bitset == 0) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }

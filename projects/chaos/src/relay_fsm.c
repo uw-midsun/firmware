@@ -25,7 +25,7 @@ typedef struct RelayFsmAckCtx {
 
 typedef struct RelayFsmCtx {
   RelayFsmAckCtx ack_ctx;
-  CANAckRequest request;
+  CanAckRequest request;
   GpioAddress power_pin;
 } RelayFsmCtx;
 
@@ -82,7 +82,7 @@ FSM_STATE_TRANSITION(relay_opening) {
   FSM_ADD_GUARDED_TRANSITION(CHAOS_EVENT_RELAY_ERROR, prv_guard_select_relay, relay_closed);
 }
 
-static void prv_relay_transmit(RelayId id, RelayState state, const CANAckRequest *ack_request) {
+static void prv_relay_transmit(RelayId id, RelayState state, const CanAckRequest *ack_request) {
   switch (id) {
     case RELAY_ID_SOLAR_MASTER_FRONT:
       CAN_TRANSMIT_SOLAR_RELAY_FRONT(ack_request, state);

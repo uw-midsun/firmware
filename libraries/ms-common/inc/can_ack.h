@@ -48,12 +48,12 @@ typedef enum {
 typedef StatusCode (*CanAckRequestCb)(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                       uint16_t num_remaining, void *context);
 
-typedef struct CANAckRequest {
+typedef struct CanAckRequest {
   CanAckRequestCb callback;
   void *context;
   uint32_t expected_bitset;
-} CANAckRequest;
-static_assert(SIZEOF_FIELD(CANAckRequest, expected_bitset) * CHAR_BIT >= CAN_MSG_MAX_DEVICES,
+} CanAckRequest;
+static_assert(SIZEOF_FIELD(CanAckRequest, expected_bitset) * CHAR_BIT >= CAN_MSG_MAX_DEVICES,
               "CAN ACK request expected bitset field not large enough to fit all CAN devices!");
 
 typedef struct CanAckPendingReq {
@@ -81,7 +81,7 @@ StatusCode can_ack_init(CanAckRequests *requests);
 
 // ack_request's expected bitset should be populated using CAN_ACK_EXPECTED_DEVICES.
 StatusCode can_ack_add_request(CanAckRequests *requests, CanMessageId msg_id,
-                               const CANAckRequest *ack_request);
+                               const CanAckRequest *ack_request);
 
 // Handle a received ACK, firing the callback associated with the received message
 StatusCode can_ack_handle_msg(CanAckRequests *requests, const CANMessage *msg);
