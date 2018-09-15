@@ -32,8 +32,8 @@ typedef struct CANSettings {
 
 typedef struct CANStorage {
   FSM fsm;
-  volatile CANFifo tx_fifo;
-  volatile CANFifo rx_fifo;
+  volatile CanFifo tx_fifo;
+  volatile CanFifo rx_fifo;
   CANAckRequests ack_requests;
   CANRxHandlers rx_handlers;
   CANRxHandler rx_handler_storage[CAN_NUM_RX_HANDLERS];
