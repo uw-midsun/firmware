@@ -37,9 +37,9 @@ void prv_bus_error_timeout_handler(SoftTimerId timer_id, void *context);
 // Starts a timer to check for bus recovery
 void prv_bus_error_handler(void *context);
 
-static CANStorage *s_can_storage;
+static CanStorage *s_can_storage;
 
-StatusCode can_init(CANStorage *storage, const CanSettings *settings) {
+StatusCode can_init(CanStorage *storage, const CanSettings *settings) {
   if (settings->device_id >= CAN_MSG_MAX_DEVICES) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "CAN: Invalid device ID");
   }
@@ -137,7 +137,7 @@ bool can_process_event(const Event *e) {
 }
 
 void prv_tx_handler(void *context) {
-  CANStorage *can_storage = context;
+  CanStorage *can_storage = context;
   CANMessage tx_msg;
 
   // If we failed to TX some messages or aren't transmitting fast enough, those events
@@ -151,7 +151,7 @@ void prv_tx_handler(void *context) {
 // The RX ISR will fire once for each received message
 // Each event will result in one message's processing.
 void prv_rx_handler(void *context) {
-  CANStorage *can_storage = context;
+  CanStorage *can_storage = context;
   uint32_t rx_id = 0;
   CANMessage rx_msg = { 0 };
   size_t counter = 0;
@@ -175,7 +175,7 @@ void prv_rx_handler(void *context) {
 }
 
 void prv_bus_error_timeout_handler(SoftTimerId timer_id, void *context) {
-  CANStorage *can_storage = context;
+  CanStorage *can_storage = context;
 
   // Note that bus errors have never been tested.
   CANHwBusStatus status = can_hw_bus_status();
@@ -186,7 +186,7 @@ void prv_bus_error_timeout_handler(SoftTimerId timer_id, void *context) {
 }
 
 void prv_bus_error_handler(void *context) {
-  CANStorage *can_storage = context;
+  CanStorage *can_storage = context;
 
   soft_timer_start_millis(CAN_BUS_OFF_RECOVERY_TIME_MS, prv_bus_error_timeout_handler, can_storage,
                           NULL);

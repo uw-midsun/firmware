@@ -19,7 +19,7 @@
 #include "unity.h"
 
 static GenericCanNetwork s_can;
-static CANStorage s_storage;
+static CanStorage s_storage;
 
 // GenericCanRxCb
 static void prv_can_rx_callback(const GenericCanMsg *msg, void *context) {

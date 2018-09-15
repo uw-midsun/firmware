@@ -17,7 +17,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-static CANStorage s_storage;
+static CanStorage s_storage;
 static EEChargerSetRelayState s_expected_state = NUM_EE_CHARGER_SET_RELAY_STATES;
 
 static StatusCode prv_charger_can_handler(const CANMessage *msg, void *context,

@@ -14,7 +14,7 @@
 
 #define TEST_BPS_HEARTBEAT_PERIOD_MS 50
 
-static CANStorage s_can;
+static CanStorage s_can;
 static BpsHeartbeatStorage s_bps_heartbeat;
 static EERelayState s_relay_state;
 static CANAckStatus s_ack_status;

@@ -24,7 +24,7 @@
 #define TEST_RELAY_DELAY_MS 50
 
 static RelayRetryServiceStorage s_relay_retry_storage;
-static CANStorage s_storage;
+static CanStorage s_storage;
 
 static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   CANAckStatus *status = context;

@@ -12,7 +12,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 
 static StatusCode prv_strobe_cb(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   EELightState *expected_state = context;

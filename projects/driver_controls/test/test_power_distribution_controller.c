@@ -17,7 +17,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-static CANStorage s_storage;
+static CanStorage s_storage;
 
 typedef struct TestPowerDistributionControllerAckCtx {
   EEPowerState expected_state;

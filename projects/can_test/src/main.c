@@ -18,7 +18,7 @@ typedef enum {
 } CANTestEvent;
 
 static GpioAddress s_led = { GPIO_PORT_B, 3 };
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 
 static void prv_blink_led(SoftTimerId timer_id, void *context) {
   gpio_toggle_state(&s_led);

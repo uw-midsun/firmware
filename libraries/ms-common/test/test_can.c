@@ -14,7 +14,7 @@ typedef enum {
   TEST_CAN_EVENT_FAULT,
 } TestCanEvent;
 
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 
 static StatusCode prv_rx_callback(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   CANMessage *rx_msg = context;

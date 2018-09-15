@@ -21,7 +21,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-static CANStorage s_storage;
+static CanStorage s_storage;
 
 static StatusCode prv_bps_ack_request(CanMessageId msg_id, uint16_t device, CANAckStatus status,
                                       uint16_t remaining, void *context) {

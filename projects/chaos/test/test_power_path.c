@@ -99,7 +99,7 @@ static PowerPathCfg s_ppc = {
             .monitoring_active = false },
 };
 
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 
 void setup_test(void) {
   event_queue_init();

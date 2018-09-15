@@ -14,7 +14,7 @@
 #include "unity.h"
 
 static EmergencyFaultStorage s_em_storage;
-static CANStorage s_storage;
+static CanStorage s_storage;
 
 // Handler that allows for injecting ack responses.
 static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {

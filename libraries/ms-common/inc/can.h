@@ -30,7 +30,7 @@ typedef struct CanSettings {
   bool loopback;
 } CanSettings;
 
-typedef struct CANStorage {
+typedef struct CanStorage {
   FSM fsm;
   volatile CanFifo tx_fifo;
   volatile CanFifo rx_fifo;
@@ -41,10 +41,10 @@ typedef struct CANStorage {
   EventId tx_event;
   EventId fault_event;
   uint16_t device_id;
-} CANStorage;
+} CanStorage;
 
 // Initializes the specified CAN configuration.
-StatusCode can_init(CANStorage *storage, const CanSettings *settings);
+StatusCode can_init(CanStorage *storage, const CanSettings *settings);
 
 // Adds a hardware filter for the specified message ID.
 StatusCode can_add_filter(CanMessageId msg_id);

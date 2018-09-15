@@ -13,7 +13,7 @@
 
 #define TEST_CRUISE_DEVICE_ID 1
 
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 
 void setup_test(void) {
   event_queue_init();

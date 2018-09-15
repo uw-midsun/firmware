@@ -42,7 +42,7 @@ typedef enum {
 
 EventArbiterStorage s_arbiter_storage;
 static FSM s_fsms[NUM_TEST_SIGNALS_FSMS];
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 static EELightType s_light_id;
 static EELightState s_light_state;
 

@@ -32,7 +32,7 @@
 
 #define CHAOS_DEBUG_LED_PERIOD_MS 500
 
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 static EmergencyFaultStorage s_emergency_storage;
 static RelayRetryServiceStorage s_retry_storage;
 

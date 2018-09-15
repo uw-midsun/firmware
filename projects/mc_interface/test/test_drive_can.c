@@ -17,7 +17,7 @@ typedef enum {
   TEST_DRIVE_CAN_EVENT_FAULT,
 } TestDriveCanEvent;
 
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 
 static int16_t s_throttle;
 static EEDriveOutputDirection s_direction;

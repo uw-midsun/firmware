@@ -7,18 +7,18 @@ FSM_DECLARE_STATE(can_rx_fsm_handle);
 FSM_DECLARE_STATE(can_tx_fsm_handle);
 
 FSM_STATE_TRANSITION(can_rx_fsm_handle) {
-  CANStorage *can_storage = fsm->context;
+  CanStorage *can_storage = fsm->context;
   FSM_ADD_TRANSITION(can_storage->rx_event, can_rx_fsm_handle);
   FSM_ADD_TRANSITION(can_storage->tx_event, can_tx_fsm_handle);
 }
 
 FSM_STATE_TRANSITION(can_tx_fsm_handle) {
-  CANStorage *can_storage = fsm->context;
+  CanStorage *can_storage = fsm->context;
   FSM_ADD_TRANSITION(can_storage->rx_event, can_rx_fsm_handle);
   FSM_ADD_TRANSITION(can_storage->tx_event, can_tx_fsm_handle);
 }
 
-static StatusCode prv_handle_data_msg(CANStorage *can_storage, const CANMessage *rx_msg) {
+static StatusCode prv_handle_data_msg(CanStorage *can_storage, const CANMessage *rx_msg) {
   CANRxHandler *handler = can_rx_get_handler(&can_storage->rx_handlers, rx_msg->msg_id);
   CANAckStatus ack_status = CAN_ACK_STATUS_OK;
   StatusCode ret = STATUS_CODE_OK;
@@ -43,7 +43,7 @@ static StatusCode prv_handle_data_msg(CANStorage *can_storage, const CANMessage 
 }
 
 static void prv_handle_rx(FSM *fsm, const Event *e, void *context) {
-  CANStorage *can_storage = context;
+  CanStorage *can_storage = context;
   CANMessage rx_msg = { 0 };
 
   StatusCode result = can_fifo_pop(&can_storage->rx_fifo, &rx_msg);
@@ -76,7 +76,7 @@ static void prv_handle_rx(FSM *fsm, const Event *e, void *context) {
 // We assume that TX events are always 1-to-1.
 // We expect the TX complete interrupt to raise any discarded events.
 static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
-  CANStorage *can_storage = context;
+  CanStorage *can_storage = context;
   CANMessage tx_msg = { 0 };
 
   StatusCode result = can_fifo_peek(&can_storage->tx_fifo, &tx_msg);
@@ -98,7 +98,7 @@ static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
   }
 }
 
-StatusCode can_fsm_init(FSM *fsm, CANStorage *can_storage) {
+StatusCode can_fsm_init(FSM *fsm, CanStorage *can_storage) {
   if (fsm == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }

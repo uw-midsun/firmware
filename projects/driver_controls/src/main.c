@@ -68,7 +68,7 @@ static ControlStalk s_stalk;
 static GpioExpanderStorage s_stalk_expander;
 static Ads1015Storage s_stalk_ads1015;
 
-static CANStorage s_can;
+static CanStorage s_can;
 static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
 
 static void prv_blink_timeout(SoftTimerId timer_id, void *context) {

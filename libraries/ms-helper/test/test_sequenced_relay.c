@@ -19,7 +19,7 @@
   { .port = GPIO_PORT_B, .pin = 9 }
 #define TEST_SEQUENCED_RELAY_DELAY_MS 10
 
-static CANStorage s_can;
+static CanStorage s_can;
 static SequencedRelayStorage s_sequenced_relay;
 
 typedef enum {

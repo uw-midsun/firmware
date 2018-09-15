@@ -15,7 +15,7 @@ typedef enum {
 
 // User uses this instance to provide storage for the module.
 typedef struct LightsCanStorage {
-  CANStorage can_storage;
+  CanStorage can_storage;
 } LightsCanStorage;
 
 // Contains all the configuration functions.

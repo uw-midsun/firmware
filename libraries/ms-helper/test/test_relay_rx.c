@@ -39,7 +39,7 @@ typedef struct TestRelayRxHandlerCtx {
   bool executed;
 } TestRelayRxHandlerCtx;
 
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 
 // CANAckRequestCb
 static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CANAckStatus status,

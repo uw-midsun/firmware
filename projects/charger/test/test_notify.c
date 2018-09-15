@@ -25,7 +25,7 @@
 
 static EEChargerSetRelayState s_response;
 static GenericCanNetwork s_generic_can;
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 
 // GenericCanRxCb
 static void prv_callback(const GenericCanMsg *msg, void *context) {

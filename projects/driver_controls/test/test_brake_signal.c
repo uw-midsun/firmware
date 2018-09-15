@@ -22,7 +22,7 @@
     TEST_ASSERT_EQUAL((state), s_brake_state);                        \
   })
 
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 static EELightState s_brake_state = false;
 
 static StatusCode prv_light_state_cb(const CANMessage *msg, void *context,

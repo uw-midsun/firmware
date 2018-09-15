@@ -25,7 +25,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-static CANStorage s_storage;
+static CanStorage s_storage;
 
 void setup_test(void) {
   interrupt_init();
