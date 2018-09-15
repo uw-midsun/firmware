@@ -14,7 +14,7 @@ typedef struct CANHwTiming {
 } CANHwTiming;
 
 typedef struct CANHwEventHandler {
-  CANHwEventHandlerCb callback;
+  CanHwEventHandlerCb callback;
   void *context;
 } CANHwEventHandler;
 
@@ -88,7 +88,7 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
   return STATUS_CODE_OK;
 }
 
-StatusCode can_hw_register_callback(CANHwEvent event, CANHwEventHandlerCb callback, void *context) {
+StatusCode can_hw_register_callback(CANHwEvent event, CanHwEventHandlerCb callback, void *context) {
   if (event >= NUM_CAN_HW_EVENTS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }

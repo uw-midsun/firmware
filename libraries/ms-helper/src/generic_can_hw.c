@@ -17,12 +17,12 @@
 
 static GenericCanInterface s_interface;
 
-// CANHwEventHandlerCb: Tx Occurred (dummy to avoid segfault if not present).
+// CanHwEventHandlerCb: Tx Occurred (dummy to avoid segfault if not present).
 static void prv_tx_handler(void *context) {
   (void)context;
 }
 
-// CANHwEventHandlerCb: Rx Occurred
+// CanHwEventHandlerCb: Rx Occurred
 static void prv_rx_handler(void *context) {
   GenericCanHw *gch = (GenericCanHw *)context;
   GenericCanMsg rx_msg = { 0 };
@@ -37,7 +37,7 @@ static void prv_rx_handler(void *context) {
   }
 }
 
-// CANHwEventHandlerCb: Fault Occurred
+// CanHwEventHandlerCb: Fault Occurred
 static void prv_bus_error_timeout_handler(SoftTimerId timer_id, void *context) {
   (void)timer_id;
   GenericCanHw *gch = context;

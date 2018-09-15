@@ -11,7 +11,7 @@
 #include "status.h"
 
 // Used to process HW events within the CAN ISR, ideally as short as possible.
-typedef void (*CANHwEventHandlerCb)(void *context);
+typedef void (*CanHwEventHandlerCb)(void *context);
 
 typedef enum {
   CAN_HW_EVENT_TX_READY = 0,
@@ -45,7 +45,7 @@ typedef struct CANHwSettings {
 StatusCode can_hw_init(const CANHwSettings *settings);
 
 // Registers a callback for the given event
-StatusCode can_hw_register_callback(CANHwEvent event, CANHwEventHandlerCb callback, void *context);
+StatusCode can_hw_register_callback(CANHwEvent event, CanHwEventHandlerCb callback, void *context);
 
 StatusCode can_hw_add_filter(uint32_t mask, uint32_t filter, bool extended);
 

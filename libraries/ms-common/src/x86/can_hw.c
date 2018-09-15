@@ -26,7 +26,7 @@
 #define CAN_HW_THREAD_EXIT_PERIOD_US 10000
 
 typedef struct CANHwEventHandler {
-  CANHwEventHandlerCb callback;
+  CanHwEventHandlerCb callback;
   void *context;
 } CANHwEventHandler;
 
@@ -201,7 +201,7 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
 }
 
 // Registers a callback for the given event
-StatusCode can_hw_register_callback(CANHwEvent event, CANHwEventHandlerCb callback, void *context) {
+StatusCode can_hw_register_callback(CANHwEvent event, CanHwEventHandlerCb callback, void *context) {
   if (event >= NUM_CAN_HW_EVENTS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
