@@ -25,7 +25,7 @@ typedef enum {
   CAN_MSG_TYPE_DATA = 0,
   CAN_MSG_TYPE_ACK,
   NUM_CAN_MSG_TYPES,
-} CANMsgType;
+} CanMsgType;
 
 typedef uint16_t CanMessageId;
 
@@ -38,7 +38,7 @@ typedef struct CANMessage {
     uint16_t data_u16[4];
     uint8_t data_u8[8];
   };
-  CANMsgType type;
+  CanMsgType type;
   size_t dlc;
 } CANMessage;
 
