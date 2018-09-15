@@ -42,7 +42,7 @@ static StatusCode prv_handle_data_msg(CanStorage *can_storage, const CANMessage 
   return ret;
 }
 
-static void prv_handle_rx(FSM *fsm, const Event *e, void *context) {
+static void prv_handle_rx(Fsm *fsm, const Event *e, void *context) {
   CanStorage *can_storage = context;
   CANMessage rx_msg = { 0 };
 
@@ -75,7 +75,7 @@ static void prv_handle_rx(FSM *fsm, const Event *e, void *context) {
 
 // We assume that TX events are always 1-to-1.
 // We expect the TX complete interrupt to raise any discarded events.
-static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
+static void prv_handle_tx(Fsm *fsm, const Event *e, void *context) {
   CanStorage *can_storage = context;
   CANMessage tx_msg = { 0 };
 
@@ -98,7 +98,7 @@ static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
   }
 }
 
-StatusCode can_fsm_init(FSM *fsm, CanStorage *can_storage) {
+StatusCode can_fsm_init(Fsm *fsm, CanStorage *can_storage) {
   if (fsm == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }

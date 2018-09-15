@@ -12,7 +12,7 @@
 
 #define GPIO_FSM_SLEW_RATE_US SOFT_TIMER_MIN_TIME_US
 
-static FSM s_gpio_fsm;
+static Fsm s_gpio_fsm;
 
 FSM_DECLARE_STATE(gpio_state_idle);
 FSM_DECLARE_STATE(gpio_state_charge_preconfig);
@@ -60,7 +60,7 @@ FSM_STATE_TRANSITION(gpio_state_drive) {
   FSM_ADD_TRANSITION(CHAOS_EVENT_GPIO_EMERGENCY, gpio_state_emergency);
 }
 
-static void prv_gpio_state_idle(FSM *fsm, const Event *e, void *context) {
+static void prv_gpio_state_idle(Fsm *fsm, const Event *e, void *context) {
   const ChaosConfig *cfg = context;
   const GpioAddress sequence[] = {
     cfg->motor_interface_power,  // To reset relays as a precaution.
@@ -73,7 +73,7 @@ static void prv_gpio_state_idle(FSM *fsm, const Event *e, void *context) {
   gpio_seq_set_state(sequence, SIZEOF_ARRAY(sequence), GPIO_STATE_LOW, GPIO_FSM_SLEW_RATE_US);
 }
 
-static void prv_gpio_state_charge_preconfig(FSM *fsm, const Event *e, void *context) {
+static void prv_gpio_state_charge_preconfig(Fsm *fsm, const Event *e, void *context) {
   const ChaosConfig *cfg = context;
   const GpioAddress sequence[] = {
     cfg->array_sense_power,      // To reset relays as a precaution.
@@ -85,7 +85,7 @@ static void prv_gpio_state_charge_preconfig(FSM *fsm, const Event *e, void *cont
   gpio_seq_set_state(sequence, SIZEOF_ARRAY(sequence), GPIO_STATE_LOW, GPIO_FSM_SLEW_RATE_US);
 }
 
-static void prv_gpio_state_charge(FSM *fsm, const Event *e, void *context) {
+static void prv_gpio_state_charge(Fsm *fsm, const Event *e, void *context) {
   const ChaosConfig *cfg = context;
   const GpioAddress sequence[] = {
     // cfg->charger_power, (external)
@@ -98,7 +98,7 @@ static void prv_gpio_state_charge(FSM *fsm, const Event *e, void *context) {
   gpio_seq_set_state(sequence, SIZEOF_ARRAY(sequence), GPIO_STATE_HIGH, GPIO_FSM_SLEW_RATE_US);
 }
 
-static void prv_gpio_state_drive_preconfig(FSM *fsm, const Event *e, void *context) {
+static void prv_gpio_state_drive_preconfig(Fsm *fsm, const Event *e, void *context) {
   const ChaosConfig *cfg = context;
   const GpioAddress sequence[] = {
     // cfg->charger_power, (external)
@@ -108,7 +108,7 @@ static void prv_gpio_state_drive_preconfig(FSM *fsm, const Event *e, void *conte
   gpio_seq_set_state(sequence, SIZEOF_ARRAY(sequence), GPIO_STATE_LOW, GPIO_FSM_SLEW_RATE_US);
 }
 
-static void prv_gpio_state_drive(FSM *fsm, const Event *e, void *context) {
+static void prv_gpio_state_drive(Fsm *fsm, const Event *e, void *context) {
   const ChaosConfig *cfg = context;
   const GpioAddress sequence[] = {
     cfg->motor_interface_power,  //

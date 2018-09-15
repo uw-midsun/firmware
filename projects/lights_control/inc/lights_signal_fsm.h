@@ -16,7 +16,7 @@
 
 typedef struct LightsSignalFsm {
   LightsBlinker blinker;
-  FSM fsm;
+  Fsm fsm;
 } LightsSignalFsm;
 
 // Initializes state machines, and blinker.

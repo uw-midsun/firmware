@@ -68,7 +68,7 @@ typedef struct LtcAfeSettings {
 } LtcAfeSettings;
 
 typedef struct LtcAfeStorage {
-  FSM fsm;
+  Fsm fsm;
   SpiPort spi_port;
   GpioAddress cs;
   LtcAfeAdcMode adc_mode;

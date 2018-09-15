@@ -21,7 +21,7 @@ static CanStorage s_can_storage;
 static UartStorage s_uart_storage;
 static ChargerCanStatus s_charger_status;
 static ChargerStorage s_charger_storage;
-static FSM s_charger_fsm;
+static Fsm s_charger_fsm;
 
 // TODO(ELEC-355): Add support for polling the ADC/PWM signal from the charging station.
 

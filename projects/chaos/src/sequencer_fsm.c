@@ -22,7 +22,7 @@
 #define NUM_SEQUENCER_FSM_FILTERS 3
 
 // Statics
-static FSM s_sequencer_fsm;
+static Fsm s_sequencer_fsm;
 static SequencerStorage s_storage;
 
 static uint8_t s_retries = 0;
@@ -271,7 +271,7 @@ static bool prv_sequencer_setup_common(void) {
 }
 
 // FSM Transitions
-static void prv_sequencer_state_emergency(FSM *fsm, const Event *e, void *context) {
+static void prv_sequencer_state_emergency(Fsm *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
@@ -285,7 +285,7 @@ static void prv_sequencer_state_emergency(FSM *fsm, const Event *e, void *contex
                  SIZEOF_ARRAY(s_emergency_events));
 }
 
-static void prv_sequencer_state_idle(FSM *fsm, const Event *e, void *context) {
+static void prv_sequencer_state_idle(Fsm *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
@@ -297,7 +297,7 @@ static void prv_sequencer_state_idle(FSM *fsm, const Event *e, void *context) {
                  SIZEOF_ARRAY(s_idle_events));
 }
 
-static void prv_sequencer_state_charge(FSM *fsm, const Event *e, void *context) {
+static void prv_sequencer_state_charge(Fsm *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {
@@ -309,7 +309,7 @@ static void prv_sequencer_state_charge(FSM *fsm, const Event *e, void *context) 
                  SIZEOF_ARRAY(s_charge_events));
 }
 
-static void prv_sequencer_state_drive(FSM *fsm, const Event *e, void *context) {
+static void prv_sequencer_state_drive(Fsm *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
   if (!prv_sequencer_setup_common()) {

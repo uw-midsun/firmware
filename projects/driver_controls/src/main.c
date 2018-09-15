@@ -41,7 +41,7 @@
 #include "dc_cfg.h"
 #include "flash.h"
 
-typedef StatusCode (*DriverControlsFsmInitFn)(FSM *fsm, EventArbiterStorage *storage);
+typedef StatusCode (*DriverControlsFsmInitFn)(Fsm *fsm, EventArbiterStorage *storage);
 
 typedef enum {
   DRIVER_CONTROLS_FSM_POWER = 0,
@@ -62,7 +62,7 @@ static DcCalibBlob s_calib_blob;
 static Ads1015Storage s_pedal_ads1015;
 static MechBrakeStorage s_mech_brake;
 static EventArbiterStorage s_event_arbiter;
-static FSM s_fsms[NUM_DRIVER_CONTROLS_FSMS];
+static Fsm s_fsms[NUM_DRIVER_CONTROLS_FSMS];
 
 static ControlStalk s_stalk;
 static GpioExpanderStorage s_stalk_expander;

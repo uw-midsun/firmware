@@ -4,4 +4,4 @@
 #include "event_arbiter.h"
 #include "fsm.h"
 
-StatusCode turn_signal_fsm_init(FSM *fsm, EventArbiterStorage *storage);
+StatusCode turn_signal_fsm_init(Fsm *fsm, EventArbiterStorage *storage);

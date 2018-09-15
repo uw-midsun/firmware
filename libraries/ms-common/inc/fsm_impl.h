@@ -15,7 +15,7 @@
 // Since we're implementing the transition table as a function, we can't rely on a return value
 // so we pass in a pointer to be modified on transitions.
 #define _FSM_STATE_TRANSITION(state) \
-  static void prv_fsm_##state(FSM *fsm, const Event *e, bool *transitioned)
+  static void prv_fsm_##state(Fsm *fsm, const Event *e, bool *transitioned)
 
 // Represents a transition through a conditional. This should only be used in transition functions.
 // This keeps track of states and signals that a transition has occurred through the pointer.

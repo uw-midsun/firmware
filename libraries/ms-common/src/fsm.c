@@ -1,12 +1,12 @@
 #include "fsm.h"
 
-void fsm_init(FSM *fsm, const char *name, State *default_state, void *context) {
+void fsm_init(Fsm *fsm, const char *name, State *default_state, void *context) {
   fsm->name = name;
   fsm->context = context;
   fsm->current_state = default_state;
 }
 
-bool fsm_process_event(FSM *fsm, const Event *e) {
+bool fsm_process_event(Fsm *fsm, const Event *e) {
   bool transitioned = false;
 
   fsm->current_state->table(fsm, e, &transitioned);
@@ -14,6 +14,6 @@ bool fsm_process_event(FSM *fsm, const Event *e) {
   return transitioned;
 }
 
-bool fsm_guard_true(FSM *fsm, const Event *e, void *context) {
+bool fsm_guard_true(Fsm *fsm, const Event *e, void *context) {
   return true;
 }

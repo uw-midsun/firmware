@@ -31,7 +31,7 @@ typedef struct CanSettings {
 } CanSettings;
 
 typedef struct CanStorage {
-  FSM fsm;
+  Fsm fsm;
   volatile CanFifo tx_fifo;
   volatile CanFifo rx_fifo;
   CanAckRequests ack_requests;

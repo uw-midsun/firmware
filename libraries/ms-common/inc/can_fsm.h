@@ -17,4 +17,4 @@
 #include "can.h"
 #include "fsm.h"
 
-StatusCode can_fsm_init(FSM *fsm, CanStorage *can_storage);
+StatusCode can_fsm_init(Fsm *fsm, CanStorage *can_storage);

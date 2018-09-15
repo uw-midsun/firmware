@@ -43,7 +43,7 @@ void teardown_test(void) {}
 // No need to validate anything other than transitions as the underlying modules are tested and
 // fully testing the behavior would require a massive test.
 void test_charger_fsm_transitions(void) {
-  FSM fsm;
+  Fsm fsm;
   GenericCan *can = (GenericCan *)&s_can;
   ChargerCanStatus status = { 0 };
   charger_fsm_init(&fsm);
