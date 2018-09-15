@@ -9,7 +9,7 @@ static int prv_handler_comp(const void *a, const void *b) {
   return x->msg_id - y->msg_id;
 }
 
-StatusCode can_rx_init(CANRxHandlers *rx_handlers, CANRxHandler *handler_storage,
+StatusCode can_rx_init(CanRxHandlers *rx_handlers, CANRxHandler *handler_storage,
                        size_t num_handlers) {
   memset(rx_handlers, 0, sizeof(*rx_handlers));
   memset(handler_storage, 0, sizeof(*handler_storage) * num_handlers);
@@ -21,7 +21,7 @@ StatusCode can_rx_init(CANRxHandlers *rx_handlers, CANRxHandler *handler_storage
   return STATUS_CODE_OK;
 }
 
-StatusCode can_rx_register_default_handler(CANRxHandlers *rx_handlers, CANRxHandlerCb handler,
+StatusCode can_rx_register_default_handler(CanRxHandlers *rx_handlers, CANRxHandlerCb handler,
                                            void *context) {
   StatusCode ret = can_rx_register_handler(rx_handlers, CAN_MSG_INVALID_ID, handler, context);
 
@@ -32,7 +32,7 @@ StatusCode can_rx_register_default_handler(CANRxHandlers *rx_handlers, CANRxHand
   return ret;
 }
 
-StatusCode can_rx_register_handler(CANRxHandlers *rx_handlers, CanMessageId msg_id,
+StatusCode can_rx_register_handler(CanRxHandlers *rx_handlers, CanMessageId msg_id,
                                    CANRxHandlerCb handler, void *context) {
   if (rx_handlers->num_handlers == rx_handlers->max_handlers) {
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN RX handlers full");
@@ -52,7 +52,7 @@ StatusCode can_rx_register_handler(CANRxHandlers *rx_handlers, CanMessageId msg_
   return STATUS_CODE_OK;
 }
 
-CANRxHandler *can_rx_get_handler(CANRxHandlers *rx_handlers, CanMessageId msg_id) {
+CANRxHandler *can_rx_get_handler(CanRxHandlers *rx_handlers, CanMessageId msg_id) {
   const CANRxHandler key = {
     .msg_id = msg_id,
   };

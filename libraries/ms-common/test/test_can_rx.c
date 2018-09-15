@@ -4,7 +4,7 @@
 
 #define TEST_CAN_RX_NUM_HANDLERS 10
 
-static CANRxHandlers s_rx_handlers;
+static CanRxHandlers s_rx_handlers;
 static CANRxHandler s_rx_handler_storage[TEST_CAN_RX_NUM_HANDLERS];
 
 static StatusCode prv_rx_callback(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
