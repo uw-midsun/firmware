@@ -12,7 +12,7 @@
 #include "status.h"
 
 // CanRxHandler
-static StatusCode prv_relay_rx_can_handler(const CANMessage *msg, void *context,
+static StatusCode prv_relay_rx_can_handler(const CanMessage *msg, void *context,
                                            CanAckStatus *ack_reply) {
   RelayRxStorage *storage = context;
   uint8_t state = storage->state_bound;

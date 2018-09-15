@@ -20,7 +20,7 @@ static uint16_t s_sequence_lookup[NUM_EE_POWER_STATES] = {
 };
 
 // CanRxHandlerCb
-static StatusCode prv_handle_power_state_msg(const CANMessage *msg, void *context,
+static StatusCode prv_handle_power_state_msg(const CanMessage *msg, void *context,
                                              CanAckStatus *ack_reply) {
   (void)context;
   EEPowerState power_state = NUM_EE_POWER_STATES;

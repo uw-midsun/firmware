@@ -25,7 +25,7 @@ typedef struct TestPowerDistributionControllerAckCtx {
 } TestPowerDistributionControllerAckCtx;
 
 // Handler that allows for injecting ack responses.
-static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CanAckStatus *ack_reply) {
+static StatusCode prv_rx_handler(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   (void)msg;
   TestPowerDistributionControllerAckCtx *ctx = context;
   EEPowerState state = NUM_EE_POWER_STATES;

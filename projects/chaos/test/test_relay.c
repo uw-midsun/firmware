@@ -26,7 +26,7 @@
 static RelayRetryServiceStorage s_relay_retry_storage;
 static CanStorage s_storage;
 
-static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CanAckStatus *ack_reply) {
+static StatusCode prv_rx_handler(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   CanAckStatus *status = context;
   *ack_reply = *status;
   LOG_DEBUG("Handled; responded with %u\n", *ack_reply);

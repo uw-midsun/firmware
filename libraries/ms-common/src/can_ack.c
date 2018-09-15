@@ -46,7 +46,7 @@ StatusCode can_ack_add_request(CanAckRequests *requests, CanMessageId msg_id,
   return STATUS_CODE_OK;
 }
 
-StatusCode can_ack_handle_msg(CanAckRequests *requests, const CANMessage *msg) {
+StatusCode can_ack_handle_msg(CanAckRequests *requests, const CanMessage *msg) {
   return prv_update_req(requests, msg->msg_id, SOFT_TIMER_INVALID_TIMER, msg->data, msg->source_id);
 }
 

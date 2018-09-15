@@ -28,7 +28,7 @@ StatusCode TEST_MOCK(sequenced_relay_set_state)(SequencedRelayStorage *storage,
   return STATUS_CODE_OK;
 }
 
-static StatusCode prv_bps_rx(const CANMessage *msg, void *context, CanAckStatus *ack_reply) {
+static StatusCode prv_bps_rx(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   *ack_reply = s_ack_status;
 
   uint8_t state = UINT8_MAX;

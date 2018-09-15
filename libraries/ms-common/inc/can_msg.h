@@ -29,7 +29,7 @@ typedef enum {
 
 typedef uint16_t CanMessageId;
 
-typedef struct CANMessage {
+typedef struct CanMessage {
   uint16_t source_id;
   CanMessageId msg_id;
   union {
@@ -40,7 +40,7 @@ typedef struct CANMessage {
   };
   CanMsgType type;
   size_t dlc;
-} CANMessage;
+} CanMessage;
 
 typedef union CanId {
   uint16_t raw;

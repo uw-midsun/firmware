@@ -8,7 +8,7 @@
 
 // Process the received CAN message. Storage to an ACK reply is valid only if the message
 // is considered critical. If valid, the ack reply is OK by default.
-typedef StatusCode (*CanRxHandlerCb)(const CANMessage *msg, void *context, CanAckStatus *ack_reply);
+typedef StatusCode (*CanRxHandlerCb)(const CanMessage *msg, void *context, CanAckStatus *ack_reply);
 
 typedef struct CanRxHandler {
   CanRxHandlerCb callback;

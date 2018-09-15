@@ -17,7 +17,7 @@ typedef struct ChargerStorage {
 static ChargerStorage s_storage;
 
 // CanRxHandlerCb
-static StatusCode prv_handle_charger_conn_state(const CANMessage *msg, void *context,
+static StatusCode prv_handle_charger_conn_state(const CanMessage *msg, void *context,
                                                 CanAckStatus *ack_reply) {
   (void)context;
   (void)ack_reply;

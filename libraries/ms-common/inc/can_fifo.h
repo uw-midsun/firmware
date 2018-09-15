@@ -7,7 +7,7 @@
 
 typedef struct CanFifo {
   Fifo fifo;
-  CANMessage msg_nodes[CAN_FIFO_SIZE];
+  CanMessage msg_nodes[CAN_FIFO_SIZE];
 } CanFifo;
 
 #define can_fifo_init(can_fifo) fifo_init(&(can_fifo)->fifo, (can_fifo)->msg_nodes)

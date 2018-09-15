@@ -17,7 +17,7 @@ static EmergencyFaultStorage s_em_storage;
 static CanStorage s_storage;
 
 // Handler that allows for injecting ack responses.
-static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CanAckStatus *ack_reply) {
+static StatusCode prv_rx_handler(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   (void)msg;
   CanAckStatus *status = context;
   *ack_reply = *status;

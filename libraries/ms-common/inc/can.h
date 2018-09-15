@@ -56,7 +56,7 @@ StatusCode can_register_rx_default_handler(CanRxHandlerCb handler, void *context
 StatusCode can_register_rx_handler(CanMessageId msg_id, CanRxHandlerCb handler, void *context);
 
 // Attempts to transmit the CAN message as soon as possible.
-StatusCode can_transmit(const CANMessage *msg, const CanAckRequest *ack_request);
+StatusCode can_transmit(const CanMessage *msg, const CanAckRequest *ack_request);
 
 // Processes the registered events. This must be called for the CAN network layer to work.
 bool can_process_event(const Event *e);

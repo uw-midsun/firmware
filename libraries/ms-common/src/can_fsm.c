@@ -18,7 +18,7 @@ FSM_STATE_TRANSITION(can_tx_fsm_handle) {
   FSM_ADD_TRANSITION(can_storage->tx_event, can_tx_fsm_handle);
 }
 
-static StatusCode prv_handle_data_msg(CanStorage *can_storage, const CANMessage *rx_msg) {
+static StatusCode prv_handle_data_msg(CanStorage *can_storage, const CanMessage *rx_msg) {
   CanRxHandler *handler = can_rx_get_handler(&can_storage->rx_handlers, rx_msg->msg_id);
   CanAckStatus ack_status = CAN_ACK_STATUS_OK;
   StatusCode ret = STATUS_CODE_OK;
@@ -27,7 +27,7 @@ static StatusCode prv_handle_data_msg(CanStorage *can_storage, const CANMessage 
     ret = handler->callback(rx_msg, handler->context, &ack_status);
 
     if (CAN_MSG_IS_CRITICAL(rx_msg)) {
-      CANMessage ack = {
+      CanMessage ack = {
         .msg_id = rx_msg->msg_id,
         .type = CAN_MSG_TYPE_ACK,
         .dlc = sizeof(ack_status),
@@ -44,7 +44,7 @@ static StatusCode prv_handle_data_msg(CanStorage *can_storage, const CANMessage 
 
 static void prv_handle_rx(Fsm *fsm, const Event *e, void *context) {
   CanStorage *can_storage = context;
-  CANMessage rx_msg = { 0 };
+  CanMessage rx_msg = { 0 };
 
   StatusCode result = can_fifo_pop(&can_storage->rx_fifo, &rx_msg);
   if (result != STATUS_CODE_OK) {
@@ -77,7 +77,7 @@ static void prv_handle_rx(Fsm *fsm, const Event *e, void *context) {
 // We expect the TX complete interrupt to raise any discarded events.
 static void prv_handle_tx(Fsm *fsm, const Event *e, void *context) {
   CanStorage *can_storage = context;
-  CANMessage tx_msg = { 0 };
+  CanMessage tx_msg = { 0 };
 
   StatusCode result = can_fifo_peek(&can_storage->tx_fifo, &tx_msg);
   if (result != STATUS_CODE_OK) {

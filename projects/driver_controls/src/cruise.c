@@ -9,7 +9,7 @@
 
 static CruiseStorage s_cruise_storage;
 
-static StatusCode prv_handle_motor_velocity(const CANMessage *msg, void *context,
+static StatusCode prv_handle_motor_velocity(const CanMessage *msg, void *context,
                                             CanAckStatus *ack_reply) {
   CruiseStorage *cruise = context;
 

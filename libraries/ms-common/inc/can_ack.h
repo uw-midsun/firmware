@@ -84,4 +84,4 @@ StatusCode can_ack_add_request(CanAckRequests *requests, CanMessageId msg_id,
                                const CanAckRequest *ack_request);
 
 // Handle a received ACK, firing the callback associated with the received message
-StatusCode can_ack_handle_msg(CanAckRequests *requests, const CANMessage *msg);
+StatusCode can_ack_handle_msg(CanAckRequests *requests, const CanMessage *msg);

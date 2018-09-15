@@ -16,8 +16,8 @@ typedef enum {
 
 static CanStorage s_can_storage;
 
-static StatusCode prv_rx_callback(const CANMessage *msg, void *context, CanAckStatus *ack_reply) {
-  CANMessage *rx_msg = context;
+static StatusCode prv_rx_callback(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
+  CanMessage *rx_msg = context;
   *rx_msg = *msg;
 
   if (msg->msg_id == TEST_CAN_UNKNOWN_MSG_ID) {
@@ -76,12 +76,12 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_can_basic(void) {
-  volatile CANMessage rx_msg = { 0 };
+  volatile CanMessage rx_msg = { 0 };
   can_register_rx_handler(0x6, prv_rx_callback, &rx_msg);
   can_register_rx_handler(0x1, prv_rx_callback, &rx_msg);
   can_register_rx_handler(0x5, prv_rx_callback, &rx_msg);
 
-  CANMessage msg = {
+  CanMessage msg = {
     .msg_id = 0x5,              //
     .type = CAN_MSG_TYPE_DATA,  //
     .data = 0x1,                //
@@ -106,13 +106,13 @@ void test_can_basic(void) {
 }
 
 void test_can_filter(void) {
-  volatile CANMessage rx_msg = { 0 };
+  volatile CanMessage rx_msg = { 0 };
   can_add_filter(0x2);
 
   can_register_rx_handler(0x1, prv_rx_callback, &rx_msg);
   can_register_rx_handler(0x2, prv_rx_callback, &rx_msg);
 
-  CANMessage msg = {
+  CanMessage msg = {
     .msg_id = 0x1,               //
     .type = CAN_MSG_TYPE_DATA,   //
     .data = 0x1122334455667788,  //
@@ -142,10 +142,10 @@ void test_can_filter(void) {
 }
 
 void test_can_ack(void) {
-  volatile CANMessage rx_msg = { 0 };
+  volatile CanMessage rx_msg = { 0 };
   volatile uint16_t device_acked = CAN_MSG_INVALID_DEVICE;
 
-  CANMessage msg = {
+  CanMessage msg = {
     .msg_id = 0x1,               //
     .type = CAN_MSG_TYPE_DATA,   //
     .data = 0x1122334455667788,  //
@@ -186,7 +186,7 @@ void test_can_ack(void) {
 
 void test_can_ack_expire(void) {
   volatile CanAckStatus ack_status = NUM_CAN_ACK_STATUSES;
-  CANMessage msg = {
+  CanMessage msg = {
     .msg_id = 0x1,               //
     .type = CAN_MSG_TYPE_DATA,   //
     .data = 0x1122334455667788,  //
@@ -210,8 +210,8 @@ void test_can_ack_expire(void) {
 
 void test_can_ack_status(void) {
   volatile CanAckStatus ack_status = NUM_CAN_ACK_STATUSES;
-  volatile CANMessage rx_msg = { 0 };
-  CANMessage msg = {
+  volatile CanMessage rx_msg = { 0 };
+  CanMessage msg = {
     .msg_id = TEST_CAN_UNKNOWN_MSG_ID,
     .type = CAN_MSG_TYPE_DATA,
     .data = 0x1122334455667788,
@@ -250,8 +250,8 @@ void test_can_ack_status(void) {
 }
 
 void test_can_default(void) {
-  volatile CANMessage rx_msg = { 0 };
-  CANMessage msg = {
+  volatile CanMessage rx_msg = { 0 };
+  CanMessage msg = {
     .msg_id = 0x1,              //
     .type = CAN_MSG_TYPE_DATA,  //
     .data = 0x1,                //

@@ -19,7 +19,7 @@
 #define CAN_BUS_OFF_RECOVERY_TIME_MS 500
 
 // Attempts to transmit the specified message using the HW TX, overwriting the source device.
-StatusCode prv_transmit(const CANMessage *msg);
+StatusCode prv_transmit(const CanMessage *msg);
 
 // Handler for CAN HW TX ready events
 // Re-raises potentially discarded TX events
@@ -104,7 +104,7 @@ StatusCode can_register_rx_handler(CanMessageId msg_id, CanRxHandlerCb handler, 
   return can_rx_register_handler(&s_can_storage->rx_handlers, msg_id, handler, context);
 }
 
-StatusCode can_transmit(const CANMessage *msg, const CanAckRequest *ack_request) {
+StatusCode can_transmit(const CanMessage *msg, const CanAckRequest *ack_request) {
   if (s_can_storage == NULL) {
     return status_code(STATUS_CODE_UNINITIALIZED);
   } else if (msg->msg_id >= CAN_MSG_MAX_IDS) {
@@ -138,7 +138,7 @@ bool can_process_event(const Event *e) {
 
 void prv_tx_handler(void *context) {
   CanStorage *can_storage = context;
-  CANMessage tx_msg;
+  CanMessage tx_msg;
 
   // If we failed to TX some messages or aren't transmitting fast enough, those events
   // were discarded. Raise a TX event to trigger a transmit attempt.
@@ -153,7 +153,7 @@ void prv_tx_handler(void *context) {
 void prv_rx_handler(void *context) {
   CanStorage *can_storage = context;
   uint32_t rx_id = 0;
-  CANMessage rx_msg = { 0 };
+  CanMessage rx_msg = { 0 };
   size_t counter = 0;
 
   bool extended = false;

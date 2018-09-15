@@ -14,7 +14,7 @@
 static GenericCanInterface s_interface;
 
 // CanRxHandlerCb
-static StatusCode prv_generic_can_network_rx_handler(const CANMessage *msg, void *context,
+static StatusCode prv_generic_can_network_rx_handler(const CanMessage *msg, void *context,
                                                      CanAckStatus *ack_reply) {
   (void)ack_reply;
   GenericCanRxStorage *gcrx = context;
@@ -30,7 +30,7 @@ static StatusCode prv_tx(const GenericCan *can, const GenericCanMsg *msg) {
   if (gcn->base.interface != &s_interface) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "GenericCan not aligned to GenericCanNetwork.");
   }
-  CANMessage can_msg = { 0 };
+  CanMessage can_msg = { 0 };
   status_ok_or_return(generic_can_msg_to_can_message(msg, &can_msg));
 
   return can_transmit(&can_msg, NULL);

@@ -49,7 +49,7 @@ void teardown_test(void) {}
 
 void test_can_ack_handle_devices(void) {
   TestResponse data = { 0 };
-  CANMessage can_msg = {
+  CanMessage can_msg = {
     .source_id = TEST_CAN_ACK_DEVICE_A,  //
     .type = CAN_MSG_TYPE_ACK,            //
     .msg_id = 0x2,                       //
@@ -147,7 +147,7 @@ void test_can_ack_expiry(void) {
 void test_can_ack_expiry_moved(void) {
   // Ensure that ACK expiry can handle being shuffled around
   volatile TestResponse data = { 0 };
-  CANMessage can_msg = {
+  CanMessage can_msg = {
     .source_id = TEST_CAN_ACK_DEVICE_A,  //
     .type = CAN_MSG_TYPE_ACK,            //
     .msg_id = 0x4,                       //

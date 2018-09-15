@@ -92,7 +92,7 @@ void test_powertrain_heartbeat_stop_heartbeat(void) {
 }
 
 void test_powertrain_heartbeat_kick_watchdog(void) {
-  CANMessage msg = {
+  CanMessage msg = {
     .type = CAN_MSG_TYPE_ACK,
     .msg_id = SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
   };

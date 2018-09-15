@@ -7,7 +7,7 @@
 typedef struct {
   uint32_t timeout_us;
   uint32_t last_success;
-  CANMessage msg;
+  CanMessage msg;
 } SenderStorage;
 
 static volatile SenderStorage s_sender = { 0 };

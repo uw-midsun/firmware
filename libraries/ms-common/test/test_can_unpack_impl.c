@@ -11,7 +11,7 @@
 
 #define TEST_CAN_UNPACK_IMPL_DLC 8
 
-static const CANMessage s_msg = {
+static const CanMessage s_msg = {
   .data_u8 = { 32, 64, 29, 76, 56, 21, 3, 1 },  //
   .dlc = TEST_CAN_UNPACK_IMPL_DLC,              //
 };

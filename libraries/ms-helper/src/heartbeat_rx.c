@@ -8,7 +8,7 @@
 #include "status.h"
 
 // CanRxHandlerCb
-static StatusCode prv_heartbeat_handler(const CANMessage *msg, void *context,
+static StatusCode prv_heartbeat_handler(const CanMessage *msg, void *context,
                                         CanAckStatus *ack_reply) {
   HeartbeatRxHandlerStorage *storage = context;
   if (!storage->handler(msg->msg_id, storage->context)) {
