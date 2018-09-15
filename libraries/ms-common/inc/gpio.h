@@ -17,7 +17,7 @@ typedef enum {
   GPIO_DIR_OUT,
   GPIO_DIR_OUT_OD,  // Output open-drain
   NUM_GPIO_DIRS,
-} GPIODir;
+} GpioDir;
 
 // For setting the output value of the pin
 typedef enum {
@@ -53,7 +53,7 @@ typedef enum {
 
 // GPIO settings for setting the value of a pin
 typedef struct GPIOSettings {
-  GPIODir direction;
+  GpioDir direction;
   GpioState state;
   GPIORes resistor;
   GPIOAltFn alt_function;
