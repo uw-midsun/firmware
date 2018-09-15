@@ -52,19 +52,19 @@ typedef enum {
 } GPIOAltFn;
 
 // GPIO settings for setting the value of a pin
-typedef struct GPIOSettings {
+typedef struct GpioSettings {
   GpioDir direction;
   GpioState state;
   GPIORes resistor;
   GPIOAltFn alt_function;
-} GPIOSettings;
+} GpioSettings;
 
 // Initializes GPIO globally by setting all pins to their default state. ONLY CALL ONCE or it will
 // deinit all current settings. Change setting by calling gpio_init_pin.
 StatusCode gpio_init(void);
 
 // Initializes a GPIO pin by address.
-StatusCode gpio_init_pin(const GpioAddress *address, const GPIOSettings *settings);
+StatusCode gpio_init_pin(const GpioAddress *address, const GpioSettings *settings);
 
 // Set the pin state by address.
 StatusCode gpio_set_state(const GpioAddress *address, GpioState state);

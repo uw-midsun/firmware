@@ -124,7 +124,7 @@ StatusCode control_stalk_init(ControlStalk *stalk, Ads1015Storage *ads1015,
     ads1015_configure_channel(stalk->ads1015, channel, true, prv_analog_cb, stalk);
   }
 
-  GPIOSettings gpio_settings = {
+  GpioSettings gpio_settings = {
     .direction = GPIO_DIR_IN,
     .resistor = GPIO_RES_PULLUP,
   };

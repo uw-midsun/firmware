@@ -63,7 +63,7 @@ void setup_test(void) {
     .loopback = true,
   };
   GpioAddress addr = { GPIO_PORT_A, 0 };
-  GPIOSettings gpio_settings = {
+  GpioSettings gpio_settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,
   };

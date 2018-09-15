@@ -37,7 +37,7 @@ static StatusCode prv_set_outputs(LightsGpio *lights_gpio, LightsGpioOutputBitse
 }
 
 StatusCode lights_gpio_init(const LightsGpio *lights_gpio) {
-  GPIOSettings settings = {
+  GpioSettings settings = {
     .direction = GPIO_DIR_OUT,       //
     .state = GPIO_STATE_HIGH,        //
     .resistor = GPIO_RES_NONE,       //

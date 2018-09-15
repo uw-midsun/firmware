@@ -28,7 +28,7 @@ static void prv_charger_pin_it(const GpioAddress *address, void *context) {
 }
 
 StatusCode charger_pin_init(const GpioAddress *address) {
-  const GPIOSettings settings = {
+  const GpioSettings settings = {
     .state = GPIO_STATE_LOW,
     .direction = GPIO_DIR_IN,
     .resistor = GPIO_RES_NONE,

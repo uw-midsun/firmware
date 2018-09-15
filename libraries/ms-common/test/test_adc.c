@@ -28,7 +28,7 @@ void prv_adc_check_range(ADCChannel adc_channel) {
 }
 
 void setup_test() {
-  GPIOSettings settings = {
+  GpioSettings settings = {
     GPIO_DIR_IN,        //
     GPIO_STATE_LOW,     //
     GPIO_RES_NONE,      //

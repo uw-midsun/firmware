@@ -84,7 +84,7 @@ static void prv_adc_read(SoftTimerID timer_id, void *context) {
 }
 
 StatusCode power_path_init(PowerPathCfg *pp) {
-  GPIOSettings settings = {
+  GpioSettings settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,
     .resistor = GPIO_RES_NONE,

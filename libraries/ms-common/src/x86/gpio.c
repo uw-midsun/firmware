@@ -5,7 +5,7 @@
 
 #include "status.h"
 
-static GPIOSettings s_pin_settings[GPIO_TOTAL_PINS];
+static GpioSettings s_pin_settings[GPIO_TOTAL_PINS];
 static uint8_t s_gpio_pin_input_value[GPIO_TOTAL_PINS];
 
 static uint32_t prv_get_index(const GpioAddress *address) {
@@ -13,7 +13,7 @@ static uint32_t prv_get_index(const GpioAddress *address) {
 }
 
 StatusCode gpio_init(void) {
-  GPIOSettings default_settings = {
+  GpioSettings default_settings = {
     .direction = GPIO_DIR_IN,
     .state = GPIO_STATE_LOW,
     .resistor = GPIO_RES_NONE,
@@ -26,7 +26,7 @@ StatusCode gpio_init(void) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_init_pin(const GpioAddress *address, const GPIOSettings *settings) {
+StatusCode gpio_init_pin(const GpioAddress *address, const GpioSettings *settings) {
   if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT ||
       settings->direction >= NUM_GPIO_DIRS || settings->state >= NUM_GPIO_STATES ||
       settings->resistor >= NUM_GPIO_RESES || settings->alt_function >= NUM_GPIO_ALTFNS) {

@@ -25,7 +25,7 @@ StatusCode killswitch_init(KillswitchStorage *storage, const GpioAddress *killsw
 }
 
 StatusCode killswitch_bypass(const GpioAddress *killswitch) {
-  GPIOSettings gpio_settings = {
+  GpioSettings gpio_settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,
   };

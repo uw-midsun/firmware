@@ -65,7 +65,7 @@ StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioE
     expander->int_pin = *interrupt_pin;
 
     // Configure the interrupt pin from the MCP23008 - active-low
-    GPIOSettings gpio_settings = {
+    GpioSettings gpio_settings = {
       .direction = GPIO_DIR_IN,        //
       .alt_function = GPIO_ALTFN_NONE  //
     };
@@ -95,7 +95,7 @@ StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioE
 }
 
 StatusCode gpio_expander_init_pin(GpioExpanderStorage *expander, GpioExpanderPin pin,
-                                  const GPIOSettings *settings) {
+                                  const GpioSettings *settings) {
   if (expander == NULL || settings == NULL ||
       (settings->resistor != GPIO_RES_NONE && settings->resistor != GPIO_RES_PULLUP)) {
     return status_code(STATUS_CODE_INVALID_ARGS);

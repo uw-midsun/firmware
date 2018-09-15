@@ -140,7 +140,7 @@ StatusCode ads1015_init(Ads1015Storage *storage, I2CPort i2c_port, Ads1015Addres
   status_ok_or_return(prv_setup_register(storage, ADS1015_ADDRESS_POINTER_HI_THRESH,
                                          ADS1015_HI_THRESH_REGISTER_MSB,
                                          ADS1015_HI_THRESH_REGISTER_LSB));
-  GPIOSettings gpio_settings = {
+  GpioSettings gpio_settings = {
     .direction = GPIO_DIR_IN,  //
   };
   InterruptSettings it_settings = {

@@ -54,7 +54,7 @@ void test_pwm_output(void) {
   TEST_ASSERT_OK(pwm_set_dc(TEST_PWM_TIMER, TEST_PWM_DUTY_CYCLE));
 
   const GpioAddress addr = TEST_PWM_ADDR;
-  const GPIOSettings settings = {
+  const GpioSettings settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,
     .resistor = GPIO_RES_PULLUP,

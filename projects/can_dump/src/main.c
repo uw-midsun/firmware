@@ -31,7 +31,7 @@ int main(void) {
   generic_can_register_rx((GenericCan *)&s_can, prv_can_rx_callback, 0, 0, true, NULL);
   generic_can_register_rx((GenericCan *)&s_can, prv_can_rx_callback, 0, 0, false, NULL);
 
-  GPIOSettings led_settings = {
+  GpioSettings led_settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_LOW,
   };

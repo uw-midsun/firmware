@@ -37,7 +37,7 @@ StatusCode spi_init(SpiPort spi, const SPISettings *settings) {
   s_port[spi].rcc_cmd(s_port[spi].periph, ENABLE);
   s_port[spi].cs = settings->cs;
 
-  GPIOSettings gpio_settings = {
+  GpioSettings gpio_settings = {
     .alt_function = GPIO_ALTFN_0,  //
     .direction = GPIO_DIR_IN,      //
     .state = GPIO_STATE_HIGH,      //

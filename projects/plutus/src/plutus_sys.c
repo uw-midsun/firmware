@@ -69,7 +69,7 @@ static StatusCode prv_init_common(PlutusSysStorage *storage, PlutusSysType type)
                                                     heartbeat_rx_auto_ack_handler, NULL));
 
   // TODO(ELEC-439): drive fans using PWM
-  GPIOSettings fan_settings = {
+  GpioSettings fan_settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,
   };
@@ -81,7 +81,7 @@ static StatusCode prv_init_common(PlutusSysStorage *storage, PlutusSysType type)
 }
 
 PlutusSysType plutus_sys_get_type(void) {
-  const GPIOSettings gpio_settings = { .direction = GPIO_DIR_IN };
+  const GpioSettings gpio_settings = { .direction = GPIO_DIR_IN };
   GpioAddress board_selector = PLUTUS_CFG_BOARD_TYPE_SEL;
   gpio_init_pin(&board_selector, &gpio_settings);
 

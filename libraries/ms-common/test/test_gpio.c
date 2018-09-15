@@ -34,7 +34,7 @@ void test_gpio_init_valid(void) {
 // Test that a valid gpio configuration will work.
 void test_gpio_init_pin_valid(void) {
   // Default settings for a pin.
-  GPIOSettings settings = {
+  GpioSettings settings = {
     .direction = GPIO_DIR_IN,
     .state = GPIO_STATE_LOW,
     .resistor = GPIO_RES_PULLUP,
@@ -52,7 +52,7 @@ void test_gpio_init_pin_valid(void) {
 // Tests a set of addresses far outside normal range.
 void test_gpio_init_pin_invalid_address(void) {
   // Default settings for a pin.
-  GPIOSettings settings = {
+  GpioSettings settings = {
     .direction = GPIO_DIR_IN,
     .state = GPIO_STATE_LOW,
     .resistor = GPIO_RES_PULLUP,
@@ -74,7 +74,7 @@ void test_gpio_init_pin_invalid_address(void) {
 // Tests a set of settings outside normal range.
 void test_gpio_init_pin_invalid_settings(void) {
   // Bad settings for a pin.
-  GPIOSettings settings = {
+  GpioSettings settings = {
     .direction = NUM_GPIO_DIRS,
     .state = GPIO_STATE_LOW,
     .resistor = GPIO_RES_PULLUP,
@@ -102,7 +102,7 @@ void test_gpio_init_pin_invalid_settings(void) {
 // register.
 void test_gpio_init_pin_valid_output(void) {
   // Default high settings for a pin.
-  GPIOSettings settings = {
+  GpioSettings settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,
     .resistor = GPIO_RES_NONE,
@@ -128,7 +128,7 @@ void test_gpio_init_pin_valid_output(void) {
 // Test that a valid state change will work.
 void test_gpio_set_state_valid(void) {
   // Default output settings for a pin.
-  GPIOSettings settings = {
+  GpioSettings settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,
     .resistor = GPIO_RES_PULLUP,
@@ -182,7 +182,7 @@ void test_gpio_set_state_invalid_state(void) {
 // Test that a valid state toggle will work.
 void test_gpio_toggle_state_valid(void) {
   // Default output settings for a pin.
-  GPIOSettings settings = {
+  GpioSettings settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_LOW,
     .resistor = GPIO_RES_PULLUP,
@@ -231,7 +231,7 @@ void test_gpio_toggle_state_invalid_address(void) {
 // gpio_init_pin works.
 void test_gpio_get_state_valid(void) {
   // Default output settings for a pin.
-  GPIOSettings settings = {
+  GpioSettings settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_LOW,
     .resistor = GPIO_RES_PULLUP,

@@ -17,7 +17,7 @@ StatusCode gpio_init(void) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_init_pin(const GpioAddress *address, const GPIOSettings *settings) {
+StatusCode gpio_init_pin(const GpioAddress *address, const GpioSettings *settings) {
   if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT ||
       settings->direction >= NUM_GPIO_DIRS || settings->state >= NUM_GPIO_STATES ||
       settings->resistor >= NUM_GPIO_RESES || settings->alt_function >= NUM_GPIO_ALTFNS) {

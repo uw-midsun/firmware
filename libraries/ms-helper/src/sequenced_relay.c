@@ -24,7 +24,7 @@ StatusCode sequenced_relay_init(SequencedRelayStorage *storage,
   storage->settings = *settings;
   storage->delay_timer = SOFT_TIMER_INVALID_TIMER;
 
-  GPIOSettings gpio_settings = {
+  GpioSettings gpio_settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_LOW,
   };

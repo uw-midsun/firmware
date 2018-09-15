@@ -20,7 +20,7 @@ int main() {
                             { GPIO_PORT_C, 2 }, { GPIO_PORT_C, 3 }, { GPIO_PORT_C, 4 },
                             { GPIO_PORT_C, 5 } };
 
-  GPIOSettings settings = {
+  GpioSettings settings = {
     GPIO_DIR_IN,        //
     GPIO_STATE_LOW,     //
     GPIO_RES_NONE,      //

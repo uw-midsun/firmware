@@ -21,7 +21,7 @@ void teardown_test(void) {}
 
 // Verify that the init and set_state calls work as intended.
 void test_gpio_seq(void) {
-  const GPIOSettings settings = {
+  const GpioSettings settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_LOW,
     .resistor = GPIO_RES_NONE,

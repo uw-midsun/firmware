@@ -51,7 +51,7 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
   memset(s_handlers, 0, sizeof(s_handlers));
   s_num_filters = 0;
 
-  GPIOSettings gpio_settings = {
+  GpioSettings gpio_settings = {
     .alt_function = GPIO_ALTFN_4,  //
     .direction = GPIO_DIR_OUT,     //
   };

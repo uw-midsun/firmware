@@ -57,7 +57,7 @@ StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioE
 
 // Initialize one of the expander pins.
 StatusCode gpio_expander_init_pin(GpioExpanderStorage *expander, GpioExpanderPin pin,
-                                  const GPIOSettings *settings);
+                                  const GpioSettings *settings);
 
 // Returns the set output value or the current input value based on the pin configuration
 StatusCode gpio_expander_get_state(GpioExpanderStorage *expander, GpioExpanderPin pin,

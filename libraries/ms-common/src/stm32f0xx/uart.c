@@ -57,7 +57,7 @@ StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage
   fifo_init(&s_port[uart].storage->tx_fifo, s_port[uart].storage->tx_buf);
   fifo_init(&s_port[uart].storage->rx_fifo, s_port[uart].storage->rx_buf);
 
-  GPIOSettings gpio_settings = {
+  GpioSettings gpio_settings = {
     .alt_function = settings->alt_fn,  //
     .resistor = GPIO_RES_PULLUP,       //
   };

@@ -132,7 +132,7 @@ void gpio_fsm_init(const ChaosConfig *cfg) {
   fsm_init(&s_gpio_fsm, "GpioFsm", &gpio_state_idle, (void *)cfg);
 
   // Permanently on devices:
-  GPIOSettings settings = {
+  GpioSettings settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,
     .resistor = GPIO_RES_NONE,

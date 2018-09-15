@@ -33,10 +33,10 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_gpio_expander_init_pin(void) {
-  GPIOSettings input_settings = {
+  GpioSettings input_settings = {
     .direction = GPIO_DIR_IN,  //
   };
-  GPIOSettings output_settings = {
+  GpioSettings output_settings = {
     .direction = GPIO_DIR_OUT,  //
     .state = GPIO_STATE_HIGH,   //
   };
@@ -66,10 +66,10 @@ void test_gpio_expander_get_state(void) {
 }
 
 void test_gpio_expander_set_state(void) {
-  GPIOSettings input_settings = {
+  GpioSettings input_settings = {
     .direction = GPIO_DIR_IN,  //
   };
-  GPIOSettings output_settings = {
+  GpioSettings output_settings = {
     .direction = GPIO_DIR_OUT,  //
     .state = GPIO_STATE_HIGH,   //
   };

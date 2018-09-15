@@ -167,7 +167,7 @@ StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings
   prv_bit_modify(storage, MCP2515_CTRL_REG_CANCTRL, MCP2515_CANCTRL_OPMODE_MASK, opmode);
 
   // Active-low interrupt pin
-  const GPIOSettings gpio_settings = {
+  const GpioSettings gpio_settings = {
     .direction = GPIO_DIR_IN,
   };
   status_ok_or_return(gpio_init_pin(&settings->int_pin, &gpio_settings));

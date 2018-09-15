@@ -8,7 +8,7 @@ static const GpioAddress s_leds[NUM_DEBUG_LEDS] = {
 };
 
 StatusCode debug_led_init(DebugLed led) {
-  const GPIOSettings led_settings = {
+  const GpioSettings led_settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,
   };
