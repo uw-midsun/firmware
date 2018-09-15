@@ -99,7 +99,7 @@ StatusCode ltc_adc_init(LtcAdcStorage *storage, const LtcAdcSettings *settings) 
   storage->miso = settings->miso;
 
   // The LTC2484 uses SPI Mode 0 (see Figure 5 on p.20 in the datasheet)
-  SPISettings spi_config = {
+  SpiSettings spi_config = {
     .baudrate = settings->spi_baudrate,
     .mode = SPI_MODE_0,
     .mosi = settings->mosi,

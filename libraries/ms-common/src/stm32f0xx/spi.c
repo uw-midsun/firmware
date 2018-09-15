@@ -15,7 +15,7 @@ static SpiPortData s_port[NUM_SPI_PORTS] = {
   [SPI_PORT_2] = { .rcc_cmd = RCC_APB1PeriphClockCmd, .periph = RCC_APB1Periph_SPI2, .base = SPI2 },
 };
 
-StatusCode spi_init(SpiPort spi, const SPISettings *settings) {
+StatusCode spi_init(SpiPort spi, const SpiSettings *settings) {
   if (spi >= NUM_SPI_PORTS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid SPI port.");
   } else if (settings->mode >= NUM_SPI_MODES) {

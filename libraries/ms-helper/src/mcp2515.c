@@ -129,7 +129,7 @@ StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings
   storage->rx_cb = settings->rx_cb;
   storage->context = settings->context;
 
-  const SPISettings spi_settings = {
+  const SpiSettings spi_settings = {
     .baudrate = settings->baudrate,
     .mode = SPI_MODE_0,
     .mosi = settings->mosi,

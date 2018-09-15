@@ -1,6 +1,6 @@
 #include "spi.h"
 
-StatusCode spi_init(SpiPort spi, const SPISettings *settings) {
+StatusCode spi_init(SpiPort spi, const SpiSettings *settings) {
   return status_code(STATUS_CODE_UNIMPLEMENTED);
 }
 

@@ -22,11 +22,11 @@ typedef struct {
   GpioAddress miso;
   GpioAddress sclk;
   GpioAddress cs;
-} SPISettings;
+} SpiSettings;
 
 // Note that our prescalers on STM32 must be a power of 2, so the actual baudrate may not be
 // exactly as requested. Please verify that the actual baudrate is within bounds.
-StatusCode spi_init(SpiPort spi, const SPISettings *settings);
+StatusCode spi_init(SpiPort spi, const SpiSettings *settings);
 
 StatusCode spi_exchange(SpiPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *rx_data,
                         size_t rx_len);
