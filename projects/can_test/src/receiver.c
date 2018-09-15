@@ -7,7 +7,7 @@ static volatile uint32_t s_prev_val = 0;
 static volatile uint32_t s_counter = 0;
 static volatile uint32_t s_skips = 0;
 
-static StatusCode prv_handle_can_rx(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_handle_can_rx(const CANMessage *msg, void *context, CanAckStatus *ack_reply) {
   s_counter++;
 
   if (msg->data_u32[0] != s_prev_val + 1) {

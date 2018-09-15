@@ -15,7 +15,7 @@ static GenericCanInterface s_interface;
 
 // CanRxHandlerCb
 static StatusCode prv_generic_can_network_rx_handler(const CANMessage *msg, void *context,
-                                                     CANAckStatus *ack_reply) {
+                                                     CanAckStatus *ack_reply) {
   (void)ack_reply;
   GenericCanRxStorage *gcrx = context;
   GenericCanMsg generic_msg = { 0 };

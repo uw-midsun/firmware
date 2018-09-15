@@ -36,10 +36,10 @@ static HeartbeatRxHandlerStorage s_hb_storage;
 static CanStorage s_can_storage;
 
 // CANAckRequestCb
-static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                    uint16_t num_remaining, void *context) {
   (void)num_remaining;
-  CANAckStatus *expected_status = context;
+  CanAckStatus *expected_status = context;
   TEST_ASSERT_EQUAL(SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT, msg_id);
   TEST_ASSERT_EQUAL(TEST_HEARTBEAT_RX_CAN_DEVICE_ID, device);
   TEST_ASSERT_EQUAL(*expected_status, status);
@@ -84,7 +84,7 @@ void test_heartbeat_rx(void) {
   HeartbeatRxHandlerStorage hb_storage = {};
   TEST_ASSERT_OK(heartbeat_rx_register_handler(&hb_storage, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
                                                prv_heartbeat_rx_handler, (void *)&context));
-  CANAckStatus expected_status = CAN_ACK_STATUS_OK;
+  CanAckStatus expected_status = CAN_ACK_STATUS_OK;
   CANAckRequest req = {
     .callback = prv_ack_callback,
     .context = &expected_status,

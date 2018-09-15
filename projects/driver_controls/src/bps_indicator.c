@@ -8,7 +8,7 @@
 #include "input_event.h"
 
 static StatusCode prv_handle_heartbeat(const CANMessage *msg, void *context,
-                                       CANAckStatus *ack_reply) {
+                                       CanAckStatus *ack_reply) {
   uint8_t data = 0;
   CAN_UNPACK_BPS_HEARTBEAT(msg, &data);
 
@@ -21,7 +21,7 @@ static StatusCode prv_handle_heartbeat(const CANMessage *msg, void *context,
 }
 
 static StatusCode prv_handle_powertrain_fault(const CANMessage *msg, void *context,
-                                              CANAckStatus *ack_reply) {
+                                              CanAckStatus *ack_reply) {
   event_raise_priority(EVENT_PRIORITY_HIGHEST, INPUT_EVENT_BPS_FAULT, 0);
 
   return STATUS_CODE_OK;

@@ -51,7 +51,7 @@ static void prv_kick_watchdog(void) {
 }
 
 // CANAckRequestCb
-static StatusCode prv_ack_cb(CanMessageId id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_cb(CanMessageId id, uint16_t device, CanAckStatus status,
                              uint16_t num_remaining, void *context) {
   // The watchdog will handle the failure of subsequent ACKs so ignore the statuses.
   (void)id;

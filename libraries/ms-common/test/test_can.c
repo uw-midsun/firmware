@@ -16,7 +16,7 @@ typedef enum {
 
 static CanStorage s_can_storage;
 
-static StatusCode prv_rx_callback(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_rx_callback(const CANMessage *msg, void *context, CanAckStatus *ack_reply) {
   CANMessage *rx_msg = context;
   *rx_msg = *msg;
 
@@ -27,7 +27,7 @@ static StatusCode prv_rx_callback(const CANMessage *msg, void *context, CANAckSt
   return STATUS_CODE_OK;
 }
 
-static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                    uint16_t num_remaining, void *context) {
   uint16_t *device_acked = context;
   *device_acked = device;
@@ -35,9 +35,9 @@ static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CANAckS
   return STATUS_CODE_OK;
 }
 
-static StatusCode prv_ack_callback_status(CanMessageId msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_callback_status(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                           uint16_t num_remaining, void *context) {
-  CANAckStatus *ret_status = context;
+  CanAckStatus *ret_status = context;
   *ret_status = status;
 
   return STATUS_CODE_OK;
@@ -185,7 +185,7 @@ void test_can_ack(void) {
 }
 
 void test_can_ack_expire(void) {
-  volatile CANAckStatus ack_status = NUM_CAN_ACK_STATUSES;
+  volatile CanAckStatus ack_status = NUM_CAN_ACK_STATUSES;
   CANMessage msg = {
     .msg_id = 0x1,               //
     .type = CAN_MSG_TYPE_DATA,   //
@@ -209,7 +209,7 @@ void test_can_ack_expire(void) {
 }
 
 void test_can_ack_status(void) {
-  volatile CANAckStatus ack_status = NUM_CAN_ACK_STATUSES;
+  volatile CanAckStatus ack_status = NUM_CAN_ACK_STATUSES;
   volatile CANMessage rx_msg = { 0 };
   CANMessage msg = {
     .msg_id = TEST_CAN_UNKNOWN_MSG_ID,

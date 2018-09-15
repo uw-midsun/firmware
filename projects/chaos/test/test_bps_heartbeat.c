@@ -23,7 +23,7 @@
 
 static CanStorage s_storage;
 
-static StatusCode prv_bps_ack_request(CanMessageId msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_bps_ack_request(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                       uint16_t remaining, void *context) {
   (void)context;
   TEST_ASSERT_EQUAL(SYSTEM_CAN_DEVICE_CHAOS, device);

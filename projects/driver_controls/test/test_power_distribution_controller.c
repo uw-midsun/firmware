@@ -21,11 +21,11 @@ static CanStorage s_storage;
 
 typedef struct TestPowerDistributionControllerAckCtx {
   EEPowerState expected_state;
-  CANAckStatus returned_status;
+  CanAckStatus returned_status;
 } TestPowerDistributionControllerAckCtx;
 
 // Handler that allows for injecting ack responses.
-static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CanAckStatus *ack_reply) {
   (void)msg;
   TestPowerDistributionControllerAckCtx *ctx = context;
   EEPowerState state = NUM_EE_POWER_STATES;

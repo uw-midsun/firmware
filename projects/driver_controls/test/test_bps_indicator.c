@@ -14,7 +14,7 @@
 
 static CanStorage s_can_storage;
 
-static StatusCode prv_strobe_cb(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_strobe_cb(const CANMessage *msg, void *context, CanAckStatus *ack_reply) {
   EELightState *expected_state = context;
 
   uint8_t id = 0, state = 0;

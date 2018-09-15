@@ -13,7 +13,7 @@
 
 // CANRxHandler
 static StatusCode prv_relay_rx_can_handler(const CANMessage *msg, void *context,
-                                           CANAckStatus *ack_reply) {
+                                           CanAckStatus *ack_reply) {
   RelayRxStorage *storage = context;
   uint8_t state = storage->state_bound;
   // NOTE: This is a bit of a hack that exploits the fact all the relay control messages are the

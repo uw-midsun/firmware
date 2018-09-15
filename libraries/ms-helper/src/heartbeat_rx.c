@@ -9,7 +9,7 @@
 
 // CanRxHandlerCb
 static StatusCode prv_heartbeat_handler(const CANMessage *msg, void *context,
-                                        CANAckStatus *ack_reply) {
+                                        CanAckStatus *ack_reply) {
   HeartbeatRxHandlerStorage *storage = context;
   if (!storage->handler(msg->msg_id, storage->context)) {
     *ack_reply = CAN_ACK_STATUS_INVALID;

@@ -10,7 +10,7 @@
 static CruiseStorage s_cruise_storage;
 
 static StatusCode prv_handle_motor_velocity(const CANMessage *msg, void *context,
-                                            CANAckStatus *ack_reply) {
+                                            CanAckStatus *ack_reply) {
   CruiseStorage *cruise = context;
 
   int16_t left = 0, right = 0;

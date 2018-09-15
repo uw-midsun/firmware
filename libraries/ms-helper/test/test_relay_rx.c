@@ -42,10 +42,10 @@ typedef struct TestRelayRxHandlerCtx {
 static CanStorage s_can_storage;
 
 // CANAckRequestCb
-static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                    uint16_t num_remaining, void *context) {
   (void)num_remaining;
-  CANAckStatus *expected_status = context;
+  CanAckStatus *expected_status = context;
   TEST_ASSERT_EQUAL(SYSTEM_CAN_MESSAGE_BATTERY_RELAY_MAIN, msg_id);
   TEST_ASSERT_EQUAL(TEST_RELAY_CAN_DEVICE_ID, device);
   TEST_ASSERT_EQUAL(*expected_status, status);
@@ -112,7 +112,7 @@ void test_relay_rx(void) {
                                             NUM_TEST_RELAY_RX_STATES, prv_relay_rx_handler,
                                             &context));
 
-  CANAckStatus expected_status = CAN_ACK_STATUS_OK;
+  CanAckStatus expected_status = CAN_ACK_STATUS_OK;
   CANAckRequest req = {
     .callback = prv_ack_callback,
     .context = &expected_status,

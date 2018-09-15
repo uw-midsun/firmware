@@ -17,9 +17,9 @@ static EmergencyFaultStorage s_em_storage;
 static CanStorage s_storage;
 
 // Handler that allows for injecting ack responses.
-static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CanAckStatus *ack_reply) {
   (void)msg;
-  CANAckStatus *status = context;
+  CanAckStatus *status = context;
   *ack_reply = *status;
   return STATUS_CODE_OK;
 }
@@ -51,7 +51,7 @@ void teardown_test(void) {}
 // Tests emergency_fault_process_event which implicitly calls emergency_fault_send and
 // emergency_fault_clear.
 void test_emergency_fault(void) {
-  CANAckStatus ack_status = CAN_ACK_STATUS_OK;
+  CanAckStatus ack_status = CAN_ACK_STATUS_OK;
   TEST_ASSERT_OK(can_register_rx_handler(SYSTEM_CAN_MESSAGE_POWER_DISTRIBUTION_FAULT,
                                          prv_rx_handler, &ack_status));
 

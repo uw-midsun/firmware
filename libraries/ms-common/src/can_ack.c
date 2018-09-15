@@ -5,7 +5,7 @@
 #include <string.h>
 
 static StatusCode prv_update_req(CanAckRequests *requests, CanMessageId msg_id,
-                                 SoftTimerId timer_id, CANAckStatus status, uint16_t device);
+                                 SoftTimerId timer_id, CanAckStatus status, uint16_t device);
 
 static void prv_timeout_cb(SoftTimerId timer_id, void *context);
 
@@ -51,7 +51,7 @@ StatusCode can_ack_handle_msg(CanAckRequests *requests, const CANMessage *msg) {
 }
 
 static StatusCode prv_update_req(CanAckRequests *requests, CanMessageId msg_id,
-                                 SoftTimerId timer_id, CANAckStatus status, uint16_t device) {
+                                 SoftTimerId timer_id, CanAckStatus status, uint16_t device) {
   CANAckPendingReq *found_request = NULL;
   size_t index = 0;
 

@@ -38,7 +38,7 @@ static bool prv_guard_select_relay(const Fsm *fsm, const Event *e, void *context
   return e->data == fsm_ctx->ack_ctx.id;
 }
 
-static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                    uint16_t num_remaining, void *context) {
   (void)msg_id;
   (void)device;

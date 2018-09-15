@@ -21,7 +21,7 @@ static CanStorage s_storage;
 static EEChargerSetRelayState s_expected_state = NUM_EE_CHARGER_SET_RELAY_STATES;
 
 static StatusCode prv_charger_can_handler(const CANMessage *msg, void *context,
-                                          CANAckStatus *ack_reply) {
+                                          CanAckStatus *ack_reply) {
   (void)context;
   (void)ack_reply;
   EEChargerSetRelayState state = NUM_EE_CHARGER_SET_RELAY_STATES;

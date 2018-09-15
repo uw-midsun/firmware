@@ -21,7 +21,7 @@ static uint16_t s_sequence_lookup[NUM_EE_POWER_STATES] = {
 
 // CanRxHandlerCb
 static StatusCode prv_handle_power_state_msg(const CANMessage *msg, void *context,
-                                             CANAckStatus *ack_reply) {
+                                             CanAckStatus *ack_reply) {
   (void)context;
   EEPowerState power_state = NUM_EE_POWER_STATES;
   CAN_UNPACK_POWER_STATE(msg, (uint8_t *)&power_state);

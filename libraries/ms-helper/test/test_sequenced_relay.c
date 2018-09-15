@@ -28,9 +28,9 @@ typedef enum {
   TEST_SEQUENCED_RELAY_EVENT_CAN_FAULT,
 } TestSequencedRelayEvent;
 
-static StatusCode prv_ack_cb(CanMessageId msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_cb(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                              uint16_t num_remaining, void *context) {
-  CANAckStatus *ack_status = context;
+  CanAckStatus *ack_status = context;
   *ack_status = status;
 
   LOG_DEBUG("CAN ACK status %d\n", status);
@@ -68,7 +68,7 @@ void teardown_test(void) {}
 
 void test_sequenced_relay_can(void) {
   // Ask to close the relay
-  volatile CANAckStatus status = NUM_STATUS_CODES;
+  volatile CanAckStatus status = NUM_STATUS_CODES;
   CANAckRequest ack_request = {
     .callback = prv_ack_cb,
     .context = &status,

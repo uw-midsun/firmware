@@ -40,12 +40,12 @@ typedef enum {
   CAN_ACK_STATUS_INVALID,
   CAN_ACK_STATUS_UNKNOWN,
   NUM_CAN_ACK_STATUSES,
-} CANAckStatus;
+} CanAckStatus;
 
 // If the callback was fired due to timer expiry, the device ID is invalid.
 // If the return code is non-OK, it is assumed that the received ACK is invalid and should be
 // ignored. If this occurs on a timer expiry, we still remove the ACK request.
-typedef StatusCode (*CANAckRequestCb)(CanMessageId msg_id, uint16_t device, CANAckStatus status,
+typedef StatusCode (*CANAckRequestCb)(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                       uint16_t num_remaining, void *context);
 
 typedef struct CANAckRequest {

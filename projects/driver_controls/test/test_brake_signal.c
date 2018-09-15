@@ -26,7 +26,7 @@ static CanStorage s_can_storage;
 static EELightState s_brake_state = false;
 
 static StatusCode prv_light_state_cb(const CANMessage *msg, void *context,
-                                     CANAckStatus *ack_reply) {
+                                     CanAckStatus *ack_reply) {
   uint8_t light_id = 0, state = 0;
   CAN_UNPACK_LIGHTS_STATE(msg, &light_id, &state);
   TEST_ASSERT_EQUAL(EE_LIGHT_TYPE_BRAKES, light_id);

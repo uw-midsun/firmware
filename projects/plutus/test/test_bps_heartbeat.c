@@ -17,7 +17,7 @@
 static CanStorage s_can;
 static BpsHeartbeatStorage s_bps_heartbeat;
 static EERelayState s_relay_state;
-static CANAckStatus s_ack_status;
+static CanAckStatus s_ack_status;
 static EEBpsHeartbeatState s_heartbeat_state;
 
 StatusCode TEST_MOCK(sequenced_relay_set_state)(SequencedRelayStorage *storage,
@@ -28,7 +28,7 @@ StatusCode TEST_MOCK(sequenced_relay_set_state)(SequencedRelayStorage *storage,
   return STATUS_CODE_OK;
 }
 
-static StatusCode prv_bps_rx(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_bps_rx(const CANMessage *msg, void *context, CanAckStatus *ack_reply) {
   *ack_reply = s_ack_status;
 
   uint8_t state = UINT8_MAX;

@@ -7,8 +7,8 @@
 static CanRxHandlers s_rx_handlers;
 static CANRxHandler s_rx_handler_storage[TEST_CAN_RX_NUM_HANDLERS];
 
-static StatusCode prv_rx_callback(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
-  *ack_reply = (CANAckStatus)context;
+static StatusCode prv_rx_callback(const CANMessage *msg, void *context, CanAckStatus *ack_reply) {
+  *ack_reply = (CanAckStatus)context;
 
   return STATUS_CODE_OK;
 }

@@ -54,13 +54,13 @@ static volatile uint8_t s_dcdc_uv = UINT8_MAX;
 static volatile uint8_t s_aux_ov = UINT8_MAX;
 static volatile uint8_t s_aux_uv = UINT8_MAX;
 
-static StatusCode prv_handle_uvov(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_handle_uvov(const CANMessage *msg, void *context, CanAckStatus *ack_reply) {
   LOG_DEBUG("Handled\n");
   CAN_UNPACK_OVUV_DCDC_AUX(msg, &s_dcdc_ov, &s_dcdc_uv, &s_aux_ov, &s_aux_uv);
   return STATUS_CODE_OK;
 }
 
-static StatusCode prv_handle_vc(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_handle_vc(const CANMessage *msg, void *context, CanAckStatus *ack_reply) {
   LOG_DEBUG("Handled\n");
   uint16_t aux_v = UINT8_MAX;
   uint16_t aux_c = UINT8_MAX;
