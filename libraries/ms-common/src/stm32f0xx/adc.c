@@ -7,8 +7,8 @@
 #include "stm32f0xx.h"
 
 // TS_CAL addresses obtained from section 3.10.1 of the specific device datasheet
-#define TS_CAL1 0x1FFFF7b8
-#define TS_CAL2 0x1FFFF7c2
+#define ADC_TS_CAL1 0x1FFFF7b8
+#define ADC_TS_CAL2 0x1FFFF7c2
 
 // VREFINT_CAL address obtained from section 3.10.2 of the specific device datasheet
 #define VREFINT_CAL 0x1FFFF7ba
@@ -30,8 +30,8 @@ static AdcStatus s_adc_status;
 
 // Formula obtained from section 13.9 of the reference manual. Returns reading in kelvin
 static uint16_t prv_get_temp(uint16_t reading) {
-  uint16_t ts_cal1 = *(uint16_t *)TS_CAL1;
-  uint16_t ts_cal2 = *(uint16_t *)TS_CAL2;
+  uint16_t ts_cal1 = *(uint16_t *)ADC_TS_CAL1;
+  uint16_t ts_cal2 = *(uint16_t *)ADC_TS_CAL2;
 
   reading = ((110 - 30) * (reading - ts_cal1)) / (ts_cal2 - ts_cal1) + 30;
 
