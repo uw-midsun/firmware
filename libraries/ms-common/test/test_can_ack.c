@@ -12,7 +12,7 @@ typedef enum {
   TEST_CAN_ACK_DEVICE_UNRECOGNIZED
 } TestCanAckDevice;
 
-static CANAckRequests s_ack_requests;
+static CanAckRequests s_ack_requests;
 
 typedef struct TestResponse {
   CanMessageId msg_id;

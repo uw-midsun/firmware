@@ -70,18 +70,18 @@ static_assert(SIZEOF_FIELD(CANAckPendingReq, expected_bitset) ==
                   SIZEOF_FIELD(CANAckPendingReq, response_bitset),
               "CAN pending ACK expected bitset size not equal to response bitset size");
 
-typedef struct CANAckRequests {
+typedef struct CanAckRequests {
   ObjectPool pool;
   CANAckPendingReq request_nodes[CAN_ACK_MAX_REQUESTS];
   CANAckPendingReq *active_requests[CAN_ACK_MAX_REQUESTS];
   size_t num_requests;
-} CANAckRequests;
+} CanAckRequests;
 
-StatusCode can_ack_init(CANAckRequests *requests);
+StatusCode can_ack_init(CanAckRequests *requests);
 
 // ack_request's expected bitset should be populated using CAN_ACK_EXPECTED_DEVICES.
-StatusCode can_ack_add_request(CANAckRequests *requests, CanMessageId msg_id,
+StatusCode can_ack_add_request(CanAckRequests *requests, CanMessageId msg_id,
                                const CANAckRequest *ack_request);
 
 // Handle a received ACK, firing the callback associated with the received message
-StatusCode can_ack_handle_msg(CANAckRequests *requests, const CANMessage *msg);
+StatusCode can_ack_handle_msg(CanAckRequests *requests, const CANMessage *msg);
