@@ -49,7 +49,7 @@ static uint16_t prv_get_vdda(uint16_t reading) {
   return reading;
 }
 
-void adc_init(ADCMode adc_mode) {
+void adc_init(AdcMode adc_mode) {
   ADC_DeInit(ADC1);
 
   // Once the ADC has been reset, enable it with the given settings

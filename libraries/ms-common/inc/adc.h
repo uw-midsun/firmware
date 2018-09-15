@@ -11,7 +11,7 @@ typedef enum {
   ADC_MODE_SINGLE = 0,
   ADC_MODE_CONTINUOUS,
   NUM_ADC_MODES,
-} ADCMode;
+} AdcMode;
 
 typedef enum {
   ADC_CHANNEL_0 = 0,
@@ -39,7 +39,7 @@ typedef enum {
 typedef void (*ADCCallback)(AdcChannel adc_channel, void *context);
 
 // Initialize the ADC to the desired conversion mode
-void adc_init(ADCMode adc_mode);
+void adc_init(AdcMode adc_mode);
 
 // Enable or disable a given channel.
 // A race condition may occur when setting a channel during a conversion. However, it should not
