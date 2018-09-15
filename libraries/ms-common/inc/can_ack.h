@@ -45,7 +45,7 @@ typedef enum {
 // If the callback was fired due to timer expiry, the device ID is invalid.
 // If the return code is non-OK, it is assumed that the received ACK is invalid and should be
 // ignored. If this occurs on a timer expiry, we still remove the ACK request.
-typedef StatusCode (*CANAckRequestCb)(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+typedef StatusCode (*CANAckRequestCb)(CanMessageId msg_id, uint16_t device, CANAckStatus status,
                                       uint16_t num_remaining, void *context);
 
 typedef struct CANAckRequest {
@@ -62,7 +62,7 @@ typedef struct CANAckPendingReq {
   uint32_t expected_bitset;
   uint32_t response_bitset;
   SoftTimerID timer;
-  CANMessageID msg_id;
+  CanMessageId msg_id;
 } CANAckPendingReq;
 static_assert(SIZEOF_FIELD(CANAckPendingReq, expected_bitset) * CHAR_BIT >= CAN_MSG_MAX_DEVICES,
               "CAN pending ACK expected bitset field not large enough to fit all CAN devices!");
@@ -80,7 +80,7 @@ typedef struct CANAckRequests {
 StatusCode can_ack_init(CANAckRequests *requests);
 
 // ack_request's expected bitset should be populated using CAN_ACK_EXPECTED_DEVICES.
-StatusCode can_ack_add_request(CANAckRequests *requests, CANMessageID msg_id,
+StatusCode can_ack_add_request(CANAckRequests *requests, CanMessageId msg_id,
                                const CANAckRequest *ack_request);
 
 // Handle a received ACK, firing the callback associated with the received message

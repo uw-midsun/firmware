@@ -4,7 +4,7 @@
 #include "can_ack.h"
 #include <string.h>
 
-static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
+static StatusCode prv_update_req(CANAckRequests *requests, CanMessageId msg_id,
                                  SoftTimerID timer_id, CANAckStatus status, uint16_t device);
 
 static void prv_timeout_cb(SoftTimerID timer_id, void *context);
@@ -17,7 +17,7 @@ StatusCode can_ack_init(CANAckRequests *requests) {
   return objpool_init(&requests->pool, requests->request_nodes, NULL, NULL);
 }
 
-StatusCode can_ack_add_request(CANAckRequests *requests, CANMessageID msg_id,
+StatusCode can_ack_add_request(CANAckRequests *requests, CanMessageId msg_id,
                                const CANAckRequest *ack_request) {
   if (ack_request == NULL || ack_request->expected_bitset == 0) {
     return status_code(STATUS_CODE_INVALID_ARGS);
@@ -50,7 +50,7 @@ StatusCode can_ack_handle_msg(CANAckRequests *requests, const CANMessage *msg) {
   return prv_update_req(requests, msg->msg_id, SOFT_TIMER_INVALID_TIMER, msg->data, msg->source_id);
 }
 
-static StatusCode prv_update_req(CANAckRequests *requests, CANMessageID msg_id,
+static StatusCode prv_update_req(CANAckRequests *requests, CanMessageId msg_id,
                                  SoftTimerID timer_id, CANAckStatus status, uint16_t device) {
   CANAckPendingReq *found_request = NULL;
   size_t index = 0;

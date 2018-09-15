@@ -15,13 +15,13 @@ typedef enum {
 static CANAckRequests s_ack_requests;
 
 typedef struct TestResponse {
-  CANMessageID msg_id;
+  CanMessageId msg_id;
   uint16_t device;
   CANAckStatus status;
   uint16_t num_remaining;
 } TestResponse;
 
-static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CANAckStatus status,
                                    uint16_t num_remaining, void *context) {
   LOG_DEBUG("ACK handled: status %d from %d (msg %d) (%d remaining)\n", status, device, msg_id,
             num_remaining);

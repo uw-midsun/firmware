@@ -19,7 +19,7 @@ static bool s_mock_return = true;
 static CANStorage s_can_storage;
 
 // CANAckRequestCb
-static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CANAckStatus status,
                                    uint16_t num_remaining, void *context) {
   (void)device;
   (void)num_remaining;

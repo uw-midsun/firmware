@@ -24,7 +24,7 @@
 #include "status.h"
 
 // Return true to respond in the affirmative. Returning false will fail the ACK.
-typedef bool (*HeartbeatRxHandler)(CANMessageID msg_id, void *context);
+typedef bool (*HeartbeatRxHandler)(CanMessageId msg_id, void *context);
 
 typedef struct HeartbeatRxHandlerStorage {
   HeartbeatRxHandler handler;
@@ -34,9 +34,9 @@ typedef struct HeartbeatRxHandlerStorage {
 // Registers a heartbeat handler (|handler|) to run for |msg_id|. |handler| takes |context| as an
 // argument. This configuration is stored in |storage| which must persist indefinitely. To
 // automatically respond in the affirmative register |heartbeat_rx_auto_ack_handler|.
-StatusCode heartbeat_rx_register_handler(HeartbeatRxHandlerStorage *storage, CANMessageID msg_id,
+StatusCode heartbeat_rx_register_handler(HeartbeatRxHandlerStorage *storage, CanMessageId msg_id,
                                          HeartbeatRxHandler handler, void *context);
 
 // An instance of HeartbeatRxHandler that can be used to automatically ack and return true with no
 // other behavior.
-bool heartbeat_rx_auto_ack_handler(CANMessageID msg_id, void *context);
+bool heartbeat_rx_auto_ack_handler(CanMessageId msg_id, void *context);

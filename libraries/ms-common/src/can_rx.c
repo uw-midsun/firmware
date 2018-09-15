@@ -32,7 +32,7 @@ StatusCode can_rx_register_default_handler(CANRxHandlers *rx_handlers, CANRxHand
   return ret;
 }
 
-StatusCode can_rx_register_handler(CANRxHandlers *rx_handlers, CANMessageID msg_id,
+StatusCode can_rx_register_handler(CANRxHandlers *rx_handlers, CanMessageId msg_id,
                                    CANRxHandlerCb handler, void *context) {
   if (rx_handlers->num_handlers == rx_handlers->max_handlers) {
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN RX handlers full");
@@ -52,7 +52,7 @@ StatusCode can_rx_register_handler(CANRxHandlers *rx_handlers, CANMessageID msg_
   return STATUS_CODE_OK;
 }
 
-CANRxHandler *can_rx_get_handler(CANRxHandlers *rx_handlers, CANMessageID msg_id) {
+CANRxHandler *can_rx_get_handler(CANRxHandlers *rx_handlers, CanMessageId msg_id) {
   const CANRxHandler key = {
     .msg_id = msg_id,
   };

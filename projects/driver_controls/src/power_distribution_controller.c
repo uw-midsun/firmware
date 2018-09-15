@@ -14,7 +14,7 @@
 static EEPowerState s_last_state = NUM_EE_POWER_STATES;
 
 // CANAckRequestCb
-static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CANAckStatus status,
                                    uint16_t num_remaining, void *context) {
   // Only Chaos is expected to ack so this isn't important.
   (void)msg_id;

@@ -4,7 +4,7 @@
 #include "log.h"
 #include "plutus_cfg.h"
 
-static StatusCode prv_handle_heartbeat_ack(CANMessageID msg_id, uint16_t device,
+static StatusCode prv_handle_heartbeat_ack(CanMessageId msg_id, uint16_t device,
                                            CANAckStatus status, uint16_t num_remaining,
                                            void *context) {
   BpsHeartbeatStorage *storage = context;

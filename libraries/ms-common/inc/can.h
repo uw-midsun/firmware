@@ -47,13 +47,13 @@ typedef struct CANStorage {
 StatusCode can_init(CANStorage *storage, const CANSettings *settings);
 
 // Adds a hardware filter for the specified message ID.
-StatusCode can_add_filter(CANMessageID msg_id);
+StatusCode can_add_filter(CanMessageId msg_id);
 
 // Registers a default RX handler for messages without specific RX handlers.
 StatusCode can_register_rx_default_handler(CANRxHandlerCb handler, void *context);
 
 // Registers an RX handler for a specific message ID.
-StatusCode can_register_rx_handler(CANMessageID msg_id, CANRxHandlerCb handler, void *context);
+StatusCode can_register_rx_handler(CanMessageId msg_id, CANRxHandlerCb handler, void *context);
 
 // Attempts to transmit the CAN message as soon as possible.
 StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request);

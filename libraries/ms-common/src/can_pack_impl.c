@@ -5,7 +5,7 @@
 #include "can_msg.h"
 #include "status.h"
 
-StatusCode can_pack_impl_u8(CANMessage *msg, uint16_t source_id, CANMessageID id, size_t num_bytes,
+StatusCode can_pack_impl_u8(CANMessage *msg, uint16_t source_id, CanMessageId id, size_t num_bytes,
                             uint8_t f1, uint8_t f2, uint8_t f3, uint8_t f4, uint8_t f5, uint8_t f6,
                             uint8_t f7, uint8_t f8) {
   if (num_bytes > CAN_PACK_IMPL_MAX_DLC) {
@@ -21,7 +21,7 @@ StatusCode can_pack_impl_u8(CANMessage *msg, uint16_t source_id, CANMessageID id
   return STATUS_CODE_OK;
 }
 
-StatusCode can_pack_impl_u16(CANMessage *msg, uint16_t source_id, CANMessageID id, size_t num_bytes,
+StatusCode can_pack_impl_u16(CANMessage *msg, uint16_t source_id, CanMessageId id, size_t num_bytes,
                              uint16_t f1, uint16_t f2, uint16_t f3, uint16_t f4) {
   if (num_bytes > CAN_PACK_IMPL_MAX_DLC) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "DLC too large");
@@ -36,7 +36,7 @@ StatusCode can_pack_impl_u16(CANMessage *msg, uint16_t source_id, CANMessageID i
   return STATUS_CODE_OK;
 }
 
-StatusCode can_pack_impl_u32(CANMessage *msg, uint16_t source_id, CANMessageID id, size_t num_bytes,
+StatusCode can_pack_impl_u32(CANMessage *msg, uint16_t source_id, CanMessageId id, size_t num_bytes,
                              uint32_t f1, uint32_t f2) {
   if (num_bytes > CAN_PACK_IMPL_MAX_DLC) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "DLC too large");
@@ -51,7 +51,7 @@ StatusCode can_pack_impl_u32(CANMessage *msg, uint16_t source_id, CANMessageID i
   return STATUS_CODE_OK;
 }
 
-StatusCode can_pack_impl_u64(CANMessage *msg, uint16_t source_id, CANMessageID id, size_t num_bytes,
+StatusCode can_pack_impl_u64(CANMessage *msg, uint16_t source_id, CanMessageId id, size_t num_bytes,
                              uint64_t f1) {
   if (num_bytes > CAN_PACK_IMPL_MAX_DLC) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "DLC too large");

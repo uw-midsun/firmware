@@ -27,7 +27,7 @@ static StatusCode prv_rx_callback(const CANMessage *msg, void *context, CANAckSt
   return STATUS_CODE_OK;
 }
 
-static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CANAckStatus status,
                                    uint16_t num_remaining, void *context) {
   uint16_t *device_acked = context;
   *device_acked = device;
@@ -35,7 +35,7 @@ static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckS
   return STATUS_CODE_OK;
 }
 
-static StatusCode prv_ack_callback_status(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_callback_status(CanMessageId msg_id, uint16_t device, CANAckStatus status,
                                           uint16_t num_remaining, void *context) {
   CANAckStatus *ret_status = context;
   *ret_status = status;

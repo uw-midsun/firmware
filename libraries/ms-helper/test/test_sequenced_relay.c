@@ -28,7 +28,7 @@ typedef enum {
   TEST_SEQUENCED_RELAY_EVENT_CAN_FAULT,
 } TestSequencedRelayEvent;
 
-static StatusCode prv_ack_cb(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_cb(CanMessageId msg_id, uint16_t device, CANAckStatus status,
                              uint16_t num_remaining, void *context) {
   CANAckStatus *ack_status = context;
   *ack_status = status;

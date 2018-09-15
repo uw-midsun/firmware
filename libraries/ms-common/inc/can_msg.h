@@ -27,11 +27,11 @@ typedef enum {
   NUM_CAN_MSG_TYPES,
 } CANMsgType;
 
-typedef uint16_t CANMessageID;
+typedef uint16_t CanMessageId;
 
 typedef struct CANMessage {
   uint16_t source_id;
-  CANMessageID msg_id;
+  CanMessageId msg_id;
   union {
     uint64_t data;
     uint32_t data_u32[2];

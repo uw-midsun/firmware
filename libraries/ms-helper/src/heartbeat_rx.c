@@ -17,7 +17,7 @@ static StatusCode prv_heartbeat_handler(const CANMessage *msg, void *context,
   return STATUS_CODE_OK;
 }
 
-StatusCode heartbeat_rx_register_handler(HeartbeatRxHandlerStorage *storage, CANMessageID msg_id,
+StatusCode heartbeat_rx_register_handler(HeartbeatRxHandlerStorage *storage, CanMessageId msg_id,
                                          HeartbeatRxHandler handler, void *context) {
   if (handler == NULL || storage == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
@@ -27,7 +27,7 @@ StatusCode heartbeat_rx_register_handler(HeartbeatRxHandlerStorage *storage, CAN
   return can_register_rx_handler(msg_id, prv_heartbeat_handler, storage);
 }
 
-bool heartbeat_rx_auto_ack_handler(CANMessageID msg_id, void *context) {
+bool heartbeat_rx_auto_ack_handler(CanMessageId msg_id, void *context) {
   (void)msg_id;
   (void)context;
   return true;
