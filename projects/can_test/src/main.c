@@ -15,7 +15,7 @@ typedef enum {
   CAN_TEST_EVENT_RX = 0,
   CAN_TEST_EVENT_TX,
   CAN_TEST_EVENT_FAULT,
-} CANTestEvent;
+} CanTestEvent;
 
 static GpioAddress s_led = { GPIO_PORT_B, 3 };
 static CanStorage s_can_storage;
