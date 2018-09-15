@@ -13,11 +13,11 @@
 // VREFINT_CAL address obtained from section 3.10.2 of the specific device datasheet
 #define VREFINT_CAL 0x1FFFF7ba
 
-typedef struct ADCInterrupt {
+typedef struct AdcInterrupt {
   AdcCallback callback;
   void *context;
   uint16_t reading;
-} ADCInterrupt;
+} AdcInterrupt;
 
 typedef struct ADCStatus {
   uint32_t sequence;
@@ -25,7 +25,7 @@ typedef struct ADCStatus {
   volatile bool conv_complete;
 } ADCStatus;
 
-static ADCInterrupt s_adc_interrupts[NUM_ADC_CHANNELS];
+static AdcInterrupt s_adc_interrupts[NUM_ADC_CHANNELS];
 static ADCStatus s_adc_status;
 
 // Formula obtained from section 13.9 of the reference manual. Returns reading in kelvin
