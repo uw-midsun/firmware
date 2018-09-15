@@ -8,10 +8,10 @@
 
 // Process the received CAN message. Storage to an ACK reply is valid only if the message
 // is considered critical. If valid, the ack reply is OK by default.
-typedef StatusCode (*CANRxHandlerCb)(const CANMessage *msg, void *context, CANAckStatus *ack_reply);
+typedef StatusCode (*CanRxHandlerCb)(const CANMessage *msg, void *context, CANAckStatus *ack_reply);
 
 typedef struct CANRxHandler {
-  CANRxHandlerCb callback;
+  CanRxHandlerCb callback;
   void *context;
   CanMessageId msg_id;
 } CANRxHandler;
@@ -26,10 +26,10 @@ typedef struct CanRxHandlers {
 StatusCode can_rx_init(CanRxHandlers *rx_handlers, CANRxHandler *handler_storage,
                        size_t num_handlers);
 
-StatusCode can_rx_register_default_handler(CanRxHandlers *rx_handlers, CANRxHandlerCb handler,
+StatusCode can_rx_register_default_handler(CanRxHandlers *rx_handlers, CanRxHandlerCb handler,
                                            void *context);
 
 StatusCode can_rx_register_handler(CanRxHandlers *rx_handlers, CanMessageId msg_id,
-                                   CANRxHandlerCb handler, void *context);
+                                   CanRxHandlerCb handler, void *context);
 
 CANRxHandler *can_rx_get_handler(CanRxHandlers *rx_handlers, CanMessageId msg_id);

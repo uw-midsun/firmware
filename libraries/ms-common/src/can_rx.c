@@ -21,7 +21,7 @@ StatusCode can_rx_init(CanRxHandlers *rx_handlers, CANRxHandler *handler_storage
   return STATUS_CODE_OK;
 }
 
-StatusCode can_rx_register_default_handler(CanRxHandlers *rx_handlers, CANRxHandlerCb handler,
+StatusCode can_rx_register_default_handler(CanRxHandlers *rx_handlers, CanRxHandlerCb handler,
                                            void *context) {
   StatusCode ret = can_rx_register_handler(rx_handlers, CAN_MSG_INVALID_ID, handler, context);
 
@@ -33,7 +33,7 @@ StatusCode can_rx_register_default_handler(CanRxHandlers *rx_handlers, CANRxHand
 }
 
 StatusCode can_rx_register_handler(CanRxHandlers *rx_handlers, CanMessageId msg_id,
-                                   CANRxHandlerCb handler, void *context) {
+                                   CanRxHandlerCb handler, void *context) {
   if (rx_handlers->num_handlers == rx_handlers->max_handlers) {
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "CAN RX handlers full");
   } else if (can_rx_get_handler(rx_handlers, msg_id) != NULL) {

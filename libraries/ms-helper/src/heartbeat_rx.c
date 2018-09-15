@@ -7,7 +7,7 @@
 #include "can_rx.h"
 #include "status.h"
 
-// CANRxHandlerCb
+// CanRxHandlerCb
 static StatusCode prv_heartbeat_handler(const CANMessage *msg, void *context,
                                         CANAckStatus *ack_reply) {
   HeartbeatRxHandlerStorage *storage = context;

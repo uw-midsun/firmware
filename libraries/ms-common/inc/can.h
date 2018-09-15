@@ -6,7 +6,7 @@
 // Note that the CAN FSM must be clocked. Call `can_process_event(&e)` in your event loop.
 //
 // See:
-// * can_rx: CANRxHandlerCb
+// * can_rx: CanRxHandlerCb
 // * can_ack: CANAckRequest
 #include <stdbool.h>
 #include <stdint.h>
@@ -50,10 +50,10 @@ StatusCode can_init(CanStorage *storage, const CanSettings *settings);
 StatusCode can_add_filter(CanMessageId msg_id);
 
 // Registers a default RX handler for messages without specific RX handlers.
-StatusCode can_register_rx_default_handler(CANRxHandlerCb handler, void *context);
+StatusCode can_register_rx_default_handler(CanRxHandlerCb handler, void *context);
 
 // Registers an RX handler for a specific message ID.
-StatusCode can_register_rx_handler(CanMessageId msg_id, CANRxHandlerCb handler, void *context);
+StatusCode can_register_rx_handler(CanMessageId msg_id, CanRxHandlerCb handler, void *context);
 
 // Attempts to transmit the CAN message as soon as possible.
 StatusCode can_transmit(const CANMessage *msg, const CANAckRequest *ack_request);

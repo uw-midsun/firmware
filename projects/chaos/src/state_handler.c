@@ -19,7 +19,7 @@ static uint16_t s_sequence_lookup[NUM_EE_POWER_STATES] = {
   [EE_POWER_STATE_DRIVE] = CHAOS_EVENT_SEQUENCE_DRIVE,
 };
 
-// CANRxHandlerCb
+// CanRxHandlerCb
 static StatusCode prv_handle_power_state_msg(const CANMessage *msg, void *context,
                                              CANAckStatus *ack_reply) {
   (void)context;

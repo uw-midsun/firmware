@@ -88,7 +88,7 @@ StatusCode can_add_filter(CanMessageId msg_id) {
   return can_hw_add_filter(can_id.raw, mask.raw, false);
 }
 
-StatusCode can_register_rx_default_handler(CANRxHandlerCb handler, void *context) {
+StatusCode can_register_rx_default_handler(CanRxHandlerCb handler, void *context) {
   if (s_can_storage == NULL) {
     return status_code(STATUS_CODE_UNINITIALIZED);
   }
@@ -96,7 +96,7 @@ StatusCode can_register_rx_default_handler(CANRxHandlerCb handler, void *context
   return can_rx_register_default_handler(&s_can_storage->rx_handlers, handler, context);
 }
 
-StatusCode can_register_rx_handler(CanMessageId msg_id, CANRxHandlerCb handler, void *context) {
+StatusCode can_register_rx_handler(CanMessageId msg_id, CanRxHandlerCb handler, void *context) {
   if (s_can_storage == NULL) {
     return status_code(STATUS_CODE_UNINITIALIZED);
   }

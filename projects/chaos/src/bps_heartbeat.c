@@ -33,7 +33,7 @@ static StatusCode prv_kick_watchdog(void) {
   return STATUS_CODE_OK;
 }
 
-// CANRxHandlerCb
+// CanRxHandlerCb
 static StatusCode prv_bps_rx(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
   (void)context;
   (void)ack_reply;

@@ -3,7 +3,7 @@
 //
 // Requires CAN to be initialized.
 //
-// Allows registering a RelayRxHandler that is wrapped by a CANRxHandlerCb which is properly
+// Allows registering a RelayRxHandler that is wrapped by a CanRxHandlerCb which is properly
 // configured to unpack relay messages and handle faults. This RelayRxHandler is expected to execute
 // the modifications to any GPIO pins or other mechanisms to trigger state changes to relays and
 // report them back to the CANRxHanderCb which will handle the ack. These should ideally be kept
@@ -14,7 +14,7 @@
 #include "can_msg_defs.h"
 #include "status.h"
 
-// Wrapped by a CANRxHandlerCb.
+// Wrapped by a CanRxHandlerCb.
 typedef StatusCode (*RelayRxHandler)(SystemCanMessage msg_id, uint8_t state, void *context);
 
 typedef struct RelayRxStorage {
