@@ -10,8 +10,8 @@
 #define ADC_TS_CAL1 0x1FFFF7b8
 #define ADC_TS_CAL2 0x1FFFF7c2
 
-// VREFINT_CAL address obtained from section 3.10.2 of the specific device datasheet
-#define VREFINT_CAL 0x1FFFF7ba
+// ADC_VREFINT_CAL address obtained from section 3.10.2 of the specific device datasheet
+#define ADC_VREFINT_CAL 0x1FFFF7ba
 
 typedef struct AdcInterrupt {
   AdcCallback callback;
@@ -44,7 +44,7 @@ static uint16_t prv_get_vdda(uint16_t reading) {
   if (!reading) {
     return reading;
   }
-  uint16_t vrefint_cal = *(uint16_t *)VREFINT_CAL;
+  uint16_t vrefint_cal = *(uint16_t *)ADC_VREFINT_CAL;
   reading = (3300 * vrefint_cal) / reading;
   return reading;
 }
