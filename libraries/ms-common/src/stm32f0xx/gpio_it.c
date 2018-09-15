@@ -9,16 +9,16 @@
 #include "stm32f0xx_interrupt.h"
 #include "stm32f0xx_syscfg.h"
 
-typedef struct GPIOITInterrupt {
+typedef struct GpioItInterrupt {
   GpioAddress address;
   GpioItCallback callback;
   void *context;
-} GPIOITInterrupt;
+} GpioItInterrupt;
 
-static GPIOITInterrupt s_gpio_it_interrupts[GPIO_PINS_PER_PORT];
+static GpioItInterrupt s_gpio_it_interrupts[GPIO_PINS_PER_PORT];
 
 void gpio_it_init(void) {
-  GPIOITInterrupt empty_interrupt = { 0 };
+  GpioItInterrupt empty_interrupt = { 0 };
   for (int16_t i = 0; i < GPIO_PINS_PER_PORT; i++) {
     s_gpio_it_interrupts[i] = empty_interrupt;
   }

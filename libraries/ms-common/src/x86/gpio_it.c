@@ -8,15 +8,15 @@
 #include "status.h"
 #include "x86_interrupt.h"
 
-typedef struct GPIOITInterrupt {
+typedef struct GpioItInterrupt {
   uint8_t interrupt_id;
   GpioAddress address;
   GpioItCallback callback;
   void *context;
-} GPIOITInterrupt;
+} GpioItInterrupt;
 
 static uint8_t s_gpio_it_handler_id;
-static GPIOITInterrupt s_gpio_it_interrupts[GPIO_PINS_PER_PORT];
+static GpioItInterrupt s_gpio_it_interrupts[GPIO_PINS_PER_PORT];
 
 static void prv_gpio_it_handler(uint8_t interrupt_id) {
   for (int i = 0; i < GPIO_PINS_PER_PORT; i++) {
@@ -31,7 +31,7 @@ static void prv_gpio_it_handler(uint8_t interrupt_id) {
 void gpio_it_init(void) {
   x86_interrupt_register_handler(prv_gpio_it_handler, &s_gpio_it_handler_id);
 
-  GPIOITInterrupt empty_cfg = { 0 };
+  GpioItInterrupt empty_cfg = { 0 };
   for (uint16_t i = 0; i < GPIO_PINS_PER_PORT; i++) {
     s_gpio_it_interrupts[i] = empty_cfg;
   }
