@@ -19,14 +19,14 @@ typedef struct AdcInterrupt {
   uint16_t reading;
 } AdcInterrupt;
 
-typedef struct ADCStatus {
+typedef struct AdcStatus {
   uint32_t sequence;
   bool continuous;
   volatile bool conv_complete;
-} ADCStatus;
+} AdcStatus;
 
 static AdcInterrupt s_adc_interrupts[NUM_ADC_CHANNELS];
-static ADCStatus s_adc_status;
+static AdcStatus s_adc_status;
 
 // Formula obtained from section 13.9 of the reference manual. Returns reading in kelvin
 static uint16_t prv_get_temp(uint16_t reading) {
