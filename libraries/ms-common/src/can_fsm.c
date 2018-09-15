@@ -85,7 +85,7 @@ static void prv_handle_tx(FSM *fsm, const Event *e, void *context) {
     return;
   }
 
-  CANId msg_id = {
+  CanId msg_id = {
     .source_id = can_storage->device_id,  //
     .type = tx_msg.type,                  //
     .msg_id = tx_msg.msg_id,              //

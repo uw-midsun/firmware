@@ -57,7 +57,7 @@ void test_generic_can(void) {
 
   volatile uint8_t counter = 0;
 
-  CANId raw_id = {
+  CanId raw_id = {
     .source_id = SYSTEM_CAN_DEVICE_CHARGER,
     .msg_id = 30,
     .type = CAN_MSG_TYPE_DATA,
