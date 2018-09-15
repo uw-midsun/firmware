@@ -41,7 +41,7 @@ typedef struct TestRelayRxHandlerCtx {
 
 static CanStorage s_can_storage;
 
-// CANAckRequestCb
+// CanAckRequestCb
 static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                    uint16_t num_remaining, void *context) {
   (void)num_remaining;

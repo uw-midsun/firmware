@@ -50,7 +50,7 @@ static void prv_kick_watchdog(void) {
   soft_timer_start_millis(POWERTRAIN_HEARTBEAT_WATCHDOG_MS, prv_hb_watchdog, NULL, &s_watchdog_id);
 }
 
-// CANAckRequestCb
+// CanAckRequestCb
 static StatusCode prv_ack_cb(CanMessageId id, uint16_t device, CanAckStatus status,
                              uint16_t num_remaining, void *context) {
   // The watchdog will handle the failure of subsequent ACKs so ignore the statuses.

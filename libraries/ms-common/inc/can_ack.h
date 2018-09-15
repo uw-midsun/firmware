@@ -45,11 +45,11 @@ typedef enum {
 // If the callback was fired due to timer expiry, the device ID is invalid.
 // If the return code is non-OK, it is assumed that the received ACK is invalid and should be
 // ignored. If this occurs on a timer expiry, we still remove the ACK request.
-typedef StatusCode (*CANAckRequestCb)(CanMessageId msg_id, uint16_t device, CanAckStatus status,
+typedef StatusCode (*CanAckRequestCb)(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                       uint16_t num_remaining, void *context);
 
 typedef struct CANAckRequest {
-  CANAckRequestCb callback;
+  CanAckRequestCb callback;
   void *context;
   uint32_t expected_bitset;
 } CANAckRequest;
@@ -57,7 +57,7 @@ static_assert(SIZEOF_FIELD(CANAckRequest, expected_bitset) * CHAR_BIT >= CAN_MSG
               "CAN ACK request expected bitset field not large enough to fit all CAN devices!");
 
 typedef struct CANAckPendingReq {
-  CANAckRequestCb callback;
+  CanAckRequestCb callback;
   void *context;
   uint32_t expected_bitset;
   uint32_t response_bitset;

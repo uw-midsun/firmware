@@ -28,7 +28,7 @@ static void prv_send(SoftTimerId id, void *context) {
   CAN_TRANSMIT_POWER_DISTRIBUTION_FAULT(&req, storage->reason);
 }
 
-// CANAckRequestCb
+// CanAckRequestCb
 static StatusCode prv_ack_handler(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                   uint16_t num_remaining, void *context) {
   // Ignore this as there should only be one receiver.
