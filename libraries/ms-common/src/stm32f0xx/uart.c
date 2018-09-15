@@ -81,7 +81,7 @@ StatusCode uart_init(UartPort uart, UartSettings *settings, UartStorage *storage
   return STATUS_CODE_OK;
 }
 
-StatusCode uart_set_rx_handler(UartPort uart, UARTRxHandler rx_handler, void *context) {
+StatusCode uart_set_rx_handler(UartPort uart, UartRxHandler rx_handler, void *context) {
   bool disabled = critical_section_start();
   s_port[uart].storage->rx_handler = rx_handler;
   s_port[uart].storage->context = context;

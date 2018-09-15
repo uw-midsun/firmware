@@ -11,10 +11,10 @@
 
 #define UART_MAX_BUFFER_LEN 512
 
-typedef void (*UARTRxHandler)(const uint8_t *rx_arr, size_t len, void *context);
+typedef void (*UartRxHandler)(const uint8_t *rx_arr, size_t len, void *context);
 
 typedef struct {
-  UARTRxHandler rx_handler;
+  UartRxHandler rx_handler;
   void *context;
 
   volatile Fifo tx_fifo;
@@ -28,7 +28,7 @@ typedef struct {
 
 typedef struct {
   uint32_t baudrate;
-  UARTRxHandler rx_handler;
+  UartRxHandler rx_handler;
   void *context;
 
   GpioAddress tx;
@@ -42,7 +42,7 @@ typedef struct {
 StatusCode uart_init(UartPort uart, UartSettings *settings, UartStorage *storage);
 
 // Overrides any currently set handler
-StatusCode uart_set_rx_handler(UartPort uart, UARTRxHandler rx_handler, void *context);
+StatusCode uart_set_rx_handler(UartPort uart, UartRxHandler rx_handler, void *context);
 
 // Sets the delimiter used to break up lines between callbacks
 // Note that the default delimiter is \n

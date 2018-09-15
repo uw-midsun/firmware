@@ -4,7 +4,7 @@ StatusCode uart_init(UartPort uart, UartSettings *settings, UartStorage *storage
   return status_code(STATUS_CODE_UNIMPLEMENTED);
 }
 
-StatusCode uart_set_rx_handler(UartPort uart, UARTRxHandler rx_handler, void *context) {
+StatusCode uart_set_rx_handler(UartPort uart, UartRxHandler rx_handler, void *context) {
   return status_code(STATUS_CODE_UNIMPLEMENTED);
 }
 
