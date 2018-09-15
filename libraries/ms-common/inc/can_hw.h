@@ -34,15 +34,15 @@ typedef enum {
   NUM_CAN_HW_BITRATES
 } CanHwBitrate;
 
-typedef struct CANHwSettings {
+typedef struct CanHwSettings {
   GpioAddress tx;
   GpioAddress rx;
   CanHwBitrate bitrate;
   bool loopback;
-} CANHwSettings;
+} CanHwSettings;
 
 // Initializes CAN using the specified settings.
-StatusCode can_hw_init(const CANHwSettings *settings);
+StatusCode can_hw_init(const CanHwSettings *settings);
 
 // Registers a callback for the given event
 StatusCode can_hw_register_callback(CANHwEvent event, CanHwEventHandlerCb callback, void *context);

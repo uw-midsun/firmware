@@ -35,7 +35,7 @@ static void prv_init_periph(void) {
   };
   uart_init(CAN_SLAVE_UART_PORT, &uart_settings, &s_uart_storage);
 
-  CANHwSettings can_hw_settings = {
+  CanHwSettings can_hw_settings = {
     .tx = { .port = GPIO_PORT_A, .pin = 12 },  //
     .rx = { .port = GPIO_PORT_A, .pin = 11 },  //
     .bitrate = CAN_SLAVE_CAN_BITRATE,          //

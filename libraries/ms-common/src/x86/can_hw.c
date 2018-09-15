@@ -127,7 +127,7 @@ static void *prv_tx_thread(void *arg) {
   return NULL;
 }
 
-StatusCode can_hw_init(const CANHwSettings *settings) {
+StatusCode can_hw_init(const CanHwSettings *settings) {
   if (s_socket_data.can_fd != -1) {
     // Request threads to exit
     close(s_socket_data.can_fd);

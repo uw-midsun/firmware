@@ -47,7 +47,7 @@ static void prv_add_filter(uint8_t filter_num, uint32_t mask, uint32_t filter) {
   CAN_FilterInit(&filter_cfg);
 }
 
-StatusCode can_hw_init(const CANHwSettings *settings) {
+StatusCode can_hw_init(const CanHwSettings *settings) {
   memset(s_handlers, 0, sizeof(s_handlers));
   s_num_filters = 0;
 

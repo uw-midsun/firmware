@@ -59,7 +59,7 @@ StatusCode can_init(CanStorage *storage, const CanSettings *settings) {
   status_ok_or_return(can_rx_init(&s_can_storage->rx_handlers, s_can_storage->rx_handler_storage,
                                   SIZEOF_ARRAY(s_can_storage->rx_handler_storage)));
 
-  CANHwSettings can_hw_settings = {
+  CanHwSettings can_hw_settings = {
     .bitrate = settings->bitrate,
     .loopback = settings->loopback,
     .tx = settings->tx,

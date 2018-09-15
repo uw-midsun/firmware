@@ -28,7 +28,7 @@ void setup_test(void) {
   soft_timer_init();
   can_interval_init();
 
-  const CANHwSettings can_hw_settings = {
+  const CanHwSettings can_hw_settings = {
     .bitrate = CAN_HW_BITRATE_250KBPS,
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },

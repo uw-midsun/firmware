@@ -16,5 +16,5 @@ typedef struct GenericCanHw {
   EventId fault_event;
 } GenericCanHw;
 
-StatusCode generic_can_hw_init(GenericCanHw *can_hw, const CANHwSettings *settings,
+StatusCode generic_can_hw_init(GenericCanHw *can_hw, const CanHwSettings *settings,
                                EventId fault_event);

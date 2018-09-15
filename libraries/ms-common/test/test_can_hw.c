@@ -33,7 +33,7 @@ void setup_test(void) {
   // Only used for delay - not needed for actual testing
   soft_timer_init();
 
-  CANHwSettings can_settings = {
+  CanHwSettings can_settings = {
     .bitrate = CAN_HW_BITRATE_125KBPS,
     .loopback = true,
     .tx = { GPIO_PORT_A, 12 },
