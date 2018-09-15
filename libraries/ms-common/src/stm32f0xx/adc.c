@@ -14,7 +14,7 @@
 #define VREFINT_CAL 0x1FFFF7ba
 
 typedef struct ADCInterrupt {
-  ADCCallback callback;
+  AdcCallback callback;
   void *context;
   uint16_t reading;
 } ADCInterrupt;
@@ -167,7 +167,7 @@ StatusCode adc_get_channel(GpioAddress address, AdcChannel *adc_channel) {
   return STATUS_CODE_OK;
 }
 
-StatusCode adc_register_callback(AdcChannel adc_channel, ADCCallback callback, void *context) {
+StatusCode adc_register_callback(AdcChannel adc_channel, AdcCallback callback, void *context) {
   if (adc_channel >= NUM_ADC_CHANNELS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }

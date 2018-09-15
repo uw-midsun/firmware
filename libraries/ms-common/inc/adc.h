@@ -36,7 +36,7 @@ typedef enum {
   NUM_ADC_CHANNELS,
 } AdcChannel;
 
-typedef void (*ADCCallback)(AdcChannel adc_channel, void *context);
+typedef void (*AdcCallback)(AdcChannel adc_channel, void *context);
 
 // Initialize the ADC to the desired conversion mode
 void adc_init(AdcMode adc_mode);
@@ -50,7 +50,7 @@ StatusCode adc_set_channel(AdcChannel adc_channel, bool new_state);
 StatusCode adc_get_channel(GpioAddress address, AdcChannel *adc_channel);
 
 // Register a callback function to be called when the specified channel completes a conversion
-StatusCode adc_register_callback(AdcChannel adc_channel, ADCCallback callback, void *context);
+StatusCode adc_register_callback(AdcChannel adc_channel, AdcCallback callback, void *context);
 
 // Obtain the raw 12-bit value read by the specified channel
 StatusCode adc_read_raw(AdcChannel adc_channel, uint16_t *reading);
