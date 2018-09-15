@@ -39,7 +39,7 @@ typedef enum {
   CHAOS_EVENT_DELAY_MS,
   CHAOS_EVENT_DELAY_DONE,
   NUM_CHAOS_EVENTS_FSM  // 27
-} ChaosEventsFSM;
+} ChaosEventsFsm;
 
 // Used for the sequence generator that schedules and order events for the other FSMs.
 typedef enum {
