@@ -38,7 +38,7 @@ typedef struct {
 
   GpioAddress cs;
   GpioAddress miso;
-  SPIPort spi_port;
+  SpiPort spi_port;
 } LtcAdcStorage;
 
 typedef struct LtcAdcSettings {
@@ -47,7 +47,7 @@ typedef struct LtcAdcSettings {
   GpioAddress miso;
   GpioAddress sclk;
 
-  SPIPort spi_port;
+  SpiPort spi_port;
   uint32_t spi_baudrate;
 
   LtcAdcFilterMode filter_mode;

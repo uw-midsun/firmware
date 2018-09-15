@@ -16,7 +16,7 @@
 typedef void (*Mcp2515RxCb)(uint32_t id, bool extended, uint64_t data, size_t dlc, void *context);
 
 typedef struct Mcp2515Settings {
-  SPIPort spi_port;
+  SpiPort spi_port;
   uint32_t baudrate;
   GpioAddress mosi;
   GpioAddress miso;
@@ -32,7 +32,7 @@ typedef struct Mcp2515Settings {
 } Mcp2515Settings;
 
 typedef struct Mcp2515Storage {
-  SPIPort spi_port;
+  SpiPort spi_port;
   Mcp2515RxCb rx_cb;
   void *context;
 } Mcp2515Storage;

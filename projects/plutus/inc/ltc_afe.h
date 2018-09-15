@@ -51,7 +51,7 @@ typedef struct LtcAfeSettings {
   GpioAddress miso;
   GpioAddress sclk;
 
-  const SPIPort spi_port;
+  const SpiPort spi_port;
   uint32_t spi_baudrate;
 
   LtcAfeAdcMode adc_mode;
@@ -69,7 +69,7 @@ typedef struct LtcAfeSettings {
 
 typedef struct LtcAfeStorage {
   FSM fsm;
-  SPIPort spi_port;
+  SpiPort spi_port;
   GpioAddress cs;
   LtcAfeAdcMode adc_mode;
 
