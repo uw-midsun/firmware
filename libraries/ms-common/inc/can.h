@@ -21,7 +21,7 @@
 
 typedef struct CANSettings {
   uint16_t device_id;
-  CANHwBitrate bitrate;
+  CanHwBitrate bitrate;
   GpioAddress tx;
   GpioAddress rx;
   EventId rx_event;

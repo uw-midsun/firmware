@@ -52,7 +52,7 @@ static pthread_mutex_t s_keep_alive = PTHREAD_MUTEX_INITIALIZER;
 
 static CANHwSocketData s_socket_data = { .can_fd = -1 };
 
-static uint32_t prv_get_delay(CANHwBitrate bitrate) {
+static uint32_t prv_get_delay(CanHwBitrate bitrate) {
   const uint32_t delay_us[NUM_CAN_HW_BITRATES] = {
     1000,  // 125 kbps
     500,   // 250 kbps

@@ -32,12 +32,12 @@ typedef enum {
   CAN_HW_BITRATE_500KBPS,
   CAN_HW_BITRATE_1000KBPS,
   NUM_CAN_HW_BITRATES
-} CANHwBitrate;
+} CanHwBitrate;
 
 typedef struct CANHwSettings {
   GpioAddress tx;
   GpioAddress rx;
-  CANHwBitrate bitrate;
+  CanHwBitrate bitrate;
   bool loopback;
 } CANHwSettings;
 
