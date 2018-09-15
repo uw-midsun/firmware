@@ -20,7 +20,7 @@ static const uint32_t s_resistance_lookup[] = {
   999300,   973800,
 };
 
-StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gpio,
+StatusCode thermistor_init(ThermistorStorage *storage, GpioAddress thermistor_gpio,
                            ThermistorPosition position) {
   storage->position = position;
   GPIOSettings gpio_settings = {

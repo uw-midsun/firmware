@@ -31,8 +31,8 @@ typedef struct {
   UARTRxHandler rx_handler;
   void *context;
 
-  GPIOAddress tx;
-  GPIOAddress rx;
+  GpioAddress tx;
+  GpioAddress rx;
   GPIOAltFn alt_fn;
 } UARTSettings;
 

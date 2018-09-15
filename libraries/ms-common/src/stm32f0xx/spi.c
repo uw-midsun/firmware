@@ -7,7 +7,7 @@ typedef struct {
   void (*rcc_cmd)(uint32_t periph, FunctionalState state);
   uint32_t periph;
   SPI_TypeDef *base;
-  GPIOAddress cs;
+  GpioAddress cs;
 } SPIPortData;
 
 static SPIPortData s_port[NUM_SPI_PORTS] = {

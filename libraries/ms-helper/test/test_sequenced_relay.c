@@ -80,8 +80,8 @@ void test_sequenced_relay_can(void) {
                                     TEST_SEQUENCED_RELAY_EVENT_CAN_RX);
   TEST_ASSERT_OK(status);
 
-  GPIOAddress left_relay = TEST_SEQUENCED_RELAY_LEFT;
-  GPIOAddress right_relay = TEST_SEQUENCED_RELAY_RIGHT;
+  GpioAddress left_relay = TEST_SEQUENCED_RELAY_LEFT;
+  GpioAddress right_relay = TEST_SEQUENCED_RELAY_RIGHT;
 
   // Make sure that both relays are now closed. We allow some delay before checking for sequencing.
   delay_ms(TEST_SEQUENCED_RELAY_DELAY_MS);
@@ -109,8 +109,8 @@ void test_sequenced_relay_set(void) {
   // Close the relays
   TEST_ASSERT_OK(sequenced_relay_set_state(&s_sequenced_relay, EE_RELAY_STATE_CLOSE));
 
-  GPIOAddress left_relay = TEST_SEQUENCED_RELAY_LEFT;
-  GPIOAddress right_relay = TEST_SEQUENCED_RELAY_RIGHT;
+  GpioAddress left_relay = TEST_SEQUENCED_RELAY_LEFT;
+  GpioAddress right_relay = TEST_SEQUENCED_RELAY_RIGHT;
 
   // Make sure that both relays are now closed. We allow some delay before checking for sequencing.
   delay_ms(TEST_SEQUENCED_RELAY_DELAY_MS);

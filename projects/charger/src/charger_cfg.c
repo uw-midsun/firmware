@@ -44,8 +44,8 @@ UARTPort charger_cfg_load_uart_port(void) {
   return UART_PORT_3;
 }
 
-GPIOAddress charger_cfg_load_charger_pin(void) {
-  return ((GPIOAddress){ GPIO_PORT_A, 15 });
+GpioAddress charger_cfg_load_charger_pin(void) {
+  return ((GpioAddress){ GPIO_PORT_A, 15 });
 }
 
 static GenericCanNetwork s_can_storage;

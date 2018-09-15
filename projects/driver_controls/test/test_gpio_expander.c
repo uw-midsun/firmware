@@ -26,7 +26,7 @@ void setup_test(void) {
 
   i2c_init(I2C_PORT_1, &settings);
 
-  GPIOAddress int_pin = { GPIO_PORT_A, 2 };
+  GpioAddress int_pin = { GPIO_PORT_A, 2 };
   TEST_ASSERT_OK(gpio_expander_init(&s_expander, I2C_PORT_1, GPIO_EXPANDER_ADDRESS_0, &int_pin));
 }
 

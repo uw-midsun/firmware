@@ -48,12 +48,12 @@ typedef struct GpioExpanderStorage {
   I2CPort port;
   I2CAddress addr;
   GpioExpanderCallback callbacks[NUM_GPIO_EXPANDER_PINS];
-  GPIOAddress int_pin;
+  GpioAddress int_pin;
 } GpioExpanderStorage;
 
 // Initialize the expander with an address to connect to its INT pin
 StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioExpanderAddress addr,
-                              const GPIOAddress *interrupt_pin);
+                              const GpioAddress *interrupt_pin);
 
 // Initialize one of the expander pins.
 StatusCode gpio_expander_init_pin(GpioExpanderStorage *expander, GpioExpanderPin pin,

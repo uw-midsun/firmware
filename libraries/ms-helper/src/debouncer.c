@@ -22,7 +22,7 @@ static void prv_timer_callback(SoftTimerID timer_id, void *context) {
 }
 
 // This is the interrupt callback to start off the debouncing
-static void prv_it_callback(const GPIOAddress *address, void *context) {
+static void prv_it_callback(const GpioAddress *address, void *context) {
   DebouncerStorage *debouncer = context;
   gpio_get_state(address, &debouncer->state);
 
@@ -32,7 +32,7 @@ static void prv_it_callback(const GPIOAddress *address, void *context) {
                           NULL);
 }
 
-StatusCode debouncer_init_pin(DebouncerStorage *debouncer, const GPIOAddress *address,
+StatusCode debouncer_init_pin(DebouncerStorage *debouncer, const GpioAddress *address,
                               GPIOItCallback callback, void *context) {
   GPIOSettings gpio_settings = {
     .direction = GPIO_DIR_IN,   //

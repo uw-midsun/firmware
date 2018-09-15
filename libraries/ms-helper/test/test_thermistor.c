@@ -48,7 +48,7 @@ StatusCode TEST_MOCK(adc_read_converted)(ADCChannel adc_channel, uint16_t *readi
   return STATUS_CODE_OK;
 }
 
-StatusCode TEST_MOCK(adc_get_channel)(GPIOAddress address, ADCChannel *adc_channel) {
+StatusCode TEST_MOCK(adc_get_channel)(GpioAddress address, ADCChannel *adc_channel) {
   *adc_channel = address.pin;
   return STATUS_CODE_OK;
 }
@@ -64,7 +64,7 @@ void teardown_test(void) {}
 // Tests thermistor calculations with thermistor = R2
 // Tests the thermistor at a standard temperature(10 degrees)
 void test_thermistor_normal(void) {
-  GPIOAddress gpio_addr = {
+  GpioAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 1,
   };
@@ -79,7 +79,7 @@ void test_thermistor_normal(void) {
 
 // Tests the lower bound of the resistance-temperature lookup table (0 deg)
 void test_thermistor_min_temp(void) {
-  GPIOAddress gpio_addr = {
+  GpioAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 2,
   };
@@ -94,7 +94,7 @@ void test_thermistor_min_temp(void) {
 
 // Tests the upper bound of the resistance-temperature lookup table (100 deg)
 void test_thermistor_max_temp(void) {
-  GPIOAddress gpio_addr = {
+  GpioAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 3,
   };
@@ -112,7 +112,7 @@ void test_thermistor_max_temp(void) {
 // Tests thermistor calculations with thermistor = R1
 // Tests the thermistor at a standard temperature(10 degrees)
 void test_thermistor_normal_alt(void) {
-  GPIOAddress gpio_addr = {
+  GpioAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 4,
   };
@@ -127,7 +127,7 @@ void test_thermistor_normal_alt(void) {
 
 // Tests the lower bound of the resistance-temperature lookup table (0 deg)
 void test_thermistor_min_temp_alt(void) {
-  GPIOAddress gpio_addr = {
+  GpioAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 5,
   };
@@ -142,7 +142,7 @@ void test_thermistor_min_temp_alt(void) {
 
 // Tests the upper bound of the resistance-temperature lookup table (100 deg)
 void test_thermistor_max_temp_alt(void) {
-  GPIOAddress gpio_addr = {
+  GpioAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 6,
   };
@@ -157,7 +157,7 @@ void test_thermistor_max_temp_alt(void) {
 
 // Tests for a temperature greater the lookup tables ranges
 void test_thermistor_exceed_range(void) {
-  GPIOAddress gpio_addr = {
+  GpioAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 0,
   };
@@ -171,7 +171,7 @@ void test_thermistor_exceed_range(void) {
 
 // Tests for a temperature smaller than the lookup tables ranges
 void test_thermistor_under_range(void) {
-  GPIOAddress gpio_addr = {
+  GpioAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 7,
   };
@@ -187,7 +187,7 @@ void test_thermistor_under_range(void) {
 
 // Tests for NULL node voltage reading
 void test_zero_node_voltage(void) {
-  GPIOAddress gpio_addr = {
+  GpioAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 7,
   };

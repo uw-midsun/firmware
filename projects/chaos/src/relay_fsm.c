@@ -26,7 +26,7 @@ typedef struct RelayFsmAckCtx {
 typedef struct RelayFsmCtx {
   RelayFsmAckCtx ack_ctx;
   CANAckRequest request;
-  GPIOAddress power_pin;
+  GpioAddress power_pin;
 } RelayFsmCtx;
 
 static RelayFsmCtx s_fsm_ctxs[NUM_RELAY_FSMS];
@@ -141,7 +141,7 @@ void relay_fsm_init(void) {
 }
 
 StatusCode relay_fsm_create(FSM *fsm, RelayId relay_id, const char *fsm_name,
-                            const GPIOAddress *addr, uint32_t ack_device_bitset) {
+                            const GpioAddress *addr, uint32_t ack_device_bitset) {
   if (relay_id > NUM_RELAY_IDS) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }

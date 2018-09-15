@@ -24,7 +24,7 @@ typedef struct ThermistorStorage {
 } ThermistorStorage;
 
 // Initializes the GPIO pin and ADC Channel associated with the thermistor
-StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gpio,
+StatusCode thermistor_init(ThermistorStorage *storage, GpioAddress thermistor_gpio,
                            ThermistorPosition position);
 
 // Fetch the temperature reading in deciCelsius from the MCU's ADC

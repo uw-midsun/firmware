@@ -9,7 +9,7 @@
 #include "interrupt_def.h"
 #include "status.h"
 
-static void prv_charger_pin_it(const GPIOAddress *address, void *context) {
+static void prv_charger_pin_it(const GpioAddress *address, void *context) {
   (void)context;
   GPIOState state = NUM_GPIO_STATES;
   gpio_get_state(address, &state);
@@ -27,7 +27,7 @@ static void prv_charger_pin_it(const GPIOAddress *address, void *context) {
   }
 }
 
-StatusCode charger_pin_init(const GPIOAddress *address) {
+StatusCode charger_pin_init(const GpioAddress *address) {
   const GPIOSettings settings = {
     .state = GPIO_STATE_LOW,
     .direction = GPIO_DIR_IN,

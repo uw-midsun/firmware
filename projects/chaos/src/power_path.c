@@ -21,7 +21,7 @@
 #define POWER_PATH_DCDC_OV_MILLIV 12840
 
 // Evaluates if two GPIO addresses are equal.
-static bool prv_addr_eq(GPIOAddress addr1, GPIOAddress addr2) {
+static bool prv_addr_eq(GpioAddress addr1, GpioAddress addr2) {
   return ((addr1.port == addr2.port) && (addr1.pin == addr2.pin));
 }
 
@@ -37,7 +37,7 @@ static void prv_send(SoftTimerID timer_id, void *context) {
 }
 
 // Interrupt handler for over and under voltage warnings.
-static void prv_voltage_warning(const GPIOAddress *addr, void *context) {
+static void prv_voltage_warning(const GpioAddress *addr, void *context) {
   PowerPathCfg *pp = context;
   StatusCode status = STATUS_CODE_OK;
   if (prv_addr_eq(*addr, pp->dcdc.uv_ov_pin) && pp->dcdc.monitoring_active) {

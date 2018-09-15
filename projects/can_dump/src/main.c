@@ -35,7 +35,7 @@ int main(void) {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_LOW,
   };
-  GPIOAddress led = { .port = GPIO_PORT_A, .pin = 15 };
+  GpioAddress led = { .port = GPIO_PORT_A, .pin = 15 };
   gpio_init_pin(&led, &led_settings);
 
   printf("hello\n");

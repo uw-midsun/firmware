@@ -28,7 +28,7 @@ void test_gpio_seq(void) {
     .alt_function = GPIO_ALTFN_NONE,
   };
 
-  const GPIOAddress addrs[] = {
+  const GpioAddress addrs[] = {
     { .port = 0, .pin = 1 },
     { .port = 0, .pin = 2 },
     { .port = 0, .pin = 3 },

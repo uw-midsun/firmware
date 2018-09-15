@@ -6,10 +6,10 @@
 #include "status.h"
 
 // GPIO address to be used to change that pin's settings. Both port and pin are zero indexed.
-typedef struct GPIOAddress {
+typedef struct GpioAddress {
   uint8_t port;
   uint8_t pin;
-} GPIOAddress;
+} GpioAddress;
 
 // For setting the direction of the pin
 typedef enum {
@@ -64,13 +64,13 @@ typedef struct GPIOSettings {
 StatusCode gpio_init(void);
 
 // Initializes a GPIO pin by address.
-StatusCode gpio_init_pin(const GPIOAddress *address, const GPIOSettings *settings);
+StatusCode gpio_init_pin(const GpioAddress *address, const GPIOSettings *settings);
 
 // Set the pin state by address.
-StatusCode gpio_set_state(const GPIOAddress *address, GPIOState state);
+StatusCode gpio_set_state(const GpioAddress *address, GPIOState state);
 
 // Toggles the output state of the pin.
-StatusCode gpio_toggle_state(const GPIOAddress *address);
+StatusCode gpio_toggle_state(const GpioAddress *address);
 
 // Gets the value of the input register for a pin and assigns it to the state that is passed in.
-StatusCode gpio_get_state(const GPIOAddress *address, GPIOState *input_state);
+StatusCode gpio_get_state(const GpioAddress *address, GPIOState *input_state);

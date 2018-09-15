@@ -18,10 +18,10 @@ typedef struct {
   uint32_t baudrate;
   SPIMode mode;
 
-  GPIOAddress mosi;
-  GPIOAddress miso;
-  GPIOAddress sclk;
-  GPIOAddress cs;
+  GpioAddress mosi;
+  GpioAddress miso;
+  GpioAddress sclk;
+  GpioAddress cs;
 } SPISettings;
 
 // Note that our prescalers on STM32 must be a power of 2, so the actual baudrate may not be

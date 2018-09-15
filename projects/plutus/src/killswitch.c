@@ -2,7 +2,7 @@
 #include "gpio_it.h"
 #include "log.h"
 
-static void prv_killswitch_handler(const GPIOAddress *address, void *context) {
+static void prv_killswitch_handler(const GpioAddress *address, void *context) {
   BpsHeartbeatStorage *storage = context;
 
   GPIOState state = NUM_GPIO_STATES;
@@ -17,14 +17,14 @@ static void prv_killswitch_handler(const GPIOAddress *address, void *context) {
   }
 }
 
-StatusCode killswitch_init(KillswitchStorage *storage, const GPIOAddress *killswitch,
+StatusCode killswitch_init(KillswitchStorage *storage, const GpioAddress *killswitch,
                            BpsHeartbeatStorage *bps_heartbeat) {
   // Force update
   prv_killswitch_handler(killswitch, bps_heartbeat);
   return debouncer_init_pin(&storage->debouncer, killswitch, prv_killswitch_handler, bps_heartbeat);
 }
 
-StatusCode killswitch_bypass(const GPIOAddress *killswitch) {
+StatusCode killswitch_bypass(const GpioAddress *killswitch) {
   GPIOSettings gpio_settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,

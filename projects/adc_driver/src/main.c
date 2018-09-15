@@ -13,7 +13,7 @@ void test_callback(ADCChannel adc_channel, void *context) {
 }
 
 int main() {
-  GPIOAddress address[] = { { GPIO_PORT_A, 0 }, { GPIO_PORT_A, 1 }, { GPIO_PORT_A, 2 },
+  GpioAddress address[] = { { GPIO_PORT_A, 0 }, { GPIO_PORT_A, 1 }, { GPIO_PORT_A, 2 },
                             { GPIO_PORT_A, 3 }, { GPIO_PORT_A, 4 }, { GPIO_PORT_A, 5 },
                             { GPIO_PORT_A, 6 }, { GPIO_PORT_A, 7 }, { GPIO_PORT_B, 0 },
                             { GPIO_PORT_A, 1 }, { GPIO_PORT_B, 0 }, { GPIO_PORT_B, 1 },

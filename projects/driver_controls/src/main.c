@@ -114,22 +114,22 @@ int main(void) {
   i2c_init(DC_CFG_I2C_BUS_PORT, &i2c_settings);
 
 #ifndef DC_CFG_DISABLE_CENTER_CONSOLE
-  GPIOAddress console_int_pin = DC_CFG_CONSOLE_IO_INT_PIN;
+  GpioAddress console_int_pin = DC_CFG_CONSOLE_IO_INT_PIN;
   gpio_expander_init(&s_console_expander, DC_CFG_I2C_BUS_PORT, DC_CFG_CONSOLE_IO_ADDR,
                      &console_int_pin);
   center_console_init(&s_console, &s_console_expander);
 #endif
 
 #ifndef DC_CFG_DISABLE_CONTROL_STALK
-  GPIOAddress stalk_int_pin = DC_CFG_STALK_IO_INT_PIN;
-  GPIOAddress stalk_ready_pin = DC_CFG_STALK_ADC_RDY_PIN;
+  GpioAddress stalk_int_pin = DC_CFG_STALK_IO_INT_PIN;
+  GpioAddress stalk_ready_pin = DC_CFG_STALK_ADC_RDY_PIN;
   gpio_expander_init(&s_stalk_expander, DC_CFG_I2C_BUS_PORT, DC_CFG_STALK_IO_ADDR, &stalk_int_pin);
   ads1015_init(&s_stalk_ads1015, DC_CFG_I2C_BUS_PORT, DC_CFG_STALK_ADC_ADDR, &stalk_ready_pin);
   control_stalk_init(&s_stalk, &s_stalk_ads1015, &s_stalk_expander);
 #endif
 
 #ifndef DC_CFG_DISABLE_PEDAL
-  GPIOAddress pedal_ads1015_ready = DC_CFG_PEDAL_ADC_RDY_PIN;
+  GpioAddress pedal_ads1015_ready = DC_CFG_PEDAL_ADC_RDY_PIN;
   ads1015_init(&s_pedal_ads1015, DC_CFG_I2C_BUS_PORT, DC_CFG_PEDAL_ADC_ADDR, &pedal_ads1015_ready);
   DcCalibBlob *dc_calib_blob = calib_blob();
   throttle_init(throttle_global(), &dc_calib_blob->throttle_calib, &s_pedal_ads1015);

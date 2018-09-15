@@ -113,7 +113,7 @@ static void prv_handle_error(Mcp2515Storage *storage, uint8_t int_flags) {
   }
 }
 
-static void prv_handle_int(const GPIOAddress *address, void *context) {
+static void prv_handle_int(const GpioAddress *address, void *context) {
   Mcp2515Storage *storage = context;
 
   uint8_t int_flags = 0;

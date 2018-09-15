@@ -73,7 +73,7 @@ static StatusCode prv_init_common(PlutusSysStorage *storage, PlutusSysType type)
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,
   };
-  GPIOAddress fan_1 = PLUTUS_CFG_FAN_1, fan_2 = PLUTUS_CFG_FAN_2;
+  GpioAddress fan_1 = PLUTUS_CFG_FAN_1, fan_2 = PLUTUS_CFG_FAN_2;
   gpio_init_pin(&fan_1, &fan_settings);
   gpio_init_pin(&fan_2, &fan_settings);
 
@@ -82,7 +82,7 @@ static StatusCode prv_init_common(PlutusSysStorage *storage, PlutusSysType type)
 
 PlutusSysType plutus_sys_get_type(void) {
   const GPIOSettings gpio_settings = { .direction = GPIO_DIR_IN };
-  GPIOAddress board_selector = PLUTUS_CFG_BOARD_TYPE_SEL;
+  GpioAddress board_selector = PLUTUS_CFG_BOARD_TYPE_SEL;
   gpio_init_pin(&board_selector, &gpio_settings);
 
   GPIOState state = NUM_GPIO_STATES;
@@ -101,7 +101,7 @@ StatusCode plutus_sys_init(PlutusSysStorage *storage, PlutusSysType type) {
 
   status_ok_or_return(prv_init_common(storage, type));
 
-  GPIOAddress killswitch = PLUTUS_CFG_KILLSWITCH;
+  GpioAddress killswitch = PLUTUS_CFG_KILLSWITCH;
   if (type == PLUTUS_SYS_TYPE_MASTER) {
     // Master also handles:
     // LTC AFE/ADC

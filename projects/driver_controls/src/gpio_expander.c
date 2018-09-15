@@ -15,7 +15,7 @@ static void prv_poll_timeout(SoftTimerID timer_id, void *context) {
 }
 
 // IO interrupt occurred
-static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
+static void prv_interrupt_handler(const GpioAddress *address, void *context) {
   GpioExpanderStorage *expander = context;
   uint8_t intf = 0;
   uint8_t gpio = 0;
@@ -50,7 +50,7 @@ static void prv_set_bit(GpioExpanderStorage *expander, uint8_t reg, GpioExpander
 }
 
 StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioExpanderAddress addr,
-                              const GPIOAddress *interrupt_pin) {
+                              const GpioAddress *interrupt_pin) {
   if (expander == NULL || addr >= NUM_GPIO_EXPANDER_ADDRESSES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }

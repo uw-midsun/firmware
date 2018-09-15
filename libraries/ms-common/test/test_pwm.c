@@ -23,7 +23,7 @@
 
 static volatile uint16_t s_counter = 0;
 
-static void prv_pwm_test(const GPIOAddress *address, void *context) {
+static void prv_pwm_test(const GpioAddress *address, void *context) {
   s_counter++;
 }
 
@@ -53,7 +53,7 @@ void test_pwm_output(void) {
   TEST_ASSERT_OK(pwm_set_pulse(TEST_PWM_TIMER, TEST_PWM_PERIOD_MS - 1));
   TEST_ASSERT_OK(pwm_set_dc(TEST_PWM_TIMER, TEST_PWM_DUTY_CYCLE));
 
-  const GPIOAddress addr = TEST_PWM_ADDR;
+  const GpioAddress addr = TEST_PWM_ADDR;
   const GPIOSettings settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,

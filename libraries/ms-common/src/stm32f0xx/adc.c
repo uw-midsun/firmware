@@ -138,7 +138,7 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
 
 // ADC Channel to GPIO Address mapping found in table 13 of the specific device datasheet.
 // Channels 0 to 7 are occupied by port A, 8 to 9 by prt B, and 10 to 15 by port C
-StatusCode adc_get_channel(GPIOAddress address, ADCChannel *adc_channel) {
+StatusCode adc_get_channel(GpioAddress address, ADCChannel *adc_channel) {
   *adc_channel = address.pin;
 
   switch (address.port) {

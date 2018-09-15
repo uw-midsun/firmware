@@ -35,7 +35,7 @@ void setup_test() {
     GPIO_ALTFN_ANALOG,  //
   };
 
-  GPIOAddress address[] = { {
+  GpioAddress address[] = { {
                                 GPIO_PORT_A,  //
                                 0,            //
                             },
@@ -170,7 +170,7 @@ void test_read_continuous(void) {
 
 void test_adc_get_channel() {
   ADCChannel adc_channel;
-  GPIOAddress address[] = {
+  GpioAddress address[] = {
     {
         .port = GPIO_PORT_A,
     },

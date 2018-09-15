@@ -62,7 +62,7 @@ void setup_test(void) {
     .solar_rear_power_pin = { GPIO_PORT_A, 0 },
     .loopback = true,
   };
-  GPIOAddress addr = { GPIO_PORT_A, 0 };
+  GpioAddress addr = { GPIO_PORT_A, 0 };
   GPIOSettings gpio_settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,

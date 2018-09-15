@@ -35,8 +35,8 @@ typedef enum {
 } CANHwBitrate;
 
 typedef struct CANHwSettings {
-  GPIOAddress tx;
-  GPIOAddress rx;
+  GpioAddress tx;
+  GpioAddress rx;
   CANHwBitrate bitrate;
   bool loopback;
 } CANHwSettings;

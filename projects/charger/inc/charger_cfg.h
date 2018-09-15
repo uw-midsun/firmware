@@ -32,8 +32,8 @@ UARTSettings *charger_cfg_load_uart_settings(void);
 UARTPort charger_cfg_load_uart_port(void);
 
 // TODO(ELEC-355): Correct this pin's usage to ADC or PWM based on what happens with the hardware.
-// Returns the GPIOAddress of the charger_pin.
-GPIOAddress charger_cfg_load_charger_pin(void);
+// Returns the GpioAddress of the charger_pin.
+GpioAddress charger_cfg_load_charger_pin(void);
 
 // Required before |charger_cfg_load_settings|, requires UART and CAN to be running.
 StatusCode charger_cfg_init_settings(void);

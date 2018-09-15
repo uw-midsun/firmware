@@ -29,9 +29,9 @@ typedef struct PowerPathVCReadings {
 // For storing the Power Path Source (eg AUX Battery vs DCDCs).
 typedef struct PowerPathSource {
   const PowerPathSourceID id;
-  const GPIOAddress uv_ov_pin;
-  const GPIOAddress voltage_pin;
-  const GPIOAddress current_pin;
+  const GpioAddress uv_ov_pin;
+  const GpioAddress voltage_pin;
+  const GpioAddress current_pin;
   volatile PowerPathVCReadings readings;
   PowerPathConversionFn current_convert_fn;
   PowerPathConversionFn voltage_convert_fn;
@@ -42,8 +42,8 @@ typedef struct PowerPathSource {
 
 // For storing the power path configuration.
 typedef struct PowerPathCfg {
-  const GPIOAddress enable_pin;
-  const GPIOAddress shutdown_pin;
+  const GpioAddress enable_pin;
+  const GpioAddress shutdown_pin;
   PowerPathSource aux_bat;
   PowerPathSource dcdc;
   uint32_t period_millis;

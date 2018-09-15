@@ -17,7 +17,7 @@ typedef enum {
   CAN_TEST_EVENT_FAULT,
 } CANTestEvent;
 
-static GPIOAddress s_led = { GPIO_PORT_B, 3 };
+static GpioAddress s_led = { GPIO_PORT_B, 3 };
 static CANStorage s_can_storage;
 
 static void prv_blink_led(SoftTimerID timer_id, void *context) {
@@ -26,8 +26,8 @@ static void prv_blink_led(SoftTimerID timer_id, void *context) {
 }
 
 static bool prv_is_sender(void) {
-  GPIOAddress pin_out = { GPIO_PORT_A, 0 };
-  GPIOAddress pin_in = { GPIO_PORT_A, 1 };
+  GpioAddress pin_out = { GPIO_PORT_A, 0 };
+  GpioAddress pin_in = { GPIO_PORT_A, 1 };
 
   GPIOSettings gpio_settings = { .direction = GPIO_DIR_OUT, .state = GPIO_STATE_LOW };
   gpio_init_pin(&pin_out, &gpio_settings);

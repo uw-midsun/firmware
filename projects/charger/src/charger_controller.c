@@ -69,7 +69,7 @@ StatusCode charger_controller_init(ChargerStorage *storage, const ChargerSetting
   }
   s_charger_status = status;
   s_storage = storage;
-  memcpy(&s_storage->relay_control_pin, &settings->relay_control_pin, sizeof(GPIOAddress));
+  memcpy(&s_storage->relay_control_pin, &settings->relay_control_pin, sizeof(GpioAddress));
 
   const GPIOSettings gpio_settings = {
     .state = GPIO_STATE_LOW,

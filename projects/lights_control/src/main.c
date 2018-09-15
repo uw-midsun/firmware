@@ -27,7 +27,7 @@ static LightsCanStorage s_lights_can_storage = { 0 };
 
 static LightsStrobeStorage s_lights_strobe = { 0 };
 
-static const GPIOAddress s_board_type_address = { .port = GPIO_PORT_B, .pin = 13 };
+static const GpioAddress s_board_type_address = { .port = GPIO_PORT_B, .pin = 13 };
 
 int main(void) {
   CANSettings can_settings = {

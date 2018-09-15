@@ -63,7 +63,7 @@ static void prv_timer_callback(SoftTimerID id, void *context) {
 
 // Inits the storage for ADS1015 and starts the soft timer.
 StatusCode ads1015_init(Ads1015Storage *storage, I2CPort i2c_port, Ads1015Address i2c_addr,
-                        GPIOAddress *ready_pin) {
+                        GpioAddress *ready_pin) {
   if (storage == NULL || ready_pin == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }

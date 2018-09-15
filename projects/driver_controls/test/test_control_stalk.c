@@ -34,13 +34,13 @@ void setup_test(void) {
   };
   i2c_init(TEST_CONTROL_STALK_I2C_PORT, &i2c_settings);
 
-  GPIOAddress ready_pin = {
+  GpioAddress ready_pin = {
     .port = GPIO_PORT_A,  //
     .pin = 9,             //
   };
   ads1015_init(&s_ads1015, TEST_CONTROL_STALK_I2C_PORT, ADS1015_ADDRESS_GND, &ready_pin);
 
-  GPIOAddress int_pin = {
+  GpioAddress int_pin = {
     .port = GPIO_PORT_A,  //
     .pin = 8,             //
   };
@@ -54,7 +54,7 @@ void teardown_test(void) {}
 void test_control_stalks_readback(void) {
   Event e;
 
-  const GPIOAddress leds[] = {
+  const GpioAddress leds[] = {
     { .port = GPIO_PORT_B, .pin = 5 },   //
     { .port = GPIO_PORT_B, .pin = 4 },   //
     { .port = GPIO_PORT_B, .pin = 3 },   //

@@ -36,16 +36,16 @@ typedef struct {
   void *context;
   void *fault_context;
 
-  GPIOAddress cs;
-  GPIOAddress miso;
+  GpioAddress cs;
+  GpioAddress miso;
   SPIPort spi_port;
 } LtcAdcStorage;
 
 typedef struct LtcAdcSettings {
-  GPIOAddress cs;
-  GPIOAddress mosi;
-  GPIOAddress miso;
-  GPIOAddress sclk;
+  GpioAddress cs;
+  GpioAddress mosi;
+  GpioAddress miso;
+  GpioAddress sclk;
 
   SPIPort spi_port;
   uint32_t spi_baudrate;
