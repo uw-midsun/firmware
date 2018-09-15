@@ -45,8 +45,8 @@ static void prv_broadcast_cb(SoftTimerID timer_id, void *context) {
                           &storage->output_timer);
 }
 
-StatusCode drive_output_init(DriveOutputStorage *storage, EventID fault_event,
-                             EventID update_req_event) {
+StatusCode drive_output_init(DriveOutputStorage *storage, EventId fault_event,
+                             EventId update_req_event) {
   memset(storage, 0, sizeof(*storage));
   storage->fault_event = fault_event;
   storage->update_req_event = update_req_event;

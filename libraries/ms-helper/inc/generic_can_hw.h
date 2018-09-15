@@ -13,8 +13,8 @@
 
 typedef struct GenericCanHw {
   GenericCan base;
-  EventID fault_event;
+  EventId fault_event;
 } GenericCanHw;
 
 StatusCode generic_can_hw_init(GenericCanHw *can_hw, const CANHwSettings *settings,
-                               EventID fault_event);
+                               EventId fault_event);

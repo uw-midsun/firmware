@@ -20,7 +20,7 @@
 
 typedef struct RelayFsmAckCtx {
   RelayId id;
-  EventID event_id;
+  EventId event_id;
 } RelayFsmAckCtx;
 
 typedef struct RelayFsmCtx {

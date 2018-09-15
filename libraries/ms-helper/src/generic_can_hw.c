@@ -82,7 +82,7 @@ static StatusCode prv_register_rx(GenericCan *can, GenericCanRx rx_handler, uint
 }
 
 StatusCode generic_can_hw_init(GenericCanHw *can_hw, const CANHwSettings *settings,
-                               EventID fault_event) {
+                               EventId fault_event) {
   s_interface.tx = prv_tx;
   s_interface.register_rx = prv_register_rx;
 

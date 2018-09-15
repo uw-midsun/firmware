@@ -26,8 +26,8 @@ typedef enum {
 typedef struct DriveOutputStorage {
   int16_t data[NUM_DRIVE_OUTPUT_SOURCES];
   int16_t pedal_requested_data;
-  EventID fault_event;
-  EventID update_req_event;
+  EventId fault_event;
+  EventId update_req_event;
   SoftTimerID watchdog_timer;
   SoftTimerID output_timer;
   uint8_t watchdog;
@@ -35,8 +35,8 @@ typedef struct DriveOutputStorage {
 
 // Set the events to be raised in the case of a fault or to request a data update
 // Starts periodic drive output as disabled
-StatusCode drive_output_init(DriveOutputStorage *storage, EventID fault_event,
-                             EventID update_req_event);
+StatusCode drive_output_init(DriveOutputStorage *storage, EventId fault_event,
+                             EventId update_req_event);
 
 // Control whether periodic drive output is enabled (ex. disable when the car is off)
 // Note that if a fault occurs, periodic drive output will be disabled.
