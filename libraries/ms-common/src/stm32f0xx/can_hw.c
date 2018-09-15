@@ -13,10 +13,10 @@ typedef struct CANHwTiming {
   uint8_t bs2;
 } CANHwTiming;
 
-typedef struct CANHwEventHandler {
+typedef struct CanHwEventHandler {
   CanHwEventHandlerCb callback;
   void *context;
-} CANHwEventHandler;
+} CanHwEventHandler;
 
 // Generated settings using http://www.bittiming.can-wiki.info/
 // Note that the BS1/BS2 register values are used +1, so we need to subtract 1 from the calculated
@@ -28,7 +28,7 @@ static CANHwTiming s_timing[NUM_CAN_HW_BITRATES] = {  // For 48MHz clock
   [CAN_HW_BITRATE_500KBPS] = { .prescaler = 6, .bs1 = 12, .bs2 = 1 },
   [CAN_HW_BITRATE_1000KBPS] = { .prescaler = 3, .bs1 = 12, .bs2 = 1 }
 };
-static CANHwEventHandler s_handlers[NUM_CAN_HW_EVENTS];
+static CanHwEventHandler s_handlers[NUM_CAN_HW_EVENTS];
 static uint8_t s_num_filters;
 
 static void prv_add_filter(uint8_t filter_num, uint32_t mask, uint32_t filter) {
@@ -93,7 +93,7 @@ StatusCode can_hw_register_callback(CANHwEvent event, CanHwEventHandlerCb callba
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  s_handlers[event] = (CANHwEventHandler){
+  s_handlers[event] = (CanHwEventHandler){
     .callback = callback,  //
     .context = context,    //
   };
@@ -182,7 +182,7 @@ void CEC_CAN_IRQHandler(void) {
   };
 
   for (int event = 0; event < NUM_CAN_HW_EVENTS; event++) {
-    CANHwEventHandler *handler = &s_handlers[event];
+    CanHwEventHandler *handler = &s_handlers[event];
     if (handler->callback != NULL && run_cb[event]) {
       handler->callback(handler->context);
       break;

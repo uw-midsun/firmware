@@ -25,10 +25,10 @@
 // Check for thread exit once every 10ms
 #define CAN_HW_THREAD_EXIT_PERIOD_US 10000
 
-typedef struct CANHwEventHandler {
+typedef struct CanHwEventHandler {
   CanHwEventHandlerCb callback;
   void *context;
-} CANHwEventHandler;
+} CanHwEventHandler;
 
 typedef struct CANHwSocketData {
   int can_fd;
@@ -37,7 +37,7 @@ typedef struct CANHwSocketData {
   struct can_frame tx_frames[CAN_HW_TX_FIFO_LEN];
   struct can_filter filters[CAN_HW_MAX_FILTERS];
   size_t num_filters;
-  CANHwEventHandler handlers[NUM_CAN_HW_EVENTS];
+  CanHwEventHandler handlers[NUM_CAN_HW_EVENTS];
   uint32_t delay_us;
 } CANHwSocketData;
 
@@ -206,7 +206,7 @@ StatusCode can_hw_register_callback(CANHwEvent event, CanHwEventHandlerCb callba
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  s_socket_data.handlers[event] = (CANHwEventHandler){
+  s_socket_data.handlers[event] = (CanHwEventHandler){
     .callback = callback,  //
     .context = context,    //
   };
