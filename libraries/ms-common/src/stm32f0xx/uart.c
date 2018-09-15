@@ -18,7 +18,7 @@ typedef struct {
   uint32_t periph;
   uint32_t irq;
   USART_TypeDef *base;
-  UARTStorage *storage;
+  UartStorage *storage;
 } UARTPortData;
 
 static UARTPortData s_port[] = {
@@ -45,7 +45,7 @@ static void prv_rx_push(UARTPort uart);
 
 static void prv_handle_irq(UARTPort uart);
 
-StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage) {
+StatusCode uart_init(UARTPort uart, UARTSettings *settings, UartStorage *storage) {
   s_port[uart].rcc_cmd(s_port[uart].periph, ENABLE);
 
   s_port[uart].storage = storage;
@@ -120,7 +120,7 @@ static void prv_tx_pop(UARTPort uart) {
 }
 
 static void prv_rx_push(UARTPort uart) {
-  UARTStorage *storage = s_port[uart].storage;
+  UartStorage *storage = s_port[uart].storage;
 
   uint8_t rx_data = USART_ReceiveData(s_port[uart].base);
   fifo_push(&storage->rx_fifo, &rx_data);

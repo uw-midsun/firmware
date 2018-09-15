@@ -24,7 +24,7 @@ typedef struct {
 
   uint8_t rx_line_buf[UART_MAX_BUFFER_LEN + 1];
   char delimiter;
-} UARTStorage;
+} UartStorage;
 
 typedef struct {
   uint32_t baudrate;
@@ -39,7 +39,7 @@ typedef struct {
 // Assumes standard 8 N 1
 // Registers a handler to be called when a newline is encountered or the buffer is full.
 // Storage should be persistent through the program.
-StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage);
+StatusCode uart_init(UARTPort uart, UARTSettings *settings, UartStorage *storage);
 
 // Overrides any currently set handler
 StatusCode uart_set_rx_handler(UARTPort uart, UARTRxHandler rx_handler, void *context);

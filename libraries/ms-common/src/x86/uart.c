@@ -1,6 +1,6 @@
 #include "uart.h"
 
-StatusCode uart_init(UARTPort uart, UARTSettings *settings, UARTStorage *storage) {
+StatusCode uart_init(UARTPort uart, UARTSettings *settings, UartStorage *storage) {
   return status_code(STATUS_CODE_UNIMPLEMENTED);
 }
 

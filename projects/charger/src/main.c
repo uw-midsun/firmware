@@ -18,7 +18,7 @@
 #include "wait.h"
 
 static CANStorage s_can_storage;
-static UARTStorage s_uart_storage;
+static UartStorage s_uart_storage;
 static ChargerCanStatus s_charger_status;
 static ChargerStorage s_charger_storage;
 static FSM s_charger_fsm;

@@ -20,7 +20,7 @@
 #define CAN_SLAVE_UART_ALTFN GPIO_ALTFN_4
 #define CAN_SLAVE_CAN_BITRATE CAN_HW_BITRATE_500KBPS
 
-static UARTStorage s_uart_storage;
+static UartStorage s_uart_storage;
 
 static void prv_init_periph(void) {
   gpio_init();
