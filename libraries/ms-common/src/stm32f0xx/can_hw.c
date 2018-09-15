@@ -7,11 +7,11 @@
 #define CAN_HW_BASE CAN
 #define CAN_HW_NUM_FILTER_BANKS 14
 
-typedef struct CANHwTiming {
+typedef struct CanHwTiming {
   uint16_t prescaler;
   uint8_t bs1;
   uint8_t bs2;
-} CANHwTiming;
+} CanHwTiming;
 
 typedef struct CanHwEventHandler {
   CanHwEventHandlerCb callback;
@@ -22,7 +22,7 @@ typedef struct CanHwEventHandler {
 // Note that the BS1/BS2 register values are used +1, so we need to subtract 1 from the calculated
 // value to compenstate. The same is true for the prescaler, but the library subtracts 1 internally.
 // The total time quanta is thus (BS1 + 1) + (BS2 + 1) + SJW (1) ~= 16 tq.
-static CANHwTiming s_timing[NUM_CAN_HW_BITRATES] = {  // For 48MHz clock
+static CanHwTiming s_timing[NUM_CAN_HW_BITRATES] = {  // For 48MHz clock
   [CAN_HW_BITRATE_125KBPS] = { .prescaler = 24, .bs1 = 12, .bs2 = 1 },
   [CAN_HW_BITRATE_250KBPS] = { .prescaler = 12, .bs1 = 12, .bs2 = 1 },
   [CAN_HW_BITRATE_500KBPS] = { .prescaler = 6, .bs1 = 12, .bs2 = 1 },
