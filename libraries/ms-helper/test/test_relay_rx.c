@@ -66,7 +66,7 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
 
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .device_id = TEST_RELAY_CAN_DEVICE_ID,
     .bitrate = CAN_HW_BITRATE_250KBPS,
     .rx_event = TEST_RELAY_RX_CAN_RX,

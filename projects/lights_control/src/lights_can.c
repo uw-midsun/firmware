@@ -52,7 +52,7 @@ static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckSta
 }
 
 StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *settings,
-                           const CANSettings *can_settings) {
+                           const CanSettings *can_settings) {
   // Initialize CAN.
   status_ok_or_return(can_init(&storage->can_storage, can_settings));
   // Specify filters.

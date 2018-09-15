@@ -40,7 +40,7 @@ static StatusCode prv_init_common(PlutusSysStorage *storage, PlutusSysType type)
   soft_timer_init();
   event_queue_init();
 
-  const CANSettings can_settings = {
+  const CanSettings can_settings = {
     .device_id = s_specifics[type].can_device,
     .bitrate = PLUTUS_CFG_CAN_BITRATE,
     .rx_event = PLUTUS_EVENT_CAN_RX,

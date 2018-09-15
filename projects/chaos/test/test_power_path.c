@@ -109,7 +109,7 @@ void setup_test(void) {
   gpio_it_init();
   adc_init(ADC_MODE_CONTINUOUS);
 
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
     .bitrate = CAN_HW_BITRATE_125KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,

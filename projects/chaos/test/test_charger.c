@@ -36,7 +36,7 @@ void setup_test(void) {
   event_queue_init();
   soft_timer_init();
 
-  const CANSettings settings = {
+  const CanSettings settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
     .bitrate = CAN_HW_BITRATE_250KBPS,
     .tx = { GPIO_PORT_A, 12 },

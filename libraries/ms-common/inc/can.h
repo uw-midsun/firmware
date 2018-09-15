@@ -19,7 +19,7 @@
 
 #define CAN_NUM_RX_HANDLERS 10
 
-typedef struct CANSettings {
+typedef struct CanSettings {
   uint16_t device_id;
   CanHwBitrate bitrate;
   GpioAddress tx;
@@ -28,7 +28,7 @@ typedef struct CANSettings {
   EventId tx_event;
   EventId fault_event;
   bool loopback;
-} CANSettings;
+} CanSettings;
 
 typedef struct CANStorage {
   FSM fsm;
@@ -44,7 +44,7 @@ typedef struct CANStorage {
 } CANStorage;
 
 // Initializes the specified CAN configuration.
-StatusCode can_init(CANStorage *storage, const CANSettings *settings);
+StatusCode can_init(CANStorage *storage, const CanSettings *settings);
 
 // Adds a hardware filter for the specified message ID.
 StatusCode can_add_filter(CanMessageId msg_id);

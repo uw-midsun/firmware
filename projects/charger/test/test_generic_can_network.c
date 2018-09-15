@@ -35,7 +35,7 @@ void setup_test(void) {
   soft_timer_init();
   gpio_init();
 
-  const CANSettings can_settings = {
+  const CanSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHARGER,
     .bitrate = CAN_HW_BITRATE_250KBPS,
     .tx = { GPIO_PORT_A, 12 },

@@ -12,7 +12,7 @@
 #include "status.h"
 #include "uart.h"
 
-static CANSettings s_can_settings = {
+static CanSettings s_can_settings = {
   .device_id = SYSTEM_CAN_DEVICE_CHARGER,
   .bitrate = CAN_HW_BITRATE_250KBPS,
   .tx = { GPIO_PORT_A, 12 },
@@ -23,7 +23,7 @@ static CANSettings s_can_settings = {
   .loopback = false,
 };
 
-CANSettings *charger_cfg_load_can_settings(void) {
+CanSettings *charger_cfg_load_can_settings(void) {
   return &s_can_settings;
 }
 

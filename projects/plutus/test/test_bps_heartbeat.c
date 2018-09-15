@@ -51,7 +51,7 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
 
-  CANSettings settings = {
+  CanSettings settings = {
     .device_id = SYSTEM_CAN_DEVICE_PLUTUS,
     .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = TEST_BPS_HEARTBEAT_EVENT_CAN_RX,

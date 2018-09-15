@@ -35,7 +35,7 @@ int main(void) {
   can_interval_init();
 
   // CAN
-  const CANSettings *can_settings = charger_cfg_load_can_settings();
+  const CanSettings *can_settings = charger_cfg_load_can_settings();
   can_init(&s_can_storage, can_settings);
 
   // UART

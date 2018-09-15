@@ -22,8 +22,8 @@
 #define CHARGER_CFG_WATCHDOG_PERIOD_S 60
 #define CHARGER_CFG_NUM_CAN_RX_HANDLERS 3
 
-// Returns a pointer to a static CANSettings object for Network Layer CAN.
-CANSettings *charger_cfg_load_can_settings(void);
+// Returns a pointer to a static CanSettings object for Network Layer CAN.
+CanSettings *charger_cfg_load_can_settings(void);
 
 // Returns a pointer to a static UartSettings object for UART CAN.
 UartSettings *charger_cfg_load_uart_settings(void);

@@ -88,7 +88,7 @@ int main(void) {
 
   calib_init(&s_calib_blob, sizeof(s_calib_blob), false);
 
-  const CANSettings can_settings = {
+  const CanSettings can_settings = {
     .device_id = DC_CFG_CAN_DEVICE_ID,
     .bitrate = DC_CFG_CAN_BITRATE,
     .rx_event = INPUT_EVENT_CAN_RX,

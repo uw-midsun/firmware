@@ -41,7 +41,7 @@ void setup_test(void) {
   Event e = { .id = CHAOS_EVENT_SET_RELAY_RETRIES, .data = RELAY_RETRY_SERVICE_DEFAULT_ATTEMPTS };
   relay_retry_service_update(&e);
 
-  CANSettings settings = {
+  CanSettings settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
     .bitrate = CAN_HW_BITRATE_125KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,

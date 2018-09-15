@@ -30,7 +30,7 @@ static LightsStrobeStorage s_lights_strobe = { 0 };
 static const GpioAddress s_board_type_address = { .port = GPIO_PORT_B, .pin = 13 };
 
 int main(void) {
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .bitrate = CAN_HW_BITRATE_500KBPS,
     .tx = { .port = GPIO_PORT_A, .pin = 12 },
     .rx = { .port = GPIO_PORT_A, .pin = 11 },

@@ -25,7 +25,7 @@ static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
 static UartStorage s_uart_storage;
 
 static void prv_setup_system_can(void) {
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,
     .bitrate = MC_CFG_CAN_BITRATE,
     .rx_event = MOTOR_EVENT_SYSTEM_CAN_RX,
