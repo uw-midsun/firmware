@@ -13,11 +13,11 @@
 typedef struct DebouncerStorage {
   GpioAddress address;
   GpioState state;
-  GPIOItCallback callback;
+  GpioItCallback callback;
   void *context;
 } DebouncerStorage;
 
 // Inits the GPIO input pin and sets up the debouncer for it.
 // debouncer_info is a storage created by the user, and it should persist.
 StatusCode debouncer_init_pin(DebouncerStorage *debouncer, const GpioAddress *address,
-                              GPIOItCallback callback, void *context);
+                              GpioItCallback callback, void *context);

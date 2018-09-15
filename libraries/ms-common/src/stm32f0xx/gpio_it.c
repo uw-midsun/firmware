@@ -11,7 +11,7 @@
 
 typedef struct GPIOITInterrupt {
   GpioAddress address;
-  GPIOItCallback callback;
+  GpioItCallback callback;
   void *context;
 } GPIOITInterrupt;
 
@@ -35,7 +35,7 @@ static uint8_t prv_get_irq_channel(uint8_t pin) {
 }
 
 StatusCode gpio_it_register_interrupt(const GpioAddress *address, const InterruptSettings *settings,
-                                      InterruptEdge edge, GPIOItCallback callback, void *context) {
+                                      InterruptEdge edge, GpioItCallback callback, void *context) {
   if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   } else if (s_gpio_it_interrupts[address->pin].callback) {

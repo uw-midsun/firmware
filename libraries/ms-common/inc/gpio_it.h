@@ -8,14 +8,14 @@
 #include "interrupt_def.h"
 #include "status.h"
 
-typedef void (*GPIOItCallback)(const GpioAddress *address, void *context);
+typedef void (*GpioItCallback)(const GpioAddress *address, void *context);
 
 // Initializes the interrupt handler for GPIO.
 void gpio_it_init(void);
 
 // Registers a new callback on a given port pin combination with the desired settings.
 StatusCode gpio_it_register_interrupt(const GpioAddress *address, const InterruptSettings *settings,
-                                      InterruptEdge edge, GPIOItCallback callback, void *context);
+                                      InterruptEdge edge, GpioItCallback callback, void *context);
 
 // Triggers an interrupt in software.
 StatusCode gpio_it_trigger_interrupt(const GpioAddress *address);
