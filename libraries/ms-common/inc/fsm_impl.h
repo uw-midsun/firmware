@@ -6,10 +6,10 @@
 // transition tables. If needed, we could add simple guards quite easily.
 
 // Forward-declares the state's transition function (prv_fsm_[state])
-// and declares a State object populated with its name and transition function
+// and declares a FsmState object populated with its name and transition function
 #define _FSM_DECLARE_STATE(state) \
   _FSM_STATE_TRANSITION(state);   \
-  static State state = { .name = #state, .table = prv_fsm_##state }
+  static FsmState state = { .name = #state, .table = prv_fsm_##state }
 
 // This is used for both forward-declaration and the actual function declaration
 // Since we're implementing the transition table as a function, we can't rely on a return value

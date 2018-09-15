@@ -54,17 +54,17 @@ typedef struct State {
   const char *name;
   StateOutput output;
   StateTransition table;
-} State;
+} FsmState;
 
 typedef struct Fsm {
   const char *name;
-  State *last_state;
-  State *current_state;
+  FsmState *last_state;
+  FsmState *current_state;
   void *context;
 } Fsm;
 
 // Initializes the FSM.
-void fsm_init(Fsm *fsm, const char *name, State *default_state, void *context);
+void fsm_init(Fsm *fsm, const char *name, FsmState *default_state, void *context);
 
 // Returns whether a transition occurred in the FSM.
 bool fsm_process_event(Fsm *fsm, const Event *e);
