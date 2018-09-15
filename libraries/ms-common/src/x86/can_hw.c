@@ -30,7 +30,7 @@ typedef struct CanHwEventHandler {
   void *context;
 } CanHwEventHandler;
 
-typedef struct CANHwSocketData {
+typedef struct CanHwSocketData {
   int can_fd;
   struct can_frame rx_frame;
   Fifo tx_fifo;
@@ -39,7 +39,7 @@ typedef struct CANHwSocketData {
   size_t num_filters;
   CanHwEventHandler handlers[NUM_CAN_HW_EVENTS];
   uint32_t delay_us;
-} CANHwSocketData;
+} CanHwSocketData;
 
 static pthread_t s_rx_pthread_id;
 static pthread_t s_tx_pthread_id;
@@ -50,7 +50,7 @@ static sem_t s_tx_sem;
 // Locked if the TX/RX threads should be alive, unlocked on exit
 static pthread_mutex_t s_keep_alive = PTHREAD_MUTEX_INITIALIZER;
 
-static CANHwSocketData s_socket_data = { .can_fd = -1 };
+static CanHwSocketData s_socket_data = { .can_fd = -1 };
 
 static uint32_t prv_get_delay(CanHwBitrate bitrate) {
   const uint32_t delay_us[NUM_CAN_HW_BITRATES] = {
