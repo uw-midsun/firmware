@@ -57,7 +57,7 @@ int main(void) {
   event_queue_init();
 
   // Getting board type.
-  GPIOState state = NUM_GPIO_STATES;
+  GpioState state = NUM_GPIO_STATES;
 
   StatusCode status = gpio_get_state(&s_board_type_address, &state);
 

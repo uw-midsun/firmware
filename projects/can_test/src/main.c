@@ -36,7 +36,7 @@ static bool prv_is_sender(void) {
   gpio_settings.resistor = GPIO_RES_PULLUP;
   gpio_init_pin(&pin_in, &gpio_settings);
 
-  GPIOState io_state = GPIO_STATE_LOW;
+  GpioState io_state = GPIO_STATE_LOW;
   gpio_get_state(&pin_in, &io_state);
 
   return io_state == GPIO_STATE_LOW;

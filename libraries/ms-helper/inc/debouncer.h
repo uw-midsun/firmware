@@ -12,7 +12,7 @@
 
 typedef struct DebouncerStorage {
   GpioAddress address;
-  GPIOState state;
+  GpioState state;
   GPIOItCallback callback;
   void *context;
 } DebouncerStorage;

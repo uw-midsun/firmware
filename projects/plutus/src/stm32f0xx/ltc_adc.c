@@ -44,7 +44,7 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
 
   // According to the Timing Characteristics (p.5 in the datasheet), we should
   // expect 149.9ms for conversion time (in the worst case).
-  GPIOState state = NUM_GPIO_STATES;
+  GpioState state = NUM_GPIO_STATES;
   gpio_get_state(&storage->miso, &state);
 
   // Restore CS high so we can trigger a SPI exchange

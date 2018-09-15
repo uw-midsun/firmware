@@ -26,7 +26,7 @@ static StatusCode prv_set_outputs(LightsGpio *lights_gpio, LightsGpioOutputBitse
     uint8_t i = __builtin_ffs(mapping) - 1;  // index of first 1 bit
     LightsGpioOutput output = lights_gpio->outputs[i];
     // Based on the polarity of the output, and the desired state, decide the gpio pin state.
-    GPIOState gpio_state =
+    GpioState gpio_state =
         (output.polarity == LIGHTS_GPIO_POLARITY_ACTIVE_HIGH)
             ? ((state == LIGHTS_GPIO_STATE_ON) ? GPIO_STATE_HIGH : GPIO_STATE_LOW)
             : ((state == LIGHTS_GPIO_STATE_ON) ? GPIO_STATE_LOW : GPIO_STATE_HIGH);
@@ -50,7 +50,7 @@ StatusCode lights_gpio_init(const LightsGpio *lights_gpio) {
   // Makes sure all lights are initialized to be turned off.
   for (uint8_t i = 0; i < lights_gpio->num_outputs; i++) {
     LightsGpioOutput output = lights_gpio->outputs[i];
-    GPIOState gpio_state =
+    GpioState gpio_state =
         (output.polarity == LIGHTS_GPIO_POLARITY_ACTIVE_HIGH) ? GPIO_STATE_LOW : GPIO_STATE_HIGH;
 
     status_ok_or_return(gpio_set_state(&(lights_gpio->outputs[i].address), gpio_state));

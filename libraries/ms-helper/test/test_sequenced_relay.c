@@ -85,7 +85,7 @@ void test_sequenced_relay_can(void) {
 
   // Make sure that both relays are now closed. We allow some delay before checking for sequencing.
   delay_ms(TEST_SEQUENCED_RELAY_DELAY_MS);
-  GPIOState state = NUM_GPIO_STATES;
+  GpioState state = NUM_GPIO_STATES;
   gpio_get_state(&left_relay, &state);
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
   gpio_get_state(&right_relay, &state);
@@ -114,7 +114,7 @@ void test_sequenced_relay_set(void) {
 
   // Make sure that both relays are now closed. We allow some delay before checking for sequencing.
   delay_ms(TEST_SEQUENCED_RELAY_DELAY_MS);
-  GPIOState state = NUM_GPIO_STATES;
+  GpioState state = NUM_GPIO_STATES;
   gpio_get_state(&left_relay, &state);
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
   gpio_get_state(&right_relay, &state);

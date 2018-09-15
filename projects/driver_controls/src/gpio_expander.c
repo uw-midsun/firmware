@@ -119,7 +119,7 @@ StatusCode gpio_expander_init_pin(GpioExpanderStorage *expander, GpioExpanderPin
 }
 
 StatusCode gpio_expander_get_state(GpioExpanderStorage *expander, GpioExpanderPin pin,
-                                   GPIOState *state) {
+                                   GpioState *state) {
   if (expander == NULL || state == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   } else if (pin >= NUM_GPIO_EXPANDER_PINS) {
@@ -130,13 +130,13 @@ StatusCode gpio_expander_get_state(GpioExpanderStorage *expander, GpioExpanderPi
   uint8_t data = 0;
   status_ok_or_return(i2c_read_reg(expander->port, expander->addr, MCP23008_GPIO, &data, 1));
 
-  *state = (GPIOState)((data >> pin) & 1);
+  *state = (GpioState)((data >> pin) & 1);
 
   return STATUS_CODE_OK;
 }
 
 StatusCode gpio_expander_set_state(GpioExpanderStorage *expander, GpioExpanderPin pin,
-                                   GPIOState state) {
+                                   GpioState state) {
   if (expander == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   } else if (pin >= NUM_GPIO_EXPANDER_PINS) {

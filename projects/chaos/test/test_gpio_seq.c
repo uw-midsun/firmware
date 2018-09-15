@@ -38,7 +38,7 @@ void test_gpio_seq(void) {
   TEST_ASSERT_OK(
       gpio_seq_set_state(addrs, SIZEOF_ARRAY(addrs), GPIO_STATE_HIGH, TEST_GPIO_SEQ_DELAY_US));
 
-  GPIOState state = GPIO_STATE_LOW;
+  GpioState state = GPIO_STATE_LOW;
   for (uint16_t i = 0; i < SIZEOF_ARRAY(addrs); i++) {
     TEST_ASSERT_OK(gpio_get_state(&addrs[i], &state));
     TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);

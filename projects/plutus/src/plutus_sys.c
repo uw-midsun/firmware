@@ -85,7 +85,7 @@ PlutusSysType plutus_sys_get_type(void) {
   GpioAddress board_selector = PLUTUS_CFG_BOARD_TYPE_SEL;
   gpio_init_pin(&board_selector, &gpio_settings);
 
-  GPIOState state = NUM_GPIO_STATES;
+  GpioState state = NUM_GPIO_STATES;
   gpio_get_state(&board_selector, &state);
 
   return (state == GPIO_STATE_HIGH) ? PLUTUS_SYS_TYPE_MASTER : PLUTUS_SYS_TYPE_SLAVE;

@@ -109,7 +109,7 @@ static void prv_opening(FSM *fsm, const Event *e, void *context) {
   RelayFsmCtx *relay_ctx = context;
   // Check that the GPIO pin is in |GPIO_STATE_HIGH| before opening. If it is already off we assume
   // the relay to be opened already.
-  GPIOState state = GPIO_STATE_LOW;
+  GpioState state = GPIO_STATE_LOW;
   gpio_get_state(&relay_ctx->power_pin, &state);
   if (state == GPIO_STATE_LOW) {
     event_raise(CHAOS_EVENT_RELAY_OPENED, relay_ctx->ack_ctx.id);
@@ -123,7 +123,7 @@ static void prv_closing(FSM *fsm, const Event *e, void *context) {
   RelayFsmCtx *relay_ctx = context;
   // Check that the GPIO pin is in |GPIO_STATE_HIGH| before closing. If it is already off this
   // action is an error and we raise it as such, this will reset us to the open state.
-  GPIOState state = GPIO_STATE_LOW;
+  GpioState state = GPIO_STATE_LOW;
   gpio_get_state(&relay_ctx->power_pin, &state);
   if (state == GPIO_STATE_LOW) {
     event_raise(CHAOS_EVENT_RELAY_ERROR, relay_ctx->ack_ctx.id);

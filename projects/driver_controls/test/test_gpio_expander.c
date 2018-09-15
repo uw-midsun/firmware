@@ -8,7 +8,7 @@
 
 static GpioExpanderStorage s_expander;
 
-void prv_callback(GpioExpanderPin pin, GPIOState state, void *context) {
+void prv_callback(GpioExpanderPin pin, GpioState state, void *context) {
   LOG_DEBUG("Pin %d callback (state %d)\n", pin, state);
 }
 
@@ -59,7 +59,7 @@ void test_gpio_expander_register_callback(void) {
 }
 
 void test_gpio_expander_get_state(void) {
-  GPIOState state = GPIO_STATE_LOW;
+  GpioState state = GPIO_STATE_LOW;
   TEST_ASSERT_EQUAL(STATUS_CODE_OUT_OF_RANGE,
                     gpio_expander_get_state(&s_expander, NUM_GPIO_EXPANDER_PINS, &state));
   TEST_ASSERT_OK(gpio_expander_get_state(&s_expander, GPIO_EXPANDER_PIN_0, &state));
@@ -84,7 +84,7 @@ void test_gpio_expander_set_state(void) {
   TEST_ASSERT_OK(gpio_expander_set_state(&s_expander, GPIO_EXPANDER_PIN_1, GPIO_STATE_LOW));
   TEST_ASSERT_OK(gpio_expander_set_state(&s_expander, GPIO_EXPANDER_PIN_2, GPIO_STATE_HIGH));
 
-  GPIOState state;
+  GpioState state;
 
   gpio_expander_get_state(&s_expander, GPIO_EXPANDER_PIN_1, &state);
   TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);

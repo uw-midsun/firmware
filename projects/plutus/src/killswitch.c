@@ -5,7 +5,7 @@
 static void prv_killswitch_handler(const GpioAddress *address, void *context) {
   BpsHeartbeatStorage *storage = context;
 
-  GPIOState state = NUM_GPIO_STATES;
+  GpioState state = NUM_GPIO_STATES;
   gpio_get_state(address, &state);
 
   if (state == GPIO_STATE_LOW) {

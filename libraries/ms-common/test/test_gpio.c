@@ -115,7 +115,7 @@ void test_gpio_init_pin_valid_output(void) {
   };
   TEST_ASSERT_OK(gpio_init());
   TEST_ASSERT_OK(gpio_init_pin(&address, &settings));
-  GPIOState state = GPIO_STATE_LOW;
+  GpioState state = GPIO_STATE_LOW;
   // Check high
   TEST_ASSERT_OK(gpio_get_state(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
@@ -141,7 +141,7 @@ void test_gpio_set_state_valid(void) {
   };
   TEST_ASSERT_OK(gpio_init());
   TEST_ASSERT_OK(gpio_init_pin(&address, &settings));
-  GPIOState state;
+  GpioState state;
   // ON to OFF
   TEST_ASSERT_OK(gpio_get_state(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
@@ -174,7 +174,7 @@ void test_gpio_set_state_invalid_state(void) {
   // A port that should be valid on all configurations.
   GpioAddress address = { .port = VALID_PORT, .pin = VALID_PIN };
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_state(&address, NUM_GPIO_STATES));
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_state(&address, (GPIOState)-1));
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_set_state(&address, (GpioState)-1));
 }
 
 // gpio_toggle_state
@@ -195,7 +195,7 @@ void test_gpio_toggle_state_valid(void) {
   };
   TEST_ASSERT_OK(gpio_init());
   TEST_ASSERT_OK(gpio_init_pin(&address, &settings));
-  GPIOState state;
+  GpioState state;
   // OFF to ON
   TEST_ASSERT_OK(gpio_get_state(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
@@ -244,7 +244,7 @@ void test_gpio_get_state_valid(void) {
   };
   TEST_ASSERT_OK(gpio_init());
   TEST_ASSERT_OK(gpio_init_pin(&address, &settings));
-  GPIOState state;
+  GpioState state;
   // Get Low
   TEST_ASSERT_OK(gpio_get_state(&address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
@@ -263,7 +263,7 @@ void test_gpio_get_state_invalid_address(void) {
     .port = INVALID_PORT,  //
     .pin = VALID_PIN       //
   };
-  GPIOState state;
+  GpioState state;
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_get_state(&address, &state));
   address.pin = INVALID_PIN;
   TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, gpio_get_state(&address, &state));

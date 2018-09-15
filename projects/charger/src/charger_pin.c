@@ -11,7 +11,7 @@
 
 static void prv_charger_pin_it(const GpioAddress *address, void *context) {
   (void)context;
-  GPIOState state = NUM_GPIO_STATES;
+  GpioState state = NUM_GPIO_STATES;
   gpio_get_state(address, &state);
   switch (state) {
     // TODO(ELEC-355): Determine if this logic is correct.

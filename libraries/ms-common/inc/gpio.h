@@ -24,7 +24,7 @@ typedef enum {
   GPIO_STATE_LOW = 0,
   GPIO_STATE_HIGH,
   NUM_GPIO_STATES,
-} GPIOState;
+} GpioState;
 
 // For setting the internal pull-up/pull-down resistor
 typedef enum {
@@ -54,7 +54,7 @@ typedef enum {
 // GPIO settings for setting the value of a pin
 typedef struct GPIOSettings {
   GPIODir direction;
-  GPIOState state;
+  GpioState state;
   GPIORes resistor;
   GPIOAltFn alt_function;
 } GPIOSettings;
@@ -67,10 +67,10 @@ StatusCode gpio_init(void);
 StatusCode gpio_init_pin(const GpioAddress *address, const GPIOSettings *settings);
 
 // Set the pin state by address.
-StatusCode gpio_set_state(const GpioAddress *address, GPIOState state);
+StatusCode gpio_set_state(const GpioAddress *address, GpioState state);
 
 // Toggles the output state of the pin.
 StatusCode gpio_toggle_state(const GpioAddress *address);
 
 // Gets the value of the input register for a pin and assigns it to the state that is passed in.
-StatusCode gpio_get_state(const GpioAddress *address, GPIOState *input_state);
+StatusCode gpio_get_state(const GpioAddress *address, GpioState *input_state);

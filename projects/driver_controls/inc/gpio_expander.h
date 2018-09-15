@@ -37,7 +37,7 @@ typedef enum {
   NUM_GPIO_EXPANDER_ADDRESSES
 } GpioExpanderAddress;
 
-typedef void (*GpioExpanderCallbackFn)(GpioExpanderPin pin, GPIOState state, void *context);
+typedef void (*GpioExpanderCallbackFn)(GpioExpanderPin pin, GpioState state, void *context);
 
 typedef struct GpioExpanderCallback {
   GpioExpanderCallbackFn func;
@@ -61,11 +61,11 @@ StatusCode gpio_expander_init_pin(GpioExpanderStorage *expander, GpioExpanderPin
 
 // Returns the set output value or the current input value based on the pin configuration
 StatusCode gpio_expander_get_state(GpioExpanderStorage *expander, GpioExpanderPin pin,
-                                   GPIOState *state);
+                                   GpioState *state);
 
 // Set the state of an output pin
 StatusCode gpio_expander_set_state(GpioExpanderStorage *expander, GpioExpanderPin pin,
-                                   GPIOState state);
+                                   GpioState state);
 
 // Register a callback for a specific pin
 StatusCode gpio_expander_register_callback(GpioExpanderStorage *expander, GpioExpanderPin pin,

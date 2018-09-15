@@ -108,7 +108,7 @@ static void prv_analog_cb(Ads1015Channel channel, void *context) {
   }
 }
 
-void prv_digital_cb(GpioExpanderPin pin, GPIOState state, void *context) {
+void prv_digital_cb(GpioExpanderPin pin, GpioState state, void *context) {
   ControlStalk *stalk = context;
   event_raise(s_digital_mapping[pin][state], 0);
 }

@@ -20,7 +20,7 @@ static const EventId s_events[NUM_CENTER_CONSOLE_INPUTS] = {
   INPUT_EVENT_CENTER_CONSOLE_HAZARDS_RELEASED,
 };
 
-static void prv_raise_event_cb(GpioExpanderPin pin, GPIOState state, void *context) {
+static void prv_raise_event_cb(GpioExpanderPin pin, GpioState state, void *context) {
   CenterConsoleStorage *storage = context;
 
   switch (pin) {
