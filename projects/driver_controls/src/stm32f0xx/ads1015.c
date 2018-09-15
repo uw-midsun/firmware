@@ -57,7 +57,7 @@ static StatusCode prv_set_channel(Ads1015Storage *storage, Ads1015Channel channe
   return STATUS_CODE_OK;
 }
 
-static void prv_watchdog(SoftTimerID timer_id, void *context) {
+static void prv_watchdog(SoftTimerId timer_id, void *context) {
   Ads1015Storage *storage = context;
 
   if (!storage->watchdog_kicked) {

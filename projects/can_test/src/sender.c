@@ -12,7 +12,7 @@ typedef struct {
 
 static volatile SenderStorage s_sender = { 0 };
 
-static void prv_tx_cb(SoftTimerID timer_id, void *context) {
+static void prv_tx_cb(SoftTimerId timer_id, void *context) {
   StatusCode ret = can_transmit(&s_sender.msg, NULL);
   if (status_ok(ret)) {
     s_sender.msg.data_u32[0]++;
@@ -21,7 +21,7 @@ static void prv_tx_cb(SoftTimerID timer_id, void *context) {
   soft_timer_start(s_sender.timeout_us, prv_tx_cb, NULL, NULL);
 }
 
-static void prv_periodic_tx_cb(SoftTimerID timer_id, void *context) {
+static void prv_periodic_tx_cb(SoftTimerId timer_id, void *context) {
   uint32_t diff = s_sender.msg.data_u32[0] - s_sender.last_success;
   s_sender.last_success = s_sender.msg.data_u32[0];
 

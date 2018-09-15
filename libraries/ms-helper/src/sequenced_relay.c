@@ -4,7 +4,7 @@
 #include "exported_enums.h"
 #include "soft_timer.h"
 
-static void prv_delay_cb(SoftTimerID timer_id, void *context) {
+static void prv_delay_cb(SoftTimerId timer_id, void *context) {
   SequencedRelayStorage *storage = context;
 
   storage->delay_timer = SOFT_TIMER_INVALID_TIMER;

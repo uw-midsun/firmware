@@ -38,7 +38,7 @@ static void prv_rx_handler(void *context) {
 }
 
 // CANHwEventHandlerCb: Fault Occurred
-static void prv_bus_error_timeout_handler(SoftTimerID timer_id, void *context) {
+static void prv_bus_error_timeout_handler(SoftTimerId timer_id, void *context) {
   (void)timer_id;
   GenericCanHw *gch = context;
 

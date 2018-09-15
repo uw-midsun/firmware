@@ -47,7 +47,7 @@ typedef struct Ads1015Storage {
   Ads1015Callback channel_callback[NUM_ADS1015_CHANNELS];
   void *callback_context[NUM_ADS1015_CHANNELS];
 
-  SoftTimerID watchdog_timer;
+  SoftTimerId watchdog_timer;
   bool watchdog_kicked;
   bool data_valid;
 } Ads1015Storage;

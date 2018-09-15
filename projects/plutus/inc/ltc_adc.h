@@ -20,7 +20,7 @@ typedef struct {
   StatusCode status;
   int32_t value;
 
-  SoftTimerID timer_id;
+  SoftTimerId timer_id;
 } LtcAdcStorageBuffer;
 
 typedef void (*LtcAdcCallback)(int32_t *value, void *context);

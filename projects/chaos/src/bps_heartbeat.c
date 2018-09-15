@@ -12,10 +12,10 @@
 #include "soft_timer.h"
 #include "status.h"
 
-static SoftTimerID s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
+static SoftTimerId s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
 
 // SoftTimerCallback
-static void prv_bps_watchdog(SoftTimerID id, void *context) {
+static void prv_bps_watchdog(SoftTimerId id, void *context) {
   (void)id;
   (void)context;
   LOG_DEBUG("Emergency: BPS Watchdog\n");

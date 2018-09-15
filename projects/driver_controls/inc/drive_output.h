@@ -28,8 +28,8 @@ typedef struct DriveOutputStorage {
   int16_t pedal_requested_data;
   EventId fault_event;
   EventId update_req_event;
-  SoftTimerID watchdog_timer;
-  SoftTimerID output_timer;
+  SoftTimerId watchdog_timer;
+  SoftTimerId output_timer;
   uint8_t watchdog;
 } DriveOutputStorage;
 

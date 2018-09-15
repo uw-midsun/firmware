@@ -5,7 +5,7 @@
 #include "i2c.h"
 #include "mcp23008.h"
 
-static void prv_poll_timeout(SoftTimerID timer_id, void *context) {
+static void prv_poll_timeout(SoftTimerId timer_id, void *context) {
   GpioExpanderStorage *expander = context;
 
   // Trigger an interrupt to force an update

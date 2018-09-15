@@ -9,7 +9,7 @@
 static int32_t s_test_voltage = 0;
 static bool s_fault_flag = false;
 
-static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
+static void prv_ltc_adc_read(SoftTimerId timer_id, void *context) {
   LtcAdcStorage *storage = (LtcAdcStorage *)context;
 
   if (s_fault_flag) {

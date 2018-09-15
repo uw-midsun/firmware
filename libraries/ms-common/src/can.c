@@ -31,7 +31,7 @@ void prv_rx_handler(void *context);
 
 // Bus error timer callback
 // Checks if the bus has recovered, raising the fault event if still off
-void prv_bus_error_timeout_handler(SoftTimerID timer_id, void *context);
+void prv_bus_error_timeout_handler(SoftTimerId timer_id, void *context);
 
 // Handler for CAN HW bus error events
 // Starts a timer to check for bus recovery
@@ -174,7 +174,7 @@ void prv_rx_handler(void *context) {
   }
 }
 
-void prv_bus_error_timeout_handler(SoftTimerID timer_id, void *context) {
+void prv_bus_error_timeout_handler(SoftTimerId timer_id, void *context) {
   CANStorage *can_storage = context;
 
   // Note that bus errors have never been tested.

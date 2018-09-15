@@ -48,11 +48,11 @@ FSM_STATE_TRANSITION(afe_aux_complete) {
   FSM_ADD_TRANSITION(PLUTUS_EVENT_AFE_CALLBACK_RUN, afe_idle);
 }
 
-static void prv_cell_conv_timeout(SoftTimerID timer_id, void *context) {
+static void prv_cell_conv_timeout(SoftTimerId timer_id, void *context) {
   event_raise(PLUTUS_EVENT_AFE_CELL_CONV_COMPLETE, 0);
 }
 
-static void prv_aux_conv_timeout(SoftTimerID timer_id, void *context) {
+static void prv_aux_conv_timeout(SoftTimerId timer_id, void *context) {
   LtcAfeStorage *afe = context;
   event_raise(PLUTUS_EVENT_AFE_AUX_CONV_COMPLETE, afe->aux_index);
 }

@@ -36,7 +36,7 @@ typedef struct PowerPathSource {
   PowerPathConversionFn current_convert_fn;
   PowerPathConversionFn voltage_convert_fn;
   uint32_t period_millis;
-  SoftTimerID timer_id;
+  SoftTimerId timer_id;
   bool monitoring_active;
 } PowerPathSource;
 

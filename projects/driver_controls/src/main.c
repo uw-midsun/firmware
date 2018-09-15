@@ -71,7 +71,7 @@ static Ads1015Storage s_stalk_ads1015;
 static CANStorage s_can;
 static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
 
-static void prv_blink_timeout(SoftTimerID timer_id, void *context) {
+static void prv_blink_timeout(SoftTimerId timer_id, void *context) {
   debug_led_toggle_state(DEBUG_LED_GREEN);
 
   soft_timer_start_seconds(1, prv_blink_timeout, NULL, NULL);

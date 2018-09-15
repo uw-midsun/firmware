@@ -32,7 +32,7 @@ static void prv_toggle_pin_altfn(GpioAddress addr, bool enable) {
   gpio_init_pin(&addr, &settings);
 }
 
-static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
+static void prv_ltc_adc_read(SoftTimerId timer_id, void *context) {
   LtcAdcStorage *storage = (LtcAdcStorage *)context;
 
   // Pull CS low so we can check for MISO to go low, signalling that the

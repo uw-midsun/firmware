@@ -46,7 +46,7 @@ static StatusCode prv_handle_state(BpsHeartbeatStorage *storage) {
   return STATUS_CODE_OK;
 }
 
-static void prv_periodic_heartbeat(SoftTimerID timer_id, void *context) {
+static void prv_periodic_heartbeat(SoftTimerId timer_id, void *context) {
   BpsHeartbeatStorage *storage = context;
 
   prv_handle_state(storage);

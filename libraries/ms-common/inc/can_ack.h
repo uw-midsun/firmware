@@ -61,7 +61,7 @@ typedef struct CANAckPendingReq {
   void *context;
   uint32_t expected_bitset;
   uint32_t response_bitset;
-  SoftTimerID timer;
+  SoftTimerId timer;
   CanMessageId msg_id;
 } CANAckPendingReq;
 static_assert(SIZEOF_FIELD(CANAckPendingReq, expected_bitset) * CHAR_BIT >= CAN_MSG_MAX_DEVICES,

@@ -25,7 +25,7 @@ static bool prv_addr_eq(GpioAddress addr1, GpioAddress addr2) {
   return ((addr1.port == addr2.port) && (addr1.pin == addr2.pin));
 }
 
-static void prv_send(SoftTimerID timer_id, void *context) {
+static void prv_send(SoftTimerId timer_id, void *context) {
   (void)timer_id;
   PowerPathCfg *cfg = context;
   PowerPathVCReadings aux = { 0 };
@@ -58,7 +58,7 @@ static void prv_voltage_warning(const GpioAddress *addr, void *context) {
   }
 }
 
-static void prv_adc_read(SoftTimerID timer_id, void *context) {
+static void prv_adc_read(SoftTimerId timer_id, void *context) {
   PowerPathSource *pps = context;
   if (pps->timer_id != timer_id || !pps->monitoring_active) {
     // Guard against accidentally starting multiple timers to monitor the same source concurrently.

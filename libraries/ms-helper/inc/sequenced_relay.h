@@ -22,7 +22,7 @@ typedef struct SequencedRelaySettings {
 
 typedef struct SequencedRelayStorage {
   SequencedRelaySettings settings;
-  SoftTimerID delay_timer;
+  SoftTimerId delay_timer;
   RelayRxStorage relay_rx;
 } SequencedRelayStorage;
 

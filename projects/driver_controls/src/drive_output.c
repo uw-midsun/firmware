@@ -10,7 +10,7 @@
 
 static DriveOutputStorage s_storage;
 
-static void prv_watchdog_cb(SoftTimerID timer_id, void *context) {
+static void prv_watchdog_cb(SoftTimerId timer_id, void *context) {
   DriveOutputStorage *storage = context;
 
   // We're missing at least one updated response
@@ -28,7 +28,7 @@ static void prv_watchdog_cb(SoftTimerID timer_id, void *context) {
                           &storage->watchdog_timer);
 }
 
-static void prv_broadcast_cb(SoftTimerID timer_id, void *context) {
+static void prv_broadcast_cb(SoftTimerId timer_id, void *context) {
   DriveOutputStorage *storage = context;
 
   // Note that this will usually output stale data from the previous update request

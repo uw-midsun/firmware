@@ -36,7 +36,7 @@ static StatusCode prv_set_channel(Ads1015Storage *storage, Ads1015Channel channe
 }
 
 // Periodically calls channels' callbacks imitating the interrupt behavior.
-static void prv_timer_callback(SoftTimerID id, void *context) {
+static void prv_timer_callback(SoftTimerId id, void *context) {
   Ads1015Storage *storage = context;
   Ads1015Channel current_channel = storage->current_channel;
 

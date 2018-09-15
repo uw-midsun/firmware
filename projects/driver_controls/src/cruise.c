@@ -21,7 +21,7 @@ static StatusCode prv_handle_motor_velocity(const CANMessage *msg, void *context
   return event_raise(INPUT_EVENT_SPEED_UPDATE, (uint16_t)cruise->current_speed_cms);
 }
 
-static void prv_timer_cb(SoftTimerID timer_id, void *context) {
+static void prv_timer_cb(SoftTimerId timer_id, void *context) {
   CruiseStorage *cruise = context;
 
   cruise_set_target_cms(cruise, cruise->target_speed_cms + cruise->offset_cms);

@@ -17,11 +17,11 @@
 
 static uint32_t s_watchdog_period_s;
 static CanInterval *s_interval;
-static SoftTimerID s_watchdog = SOFT_TIMER_INVALID_TIMER;
+static SoftTimerId s_watchdog = SOFT_TIMER_INVALID_TIMER;
 
 // Watchdog activated when commanded to start. Requires reaffirmation every minute or it will cease
 // charging.
-static void prv_command_watchdog(SoftTimerID id, void *context) {
+static void prv_command_watchdog(SoftTimerId id, void *context) {
   (void)id;
   (void)context;
   event_raise(CHARGER_EVENT_STOP_CHARGING, 0);

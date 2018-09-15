@@ -36,7 +36,7 @@ static CANStorage s_can_storage;
 static EmergencyFaultStorage s_emergency_storage;
 static RelayRetryServiceStorage s_retry_storage;
 
-static void prv_toggle(SoftTimerID id, void *context) {
+static void prv_toggle(SoftTimerId id, void *context) {
   (void)id;
   (void)context;
   debug_led_toggle_state(DEBUG_LED_RED);

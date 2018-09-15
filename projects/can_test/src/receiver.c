@@ -19,7 +19,7 @@ static StatusCode prv_handle_can_rx(const CANMessage *msg, void *context, CANAck
   return STATUS_CODE_OK;
 }
 
-static void prv_periodic_rx_cb(SoftTimerID timer_id, void *context) {
+static void prv_periodic_rx_cb(SoftTimerId timer_id, void *context) {
   printf("RX'd %" PRIu32 ", %" PRIu32 " skips (%" PRIu32 ")\n", s_counter, s_skips, s_prev_val);
   s_counter = 0;
   s_skips = 0;

@@ -16,7 +16,7 @@ static StatusCode prv_ack_handler(CanMessageId msg_id, uint16_t device, CANAckSt
                                   uint16_t num_remaining, void *context);
 
 // SoftTimerCallback
-static void prv_send(SoftTimerID id, void *context) {
+static void prv_send(SoftTimerId id, void *context) {
   (void)id;
   EmergencyFaultStorage *storage = context;
   storage->id = SOFT_TIMER_INVALID_TIMER;

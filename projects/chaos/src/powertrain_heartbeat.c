@@ -25,11 +25,11 @@
 // Although a counter could be substituted for the watchdog timer this has the added benefit of
 // signalling in the event the CAN bus starts faulting and the message cannot be sent.
 
-static SoftTimerID s_interval_id = SOFT_TIMER_INVALID_TIMER;
-static SoftTimerID s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
+static SoftTimerId s_interval_id = SOFT_TIMER_INVALID_TIMER;
+static SoftTimerId s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
 
 // SoftTimerCallback
-static void prv_hb_watchdog(SoftTimerID timer_id, void *context) {
+static void prv_hb_watchdog(SoftTimerId timer_id, void *context) {
   (void)timer_id;
   (void)context;
   s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
@@ -65,7 +65,7 @@ static StatusCode prv_ack_cb(CanMessageId id, uint16_t device, CANAckStatus stat
 }
 
 // SoftTimerCallback
-static void prv_send_hb_request(SoftTimerID timer_id, void *context) {
+static void prv_send_hb_request(SoftTimerId timer_id, void *context) {
   (void)timer_id;
   (void)context;
   CANAckRequest ack_req = {
