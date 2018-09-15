@@ -20,7 +20,7 @@ typedef enum {
 
 typedef struct ThermistorStorage {
   ThermistorPosition position;
-  ADCChannel adc_channel;
+  AdcChannel adc_channel;
 } ThermistorStorage;
 
 // Initializes the GPIO pin and ADC Channel associated with the thermistor

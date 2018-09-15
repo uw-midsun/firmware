@@ -7,7 +7,7 @@
 #include "interrupt.h"
 #include "log.h"
 
-void test_callback(ADCChannel adc_channel, void *context) {
+void test_callback(AdcChannel adc_channel, void *context) {
   uint16_t *adc_reading = (uint16_t *)context;
   adc_read_converted(adc_channel, adc_reading);
 }
@@ -39,7 +39,7 @@ int main() {
 
   adc_init(ADC_MODE_SINGLE);
 
-  for (ADCChannel i = ADC_CHANNEL_10; i < ADC_CHANNEL_14; i++) {
+  for (AdcChannel i = ADC_CHANNEL_10; i < ADC_CHANNEL_14; i++) {
     adc_set_channel(i, true);
     adc_register_callback(i, test_callback, &adc_readings[i]);
   }

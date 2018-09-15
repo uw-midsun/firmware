@@ -67,7 +67,7 @@ static void prv_adc_read(SoftTimerID timer_id, void *context) {
   pps->timer_id = SOFT_TIMER_INVALID_TIMER;
 
   uint16_t value = 0;
-  ADCChannel chan = NUM_ADC_CHANNELS;
+  AdcChannel chan = NUM_ADC_CHANNELS;
   // Read and convert the current values.
   adc_get_channel(pps->current_pin, &chan);
   adc_read_converted(chan, &value);
@@ -138,7 +138,7 @@ StatusCode power_path_source_monitor_enable(PowerPathSource *source, uint32_t pe
   }
 
   // Set up adc current/voltage monitoring
-  ADCChannel chan = NUM_ADC_CHANNELS;
+  AdcChannel chan = NUM_ADC_CHANNELS;
   adc_get_channel(source->current_pin, &chan);
   status_ok_or_return(adc_set_channel(chan, true));
   adc_get_channel(source->voltage_pin, &chan);
@@ -162,7 +162,7 @@ StatusCode power_path_source_monitor_disable(PowerPathSource *source) {
   }
 
   // Disable the ADCs
-  ADCChannel chan = NUM_ADC_CHANNELS;
+  AdcChannel chan = NUM_ADC_CHANNELS;
   adc_get_channel(source->current_pin, &chan);
   status_ok_or_return(adc_set_channel(chan, false));
   adc_get_channel(source->voltage_pin, &chan);

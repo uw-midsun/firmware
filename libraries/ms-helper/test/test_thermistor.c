@@ -12,7 +12,7 @@
 // Each value is used for a different test case
 // Channel 0~3 used for thermistor = R1. Channel 4~6 used for thermistor = R2. Channel 7 & REF used
 // for producing errors.
-StatusCode TEST_MOCK(adc_read_converted)(ADCChannel adc_channel, uint16_t *reading) {
+StatusCode TEST_MOCK(adc_read_converted)(AdcChannel adc_channel, uint16_t *reading) {
   switch (adc_channel) {
     case (ADC_CHANNEL_0):
       *reading = 2900;  // Used for testing out of range temperatures
@@ -48,12 +48,12 @@ StatusCode TEST_MOCK(adc_read_converted)(ADCChannel adc_channel, uint16_t *readi
   return STATUS_CODE_OK;
 }
 
-StatusCode TEST_MOCK(adc_get_channel)(GpioAddress address, ADCChannel *adc_channel) {
+StatusCode TEST_MOCK(adc_get_channel)(GpioAddress address, AdcChannel *adc_channel) {
   *adc_channel = address.pin;
   return STATUS_CODE_OK;
 }
 
-StatusCode TEST_MOCK(adc_set_channel)(ADCChannel adc_channel, bool new_state) {
+StatusCode TEST_MOCK(adc_set_channel)(AdcChannel adc_channel, bool new_state) {
   return STATUS_CODE_OK;
 }
 

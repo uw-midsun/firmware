@@ -103,7 +103,7 @@ void adc_init(ADCMode adc_mode) {
   adc_set_channel(ADC_CHANNEL_REF, true);
 }
 
-StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
+StatusCode adc_set_channel(AdcChannel adc_channel, bool new_state) {
   if (adc_channel >= NUM_ADC_CHANNELS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -138,7 +138,7 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
 
 // ADC Channel to GPIO Address mapping found in table 13 of the specific device datasheet.
 // Channels 0 to 7 are occupied by port A, 8 to 9 by prt B, and 10 to 15 by port C
-StatusCode adc_get_channel(GpioAddress address, ADCChannel *adc_channel) {
+StatusCode adc_get_channel(GpioAddress address, AdcChannel *adc_channel) {
   *adc_channel = address.pin;
 
   switch (address.port) {
@@ -167,7 +167,7 @@ StatusCode adc_get_channel(GpioAddress address, ADCChannel *adc_channel) {
   return STATUS_CODE_OK;
 }
 
-StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, void *context) {
+StatusCode adc_register_callback(AdcChannel adc_channel, ADCCallback callback, void *context) {
   if (adc_channel >= NUM_ADC_CHANNELS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -181,7 +181,7 @@ StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, v
   return STATUS_CODE_OK;
 }
 
-StatusCode adc_read_raw(ADCChannel adc_channel, uint16_t *reading) {
+StatusCode adc_read_raw(AdcChannel adc_channel, uint16_t *reading) {
   if (adc_channel >= NUM_ADC_CHANNELS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -201,7 +201,7 @@ StatusCode adc_read_raw(ADCChannel adc_channel, uint16_t *reading) {
   return STATUS_CODE_OK;
 }
 
-StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading) {
+StatusCode adc_read_converted(AdcChannel adc_channel, uint16_t *reading) {
   if (adc_channel >= NUM_ADC_CHANNELS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -240,7 +240,7 @@ void ADC1_COMP_IRQHandler() {
   if (ADC_GetITStatus(ADC1, ADC_IT_EOC)) {
     uint16_t reading = ADC_GetConversionValue(ADC1);
     if (s_adc_status.sequence != 0) {
-      ADCChannel current_channel = __builtin_ctz(s_adc_status.sequence);
+      AdcChannel current_channel = __builtin_ctz(s_adc_status.sequence);
 
       if (s_adc_interrupts[current_channel].callback != NULL) {
         s_adc_interrupts[current_channel].callback(current_channel,
