@@ -55,7 +55,7 @@ void setup_test() {
   };
   i2c_init(DC_CFG_I2C_BUS_PORT, &i2c_settings);
   event_queue_init();
-  GPIOAddress ready_pin = DC_CFG_PEDAL_ADC_RDY_PIN;
+  GpioAddress ready_pin = DC_CFG_PEDAL_ADC_RDY_PIN;
   ads1015_init(&s_ads1015_storage, DC_CFG_I2C_BUS_PORT, DC_CFG_PEDAL_ADC_ADDR, &ready_pin);
 
   const MechBrakeCalibrationData s_calibration_data = {

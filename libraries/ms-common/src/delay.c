@@ -6,7 +6,7 @@
 #include "soft_timer.h"
 #include "wait.h"
 
-static void prv_delay_it(SoftTimerID timer_id, void *context) {
+static void prv_delay_it(SoftTimerId timer_id, void *context) {
   volatile bool *block = context;
   *block = false;
 }

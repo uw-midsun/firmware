@@ -37,7 +37,7 @@ typedef enum {
   NUM_GPIO_EXPANDER_ADDRESSES
 } GpioExpanderAddress;
 
-typedef void (*GpioExpanderCallbackFn)(GpioExpanderPin pin, GPIOState state, void *context);
+typedef void (*GpioExpanderCallbackFn)(GpioExpanderPin pin, GpioState state, void *context);
 
 typedef struct GpioExpanderCallback {
   GpioExpanderCallbackFn func;
@@ -48,24 +48,24 @@ typedef struct GpioExpanderStorage {
   I2CPort port;
   I2CAddress addr;
   GpioExpanderCallback callbacks[NUM_GPIO_EXPANDER_PINS];
-  GPIOAddress int_pin;
+  GpioAddress int_pin;
 } GpioExpanderStorage;
 
 // Initialize the expander with an address to connect to its INT pin
 StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioExpanderAddress addr,
-                              const GPIOAddress *interrupt_pin);
+                              const GpioAddress *interrupt_pin);
 
 // Initialize one of the expander pins.
 StatusCode gpio_expander_init_pin(GpioExpanderStorage *expander, GpioExpanderPin pin,
-                                  const GPIOSettings *settings);
+                                  const GpioSettings *settings);
 
 // Returns the set output value or the current input value based on the pin configuration
 StatusCode gpio_expander_get_state(GpioExpanderStorage *expander, GpioExpanderPin pin,
-                                   GPIOState *state);
+                                   GpioState *state);
 
 // Set the state of an output pin
 StatusCode gpio_expander_set_state(GpioExpanderStorage *expander, GpioExpanderPin pin,
-                                   GPIOState state);
+                                   GpioState state);
 
 // Register a callback for a specific pin
 StatusCode gpio_expander_register_callback(GpioExpanderStorage *expander, GpioExpanderPin pin,

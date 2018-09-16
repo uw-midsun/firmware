@@ -9,16 +9,16 @@
 #include "stm32f0xx_interrupt.h"
 #include "stm32f0xx_syscfg.h"
 
-typedef struct GPIOITInterrupt {
-  GPIOAddress address;
-  GPIOItCallback callback;
+typedef struct GpioItInterrupt {
+  GpioAddress address;
+  GpioItCallback callback;
   void *context;
-} GPIOITInterrupt;
+} GpioItInterrupt;
 
-static GPIOITInterrupt s_gpio_it_interrupts[GPIO_PINS_PER_PORT];
+static GpioItInterrupt s_gpio_it_interrupts[GPIO_PINS_PER_PORT];
 
 void gpio_it_init(void) {
-  GPIOITInterrupt empty_interrupt = { 0 };
+  GpioItInterrupt empty_interrupt = { 0 };
   for (int16_t i = 0; i < GPIO_PINS_PER_PORT; i++) {
     s_gpio_it_interrupts[i] = empty_interrupt;
   }
@@ -34,8 +34,8 @@ static uint8_t prv_get_irq_channel(uint8_t pin) {
   return 7;
 }
 
-StatusCode gpio_it_register_interrupt(const GPIOAddress *address, const InterruptSettings *settings,
-                                      InterruptEdge edge, GPIOItCallback callback, void *context) {
+StatusCode gpio_it_register_interrupt(const GpioAddress *address, const InterruptSettings *settings,
+                                      InterruptEdge edge, GpioItCallback callback, void *context) {
   if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   } else if (s_gpio_it_interrupts[address->pin].callback) {
@@ -64,7 +64,7 @@ StatusCode gpio_it_register_interrupt(const GPIOAddress *address, const Interrup
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_it_trigger_interrupt(const GPIOAddress *address) {
+StatusCode gpio_it_trigger_interrupt(const GpioAddress *address) {
   if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -102,7 +102,7 @@ void EXTI4_15_IRQHandler(void) {
   prv_run_gpio_callbacks(4, 15);
 }
 
-StatusCode gpio_it_mask_interrupt(const GPIOAddress *address, bool masked) {
+StatusCode gpio_it_mask_interrupt(const GpioAddress *address, bool masked) {
   if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }

@@ -6,4 +6,4 @@
 #include "event_arbiter.h"
 #include "fsm.h"
 
-StatusCode cruise_fsm_init(FSM *fsm, EventArbiterStorage *storage);
+StatusCode cruise_fsm_init(Fsm *fsm, EventArbiterStorage *storage);

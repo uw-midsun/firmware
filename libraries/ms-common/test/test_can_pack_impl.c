@@ -17,7 +17,7 @@
 // replaced with what they represent at compile time.
 #define TEST_CAN_PACK_IMPL_FRAMEWORK(pack_call)                  \
   do {                                                           \
-    CANMessage msg = { 0 };                                      \
+    CanMessage msg = { 0 };                                      \
     test_can_pack_impl_data data = { .data_u64 = 1 };            \
     size_t size;                                                 \
     for (size = 0; size < CAN_PACK_IMPL_MAX_DLC; size++) {       \

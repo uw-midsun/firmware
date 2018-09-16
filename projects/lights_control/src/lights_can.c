@@ -29,7 +29,7 @@ static StatusCode prv_get_event_id(LightsCanEventType event_type, EELightState s
   return STATUS_CODE_OK;
 }
 
-static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_rx_handler(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   LightsCanSettings *settings = (LightsCanSettings *)context;
   // Storage for extracting message data.
   uint8_t param_1 = 0;
@@ -52,7 +52,7 @@ static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckSta
 }
 
 StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *settings,
-                           const CANSettings *can_settings) {
+                           const CanSettings *can_settings) {
   // Initialize CAN.
   status_ok_or_return(can_init(&storage->can_storage, can_settings));
   // Specify filters.

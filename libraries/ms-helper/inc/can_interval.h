@@ -14,7 +14,7 @@
 typedef struct CanInterval {
   GenericCan *can;
   GenericCanMsg msg;
-  SoftTimerID timer_id;
+  SoftTimerId timer_id;
   uint32_t period;
 } CanInterval;
 

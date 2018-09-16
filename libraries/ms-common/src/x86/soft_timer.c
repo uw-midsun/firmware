@@ -82,7 +82,7 @@ void soft_timer_init(void) {
 }
 
 StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, void *context,
-                            SoftTimerID *timer_id) {
+                            SoftTimerId *timer_id) {
   if (duration_us < SOFT_TIMER_MIN_TIME_US) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Soft timer too short!");
   }
@@ -120,7 +120,7 @@ bool soft_timer_inuse(void) {
   return false;
 }
 
-bool soft_timer_cancel(SoftTimerID timer_id) {
+bool soft_timer_cancel(SoftTimerId timer_id) {
   const bool critical = critical_section_start();
   if (timer_id < SOFT_TIMER_MAX_TIMERS && s_posix_timers[timer_id].inuse) {
     // Clear the timer if it is in use by setting it_val to 0, 0.
@@ -135,7 +135,7 @@ bool soft_timer_cancel(SoftTimerID timer_id) {
   return false;
 }
 
-uint32_t soft_timer_remaining_time(SoftTimerID timer_id) {
+uint32_t soft_timer_remaining_time(SoftTimerId timer_id) {
   struct itimerspec spec = { { 0, 0 }, { 0, 0 } };
   timer_gettime(s_posix_timers[timer_id].timer_id, &spec);
   return spec.it_value.tv_sec * 1000000 + spec.it_value.tv_nsec / 1000;

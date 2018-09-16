@@ -17,7 +17,7 @@ StatusCode gpio_init(void) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_init_pin(const GPIOAddress *address, const GPIOSettings *settings) {
+StatusCode gpio_init_pin(const GpioAddress *address, const GpioSettings *settings) {
   if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT ||
       settings->direction >= NUM_GPIO_DIRS || settings->state >= NUM_GPIO_STATES ||
       settings->resistor >= NUM_GPIO_RESES || settings->alt_function >= NUM_GPIO_ALTFNS) {
@@ -68,7 +68,7 @@ StatusCode gpio_init_pin(const GPIOAddress *address, const GPIOSettings *setting
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_set_state(const GPIOAddress *address, GPIOState state) {
+StatusCode gpio_set_state(const GpioAddress *address, GpioState state) {
   if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT ||
       state >= NUM_GPIO_STATES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
@@ -78,7 +78,7 @@ StatusCode gpio_set_state(const GPIOAddress *address, GPIOState state) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_toggle_state(const GPIOAddress *address) {
+StatusCode gpio_toggle_state(const GpioAddress *address) {
   if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -93,7 +93,7 @@ StatusCode gpio_toggle_state(const GPIOAddress *address) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_get_state(const GPIOAddress *address, GPIOState *input_state) {
+StatusCode gpio_get_state(const GpioAddress *address, GpioState *input_state) {
   if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }

@@ -47,14 +47,14 @@ FSM_STATE_TRANSITION(cruise_on_brake) {
   FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_FAULT, cruise_off);
 }
 
-static void prv_cruise_off_output(FSM *fsm, const Event *e, void *context) {
+static void prv_cruise_off_output(Fsm *fsm, const Event *e, void *context) {
   DriveOutputStorage *storage = drive_output_global();
 
   // Off - Keep target speed, but send disabled to motor controllers
   drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, 0);
 }
 
-static void prv_cruise_on_output(FSM *fsm, const Event *e, void *context) {
+static void prv_cruise_on_output(Fsm *fsm, const Event *e, void *context) {
   DriveOutputStorage *storage = drive_output_global();
   CruiseStorage *cruise = cruise_global();
 
@@ -62,7 +62,7 @@ static void prv_cruise_on_output(FSM *fsm, const Event *e, void *context) {
   drive_output_update(storage, DRIVE_OUTPUT_SOURCE_CRUISE, cruise_get_target_cms(cruise));
 }
 
-StatusCode cruise_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
+StatusCode cruise_fsm_init(Fsm *fsm, EventArbiterStorage *storage) {
   fsm_state_init(cruise_off, prv_cruise_off_output);
   fsm_state_init(cruise_on, prv_cruise_on_output);
   fsm_state_init(cruise_on_brake, prv_cruise_on_output);

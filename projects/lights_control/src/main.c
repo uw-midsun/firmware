@@ -27,10 +27,10 @@ static LightsCanStorage s_lights_can_storage = { 0 };
 
 static LightsStrobeStorage s_lights_strobe = { 0 };
 
-static const GPIOAddress s_board_type_address = { .port = GPIO_PORT_B, .pin = 13 };
+static const GpioAddress s_board_type_address = { .port = GPIO_PORT_B, .pin = 13 };
 
 int main(void) {
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .bitrate = CAN_HW_BITRATE_500KBPS,
     .tx = { .port = GPIO_PORT_A, .pin = 12 },
     .rx = { .port = GPIO_PORT_A, .pin = 11 },
@@ -57,7 +57,7 @@ int main(void) {
   event_queue_init();
 
   // Getting board type.
-  GPIOState state = NUM_GPIO_STATES;
+  GpioState state = NUM_GPIO_STATES;
 
   StatusCode status = gpio_get_state(&s_board_type_address, &state);
 
