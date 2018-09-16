@@ -18,7 +18,7 @@
 typedef struct RelayRetryServiceStorage {
   uint32_t backoff_ms;
   uint8_t relays_curr_retries[NUM_RELAY_IDS];
-  SoftTimerID relays_timer_id[NUM_RELAY_IDS];
+  SoftTimerId relays_timer_id[NUM_RELAY_IDS];
   uint8_t max_retries;
 } RelayRetryServiceStorage;
 

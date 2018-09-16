@@ -10,7 +10,7 @@ FSM_DECLARE_STATE(afe_trigger_aux_conv);
 FSM_DECLARE_STATE(afe_read_aux);
 FSM_DECLARE_STATE(afe_aux_complete);
 
-static bool prv_all_aux_complete(const struct FSM *fsm, const Event *e, void *context) {
+static bool prv_all_aux_complete(const struct Fsm *fsm, const Event *e, void *context) {
   return e->data >= 12;
 }
 
@@ -48,16 +48,16 @@ FSM_STATE_TRANSITION(afe_aux_complete) {
   FSM_ADD_TRANSITION(PLUTUS_EVENT_AFE_CALLBACK_RUN, afe_idle);
 }
 
-static void prv_cell_conv_timeout(SoftTimerID timer_id, void *context) {
+static void prv_cell_conv_timeout(SoftTimerId timer_id, void *context) {
   event_raise(PLUTUS_EVENT_AFE_CELL_CONV_COMPLETE, 0);
 }
 
-static void prv_aux_conv_timeout(SoftTimerID timer_id, void *context) {
+static void prv_aux_conv_timeout(SoftTimerId timer_id, void *context) {
   LtcAfeStorage *afe = context;
   event_raise(PLUTUS_EVENT_AFE_AUX_CONV_COMPLETE, afe->aux_index);
 }
 
-static void prv_afe_trigger_cell_conv_output(struct FSM *fsm, const Event *e, void *context) {
+static void prv_afe_trigger_cell_conv_output(struct Fsm *fsm, const Event *e, void *context) {
   LtcAfeStorage *afe = context;
   StatusCode ret = ltc_afe_impl_trigger_cell_conv(afe);
   if (status_ok(ret)) {
@@ -68,7 +68,7 @@ static void prv_afe_trigger_cell_conv_output(struct FSM *fsm, const Event *e, vo
   }
 }
 
-static void prv_afe_read_cells_output(struct FSM *fsm, const Event *e, void *context) {
+static void prv_afe_read_cells_output(struct Fsm *fsm, const Event *e, void *context) {
   LtcAfeStorage *afe = context;
 
   StatusCode ret = ltc_afe_impl_read_cells(afe);
@@ -89,7 +89,7 @@ static void prv_afe_read_cells_output(struct FSM *fsm, const Event *e, void *con
   }
 }
 
-static void prv_afe_trigger_aux_conv_output(struct FSM *fsm, const Event *e, void *context) {
+static void prv_afe_trigger_aux_conv_output(struct Fsm *fsm, const Event *e, void *context) {
   LtcAfeStorage *afe = context;
   uint32_t device_cell = e->data;
   StatusCode ret = ltc_afe_impl_trigger_aux_conv(afe, device_cell);
@@ -102,7 +102,7 @@ static void prv_afe_trigger_aux_conv_output(struct FSM *fsm, const Event *e, voi
   }
 }
 
-static void prv_afe_read_aux_output(struct FSM *fsm, const Event *e, void *context) {
+static void prv_afe_read_aux_output(struct Fsm *fsm, const Event *e, void *context) {
   LtcAfeStorage *afe = context;
   uint16_t device_cell = e->data;
 
@@ -121,7 +121,7 @@ static void prv_afe_read_aux_output(struct FSM *fsm, const Event *e, void *conte
   }
 }
 
-static void prv_afe_aux_complete_output(struct FSM *fsm, const Event *e, void *context) {
+static void prv_afe_aux_complete_output(struct Fsm *fsm, const Event *e, void *context) {
   LtcAfeStorage *afe = context;
 
   // Raise the event first in case the user raises a trigger conversion event in the callback
@@ -133,7 +133,7 @@ static void prv_afe_aux_complete_output(struct FSM *fsm, const Event *e, void *c
   }
 }
 
-StatusCode ltc_afe_fsm_init(FSM *fsm, LtcAfeStorage *afe) {
+StatusCode ltc_afe_fsm_init(Fsm *fsm, LtcAfeStorage *afe) {
   fsm_state_init(afe_idle, NULL);
   fsm_state_init(afe_trigger_cell_conv, prv_afe_trigger_cell_conv_output);
   fsm_state_init(afe_read_cells, prv_afe_read_cells_output);

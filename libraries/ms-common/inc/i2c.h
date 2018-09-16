@@ -19,8 +19,8 @@ typedef enum {
 
 typedef struct {
   I2CSpeed speed;
-  GPIOAddress sda;
-  GPIOAddress scl;
+  GpioAddress sda;
+  GpioAddress scl;
 } I2CSettings;
 
 StatusCode i2c_init(I2CPort i2c, const I2CSettings *settings);

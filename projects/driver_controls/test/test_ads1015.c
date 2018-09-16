@@ -44,7 +44,7 @@ void setup_test(void) {
     .sda = { .port = GPIO_PORT_B, .pin = 9 },  //
   };
   i2c_init(TEST_ADS1015_I2C_PORT, &i2c_settings);
-  GPIOAddress ready_pin = {
+  GpioAddress ready_pin = {
     .port = GPIO_PORT_A,  //
     .pin = 10,            //
   };
@@ -56,7 +56,7 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_ads1015_init_invalid_input(void) {
-  GPIOAddress ready_pin = {
+  GpioAddress ready_pin = {
     .port = GPIO_PORT_A,  //
     .pin = 0,             //
   };

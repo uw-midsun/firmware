@@ -13,16 +13,16 @@
 #include "status.h"
 
 typedef struct SequencedRelaySettings {
-  CANMessageID can_msg_id;
-  GPIOAddress left_relay;
-  GPIOAddress right_relay;
+  CanMessageId can_msg_id;
+  GpioAddress left_relay;
+  GpioAddress right_relay;
   // Delay between left and right relays closing
   uint32_t delay_ms;
 } SequencedRelaySettings;
 
 typedef struct SequencedRelayStorage {
   SequencedRelaySettings settings;
-  SoftTimerID delay_timer;
+  SoftTimerId delay_timer;
   RelayRxStorage relay_rx;
 } SequencedRelayStorage;
 

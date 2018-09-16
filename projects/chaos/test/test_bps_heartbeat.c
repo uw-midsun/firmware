@@ -21,9 +21,9 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-static CANStorage s_storage;
+static CanStorage s_storage;
 
-static StatusCode prv_bps_ack_request(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_bps_ack_request(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                       uint16_t remaining, void *context) {
   (void)context;
   TEST_ASSERT_EQUAL(SYSTEM_CAN_DEVICE_CHAOS, device);
@@ -38,7 +38,7 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
 
-  CANSettings settings = {
+  CanSettings settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
     .bitrate = CAN_HW_BITRATE_125KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,
@@ -56,7 +56,7 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_bps_heartbeat_watchdog_kick(void) {
-  const CANAckRequest ack_req = {
+  const CanAckRequest ack_req = {
     .callback = prv_bps_ack_request,
     .context = NULL,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_CHAOS),

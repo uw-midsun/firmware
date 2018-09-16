@@ -61,7 +61,7 @@ static bool prv_brake_guard(const Event *e) {
 }
 
 // Pedal FSM output functions
-static void prv_brake_output(FSM *fsm, const Event *e, void *context) {
+static void prv_brake_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = context;
   event_arbiter_set_guard_fn(guard, prv_brake_guard);
 
@@ -70,7 +70,7 @@ static void prv_brake_output(FSM *fsm, const Event *e, void *context) {
   prv_update_drive_output();
 }
 
-static void prv_not_brake_output(FSM *fsm, const Event *e, void *context) {
+static void prv_not_brake_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = context;
   event_arbiter_set_guard_fn(guard, NULL);
 
@@ -78,7 +78,7 @@ static void prv_not_brake_output(FSM *fsm, const Event *e, void *context) {
   prv_update_drive_output();
 }
 
-StatusCode pedal_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
+StatusCode pedal_fsm_init(Fsm *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_brake, prv_brake_output);
   fsm_state_init(state_coast, prv_not_brake_output);
   fsm_state_init(state_accel, prv_not_brake_output);

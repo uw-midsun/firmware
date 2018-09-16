@@ -25,7 +25,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-static CANStorage s_storage;
+static CanStorage s_storage;
 
 void setup_test(void) {
   interrupt_init();
@@ -33,7 +33,7 @@ void setup_test(void) {
   gpio_init();
   soft_timer_init();
 
-  CANSettings settings = {
+  CanSettings settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
     .bitrate = CAN_HW_BITRATE_125KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,
@@ -92,7 +92,7 @@ void test_powertrain_heartbeat_stop_heartbeat(void) {
 }
 
 void test_powertrain_heartbeat_kick_watchdog(void) {
-  CANMessage msg = {
+  CanMessage msg = {
     .type = CAN_MSG_TYPE_ACK,
     .msg_id = SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
   };

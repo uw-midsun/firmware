@@ -20,7 +20,7 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_charger_pin(void) {
-  const GPIOAddress addr = {
+  const GpioAddress addr = {
     .pin = 1,
     .port = 1,
   };

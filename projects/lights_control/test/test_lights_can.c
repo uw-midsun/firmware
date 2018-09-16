@@ -14,7 +14,7 @@
 #include "lights_can_config.h"
 #include "lights_events.h"
 
-const CANSettings s_can_settings = {
+const CanSettings s_can_settings = {
   // clang-format on
   .loopback = true,
   .bitrate = CAN_HW_BITRATE_500KBPS,

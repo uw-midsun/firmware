@@ -5,15 +5,15 @@
 
 #include "status.h"
 
-static GPIOSettings s_pin_settings[GPIO_TOTAL_PINS];
+static GpioSettings s_pin_settings[GPIO_TOTAL_PINS];
 static uint8_t s_gpio_pin_input_value[GPIO_TOTAL_PINS];
 
-static uint32_t prv_get_index(const GPIOAddress *address) {
+static uint32_t prv_get_index(const GpioAddress *address) {
   return address->port * (uint32_t)NUM_GPIO_PORTS + address->pin;
 }
 
 StatusCode gpio_init(void) {
-  GPIOSettings default_settings = {
+  GpioSettings default_settings = {
     .direction = GPIO_DIR_IN,
     .state = GPIO_STATE_LOW,
     .resistor = GPIO_RES_NONE,
@@ -26,7 +26,7 @@ StatusCode gpio_init(void) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_init_pin(const GPIOAddress *address, const GPIOSettings *settings) {
+StatusCode gpio_init_pin(const GpioAddress *address, const GpioSettings *settings) {
   if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT ||
       settings->direction >= NUM_GPIO_DIRS || settings->state >= NUM_GPIO_STATES ||
       settings->resistor >= NUM_GPIO_RESES || settings->alt_function >= NUM_GPIO_ALTFNS) {
@@ -37,7 +37,7 @@ StatusCode gpio_init_pin(const GPIOAddress *address, const GPIOSettings *setting
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_set_state(const GPIOAddress *address, GPIOState state) {
+StatusCode gpio_set_state(const GpioAddress *address, GpioState state) {
   if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT ||
       state >= NUM_GPIO_STATES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
@@ -47,7 +47,7 @@ StatusCode gpio_set_state(const GPIOAddress *address, GPIOState state) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_toggle_state(const GPIOAddress *address) {
+StatusCode gpio_toggle_state(const GpioAddress *address) {
   if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -61,7 +61,7 @@ StatusCode gpio_toggle_state(const GPIOAddress *address) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gpio_get_state(const GPIOAddress *address, GPIOState *state) {
+StatusCode gpio_get_state(const GpioAddress *address, GpioState *state) {
   if (address->port >= NUM_GPIO_PORTS || address->pin >= GPIO_PINS_PER_PORT) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }

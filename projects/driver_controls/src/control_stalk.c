@@ -31,7 +31,7 @@
 #define CONTROL_STALK_681_OHMS_THRESHOLD CONTROL_STALK_THRESHOLD(750)
 
 // ADC channel to Event ID
-static const EventID s_analog_mapping[CONTROL_STALK_ANALOG_INPUTS][NUM_CONTROL_STALK_STATES] = {
+static const EventId s_analog_mapping[CONTROL_STALK_ANALOG_INPUTS][NUM_CONTROL_STALK_STATES] = {
   {
       INPUT_EVENT_CONTROL_STALK_ANALOG_DISTANCE_NEUTRAL,
       INPUT_EVENT_CONTROL_STALK_ANALOG_DISTANCE_MINUS,
@@ -55,7 +55,7 @@ static const EventID s_analog_mapping[CONTROL_STALK_ANALOG_INPUTS][NUM_CONTROL_S
 };
 
 // Active-low
-static const EventID s_digital_mapping[CONTROL_STALK_DIGITAL_INPUTS][NUM_GPIO_STATES] = {
+static const EventId s_digital_mapping[CONTROL_STALK_DIGITAL_INPUTS][NUM_GPIO_STATES] = {
   {
       INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED,
       INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_RELEASED,
@@ -108,7 +108,7 @@ static void prv_analog_cb(Ads1015Channel channel, void *context) {
   }
 }
 
-void prv_digital_cb(GpioExpanderPin pin, GPIOState state, void *context) {
+void prv_digital_cb(GpioExpanderPin pin, GpioState state, void *context) {
   ControlStalk *stalk = context;
   event_raise(s_digital_mapping[pin][state], 0);
 }
@@ -124,7 +124,7 @@ StatusCode control_stalk_init(ControlStalk *stalk, Ads1015Storage *ads1015,
     ads1015_configure_channel(stalk->ads1015, channel, true, prv_analog_cb, stalk);
   }
 
-  GPIOSettings gpio_settings = {
+  GpioSettings gpio_settings = {
     .direction = GPIO_DIR_IN,
     .resistor = GPIO_RES_PULLUP,
   };

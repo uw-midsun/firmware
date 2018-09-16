@@ -11,7 +11,7 @@ typedef enum {
   ADC_MODE_SINGLE = 0,
   ADC_MODE_CONTINUOUS,
   NUM_ADC_MODES,
-} ADCMode;
+} AdcMode;
 
 typedef enum {
   ADC_CHANNEL_0 = 0,
@@ -34,26 +34,26 @@ typedef enum {
   ADC_CHANNEL_REF,
   ADC_CHANNEL_BAT,
   NUM_ADC_CHANNELS,
-} ADCChannel;
+} AdcChannel;
 
-typedef void (*ADCCallback)(ADCChannel adc_channel, void *context);
+typedef void (*AdcCallback)(AdcChannel adc_channel, void *context);
 
 // Initialize the ADC to the desired conversion mode
-void adc_init(ADCMode adc_mode);
+void adc_init(AdcMode adc_mode);
 
 // Enable or disable a given channel.
 // A race condition may occur when setting a channel during a conversion. However, it should not
 // cause issues given the intended use cases
-StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state);
+StatusCode adc_set_channel(AdcChannel adc_channel, bool new_state);
 
 // Return a channel corresponding to the given GPIO address
-StatusCode adc_get_channel(GPIOAddress address, ADCChannel *adc_channel);
+StatusCode adc_get_channel(GpioAddress address, AdcChannel *adc_channel);
 
 // Register a callback function to be called when the specified channel completes a conversion
-StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, void *context);
+StatusCode adc_register_callback(AdcChannel adc_channel, AdcCallback callback, void *context);
 
 // Obtain the raw 12-bit value read by the specified channel
-StatusCode adc_read_raw(ADCChannel adc_channel, uint16_t *reading);
+StatusCode adc_read_raw(AdcChannel adc_channel, uint16_t *reading);
 
 // Obtain the converted value at the specified channel
-StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading);
+StatusCode adc_read_converted(AdcChannel adc_channel, uint16_t *reading);

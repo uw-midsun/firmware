@@ -15,7 +15,7 @@
 
 #define CAN_MSG_SET_RAW_ID(can_msg, can_id) \
   do {                                      \
-    CANId id = { .raw = (can_id) };         \
+    CanId id = { .raw = (can_id) };         \
     (can_msg)->source_id = id.source_id;    \
     (can_msg)->msg_id = id.msg_id;          \
     (can_msg)->type = id.type;              \
@@ -25,28 +25,28 @@ typedef enum {
   CAN_MSG_TYPE_DATA = 0,
   CAN_MSG_TYPE_ACK,
   NUM_CAN_MSG_TYPES,
-} CANMsgType;
+} CanMsgType;
 
-typedef uint16_t CANMessageID;
+typedef uint16_t CanMessageId;
 
-typedef struct CANMessage {
+typedef struct CanMessage {
   uint16_t source_id;
-  CANMessageID msg_id;
+  CanMessageId msg_id;
   union {
     uint64_t data;
     uint32_t data_u32[2];
     uint16_t data_u16[4];
     uint8_t data_u8[8];
   };
-  CANMsgType type;
+  CanMsgType type;
   size_t dlc;
-} CANMessage;
+} CanMessage;
 
-typedef union CANId {
+typedef union CanId {
   uint16_t raw;
   struct {
     uint16_t source_id : 4;
     uint16_t type : 1;
     uint16_t msg_id : 6;
   };
-} CANId;
+} CanId;

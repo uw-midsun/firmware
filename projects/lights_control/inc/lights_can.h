@@ -15,7 +15,7 @@ typedef enum {
 
 // User uses this instance to provide storage for the module.
 typedef struct LightsCanStorage {
-  CANStorage can_storage;
+  CanStorage can_storage;
 } LightsCanStorage;
 
 // Contains all the configuration functions.
@@ -26,7 +26,7 @@ typedef struct LightsCanSettings {
 
 // Initializes the lights_can module.
 StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *lights_can,
-                           const CANSettings *can_settings);
+                           const CanSettings *can_settings);
 
 // Sends a sync message.
 StatusCode lights_can_process_event(const Event *);

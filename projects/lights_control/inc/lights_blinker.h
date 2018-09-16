@@ -27,7 +27,7 @@ typedef uint32_t LightsBlinkerDuration;
 // Blinker storage.
 typedef struct LightsBlinker {
   LightsEventGpioPeripheral peripheral;
-  SoftTimerID timer_id;
+  SoftTimerId timer_id;
   LightsBlinkerState state;
   // Duration, in milliseconds.
   LightsBlinkerDuration duration_ms;

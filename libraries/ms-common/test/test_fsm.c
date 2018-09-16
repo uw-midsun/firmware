@@ -8,10 +8,10 @@ typedef enum {
   TEST_FSM_EVENT_C,
 } TEST_FSM_EVENT;
 
-static FSM s_fsm;
+static Fsm s_fsm;
 static uint16_t s_num_output;
 
-static bool prv_guard(const FSM *fsm, const Event *e, void *context) {
+static bool prv_guard(const Fsm *fsm, const Event *e, void *context) {
   LOG_DEBUG("Hit transition guard - returning %d\n", (bool)e->data);
   return (bool)e->data;
 }
@@ -36,7 +36,7 @@ FSM_STATE_TRANSITION(test_c) {
   FSM_ADD_GUARDED_TRANSITION(TEST_FSM_EVENT_B, prv_guard, test_a);
 }
 
-static void prv_output(FSM *fsm, const Event *e, void *context) {
+static void prv_output(Fsm *fsm, const Event *e, void *context) {
   LOG_DEBUG("[%s:%s] State reached from %s (Event %d, data %d)\n", fsm->name,
             fsm->current_state->name, fsm->last_state->name, e->id, e->data);
   TEST_ASSERT_EQUAL(fsm, context);

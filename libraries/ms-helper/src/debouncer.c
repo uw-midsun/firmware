@@ -10,10 +10,10 @@
 #define DEBOUNCER_INTERRUPT_MASKING_DURATION_MS 50
 
 // This is the callback for the soft timer. If there is a button input, it runs the user's callback.
-static void prv_timer_callback(SoftTimerID timer_id, void *context) {
+static void prv_timer_callback(SoftTimerId timer_id, void *context) {
   DebouncerStorage *debouncer = context;
 
-  GPIOState current_state;
+  GpioState current_state;
   gpio_get_state(&debouncer->address, &current_state);
   if (debouncer->callback && current_state == debouncer->state) {
     debouncer->callback(&debouncer->address, debouncer->context);
@@ -22,7 +22,7 @@ static void prv_timer_callback(SoftTimerID timer_id, void *context) {
 }
 
 // This is the interrupt callback to start off the debouncing
-static void prv_it_callback(const GPIOAddress *address, void *context) {
+static void prv_it_callback(const GpioAddress *address, void *context) {
   DebouncerStorage *debouncer = context;
   gpio_get_state(address, &debouncer->state);
 
@@ -32,9 +32,9 @@ static void prv_it_callback(const GPIOAddress *address, void *context) {
                           NULL);
 }
 
-StatusCode debouncer_init_pin(DebouncerStorage *debouncer, const GPIOAddress *address,
-                              GPIOItCallback callback, void *context) {
-  GPIOSettings gpio_settings = {
+StatusCode debouncer_init_pin(DebouncerStorage *debouncer, const GpioAddress *address,
+                              GpioItCallback callback, void *context) {
+  GpioSettings gpio_settings = {
     .direction = GPIO_DIR_IN,   //
     .resistor = GPIO_RES_NONE,  //
   };
