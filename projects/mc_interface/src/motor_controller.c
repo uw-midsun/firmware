@@ -188,3 +188,22 @@ StatusCode motor_controller_set_cruise(MotorControllerStorage *controller, int16
 
   return STATUS_CODE_OK;
 }
+
+StatusCode motor_controller_trigger_reset(MotorControllerStorage *storage) {
+  GenericCanMsg msg = { .dlc = 8, .extended = false };
+
+  for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
+    WaveSculptorCanId can_id = {
+      .device_id = storage->settings.ids[i].interface,
+      .msg_id = WAVESCULPTOR_CMD_ID_RESET,
+    };
+    msg.id = can_id.raw;
+
+    WaveSculptorCanData can_data = { 0 };
+    msg.data = can_data.raw;
+
+    status_ok_or_return(generic_can_tx(storage->settings.motor_can, &msg));
+  }
+
+  return STATUS_CODE_OK;
+}
