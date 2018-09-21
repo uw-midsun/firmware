@@ -58,7 +58,7 @@ typedef enum {
 } WaveSculptorMeasurementId;
 
 // Motor Controller Base Addr + 0
-typedef struct {
+typedef struct WaveSculptorIdInfo {
   // "TRIa" stored as a string. msg[0] = 'T', msg[1] = 'R'..
   char tritium_id[4];
 
@@ -132,7 +132,7 @@ static_assert(sizeof(WaveSculptorVelocityMeasurement) == 8,
               "WaveSculptorVelocityMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 4
-typedef struct {
+typedef struct WaveSculptorPhaseCurrentMeasurement {
   // Units: (A)mps
   // RMS current in motor Phase B.
   float phase_b_rms_current;
@@ -145,7 +145,7 @@ static_assert(sizeof(WaveSculptorPhaseCurrentMeasurement) == 8,
               "WaveSculptorPhaseCurrentMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 5
-typedef struct {
+typedef struct WaveSculptorMotorVoltageVectorMeasurement {
   // Units: (V)olts
   // Imaginary component of the applied non-rotating voltage vector to the
   // motor.
@@ -159,7 +159,7 @@ static_assert(sizeof(WaveSculptorMotorVoltageVectorMeasurement) == 8,
               "WaveSculptorMotorVoltageVectorMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 6
-typedef struct {
+typedef struct WaveSculptorMotorCurrentVectorMeasurement {
   // Units: (A)mps
   // Imaginary component of applied non-rotating current vector to the motor.
   // This current produces torque in the motor and should be in phase with the
@@ -175,7 +175,7 @@ static_assert(sizeof(WaveSculptorMotorCurrentVectorMeasurement) == 8,
               "WaveSculptorMotorCurrentVectorMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 7
-typedef struct {
+typedef struct WaveSculptorBackEmfMeasurement {
   // Units: (V)olts
   // Peak of the phase to neutral motor voltage.
   float back_emf_imaginary;
@@ -188,7 +188,7 @@ static_assert(sizeof(WaveSculptorBackEmfMeasurement) == 8,
               "WaveSculptorBackEmfMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 8
-typedef struct {
+typedef struct WaveSculptorPowerRailMeasurement {
   // Units: (V)olts
   // Actual voltage level of the 1.65 V analog reference.
   float power_rail_analog_ref;
@@ -201,7 +201,7 @@ static_assert(sizeof(WaveSculptorPowerRailMeasurement) == 8,
               "WaveSculptorPowerRailMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 9
-typedef struct {
+typedef struct WaveSculptorControllerRailMeasurement {
   // Units: (V)olts
   // Actual voltage level of the 1.2V DSP power rail.
   float power_rail_dsp;
@@ -214,7 +214,7 @@ static_assert(sizeof(WaveSculptorControllerRailMeasurement) == 8,
               "WaveSculptorControllerRailMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 10
-typedef struct {
+typedef struct WaveSculptorFanSpeedMeasurement {
   // Units: %
   // Drive voltage percentage to cooling fan. If this value
   // is above 0%, then the fan should be spinning
@@ -228,7 +228,7 @@ static_assert(sizeof(WaveSculptorFanSpeedMeasurement) == 8,
               "WaveSculptorFanSpeedMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 11
-typedef struct {
+typedef struct WaveSculptorSinkMotorTempMeasurement {
   // Units: (C)elsius
   // Internal temperature of the motor.
   float motor_temp;
@@ -241,7 +241,7 @@ static_assert(sizeof(WaveSculptorSinkMotorTempMeasurement) == 8,
               "WaveSculptorSinkMotorTempMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 12
-typedef struct {
+typedef struct WaveSculptorAirInCpuTempMeasurement {
   // Units: (C)elsius
   // Temperature of the internal processor.
   float processor_temp;
@@ -254,7 +254,7 @@ static_assert(sizeof(WaveSculptorAirInCpuTempMeasurement) == 8,
               "WaveSculptorAirInCpuTempMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 13
-typedef struct {
+typedef struct WaveSculptorAirOutCapTempMeasurement {
   // Units: (C)elsius
   // Ambient temperature of the internal bus capacitors. Unused by 20kW WaveSculptor.
   float capacitor_temp;
@@ -268,7 +268,7 @@ static_assert(sizeof(WaveSculptorAirOutCapTempMeasurement) == 8,
               "WaveSculptorAirOutCapTempMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 14
-typedef struct {
+typedef struct WaveSculptorOdometerBusAhMeasurement {
   // Units: (m)eters
   // The distance the vehicle has travelled since reset.
   float odometer;
