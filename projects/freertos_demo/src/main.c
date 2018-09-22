@@ -31,8 +31,8 @@ void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer,
 
 int main() {
   // Setup the task
-  xTaskCreateStatic(blink_task, "Blink LED", configMINIMAL_STACK_SIZE, NULL,
-                    BLINK_TASK_PRIORITY, blink_get_stack(), blink_get_tcb());
+  xTaskCreateStatic(blink_task, "Blink LED", configMINIMAL_STACK_SIZE, NULL, BLINK_TASK_PRIORITY,
+                    blink_get_stack(), blink_get_tcb());
 
   /// Start the scheduler
   vTaskStartScheduler();
