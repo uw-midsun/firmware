@@ -100,7 +100,7 @@ typedef struct WaveSculptorStatusInfo {
     uint16_t raw;
   } error_flags;
 
-  // The index of the motor currently being used
+  // The index of the motor currently being used.
   uint16_t active_motor;
   uint16_t reserved;
 } WaveSculptorStatusInfo;
@@ -108,19 +108,19 @@ static_assert(sizeof(WaveSculptorStatusInfo) == 8, "WaveSculptorStatusInfo is no
 
 // Motor Controller Base Addr + 2
 typedef struct WaveSculptorBusMeasurement {
-  // Units: (V)olts
+  // Units: V
   // DC bus voltage at the controller.
-  float bus_voltage;
+  float bus_voltage_v;
 
-  // Units: (A)mps
+  // Units: A
   // Current drawn from the DC bus by the controller.
-  float bus_current;
+  float bus_current_a;
 } WaveSculptorBusMeasurement;
 static_assert(sizeof(WaveSculptorBusMeasurement) == 8, "WaveSculptorBusMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 3
 typedef struct WaveSculptorVelocityMeasurement {
-  // Units: revolutions per minute
+  // Units: revolutions per minute (rpm)
   // Motor angular frequency.
   float motor_velocity_rpm;
 
@@ -133,82 +133,82 @@ static_assert(sizeof(WaveSculptorVelocityMeasurement) == 8,
 
 // Motor Controller Base Addr + 4
 typedef struct WaveSculptorPhaseCurrentMeasurement {
-  // Units: (A)mps
-  // RMS current in motor Phase B.
-  float phase_b_rms_current;
+  // Units: A
+  // Root Mean Square current in motor Phase B.
+  float phase_b_rms_current_a;
 
-  // Units: (A)mps
-  // RMS current in motor Phase A.
-  float phase_a_rms_current;
+  // Units: A
+  // Root Mean Square current in motor Phase A.
+  float phase_a_rms_current_a;
 } WaveSculptorPhaseCurrentMeasurement;
 static_assert(sizeof(WaveSculptorPhaseCurrentMeasurement) == 8,
               "WaveSculptorPhaseCurrentMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 5
 typedef struct WaveSculptorMotorVoltageVectorMeasurement {
-  // Units: (V)olts
+  // Units: V
   // Imaginary component of the applied non-rotating voltage vector to the
   // motor.
-  float voltage_imaginary;
+  float voltage_imaginary_v;
 
-  // Units: (V)olts
+  // Units: V
   // Real component of the applied non-rotating voltage vector to the motor.
-  float voltage_real;
+  float voltage_real_v;
 } WaveSculptorMotorVoltageVectorMeasurement;
 static_assert(sizeof(WaveSculptorMotorVoltageVectorMeasurement) == 8,
               "WaveSculptorMotorVoltageVectorMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 6
 typedef struct WaveSculptorMotorCurrentVectorMeasurement {
-  // Units: (A)mps
+  // Units: A
   // Imaginary component of applied non-rotating current vector to the motor.
   // This current produces torque in the motor and should be in phase with the
-  // back-EMF of the motor.
-  float current_imaginary;
+  // back-EMF (electromotive force) of the motor.
+  float current_imaginary_a;
 
-  // Units: (A)mps
+  // Units: A
   // Real component of applied non-rotating current vector to the motor. This
   // vector represents the field current of the motor.
-  float current_real;
+  float current_real_a;
 } WaveSculptorMotorCurrentVectorMeasurement;
 static_assert(sizeof(WaveSculptorMotorCurrentVectorMeasurement) == 8,
               "WaveSculptorMotorCurrentVectorMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 7
 typedef struct WaveSculptorBackEmfMeasurement {
-  // Units: (V)olts
+  // Units: V
   // Peak of the phase to neutral motor voltage.
-  float back_emf_imaginary;
+  float back_emf_imaginary_v;
 
-  // Units: (V)olts
+  // Units: V
   // By definition this value is always 0 V.
-  float back_emf_real;
+  float back_emf_real_v;
 } WaveSculptorBackEmfMeasurement;
 static_assert(sizeof(WaveSculptorBackEmfMeasurement) == 8,
               "WaveSculptorBackEmfMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 8
 typedef struct WaveSculptorPowerRailMeasurement {
-  // Units: (V)olts
+  // Units: V
   // Actual voltage level of the 1.65 V analog reference.
-  float power_rail_analog_ref;
+  float power_rail_analog_ref_v;
 
-  // Units: (V)olts
+  // Units: V
   // Actual voltage level of the 15 V power rail.
-  float power_rail;
+  float power_rail_v;
 } WaveSculptorPowerRailMeasurement;
 static_assert(sizeof(WaveSculptorPowerRailMeasurement) == 8,
               "WaveSculptorPowerRailMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 9
 typedef struct WaveSculptorControllerRailMeasurement {
-  // Units: (V)olts
+  // Units: V
   // Actual voltage level of the 1.2V DSP power rail.
-  float power_rail_dsp;
+  float power_rail_dsp_v;
 
-  // Units: (V)olts
+  // Units: V
   // Actual voltage level of the 2.5V FPGA power rail.
-  float power_rail_fgpa;
+  float power_rail_fgpa_v;
 } WaveSculptorControllerRailMeasurement;
 static_assert(sizeof(WaveSculptorControllerRailMeasurement) == 8,
               "WaveSculptorControllerRailMeasurement is not 8 bytes");
@@ -220,7 +220,7 @@ typedef struct WaveSculptorFanSpeedMeasurement {
   // is above 0%, then the fan should be spinning
   float voltage_percentage;
 
-  // Units: rpm
+  // Units: revolutions per minute (rpm)
   // Cooling fan speed in revolutions per minute.
   float fan_rpm;
 } WaveSculptorFanSpeedMeasurement;
@@ -229,49 +229,49 @@ static_assert(sizeof(WaveSculptorFanSpeedMeasurement) == 8,
 
 // Motor Controller Base Addr + 11
 typedef struct WaveSculptorSinkMotorTempMeasurement {
-  // Units: (C)elsius
+  // Units: C
   // Internal temperature of the motor.
-  float motor_temp;
+  float motor_temp_c;
 
-  // Units: (C)elsius
+  // Units: C
   // Surface temperature of the controller heatsink.
-  float heatsink_temp;
+  float heatsink_temp_c;
 } WaveSculptorSinkMotorTempMeasurement;
 static_assert(sizeof(WaveSculptorSinkMotorTempMeasurement) == 8,
               "WaveSculptorSinkMotorTempMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 12
 typedef struct WaveSculptorAirInCpuTempMeasurement {
-  // Units: (C)elsius
+  // Units: C
   // Temperature of the internal processor.
-  float processor_temp;
+  float processor_temp_c;
 
-  // Units: (C)elsius
+  // Units: C
   // Ambient temperature at the ventilation inlet of the controller.
-  float air_inlet_temp;
+  float air_inlet_temp_c;
 } WaveSculptorAirInCpuTempMeasurement;
 static_assert(sizeof(WaveSculptorAirInCpuTempMeasurement) == 8,
               "WaveSculptorAirInCpuTempMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 13
 typedef struct WaveSculptorAirOutCapTempMeasurement {
-  // Units: (C)elsius
+  // Units: C
   // Ambient temperature of the internal bus capacitors. Unused by 20kW WaveSculptor.
-  float capacitor_temp;
+  float capacitor_temp_c;
 
-  // Units: (C)elsius
+  // Units: C
   // Ambient air temperature of the ventilation outlet of the controller. Unused in 20kW
   // WaveSculptor.
-  float air_out_temp;
+  float air_out_temp_c;
 } WaveSculptorAirOutCapTempMeasurement;
 static_assert(sizeof(WaveSculptorAirOutCapTempMeasurement) == 8,
               "WaveSculptorAirOutCapTempMeasurement is not 8 bytes");
 
 // Motor Controller Base Addr + 14
 typedef struct WaveSculptorOdometerBusAhMeasurement {
-  // Units: (m)eters
+  // Units: m
   // The distance the vehicle has travelled since reset.
-  float odometer;
+  float odometer_m;
 
   // Units: Ah
   // The charge flow into the controller bus voltage from the time of reset.
