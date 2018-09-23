@@ -157,7 +157,8 @@ def main():
     parser.add_argument('device', help='Serial device or "slcan0"')
     args = parser.parse_args()
 
-    log_file = '{}/system_can_{}.log'.format(args.log_dir, datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S.%f'))
+    date_formatted = datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S.%f')
+    log_file = '{}/system_can_{}.log'.format(args.log_dir, date_formatted)
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s,%(message)s', filename=log_file)
 
