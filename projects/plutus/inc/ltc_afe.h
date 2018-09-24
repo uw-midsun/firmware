@@ -11,6 +11,11 @@
 // This module supports AFEs with fewer than 12 cells using the |cell/aux_bitset|.
 // Note that due to the long conversion delays required, we use an FSM to return control to the
 // application.
+//
+// Due to time constraints, we didn't have time to implement cell balancing properly. To allow
+// cell balancing after sealing the pack, we support a cell discharge bitset to be set over CAN.
+// We periodically dump the discharge bitset over CAN for telemetry. For thermal reasons, only
+// one cell should ever be discharging per AFE.
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>

@@ -291,3 +291,13 @@ StatusCode ltc_afe_impl_toggle_cell_discharge(LtcAfeStorage *afe, uint16_t cell,
 
   return STATUS_CODE_OK;
 }
+
+StatusCode ltc_afe_impl_raw_cell_discharge(LtcAfeStorage *afe, uint16_t *discharge_bitset,
+                                           size_t num_devices) {
+  if (num_devices != PLUTUS_CFG_AFE_DEVICES_IN_CHAIN) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+  memcpy(afe->discharge_bitset, discharge_bitset, sizeof(afe->discharge_bitset));
+
+  return STATUS_CODE_OK;
+}
