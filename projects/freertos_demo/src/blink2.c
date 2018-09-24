@@ -8,23 +8,23 @@
 #include "gpio.h"
 #include "misc.h"
 
-#define BLINK_TASK_STACK_SIZE 30
+#define BLINK_2_TASK_STACK_SIZE 30
 
 // Statically allocated memory for producer_task stack
-static StackType_t s_ProducerTaskStack[BLINK_TASK_STACK_SIZE];
+static StackType_t s_ProducerTaskStack[BLINK_2_TASK_STACK_SIZE];
 
 // Statically allocated memory for producer_task task control block
 static StaticTask_t s_ProducerTaskTCB;
 
-StackType_t *blink_get_stack(void) {
+StackType_t *blink_2_get_stack(void) {
   return &s_ProducerTaskStack[0];
 }
 
-StaticTask_t *blink_get_tcb(void) {
+StaticTask_t *blink_2_get_tcb(void) {
   return &s_ProducerTaskTCB;
 }
 
-void blink_task(void *params) {
+void blink_2_task(void *params) {
   // Initialise so that the first call to vTaskDelayUntil() works correctly
   TickType_t last_execution_time = xTaskGetTickCount();
 
@@ -36,8 +36,8 @@ void blink_task(void *params) {
   };
 
   const GpioAddress leds[] = {
-    { .port = GPIO_PORT_B, .pin = 5 },   //
-    { .port = GPIO_PORT_B, .pin = 4 },   //
+    { .port = GPIO_PORT_B, .pin = 3 },   //
+    { .port = GPIO_PORT_A, .pin = 15 },  //
   };
 
   // Initialize LED GPIOs

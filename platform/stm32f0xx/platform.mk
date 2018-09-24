@@ -26,6 +26,7 @@ CDEFINES := USE_STDPERIPH_DRIVER STM32F072 HSE_VALUE=32000000
 CFLAGS := -Wall -Wextra -Werror -g3 -Os -std=c11 -Wno-discarded-qualifiers \
 					-Wno-unused-variable -Wno-unused-parameter -Wsign-conversion -Wpointer-arith \
 					-ffunction-sections -fdata-sections -fno-builtin \
+					-Wl,--undefined=uxTopUsedPriority \
 					$(ARCH_CFLAGS) $(addprefix -D,$(CDEFINES))
 
 # Linker flags
@@ -37,9 +38,11 @@ LDFLAGS := -L$(LDSCRIPT_DIR) -Tstm32f0.ld -fuse-linker-plugin \
 PROBE=cmsis-dap
 OPENOCD_SCRIPT_DIR := /usr/share/openocd/scripts/
 OPENOCD_CFG := -s $(OPENOCD_SCRIPT_DIR) \
-               -f interface/$(PROBE).cfg -f target/stm32f0x.cfg \
+               -f interface/$(PROBE).cfg \
+               -f target/stm32f0x.cfg \
                -c "$$(python3 $(SCRIPT_DIR)/select_programmer.py $(SERIAL))" \
-               -f $(SCRIPT_DIR)/stm32f0-openocd.cfg
+               -f $(SCRIPT_DIR)/stm32f0-openocd.cfg \
+               -c 'stm32f0x.cpu configure -rtos FreeRTOS'
 
 # Platform targets
 .PHONY: program gdb target
@@ -51,7 +54,7 @@ program: $(TARGET_BINARY:$(PLATFORM_EXT)=.bin)
 
 gdb: $(TARGET_BINARY)
 	@pkill $(OPENOCD) || true
-	@setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
+	@setsid $(OPENOCD) $(OPENOCD_CFG) > test.txt 2>&1 &
 	@$(GDB) $< -x "$(SCRIPT_DIR)/gdb_flash"
 	@pkill $(OPENOCD)
 

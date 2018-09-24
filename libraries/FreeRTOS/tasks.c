@@ -351,10 +351,10 @@ which static variables must be declared volatile. */
 PRIVILEGED_DATA TCB_t * volatile pxCurrentTCB = NULL;
 
 /* Lists for ready and blocked tasks. --------------------*/
-PRIVILEGED_DATA static List_t pxReadyTasksLists[ configMAX_PRIORITIES ];/*< Prioritised ready tasks. */
-PRIVILEGED_DATA static List_t * volatile pxDelayedTaskList;				/*< Points to the delayed task list currently being used. */
-PRIVILEGED_DATA static List_t * volatile pxOverflowDelayedTaskList;		/*< Points to the delayed task list currently being used to hold tasks that have overflowed the current tick count. */
-PRIVILEGED_DATA static List_t xPendingReadyList;						/*< Tasks that have been readied while the scheduler was suspended.  They will be moved to the ready list when the scheduler is resumed. */
+PRIVILEGED_DATA List_t pxReadyTasksLists[ configMAX_PRIORITIES ];/*< Prioritised ready tasks. */
+PRIVILEGED_DATA List_t * volatile pxDelayedTaskList;				/*< Points to the delayed task list currently being used. */
+PRIVILEGED_DATA List_t * volatile pxOverflowDelayedTaskList;		/*< Points to the delayed task list currently being used to hold tasks that have overflowed the current tick count. */
+PRIVILEGED_DATA List_t xPendingReadyList;						/*< Tasks that have been readied while the scheduler was suspended.  They will be moved to the ready list when the scheduler is resumed. */
 
 #if( INCLUDE_vTaskDelete == 1 )
 
@@ -376,7 +376,7 @@ the errno of the currently running task. */
 #endif
 
 /* Other file private variables. --------------------------------*/
-PRIVILEGED_DATA static volatile UBaseType_t uxCurrentNumberOfTasks 	= ( UBaseType_t ) 0U;
+PRIVILEGED_DATA volatile UBaseType_t uxCurrentNumberOfTasks 	= ( UBaseType_t ) 0U;
 PRIVILEGED_DATA static volatile TickType_t xTickCount 				= ( TickType_t ) configINITIAL_TICK_COUNT;
 PRIVILEGED_DATA static volatile UBaseType_t uxTopReadyPriority 		= tskIDLE_PRIORITY;
 PRIVILEGED_DATA static volatile BaseType_t xSchedulerRunning 		= pdFALSE;
@@ -3485,11 +3485,11 @@ static portTASK_FUNCTION( prvIdleTask, pvParameters )
 #endif /* portUSING_MPU_WRAPPERS */
 /*-----------------------------------------------------------*/
 
+PRIVILEGED_DATA List_t xDelayedTaskList1;	/*< Delayed tasks. */
+PRIVILEGED_DATA List_t xDelayedTaskList2;	/*< Delayed tasks (two lists are used - one for delays that have overflowed the current tick count. */
 static void prvInitialiseTaskLists( void )
 {
 UBaseType_t uxPriority;
-PRIVILEGED_DATA static List_t xDelayedTaskList1;	/*< Delayed tasks. */
-PRIVILEGED_DATA static List_t xDelayedTaskList2;	/*< Delayed tasks (two lists are used - one for delays that have overflowed the current tick count. */
 
 	for( uxPriority = ( UBaseType_t ) 0U; uxPriority < ( UBaseType_t ) configMAX_PRIORITIES; uxPriority++ )
 	{
