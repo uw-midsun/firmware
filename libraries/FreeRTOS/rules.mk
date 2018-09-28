@@ -5,6 +5,11 @@
 # $(T)_INC_DIRS: $(T)_DIR/inc{/$(PLATFORM)}
 # $(T)_SRC: $(T)_DIR/src{/$(PLATFORM)}/*.{c,s}
 
+# The code in this library is pulled directly from the FreeRTOS release.
+# https://www.freertos.org/
+#
+# Any Midnight Sun specific changes should go in the ms-freertos library
+
 $(T)_SRC_ROOT := $($(T)_DIR)
 
 $(T)_INC_DIRS := $($(T)_DIR) \
@@ -19,7 +24,7 @@ ifeq (stm32f0xx,$(PLATFORM))
     $(T)_SRC += $(wildcard $($(T)_SRC_ROOT)/portable/GCC/ARM_CM0/*.c)
 endif
 
-$(T)_DEPS := CMSIS stm32f0xx
+$(T)_DEPS := CMSIS stm32f0xx ms-freertos
 
 # Specifies library specific build flags
 $(T)_CFLAGS += -ffreestanding -nostdlib
