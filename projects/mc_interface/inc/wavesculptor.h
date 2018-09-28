@@ -257,12 +257,12 @@ static_assert(sizeof(WaveSculptorAirInCpuTempMeasurement) == 8,
 typedef struct WaveSculptorAirOutCapTempMeasurement {
   // Units: C
   // Ambient temperature of the internal bus capacitors. Unused by 20kW WaveSculptor.
-  float capacitor_temp_c;
+  float unused_capacitor_temp_c;
 
   // Units: C
   // Ambient air temperature of the ventilation outlet of the controller. Unused in 20kW
   // WaveSculptor.
-  float air_out_temp_c;
+  float unused_air_out_temp_c;
 } WaveSculptorAirOutCapTempMeasurement;
 static_assert(sizeof(WaveSculptorAirOutCapTempMeasurement) == 8,
               "WaveSculptorAirOutCapTempMeasurement is not 8 bytes");
