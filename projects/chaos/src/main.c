@@ -7,6 +7,7 @@
 #include "can_ack.h"
 #include "chaos_config.h"
 #include "chaos_events.h"
+#include "chaos_flags.h"
 #include "charger.h"
 #include "debug_led.h"
 #include "delay.h"
@@ -31,11 +32,11 @@
 
 #define CHAOS_DEBUG_LED_PERIOD_MS 500
 
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 static EmergencyFaultStorage s_emergency_storage;
 static RelayRetryServiceStorage s_retry_storage;
 
-static void prv_toggle(SoftTimerID id, void *context) {
+static void prv_toggle(SoftTimerId id, void *context) {
   (void)id;
   (void)context;
   debug_led_toggle_state(DEBUG_LED_RED);
@@ -54,7 +55,7 @@ int main(void) {
   soft_timer_start_millis(CHAOS_DEBUG_LED_PERIOD_MS, prv_toggle, NULL, NULL);
 
   // CAN
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
     .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,
@@ -68,7 +69,9 @@ int main(void) {
 
   // Heartbeats
   bps_heartbeat_init();  // Use the auto start feature to start the watchdog.
+#ifdef CHAOS_FLAG_ENABLE_POWERTRAIN_HB
   powertrain_heartbeat_init();
+#endif  // CHAOS_FLAG_ENABLE_POWERTRAIN_HB
 
   // Power Path
   ChaosConfig *cfg = chaos_config_load();
@@ -130,7 +133,9 @@ int main(void) {
     fan_control_process_event(&e);
     emergency_fault_process_event(&s_emergency_storage, &e);
     gpio_fsm_process_event(&e);
+#ifdef CHAOS_FLAG_ENABLE_POWERTRAIN_HB
     powertrain_heartbeat_process_event(&e);
+#endif  // CHAOS_FLAG_ENABLE_POWERTRAIN_HB
     power_path_process_event(&cfg->power_path, &e);
     charger_process_event(&e);
     relay_process_event(&e);

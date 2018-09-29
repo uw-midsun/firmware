@@ -41,8 +41,8 @@ typedef enum {
 } TestSignalsFsm;
 
 EventArbiterStorage s_arbiter_storage;
-static FSM s_fsms[NUM_TEST_SIGNALS_FSMS];
-static CANStorage s_can_storage;
+static Fsm s_fsms[NUM_TEST_SIGNALS_FSMS];
+static CanStorage s_can_storage;
 static EELightType s_light_id;
 static EELightState s_light_state;
 
@@ -53,27 +53,27 @@ static void prv_dump_fsms(void) {
 }
 
 static void prv_clock_expected_lights(TestSignalsExpectedLight *lights, size_t num_lights) {
-  for (size_t i = 0; i < num_lights * 2; i++) {
+  uint8_t found_bitset = 0;
+  uint8_t expected_bitset = (1 << num_lights) - 1;
+  while (found_bitset != expected_bitset) {
     Event e = { 0 };
     MS_TEST_HELPER_AWAIT_EVENT(e);
     TEST_ASSERT(can_process_event(&e));
 
     if (e.id == INPUT_EVENT_CAN_RX) {
-      bool found = false;
       for (size_t j = 0; j < num_lights; j++) {
         if (lights[j].type == s_light_id) {
           TEST_ASSERT_EQUAL(lights[j].state, s_light_state);
-          found = true;
+          found_bitset |= 1 << j;
           break;
         }
       }
-      TEST_ASSERT(found);
     }
   }
 }
 
-static StatusCode prv_light_state_cb(const CANMessage *msg, void *context,
-                                     CANAckStatus *ack_reply) {
+static StatusCode prv_light_state_cb(const CanMessage *msg, void *context,
+                                     CanAckStatus *ack_reply) {
   uint8_t light_id = 0, state = 0;
   CAN_UNPACK_LIGHTS_STATE(msg, &light_id, &state);
   LOG_DEBUG("Light %d: %d\n", light_id, state);
@@ -88,7 +88,7 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
 
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,
     .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = INPUT_EVENT_CAN_RX,

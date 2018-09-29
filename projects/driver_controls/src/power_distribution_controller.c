@@ -13,8 +13,8 @@
 
 static EEPowerState s_last_state = NUM_EE_POWER_STATES;
 
-// CANAckRequestCb
-static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+// CanAckRequestCb
+static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                    uint16_t num_remaining, void *context) {
   // Only Chaos is expected to ack so this isn't important.
   (void)msg_id;
@@ -33,7 +33,7 @@ StatusCode power_distribution_controller_send_update(EEPowerState power_state) {
   if (power_state >= NUM_EE_POWER_STATES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
-  CANAckRequest req = {
+  CanAckRequest req = {
     .callback = prv_ack_callback,
     .context = NULL,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_CHAOS),

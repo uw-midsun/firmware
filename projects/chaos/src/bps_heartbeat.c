@@ -12,14 +12,14 @@
 #include "soft_timer.h"
 #include "status.h"
 
-static SoftTimerID s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
+static SoftTimerId s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
 
 // SoftTimerCallback
-static void prv_bps_watchdog(SoftTimerID id, void *context) {
+static void prv_bps_watchdog(SoftTimerId id, void *context) {
   (void)id;
   (void)context;
   LOG_DEBUG("Emergency: BPS Watchdog\n");
-  event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, 0);
+  event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, EE_POWER_DISTRIBUTION_FAULT_REASON_BPS_HB_WATCHDOG);
   s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
 }
 
@@ -33,8 +33,8 @@ static StatusCode prv_kick_watchdog(void) {
   return STATUS_CODE_OK;
 }
 
-// CANRxHandlerCb
-static StatusCode prv_bps_rx(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+// CanRxHandlerCb
+static StatusCode prv_bps_rx(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   (void)context;
   (void)ack_reply;
   uint8_t state = 0;
@@ -45,7 +45,7 @@ static StatusCode prv_bps_rx(const CANMessage *msg, void *context, CANAckStatus 
       soft_timer_cancel(s_watchdog_id);
       s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
     }
-    event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, 0);
+    event_raise(CHAOS_EVENT_SEQUENCE_EMERGENCY, EE_POWER_DISTRIBUTION_FAULT_REASON_BPS_HB);
   } else {
     prv_kick_watchdog();
   }

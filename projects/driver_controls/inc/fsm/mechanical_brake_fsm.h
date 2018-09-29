@@ -7,4 +7,4 @@
 #include "event_arbiter.h"
 #include "fsm.h"
 
-StatusCode mechanical_brake_fsm_init(FSM *fsm, EventArbiterStorage *storage);
+StatusCode mechanical_brake_fsm_init(Fsm *fsm, EventArbiterStorage *storage);

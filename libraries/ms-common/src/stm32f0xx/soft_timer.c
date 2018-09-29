@@ -52,7 +52,7 @@ void soft_timer_init(void) {
 
 // Seems to take around 5us to start a timer
 StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, void *context,
-                            SoftTimerID *timer_id) {
+                            SoftTimerId *timer_id) {
   if (duration_us < SOFT_TIMER_MIN_TIME_US) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Soft timer too short!");
   }
@@ -83,7 +83,7 @@ StatusCode soft_timer_start(uint32_t duration_us, SoftTimerCallback callback, vo
   return STATUS_CODE_OK;
 }
 
-bool soft_timer_cancel(SoftTimerID timer_id) {
+bool soft_timer_cancel(SoftTimerId timer_id) {
   if (timer_id >= SOFT_TIMER_MAX_TIMERS) {
     return false;
   }
@@ -98,7 +98,7 @@ bool soft_timer_inuse(void) {
   return s_timers.head != NULL;
 }
 
-uint32_t soft_timer_remaining_time(SoftTimerID timer_id) {
+uint32_t soft_timer_remaining_time(SoftTimerId timer_id) {
   if (s_storage[timer_id].expiry_us == 0) {
     return 0;
   }

@@ -30,7 +30,7 @@ typedef enum {
 typedef uint16_t LightsGpioOutputBitset;
 
 typedef struct LightsGpioOutput {
-  GPIOAddress address;
+  GpioAddress address;
   LightsGpioPolarity polarity;
 } LightsGpioOutput;
 

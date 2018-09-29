@@ -8,10 +8,9 @@
 
 static const LightsGpio *s_lights_gpio;
 
-StatusCode lights_gpio_config(LightsGpioConfigBoardType board_type) {
-  s_lights_gpio = (board_type == LIGHTS_GPIO_CONFIG_BOARD_TYPE_FRONT)
-                      ? lights_gpio_config_front_load()
-                      : lights_gpio_config_rear_load();
+StatusCode lights_gpio_config_init(LightsBoardType board_type) {
+  s_lights_gpio = (board_type == LIGHTS_BOARD_TYPE_FRONT) ? lights_gpio_config_front_load()
+                                                          : lights_gpio_config_rear_load();
   return STATUS_CODE_OK;
 }
 

@@ -8,7 +8,7 @@
 #define CALIB_FLASH_PAGE NUM_FLASH_PAGES - 1
 
 // Load any stored data into |blob|. |blob| should persist.
-StatusCode calib_init(void *blob, size_t blob_size);
+StatusCode calib_init(void *blob, size_t blob_size, bool overwrite);
 
 // Store any changes to the calibration blob.
 StatusCode calib_commit(void);

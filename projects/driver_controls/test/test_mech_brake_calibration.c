@@ -43,7 +43,7 @@ void setup_test(void) {
 
   i2c_init(DC_CFG_I2C_BUS_PORT, &i2c_settings);
 
-  GPIOAddress ready_pin = DC_CFG_PEDAL_ADC_RDY_PIN;
+  GpioAddress ready_pin = DC_CFG_PEDAL_ADC_RDY_PIN;
 
   const MechBrakeSettings calib_settings = {
     .ads1015 = &s_ads1015_storage,
@@ -53,7 +53,7 @@ void setup_test(void) {
   event_queue_init();
   ads1015_init(&s_ads1015_storage, DC_CFG_I2C_BUS_PORT, DC_CFG_PEDAL_ADC_ADDR, &ready_pin);
 
-  TEST_ASSERT_OK(calib_init(&s_calib_blob, sizeof(s_calib_blob)));
+  TEST_ASSERT_OK(calib_init(&s_calib_blob, sizeof(s_calib_blob), true));
   mech_brake_calibration_init(&s_calibration_storage, &calib_settings);
 }
 
@@ -75,6 +75,8 @@ void test_mech_brake_calibration_run(void) {
 
   LOG_DEBUG("%d %d\n", s_calib_blob.mech_brake_calib.zero_value,
             s_calib_blob.mech_brake_calib.hundred_value);
+
+  calib_commit();
 }
 
 void test_mech_brake_calibration_verify(void) {

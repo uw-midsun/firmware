@@ -52,7 +52,7 @@ typedef enum {
 } TestDriveFsm;
 
 EventArbiterStorage s_arbiter_storage;
-static FSM s_fsms[NUM_TEST_DRIVE_FSMS];
+static Fsm s_fsms[NUM_TEST_DRIVE_FSMS];
 
 static void prv_clock_update_request(void) {
   Event e = { 0 };

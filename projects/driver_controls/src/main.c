@@ -41,7 +41,7 @@
 #include "dc_cfg.h"
 #include "flash.h"
 
-typedef StatusCode (*DriverControlsFsmInitFn)(FSM *fsm, EventArbiterStorage *storage);
+typedef StatusCode (*DriverControlsFsmInitFn)(Fsm *fsm, EventArbiterStorage *storage);
 
 typedef enum {
   DRIVER_CONTROLS_FSM_POWER = 0,
@@ -62,16 +62,16 @@ static DcCalibBlob s_calib_blob;
 static Ads1015Storage s_pedal_ads1015;
 static MechBrakeStorage s_mech_brake;
 static EventArbiterStorage s_event_arbiter;
-static FSM s_fsms[NUM_DRIVER_CONTROLS_FSMS];
+static Fsm s_fsms[NUM_DRIVER_CONTROLS_FSMS];
 
 static ControlStalk s_stalk;
 static GpioExpanderStorage s_stalk_expander;
 static Ads1015Storage s_stalk_ads1015;
 
-static CANStorage s_can;
+static CanStorage s_can;
 static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
 
-static void prv_blink_timeout(SoftTimerID timer_id, void *context) {
+static void prv_blink_timeout(SoftTimerId timer_id, void *context) {
   debug_led_toggle_state(DEBUG_LED_GREEN);
 
   soft_timer_start_seconds(1, prv_blink_timeout, NULL, NULL);
@@ -86,9 +86,9 @@ int main(void) {
   crc32_init();
   flash_init();
 
-  calib_init(&s_calib_blob, sizeof(s_calib_blob));
+  calib_init(&s_calib_blob, sizeof(s_calib_blob), false);
 
-  const CANSettings can_settings = {
+  const CanSettings can_settings = {
     .device_id = DC_CFG_CAN_DEVICE_ID,
     .bitrate = DC_CFG_CAN_BITRATE,
     .rx_event = INPUT_EVENT_CAN_RX,
@@ -114,29 +114,30 @@ int main(void) {
   i2c_init(DC_CFG_I2C_BUS_PORT, &i2c_settings);
 
 #ifndef DC_CFG_DISABLE_CENTER_CONSOLE
-  GPIOAddress console_int_pin = DC_CFG_CONSOLE_IO_INT_PIN;
+  GpioAddress console_int_pin = DC_CFG_CONSOLE_IO_INT_PIN;
   gpio_expander_init(&s_console_expander, DC_CFG_I2C_BUS_PORT, DC_CFG_CONSOLE_IO_ADDR,
                      &console_int_pin);
   center_console_init(&s_console, &s_console_expander);
 #endif
 
 #ifndef DC_CFG_DISABLE_CONTROL_STALK
-  GPIOAddress stalk_int_pin = DC_CFG_STALK_IO_INT_PIN;
-  GPIOAddress stalk_ready_pin = DC_CFG_STALK_ADC_RDY_PIN;
+  GpioAddress stalk_int_pin = DC_CFG_STALK_IO_INT_PIN;
+  GpioAddress stalk_ready_pin = DC_CFG_STALK_ADC_RDY_PIN;
   gpio_expander_init(&s_stalk_expander, DC_CFG_I2C_BUS_PORT, DC_CFG_STALK_IO_ADDR, &stalk_int_pin);
   ads1015_init(&s_stalk_ads1015, DC_CFG_I2C_BUS_PORT, DC_CFG_STALK_ADC_ADDR, &stalk_ready_pin);
   control_stalk_init(&s_stalk, &s_stalk_ads1015, &s_stalk_expander);
 #endif
 
 #ifndef DC_CFG_DISABLE_PEDAL
-  GPIOAddress pedal_ads1015_ready = DC_CFG_PEDAL_ADC_RDY_PIN;
+  GpioAddress pedal_ads1015_ready = DC_CFG_PEDAL_ADC_RDY_PIN;
   ads1015_init(&s_pedal_ads1015, DC_CFG_I2C_BUS_PORT, DC_CFG_PEDAL_ADC_ADDR, &pedal_ads1015_ready);
   DcCalibBlob *dc_calib_blob = calib_blob();
   throttle_init(throttle_global(), &dc_calib_blob->throttle_calib, &s_pedal_ads1015);
 
   const MechBrakeSettings mech_brake_settings = {
     .ads1015 = &s_pedal_ads1015,
-    .brake_pressed_threshold_percentage = 5,
+    .brake_pressed_threshold_percentage = 55,
+    .brake_unpressed_threshold_percentage = 45,
     .bounds_tolerance_percentage = 5,
     .channel = ADS1015_CHANNEL_2,
   };

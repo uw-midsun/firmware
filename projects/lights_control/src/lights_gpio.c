@@ -4,6 +4,7 @@
 #include "gpio_mcu.h"
 #include "lights_events.h"
 #include "lights_gpio_config.h"
+#include "log.h"
 #include "status.h"
 
 // Searches the event-mappings table for a mapping matching event's peripheral.
@@ -25,7 +26,7 @@ static StatusCode prv_set_outputs(LightsGpio *lights_gpio, LightsGpioOutputBitse
     uint8_t i = __builtin_ffs(mapping) - 1;  // index of first 1 bit
     LightsGpioOutput output = lights_gpio->outputs[i];
     // Based on the polarity of the output, and the desired state, decide the gpio pin state.
-    GPIOState gpio_state =
+    GpioState gpio_state =
         (output.polarity == LIGHTS_GPIO_POLARITY_ACTIVE_HIGH)
             ? ((state == LIGHTS_GPIO_STATE_ON) ? GPIO_STATE_HIGH : GPIO_STATE_LOW)
             : ((state == LIGHTS_GPIO_STATE_ON) ? GPIO_STATE_LOW : GPIO_STATE_HIGH);
@@ -36,7 +37,7 @@ static StatusCode prv_set_outputs(LightsGpio *lights_gpio, LightsGpioOutputBitse
 }
 
 StatusCode lights_gpio_init(const LightsGpio *lights_gpio) {
-  GPIOSettings settings = {
+  GpioSettings settings = {
     .direction = GPIO_DIR_OUT,       //
     .state = GPIO_STATE_HIGH,        //
     .resistor = GPIO_RES_NONE,       //
@@ -49,7 +50,7 @@ StatusCode lights_gpio_init(const LightsGpio *lights_gpio) {
   // Makes sure all lights are initialized to be turned off.
   for (uint8_t i = 0; i < lights_gpio->num_outputs; i++) {
     LightsGpioOutput output = lights_gpio->outputs[i];
-    GPIOState gpio_state =
+    GpioState gpio_state =
         (output.polarity == LIGHTS_GPIO_POLARITY_ACTIVE_HIGH) ? GPIO_STATE_LOW : GPIO_STATE_HIGH;
 
     status_ok_or_return(gpio_set_state(&(lights_gpio->outputs[i].address), gpio_state));
@@ -62,6 +63,7 @@ StatusCode lights_gpio_process_event(const LightsGpio *lights_gpio, const Event 
   if ((e->id != LIGHTS_EVENT_GPIO_OFF) && (e->id != LIGHTS_EVENT_GPIO_ON)) {
     return STATUS_CODE_OK;
   }
+  LOG_DEBUG("Turning %s: %d\n", (e->id == LIGHTS_EVENT_GPIO_ON) ? "ON" : "OFF", e->data);
   LightsGpioOutputBitset output_bitset = 0;
   status_ok_or_return(prv_search_mappings_table(lights_gpio, e, &output_bitset));
   LightsGpioState state =

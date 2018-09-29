@@ -19,13 +19,13 @@ typedef enum {
 
 static MotorControllerStorage s_controller_storage;
 static GenericCanUart s_can_uart;
-static CANStorage s_can_storage;
-static UARTStorage s_uart_storage;
+static CanStorage s_can_storage;
 static SequencedRelayStorage s_relay_storage;
 static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
+static UartStorage s_uart_storage;
 
 static void prv_setup_system_can(void) {
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,
     .bitrate = MC_CFG_CAN_BITRATE,
     .rx_event = MOTOR_EVENT_SYSTEM_CAN_RX,
@@ -40,7 +40,7 @@ static void prv_setup_system_can(void) {
 }
 
 static void prv_setup_motor_can(void) {
-  UARTSettings uart_settings = {
+  UartSettings uart_settings = {
     .baudrate = MC_CFG_CAN_UART_BAUDRATE,
     .tx = MC_CFG_CAN_UART_TX,
     .rx = MC_CFG_CAN_UART_RX,

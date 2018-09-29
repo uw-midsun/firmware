@@ -92,7 +92,7 @@ static bool prv_channels_synced(int16_t reading_main, int16_t reading_secondary,
 // The periodic callback which checks if readings are up to date and channels are in sync.
 // If they are, the event corresponding to the pedals position is raised.
 // If not, a pedal timout event is raised.
-static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) {
+static void prv_raise_event_timer_callback(SoftTimerId timer_id, void *context) {
   ThrottleStorage *storage = context;
   int16_t reading_main = INT16_MIN;
   int16_t reading_secondary = INT16_MIN;

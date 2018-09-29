@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 
 #include <stdbool.h>
@@ -30,7 +29,8 @@ static Ads1015Storage s_ads1015_storage;
 static int16_t s_mocked_reading;
 
 const MechBrakeSettings brake_settings = {
-  .brake_pressed_threshold_percentage = 50,
+  .brake_pressed_threshold_percentage = 55,
+  .brake_unpressed_threshold_percentage = 45,
   .bounds_tolerance_percentage = 2,
   .channel = ADS1015_CHANNEL_2,
   .ads1015 = &s_ads1015_storage,
@@ -55,7 +55,7 @@ void setup_test() {
   };
   i2c_init(DC_CFG_I2C_BUS_PORT, &i2c_settings);
   event_queue_init();
-  GPIOAddress ready_pin = DC_CFG_PEDAL_ADC_RDY_PIN;
+  GpioAddress ready_pin = DC_CFG_PEDAL_ADC_RDY_PIN;
   ads1015_init(&s_ads1015_storage, DC_CFG_I2C_BUS_PORT, DC_CFG_PEDAL_ADC_ADDR, &ready_pin);
 
   const MechBrakeCalibrationData s_calibration_data = {
@@ -94,26 +94,78 @@ void test_mech_brake_get_percentage_invalid_args(void) {
 
 void test_mech_brake_percentage_in_released_zone(void) {
   int16_t position = 0;
-  // The brake_pressed_threshold is 50%, a reading of 400 is 9%.
+  // The brake_pressed_threshold is 55%, a reading of 400 is 9%.
   s_mocked_reading = 400;
   Event e;
 
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
   delay_ms(5);
-  TEST_ASSERT_OK(event_process(&e));
-  TEST_ASSERT_EQUAL(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, e.id);
+  // Consume the backlog of events.
+  while (STATUS_CODE_OK == event_process(&e)) {
+    TEST_ASSERT_EQUAL(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, e.id);
+  }
+
+  s_mocked_reading = 2088;  // 50 %
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
+  delay_ms(5);
+  // Consume the backlog of events.
+  while (STATUS_CODE_OK == event_process(&e)) {
+    TEST_ASSERT_EQUAL(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, e.id);
+  }
+
+  s_mocked_reading = 3000;  // 73 %
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
+  delay_ms(5);
+  bool flushed = false;
+  // Consume the backlog of events.
+  while (STATUS_CODE_OK == event_process(&e)) {
+    // Discard old data.
+    if (INPUT_EVENT_MECHANICAL_BRAKE_RELEASED == e.id) {
+      TEST_ASSERT_FALSE(flushed);
+      continue;
+    }
+    TEST_ASSERT_EQUAL(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, e.id);
+    flushed = true;
+  }
+  TEST_ASSERT_TRUE(flushed);
 }
 
-void test_mech_brake_percentage_in_pressed_zone(void) {
+void test_mech_brake_percentage_in_pressed_then_unpressed_zone(void) {
   int16_t position = 0;
-  // The brake_pressed_threshold is 50%,a reading of 3000 is 73%.
+  // The brake_pressed_threshold is 55%,a reading of 3000 is 73%.
   s_mocked_reading = 3000;
   Event e;
 
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
   delay_ms(5);
-  TEST_ASSERT_OK(event_process(&e));
-  TEST_ASSERT_EQUAL(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, e.id);
+  // Consume the backlog of events.
+  while (STATUS_CODE_OK == event_process(&e)) {
+    TEST_ASSERT_EQUAL(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, e.id);
+  }
+
+  s_mocked_reading = 2088;  // 50 %
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
+  delay_ms(5);
+  // Consume the backlog of events.
+  while (STATUS_CODE_OK == event_process(&e)) {
+    TEST_ASSERT_EQUAL(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, e.id);
+  }
+
+  s_mocked_reading = 822;  // 20 %
+  TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
+  delay_ms(5);
+  bool flushed = false;
+  // Consume the backlog of events.
+  while (STATUS_CODE_OK == event_process(&e)) {
+    // Discard old data.
+    if (INPUT_EVENT_MECHANICAL_BRAKE_PRESSED == e.id) {
+      TEST_ASSERT_FALSE(flushed);
+      continue;
+    }
+    TEST_ASSERT_EQUAL(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, e.id);
+    flushed = true;
+  }
+  TEST_ASSERT_TRUE(flushed);
 }
 
 void test_mech_brake_percentage_below_bounds(void) {

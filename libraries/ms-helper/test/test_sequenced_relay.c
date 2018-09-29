@@ -19,7 +19,7 @@
   { .port = GPIO_PORT_B, .pin = 9 }
 #define TEST_SEQUENCED_RELAY_DELAY_MS 10
 
-static CANStorage s_can;
+static CanStorage s_can;
 static SequencedRelayStorage s_sequenced_relay;
 
 typedef enum {
@@ -28,9 +28,9 @@ typedef enum {
   TEST_SEQUENCED_RELAY_EVENT_CAN_FAULT,
 } TestSequencedRelayEvent;
 
-static StatusCode prv_ack_cb(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_cb(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                              uint16_t num_remaining, void *context) {
-  CANAckStatus *ack_status = context;
+  CanAckStatus *ack_status = context;
   *ack_status = status;
 
   LOG_DEBUG("CAN ACK status %d\n", status);
@@ -43,7 +43,7 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
 
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .device_id = TEST_SEQUENCED_RELAY_CAN_DEVICE_ID,
     .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = TEST_SEQUENCED_RELAY_EVENT_CAN_RX,
@@ -68,8 +68,8 @@ void teardown_test(void) {}
 
 void test_sequenced_relay_can(void) {
   // Ask to close the relay
-  volatile CANAckStatus status = NUM_STATUS_CODES;
-  CANAckRequest ack_request = {
+  volatile CanAckStatus status = NUM_STATUS_CODES;
+  CanAckRequest ack_request = {
     .callback = prv_ack_cb,
     .context = &status,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_SEQUENCED_RELAY_CAN_DEVICE_ID),
@@ -80,12 +80,12 @@ void test_sequenced_relay_can(void) {
                                     TEST_SEQUENCED_RELAY_EVENT_CAN_RX);
   TEST_ASSERT_OK(status);
 
-  GPIOAddress left_relay = TEST_SEQUENCED_RELAY_LEFT;
-  GPIOAddress right_relay = TEST_SEQUENCED_RELAY_RIGHT;
+  GpioAddress left_relay = TEST_SEQUENCED_RELAY_LEFT;
+  GpioAddress right_relay = TEST_SEQUENCED_RELAY_RIGHT;
 
   // Make sure that both relays are now closed. We allow some delay before checking for sequencing.
   delay_ms(TEST_SEQUENCED_RELAY_DELAY_MS);
-  GPIOState state = NUM_GPIO_STATES;
+  GpioState state = NUM_GPIO_STATES;
   gpio_get_state(&left_relay, &state);
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
   gpio_get_state(&right_relay, &state);
@@ -109,12 +109,12 @@ void test_sequenced_relay_set(void) {
   // Close the relays
   TEST_ASSERT_OK(sequenced_relay_set_state(&s_sequenced_relay, EE_RELAY_STATE_CLOSE));
 
-  GPIOAddress left_relay = TEST_SEQUENCED_RELAY_LEFT;
-  GPIOAddress right_relay = TEST_SEQUENCED_RELAY_RIGHT;
+  GpioAddress left_relay = TEST_SEQUENCED_RELAY_LEFT;
+  GpioAddress right_relay = TEST_SEQUENCED_RELAY_RIGHT;
 
   // Make sure that both relays are now closed. We allow some delay before checking for sequencing.
   delay_ms(TEST_SEQUENCED_RELAY_DELAY_MS);
-  GPIOState state = NUM_GPIO_STATES;
+  GpioState state = NUM_GPIO_STATES;
   gpio_get_state(&left_relay, &state);
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);
   gpio_get_state(&right_relay, &state);

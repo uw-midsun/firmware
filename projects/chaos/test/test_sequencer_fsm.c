@@ -22,7 +22,7 @@ static void prv_handle_awaiting(const Event *prev_event, Event *present_event) {
   }
 }
 
-static void prv_raise_with_delay_cb(SoftTimerID id, void *context) {
+static void prv_raise_with_delay_cb(SoftTimerId id, void *context) {
   (void)id;
   Event *e = context;
   event_raise(e->id, e->data);

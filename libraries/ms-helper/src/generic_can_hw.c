@@ -17,12 +17,12 @@
 
 static GenericCanInterface s_interface;
 
-// CANHwEventHandlerCb: Tx Occurred (dummy to avoid segfault if not present).
+// CanHwEventHandlerCb: Tx Occurred (dummy to avoid segfault if not present).
 static void prv_tx_handler(void *context) {
   (void)context;
 }
 
-// CANHwEventHandlerCb: Rx Occurred
+// CanHwEventHandlerCb: Rx Occurred
 static void prv_rx_handler(void *context) {
   GenericCanHw *gch = (GenericCanHw *)context;
   GenericCanMsg rx_msg = { 0 };
@@ -37,13 +37,13 @@ static void prv_rx_handler(void *context) {
   }
 }
 
-// CANHwEventHandlerCb: Fault Occurred
-static void prv_bus_error_timeout_handler(SoftTimerID timer_id, void *context) {
+// CanHwEventHandlerCb: Fault Occurred
+static void prv_bus_error_timeout_handler(SoftTimerId timer_id, void *context) {
   (void)timer_id;
   GenericCanHw *gch = context;
 
   // Note that bus errors have never been tested.
-  CANHwBusStatus status = can_hw_bus_status();
+  CanHwBusStatus status = can_hw_bus_status();
 
   if (status == CAN_HW_BUS_STATUS_OFF) {
     event_raise(gch->fault_event, 0);
@@ -81,12 +81,12 @@ static StatusCode prv_register_rx(GenericCan *can, GenericCanRx rx_handler, uint
   return generic_can_helpers_register_rx(can, rx_handler, mask, filter, context, NULL);
 }
 
-StatusCode generic_can_hw_init(GenericCanHw *can_hw, const CANHwSettings *settings,
-                               EventID fault_event) {
+StatusCode generic_can_hw_init(GenericCanHw *can_hw, const CanHwSettings *settings,
+                               EventId fault_event) {
   s_interface.tx = prv_tx;
   s_interface.register_rx = prv_register_rx;
 
-  memset(can_hw->base.rx_storage, 0, sizeof(GenericCanRx) * NUM_GENERIC_CAN_RX_HANDLERS);
+  memset(can_hw->base.rx_storage, 0, sizeof(can_hw->base.rx_storage));
 
   can_hw->base.interface = &s_interface;
   can_hw->fault_event = fault_event;

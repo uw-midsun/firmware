@@ -5,6 +5,8 @@
 
 // src: https://www.murata.com/en-global/products/productdata/8796836626462/NTHCG83.txt
 // Expected resistance in milliohms for a given temperature in celsius
+//
+// This table covers the range [0 C, 100 C] in 1 degree steps
 static const uint32_t s_resistance_lookup[] = {
   27218600, 26076000, 24987700, 23950900, 22962900, 22021100, 21123000, 20266600, 19449500,
   18669800, 17925500, 17213900, 16534400, 15885600, 15265800, 14673500, 14107500, 13566400,
@@ -20,10 +22,17 @@ static const uint32_t s_resistance_lookup[] = {
   999300,   973800,
 };
 
-StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gpio,
+// Used for converting the lookup table index with corresponding temperatures
+#define THERMISTOR_LOOKUP_RANGE (SIZEOF_ARRAY(s_resistance_lookup) - 1)
+
+#define THERMISTOR_MILLIOHMS_TO_OHMS(x) ((x) / 1000)
+#define THERMISTOR_DECICELSIUS_TO_CELSIUS(x) ((x) / 10)
+#define THERMISTOR_CELSIUS_TO_DECICELSIUS(x) ((x)*10)
+
+StatusCode thermistor_init(ThermistorStorage *storage, GpioAddress thermistor_gpio,
                            ThermistorPosition position) {
   storage->position = position;
-  GPIOSettings gpio_settings = {
+  GpioSettings gpio_settings = {
     .direction = GPIO_DIR_IN,
     .state = GPIO_STATE_LOW,
     .resistor = GPIO_RES_NONE,
@@ -84,4 +93,26 @@ StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms,
   // Sets the returned temperature to be absurdly large
   *temperature_dc = UINT16_MAX;
   return status_msg(STATUS_CODE_OUT_OF_RANGE, "Temperature out of lookup table range.");
+}
+
+StatusCode thermistor_calculate_resistance(uint16_t temperature_dc,
+                                           uint16_t *thermistor_resistor_ohms) {
+  if (temperature_dc > THERMISTOR_CELSIUS_TO_DECICELSIUS(THERMISTOR_LOOKUP_RANGE)) {
+    return status_msg(STATUS_CODE_OUT_OF_RANGE,
+                      "Input temperature, exceeds lookup table ranges (0-100 deg).");
+  } else if (temperature_dc == THERMISTOR_CELSIUS_TO_DECICELSIUS(THERMISTOR_LOOKUP_RANGE)) {
+    // For the higher lookup edge case
+    *thermistor_resistor_ohms =
+        THERMISTOR_MILLIOHMS_TO_OHMS(s_resistance_lookup[THERMISTOR_LOOKUP_RANGE]);
+  } else {
+    // Linearly interpolate between the two points and then convert to Ohms
+    uint16_t lower_temp = THERMISTOR_DECICELSIUS_TO_CELSIUS(temperature_dc);
+    *thermistor_resistor_ohms = THERMISTOR_MILLIOHMS_TO_OHMS(
+        (s_resistance_lookup[lower_temp] * 10 +
+         (s_resistance_lookup[lower_temp + 1] - s_resistance_lookup[lower_temp]) *
+             (temperature_dc % 10)) /
+        10);
+  }
+
+  return STATUS_CODE_OK;
 }

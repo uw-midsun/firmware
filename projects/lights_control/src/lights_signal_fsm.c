@@ -13,15 +13,15 @@ FSM_DECLARE_STATE(state_hazard_left_signal);
 // Hazard button pressed, while right signal active.
 FSM_DECLARE_STATE(state_hazard_right_signal);
 
-static bool prv_guard_signal_left(const FSM *fsm, const Event *e, void *context) {
+static bool prv_guard_signal_left(const Fsm *fsm, const Event *e, void *context) {
   return (e->data == LIGHTS_EVENT_SIGNAL_MODE_LEFT);
 }
 
-static bool prv_guard_signal_right(const FSM *fsm, const Event *e, void *context) {
+static bool prv_guard_signal_right(const Fsm *fsm, const Event *e, void *context) {
   return (e->data == LIGHTS_EVENT_SIGNAL_MODE_RIGHT);
 }
 
-static bool prv_guard_signal_hazard(const FSM *fsm, const Event *e, void *context) {
+static bool prv_guard_signal_hazard(const Fsm *fsm, const Event *e, void *context) {
   return (e->data == LIGHTS_EVENT_SIGNAL_MODE_HAZARD);
 }
 
@@ -68,25 +68,25 @@ FSM_STATE_TRANSITION(state_hazard_signal) {
 }
 
 // Deactivates the current blinker.
-static void prv_state_none_output(FSM *fsm, const Event *e, void *context) {
+static void prv_state_none_output(Fsm *fsm, const Event *e, void *context) {
   LightsSignalFsm *lights_signal_fsm = (LightsSignalFsm *)context;
   lights_blinker_deactivate(&lights_signal_fsm->blinker);
 }
 
 // Makes left signal blink.
-static void prv_state_left_signal_output(FSM *fsm, const Event *e, void *context) {
+static void prv_state_left_signal_output(Fsm *fsm, const Event *e, void *context) {
   LightsSignalFsm *lights_signal_fsm = (LightsSignalFsm *)context;
   lights_blinker_activate(&lights_signal_fsm->blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_LEFT);
 }
 
 // Makes right signal blink.
-static void prv_state_right_signal_output(FSM *fsm, const Event *e, void *context) {
+static void prv_state_right_signal_output(Fsm *fsm, const Event *e, void *context) {
   LightsSignalFsm *lights_signal_fsm = (LightsSignalFsm *)context;
   lights_blinker_activate(&lights_signal_fsm->blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_RIGHT);
 }
 
 // Makes both left and right signals blink (HAZARD state).
-static void prv_state_hazard_signal_output(FSM *fsm, const Event *e, void *context) {
+static void prv_state_hazard_signal_output(Fsm *fsm, const Event *e, void *context) {
   LightsSignalFsm *lights_signal_fsm = (LightsSignalFsm *)context;
   lights_blinker_activate(&lights_signal_fsm->blinker, LIGHTS_EVENT_GPIO_PERIPHERAL_SIGNAL_HAZARD);
 }
@@ -107,12 +107,7 @@ StatusCode lights_signal_fsm_init(LightsSignalFsm *lights_signal_fsm,
 
 StatusCode lights_signal_fsm_process_event(LightsSignalFsm *lights_signal_fsm, const Event *event) {
   fsm_process_event(&lights_signal_fsm->fsm, event);
-  return STATUS_CODE_OK;
-}
-
-StatusCode lights_signal_fsm_process_sync_event(LightsSignalFsm *lights_signal_fsm,
-                                                const Event *event) {
-  if (event->id == LIGHTS_EVENT_SYNC) {
+  if (event->id == LIGHTS_EVENT_SYNC_RX) {
     return lights_blinker_force_on(&lights_signal_fsm->blinker);
   }
   return STATUS_CODE_OK;

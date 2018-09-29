@@ -20,7 +20,7 @@ typedef struct {
   StatusCode status;
   int32_t value;
 
-  SoftTimerID timer_id;
+  SoftTimerId timer_id;
 } LtcAdcStorageBuffer;
 
 typedef void (*LtcAdcCallback)(int32_t *value, void *context);
@@ -36,18 +36,18 @@ typedef struct {
   void *context;
   void *fault_context;
 
-  GPIOAddress cs;
-  GPIOAddress miso;
-  SPIPort spi_port;
+  GpioAddress cs;
+  GpioAddress miso;
+  SpiPort spi_port;
 } LtcAdcStorage;
 
 typedef struct LtcAdcSettings {
-  GPIOAddress cs;
-  GPIOAddress mosi;
-  GPIOAddress miso;
-  GPIOAddress sclk;
+  GpioAddress cs;
+  GpioAddress mosi;
+  GpioAddress miso;
+  GpioAddress sclk;
 
-  SPIPort spi_port;
+  SpiPort spi_port;
   uint32_t spi_baudrate;
 
   LtcAdcFilterMode filter_mode;

@@ -14,10 +14,10 @@
 
 #define TEST_BPS_HEARTBEAT_PERIOD_MS 50
 
-static CANStorage s_can;
+static CanStorage s_can;
 static BpsHeartbeatStorage s_bps_heartbeat;
 static EERelayState s_relay_state;
-static CANAckStatus s_ack_status;
+static CanAckStatus s_ack_status;
 static EEBpsHeartbeatState s_heartbeat_state;
 
 StatusCode TEST_MOCK(sequenced_relay_set_state)(SequencedRelayStorage *storage,
@@ -28,7 +28,7 @@ StatusCode TEST_MOCK(sequenced_relay_set_state)(SequencedRelayStorage *storage,
   return STATUS_CODE_OK;
 }
 
-static StatusCode prv_bps_rx(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_bps_rx(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   *ack_reply = s_ack_status;
 
   uint8_t state = UINT8_MAX;
@@ -51,7 +51,7 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
 
-  CANSettings settings = {
+  CanSettings settings = {
     .device_id = SYSTEM_CAN_DEVICE_PLUTUS,
     .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = TEST_BPS_HEARTBEAT_EVENT_CAN_RX,

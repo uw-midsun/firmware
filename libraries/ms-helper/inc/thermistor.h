@@ -20,11 +20,11 @@ typedef enum {
 
 typedef struct ThermistorStorage {
   ThermistorPosition position;
-  ADCChannel adc_channel;
+  AdcChannel adc_channel;
 } ThermistorStorage;
 
 // Initializes the GPIO pin and ADC Channel associated with the thermistor
-StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gpio,
+StatusCode thermistor_init(ThermistorStorage *storage, GpioAddress thermistor_gpio,
                            ThermistorPosition position);
 
 // Fetch the temperature reading in deciCelsius from the MCU's ADC
@@ -33,3 +33,7 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint16_t *temperature
 
 // Calculate the temperature in deciCelsius from ohms
 StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms, uint16_t *temperature_dc);
+
+// Calculates the thermistor resistance given a certain temperature in dC
+StatusCode thermistor_calculate_resistance(uint16_t temperature_dc,
+                                           uint16_t *thermistor_resistor_ohms);

@@ -17,7 +17,7 @@ typedef enum {
   TEST_DRIVE_CAN_EVENT_FAULT,
 } TestDriveCanEvent;
 
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 
 static int16_t s_throttle;
 static EEDriveOutputDirection s_direction;
@@ -38,15 +38,17 @@ void TEST_MOCK(motor_controller_set_cruise)(MotorControllerStorage *controller, 
   s_speed_cms = speed_cms;
 }
 
-void TEST_MOCK(motor_controller_set_speed_cb)(MotorControllerStorage *controller,
-                                              MotorControllerSpeedCb speed_cb, void *context) {}
+void TEST_MOCK(motor_controller_set_update_cbs)(MotorControllerStorage *controller,
+                                                MotorControllerSpeedCb speed_cb,
+                                                MotorControllerBusMeasurementCb bus_measurement_cb,
+                                                void *context) {}
 
 void setup_test(void) {
   event_queue_init();
   interrupt_init();
   soft_timer_init();
 
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .device_id = TEST_DRIVE_CAN_DEVICE_ID,
     .bitrate = CAN_HW_BITRATE_125KBPS,
     .rx_event = TEST_DRIVE_CAN_EVENT_RX,

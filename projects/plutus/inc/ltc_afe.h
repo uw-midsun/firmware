@@ -46,12 +46,12 @@ typedef enum {
 } LtcAfeAdcMode;
 
 typedef struct LtcAfeSettings {
-  GPIOAddress cs;
-  GPIOAddress mosi;
-  GPIOAddress miso;
-  GPIOAddress sclk;
+  GpioAddress cs;
+  GpioAddress mosi;
+  GpioAddress miso;
+  GpioAddress sclk;
 
-  const SPIPort spi_port;
+  const SpiPort spi_port;
   uint32_t spi_baudrate;
 
   LtcAfeAdcMode adc_mode;
@@ -68,9 +68,9 @@ typedef struct LtcAfeSettings {
 } LtcAfeSettings;
 
 typedef struct LtcAfeStorage {
-  FSM fsm;
-  SPIPort spi_port;
-  GPIOAddress cs;
+  Fsm fsm;
+  SpiPort spi_port;
+  GpioAddress cs;
   LtcAfeAdcMode adc_mode;
 
   // Only used for storage in the FSM so we store data for the correct cells

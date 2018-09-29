@@ -18,7 +18,7 @@ typedef enum {
   POWER_PATH_SOURCE_ID_DCDC = 0,
   POWER_PATH_SOURCE_ID_AUX_BAT,
   NUM_POWER_PATH_SOURCE_IDS,
-} PowerPathSourceID;
+} PowerPathSourceId;
 
 // For storing voltage and current values.
 typedef struct PowerPathVCReadings {
@@ -28,22 +28,22 @@ typedef struct PowerPathVCReadings {
 
 // For storing the Power Path Source (eg AUX Battery vs DCDCs).
 typedef struct PowerPathSource {
-  const PowerPathSourceID id;
-  const GPIOAddress uv_ov_pin;
-  const GPIOAddress voltage_pin;
-  const GPIOAddress current_pin;
+  const PowerPathSourceId id;
+  const GpioAddress uv_ov_pin;
+  const GpioAddress voltage_pin;
+  const GpioAddress current_pin;
   volatile PowerPathVCReadings readings;
   PowerPathConversionFn current_convert_fn;
   PowerPathConversionFn voltage_convert_fn;
   uint32_t period_millis;
-  SoftTimerID timer_id;
+  SoftTimerId timer_id;
   bool monitoring_active;
 } PowerPathSource;
 
 // For storing the power path configuration.
 typedef struct PowerPathCfg {
-  const GPIOAddress enable_pin;
-  const GPIOAddress shutdown_pin;
+  const GpioAddress enable_pin;
+  const GpioAddress shutdown_pin;
   PowerPathSource aux_bat;
   PowerPathSource dcdc;
   uint32_t period_millis;
