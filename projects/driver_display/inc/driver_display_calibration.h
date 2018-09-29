@@ -17,7 +17,7 @@ typedef enum {
 } DriverDisplayCalibrationBounds;
 
 typedef struct DriverDisplayCalibrationStorage {
-  ADCChannel adc_channel;
+  AdcChannel adc_channel;
   DriverDisplayBrightnessCalibrationData *data;
   volatile bool reading_ok_flag;
   volatile uint64_t sample_sum;

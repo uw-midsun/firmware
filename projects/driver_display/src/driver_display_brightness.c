@@ -4,7 +4,7 @@
 
 #include "driver_display_brightness.h"
 
-static void prv_timer_callback(SoftTimerID timer_id, void *context) {
+static void prv_timer_callback(SoftTimerId timer_id, void *context) {
   DriverDisplayBrightnessStorage *storage = (DriverDisplayBrightnessStorage *)context;
 
   uint16_t reading;
@@ -44,7 +44,7 @@ static void prv_timer_callback(SoftTimerID timer_id, void *context) {
   }
 }
 
-static void prv_adc_callback(ADCChannel adc_channel, void *context) {
+static void prv_adc_callback(AdcChannel adc_channel, void *context) {
   uint16_t *adc_reading = (uint16_t *)context;
   // Read raw value from adc_channel and return
   adc_read_raw(adc_channel, adc_reading);
@@ -61,7 +61,7 @@ StatusCode driver_display_brightness_init(
   storage->settings = settings;
   storage->reading_ok_flag = true;
 
-  GPIOSettings pwm_settings = { .direction = GPIO_DIR_OUT,
+  GpioSettings pwm_settings = { .direction = GPIO_DIR_OUT,
                                 .state = GPIO_STATE_HIGH,
                                 .resistor = GPIO_RES_PULLUP,
                                 .alt_function = GPIO_ALTFN_4 };
@@ -74,7 +74,7 @@ StatusCode driver_display_brightness_init(
     status_ok_or_return(pwm_set_dc(settings->timer, 50));
   }
 
-  GPIOSettings adc_settings = { .direction = GPIO_DIR_IN,
+  GpioSettings adc_settings = { .direction = GPIO_DIR_IN,
                                 .state = GPIO_STATE_LOW,
                                 .resistor = GPIO_RES_NONE,
                                 .alt_function = GPIO_ALTFN_ANALOG };

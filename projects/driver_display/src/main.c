@@ -10,7 +10,7 @@
 #include "driver_display_calibration.h"
 #include "driver_display_config.h"
 
-static UARTStorage s_uart_storage;
+static UartStorage s_uart_storage;
 static DriverDisplayCalibrationStorage s_calibration_storage;
 static DriverDisplayBrightnessCalibrationData s_calibration_data;
 static DriverDisplayBrightnessStorage s_brightness_storage;

@@ -10,10 +10,10 @@
 #define DRIVER_DISPLAY_CONFIG_UART_BAUDRATE 115200
 
 // Load uart settings for uart initialization
-UARTSettings *driver_display_config_load_uart(void);
+UartSettings *driver_display_config_load_uart(void);
 
 // Load can_hw settings for can_hw initialization
-CANHwSettings *driver_display_config_load_can(void);
+CanHwSettings *driver_display_config_load_can(void);
 
 // Load can_uart settings for can_uart initialization
 CanUart *driver_display_config_load_can_uart(void);

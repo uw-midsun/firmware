@@ -3,7 +3,7 @@
 #include "delay.h"
 #include "driver_display_calibration.h"
 
-static void prv_timer_callback(SoftTimerID timer_id, void *context) {
+static void prv_timer_callback(SoftTimerId timer_id, void *context) {
   DriverDisplayCalibrationStorage *storage = context;
   // Continue sampling until the sample size has been reached
   if (storage->sample_count < DRIVER_DISPLAY_CALIBRATION_SAMPLE_SIZE) {
@@ -25,7 +25,7 @@ static void prv_timer_callback(SoftTimerID timer_id, void *context) {
   }
 }
 
-static void prv_adc_callback(ADCChannel adc_channel, void *context) {
+static void prv_adc_callback(AdcChannel adc_channel, void *context) {
   uint16_t *adc_reading = (uint16_t *)context;
   // Read raw value from adc_channel and return
   adc_read_raw(adc_channel, adc_reading);
@@ -41,13 +41,13 @@ StatusCode driver_display_calibration_init(const DriverDisplayBrightnessSettings
   storage->data = data;
 
   // Initilizes the calibration module for light sensor
-  GPIOSettings adc_settings = { .direction = GPIO_DIR_IN,
+  GpioSettings adc_settings = { .direction = GPIO_DIR_IN,
                                 .state = GPIO_STATE_LOW,
                                 .resistor = GPIO_RES_NONE,
                                 .alt_function = GPIO_ALTFN_ANALOG };
 
   // Init the ADC pin (All screens currently controlled by single sensor)
-  ADCChannel adc_channel;
+  AdcChannel adc_channel;
   status_ok_or_return(gpio_init_pin(&settings->adc_address, &adc_settings));
   status_ok_or_return(adc_get_channel(settings->adc_address, &adc_channel));
   status_ok_or_return(adc_set_channel(adc_channel, true));
