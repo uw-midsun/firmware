@@ -1,7 +1,10 @@
 #pragma once
 // An example blinker task
 
+#include "FreeRTOS.h"
+
 #define BLINK_TASK_PRIORITY 1
+#define BLINK_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
 
 // Fetch the task's stack
 StackType_t *blink_get_stack(void);

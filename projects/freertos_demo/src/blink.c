@@ -8,20 +8,17 @@
 #include "gpio.h"
 #include "misc.h"
 
-#define BLINK_TASK_STACK_SIZE 30
+#include "ms_task.h"
 
-// Statically allocated memory for producer_task stack
-static StackType_t s_ProducerTaskStack[BLINK_TASK_STACK_SIZE];
-
-// Statically allocated memory for producer_task task control block
-static StaticTask_t s_ProducerTaskTCB;
+static StackType_t s_task_stack[BLINK_TASK_STACK_SIZE];
+static StaticTask_t s_task_tcb;
 
 StackType_t *blink_get_stack(void) {
-  return &s_ProducerTaskStack[0];
+  return &s_task_stack[0];
 }
 
 StaticTask_t *blink_get_tcb(void) {
-  return &s_ProducerTaskTCB;
+  return &s_task_tcb;
 }
 
 void blink_task(void *params) {
@@ -36,8 +33,8 @@ void blink_task(void *params) {
   };
 
   const GpioAddress leds[] = {
-    { .port = GPIO_PORT_B, .pin = 5 },   //
-    { .port = GPIO_PORT_B, .pin = 4 },   //
+    { .port = GPIO_PORT_B, .pin = 5 },  //
+    { .port = GPIO_PORT_B, .pin = 4 },  //
   };
 
   // Initialize LED GPIOs
@@ -49,7 +46,7 @@ void blink_task(void *params) {
     for (size_t i = 0; i < SIZEOF_ARRAY(leds); i++) {
       gpio_toggle_state(&leds[i]);
 
-      vTaskDelayUntil(&last_execution_time, pdMS_TO_TICKS(50));
+      vTaskDelayUntil(&last_execution_time, pdMS_TO_TICKS(FREERTOS_TASK_RATE_10_HZ));
     }
   }
 }

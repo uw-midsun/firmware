@@ -3,25 +3,25 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "blink.h"
+#include "blink2.h"
 
 #include "gpio.h"
 #include "misc.h"
 
-#define BLINK_2_TASK_STACK_SIZE 30
+#include "ms_task.h"
 
 // Statically allocated memory for producer_task stack
-static StackType_t s_ProducerTaskStack[BLINK_2_TASK_STACK_SIZE];
+static StackType_t s_task_stack[BLINK_2_TASK_STACK_SIZE];
 
 // Statically allocated memory for producer_task task control block
-static StaticTask_t s_ProducerTaskTCB;
+static StaticTask_t s_task_tcb;
 
 StackType_t *blink_2_get_stack(void) {
-  return &s_ProducerTaskStack[0];
+  return &s_task_stack[0];
 }
 
 StaticTask_t *blink_2_get_tcb(void) {
-  return &s_ProducerTaskTCB;
+  return &s_task_tcb;
 }
 
 void blink_2_task(void *params) {
@@ -49,7 +49,7 @@ void blink_2_task(void *params) {
     for (size_t i = 0; i < SIZEOF_ARRAY(leds); i++) {
       gpio_toggle_state(&leds[i]);
 
-      vTaskDelayUntil(&last_execution_time, pdMS_TO_TICKS(50));
+      vTaskDelayUntil(&last_execution_time, pdMS_TO_TICKS(FREERTOS_TASK_RATE_10_HZ));
     }
   }
 }
