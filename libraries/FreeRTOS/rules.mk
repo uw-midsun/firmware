@@ -22,9 +22,16 @@ $(T)_SRC := $(wildcard $($(T)_SRC_ROOT)/*.c) \
 ifeq (stm32f0xx,$(PLATFORM))
     $(T)_INC_DIRS += $($(T)_DIR)/portable/GCC/ARM_CM0
     $(T)_SRC += $(wildcard $($(T)_SRC_ROOT)/portable/GCC/ARM_CM0/*.c)
+else ifeq (x86,$(PLATFORM))
+    $(T)_INC_DIRS += $($(T)_DIR)/portable/GCC/Linux
+    $(T)_SRC += $(wildcard $($(T)_SRC_ROOT)/portable/GCC/Linux/*.c)
 endif
 
+ifeq (stm32f0xx,$(PLATFORM))
 $(T)_DEPS := CMSIS stm32f0xx ms-freertos
+else ifeq (x86,$(PLATFORM))
+$(T)_DEPS := ms-freertos
+endif
 
 # Specifies library specific build flags
 $(T)_CFLAGS += -ffreestanding -nostdlib
