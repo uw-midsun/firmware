@@ -11,7 +11,8 @@ typedef enum {
 } SolarMasterConfigBoard;
 
 typedef struct SolarMasterConfig {
-  I2CPort i2c_port;
+  I2CPort slave_i2c_port;
+  I2CPort current_i2c_port;
   SolarMasterConfigBoard board;
 } SolarMasterConfig;
 

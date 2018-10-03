@@ -2,7 +2,8 @@
 #include "log.h"
 
 static SolarMasterConfig s_config = {
-  .i2c_port = I2C_PORT_2,
+  .slave_i2c_port = I2C_PORT_2,
+  .current_i2c_port = I2C_PORT_1,
 };
 
 // We'll ignore mode_sel_1 because there's only two solar masters.
