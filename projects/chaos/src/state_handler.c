@@ -19,9 +19,9 @@ static uint16_t s_sequence_lookup[NUM_EE_POWER_STATES] = {
   [EE_POWER_STATE_DRIVE] = CHAOS_EVENT_SEQUENCE_DRIVE,
 };
 
-// CANRxHandlerCb
-static StatusCode prv_handle_power_state_msg(const CANMessage *msg, void *context,
-                                             CANAckStatus *ack_reply) {
+// CanRxHandlerCb
+static StatusCode prv_handle_power_state_msg(const CanMessage *msg, void *context,
+                                             CanAckStatus *ack_reply) {
   (void)context;
   EEPowerState power_state = NUM_EE_POWER_STATES;
   CAN_UNPACK_POWER_STATE(msg, (uint8_t *)&power_state);

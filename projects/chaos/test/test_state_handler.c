@@ -16,14 +16,14 @@
 
 static bool s_mock_return = true;
 
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 
-// CANAckRequestCb
-static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+// CanAckRequestCb
+static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                    uint16_t num_remaining, void *context) {
   (void)device;
   (void)num_remaining;
-  CANAckStatus *expected_status = context;
+  CanAckStatus *expected_status = context;
   TEST_ASSERT_EQUAL(SYSTEM_CAN_MESSAGE_POWER_STATE, msg_id);
   TEST_ASSERT_EQUAL(*expected_status, status);
   return STATUS_CODE_OK;
@@ -34,7 +34,7 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
 
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
     .bitrate = CAN_HW_BITRATE_250KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,
@@ -51,8 +51,8 @@ void teardown_test(void) {}
 
 void test_state_handler(void) {
   TEST_ASSERT_OK(state_handler_init());
-  CANAckStatus expected_status = CAN_ACK_STATUS_OK;
-  CANAckRequest req = {
+  CanAckStatus expected_status = CAN_ACK_STATUS_OK;
+  CanAckRequest req = {
     .callback = prv_ack_callback,
     .context = &expected_status,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_CHAOS),

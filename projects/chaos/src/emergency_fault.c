@@ -12,24 +12,24 @@
 #include "status.h"
 
 // Forward declare to resolve the circular dependence of the functions.
-static StatusCode prv_ack_handler(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_handler(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                   uint16_t num_remaining, void *context);
 
 // SoftTimerCallback
-static void prv_send(SoftTimerID id, void *context) {
+static void prv_send(SoftTimerId id, void *context) {
   (void)id;
   EmergencyFaultStorage *storage = context;
   storage->id = SOFT_TIMER_INVALID_TIMER;
-  CANAckRequest req = {
+  CanAckRequest req = {
     .callback = prv_ack_handler,
     .context = context,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_DRIVER_CONTROLS),
   };
-  CAN_TRANSMIT_POWER_DISTRIBUTION_FAULT(&req);
+  CAN_TRANSMIT_POWER_DISTRIBUTION_FAULT(&req, storage->reason);
 }
 
-// CANAckRequestCb
-static StatusCode prv_ack_handler(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+// CanAckRequestCb
+static StatusCode prv_ack_handler(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                   uint16_t num_remaining, void *context) {
   // Ignore this as there should only be one receiver.
   (void)msg_id;
@@ -70,6 +70,7 @@ void emergency_fault_clear(EmergencyFaultStorage *storage) {
 void emergency_fault_process_event(EmergencyFaultStorage *storage, const Event *e) {
   switch (e->id) {
     case CHAOS_EVENT_SEQUENCE_EMERGENCY:
+      storage->reason = e->data;
       if (!storage->keep_trying) {
         emergency_fault_send(storage);
       }

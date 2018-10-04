@@ -25,7 +25,7 @@
 
 static EEChargerSetRelayState s_response;
 static GenericCanNetwork s_generic_can;
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 
 // GenericCanRxCb
 static void prv_callback(const GenericCanMsg *msg, void *context) {
@@ -40,7 +40,7 @@ void setup_test(void) {
   event_queue_init();
   interrupt_init();
   soft_timer_init();
-  const CANSettings can_settings = {
+  const CanSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHARGER,
     .bitrate = CAN_HW_BITRATE_125KBPS,
     .tx = { GPIO_PORT_A, 12 },

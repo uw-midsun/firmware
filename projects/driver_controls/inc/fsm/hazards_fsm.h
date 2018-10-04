@@ -3,4 +3,4 @@
 #include "event_arbiter.h"
 #include "fsm.h"
 
-StatusCode hazards_fsm_init(FSM *fsm, EventArbiterStorage *storage);
+StatusCode hazards_fsm_init(Fsm *fsm, EventArbiterStorage *storage);

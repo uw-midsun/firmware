@@ -14,7 +14,7 @@
 #include "lights_can_config.h"
 #include "lights_events.h"
 
-const CANSettings s_can_settings = {
+const CanSettings s_can_settings = {
   // clang-format on
   .loopback = true,
   .bitrate = CAN_HW_BITRATE_500KBPS,
@@ -86,15 +86,15 @@ void test_lights_sync_handler(void) {
   MS_TEST_HELPER_CAN_TX_RX(LIGHTS_EVENT_CAN_TX, LIGHTS_EVENT_CAN_RX);
   while (!status_ok(event_process(&e))) {
   }
-  TEST_ASSERT_EQUAL(LIGHTS_EVENT_SYNC, e.id);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_SYNC_RX, e.id);
 }
 
 // Transmit a sync message.
 void test_lights_process_event(void) {
-  const Event e = { .id = LIGHTS_EVENT_SYNC, .data = 0 };
+  const Event e = { .id = LIGHTS_EVENT_SYNC_TX, .data = 0 };
   TEST_ASSERT_OK(lights_can_process_event(&e));
   MS_TEST_HELPER_CAN_TX_RX(LIGHTS_EVENT_CAN_TX, LIGHTS_EVENT_CAN_RX);
   while (!status_ok(event_process(&e))) {
   }
-  TEST_ASSERT_EQUAL(LIGHTS_EVENT_SYNC, e.id);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_SYNC_RX, e.id);
 }

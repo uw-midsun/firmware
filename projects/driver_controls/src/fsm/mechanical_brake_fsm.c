@@ -52,7 +52,7 @@ static bool prv_guard_disengaged(const Event *e) {
 }
 
 // Mechanical Brake FSM output functions
-static void prv_engaged_output(FSM *fsm, const Event *e, void *context) {
+static void prv_engaged_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   event_arbiter_set_guard_fn(guard, prv_guard_engaged);
 
@@ -62,7 +62,7 @@ static void prv_engaged_output(FSM *fsm, const Event *e, void *context) {
   }
 }
 
-static void prv_disengaged_output(FSM *fsm, const Event *e, void *context) {
+static void prv_disengaged_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   event_arbiter_set_guard_fn(guard, prv_guard_disengaged);
 
@@ -72,7 +72,7 @@ static void prv_disengaged_output(FSM *fsm, const Event *e, void *context) {
   }
 }
 
-StatusCode mechanical_brake_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
+StatusCode mechanical_brake_fsm_init(Fsm *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_engaged, prv_engaged_output);
   fsm_state_init(state_disengaged, prv_disengaged_output);
 

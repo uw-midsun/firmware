@@ -3,7 +3,7 @@
 //
 // Requires CAN to be initialized.
 //
-// Allows registering a RelayRxHandler that is wrapped by a CANRxHandlerCb which is properly
+// Allows registering a RelayRxHandler that is wrapped by a CanRxHandlerCb which is properly
 // configured to unpack relay messages and handle faults. This RelayRxHandler is expected to execute
 // the modifications to any GPIO pins or other mechanisms to trigger state changes to relays and
 // report them back to the CANRxHanderCb which will handle the ack. These should ideally be kept
@@ -14,7 +14,7 @@
 #include "can_msg_defs.h"
 #include "status.h"
 
-// Wrapped by a CANRxHandlerCb.
+// Wrapped by a CanRxHandlerCb.
 typedef StatusCode (*RelayRxHandler)(SystemCanMessage msg_id, uint8_t state, void *context);
 
 typedef struct RelayRxStorage {
@@ -27,7 +27,7 @@ typedef struct RelayRxStorage {
 
 // Configures |RelayRxHandler| to be triggered when |msg_id| is received. This handler should alter
 // a relay or set of relays to match the expected state. In the event of a failure the status code
-// should propagate back to the CANRxHandler. |state_bound| is the non-inclusive upper bound on the
+// should propagate back to the CanRxHandler. |state_bound| is the non-inclusive upper bound on the
 // values the returned uint8_t can be. The configuration is stored in |storage|. If the relay is
 // already in the expected state |handler| should still return with STATUS_CODE_OK so long as there
 // are no faults.

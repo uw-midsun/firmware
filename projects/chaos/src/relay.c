@@ -8,7 +8,7 @@
 #include "relay_fsm.h"
 #include "relay_id.h"
 
-static FSM s_relay_fsms[NUM_RELAY_IDS];
+static Fsm s_relay_fsms[NUM_RELAY_IDS];
 
 void relay_init(const RelaySettings *settings) {
   relay_fsm_init();

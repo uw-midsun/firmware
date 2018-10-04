@@ -28,7 +28,7 @@ void setup_test(void) {
   soft_timer_init();
   can_interval_init();
 
-  const CANHwSettings can_hw_settings = {
+  const CanHwSettings can_hw_settings = {
     .bitrate = CAN_HW_BITRATE_250KBPS,
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },
@@ -43,7 +43,7 @@ void teardown_test(void) {}
 // No need to validate anything other than transitions as the underlying modules are tested and
 // fully testing the behavior would require a massive test.
 void test_charger_fsm_transitions(void) {
-  FSM fsm;
+  Fsm fsm;
   GenericCan *can = (GenericCan *)&s_can;
   ChargerCanStatus status = { 0 };
   charger_fsm_init(&fsm);

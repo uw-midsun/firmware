@@ -4,7 +4,7 @@
 #include "can_transmit.h"
 #include "can_unpack.h"
 
-static StatusCode prv_handle_drive(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_handle_drive(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   MotorControllerStorage *controller = context;
   int16_t pedal = 0, direction = 0, cruise = 0, mech_brake = 0;
 

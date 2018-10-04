@@ -19,7 +19,8 @@ typedef enum {
   LIGHTS_EVENT_STROBE_OFF,
   LIGHTS_EVENT_STROBE_ON,
   // Event processed by lights_sync module.
-  LIGHTS_EVENT_SYNC,
+  LIGHTS_EVENT_SYNC_TX,
+  LIGHTS_EVENT_SYNC_RX,
   NUM_LIGHTS_EVENTS
 } LightsEvent;
 

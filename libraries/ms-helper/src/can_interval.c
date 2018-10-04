@@ -13,7 +13,7 @@
 static ObjectPool s_can_interval_pool;
 static CanInterval s_can_interval_storage[CAN_INTERVAL_POOL_SIZE];
 
-static void prv_can_interval_timer_cb(SoftTimerID id, void *context) {
+static void prv_can_interval_timer_cb(SoftTimerId id, void *context) {
   (void)id;
   CanInterval *interval = context;
   generic_can_tx(interval->can, &interval->msg);

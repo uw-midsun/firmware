@@ -16,7 +16,8 @@
 #define EMERGENCY_FAULT_BACKOFF_MS 1000
 
 typedef struct EmergencyFaultStorage {
-  SoftTimerID id;
+  SoftTimerId id;
+  uint8_t reason;
   bool keep_trying;
 } EmergencyFaultStorage;
 

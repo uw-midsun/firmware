@@ -34,7 +34,7 @@ void setup_test(void) {
     .scl = { .port = GPIO_PORT_B, .pin = 8 },  //
   };
   i2c_init(I2C_PORT_1, &i2c_settings);
-  GPIOAddress ready_pin = {
+  GpioAddress ready_pin = {
     .port = GPIO_PORT_A,  //
     .pin = 10,            //
   };
@@ -50,7 +50,7 @@ void setup_test(void) {
   };
   throttle_calibration_init(&s_calibration_storage, &calib_settings);
 
-  calib_init(&s_calib_blob, sizeof(s_calib_blob));
+  calib_init(&s_calib_blob, sizeof(s_calib_blob), true);
 }
 
 void teardown_test(void) {}

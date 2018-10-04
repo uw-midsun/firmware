@@ -113,7 +113,7 @@ static void prv_handle_error(Mcp2515Storage *storage, uint8_t int_flags) {
   }
 }
 
-static void prv_handle_int(const GPIOAddress *address, void *context) {
+static void prv_handle_int(const GpioAddress *address, void *context) {
   Mcp2515Storage *storage = context;
 
   uint8_t int_flags = 0;
@@ -129,7 +129,7 @@ StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings
   storage->rx_cb = settings->rx_cb;
   storage->context = settings->context;
 
-  const SPISettings spi_settings = {
+  const SpiSettings spi_settings = {
     .baudrate = settings->baudrate,
     .mode = SPI_MODE_0,
     .mosi = settings->mosi,
@@ -167,7 +167,7 @@ StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings
   prv_bit_modify(storage, MCP2515_CTRL_REG_CANCTRL, MCP2515_CANCTRL_OPMODE_MASK, opmode);
 
   // Active-low interrupt pin
-  const GPIOSettings gpio_settings = {
+  const GpioSettings gpio_settings = {
     .direction = GPIO_DIR_IN,
   };
   status_ok_or_return(gpio_init_pin(&settings->int_pin, &gpio_settings));

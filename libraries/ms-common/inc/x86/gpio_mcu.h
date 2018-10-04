@@ -10,6 +10,6 @@ typedef enum {
   GPIO_PORT_E,
   GPIO_PORT_F,
   NUM_GPIO_PORTS,
-} GPIOPort;
+} GpioPort;
 
 #define GPIO_TOTAL_PINS ((GPIO_PINS_PER_PORT) * (NUM_GPIO_PORTS))

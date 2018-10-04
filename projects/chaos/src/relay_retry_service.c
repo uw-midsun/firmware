@@ -8,7 +8,7 @@
 
 static RelayRetryServiceStorage *s_storage = NULL;
 
-static void prv_retry_with_delay(SoftTimerID id, void *context) {
+static void prv_retry_with_delay(SoftTimerId id, void *context) {
   for (RelayId i = 0; i < NUM_RELAY_IDS; ++i) {
     if (s_storage->relays_timer_id[i] == id) {
       event_raise(CHAOS_EVENT_RETRY_RELAY, i);
