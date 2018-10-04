@@ -18,15 +18,15 @@
 // Check this document on page 4:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/evm-gps-f4.pdf
 typedef struct {
-  UARTPort port;
-  UARTSettings *uart_settings;    // The uart settings to be used
-  GPIOSettings *settings_power;   // Pin which provides power
-  GPIOSettings *settings_on_off;  // Pin to trigger power up
-  GPIOAddress *pin_rx;            // Pin addresses
-  GPIOAddress *pin_tx;
-  GPIOAddress *pin_power;
-  GPIOAddress *pin_on_off;
-  UARTStorage uart_storage;
+  UartPort port;
+  UartSettings *uart_settings;    // The uart settings to be used
+  GpioSettings *settings_power;   // Pin which provides power
+  GpioSettings *settings_on_off;  // Pin to trigger power up
+  GpioAddress *pin_rx;            // Pin addresses
+  GpioAddress *pin_tx;
+  GpioAddress *pin_power;
+  GpioAddress *pin_on_off;
+  UartStorage uart_storage;
   volatile char gga_data[GPS_MAX_NMEA_LENGTH];  // Stores raw NMEA messages sent by the chip
 } GpsSettings;
 

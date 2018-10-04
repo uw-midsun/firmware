@@ -30,12 +30,12 @@ static void prv_gps_set_power_state(bool powered) {
 }
 
 // Stage 1 of initialization: pull high on ON/OFF line
-static void prv_gps_init_stage_1(SoftTimerID timer_id, void *context) {
+static void prv_gps_init_stage_1(SoftTimerId timer_id, void *context) {
   gpio_set_state(s_settings->pin_on_off, GPIO_STATE_HIGH);
 }
 
 // Stage 2: set ON/OFF line to low
-static void prv_gps_init_stage_2(SoftTimerID timer_id, void *context) {
+static void prv_gps_init_stage_2(SoftTimerId timer_id, void *context) {
   gpio_set_state(s_settings->pin_on_off, GPIO_STATE_LOW);
 }
 

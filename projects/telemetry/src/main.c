@@ -14,13 +14,13 @@
 #include "wait.h"
 #include "xbee.h"
 
-GPIOSettings telemetry_settings_gpio_general = {
+GpioSettings telemetry_settings_gpio_general = {
   .direction = GPIO_DIR_OUT,  // The pin needs to output.
   .state = GPIO_STATE_LOW,    // Start in the "off" state.
   .alt_function = GPIO_ALTFN_NONE,
 };
 
-UARTSettings telemetry_gps_uart_settings = {
+UartSettings telemetry_gps_uart_settings = {
   .baudrate = 9600,
   .tx = { .port = GPIO_PORT_A, .pin = 2 },
   .rx = { .port = GPIO_PORT_A, .pin = 3 },
@@ -28,7 +28,7 @@ UARTSettings telemetry_gps_uart_settings = {
 };
 
 // The pin numbers to use for providing power and turning the GPS on and off
-GPIOAddress telemetry_gps_pins[] = {
+GpioAddress telemetry_gps_pins[] = {
   { .port = GPIO_PORT_B, .pin = 3 },  // Pin GPS power
   { .port = GPIO_PORT_B, .pin = 4 },  // Pin GPS on_off
 };
@@ -46,7 +46,7 @@ CanUart telemetry_can_uart_settings = {
   .context = NULL,
 };
 
-CANHwSettings telemetry_can_hw_settings = {
+CanHwSettings telemetry_can_hw_settings = {
   .tx = { .port = GPIO_PORT_A, .pin = 12 },
   .rx = { .port = GPIO_PORT_A, .pin = 11 },
   .bitrate = CAN_HW_BITRATE_500KBPS,

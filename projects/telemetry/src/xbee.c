@@ -2,16 +2,16 @@
 #include "fifo.h"
 #include "uart.h"
 
-static const UARTPort s_xbee_port = XBEE_UART_PORT;
+static const UartPort s_xbee_port = XBEE_UART_PORT;
 
-static UARTSettings s_xbee_settings = {
+static UartSettings s_xbee_settings = {
   .baudrate = 115200,
   .tx = { .port = GPIO_PORT_B, .pin = 10 },
   .rx = { .port = GPIO_PORT_B, .pin = 11 },
   .alt_fn = GPIO_ALTFN_4,
 };
 
-static UARTStorage s_storage;
+static UartStorage s_storage;
 
 StatusCode xbee_init() {
   return uart_init(s_xbee_port, &s_xbee_settings, &s_storage);
