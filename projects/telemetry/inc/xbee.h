@@ -2,8 +2,9 @@
 // This will be the xbee driver. It can be initialized, and then used to send
 // messages to the xbee. Basically it's a UART wrapper
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 #include "status.h"
-#include "uart.h"
 
 #define XBEE_UART_PORT UART_PORT_3
 

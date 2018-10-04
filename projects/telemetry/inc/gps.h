@@ -1,9 +1,18 @@
 #pragma once
 // This will be the GPS driver. It will be responsive for initializing, and cleaning up the GPS
 // as well as providing data from the GPS.
+
+// On GPS data: the GPS sends NMEA (National Marine Electronics Association) messages which
+// contain data about current time, position, speed, etc. The message we are most interested
+// in is the GGA message (Global Positioning System Fix Data). It contains latitude and
+// longitude.
 #include <stdbool.h>
 #include "status.h"
 #include "uart.h"
+
+// Just some constants so that the max length of raw data can be set.
+// A GGA message will be around a hundred characters.
+#define GPS_MAX_NMEA_LENGTH 128
 
 // This struct basically contains all the info about pins etc.
 // Check this document on page 4:
@@ -17,14 +26,9 @@ typedef struct {
   GPIOAddress *pin_tx;
   GPIOAddress *pin_power;
   GPIOAddress *pin_on_off;
-} gps_settings;
+  UARTStorage uart_storage;
+  volatile char gga_data[GPS_MAX_NMEA_LENGTH];  // Stores raw NMEA messages sent by the chip
+} GpsSettings;
 
 // Initialized the GPS module
 StatusCode gps_init();
-
-// Shuts the GPS module down
-StatusCode gps_clean_up();
-
-// Sets gga_message to the last received GGA message
-// Returns whether the GPS is active or not
-bool gps_get_gga(char *gga_message);
