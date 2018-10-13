@@ -39,7 +39,7 @@ typedef void (*Ads1015Callback)(Ads1015Channel channel, void *context);
 typedef struct Ads1015Storage {
   I2CPort i2c_port;
   uint8_t i2c_addr;
-  GPIOAddress ready_pin;
+  GpioAddress ready_pin;
   int16_t channel_readings[NUM_ADS1015_CHANNELS];
   Ads1015Channel current_channel;
   uint8_t channel_bitset;
@@ -47,14 +47,14 @@ typedef struct Ads1015Storage {
   Ads1015Callback channel_callback[NUM_ADS1015_CHANNELS];
   void *callback_context[NUM_ADS1015_CHANNELS];
 
-  SoftTimerID watchdog_timer;
+  SoftTimerId watchdog_timer;
   bool watchdog_kicked;
   bool data_valid;
 } Ads1015Storage;
 
 // Initiates ads1015 by setting up registers and enabling ALRT/RDY Pin.
 StatusCode ads1015_init(Ads1015Storage *storage, I2CPort i2c_port, Ads1015Address i2c_addr,
-                        GPIOAddress *ready_pin);
+                        GpioAddress *ready_pin);
 
 // Enable/disables a channel, and registers a callback on the channel.
 StatusCode ads1015_configure_channel(Ads1015Storage *storage, Ads1015Channel channel, bool enable,

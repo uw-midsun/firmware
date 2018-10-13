@@ -7,6 +7,7 @@
 #include "can_ack.h"
 #include "chaos_config.h"
 #include "chaos_events.h"
+#include "chaos_flags.h"
 #include "charger.h"
 #include "debug_led.h"
 #include "delay.h"
@@ -32,11 +33,11 @@
 
 #define CHAOS_DEBUG_LED_PERIOD_MS 500
 
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 static EmergencyFaultStorage s_emergency_storage;
 static RelayRetryServiceStorage s_retry_storage;
 
-static void prv_toggle(SoftTimerID id, void *context) {
+static void prv_toggle(SoftTimerId id, void *context) {
   (void)id;
   (void)context;
   debug_led_toggle_state(DEBUG_LED_RED);
@@ -55,7 +56,7 @@ int main(void) {
   soft_timer_start_millis(CHAOS_DEBUG_LED_PERIOD_MS, prv_toggle, NULL, NULL);
 
   // CAN
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
     .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,
@@ -69,7 +70,9 @@ int main(void) {
 
   // Heartbeats
   bps_heartbeat_init();  // Use the auto start feature to start the watchdog.
+#ifdef CHAOS_FLAG_ENABLE_POWERTRAIN_HB
   powertrain_heartbeat_init();
+#endif  // CHAOS_FLAG_ENABLE_POWERTRAIN_HB
 
   // Power Path
   ChaosConfig *cfg = chaos_config_load();
@@ -106,7 +109,8 @@ int main(void) {
   // Postpone to as late as possible so that BPS heartbeats are ready to be ACK'd.
   gpio_fsm_init(cfg);
 
-  const GPIOAddress addrs[] = {
+  // Debug
+  const GpioAddress addrs[] = {
     cfg->array_sense_power,
     cfg->battery_box_power,
     cfg->charger_power,
@@ -121,7 +125,7 @@ int main(void) {
     cfg->telemetry_power,
     cfg->themis_power,
   };
-  const GPIOSettings stg = {
+  const GpioSettings stg = {
     .resistor = GPIO_RES_NONE,
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,
@@ -133,6 +137,7 @@ int main(void) {
     gpio_seq_set_state(addrs, SIZEOF_ARRAY(addrs), GPIO_STATE_LOW, 70);
     delay_ms(1000);
   }
+  // End debug
 
   // LOG_DEBUG("Started\n");
 
@@ -140,32 +145,36 @@ int main(void) {
   // Event e = { 0 };
   // StatusCode status = NUM_STATUS_CODES;
   // while (true) {
-  //   // Tight event loop
-  //   do {
-  //     status = event_process(&e);
-  //     // TODO(ELEC-105): Validate nothing gets stuck here.
-  //     if (status == STATUS_CODE_EMPTY) {
-  //       wait();
-  //     }
-  //   } while (status != STATUS_CODE_OK);
-
-  //   // Event Processing:
-
-  //   // TODO(ELEC-105): At least one of the following should respond with either a boolean true or
-  //   // a STATUS_CODE_OK for each emitted message. Consider adding a requirement that this is the
-  //   // case with a failure resulting in faulting into Emergency.
-  //   can_process_event(&e);
-  //   delay_service_process_event(&e);
-  //   fan_control_process_event(&e);
-  //   emergency_fault_process_event(&s_emergency_storage, &e);
-  //   gpio_fsm_process_event(&e);
-  //   powertrain_heartbeat_process_event(&e);
-  //   power_path_process_event(&cfg->power_path, &e);
-  //   charger_process_event(&e);
-  //   relay_process_event(&e);
-  //   relay_retry_service_update(&e);
-  //   sequencer_fsm_publish_next_event(&e);
-  // }
+  // Tight event loop
+  //     do {
+  //       status = event_process(&e);
+  //       // TODO(ELEC-105): Validate nothing gets stuck here.
+  //       if (status == STATUS_CODE_EMPTY) {
+  //         wait();
+  //       }
+  //     } while (status != STATUS_CODE_OK);
+  //
+  //     // Event Processing:
+  //
+  //     // TODO(ELEC-105): At least one of the following should respond with either a boolean true
+  //     or
+  //     // a STATUS_CODE_OK for each emitted message. Consider adding a requirement that this is
+  //     the
+  //     // case with a failure resulting in faulting into Emergency.
+  //     can_process_event(&e);
+  //     delay_service_process_event(&e);
+  //     fan_control_process_event(&e);
+  //     emergency_fault_process_event(&s_emergency_storage, &e);
+  //     gpio_fsm_process_event(&e);
+  // #ifdef CHAOS_FLAG_ENABLE_POWERTRAIN_HB
+  //     powertrain_heartbeat_process_event(&e);
+  // #endif  // CHAOS_FLAG_ENABLE_POWERTRAIN_HB
+  //     power_path_process_event(&cfg->power_path, &e);
+  //     charger_process_event(&e);
+  //     relay_process_event(&e);
+  //     relay_retry_service_update(&e);
+  //     sequencer_fsm_publish_next_event(&e);
+  //   }
 
   // Not reached.
   return EXIT_SUCCESS;

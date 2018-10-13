@@ -16,14 +16,14 @@
 // board.
 
 // Controller board LEDs
-static const GPIOAddress leds[] = {
+static const GpioAddress leds[] = {
   { .port = GPIO_PORT_B, .pin = 5 },   //
   { .port = GPIO_PORT_B, .pin = 4 },   //
   { .port = GPIO_PORT_B, .pin = 3 },   //
   { .port = GPIO_PORT_A, .pin = 15 },  //
 };
 // Discovery board LEDs
-// static const GPIOAddress leds[] = {
+// static const GpioAddress leds[] = {
 //   { .port = GPIO_PORT_C, .pin = 8 },  //
 //   { .port = GPIO_PORT_C, .pin = 9 },  //
 //   { .port = GPIO_PORT_C, .pin = 6 },  //
@@ -36,7 +36,7 @@ int main(void) {
   soft_timer_init();
   gpio_init();
 
-  GPIOSettings led_settings = {
+  GpioSettings led_settings = {
     .direction = GPIO_DIR_OUT,        // The pin needs to output.
     .state = GPIO_STATE_HIGH,         // Start in the "on" state.
     .alt_function = GPIO_ALTFN_NONE,  // No connections to peripherals.

@@ -228,5 +228,5 @@ void test_lights_blinker_with_sync(void) {
   while (event_process(&e) != STATUS_CODE_OK) {
   }
   // Expect the sync event to have been raised.
-  TEST_ASSERT_EQUAL(LIGHTS_EVENT_SYNC, e.id);
+  TEST_ASSERT_EQUAL(LIGHTS_EVENT_SYNC_TX, e.id);
 }

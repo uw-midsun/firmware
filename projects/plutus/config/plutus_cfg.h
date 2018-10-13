@@ -7,10 +7,14 @@
 #include "can_msg_defs.h"
 
 // Input fault conditions
-// in 100uV units
+// in 100 uV units
 #define PLUTUS_CFG_CELL_UNDERVOLTAGE 25000
 #define PLUTUS_CFG_CELL_OVERVOLTAGE 42000
-// in 0.1C units
+// in 100 uV units
+#define PLUTUS_CFG_THERMISTOR_SUPPLY 50000
+#define PLUTUS_CFG_THERMISTOR_FIXED_RESISTOR_OHMS 10000
+
+// in 0.1 C units
 #define PLUTUS_CFG_OVERTEMP_DISCHARGE 600
 #define PLUTUS_CFG_OVERTEMP_CHARGE 450
 // in mA

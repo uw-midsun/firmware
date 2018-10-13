@@ -21,11 +21,11 @@
 #define POWER_PATH_DCDC_OV_MILLIV 12840
 
 // Evaluates if two GPIO addresses are equal.
-static bool prv_addr_eq(GPIOAddress addr1, GPIOAddress addr2) {
+static bool prv_addr_eq(GpioAddress addr1, GpioAddress addr2) {
   return ((addr1.port == addr2.port) && (addr1.pin == addr2.pin));
 }
 
-static void prv_send(SoftTimerID timer_id, void *context) {
+static void prv_send(SoftTimerId timer_id, void *context) {
   (void)timer_id;
   PowerPathCfg *cfg = context;
   PowerPathVCReadings aux = { 0 };
@@ -37,7 +37,7 @@ static void prv_send(SoftTimerID timer_id, void *context) {
 }
 
 // Interrupt handler for over and under voltage warnings.
-static void prv_voltage_warning(const GPIOAddress *addr, void *context) {
+static void prv_voltage_warning(const GpioAddress *addr, void *context) {
   PowerPathCfg *pp = context;
   StatusCode status = STATUS_CODE_OK;
   if (prv_addr_eq(*addr, pp->dcdc.uv_ov_pin) && pp->dcdc.monitoring_active) {
@@ -58,7 +58,7 @@ static void prv_voltage_warning(const GPIOAddress *addr, void *context) {
   }
 }
 
-static void prv_adc_read(SoftTimerID timer_id, void *context) {
+static void prv_adc_read(SoftTimerId timer_id, void *context) {
   PowerPathSource *pps = context;
   if (pps->timer_id != timer_id || !pps->monitoring_active) {
     // Guard against accidentally starting multiple timers to monitor the same source concurrently.
@@ -67,7 +67,7 @@ static void prv_adc_read(SoftTimerID timer_id, void *context) {
   pps->timer_id = SOFT_TIMER_INVALID_TIMER;
 
   uint16_t value = 0;
-  ADCChannel chan = NUM_ADC_CHANNELS;
+  AdcChannel chan = NUM_ADC_CHANNELS;
   // Read and convert the current values.
   adc_get_channel(pps->current_pin, &chan);
   adc_read_converted(chan, &value);
@@ -84,7 +84,7 @@ static void prv_adc_read(SoftTimerID timer_id, void *context) {
 }
 
 StatusCode power_path_init(PowerPathCfg *pp) {
-  GPIOSettings settings = {
+  GpioSettings settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,
     .resistor = GPIO_RES_NONE,
@@ -138,7 +138,7 @@ StatusCode power_path_source_monitor_enable(PowerPathSource *source, uint32_t pe
   }
 
   // Set up adc current/voltage monitoring
-  ADCChannel chan = NUM_ADC_CHANNELS;
+  AdcChannel chan = NUM_ADC_CHANNELS;
   adc_get_channel(source->current_pin, &chan);
   status_ok_or_return(adc_set_channel(chan, true));
   adc_get_channel(source->voltage_pin, &chan);
@@ -162,7 +162,7 @@ StatusCode power_path_source_monitor_disable(PowerPathSource *source) {
   }
 
   // Disable the ADCs
-  ADCChannel chan = NUM_ADC_CHANNELS;
+  AdcChannel chan = NUM_ADC_CHANNELS;
   adc_get_channel(source->current_pin, &chan);
   status_ok_or_return(adc_set_channel(chan, false));
   adc_get_channel(source->voltage_pin, &chan);

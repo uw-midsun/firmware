@@ -185,7 +185,7 @@ StatusCode ltc_afe_impl_init(LtcAfeStorage *afe, const LtcAfeSettings *settings)
 
   crc15_init_table();
 
-  SPISettings spi_config = {
+  SpiSettings spi_config = {
     .baudrate = settings->spi_baudrate,  //
     .mode = SPI_MODE_3,                  //
     .mosi = settings->mosi,              //

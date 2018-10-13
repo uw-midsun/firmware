@@ -31,8 +31,8 @@ FSM_STATE_TRANSITION(state_c) {
   // Empty state to keep FSM B constant
 }
 
-static FSM s_fsm_a;
-static FSM s_fsm_b;
+static Fsm s_fsm_a;
+static Fsm s_fsm_b;
 static EventArbiterStorage s_arbiter_storage;
 
 static uint8_t s_output_runs;
@@ -41,7 +41,7 @@ static bool prv_disable_event_b(const Event *e) {
   return (e->id != TEST_EVENT_ARBITER_EVENT_B);
 }
 
-static void prv_state_output(FSM *fsm, const Event *e, void *context) {
+static void prv_state_output(Fsm *fsm, const Event *e, void *context) {
   s_output_runs++;
 }
 

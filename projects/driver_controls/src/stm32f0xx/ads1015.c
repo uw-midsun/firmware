@@ -57,7 +57,7 @@ static StatusCode prv_set_channel(Ads1015Storage *storage, Ads1015Channel channe
   return STATUS_CODE_OK;
 }
 
-static void prv_watchdog(SoftTimerID timer_id, void *context) {
+static void prv_watchdog(SoftTimerId timer_id, void *context) {
   Ads1015Storage *storage = context;
 
   if (!storage->watchdog_kicked) {
@@ -75,7 +75,7 @@ static void prv_watchdog(SoftTimerID timer_id, void *context) {
 // This function is registered as the callback for ALRT/RDY Pin.
 // Reads and stores the conversion value in storage, and switches to the next enabled channel.
 // Also if there is a callback on a channel, it will be run here.
-static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
+static void prv_interrupt_handler(const GpioAddress *address, void *context) {
   Ads1015Storage *storage = context;
   Ads1015Channel current_channel = storage->current_channel;
   uint8_t channel_bitset = storage->channel_bitset;
@@ -114,7 +114,7 @@ static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
 // Initiates ads1015 by setting up registers and enabling ALRT/RDY Pin.
 // It also registers the interrupt handler on ALRT/RDY pin.
 StatusCode ads1015_init(Ads1015Storage *storage, I2CPort i2c_port, Ads1015Address i2c_addr,
-                        GPIOAddress *ready_pin) {
+                        GpioAddress *ready_pin) {
   if ((storage == NULL) || (ready_pin == NULL)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -140,7 +140,7 @@ StatusCode ads1015_init(Ads1015Storage *storage, I2CPort i2c_port, Ads1015Addres
   status_ok_or_return(prv_setup_register(storage, ADS1015_ADDRESS_POINTER_HI_THRESH,
                                          ADS1015_HI_THRESH_REGISTER_MSB,
                                          ADS1015_HI_THRESH_REGISTER_LSB));
-  GPIOSettings gpio_settings = {
+  GpioSettings gpio_settings = {
     .direction = GPIO_DIR_IN,  //
   };
   InterruptSettings it_settings = {

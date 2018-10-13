@@ -25,11 +25,11 @@
 // Although a counter could be substituted for the watchdog timer this has the added benefit of
 // signalling in the event the CAN bus starts faulting and the message cannot be sent.
 
-static SoftTimerID s_interval_id = SOFT_TIMER_INVALID_TIMER;
-static SoftTimerID s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
+static SoftTimerId s_interval_id = SOFT_TIMER_INVALID_TIMER;
+static SoftTimerId s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
 
 // SoftTimerCallback
-static void prv_hb_watchdog(SoftTimerID timer_id, void *context) {
+static void prv_hb_watchdog(SoftTimerId timer_id, void *context) {
   (void)timer_id;
   (void)context;
   s_watchdog_id = SOFT_TIMER_INVALID_TIMER;
@@ -50,8 +50,8 @@ static void prv_kick_watchdog(void) {
   soft_timer_start_millis(POWERTRAIN_HEARTBEAT_WATCHDOG_MS, prv_hb_watchdog, NULL, &s_watchdog_id);
 }
 
-// CANAckRequestCb
-static StatusCode prv_ack_cb(CANMessageID id, uint16_t device, CANAckStatus status,
+// CanAckRequestCb
+static StatusCode prv_ack_cb(CanMessageId id, uint16_t device, CanAckStatus status,
                              uint16_t num_remaining, void *context) {
   // The watchdog will handle the failure of subsequent ACKs so ignore the statuses.
   (void)id;
@@ -65,10 +65,10 @@ static StatusCode prv_ack_cb(CANMessageID id, uint16_t device, CANAckStatus stat
 }
 
 // SoftTimerCallback
-static void prv_send_hb_request(SoftTimerID timer_id, void *context) {
+static void prv_send_hb_request(SoftTimerId timer_id, void *context) {
   (void)timer_id;
   (void)context;
-  CANAckRequest ack_req = {
+  CanAckRequest ack_req = {
     .callback = prv_ack_cb,
     .context = NULL,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(

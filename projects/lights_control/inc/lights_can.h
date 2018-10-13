@@ -2,6 +2,7 @@
 // This module is responsible for receiving CAN messages and raising events in return, or sending
 // can messages.
 #include "can.h"
+#include "can_msg_defs.h"
 #include "exported_enums.h"
 #include "lights_events.h"
 
@@ -14,7 +15,7 @@ typedef enum {
 
 // User uses this instance to provide storage for the module.
 typedef struct LightsCanStorage {
-  CANStorage can_storage;
+  CanStorage can_storage;
 } LightsCanStorage;
 
 // Contains all the configuration functions.
@@ -25,7 +26,7 @@ typedef struct LightsCanSettings {
 
 // Initializes the lights_can module.
 StatusCode lights_can_init(LightsCanStorage *storage, const LightsCanSettings *lights_can,
-                           const CANSettings *can_settings);
+                           const CanSettings *can_settings);
 
 // Sends a sync message.
 StatusCode lights_can_process_event(const Event *);

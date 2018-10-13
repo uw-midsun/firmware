@@ -7,28 +7,28 @@
 #define CAN_HW_BASE CAN
 #define CAN_HW_NUM_FILTER_BANKS 14
 
-typedef struct CANHwTiming {
+typedef struct CanHwTiming {
   uint16_t prescaler;
   uint8_t bs1;
   uint8_t bs2;
-} CANHwTiming;
+} CanHwTiming;
 
-typedef struct CANHwEventHandler {
-  CANHwEventHandlerCb callback;
+typedef struct CanHwEventHandler {
+  CanHwEventHandlerCb callback;
   void *context;
-} CANHwEventHandler;
+} CanHwEventHandler;
 
 // Generated settings using http://www.bittiming.can-wiki.info/
 // Note that the BS1/BS2 register values are used +1, so we need to subtract 1 from the calculated
 // value to compenstate. The same is true for the prescaler, but the library subtracts 1 internally.
 // The total time quanta is thus (BS1 + 1) + (BS2 + 1) + SJW (1) ~= 16 tq.
-static CANHwTiming s_timing[NUM_CAN_HW_BITRATES] = {  // For 48MHz clock
+static CanHwTiming s_timing[NUM_CAN_HW_BITRATES] = {  // For 48MHz clock
   [CAN_HW_BITRATE_125KBPS] = { .prescaler = 24, .bs1 = 12, .bs2 = 1 },
   [CAN_HW_BITRATE_250KBPS] = { .prescaler = 12, .bs1 = 12, .bs2 = 1 },
   [CAN_HW_BITRATE_500KBPS] = { .prescaler = 6, .bs1 = 12, .bs2 = 1 },
   [CAN_HW_BITRATE_1000KBPS] = { .prescaler = 3, .bs1 = 12, .bs2 = 1 }
 };
-static CANHwEventHandler s_handlers[NUM_CAN_HW_EVENTS];
+static CanHwEventHandler s_handlers[NUM_CAN_HW_EVENTS];
 static uint8_t s_num_filters;
 
 static void prv_add_filter(uint8_t filter_num, uint32_t mask, uint32_t filter) {
@@ -47,11 +47,11 @@ static void prv_add_filter(uint8_t filter_num, uint32_t mask, uint32_t filter) {
   CAN_FilterInit(&filter_cfg);
 }
 
-StatusCode can_hw_init(const CANHwSettings *settings) {
+StatusCode can_hw_init(const CanHwSettings *settings) {
   memset(s_handlers, 0, sizeof(s_handlers));
   s_num_filters = 0;
 
-  GPIOSettings gpio_settings = {
+  GpioSettings gpio_settings = {
     .alt_function = GPIO_ALTFN_4,  //
     .direction = GPIO_DIR_OUT,     //
   };
@@ -88,12 +88,12 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
   return STATUS_CODE_OK;
 }
 
-StatusCode can_hw_register_callback(CANHwEvent event, CANHwEventHandlerCb callback, void *context) {
+StatusCode can_hw_register_callback(CanHwEvent event, CanHwEventHandlerCb callback, void *context) {
   if (event >= NUM_CAN_HW_EVENTS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  s_handlers[event] = (CANHwEventHandler){
+  s_handlers[event] = (CanHwEventHandler){
     .callback = callback,  //
     .context = context,    //
   };
@@ -118,7 +118,7 @@ StatusCode can_hw_add_filter(uint32_t mask, uint32_t filter, bool extended) {
   return STATUS_CODE_OK;
 }
 
-CANHwBusStatus can_hw_bus_status(void) {
+CanHwBusStatus can_hw_bus_status(void) {
   if (CAN_GetFlagStatus(CAN_HW_BASE, CAN_FLAG_BOF) == SET) {
     return CAN_HW_BUS_STATUS_OFF;
   } else if (CAN_GetFlagStatus(CAN_HW_BASE, CAN_FLAG_EWG) == SET ||
@@ -182,7 +182,7 @@ void CEC_CAN_IRQHandler(void) {
   };
 
   for (int event = 0; event < NUM_CAN_HW_EVENTS; event++) {
-    CANHwEventHandler *handler = &s_handlers[event];
+    CanHwEventHandler *handler = &s_handlers[event];
     if (handler->callback != NULL && run_cb[event]) {
       handler->callback(handler->context);
       break;

@@ -32,22 +32,22 @@ FSM_STATE_TRANSITION(state_right_signal) {
 }
 
 // Turn signal FSM output function
-static void prv_no_signal_output(FSM *fsm, const Event *e, void *context) {
+static void prv_no_signal_output(Fsm *fsm, const Event *e, void *context) {
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_SIGNAL_LEFT, EE_LIGHT_STATE_OFF);
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_SIGNAL_RIGHT, EE_LIGHT_STATE_OFF);
 }
 
-static void prv_left_signal_output(FSM *fsm, const Event *e, void *context) {
+static void prv_left_signal_output(Fsm *fsm, const Event *e, void *context) {
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_SIGNAL_LEFT, EE_LIGHT_STATE_ON);
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_SIGNAL_RIGHT, EE_LIGHT_STATE_OFF);
 }
 
-static void prv_right_signal_output(FSM *fsm, const Event *e, void *context) {
+static void prv_right_signal_output(Fsm *fsm, const Event *e, void *context) {
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_SIGNAL_LEFT, EE_LIGHT_STATE_OFF);
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_SIGNAL_RIGHT, EE_LIGHT_STATE_ON);
 }
 
-StatusCode turn_signal_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
+StatusCode turn_signal_fsm_init(Fsm *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_no_signal, prv_no_signal_output);
   fsm_state_init(state_left_signal, prv_left_signal_output);
   fsm_state_init(state_right_signal, prv_right_signal_output);

@@ -12,9 +12,9 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 
-static StatusCode prv_strobe_cb(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_strobe_cb(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   EELightState *expected_state = context;
 
   uint8_t id = 0, state = 0;
@@ -31,7 +31,7 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
 
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,
     .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = INPUT_EVENT_CAN_RX,
@@ -54,7 +54,7 @@ void test_bps_indicator_heartbeat(void) {
   Event e = { 0 };
 
   // Send BPS heartbeat good - make sure we receive an ACK and nothing happened
-  CANAckRequest ack_request = {
+  CanAckRequest ack_request = {
     .callback = NULL,
     .context = NULL,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_DRIVER_CONTROLS),

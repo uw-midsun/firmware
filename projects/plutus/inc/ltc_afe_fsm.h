@@ -20,4 +20,4 @@ typedef enum {
   NUM_LTC_AFE_FSM_FAULTS
 } LtcAfeFsmFault;
 
-StatusCode ltc_afe_fsm_init(FSM *fsm, LtcAfeStorage *afe);
+StatusCode ltc_afe_fsm_init(Fsm *fsm, LtcAfeStorage *afe);

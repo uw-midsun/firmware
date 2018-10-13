@@ -17,15 +17,15 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-static CANStorage s_storage;
+static CanStorage s_storage;
 
 typedef struct TestPowerDistributionControllerAckCtx {
   EEPowerState expected_state;
-  CANAckStatus returned_status;
+  CanAckStatus returned_status;
 } TestPowerDistributionControllerAckCtx;
 
 // Handler that allows for injecting ack responses.
-static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_rx_handler(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   (void)msg;
   TestPowerDistributionControllerAckCtx *ctx = context;
   EEPowerState state = NUM_EE_POWER_STATES;
@@ -41,7 +41,7 @@ void setup_test(void) {
   gpio_init();
   soft_timer_init();
 
-  CANSettings settings = {
+  CanSettings settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,  // Pretend to be the target so loopback works.
     .bitrate = CAN_HW_BITRATE_125KBPS,
     .rx_event = INPUT_EVENT_CAN_RX,

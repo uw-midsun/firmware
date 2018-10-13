@@ -23,15 +23,15 @@ FSM_STATE_TRANSITION(state_horn_on) {
 }
 
 // Horn FSM output function
-static void prv_horn_off_output(FSM *fsm, const Event *e, void *context) {
+static void prv_horn_off_output(Fsm *fsm, const Event *e, void *context) {
   CAN_TRANSMIT_HORN(EE_HORN_STATE_OFF);
 }
 
-static void prv_horn_on_output(FSM *fsm, const Event *e, void *context) {
+static void prv_horn_on_output(Fsm *fsm, const Event *e, void *context) {
   CAN_TRANSMIT_HORN(EE_HORN_STATE_ON);
 }
 
-StatusCode horn_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
+StatusCode horn_fsm_init(Fsm *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_horn_off, prv_horn_off_output);
   fsm_state_init(state_horn_on, prv_horn_on_output);
 

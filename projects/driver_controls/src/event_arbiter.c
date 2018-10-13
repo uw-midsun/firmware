@@ -8,7 +8,7 @@ StatusCode event_arbiter_init(EventArbiterStorage *storage) {
   return STATUS_CODE_OK;
 }
 
-EventArbiterGuard *event_arbiter_add_fsm(EventArbiterStorage *storage, FSM *fsm,
+EventArbiterGuard *event_arbiter_add_fsm(EventArbiterStorage *storage, Fsm *fsm,
                                          EventArbiterGuardFn guard_fn) {
   if (storage->num_registered_arbiters >= EVENT_ARBITER_MAX_FSMS) {
     return NULL;
