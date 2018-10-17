@@ -160,7 +160,7 @@ def main():
     date_formatted = datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S.%f')
     log_file = '{}/system_can_{}.log'.format(args.log_dir, date_formatted)
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s,%(message)s', filename=log_file)
+    logging.basicConfig(level=logging.DEBUG, format='"%(asctime)s",%(message)s', filename=log_file)
 
     print('Masking IDs {}'.format(args.mask))
     if args.device == 'slcan0':
