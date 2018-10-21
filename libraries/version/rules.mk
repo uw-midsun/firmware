@@ -48,11 +48,25 @@ ifneq ($(strip $(shell git status --porcelain 2>/dev/null)),)
   GIT_VERSION_DIRTY_STATUS := "dirty"
 endif
 
-# Add variables
-$(T)_CFLAGS += -DGIT_VERSION_COMMIT_HASH=\"$(GIT_VERSION_COMMIT_HASH)\" \
-                -DGIT_VERSION_DIRTY_STATUS=\"$(GIT_VERSION_DIRTY_STATUS)\"
-
-# Force the dependency to be rebuilt when the CFLAGS variables are updated
-$($(T)_SRC_ROOT)/git_version.c: .FORCE
-	@touch $@
-	@echo "Version: $(GIT_VERSION_COMMIT_HASH): $(GIT_VERSION_DIRTY_STATUS)"
+# Basically what we're doing here is generating a temporary file and then
+# comparing it against the current header. This is because Make can't track
+# changes to CFLAGS, and thus, we would have to touch the header each time.
+# This is an attempt at reducing the amount of time we spend rebuilding due to
+# changes in this header.
+#
+# If the header file is different, then we're going to replace it with the
+# newly generated header, which will trigger a rebuild.
+#
+# Otherwise, the header file is the same, and so we clean up the temporary
+# file, and no rebuild is necessary.
+$($(T)_DIR)/inc/git_version.h: .FORCE
+	@echo "Version: $(GIT_VERSION_COMMIT_HASH)-$(GIT_VERSION_DIRTY_STATUS)"
+	@echo "#pragma once" >| $(dir $@)/git_version_impl.h.tmp; \
+	echo "#define GIT_VERSION_COMMIT_HASH \"${GIT_VERSION_COMMIT_HASH}\"" >| $(dir $@)/git_version_impl.h.tmp; \
+	echo "#define GIT_VERSION_DIRTY_STATUS \"${GIT_VERSION_DIRTY_STATUS}\"" >> $(dir $@)/git_version_impl.h.tmp;
+	@if ! [ -f $(dir $@)/git_version_impl.h ] || ! cmp -s $(dir $@)/git_version_impl.h.tmp $(dir $@)/git_version_impl.h; then \
+		echo "Replacing git_version_impl.h"; \
+		mv $(dir $@)/git_version_impl.h.tmp $(dir $@)/git_version_impl.h; \
+	else \
+		rm -f $(dir $@)/git_version_impl.h.tmp; \
+	fi

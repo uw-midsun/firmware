@@ -1,5 +1,6 @@
 #include "git_version.h"
 
+#include "git_version_impl.h"
 #include "log.h"
 
 static const char s_commit_hash[] = GIT_VERSION_COMMIT_HASH;
