@@ -10,7 +10,7 @@ $(T)_DEPS := ms-common
 # GIT_VERSION_COMMIT_HASH is an 8-digit git commit hash
 GIT_VERSION_COMMIT_HASH := $(shell git rev-parse --short HEAD)
 # GIT_VERSION_DIRTY_STATUS denotes whether or not the tree is dirty
-GIT_VERSION_DIRTY_STATUS := ""
+GIT_VERSION_DIRTY_STATUS := "clean"
 
 # We define a tree as "dirty" if there exist any possible changes that might
 # affect our build outputs. Formally, the tree is considered "dirty" if there
@@ -20,10 +20,12 @@ GIT_VERSION_DIRTY_STATUS := ""
 # 2. Unstaged changes
 # 3. Untracked changes in files that are not ignored
 #
-# Theoretically, we should just be able to get away with running the porcelain
-# version of git status.
+# This is so we don't need to parse the dependencies of each project and their
+# transitive dependencies.
 #
-# Otherwise, we can do the same thing, but with plumbing commands.
+# Theoretically, we should just be able to get away with running the porcelain
+# version of git status. Otherwise, we can do the same thing, but with plumbing
+# commands.
 #
 # Staged changes
 # git diff-index --quiet --cached HEAD --
@@ -49,3 +51,8 @@ endif
 # Add variables
 $(T)_CFLAGS += -DGIT_VERSION_COMMIT_HASH=\"$(GIT_VERSION_COMMIT_HASH)\" \
                 -DGIT_VERSION_DIRTY_STATUS=\"$(GIT_VERSION_DIRTY_STATUS)\"
+
+# Force the dependency to be rebuilt when the CFLAGS variables are updated
+$($(T)_SRC_ROOT)/git_version.c: .FORCE
+	@touch $@
+	@echo "Version: $(GIT_VERSION_COMMIT_HASH): $(GIT_VERSION_DIRTY_STATUS)"
