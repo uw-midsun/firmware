@@ -5,7 +5,7 @@
 # $(T)_INC_DIRS: $(T)_DIR/inc{/$(PLATFORM)}
 # $(T)_SRC: $(T)_DIR/src{/$(PLATFORM)}/*.{c,s}
 
-$(T)_DEPS := ms-common
+$(T)_DEPS :=
 
 # GIT_VERSION_COMMIT_HASH is an 8-digit git commit hash
 GIT_VERSION_COMMIT_HASH := $(shell git rev-parse --short HEAD)
