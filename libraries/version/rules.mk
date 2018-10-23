@@ -62,7 +62,7 @@ endif
 $($(T)_DIR)/inc/git_version_impl.h: .FORCE
 	@echo "Version: $(GIT_VERSION_COMMIT_HASH)-$(GIT_VERSION_DIRTY_STATUS)"
 	@echo "#pragma once" >| $(dir $@)/git_version_impl.h.tmp; \
-	echo "#define GIT_VERSION_COMMIT_HASH \"${GIT_VERSION_COMMIT_HASH}\"" >| $(dir $@)/git_version_impl.h.tmp; \
+	echo "#define GIT_VERSION_COMMIT_HASH \"${GIT_VERSION_COMMIT_HASH}\"" >> $(dir $@)/git_version_impl.h.tmp; \
 	echo "#define GIT_VERSION_DIRTY_STATUS \"${GIT_VERSION_DIRTY_STATUS}\"" >> $(dir $@)/git_version_impl.h.tmp;
 	@if ! [ -f $(dir $@)/git_version_impl.h ] || ! cmp -s $(dir $@)/git_version_impl.h.tmp $(dir $@)/git_version_impl.h; then \
 		echo "Replacing git_version_impl.h"; \
