@@ -59,7 +59,7 @@ endif
 #
 # Otherwise, the header file is the same, and so we clean up the temporary
 # file, and no rebuild is necessary.
-$($(T)_DIR)/inc/git_version.h: .FORCE
+$($(T)_DIR)/inc/git_version_impl.h: .FORCE
 	@echo "Version: $(GIT_VERSION_COMMIT_HASH)-$(GIT_VERSION_DIRTY_STATUS)"
 	@echo "#pragma once" >| $(dir $@)/git_version_impl.h.tmp; \
 	echo "#define GIT_VERSION_COMMIT_HASH \"${GIT_VERSION_COMMIT_HASH}\"" >| $(dir $@)/git_version_impl.h.tmp; \
@@ -70,3 +70,5 @@ $($(T)_DIR)/inc/git_version.h: .FORCE
 	else \
 		rm -f $(dir $@)/git_version_impl.h.tmp; \
 	fi
+
+$($(T)_OBJ_ROOT)/git_version.o: $($(T)_DIR)/inc/git_version_impl.h $($(T)_DIR)/inc/git_version.h
