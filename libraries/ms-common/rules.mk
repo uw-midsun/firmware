@@ -5,7 +5,7 @@
 # $(T)_INC_DIRS: $(T)_DIR/inc{/$(PLATFORM)}
 # $(T)_SRC: $(T)_DIR/src{/$(PLATFORM)}/*.{c,s}
 
-$(T)_DEPS := $(PLATFORM_LIB) libcore version
+$(T)_DEPS := $(PLATFORM_LIB) libcore
 
 ifeq (x86,$(PLATFORM))
 $(T)_EXCLUDE_TESTS := adc pwm
