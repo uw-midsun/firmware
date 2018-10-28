@@ -24,15 +24,15 @@ static void prv_bus_measurement_rx(const GenericCanMsg *msg, void *context) {
 
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
     if (can_id.device_id == storage->settings.ids[i].motor_controller) {
-      storage->bus_measurement[i].bus_voltage = (int16_t)(can_data.bus_measurement.bus_voltage);
-      storage->bus_measurement[i].bus_current = (int16_t)(can_data.bus_measurement.bus_current);
+      storage->bus_measurement[i].bus_voltage = (int16_t)(can_data.bus_measurement.bus_voltage_v);
+      storage->bus_measurement[i].bus_current = (int16_t)(can_data.bus_measurement.bus_current_a);
       storage->bus_rx_bitset |= 1 << i;
 
       if (i == 0) {
         // This controller is deemed to be the source of truth during cruise - copy setpoint
         storage->cruise_current_percentage =
-            fabsf(can_data.bus_measurement.bus_current / storage->settings.max_bus_current);
-        storage->cruise_is_braking = (can_data.bus_measurement.bus_current < 0.0f);
+            fabsf(can_data.bus_measurement.bus_current_a / storage->settings.max_bus_current);
+        storage->cruise_is_braking = (can_data.bus_measurement.bus_current_a < 0.0f);
       }
     }
   }

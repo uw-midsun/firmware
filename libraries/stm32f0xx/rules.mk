@@ -7,7 +7,7 @@
 
 # This library glues the standard peripheral and CMSIS libraries together
 # and includes the startup file.
-$(T)_DEPS := STM32F0xx_StdPeriph_Driver
+$(T)_DEPS := STM32F0xx_StdPeriph_Driver version
 
 # Specifies library specific build flags
 $(T)_CFLAGS += -ffreestanding -nostdlib
