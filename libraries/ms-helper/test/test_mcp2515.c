@@ -50,7 +50,7 @@ void setup_test(void) {
     .cs = { .port = GPIO_PORT_A, 4 },
     .int_pin = { .port = GPIO_PORT_A, 3 },
 
-    .loopback = true,
+    .loopback = false,
     .rx_cb = prv_handle_rx,
     .context = NULL,
   };

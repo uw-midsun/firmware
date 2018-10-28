@@ -2,14 +2,6 @@
 
 #define MC_CFG_CAN_BITRATE CAN_HW_BITRATE_500KBPS
 
-#define MC_CFG_CAN_UART_PORT UART_PORT_3
-#define MC_CFG_CAN_UART_TX \
-  { .port = GPIO_PORT_B, .pin = 10 }
-#define MC_CFG_CAN_UART_RX \
-  { .port = GPIO_PORT_B, .pin = 11 }
-#define MC_CFG_CAN_UART_ALTFN GPIO_ALTFN_4
-#define MC_CFG_CAN_UART_BAUDRATE 115200
-
 #define MC_CFG_RELAY_LEFT \
   { .port = GPIO_PORT_B, .pin = 3 }
 #define MC_CFG_RELAY_RIGHT \
@@ -21,3 +13,18 @@
 #define MC_CFG_MOTOR_CAN_ID_MC_LEFT 0x03
 #define MC_CFG_MOTOR_CAN_ID_MC_RIGHT 0x04
 #define MC_CFG_MOTOR_MAX_BUS_CURRENT 65.0f
+
+#define MC_CFG_CAN_SPI_PORT SPI_PORT_2
+#define MC_CFG_CAN_SPI_BAUDRATE 6000000
+#define MC_CFG_CAN_SPI_MOSI \
+  { .port = GPIO_PORT_B, 15 }
+#define MC_CFG_CAN_SPI_MISO \
+  { .port = GPIO_PORT_B, 14 }
+#define MC_CFG_CAN_SPI_SCLK \
+  { .port = GPIO_PORT_B, 14 }
+#define MC_CFG_CAN_SPI_CS \
+  { .port = GPIO_PORT_B, 12 }
+#define MC_CFG_CAN_SPI_INIT_PIN \
+  { .port = GPIO_PORT_A, 8 }
+
+#define MC_CFG_CAN_HEARTBEAT_PERIOD_S 1

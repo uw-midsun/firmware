@@ -53,7 +53,7 @@ def dump_msg(can_id, data):
     unpacked = struct.unpack(fmt, data)
     try:
         data_str = '({:.4f}, {:.4f})'.format(*unpacked)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, IndexError):
         data_str = unpacked
     print('Msg {} from {} 0x{:02x} - {}: {}'.format(msg_id, friendly_type, device_id,
                                                     name, data_str))
@@ -73,6 +73,7 @@ def main():
         if length == 8:
             dump_msg(can_id, data)
         else:
+            data = int.from_bytes(data, 'litte')
             print('RX id: 0x{:03x} data: 0x{:08x} (dlc {})'.format(can_id, data, length))
 
 if __name__ == '__main__':

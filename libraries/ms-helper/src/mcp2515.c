@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <string.h>
 #include "critical_section.h"
+#include "delay.h"
 #include "gpio_it.h"
 #include "log.h"
 #include "mcp2515_defs.h"
@@ -110,6 +111,10 @@ static void prv_handle_error(Mcp2515Storage *storage, uint8_t int_flags) {
     prv_write(storage, MCP2515_CTRL_REG_EFLG, &clear, 1);
     prv_write(storage, MCP2515_CTRL_REG_TEC, &clear, 1);
     prv_write(storage, MCP2515_CTRL_REG_REC, &clear, 1);
+
+    // Why are we doing this?
+    prv_bit_modify(storage, MCP2515_CTRL_REG_CANINTF | MCP2515_CANINT_MSG_ERROR,
+                   MCP2515_CANINT_EFLAG | MCP2515_CANINT_MSG_ERROR, 0);
   }
 }
 
@@ -122,12 +127,17 @@ static void prv_handle_int(const GpioAddress *address, void *context) {
   // Either RX or error
   prv_handle_rx(storage, int_flags);
   prv_handle_error(storage, int_flags);
+
+  uint8_t clear = 0x00;
+  prv_write(storage, MCP2515_CTRL_REG_CANINTF, &clear, 1);
 }
 
 StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings) {
   storage->spi_port = settings->spi_port;
   storage->rx_cb = settings->rx_cb;
   storage->context = settings->context;
+  storage->int_pin = settings->int_pin;
+  storage->settings = *settings;
 
   const SpiSettings spi_settings = {
     .baudrate = settings->baudrate,
@@ -137,6 +147,7 @@ StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings
     .sclk = settings->sclk,
     .cs = settings->cs,
   };
+
   status_ok_or_return(spi_init(settings->spi_port, &spi_settings));
 
   prv_reset(storage);
@@ -156,10 +167,13 @@ StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings
   // EFLG: clear all error flags
   const uint8_t registers[] = {
     0x05, MCP2515_CNF2_BTLMODE_CNF3 | MCP2515_CNF2_SAMPLE_3X | (0x07 << 3),
-    0x00, MCP2515_CANINT_EFLAG | MCP2515_CANINT_RX1IE | MCP2515_CANINT_RX0IE,
+    0x01, MCP2515_CANINT_EFLAG | MCP2515_CANINT_RX1IE | MCP2515_CANINT_RX0IE,
     0x00, 0x00,
   };
   prv_write(storage, MCP2515_CTRL_REG_CNF3, registers, SIZEOF_ARRAY(registers));
+
+  prv_bit_modify(storage, MCP2515_CTRL_REG_RXB0CTRL, MCP2515_RXB0CTRL_BUKT_MASK,
+                 MCP2515_RXB0CTRL_BUKT_ROLLOVER);
 
   // Leave config mode
   uint8_t opmode =
@@ -171,15 +185,13 @@ StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings
     .direction = GPIO_DIR_IN,
   };
   status_ok_or_return(gpio_init_pin(&settings->int_pin, &gpio_settings));
-  const InterruptSettings it_settings = {
-    .type = INTERRUPT_TYPE_INTERRUPT,
-    .priority = INTERRUPT_PRIORITY_NORMAL,
-  };
-  return gpio_it_register_interrupt(&settings->int_pin, &it_settings, INTERRUPT_EDGE_FALLING,
-                                    prv_handle_int, storage);
+
+  return STATUS_CODE_OK;
 }
 
 StatusCode mcp2515_register_rx_cb(Mcp2515Storage *storage, Mcp2515RxCb rx_cb, void *context) {
+  CRITICAL_SECTION_AUTOEND;
+
   bool disabled = critical_section_start();
   storage->rx_cb = rx_cb;
   storage->context = context;
@@ -237,4 +249,18 @@ StatusCode mcp2515_tx(Mcp2515Storage *storage, uint32_t id, bool extended, uint6
   spi_exchange(storage->spi_port, send_payload, sizeof(send_payload), NULL, 0);
 
   return STATUS_CODE_OK;
+}
+
+void mcp2515_poll(Mcp2515Storage *storage) {
+  GpioState state = NUM_GPIO_STATES;
+  gpio_get_state(&storage->int_pin, &state);
+
+  if (state == GPIO_STATE_LOW) {
+    prv_handle_int(&storage->int_pin, storage);
+  }
+}
+
+StatusCode mcp2515_reset(Mcp2515Storage *storage) {
+  Mcp2515Settings settings = storage->settings;
+  return mcp2515_init(storage, &settings);
 }

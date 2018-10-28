@@ -3,6 +3,7 @@
 #include "can.h"
 #include "can_transmit.h"
 #include "can_unpack.h"
+#include "log.h"
 
 static StatusCode prv_handle_drive(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   MotorControllerStorage *controller = context;
@@ -18,10 +19,10 @@ static StatusCode prv_handle_drive(const CanMessage *msg, void *context, CanAckS
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  if (mech_brake > EE_DRIVE_OUTPUT_MECH_THRESHOLD) {
-    // Mechanical brake is active - force into coast/regen
-    motor_controller_set_throttle(controller, MIN(0, pedal), direction);
-  } else if (cruise > 0) {
+  // if (mech_brake > EE_DRIVE_OUTPUT_MECH_THRESHOLD) {
+  // Mechanical brake is active - force into coast/regen
+  // motor_controller_set_throttle(controller, MIN(0, pedal), direction);
+  if (cruise > 0) {
     // Enter cruise state
     motor_controller_set_cruise(controller, cruise);
   } else {
