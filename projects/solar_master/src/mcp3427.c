@@ -47,20 +47,22 @@ static void prv_channel_ready(struct FSM *fsm, const Event *e, void *context) {
   Mcp3427Storage *storage = (Mcp3427Storage *)context;
   uint8_t read_data[MCP3427_NUM_DATA_BYTES] = { 0 };
   StatusCode status = i2c_read(storage->port, storage->addr, read_data, MCP3427_NUM_DATA_BYTES);
-  // The first byte is the config/status byte. It contains the ready bit.
-  uint8_t config = read_data[0];
+  // The third byte is the config/status byte. It contains the ready bit.
+  uint8_t config = read_data[2];
   // If the latest data is not ready, we log it.
-  if (!(config & MCP3427_RDY_MASK)) {
-    LOG_WARN("Ready bit not cleared. Data may not be the latest data available.");
+  if (config & MCP3427_RDY_MASK) {
+    LOG_WARN("Ready bit not cleared. Data may not be the latest data available.\n");
     if (storage->fault_callback != NULL) {
       storage->fault_callback(storage->fault_context);
     }
     event_raise(storage->data_trigger_event, 0);
     return;
   }
-  // The second and third byte contain latest ADC value.
-  uint16_t sensor_data = read_data[2] | (read_data[1] << 8);
-  sensor_data |= s_data_mask_lookup[storage->sample_rate];
+
+  // The first and second bytes contain latest ADC value.
+  // The appropriate number of bits is taken, depending on the sample rate.
+  uint16_t sensor_data = (read_data[0] << 8) | read_data[1];
+  sensor_data &= s_data_mask_lookup[storage->sample_rate];
 
   uint8_t current_channel =
       (storage->config & (1 << MCP3427_CH_SEL_OFFSET)) >> MCP3427_CH_SEL_OFFSET;
@@ -80,6 +82,7 @@ static void prv_channel_ready(struct FSM *fsm, const Event *e, void *context) {
 static void prv_channel_trigger(struct FSM *fsm, const Event *e, void *context) {
   Mcp3427Storage *storage = (Mcp3427Storage *)context;
   // We want to trigger a read. So we set the ready bit.
+  // If operating in continuous conversion mode, setting this bit has no effect.
   uint8_t config = storage->config;
   config |= MCP3427_RDY_MASK;
   // Setting the current channel we want to read from. We just flip it from the

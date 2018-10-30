@@ -5,21 +5,25 @@
 
 #include <stdio.h>
 #include <stddef.h>
+#include <stdbool.h>
 #include "ads1015.h"
 #include "ads1015_def.h"
+//#include "solar_master_relay.h"
+#include "solar_master_event.h"
+#include "exported_enums.h"
+#include "event_queue.h"
 #include "log.h"
 
 #define SOLAR_MASTER_CURRENT_CHANNEL 0
 
-// Temporary - will be adjusted by temperature in future
+// TODO: Adjust by temperature??
 #define SOLAR_MASTER_CURRENT_GRADIENT 264
-#define SOLAR_MASTER_CURRENT_INTERCEPT 260
+#define SOLAR_MASTER_CURRENT_INTERCEPT 336
 
 #define SOLAR_MASTER_CURRENT_I2C_BUS_PORT I2C_PORT_1
 #define SOLAR_MASTER_CURRENT_ADC_ADDR 0 // ?????
 
 #define SOLAR_MASTER_CURRENT_SAMPLE_SIZE 100
-
 
 #define CURRENT_ADC_READY_PIN \
   { GPIO_PORT_A, 4 }
@@ -29,6 +33,8 @@ typedef struct SolarMasterCurrent {
   int16_t averaging[SOLAR_MASTER_CURRENT_SAMPLE_SIZE];
   int16_t lastAverage;
   uint16_t counter;
+  uint16_t zero_point;
+  bool calibrated;
 } SolarMasterCurrent;
 
 // Registers callbacks for analog inputs. |ads1015| should be initialized.

@@ -37,8 +37,8 @@ static SolarMasterCanStorage s_solar_master_can_storage = { 0 };
 static Ads1015Storage s_current_ads1015 = { 0 };
 static SolarMasterCurrent s_current_storage = { 0 };
 
-static Mcp3427Storage s_voltage_mcp3427 = { 0 };
-static SolarMasterSlave s_voltage_storage = { 0 };
+static Mcp3427Storage s_slave_mcp3427 = { 0 };
+static SolarMasterSlave s_slave_storage = { 0 };
 
 int main(void) {
   // TODO(ELEC-502): Add I2C high speed support to the driver.
@@ -49,18 +49,18 @@ int main(void) {
   };
 
   const I2CSettings current_i2c_settings = {
-    .speed = I2C_SPEED_STANDARD,      //
+    .speed = I2C_SPEED_STANDARD,       //
     .sda = SOLAR_CURRENT_I2C_BUS_SDA,  //
     .scl = SOLAR_CURRENT_I2C_BUS_SCL,  //
   };
 
-  const Mcp3427Setting voltage_mcp3427_settings = {
-    .sample_rate = MCP3427_SAMPLE_RATE_16_BIT,
-    .Adr0 = MCP3427_PIN_STATE_LOW, // ??
-    .Adr1 = MCP3427_PIN_STATE_LOW, // ?,
+  const Mcp3427Setting slave_mcp3427_settings = {
+    .sample_rate = MCP3427_SAMPLE_RATE_12_BIT,
+    .Adr0 = MCP3427_PIN_STATE_FLOAT,
+    .Adr1 = MCP3427_PIN_STATE_FLOAT, 
     .amplifier_gain = MCP3427_AMP_GAIN_1,
     .conversion_mode = MCP3427_CONVERSION_MODE_CONTINUOUS,
-    .port = I2C_PORT_1,
+    .port = I2C_PORT_2,
   };
 
   CANSettings can_settings = {
@@ -92,7 +92,16 @@ int main(void) {
   i2c_init(config->slave_i2c_port, &slave_i2c_settings);
   i2c_init(config->current_i2c_port, &current_i2c_settings);
 
-  StatusCode status = solar_master_relay_init();
+  // TODO(ELEC-502): unify constants
+  // Initialize current sense ADC
+  GPIOAddress current_ready_pin = CURRENT_ADC_READY_PIN;
+  ads1015_init(&s_current_ads1015, SOLAR_MASTER_CURRENT_I2C_BUS_PORT, SOLAR_MASTER_CURRENT_ADC_ADDR, &current_ready_pin);
+  StatusCode status = solar_master_current_init(&s_current_storage, &s_current_ads1015);
+  if (!status_ok(status)) {
+    LOG_DEBUG("Error initializing Solar Master Current.\n");
+  }
+
+  status = solar_master_relay_init();
 
   if (!status_ok(status)) {
     LOG_DEBUG("Error initializing Solar Master Relay.\n");
@@ -107,24 +116,14 @@ int main(void) {
     LOG_DEBUG("Error initializing Solar Master CAN.\n");
   }
 
-  // TODO(ELEC-502): unify constants
-  // Initialize current sense ADC
-  GPIOAddress current_ready_pin = CURRENT_ADC_READY_PIN;
-  ads1015_init(&s_current_ads1015, SOLAR_MASTER_CURRENT_I2C_BUS_PORT, SOLAR_MASTER_CURRENT_ADC_ADDR, &current_ready_pin);
-  status = solar_master_current_init(&s_current_storage, &s_current_ads1015);
+  
 
-  if (!status_ok(status)) {
-    LOG_DEBUG("Error initializing Solar Master Current.\n");
-  }
-
-  // Initialize voltage reading adc
-  status = mcp3427_init(&s_voltage_mcp3427, &voltage_mcp3427_settings);
+  // Initialize voltage/temp (slave) reading adc
+  //status = mcp3427_init(&s_slave_mcp3427, &slave_mcp3427_settings);
   if (!status_ok(status)) {
     LOG_DEBUG("Error initializing Solar Master Slave adc.\n");
-    LOG_DEBUG("CODE: %i\n", (int)status);
   }
-
-  status = solar_master_slave_init(&s_voltage_storage, &s_voltage_mcp3427);
+  //status = solar_master_slave_init(&s_slave_storage, &s_slave_mcp3427);
   if (!status_ok(status)) {
     LOG_DEBUG("Error initializing Solar Master Slave.\n");
   }
@@ -134,7 +133,7 @@ int main(void) {
     while (event_process(&e) == STATUS_CODE_OK) {
       can_process_event(&e);
       solar_master_relay_process_event(&e);
-      // TODO(ELEC-502): Add ADC drivers' FSM process event here.
+      fsm_process_event(&(s_slave_mcp3427.fsm), &e);
       // TODO(ELEC-502): Add can process event here.
     }
     wait();

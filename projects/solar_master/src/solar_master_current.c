@@ -13,7 +13,13 @@ static void prv_current_read_cb(Ads1015Channel channel, void *context) {
       current_measurement += current->averaging[i];
     }
 
-    current_measurement =  ((current_measurement/SOLAR_MASTER_CURRENT_SAMPLE_SIZE) - SOLAR_MASTER_CURRENT_INTERCEPT) / SOLAR_MASTER_CURRENT_GRADIENT;
+    if (current->zero_point == 0) {
+      LOG_DEBUG("WEE\n");
+      current->zero_point = current_measurement / SOLAR_MASTER_CURRENT_SAMPLE_SIZE;
+      event_raise(SOLAR_MASTER_EVENT_RELAY_STATE, EE_CHARGER_SET_RELAY_STATE_CLOSE);
+    }
+
+    current_measurement =  ((current_measurement/SOLAR_MASTER_CURRENT_SAMPLE_SIZE) - current->zero_point) / SOLAR_MASTER_CURRENT_GRADIENT;
 
     LOG_DEBUG("Reading: %i Current: %i mA\n", reading, (int16_t)(current_measurement*1000));
     // event_raise(SOLAR_MASTER_EVENT_CURRENT, reading);
