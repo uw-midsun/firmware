@@ -54,7 +54,7 @@ program: $(TARGET_BINARY:$(PLATFORM_EXT)=.bin)
 
 gdb: $(TARGET_BINARY)
 	@pkill $(OPENOCD) || true
-	@setsid $(OPENOCD) $(OPENOCD_CFG) > test.txt 2>&1 &
+	@setsid $(OPENOCD) $(OPENOCD_CFG) > /dev/null 2>&1 &
 	@$(GDB) $< -x "$(SCRIPT_DIR)/gdb_flash"
 	@pkill $(OPENOCD)
 
