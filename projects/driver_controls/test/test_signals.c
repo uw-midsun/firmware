@@ -138,8 +138,8 @@ void test_signals_turn(void) {
 
 void test_signals_headlights(void) {
   TestSignalsExpectedLight expected_lights[] = {
-    { .type = EE_LIGHT_TYPE_DRL, .state = EE_LIGHT_STATE_ON },
-    { .type = EE_LIGHT_TYPE_LOW_BEAMS, .state = EE_LIGHT_STATE_OFF },
+    { .type = EE_LIGHT_TYPE_DRL, .state = EE_LIGHT_STATE_OFF },
+    { .type = EE_LIGHT_TYPE_LOW_BEAMS, .state = EE_LIGHT_STATE_ON },
     { .type = EE_LIGHT_TYPE_HIGH_BEAMS, .state = EE_LIGHT_STATE_OFF },
   };
 

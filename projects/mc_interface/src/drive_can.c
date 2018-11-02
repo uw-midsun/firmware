@@ -18,7 +18,7 @@ static StatusCode prv_handle_drive(const CanMessage *msg, void *context, CanAckS
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  if (mech_brake > EE_DRIVE_OUTPUT_MECH_THRESHOLD) {
+  if (mech_brake > EE_DRIVE_OUTPUT_MECH_BRAKE_THRESHOLD) {
     // Mechanical brake is active - force into coast/regen
     motor_controller_set_throttle(controller, MIN(0, pedal), direction);
   } else if (cruise > 0) {

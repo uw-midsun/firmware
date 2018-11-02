@@ -2,22 +2,22 @@
 #include "input_event.h"
 #include "log.h"
 // Inputs are as follows:
-// * A0: Drive
-// * A1: Neutral
-// * A2: Reverse
-// * A3: DRLs
-// * A4: Lowbeams
-// * A5: Hazards
-// * A6: Power
+// * A0: Power
+// * A1: Drive
+// * A2: Neutral
+// * A3: Reverse
+// * A4: DRLs
+// * A5: Lowbeams
+// * A6: Hazards
 
 static const EventId s_events[NUM_CENTER_CONSOLE_INPUTS] = {
+  INPUT_EVENT_CENTER_CONSOLE_POWER,
   INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE,
   INPUT_EVENT_CENTER_CONSOLE_DIRECTION_NEUTRAL,
   INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE,
   INPUT_EVENT_CENTER_CONSOLE_DRL,
   INPUT_EVENT_CENTER_CONSOLE_LOWBEAMS,
   INPUT_EVENT_CENTER_CONSOLE_HAZARDS_RELEASED,
-  INPUT_EVENT_CENTER_CONSOLE_POWER,
 };
 
 static void prv_raise_event_cb(GpioExpanderPin pin, GpioState state, void *context) {
@@ -37,140 +37,13 @@ static void prv_raise_event_cb(GpioExpanderPin pin, GpioState state, void *conte
   }
 }
 
-static bool prv_handle_power_state(CenterConsoleStorage *storage, const Event *e) {
-  GpioState output_states[NUM_CENTER_CONSOLE_OUTPUTS] = { 0 };
-  GpioState charge_led = GPIO_STATE_HIGH;
-  // Power update - reset all LEDs
-  for (size_t i = 0; i < NUM_CENTER_CONSOLE_OUTPUTS; i++) {
-    output_states[i] = GPIO_STATE_HIGH;
-  }
+StatusCode center_console_init(CenterConsoleStorage *storage, GpioExpanderStorage *expander) {
+  const GpioSettings gpio_settings = { .direction = GPIO_DIR_IN };
 
-  switch (e->id) {
-    case INPUT_EVENT_POWER_STATE_OFF:
-      // Power off - no LEDs should be on
-      break;
-    case INPUT_EVENT_POWER_STATE_FAULT:
-      // Fault LED on
-      output_states[CENTER_CONSOLE_OUTPUT_BPS_FAULT_LED] = GPIO_STATE_LOW;
-      break;
-    case INPUT_EVENT_POWER_STATE_CHARGE:
-      charge_led = GPIO_STATE_LOW;
-      // Fall-though - power LED should also be on
-    case INPUT_EVENT_POWER_STATE_DRIVE:
-      // Power LED on
-      output_states[CENTER_CONSOLE_OUTPUT_POWER_LED] = GPIO_STATE_LOW;
-      break;
-    default:
-      // Unrecognized ID
-      return false;
-  }
-
-  for (size_t i = 0; i < NUM_CENTER_CONSOLE_OUTPUTS; i++) {
-    gpio_expander_set_state(storage->output_expander, i, output_states[i]);
-  }
-
-  gpio_expander_set_state(storage->input_expander, GPIO_EXPANDER_PIN_7, charge_led);
-  return true;
-}
-
-static bool prv_handle_direction(CenterConsoleStorage *storage, const Event *e) {
-  GpioState drive_led = GPIO_STATE_HIGH, neutral_led = GPIO_STATE_HIGH,
-            reverse_led = GPIO_STATE_HIGH;
-  switch (e->id) {
-    case INPUT_EVENT_DIRECTION_STATE_FORWARD:
-      drive_led = GPIO_STATE_LOW;
-      break;
-    case INPUT_EVENT_DIRECTION_STATE_NEUTRAL:
-      neutral_led = GPIO_STATE_LOW;
-      break;
-    case INPUT_EVENT_DIRECTION_STATE_REVERSE:
-      reverse_led = GPIO_STATE_LOW;
-      break;
-    default:
-      // Unrecognized ID
-      return false;
-  }
-
-  gpio_expander_set_state(storage->output_expander, CENTER_CONSOLE_OUTPUT_DRIVE_LED, drive_led);
-  gpio_expander_set_state(storage->output_expander, CENTER_CONSOLE_OUTPUT_NEUTRAL_LED, neutral_led);
-  gpio_expander_set_state(storage->output_expander, CENTER_CONSOLE_OUTPUT_REVERSE_LED, reverse_led);
-  return true;
-}
-
-static bool prv_handle_headlights(CenterConsoleStorage *storage, const Event *e) {
-  GpioState drl_led = GPIO_STATE_HIGH, lowbeam_led = GPIO_STATE_HIGH;
-  switch (e->id) {
-    case INPUT_EVENT_HEADLIGHT_STATE_DRL:
-      drl_led = GPIO_STATE_LOW;
-      break;
-    case INPUT_EVENT_HEADLIGHT_STATE_LOWBEAM:
-      lowbeam_led = GPIO_STATE_LOW;
-      break;
-    case INPUT_EVENT_HEADLIGHT_STATE_HIGHBEAM:
-    case INPUT_EVENT_HEADLIGHT_STATE_OFF:
-      // Highbeam has no indicator, but turn off the DRL and lowbeam indicators
-      break;
-    default:
-      // Unrecognized ID
-      return false;
-  }
-
-  // Set the states
-  gpio_expander_set_state(storage->output_expander, CENTER_CONSOLE_OUTPUT_DRL_LED, drl_led);
-  gpio_expander_set_state(storage->output_expander, CENTER_CONSOLE_OUTPUT_LOWBEAM_LED, lowbeam_led);
-  return true;
-}
-
-static bool prv_handle_hazards(CenterConsoleStorage *storage, const Event *e) {
-  if (e->id != INPUT_EVENT_HAZARDS_STATE_ON && e->id != INPUT_EVENT_HAZARDS_STATE_OFF) {
-    return false;
-  }
-
-  // If the hazards are ON then set the GPIO state to high, low otherwise
-  GpioState state = (e->id == INPUT_EVENT_HAZARDS_STATE_ON) ? GPIO_STATE_HIGH : GPIO_STATE_LOW;
-  gpio_expander_set_state(storage->output_expander, CENTER_CONSOLE_OUTPUT_HAZARDS_LED, state);
-  return true;
-}
-
-StatusCode center_console_init(CenterConsoleStorage *storage, GpioExpanderStorage *input_expander,
-                               GpioExpanderStorage *output_expander) {
-  if (storage == NULL || input_expander == NULL || output_expander == NULL) {
-    return status_code(STATUS_CODE_INVALID_ARGS);
-  }
-
-  storage->output_expander = output_expander;
-  storage->input_expander = input_expander;
-
-  const GpioSettings in_settings = { .direction = GPIO_DIR_IN, .resistor = GPIO_RES_PULLUP };
-  const GpioSettings out_settings = { .direction = GPIO_DIR_OUT, .state = GPIO_STATE_HIGH };
-
-  // Init all the pins (register callbacks as well) for all the input pins
   for (size_t i = 0; i < NUM_CENTER_CONSOLE_INPUTS; i++) {
-    status_ok_or_return(gpio_expander_init_pin(input_expander, i, &in_settings));
-    status_ok_or_return(
-        gpio_expander_register_callback(input_expander, i, prv_raise_event_cb, storage));
+    gpio_expander_init_pin(expander, i, &gpio_settings);
+    gpio_expander_register_callback(expander, i, prv_raise_event_cb, storage);
   }
 
-  // Init all the pins based on number of console outputs
-  for (size_t i = 0; i < NUM_CENTER_CONSOLE_OUTPUTS; i++) {
-    status_ok_or_return(gpio_expander_init_pin(output_expander, i, &out_settings));
-  }
-
-  gpio_expander_init_pin(input_expander, GPIO_EXPANDER_PIN_7, &out_settings);
   return STATUS_CODE_OK;
-}
-
-bool center_console_process_event(CenterConsoleStorage *storage, const Event *e) {
-  if (storage == NULL) {
-    return false;
-  }
-
-  // If any of the handle functions failed, then return false
-  bool processed = false;
-  processed |= prv_handle_power_state(storage, e);
-  processed |= prv_handle_direction(storage, e);
-  processed |= prv_handle_headlights(storage, e);
-  processed |= prv_handle_hazards(storage, e);
-
-  return processed;
 }

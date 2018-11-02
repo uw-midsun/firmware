@@ -107,9 +107,9 @@ int main(void) {
   can_add_filter(SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY);
 
   const I2CSettings i2c_settings = {
-    .speed = I2C_SPEED_FAST,    //
-    .sda = DC_CFG_I2C_BUS_SDA,  //
-    .scl = DC_CFG_I2C_BUS_SCL,  //
+    .speed = I2C_SPEED_STANDARD,  //
+    .sda = DC_CFG_I2C_BUS_SDA,    //
+    .scl = DC_CFG_I2C_BUS_SCL,    //
   };
 
   i2c_init(DC_CFG_I2C_BUS_PORT, &i2c_settings);
@@ -139,7 +139,8 @@ int main(void) {
 
   const MechBrakeSettings mech_brake_settings = {
     .ads1015 = &s_pedal_ads1015,
-    .brake_pressed_threshold_percentage = 70,
+    .brake_pressed_threshold_percentage = EE_DRIVE_OUTPUT_MECH_BRAKE_PERCENTAGE + 5,
+    .brake_unpressed_threshold_percentage = EE_DRIVE_OUTPUT_MECH_BRAKE_PERCENTAGE - 5,
     .bounds_tolerance_percentage = 10,
     .channel = ADS1015_CHANNEL_2,
   };
@@ -185,10 +186,9 @@ int main(void) {
         case INPUT_EVENT_DRIVE_UPDATE_REQUESTED:
         case INPUT_EVENT_CAN_RX:
         case INPUT_EVENT_CAN_TX:
-        case INPUT_EVENT_MECHANICAL_BRAKE_PRESSED:
         case INPUT_EVENT_MECHANICAL_BRAKE_RELEASED:
+        case INPUT_EVENT_MECHANICAL_BRAKE_PRESSED:
         case INPUT_EVENT_SPEED_UPDATE:
-        case INPUT_EVENT_PEDAL_FAULT:
           break;
         default:
           LOG_DEBUG("e %d %d\n", e.id, e.data);
@@ -196,7 +196,10 @@ int main(void) {
 #endif
       can_process_event(&e);
       power_distribution_controller_retry(&e);
+      cruise_handle_event(cruise_global(), &e);
       event_arbiter_process_event(&s_event_arbiter, &e);
+      brake_signal_process_event(&e);
+      // center_console_process_event(&s_console, &e);
     }
   }
 }
