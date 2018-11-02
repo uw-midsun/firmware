@@ -38,6 +38,7 @@ typedef struct DriverDisplayBrightnessStorage {
   DriverDisplayBrightnessCalibrationData *calibration_data;
   AdcChannel adc_channel;
   volatile bool reading_ok_flag;
+  volatile uint16_t previous_percent_reading[NUM_DRIVER_DISPLAY_BRIGHTNESS_SCREENS];
 } DriverDisplayBrightnessStorage;
 
 // Initializes the brightness module

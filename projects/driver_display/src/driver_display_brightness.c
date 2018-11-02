@@ -32,6 +32,20 @@ static void prv_timer_callback(SoftTimerId timer_id, void *context) {
   // Currently all screens are controlled by single photo sensor (they will have synchronized
   // brightness levels)
   StatusCode secondary_status = pwm_set_dc(storage->settings->timer, percent_reading);
+  // Uncomment for some smooth brightness
+  for (uint8_t i = 1; i <= 10; i++) {
+    for (uint8_t i = 0; i < NUM_DRIVER_DISPLAY_BRIGHTNESS_SCREENS; i++) {
+      int16_t interval = (percent_reading - storage->previous_percent_reading[i]) / 10;
+      StatusCode secondary_status =
+          pwm_set_dc(storage->settings->timer, storage->previous_percent_reading[i] + interval * i);
+    }
+  }
+
+  // Record previous brightness for next brightness adjustment
+  for (uint8_t i = 0; i < NUM_DRIVER_DISPLAY_BRIGHTNESS_SCREENS; i++) {
+    storage->previous_percent_reading[i] = percent_reading;
+  }
+
   // Schedule new timer
   StatusCode tertiary_status = soft_timer_start_seconds(storage->settings->update_period_s,
                                                         prv_timer_callback, storage, NULL);
@@ -72,6 +86,7 @@ StatusCode driver_display_brightness_init(
     status_ok_or_return(pwm_init_hz(settings->timer, settings->frequency_hz));
     // set the screen brightness to 50% initially
     status_ok_or_return(pwm_set_dc(settings->timer, 50));
+    storage->previous_percent_reading[i] = 50;
   }
 
   GpioSettings adc_settings = { .direction = GPIO_DIR_IN,
