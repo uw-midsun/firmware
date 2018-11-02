@@ -22,42 +22,42 @@
 #include "mech_brake.h"
 #include "power_distribution_controller.h"
 
- // Power FSM state definitions
- FSM_DECLARE_STATE(state_off);
- FSM_DECLARE_STATE(state_off_brake);
- FSM_DECLARE_STATE(state_charging);
- FSM_DECLARE_STATE(state_on);
- FSM_DECLARE_STATE(state_fault);
+// Power FSM state definitions
+FSM_DECLARE_STATE(state_off);
+FSM_DECLARE_STATE(state_off_brake);
+FSM_DECLARE_STATE(state_charging);
+FSM_DECLARE_STATE(state_on);
+FSM_DECLARE_STATE(state_fault);
 
 // Power FSM transition table definitions
 FSM_STATE_TRANSITION(state_off) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_on);
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_off_brake);
   FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
- }
- 
- FSM_STATE_TRANSITION(state_off_brake) {
-   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_on);
-   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_off);
- 
-   FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
- }
- 
- FSM_STATE_TRANSITION(state_charging) {
-   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_off);
- 
-   FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
- }
- 
- FSM_STATE_TRANSITION(state_on) {
-   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_off);
- 
-   FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
- }
- 
- FSM_STATE_TRANSITION(state_fault) {
-   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_off);
- }
+}
+
+FSM_STATE_TRANSITION(state_off_brake) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_on);
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_off);
+
+  FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
+}
+
+FSM_STATE_TRANSITION(state_charging) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_off);
+
+  FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
+}
+
+FSM_STATE_TRANSITION(state_on) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_off);
+
+  FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
+}
+
+FSM_STATE_TRANSITION(state_fault) {
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_off);
+}
 
 // Power FSM arbiter functions
 static bool prv_guard_off(const Event *e) {
