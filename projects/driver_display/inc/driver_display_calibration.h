@@ -9,6 +9,7 @@
 // The period indicates the amount of time in ms between samples
 #define DRIVER_DISPLAY_CALIBRATION_PERIOD_MS 10
 #define DRIVER_DISPLAY_CALIBRATION_SAMPLE_SIZE 1000
+#define DRIVER_DISPLAY_CALIBRATION_START_THRESHOLD 400
 
 typedef enum {
   DRIVER_DISPLAY_CALIBRATION_LOWER_BOUND = 0,
@@ -24,11 +25,19 @@ typedef struct DriverDisplayCalibrationStorage {
   volatile uint16_t sample_count;
 } DriverDisplayCalibrationStorage;
 
+typedef struct DriverDisplayCalibrationStartDetection {
+  AdcChannel adc_channel;
+  volatile bool started;
+  volatile uint16_t sample_sum;
+  volatile uint16_t sample_count;
+} DriverDisplayCalibrationStartDetection;
+
 // Initializes the calibration module
 // GPIOs and ADC must be initialized beforehand.
 StatusCode driver_display_calibration_init(const DriverDisplayBrightnessSettings *settings,
                                            DriverDisplayBrightnessCalibrationData *data,
-                                           DriverDisplayCalibrationStorage *storage);
+                                           DriverDisplayCalibrationStorage *storage,
+                                           DriverDisplayCalibrationStartDetection *detection);
 
 // Calibrates the upper/lower bound by averaging ADC output values for a period of time
 // (DRIVER_DISPLAY_CALIBRATION_PERIOD_S) Module init must be called first before running this
@@ -36,3 +45,4 @@ StatusCode driver_display_calibration_init(const DriverDisplayBrightnessSettings
 // The bound parameter specifies which bound to adjust
 StatusCode driver_display_calibration_bounds(DriverDisplayCalibrationStorage *storage,
                                              DriverDisplayCalibrationBounds bound);
+
