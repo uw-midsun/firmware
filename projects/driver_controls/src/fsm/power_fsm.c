@@ -117,8 +117,6 @@ static void prv_fault_output(Fsm *fsm, const Event *e, void *context) {
     bps_indicator_set_fault();
   }
 
-  bps_indicator_set_fault();
-
   // Disable periodic drive output updates if not running
   drive_output_set_enabled(drive_output_global(), false);
   event_arbiter_set_guard_fn(guard, prv_guard_off);
