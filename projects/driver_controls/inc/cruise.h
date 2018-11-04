@@ -1,7 +1,10 @@
 #pragma once
 // Cruise control target speed module
 // Requires CAN to be initialized
+//
 // Stores updates to target cruise speed and reads motor speed from the motor controllers.
+// Also raises INPUT_EVENT_SPEED_UPDATE events where the data field is the average speed in cm/s.
+//
 // On events:
 // * INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED: Sets the target speed to the current speed
 // * INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_PLUS: Offsets the target speed by +CRUISE_OFFSET_CMS
@@ -22,7 +25,7 @@ typedef struct CruiseStorage {
   volatile int16_t target_speed_cms;   // m/s * 100
   volatile int16_t current_speed_cms;  // From motor controllers
   int16_t offset_cms;
-  SoftTimerID repeat_timer;  // Repeats offset while increment/decrement is held
+  SoftTimerId repeat_timer;  // Repeats offset while increment/decrement is held
   size_t repeat_counter;
 } CruiseStorage;
 

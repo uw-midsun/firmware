@@ -18,7 +18,6 @@
 #include "unity.h"
 
 #define TEST_GENERIC_CAN_HW_FAULT_EVENT 1
-#define NUM_GENERIC_CAN_RX_HANDLERS 5
 
 static GenericCanHw s_can;
 
@@ -36,7 +35,7 @@ void setup_test(void) {
   soft_timer_init();
   gpio_init();
 
-  const CANHwSettings can_hw_settings = {
+  const CanHwSettings can_hw_settings = {
     .bitrate = CAN_HW_BITRATE_250KBPS,
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },

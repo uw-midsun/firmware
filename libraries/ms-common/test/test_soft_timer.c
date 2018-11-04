@@ -9,8 +9,8 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-static void prv_timeout_cb(SoftTimerID timer_id, void *context) {
-  SoftTimerID *cb_id = context;
+static void prv_timeout_cb(SoftTimerId timer_id, void *context) {
+  SoftTimerId *cb_id = context;
   *cb_id = timer_id;
 }
 
@@ -25,8 +25,8 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_soft_timer_basic(void) {
-  volatile SoftTimerID cb_id = SOFT_TIMER_INVALID_TIMER;
-  SoftTimerID id = SOFT_TIMER_INVALID_TIMER;
+  volatile SoftTimerId cb_id = SOFT_TIMER_INVALID_TIMER;
+  SoftTimerId id = SOFT_TIMER_INVALID_TIMER;
 
   TEST_ASSERT_FALSE(soft_timer_inuse());
 
@@ -47,15 +47,15 @@ void test_soft_timer_basic(void) {
 void test_soft_timer_preempt(void) {
   // Begin medium, longer, short, then long - should finish short, medium, long, longer
   // Tests ordering: new, append to back, insert into front, insert into middle
-  volatile SoftTimerID cb_id_short = SOFT_TIMER_INVALID_TIMER;
-  volatile SoftTimerID cb_id_medium = SOFT_TIMER_INVALID_TIMER;
-  volatile SoftTimerID cb_id_long = SOFT_TIMER_INVALID_TIMER;
-  volatile SoftTimerID cb_id_longer = SOFT_TIMER_INVALID_TIMER;
+  volatile SoftTimerId cb_id_short = SOFT_TIMER_INVALID_TIMER;
+  volatile SoftTimerId cb_id_medium = SOFT_TIMER_INVALID_TIMER;
+  volatile SoftTimerId cb_id_long = SOFT_TIMER_INVALID_TIMER;
+  volatile SoftTimerId cb_id_longer = SOFT_TIMER_INVALID_TIMER;
 
-  SoftTimerID id_short = SOFT_TIMER_INVALID_TIMER;
-  SoftTimerID id_medium = SOFT_TIMER_INVALID_TIMER;
-  SoftTimerID id_long = SOFT_TIMER_INVALID_TIMER;
-  SoftTimerID id_longer = SOFT_TIMER_INVALID_TIMER;
+  SoftTimerId id_short = SOFT_TIMER_INVALID_TIMER;
+  SoftTimerId id_medium = SOFT_TIMER_INVALID_TIMER;
+  SoftTimerId id_long = SOFT_TIMER_INVALID_TIMER;
+  SoftTimerId id_longer = SOFT_TIMER_INVALID_TIMER;
 
   TEST_ASSERT_FALSE(soft_timer_inuse());
 
@@ -109,11 +109,11 @@ void test_soft_timer_preempt(void) {
 }
 
 void test_soft_timer_cancelled_timer(void) {
-  volatile SoftTimerID cb_id_short = SOFT_TIMER_INVALID_TIMER;
-  volatile SoftTimerID cb_id_long = SOFT_TIMER_INVALID_TIMER;
+  volatile SoftTimerId cb_id_short = SOFT_TIMER_INVALID_TIMER;
+  volatile SoftTimerId cb_id_long = SOFT_TIMER_INVALID_TIMER;
 
-  SoftTimerID id_short = SOFT_TIMER_INVALID_TIMER;
-  SoftTimerID id_long = SOFT_TIMER_INVALID_TIMER;
+  SoftTimerId id_short = SOFT_TIMER_INVALID_TIMER;
+  SoftTimerId id_long = SOFT_TIMER_INVALID_TIMER;
 
   TEST_ASSERT_FALSE(soft_timer_inuse());
 
@@ -122,7 +122,7 @@ void test_soft_timer_cancelled_timer(void) {
   TEST_ASSERT_OK(ret);
   TEST_ASSERT_NOT_EQUAL(SOFT_TIMER_INVALID_TIMER, id_long);
 
-  ret = soft_timer_start(10, prv_timeout_cb, (void *)&cb_id_short, &id_short);
+  ret = soft_timer_start(SOFT_TIMER_MIN_TIME_US, prv_timeout_cb, (void *)&cb_id_short, &id_short);
   TEST_ASSERT_OK(ret);
   TEST_ASSERT_NOT_EQUAL(SOFT_TIMER_INVALID_TIMER, id_short);
 
@@ -138,8 +138,8 @@ void test_soft_timer_cancelled_timer(void) {
 }
 
 void test_soft_timer_remaining(void) {
-  volatile SoftTimerID cb_id = SOFT_TIMER_INVALID_TIMER;
-  SoftTimerID id = SOFT_TIMER_INVALID_TIMER;
+  volatile SoftTimerId cb_id = SOFT_TIMER_INVALID_TIMER;
+  SoftTimerId id = SOFT_TIMER_INVALID_TIMER;
 
   TEST_ASSERT_FALSE(soft_timer_inuse());
 
@@ -164,10 +164,10 @@ void test_soft_timer_remaining(void) {
 }
 
 void test_soft_timer_exhausted(void) {
-  volatile SoftTimerID cb_ids[SOFT_TIMER_MAX_TIMERS] = { 0 };
-  volatile SoftTimerID cb_id_single = SOFT_TIMER_INVALID_TIMER;
-  SoftTimerID ids[SOFT_TIMER_MAX_TIMERS] = { 0 };
-  SoftTimerID id_single = SOFT_TIMER_INVALID_TIMER;
+  volatile SoftTimerId cb_ids[SOFT_TIMER_MAX_TIMERS] = { 0 };
+  volatile SoftTimerId cb_id_single = SOFT_TIMER_INVALID_TIMER;
+  SoftTimerId ids[SOFT_TIMER_MAX_TIMERS] = { 0 };
+  SoftTimerId id_single = SOFT_TIMER_INVALID_TIMER;
 
   StatusCode ret;
   for (int i = 0; i < SOFT_TIMER_MAX_TIMERS; i++) {
@@ -198,4 +198,9 @@ void test_soft_timer_exhausted(void) {
   }
 
   TEST_ASSERT_FALSE(soft_timer_inuse());
+}
+
+void test_soft_timer_too_short(void) {
+  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS,
+                    soft_timer_start(SOFT_TIMER_MIN_TIME_US - 1, prv_timeout_cb, NULL, NULL));
 }

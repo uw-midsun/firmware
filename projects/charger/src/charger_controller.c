@@ -12,12 +12,13 @@
 #include "event_queue.h"
 #include "generic_can.h"
 #include "generic_can_msg.h"
+#include "misc.h"
 #include "status.h"
 
 #define CHARGER_PERIOD_US 1000000  // 1 Second as defined in datasheet.
 
-#define CHARGER_EXPECTED_RX_DLC 5
-#define CHARGER_EXPECTED_TX_DLC 5
+#define CHARGER_EXPECTED_RX_DLC 8
+#define CHARGER_EXPECTED_TX_DLC 8
 
 static ChargerStorage *s_storage;
 static CanInterval *s_interval;
@@ -50,6 +51,8 @@ static void prv_rx_handler(const GenericCanMsg *msg, void *context) {
     .raw_data = msg->data,
   };
   *s_charger_status = data.data_impl.status_flags;
+  CAN_TRANSMIT_CHARGER_INFO(SWAP_UINT16(data.data_impl.current),
+                            SWAP_UINT16(data.data_impl.voltage), data.data_impl.status_flags.raw);
 
   // Check for statuses
   if (!charger_controller_is_safe()) {
@@ -66,9 +69,9 @@ StatusCode charger_controller_init(ChargerStorage *storage, const ChargerSetting
   }
   s_charger_status = status;
   s_storage = storage;
-  memcpy(&s_storage->relay_control_pin, &settings->relay_control_pin, sizeof(GPIOAddress));
+  memcpy(&s_storage->relay_control_pin, &settings->relay_control_pin, sizeof(GpioAddress));
 
-  const GPIOSettings gpio_settings = {
+  const GpioSettings gpio_settings = {
     .state = GPIO_STATE_LOW,
     .alt_function = GPIO_ALTFN_NONE,
     .direction = GPIO_DIR_OUT,

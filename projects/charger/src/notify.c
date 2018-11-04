@@ -17,11 +17,11 @@
 
 static uint32_t s_watchdog_period_s;
 static CanInterval *s_interval;
-static SoftTimerID s_watchdog = SOFT_TIMER_INVALID_TIMER;
+static SoftTimerId s_watchdog = SOFT_TIMER_INVALID_TIMER;
 
 // Watchdog activated when commanded to start. Requires reaffirmation every minute or it will cease
 // charging.
-static void prv_command_watchdog(SoftTimerID id, void *context) {
+static void prv_command_watchdog(SoftTimerId id, void *context) {
   (void)id;
   (void)context;
   event_raise(CHARGER_EVENT_STOP_CHARGING, 0);
@@ -35,7 +35,7 @@ static void prv_kick_watchdog(void) {
 // GenericCanRx
 static void prv_command_rx(const GenericCanMsg *msg, void *context) {
   (void)context;
-  CANMessage can_msg = { 0 };
+  CanMessage can_msg = { 0 };
   generic_can_msg_to_can_message(msg, &can_msg);
   EEChargerSetRelayState relay_state = 0;
   CAN_UNPACK_CHARGER_SET_RELAY_STATE(&can_msg, (uint8_t *)&relay_state);
@@ -49,7 +49,7 @@ static void prv_command_rx(const GenericCanMsg *msg, void *context) {
 
 static StatusCode prv_pack_generic_notify_msg(EEChargerConnState conn_status,
                                               GenericCanMsg *generic_msg) {
-  CANMessage msg = { 0 };
+  CanMessage msg = { 0 };
   CAN_PACK_CHARGER_CONN_STATE(&msg, (uint8_t)conn_status);
   return can_message_to_generic_can_message(&msg, generic_msg);
 }

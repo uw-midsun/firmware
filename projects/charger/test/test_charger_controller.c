@@ -20,7 +20,7 @@
 #define TEST_CHARGER_MAX_VOLTAGE 100
 #define TEST_CHARGER_MAX_CURRENT 200
 
-#define TEST_CHARGER_EXPECTED_DLC 5
+#define TEST_CHARGER_EXPECTED_DLC 8
 // NOTE: the TX and RX used for these IDs are from the perspective of the charger that is being
 // mocked. Internally, the charger controller labels these the other way around!
 #define TEST_CHARGER_EXPECTED_TX_ID 0x18FF50E5
@@ -76,7 +76,7 @@ void setup_test(void) {
   soft_timer_init();
   can_interval_init();
 
-  const CANHwSettings can_hw_settings = {
+  const CanHwSettings can_hw_settings = {
     .bitrate = CAN_HW_BITRATE_250KBPS,
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },

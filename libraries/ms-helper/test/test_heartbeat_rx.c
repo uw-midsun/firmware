@@ -19,8 +19,6 @@
 #include "unity.h"
 
 #define TEST_HEARTBEAT_RX_CAN_DEVICE_ID 10
-#define NUM_TEST_HEARTBEAT_RX_RX_CAN_HANDLERS 3
-#define NUM_TEST_HEARTBEAT_RX_RX_STORAGE_HANDLERS 2
 
 typedef enum {
   TEST_HEARTBEAT_RX_RX_CAN_RX = 10,
@@ -35,15 +33,13 @@ typedef struct TestHeartbeatRxHandlerCtx {
 } TestHeartbeatRxHandlerCtx;
 
 static HeartbeatRxHandlerStorage s_hb_storage;
-static CANStorage s_can_storage;
-static CANAckRequests s_can_ack_requests;
-static CANRxHandler s_rx_handlers[NUM_TEST_HEARTBEAT_RX_RX_STORAGE_HANDLERS];
+static CanStorage s_can_storage;
 
-// CANAckRequestCb
-static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+// CanAckRequestCb
+static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                    uint16_t num_remaining, void *context) {
   (void)num_remaining;
-  CANAckStatus *expected_status = context;
+  CanAckStatus *expected_status = context;
   TEST_ASSERT_EQUAL(SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT, msg_id);
   TEST_ASSERT_EQUAL(TEST_HEARTBEAT_RX_CAN_DEVICE_ID, device);
   TEST_ASSERT_EQUAL(*expected_status, status);
@@ -51,7 +47,7 @@ static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckS
 }
 
 // HeartbeatRxHandler
-static bool prv_heartbeat_rx_handler(CANMessageID msg_id, void *context) {
+static bool prv_heartbeat_rx_handler(CanMessageId msg_id, void *context) {
   TestHeartbeatRxHandlerCtx *data = context;
   TEST_ASSERT_EQUAL(data->expected_msg_id, msg_id);
   data->executed = true;
@@ -63,7 +59,7 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
 
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .device_id = TEST_HEARTBEAT_RX_CAN_DEVICE_ID,
     .bitrate = CAN_HW_BITRATE_125KBPS,
     .rx_event = TEST_HEARTBEAT_RX_RX_CAN_RX,
@@ -73,9 +69,7 @@ void setup_test(void) {
     .rx = { GPIO_PORT_A, 11 },
     .loopback = true,
   };
-  TEST_ASSERT_OK(can_init(&can_settings, &s_can_storage, s_rx_handlers,
-                          NUM_TEST_HEARTBEAT_RX_RX_CAN_HANDLERS));
-  can_ack_init(&s_can_ack_requests);
+  TEST_ASSERT_OK(can_init(&s_can_storage, &can_settings));
 }
 
 void teardown_test(void) {}
@@ -90,8 +84,8 @@ void test_heartbeat_rx(void) {
   HeartbeatRxHandlerStorage hb_storage = {};
   TEST_ASSERT_OK(heartbeat_rx_register_handler(&hb_storage, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
                                                prv_heartbeat_rx_handler, (void *)&context));
-  CANAckStatus expected_status = CAN_ACK_STATUS_OK;
-  CANAckRequest req = {
+  CanAckStatus expected_status = CAN_ACK_STATUS_OK;
+  CanAckRequest req = {
     .callback = prv_ack_callback,
     .context = &expected_status,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_HEARTBEAT_RX_CAN_DEVICE_ID),

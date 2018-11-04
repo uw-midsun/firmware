@@ -12,16 +12,16 @@ typedef enum {
   TEST_CAN_ACK_DEVICE_UNRECOGNIZED
 } TestCanAckDevice;
 
-static CANAckRequests s_ack_requests;
+static CanAckRequests s_ack_requests;
 
 typedef struct TestResponse {
-  CANMessageID msg_id;
+  CanMessageId msg_id;
   uint16_t device;
-  CANAckStatus status;
+  CanAckStatus status;
   uint16_t num_remaining;
 } TestResponse;
 
-static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                    uint16_t num_remaining, void *context) {
   LOG_DEBUG("ACK handled: status %d from %d (msg %d) (%d remaining)\n", status, device, msg_id,
             num_remaining);
@@ -49,12 +49,12 @@ void teardown_test(void) {}
 
 void test_can_ack_handle_devices(void) {
   TestResponse data = { 0 };
-  CANMessage can_msg = {
+  CanMessage can_msg = {
     .source_id = TEST_CAN_ACK_DEVICE_A,  //
     .type = CAN_MSG_TYPE_ACK,            //
     .msg_id = 0x2,                       //
   };
-  CANAckRequest ack_request = {
+  CanAckRequest ack_request = {
     .callback = prv_ack_callback,  //
     .context = &data,              //
   };
@@ -128,7 +128,7 @@ void test_can_ack_handle_devices(void) {
 void test_can_ack_expiry(void) {
   // Basic expiry test
   volatile TestResponse data = { 0 };
-  CANAckRequest ack_request = {
+  CanAckRequest ack_request = {
     .callback = prv_ack_callback,  //
     .context = &data,              //
     .expected_bitset = 0x1,        //
@@ -147,12 +147,12 @@ void test_can_ack_expiry(void) {
 void test_can_ack_expiry_moved(void) {
   // Ensure that ACK expiry can handle being shuffled around
   volatile TestResponse data = { 0 };
-  CANMessage can_msg = {
+  CanMessage can_msg = {
     .source_id = TEST_CAN_ACK_DEVICE_A,  //
     .type = CAN_MSG_TYPE_ACK,            //
     .msg_id = 0x4,                       //
   };
-  CANAckRequest ack_request = {
+  CanAckRequest ack_request = {
     .callback = prv_ack_callback,                                        //
     .context = &data,                                                    //
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_CAN_ACK_DEVICE_A),  //

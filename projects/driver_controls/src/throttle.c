@@ -1,20 +1,21 @@
 // The module operates based on the voltage readings that come from the pedals.
 // The pedal occupies two channels of the ADS1015. The channel with a higher resolution is chosen
 // to be the "main" channel.
-// Everytime ADS1015 finishes a conversion of the pedal input on the main channel,
-// prv_flag_update_callback is called to set reading_updated_flag accordingly which determines if
-// the readings are up to date. A periodic safety check, prv_raise_event_timer_callback, checks
-// for this flag and if ok, it updates the position of the pedal in storage and
-// raises the events related to the pedal's position (braking, coasting, and accelerating zones).
-// The reading_ok_flag basically holds the actual state of reading_updated_flag as it resets.
+//
+// A periodic safety check, prv_raise_event_timer_callback, checks for this flag and if ok, it
+// updates the position of the pedal in storage and raises the events related to the pedal's
+// position (braking, coasting, and accelerating zones).
+//
 // In this module, it is assumed that channels hold a linear relationship with respect to the
 // pedal's position. This is used to verify if the readings are valid and "real" i.e if channels
 // are synced. If the data turns out to be stale or channels aren't synced, a timeout event will
 // be raised. The throttle_get_position function simply reads the position from storage.
 #include "throttle.h"
 #include <string.h>
+#include "critical_section.h"
 #include "event_queue.h"
 #include "input_event.h"
+#include "log.h"
 
 static ThrottleStorage s_throttle_storage;
 
@@ -88,48 +89,34 @@ static bool prv_channels_synced(int16_t reading_main, int16_t reading_secondary,
   return abs(expected_reading_secondary - reading_secondary) <= tolerance;
 }
 
-// This callback is called whenever a conversion is done. It sets the flags
-// so that we know conversions are happening.
-static void prv_flag_update_callback(Ads1015Channel channel, void *context) {
-  ThrottleStorage *storage = context;
-  storage->reading_updated_flag = true;
-}
-
 // The periodic callback which checks if readings are up to date and channels are in sync.
 // If they are, the event corresponding to the pedals position is raised.
 // If not, a pedal timout event is raised.
-static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) {
+static void prv_raise_event_timer_callback(SoftTimerId timer_id, void *context) {
   ThrottleStorage *storage = context;
   int16_t reading_main = INT16_MIN;
   int16_t reading_secondary = INT16_MIN;
 
-  ads1015_read_raw(storage->pedal_ads1015_storage, storage->calibration_data->channel_main,
-                   &reading_main);
-  ads1015_read_raw(storage->pedal_ads1015_storage, storage->calibration_data->channel_secondary,
-                   &reading_secondary);
+  bool fault = true;
+  StatusCode primary_status = ads1015_read_raw(
+      storage->pedal_ads1015_storage, storage->calibration_data->channel_main, &reading_main);
+  StatusCode secondary_status =
+      ads1015_read_raw(storage->pedal_ads1015_storage, storage->calibration_data->channel_secondary,
+                       &reading_secondary);
 
   InputEvent pedal_events[NUM_THROTTLE_ZONES] = { INPUT_EVENT_PEDAL_BRAKE, INPUT_EVENT_PEDAL_COAST,
                                                   INPUT_EVENT_PEDAL_ACCEL };
 
-  bool fault = true;
-
-  if (storage->reading_updated_flag) {
-    if (prv_channels_synced(reading_main, reading_secondary, storage)) {
-      storage->desync_counter = 0;
-    } else {
-      storage->desync_counter++;
-    }
-
-    if (storage->desync_counter < THROTTLE_MAX_DESYNC_COUNT) {
-      for (ThrottleZone zone = THROTTLE_ZONE_BRAKE; zone < NUM_THROTTLE_ZONES; zone++) {
-        if (prv_reading_within_zone(reading_main, zone, storage)) {
-          fault = false;
-          storage->position.zone = zone;
-          storage->position.numerator = prv_get_numerator_zone(reading_main, zone, storage);
-          storage->reading_ok_flag = true;
-          event_raise(pedal_events[zone], storage->position.numerator);
-          break;
-        }
+  if (status_ok(primary_status) && status_ok(secondary_status) &&
+      prv_channels_synced(reading_main, reading_secondary, storage)) {
+    for (ThrottleZone zone = THROTTLE_ZONE_BRAKE; zone < NUM_THROTTLE_ZONES; zone++) {
+      if (prv_reading_within_zone(reading_main, zone, storage)) {
+        fault = false;
+        storage->position.zone = zone;
+        storage->position.numerator = prv_get_numerator_zone(reading_main, zone, storage);
+        storage->reading_ok_flag = true;
+        event_raise(pedal_events[zone], storage->position.numerator);
+        break;
       }
     }
   }
@@ -140,7 +127,6 @@ static void prv_raise_event_timer_callback(SoftTimerID timer_id, void *context) 
     event_raise(INPUT_EVENT_PEDAL_FAULT, 0);
   }
 
-  storage->reading_updated_flag = false;
   soft_timer_start_millis(THROTTLE_UPDATE_PERIOD_MS, prv_raise_event_timer_callback, context, NULL);
 }
 
@@ -158,8 +144,7 @@ StatusCode throttle_init(ThrottleStorage *storage, ThrottleCalibrationData *cali
   // The callback for updating flags is only set on the main channel.
   // Verifying later if the second channel is in sync with the main channel is sufficient.
   status_ok_or_return(ads1015_configure_channel(pedal_ads1015_storage,
-                                                calibration_data->channel_main, true,
-                                                prv_flag_update_callback, storage));
+                                                calibration_data->channel_main, true, NULL, NULL));
   status_ok_or_return(ads1015_configure_channel(
       pedal_ads1015_storage, calibration_data->channel_secondary, true, NULL, NULL));
 
@@ -177,8 +162,12 @@ StatusCode throttle_get_position(ThrottleStorage *storage, ThrottlePosition *pos
   if (!storage->reading_ok_flag) {
     return status_code(STATUS_CODE_TIMEOUT);
   }
+
+  bool disabled = critical_section_start();
   position->zone = storage->position.zone;
   position->numerator = storage->position.numerator;
+  critical_section_end(disabled);
+
   return STATUS_CODE_OK;
 }
 

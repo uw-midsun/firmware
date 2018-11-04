@@ -25,33 +25,34 @@
 // Check for thread exit once every 10ms
 #define CAN_HW_THREAD_EXIT_PERIOD_US 10000
 
-typedef struct CANHwEventHandler {
-  CANHwEventHandlerCb callback;
+typedef struct CanHwEventHandler {
+  CanHwEventHandlerCb callback;
   void *context;
-} CANHwEventHandler;
+} CanHwEventHandler;
 
-typedef struct CANHwSocketData {
+typedef struct CanHwSocketData {
   int can_fd;
   struct can_frame rx_frame;
   Fifo tx_fifo;
   struct can_frame tx_frames[CAN_HW_TX_FIFO_LEN];
   struct can_filter filters[CAN_HW_MAX_FILTERS];
   size_t num_filters;
-  CANHwEventHandler handlers[NUM_CAN_HW_EVENTS];
+  CanHwEventHandler handlers[NUM_CAN_HW_EVENTS];
   uint32_t delay_us;
-} CANHwSocketData;
+} CanHwSocketData;
 
 static pthread_t s_rx_pthread_id;
 static pthread_t s_tx_pthread_id;
+static pthread_barrier_t s_barrier;
 // Producer/Consumer semaphore
 static sem_t s_tx_sem;
 
 // Locked if the TX/RX threads should be alive, unlocked on exit
 static pthread_mutex_t s_keep_alive = PTHREAD_MUTEX_INITIALIZER;
 
-static CANHwSocketData s_socket_data = { .can_fd = -1 };
+static CanHwSocketData s_socket_data = { .can_fd = -1 };
 
-static uint32_t prv_get_delay(CANHwBitrate bitrate) {
+static uint32_t prv_get_delay(CanHwBitrate bitrate) {
   const uint32_t delay_us[NUM_CAN_HW_BITRATES] = {
     1000,  // 125 kbps
     500,   // 250 kbps
@@ -65,6 +66,8 @@ static uint32_t prv_get_delay(CANHwBitrate bitrate) {
 static void *prv_rx_thread(void *arg) {
   x86_interrupt_pthread_init();
   LOG_DEBUG("CAN HW RX thread started\n");
+
+  pthread_barrier_wait(&s_barrier);
 
   struct timeval timeout = { .tv_usec = CAN_HW_THREAD_EXIT_PERIOD_US };
 
@@ -101,6 +104,8 @@ static void *prv_tx_thread(void *arg) {
   LOG_DEBUG("CAN HW TX thread started\n");
   struct can_frame frame = { 0 };
 
+  pthread_barrier_wait(&s_barrier);
+
   // Mutex is unlocked when the thread should exit
   while (pthread_mutex_trylock(&s_keep_alive) != 0) {
     // Wait until the producer has created an item
@@ -122,7 +127,7 @@ static void *prv_tx_thread(void *arg) {
   return NULL;
 }
 
-StatusCode can_hw_init(const CANHwSettings *settings) {
+StatusCode can_hw_init(const CanHwSettings *settings) {
   if (s_socket_data.can_fd != -1) {
     // Request threads to exit
     close(s_socket_data.can_fd);
@@ -183,19 +188,25 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
 
   LOG_DEBUG("CAN HW initialized on %s\n", CAN_HW_DEV_INTERFACE);
 
+  // 3 threads total: main, TX, RX
+  pthread_barrier_init(&s_barrier, NULL, 3);
+
   pthread_create(&s_rx_pthread_id, NULL, prv_rx_thread, NULL);
   pthread_create(&s_tx_pthread_id, NULL, prv_tx_thread, NULL);
+
+  pthread_barrier_wait(&s_barrier);
+  pthread_barrier_destroy(&s_barrier);
 
   return STATUS_CODE_OK;
 }
 
 // Registers a callback for the given event
-StatusCode can_hw_register_callback(CANHwEvent event, CANHwEventHandlerCb callback, void *context) {
+StatusCode can_hw_register_callback(CanHwEvent event, CanHwEventHandlerCb callback, void *context) {
   if (event >= NUM_CAN_HW_EVENTS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  s_socket_data.handlers[event] = (CANHwEventHandler){
+  s_socket_data.handlers[event] = (CanHwEventHandler){
     .callback = callback,  //
     .context = context,    //
   };
@@ -222,7 +233,7 @@ StatusCode can_hw_add_filter(uint32_t mask, uint32_t filter, bool extended) {
   return STATUS_CODE_OK;
 }
 
-CANHwBusStatus can_hw_bus_status(void) {
+CanHwBusStatus can_hw_bus_status(void) {
   return CAN_HW_BUS_STATUS_OK;
 }
 

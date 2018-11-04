@@ -19,7 +19,6 @@
 #include "unity.h"
 
 #define TEST_RELAY_CAN_DEVICE_ID 10
-#define NUM_TEST_RELAY_RX_CAN_HANDLERS 3
 
 typedef enum {
   TEST_RELAY_RX_STATE_OPEN = 0,
@@ -40,15 +39,13 @@ typedef struct TestRelayRxHandlerCtx {
   bool executed;
 } TestRelayRxHandlerCtx;
 
-static CANStorage s_can_storage;
-static CANAckRequests s_can_ack_requests;
-static CANRxHandler s_rx_handlers[NUM_TEST_RELAY_RX_CAN_HANDLERS];
+static CanStorage s_can_storage;
 
-// CANAckRequestCb
-static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+// CanAckRequestCb
+static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                    uint16_t num_remaining, void *context) {
   (void)num_remaining;
-  CANAckStatus *expected_status = context;
+  CanAckStatus *expected_status = context;
   TEST_ASSERT_EQUAL(SYSTEM_CAN_MESSAGE_BATTERY_RELAY_MAIN, msg_id);
   TEST_ASSERT_EQUAL(TEST_RELAY_CAN_DEVICE_ID, device);
   TEST_ASSERT_EQUAL(*expected_status, status);
@@ -69,7 +66,7 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
 
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .device_id = TEST_RELAY_CAN_DEVICE_ID,
     .bitrate = CAN_HW_BITRATE_250KBPS,
     .rx_event = TEST_RELAY_RX_CAN_RX,
@@ -79,9 +76,7 @@ void setup_test(void) {
     .rx = { GPIO_PORT_A, 11 },
     .loopback = true,
   };
-  TEST_ASSERT_OK(
-      can_init(&can_settings, &s_can_storage, s_rx_handlers, NUM_TEST_RELAY_RX_CAN_HANDLERS));
-  can_ack_init(&s_can_ack_requests);
+  TEST_ASSERT_OK(can_init(&s_can_storage, &can_settings));
 }
 
 void teardown_test(void) {}
@@ -117,8 +112,8 @@ void test_relay_rx(void) {
                                             NUM_TEST_RELAY_RX_STATES, prv_relay_rx_handler,
                                             &context));
 
-  CANAckStatus expected_status = CAN_ACK_STATUS_OK;
-  CANAckRequest req = {
+  CanAckStatus expected_status = CAN_ACK_STATUS_OK;
+  CanAckRequest req = {
     .callback = prv_ack_callback,
     .context = &expected_status,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_RELAY_CAN_DEVICE_ID),

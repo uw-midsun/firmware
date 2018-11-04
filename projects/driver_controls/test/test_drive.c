@@ -5,6 +5,9 @@
 #include "drive_output.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
+#include "hazards_fsm.h"
+#include "headlight_fsm.h"
+#include "horn_fsm.h"
 #include "input_event.h"
 #include "interrupt.h"
 #include "log.h"
@@ -13,14 +16,26 @@
 #include "power_fsm.h"
 #include "soft_timer.h"
 #include "test_helpers.h"
+#include "turn_signal_fsm.h"
 #include "unity.h"
 
 // Tests interaction between the drive output module and power/direction/pedal FSMs
 
-#define TEST_DRIVE_CLOCK_EVENT(event_id, should_succeed)                                    \
-  {                                                                                         \
-    Event e = { .id = event_id };                                                           \
-    TEST_ASSERT_EQUAL(should_succeed, event_arbiter_process_event(&s_arbiter_storage, &e)); \
+#define TEST_DRIVE_CLOCK_EVENT(event_id, should_succeed)                                      \
+  {                                                                                           \
+    Event e = { .id = (event_id) };                                                           \
+    TEST_ASSERT_EQUAL((should_succeed), event_arbiter_process_event(&s_arbiter_storage, &e)); \
+    if ((should_succeed) &&                                                                   \
+        (e.id == INPUT_EVENT_CENTER_CONSOLE_POWER || e.id == INPUT_EVENT_BPS_FAULT ||         \
+         e.id == INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE ||                                \
+         e.id == INPUT_EVENT_CENTER_CONSOLE_DIRECTION_NEUTRAL ||                              \
+         e.id == INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE ||                              \
+         e.id == INPUT_EVENT_MECHANICAL_BRAKE_PRESSED ||                                      \
+         e.id == INPUT_EVENT_MECHANICAL_BRAKE_RELEASED)) {                                    \
+      if (status_ok(event_process(&e))) {                                                     \
+        event_arbiter_process_event(&s_arbiter_storage, &e);                                  \
+      }                                                                                       \
+    }                                                                                         \
   }
 
 typedef enum {
@@ -29,11 +44,15 @@ typedef enum {
   TEST_DRIVE_FSM_PEDAL,
   TEST_DRIVE_FSM_DIRECTION,
   TEST_DRIVE_FSM_MECH_BRAKE,
+  TEST_DRIVE_FSM_HEADLIGHT,
+  TEST_DRIVE_FSM_TURN_SIGNALS,
+  TEST_DRIVE_FSM_HAZARDS,
+  TEST_DRIVE_FSM_HORN,
   NUM_TEST_DRIVE_FSMS
 } TestDriveFsm;
 
 EventArbiterStorage s_arbiter_storage;
-static FSM s_fsms[NUM_TEST_DRIVE_FSMS];
+static Fsm s_fsms[NUM_TEST_DRIVE_FSMS];
 
 static void prv_clock_update_request(void) {
   Event e = { 0 };
@@ -63,6 +82,11 @@ void setup_test(void) {
   pedal_fsm_init(&s_fsms[TEST_DRIVE_FSM_PEDAL], &s_arbiter_storage);
   direction_fsm_init(&s_fsms[TEST_DRIVE_FSM_DIRECTION], &s_arbiter_storage);
   mechanical_brake_fsm_init(&s_fsms[TEST_DRIVE_FSM_MECH_BRAKE], &s_arbiter_storage);
+
+  turn_signal_fsm_init(&s_fsms[TEST_DRIVE_FSM_TURN_SIGNALS], &s_arbiter_storage);
+  horn_fsm_init(&s_fsms[TEST_DRIVE_FSM_HORN], &s_arbiter_storage);
+  hazards_fsm_init(&s_fsms[TEST_DRIVE_FSM_HAZARDS], &s_arbiter_storage);
+  headlight_fsm_init(&s_fsms[TEST_DRIVE_FSM_HEADLIGHT], &s_arbiter_storage);
 }
 
 void teardown_test(void) {}
@@ -74,16 +98,16 @@ void test_drive_basic(void) {
   // Try sending some drive commands before power on
   LOG_DEBUG("Raising events before power on\n");
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, false);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_TURN_SIGNAL_LEFT, false);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_LEFT, false);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, false);
 
   // Send the correct sequence of events to enter power on
   LOG_DEBUG("Powering on\n");
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_POWER, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_POWER, true);
 
   LOG_DEBUG("Moving direction to reverse\n");
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE, true);
 
   // Power should now be on - process events before the watchdog faults
   LOG_DEBUG("Expecting drive update requests\n");
@@ -94,7 +118,7 @@ void test_drive_basic(void) {
 
   LOG_DEBUG("Moving direction to drive\n");
   // Try changing the direction (mech brake still held) and waiting for another output
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE, true);
 
   delay_ms(DRIVE_OUTPUT_BROADCAST_MS);
   prv_clock_update_request();
@@ -130,7 +154,7 @@ void test_drive_charge(void) {
 
   // Move to charging
   LOG_DEBUG("Moving to charging state\n");
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_POWER, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_POWER, true);
 
   // Check charging behavior - make sure that drive commands are not sent
   delay_ms(DRIVE_OUTPUT_WATCHDOG_MS);
@@ -139,16 +163,13 @@ void test_drive_charge(void) {
   LOG_DEBUG("Ensuring that no drive commands were sent\n");
   StatusCode ret = event_process(&e);
   TEST_ASSERT_NOT_OK(ret);
-
-  // Make sure we don't allow any movement during charging
-  LOG_DEBUG("Pressing the pedal should do nothing\n");
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, false);
 }
 
 void test_drive_cruise(void) {
   LOG_DEBUG("Moving to powered drive\n");
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_POWER, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_POWER, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
 
   LOG_DEBUG("Attempting to enter cruise from braking state\n");
@@ -158,7 +179,7 @@ void test_drive_cruise(void) {
   // The cruise module will never support cruising in the negative velocity
   LOG_DEBUG("Attempt to enter cruise from reverse\n");
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
   // pretend we're accelerating
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, true);
@@ -170,7 +191,7 @@ void test_drive_cruise(void) {
   // Check cruise exits
   LOG_DEBUG("Entering cruise\n");
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_DRIVE, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME, true);
@@ -199,7 +220,7 @@ void test_drive_fault(void) {
 
   LOG_DEBUG("Moving to powered drive\n");
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_POWER, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_POWER, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, true);
 
@@ -209,8 +230,8 @@ void test_drive_fault(void) {
   // Fault occurred - almost all events are disabled
   LOG_DEBUG("Raising a bunch of events\n");
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, false);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_TURN_SIGNAL_LEFT, false);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_DIRECTION_SELECTOR_REVERSE, false);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_LEFT, false);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE, false);
 
   // Make sure that drive commands are not sent
   delay_ms(DRIVE_OUTPUT_WATCHDOG_MS);
@@ -221,15 +242,83 @@ void test_drive_fault(void) {
   TEST_ASSERT_NOT_OK(ret);
 
   LOG_DEBUG("Clearing fault\n");
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_POWER, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_POWER, true);
 
   LOG_DEBUG("Powering on\n");
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
-  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_POWER, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_POWER, true);
   TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
   prv_dump_fsms();
 
   LOG_DEBUG("Checking for new drive commands\n");
   delay_ms(DRIVE_OUTPUT_BROADCAST_MS);
   prv_clock_update_request();
+}
+
+void test_drive_revert_cruise(void) {
+  LOG_DEBUG("Moving to powered drive\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_POWER, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, true);
+
+  LOG_DEBUG("Entering cruise control\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME, true);
+
+  LOG_DEBUG("Turning car off\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_POWER, true);
+  prv_dump_fsms();
+  LOG_DEBUG("Turning car back on\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_POWER, true);
+  prv_dump_fsms();
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
+
+  LOG_DEBUG("We should be able to enter cruise control (post-brake)\n");
+  prv_dump_fsms();
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_BRAKE, true);
+
+  LOG_DEBUG("Faulting\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_BPS_FAULT, true);
+
+  LOG_DEBUG("Acknowledging fault\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_POWER, true);
+
+  LOG_DEBUG("Turning car back on\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_POWER, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, true);
+
+  LOG_DEBUG("We should be able to enter cruise\n");
+  prv_dump_fsms();
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME, true);
+}
+
+void test_drive_revert_direction(void) {
+  LOG_DEBUG("Moving to powered drive\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_POWER, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_PEDAL_ACCEL, true);
+
+  LOG_DEBUG("We should be able to enter cruise control\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME, true);
+
+  LOG_DEBUG("Turning car off\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_POWER, true);
+
+  LOG_DEBUG("Turning car back on\n");
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_POWER, true);
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, true);
+
+  LOG_DEBUG("Attempting to enter cruise control - we should be in neutral\n");
+  prv_dump_fsms();
+  TEST_DRIVE_CLOCK_EVENT(INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME, false);
 }

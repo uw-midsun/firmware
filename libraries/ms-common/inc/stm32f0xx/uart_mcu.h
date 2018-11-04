@@ -6,4 +6,4 @@ typedef enum {
   UART_PORT_3,
   UART_PORT_4,
   NUM_UART_PORTS,
-} UARTPort;
+} UartPort;

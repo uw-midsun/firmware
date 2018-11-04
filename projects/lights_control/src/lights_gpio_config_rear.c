@@ -10,44 +10,44 @@
 static const LightsGpioOutput s_rear_outputs[] = {
   // clang-format off
   [LIGHTS_GPIO_CONFIG_REAR_OUTPUT_STROBE] = {
-    .address = { .port = GPIO_PORT_B, .pin = 11 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .address = { .port = GPIO_PORT_B, .pin = 11 }, // LED 2
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_REAR_OUTPUT_RIGHT_BRAKE] = {
-    .address = { .port = GPIO_PORT_B, .pin = 1 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .address = { .port = GPIO_PORT_B, .pin = 1 }, // LED 6
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_REAR_OUTPUT_RIGHT_OUTER_BRAKE] = {
-    .address = { .port = GPIO_PORT_B, .pin = 2 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .address = { .port = GPIO_PORT_B, .pin = 2 }, // LED 8
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_REAR_OUTPUT_LEFT_BRAKE] = {
-    .address = { .port = GPIO_PORT_B, .pin = 15 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .address = { .port = GPIO_PORT_B, .pin = 15 }, // LED 10
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_REAR_OUTPUT_LEFT_OUTER_BRAKE] = {
-    .address = { .port = GPIO_PORT_A, .pin = 8 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .address = { .port = GPIO_PORT_A, .pin = 8 }, // LED 12
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_REAR_OUTPUT_CENTRE_BRAKE] = {
-    .address = { .port = GPIO_PORT_B, .pin = 14 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .address = { .port = GPIO_PORT_B, .pin = 14 }, // LED 4
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_REAR_OUTPUT_LEFT_OUTER_TURN] = {
-    .address = { .port = GPIO_PORT_A, .pin = 10 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .address = { .port = GPIO_PORT_A, .pin = 10 }, // LED 11
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_REAR_OUTPUT_LEFT_TURN] = {
-    .address = { .port = GPIO_PORT_A, .pin = 9 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .address = { .port = GPIO_PORT_A, .pin = 9 }, // LED 13
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_REAR_OUTPUT_RIGHT_OUTER_TURN] = {
-    .address = { .port = GPIO_PORT_B, .pin = 0 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .address = { .port = GPIO_PORT_B, .pin = 0 }, // LED 7
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   },
   [LIGHTS_GPIO_CONFIG_REAR_OUTPUT_RIGHT_TURN] = {
-    .address = { .port = GPIO_PORT_B, .pin = 10 },
-    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_LOW,
+    .address = { .port = GPIO_PORT_B, .pin = 10 }, // LED 9
+    .polarity = LIGHTS_GPIO_POLARITY_ACTIVE_HIGH,
   }
   // clang-format off
 };

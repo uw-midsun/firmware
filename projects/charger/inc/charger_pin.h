@@ -6,4 +6,4 @@
 #include "status.h"
 
 // Inits the charger pin and configures an interrupt.
-StatusCode charger_pin_init(const GPIOAddress *address);
+StatusCode charger_pin_init(const GpioAddress *address);

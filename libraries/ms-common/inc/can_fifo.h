@@ -3,12 +3,12 @@
 #include "can_msg.h"
 #include "fifo.h"
 
-#define CAN_FIFO_SIZE 10
+#define CAN_FIFO_SIZE 32
 
-typedef struct CANFifo {
+typedef struct CanFifo {
   Fifo fifo;
-  CANMessage msg_nodes[CAN_FIFO_SIZE];
-} CANFifo;
+  CanMessage msg_nodes[CAN_FIFO_SIZE];
+} CanFifo;
 
 #define can_fifo_init(can_fifo) fifo_init(&(can_fifo)->fifo, (can_fifo)->msg_nodes)
 

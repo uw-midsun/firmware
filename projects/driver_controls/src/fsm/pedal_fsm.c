@@ -9,14 +9,12 @@
 #include "throttle.h"
 
 // Pedal FSM state definitions
-
 // We only really care about braking vs. not braking, but keep the 3 states just to be explicit
 FSM_DECLARE_STATE(state_brake);
 FSM_DECLARE_STATE(state_coast);
 FSM_DECLARE_STATE(state_accel);
 
 // Pedal FSM transition table definitions
-
 FSM_STATE_TRANSITION(state_brake) {
   FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_brake);
 
@@ -38,10 +36,14 @@ FSM_STATE_TRANSITION(state_accel) {
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_COAST, state_coast);
 }
 
+// Pedal FSM output functions
 static void prv_update_drive_output(void) {
   ThrottlePosition position = { 0 };
   // TODO(ELEC-431): Could just remove UPDATE_REQUESTED transitions and use the actual events + data
-  throttle_get_position(throttle_global(), &position);
+  StatusCode status = throttle_get_position(throttle_global(), &position);
+  if (!status_ok(status)) {
+    return;
+  }
 
   const int16_t zone_multiplier[NUM_THROTTLE_ZONES] = {
     [THROTTLE_ZONE_BRAKE] = -1,
@@ -59,7 +61,7 @@ static bool prv_brake_guard(const Event *e) {
 }
 
 // Pedal FSM output functions
-static void prv_brake_output(FSM *fsm, const Event *e, void *context) {
+static void prv_brake_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = context;
   event_arbiter_set_guard_fn(guard, prv_brake_guard);
 
@@ -68,7 +70,7 @@ static void prv_brake_output(FSM *fsm, const Event *e, void *context) {
   prv_update_drive_output();
 }
 
-static void prv_not_brake_output(FSM *fsm, const Event *e, void *context) {
+static void prv_not_brake_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = context;
   event_arbiter_set_guard_fn(guard, NULL);
 
@@ -76,7 +78,7 @@ static void prv_not_brake_output(FSM *fsm, const Event *e, void *context) {
   prv_update_drive_output();
 }
 
-StatusCode pedal_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
+StatusCode pedal_fsm_init(Fsm *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_brake, prv_brake_output);
   fsm_state_init(state_coast, prv_not_brake_output);
   fsm_state_init(state_accel, prv_not_brake_output);

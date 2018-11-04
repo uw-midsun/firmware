@@ -1,34 +1,37 @@
-#include <stdbool.h>
-
 #include "adc.h"
+
+#include <stdbool.h>
+#include <stddef.h>
+
 #include "log.h"
 #include "stm32f0xx.h"
 
 // TS_CAL addresses obtained from section 3.10.1 of the specific device datasheet
-#define TS_CAL1 0x1FFFF7b8
-#define TS_CAL2 0x1FFFF7c2
+#define ADC_TS_CAL1 0x1FFFF7b8
+#define ADC_TS_CAL2 0x1FFFF7c2
 
-// VREFINT_CAL address obtained from section 3.10.2 of the specific device datasheet
-#define VREFINT_CAL 0x1FFFF7ba
+// ADC_VREFINT_CAL address obtained from section 3.10.2 of the specific device datasheet
+#define ADC_VREFINT_CAL 0x1FFFF7ba
 
-typedef struct ADCInterrupt {
-  ADCCallback callback;
+typedef struct AdcInterrupt {
+  AdcCallback callback;
   void *context;
   uint16_t reading;
-} ADCInterrupt;
+} AdcInterrupt;
 
-typedef struct ADCStatus {
+typedef struct AdcStatus {
   uint32_t sequence;
   bool continuous;
-} ADCStatus;
+  volatile bool conv_complete;
+} AdcStatus;
 
-static ADCInterrupt s_adc_interrupts[NUM_ADC_CHANNELS];
-static ADCStatus s_adc_status;
+static AdcInterrupt s_adc_interrupts[NUM_ADC_CHANNELS];
+static AdcStatus s_adc_status;
 
 // Formula obtained from section 13.9 of the reference manual. Returns reading in kelvin
 static uint16_t prv_get_temp(uint16_t reading) {
-  uint16_t ts_cal1 = *(uint16_t *)TS_CAL1;
-  uint16_t ts_cal2 = *(uint16_t *)TS_CAL2;
+  uint16_t ts_cal1 = *(uint16_t *)ADC_TS_CAL1;
+  uint16_t ts_cal2 = *(uint16_t *)ADC_TS_CAL2;
 
   reading = ((110 - 30) * (reading - ts_cal1)) / (ts_cal2 - ts_cal1) + 30;
 
@@ -37,12 +40,16 @@ static uint16_t prv_get_temp(uint16_t reading) {
 
 // Formula obtained from section 13.9 of the reference manual. Returns Vdda in mV
 static uint16_t prv_get_vdda(uint16_t reading) {
-  uint16_t vrefint_cal = *(uint16_t *)VREFINT_CAL;
+  // To avoid dividing by zero faults:
+  if (!reading) {
+    return reading;
+  }
+  uint16_t vrefint_cal = *(uint16_t *)ADC_VREFINT_CAL;
   reading = (3300 * vrefint_cal) / reading;
   return reading;
 }
 
-void adc_init(ADCMode adc_mode) {
+void adc_init(AdcMode adc_mode) {
   ADC_DeInit(ADC1);
 
   // Once the ADC has been reset, enable it with the given settings
@@ -87,11 +94,16 @@ void adc_init(ADCMode adc_mode) {
     ADC_StartOfConversion(ADC1);
   }
 
+  for (size_t i = 0; i < NUM_ADC_CHANNELS; ++i) {
+    s_adc_interrupts[i].callback = NULL;
+    s_adc_interrupts[i].context = NULL;
+  }
+
   // Configure internal reference channel to run by default for voltage conversions
   adc_set_channel(ADC_CHANNEL_REF, true);
 }
 
-StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
+StatusCode adc_set_channel(AdcChannel adc_channel, bool new_state) {
   if (adc_channel >= NUM_ADC_CHANNELS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -126,7 +138,7 @@ StatusCode adc_set_channel(ADCChannel adc_channel, bool new_state) {
 
 // ADC Channel to GPIO Address mapping found in table 13 of the specific device datasheet.
 // Channels 0 to 7 are occupied by port A, 8 to 9 by prt B, and 10 to 15 by port C
-StatusCode adc_get_channel(GPIOAddress address, ADCChannel *adc_channel) {
+StatusCode adc_get_channel(GpioAddress address, AdcChannel *adc_channel) {
   *adc_channel = address.pin;
 
   switch (address.port) {
@@ -155,7 +167,7 @@ StatusCode adc_get_channel(GPIOAddress address, ADCChannel *adc_channel) {
   return STATUS_CODE_OK;
 }
 
-StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, void *context) {
+StatusCode adc_register_callback(AdcChannel adc_channel, AdcCallback callback, void *context) {
   if (adc_channel >= NUM_ADC_CHANNELS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -169,7 +181,7 @@ StatusCode adc_register_callback(ADCChannel adc_channel, ADCCallback callback, v
   return STATUS_CODE_OK;
 }
 
-StatusCode adc_read_raw(ADCChannel adc_channel, uint16_t *reading) {
+StatusCode adc_read_raw(AdcChannel adc_channel, uint16_t *reading) {
   if (adc_channel >= NUM_ADC_CHANNELS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -178,8 +190,9 @@ StatusCode adc_read_raw(ADCChannel adc_channel, uint16_t *reading) {
   }
 
   if (!s_adc_status.continuous) {
+    s_adc_status.conv_complete = false;
     ADC_StartOfConversion(ADC1);
-    while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOSEQ)) {
+    while (!s_adc_status.conv_complete) {
     }
   }
 
@@ -188,7 +201,7 @@ StatusCode adc_read_raw(ADCChannel adc_channel, uint16_t *reading) {
   return STATUS_CODE_OK;
 }
 
-StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading) {
+StatusCode adc_read_converted(AdcChannel adc_channel, uint16_t *reading) {
   if (adc_channel >= NUM_ADC_CHANNELS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -196,7 +209,7 @@ StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading) {
     return status_code(STATUS_CODE_EMPTY);
   }
 
-  uint16_t adc_reading;
+  uint16_t adc_reading = 0;
   adc_read_raw(adc_channel, &adc_reading);
 
   switch (adc_channel) {
@@ -225,21 +238,23 @@ StatusCode adc_read_converted(ADCChannel adc_channel, uint16_t *reading) {
 
 void ADC1_COMP_IRQHandler() {
   if (ADC_GetITStatus(ADC1, ADC_IT_EOC)) {
-    ADCChannel current_channel = __builtin_ctz(s_adc_status.sequence);
-
     uint16_t reading = ADC_GetConversionValue(ADC1);
+    if (s_adc_status.sequence != 0) {
+      AdcChannel current_channel = __builtin_ctz(s_adc_status.sequence);
 
-    if (s_adc_interrupts[current_channel].callback != NULL) {
-      s_adc_interrupts[current_channel].callback(current_channel,
-                                                 s_adc_interrupts[current_channel].context);
+      if (s_adc_interrupts[current_channel].callback != NULL) {
+        s_adc_interrupts[current_channel].callback(current_channel,
+                                                   s_adc_interrupts[current_channel].context);
+      }
+
+      s_adc_interrupts[current_channel].reading = reading;
+      s_adc_status.sequence &= ~((uint32_t)1 << current_channel);
     }
-
-    s_adc_interrupts[current_channel].reading = reading;
-    s_adc_status.sequence &= ~((uint32_t)1 << current_channel);
   }
 
   if (ADC_GetITStatus(ADC1, ADC_IT_EOSEQ)) {
     s_adc_status.sequence = ADC1->CHSELR;
+    s_adc_status.conv_complete = true;
     ADC_ClearITPendingBit(ADC1, ADC_IT_EOSEQ);
   }
 }

@@ -5,8 +5,17 @@
 #include "i2c.h"
 #include "mcp23008.h"
 
+static void prv_poll_timeout(SoftTimerId timer_id, void *context) {
+  GpioExpanderStorage *expander = context;
+
+  // Trigger an interrupt to force an update
+  gpio_it_trigger_interrupt(&expander->int_pin);
+
+  soft_timer_start_millis(GPIO_EXPANDER_POLL_PERIOD_MS, prv_poll_timeout, expander, NULL);
+}
+
 // IO interrupt occurred
-static void prv_interrupt_handler(const GPIOAddress *address, void *context) {
+static void prv_interrupt_handler(const GpioAddress *address, void *context) {
   GpioExpanderStorage *expander = context;
   uint8_t intf = 0;
   uint8_t gpio = 0;
@@ -41,28 +50,36 @@ static void prv_set_bit(GpioExpanderStorage *expander, uint8_t reg, GpioExpander
 }
 
 StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioExpanderAddress addr,
-                              const GPIOAddress *interrupt_pin) {
-  if (addr >= NUM_GPIO_EXPANDER_ADDRESSES) {
+                              const GpioAddress *interrupt_pin) {
+  if (expander == NULL || addr >= NUM_GPIO_EXPANDER_ADDRESSES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
   memset(expander, 0, sizeof(*expander));
   expander->port = port;
   expander->addr = MCP23008_ADDRESS + addr;
+  expander->int_pin.port = NUM_GPIO_PORTS;
 
-  // Configure the interrupt pin from the MCP23008 - active-low
-  GPIOSettings gpio_settings = {
-    .direction = GPIO_DIR_IN,        //
-    .alt_function = GPIO_ALTFN_NONE  //
-  };
-  InterruptSettings it_settings = {
-    .type = INTERRUPT_TYPE_INTERRUPT,      //
-    .priority = INTERRUPT_PRIORITY_NORMAL  //
-  };
+  // If we don't have an interrupt pin registered, this will be an output-only IO expander.
+  if (interrupt_pin != NULL) {
+    expander->int_pin = *interrupt_pin;
 
-  gpio_init_pin(interrupt_pin, &gpio_settings);
-  gpio_it_register_interrupt(interrupt_pin, &it_settings, INTERRUPT_EDGE_FALLING,
-                             prv_interrupt_handler, expander);
+    // Configure the interrupt pin from the MCP23008 - active-low
+    GpioSettings gpio_settings = {
+      .direction = GPIO_DIR_IN,        //
+      .alt_function = GPIO_ALTFN_NONE  //
+    };
+    InterruptSettings it_settings = {
+      .type = INTERRUPT_TYPE_INTERRUPT,      //
+      .priority = INTERRUPT_PRIORITY_NORMAL  //
+    };
+
+    gpio_init_pin(interrupt_pin, &gpio_settings);
+    gpio_it_register_interrupt(interrupt_pin, &it_settings, INTERRUPT_EDGE_FALLING,
+                               prv_interrupt_handler, expander);
+
+    soft_timer_start_millis(GPIO_EXPANDER_POLL_PERIOD_MS, prv_poll_timeout, expander, NULL);
+  }
 
   // Set default configuration: input, interrupt on change, active-low interrupt
   uint8_t cfg[] = {
@@ -78,13 +95,15 @@ StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioE
 }
 
 StatusCode gpio_expander_init_pin(GpioExpanderStorage *expander, GpioExpanderPin pin,
-                                  const GPIOSettings *settings) {
-  if (pin >= NUM_GPIO_EXPANDER_PINS) {
-    return status_code(STATUS_CODE_OUT_OF_RANGE);
-  }
-
-  if (settings->resistor != GPIO_RES_NONE && settings->resistor != GPIO_RES_PULLUP) {
+                                  const GpioSettings *settings) {
+  if (expander == NULL || settings == NULL ||
+      (settings->resistor != GPIO_RES_NONE && settings->resistor != GPIO_RES_PULLUP)) {
     return status_code(STATUS_CODE_INVALID_ARGS);
+  } else if (pin >= NUM_GPIO_EXPANDER_PINS) {
+    return status_code(STATUS_CODE_OUT_OF_RANGE);
+  } else if (expander->int_pin.port == NUM_GPIO_PORTS && settings->direction != GPIO_DIR_OUT) {
+    // If there's no interrupt pin, this expander is output-only
+    return status_code(STATUS_CODE_INTERNAL_ERROR);
   }
 
   // Set the direction of the data I/O
@@ -100,8 +119,10 @@ StatusCode gpio_expander_init_pin(GpioExpanderStorage *expander, GpioExpanderPin
 }
 
 StatusCode gpio_expander_get_state(GpioExpanderStorage *expander, GpioExpanderPin pin,
-                                   GPIOState *state) {
-  if (pin >= NUM_GPIO_EXPANDER_PINS) {
+                                   GpioState *state) {
+  if (expander == NULL || state == NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  } else if (pin >= NUM_GPIO_EXPANDER_PINS) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 
@@ -109,14 +130,16 @@ StatusCode gpio_expander_get_state(GpioExpanderStorage *expander, GpioExpanderPi
   uint8_t data = 0;
   status_ok_or_return(i2c_read_reg(expander->port, expander->addr, MCP23008_GPIO, &data, 1));
 
-  *state = (GPIOState)((data >> pin) & 1);
+  *state = (GpioState)((data >> pin) & 1);
 
   return STATUS_CODE_OK;
 }
 
 StatusCode gpio_expander_set_state(GpioExpanderStorage *expander, GpioExpanderPin pin,
-                                   GPIOState state) {
-  if (pin >= NUM_GPIO_EXPANDER_PINS) {
+                                   GpioState state) {
+  if (expander == NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  } else if (pin >= NUM_GPIO_EXPANDER_PINS) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 
@@ -128,7 +151,9 @@ StatusCode gpio_expander_set_state(GpioExpanderStorage *expander, GpioExpanderPi
 
 StatusCode gpio_expander_register_callback(GpioExpanderStorage *expander, GpioExpanderPin pin,
                                            GpioExpanderCallbackFn callback, void *context) {
-  if (pin >= NUM_GPIO_EXPANDER_PINS) {
+  if (expander == NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  } else if (pin >= NUM_GPIO_EXPANDER_PINS) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 
