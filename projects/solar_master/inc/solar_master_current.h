@@ -31,10 +31,9 @@
 typedef struct SolarMasterCurrent {
   Ads1015Storage *ads1015;
   int16_t averaging[SOLAR_MASTER_CURRENT_SAMPLE_SIZE];
-  int16_t lastAverage;
+  int16_t sliding_sum;
   uint16_t counter;
   uint16_t zero_point;
-  bool calibrated;
 } SolarMasterCurrent;
 
 // Registers callbacks for analog inputs. |ads1015| should be initialized.

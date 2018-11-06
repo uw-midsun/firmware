@@ -37,8 +37,8 @@ static SolarMasterCanStorage s_solar_master_can_storage = { 0 };
 static Ads1015Storage s_current_ads1015 = { 0 };
 static SolarMasterCurrent s_current_storage = { 0 };
 
-static Mcp3427Storage s_slave_mcp3427 = { 0 };
-static SolarMasterSlave s_slave_storage = { 0 };
+static Mcp3427Storage s_slave_mcp3427[SOLAR_MASTER_NUM_SOLAR_SLAVES] = { 0 };
+static SolarMasterSlave s_slave_storage[SOLAR_MASTER_NUM_SOLAR_SLAVES] = { 0 };
 
 int main(void) {
   // TODO(ELEC-502): Add I2C high speed support to the driver.
@@ -92,40 +92,58 @@ int main(void) {
   i2c_init(config->slave_i2c_port, &slave_i2c_settings);
   i2c_init(config->current_i2c_port, &current_i2c_settings);
 
-  // TODO(ELEC-502): unify constants
-  // Initialize current sense ADC
-  GPIOAddress current_ready_pin = CURRENT_ADC_READY_PIN;
-  ads1015_init(&s_current_ads1015, SOLAR_MASTER_CURRENT_I2C_BUS_PORT, SOLAR_MASTER_CURRENT_ADC_ADDR, &current_ready_pin);
-  StatusCode status = solar_master_current_init(&s_current_storage, &s_current_ads1015);
-  if (!status_ok(status)) {
-    LOG_DEBUG("Error initializing Solar Master Current.\n");
-  }
 
-  status = solar_master_relay_init();
+  StatusCode status = solar_master_relay_init();
 
   if (!status_ok(status)) {
     LOG_DEBUG("Error initializing Solar Master Relay.\n");
   }
 
+  // Initialize current sense ADC
+  GPIOAddress current_ready_pin = CURRENT_ADC_READY_PIN;
+  ads1015_init(&s_current_ads1015, SOLAR_MASTER_CURRENT_I2C_BUS_PORT, SOLAR_MASTER_CURRENT_ADC_ADDR, &current_ready_pin);
+  status = solar_master_current_init(&s_current_storage, &s_current_ads1015);
+  if (!status_ok(status)) {
+    LOG_DEBUG("Error initializing Solar Master Current.\n");
+  }
+ 
+  // Initialize voltage/temp (slave) reading adcs
+  // Move this loop to solar_master_slave.c init?
+  uint8_t slave_count = 0;
+  Mcp3427PinState addr0 = MCP3427_PIN_STATE_LOW;
+  Mcp3427PinState addr1 = MCP3427_PIN_STATE_LOW;
+  while (slave_count < SOLAR_MASTER_NUM_SOLAR_SLAVES && addr1 < NUM_MCP3427_PIN_STATES) {
+    Mcp3427Setting temp_slave_settings = slave_mcp3427_settings;
+    temp_slave_settings.Adr0 = addr0;
+    temp_slave_settings.Adr1 = addr1;
+    printf("%i %i ", (int) addr0, (int) addr1);
+    addr0++;
+    if (addr0 == NUM_MCP3427_PIN_STATES) {
+      addr0 = MCP3427_PIN_STATE_LOW;
+      addr1++;
+    }
+    status = mcp3427_init(&(s_slave_mcp3427[slave_count]), &temp_slave_settings);
+    if (!status_ok(status)) {
+      printf("failed\n");
+      continue;
+    }
+    status = solar_master_slave_init(&(s_slave_storage[slave_count]), &(s_slave_mcp3427[slave_count]));
+    if (!status_ok(status)) {
+      LOG_DEBUG("Error initializing Solar Master Slave.\n");
+    }
+    printf("succeeded\n");
+    slave_count++;
+  }
+  printf("Initialized slaves\n");
+  
   // Initialize lights_can.
   can_settings.device_id = device_id_lookup[config->board];
-
+  s_solar_master_can_storage.current_storage = &s_current_storage;
+  s_solar_master_can_storage.slave_storage = s_slave_storage;
   status = solar_master_can_init(&s_solar_master_can_storage, &can_settings, config->board);
 
   if (!status_ok(status)) {
     LOG_DEBUG("Error initializing Solar Master CAN.\n");
-  }
-
-  
-
-  // Initialize voltage/temp (slave) reading adc
-  //status = mcp3427_init(&s_slave_mcp3427, &slave_mcp3427_settings);
-  if (!status_ok(status)) {
-    LOG_DEBUG("Error initializing Solar Master Slave adc.\n");
-  }
-  //status = solar_master_slave_init(&s_slave_storage, &s_slave_mcp3427);
-  if (!status_ok(status)) {
-    LOG_DEBUG("Error initializing Solar Master Slave.\n");
   }
 
   Event e = { 0 };
@@ -133,8 +151,9 @@ int main(void) {
     while (event_process(&e) == STATUS_CODE_OK) {
       can_process_event(&e);
       solar_master_relay_process_event(&e);
-      fsm_process_event(&(s_slave_mcp3427.fsm), &e);
-      // TODO(ELEC-502): Add can process event here.
+      for (int i = 0; i < SOLAR_MASTER_NUM_SOLAR_SLAVES; i++) {
+        fsm_process_event(&(s_slave_mcp3427[i].fsm), &e);
+      }
     }
     wait();
   }
