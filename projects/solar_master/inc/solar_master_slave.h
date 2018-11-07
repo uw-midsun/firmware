@@ -1,14 +1,13 @@
 #pragma once
 
-
-#include <stdio.h>
 #include <stddef.h>
+#include <stdio.h>
 #include "log.h"
 #include "mcp3427.h"
 
 #define SOLAR_MASTER_NUM_SOLAR_SLAVES 1
 
-#define SOLAR_MASTER_MCP3427_SAMPLE_SIZE 5 
+#define SOLAR_MASTER_MCP3427_SAMPLE_SIZE 5
 
 #define SOLAR_MASTER_VOLTAGE_SCALING_FACTOR 19
 #define SOLAR_MASTER_TEMP_SCALING_FACTOR 1

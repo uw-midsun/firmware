@@ -1,27 +1,25 @@
 #pragma once
-// Module for interfacing 
+// Module for interfacing
 // Requires ADS1015, event queue to be initialized
 // Monitors ADS1015 over I2C and raises events on input state change.
 
-#include <stdio.h>
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdio.h>
 #include "ads1015.h"
 #include "ads1015_def.h"
-//#include "solar_master_relay.h"
-#include "solar_master_event.h"
-#include "exported_enums.h"
 #include "event_queue.h"
+#include "exported_enums.h"
 #include "log.h"
+#include "solar_master_event.h"
 
 #define SOLAR_MASTER_CURRENT_CHANNEL 0
 
-// TODO: Adjust by temperature??
 #define SOLAR_MASTER_CURRENT_GRADIENT 264
 #define SOLAR_MASTER_CURRENT_INTERCEPT 336
 
 #define SOLAR_MASTER_CURRENT_I2C_BUS_PORT I2C_PORT_1
-#define SOLAR_MASTER_CURRENT_ADC_ADDR 0 // ?????
+#define SOLAR_MASTER_CURRENT_ADC_ADDR 0
 
 #define SOLAR_MASTER_CURRENT_SAMPLE_SIZE 100
 
