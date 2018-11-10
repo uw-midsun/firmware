@@ -7,6 +7,9 @@
 #include "can_uart.h"
 #include "uart.h"
 
+// Uncomment to enable calibration
+// #define DRIVER_DISPLAY_CONFIG_DISABLE_CALIBRATION
+
 #define DRIVER_DISPLAY_CONFIG_UART_BAUDRATE 115200
 
 // Load uart settings for uart initialization

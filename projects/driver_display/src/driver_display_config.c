@@ -1,8 +1,5 @@
 #include "driver_display_config.h"
 
-// Uncomment to enable calibration
-// #define DRIVER_DISPLAY_CONFIG_DISABLE_CALIBRATION
-
 static const UartSettings uart_settings = {
   .baudrate = CAN_HW_BITRATE_500KBPS,        //
   .tx = { .port = GPIO_PORT_B, .pin = 10 },  //
