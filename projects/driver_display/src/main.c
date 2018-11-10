@@ -35,7 +35,7 @@ int main(void) {
   can_uart_init(can_uart);
   can_uart_enable_passthrough(can_uart);
 
-  FlashCalibrationStorage flash_storage = { 0 };
+  DriverDisplayCalibrationFlashStorage flash_storage = { 0 };
 
   // Load data from persist layer
   persist_init(&s_persist_storage, CALIBRATION_FLASH_PAGE, &flash_storage, sizeof(flash_storage),

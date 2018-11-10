@@ -29,7 +29,7 @@ typedef struct DriverDisplayCalibrationStorage {
 typedef struct DriverDisplayCalibrationFlashStorage {
   DriverDisplayBrightnessCalibrationData data;
   void *ptr;
-} FlashCalibrationStorage;
+} DriverDisplayCalibrationFlashStorage;
 
 // Initializes the calibration module
 // GPIOs and ADC must be initialized beforehand.
