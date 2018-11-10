@@ -24,7 +24,6 @@ int main(void) {
   soft_timer_init();
   gpio_init();
   adc_init(ADC_MODE_CONTINUOUS);
-
   crc32_init();
   flash_init();
 
