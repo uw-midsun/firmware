@@ -1,9 +1,6 @@
 #pragma once
 #include <stdint.h>
 
-// The following things shouldn't be used outside this module,
-// but are public so they can be properly unit tested.
-
 #define SOC_VOLTAGE_STEPS 20
 
 // Since floating point is not supported,
