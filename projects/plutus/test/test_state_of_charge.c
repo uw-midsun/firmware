@@ -10,6 +10,8 @@ SocBatterySettings batterySettings1 = {
   .voltage_to_charge = { 100,   150,   250,   400,   600,   900,   1300,  1800,  5100,  12000,
                          14000, 15000, 15800, 16400, 16900, 17300, 17500, 17650, 17750, 17800 },  //
   .voltage_inaccuracy = 1000,                                                                     //
+  .current_efficiency = { 63, 64 },
+  .internal_resistance = { 1, 4 }
 };
 
 SocBatterySettings batterySettings2 = {
@@ -19,6 +21,8 @@ SocBatterySettings batterySettings2 = {
                          18000,  51000,  120000, 140000, 150000, 158000, 164000,
                          169000, 173000, 175000, 176500, 177500, 178000 },  //
   .voltage_inaccuracy = 500,                                                //
+  .current_efficiency = { 3, 4 },
+  .internal_resistance = { 1, 64 }
 };
 
 void setup_test(void) {}
@@ -116,4 +120,24 @@ void test_maximum_charge_for_voltage(void) {
   TEST_ASSERT_EQUAL(1450, soc_maximum_charge_for_voltage(10750, &batterySettings2));
   TEST_ASSERT_EQUAL(112, soc_maximum_charge_for_voltage(234, &batterySettings1));
   TEST_ASSERT_EQUAL(1669, soc_maximum_charge_for_voltage(11845, &batterySettings2));
+}
+
+void test_current_adjusted_voltage(void) {
+  TEST_ASSERT_EQUAL(10, soc_current_adjusted_voltage(13, 12, &batterySettings1));
+  TEST_ASSERT_EQUAL(121, soc_current_adjusted_voltage(123, 128, &batterySettings2));
+}
+
+void test_charge_after_transition(void) {
+  // Regular change
+  TEST_ASSERT_EQUAL(150, soc_charge_after_transition(126, 2003, 12, 2, &batterySettings1));
+  TEST_ASSERT_EQUAL(1700, soc_charge_after_transition(1316, 12502, 128, 4, &batterySettings2));
+  // Reverse change
+  TEST_ASSERT_EQUAL(150, soc_charge_after_transition(174, 1997, -12, 2, &batterySettings1));
+  TEST_ASSERT_EQUAL(1700, soc_charge_after_transition(2084, 12498, -128, 4, &batterySettings2));
+  // Calibrating down
+  TEST_ASSERT_EQUAL(150, soc_charge_after_transition(10000, 1003, 12, 2, &batterySettings1));
+  TEST_ASSERT_EQUAL(1700, soc_charge_after_transition(100000, 12002, 128, 4, &batterySettings2));
+  // Calibrating up
+  TEST_ASSERT_EQUAL(150, soc_charge_after_transition(-10000, 3003, 12, 2, &batterySettings1));
+  TEST_ASSERT_EQUAL(1700, soc_charge_after_transition(-100000, 13002, 128, 4, &batterySettings2));
 }

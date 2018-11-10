@@ -1,5 +1,6 @@
 #include "state_of_charge.h"
 #include <stdint.h>
+#include <stdio.h>
 
 int32_t soc_minimum_charge(SocBatterySettings *batterySettings) {
   return batterySettings->voltage_to_charge[0];
@@ -9,7 +10,7 @@ int32_t soc_maximum_charge(SocBatterySettings *batterySettings) {
   return batterySettings->voltage_to_charge[SOC_VOLTAGE_STEPS - 1];
 }
 
-int32_t soc_minimum_voltage(SocBatterySettings *batterySettings){
+int32_t soc_minimum_voltage(SocBatterySettings *batterySettings) {
   return batterySettings->minimum_voltage;
 }
 
@@ -46,7 +47,8 @@ int32_t soc_charge_for_voltage(int32_t voltage, SocBatterySettings *batterySetti
   int32_t voltage_over_minimum = voltage - soc_minimum_voltage(batterySettings);
 
   int32_t step = voltage_over_minimum / batterySettings->voltage_step;
-  SocFraction interpolation_amount = { voltage_over_minimum % batterySettings->voltage_step, batterySettings->voltage_step };
+  SocFraction interpolation_amount = { voltage_over_minimum % batterySettings->voltage_step,
+                                       batterySettings->voltage_step };
 
   int32_t charge_below = batterySettings->voltage_to_charge[step];
   int32_t charge_above = batterySettings->voltage_to_charge[step + 1];
@@ -63,4 +65,29 @@ int32_t soc_minimum_charge_for_voltage(int32_t voltage, SocBatterySettings *batt
 
 int32_t soc_maximum_charge_for_voltage(int32_t voltage, SocBatterySettings *batterySettings) {
   return soc_charge_for_voltage(voltage + batterySettings->voltage_inaccuracy, batterySettings);
+}
+
+int32_t soc_current_adjusted_voltage(int32_t voltage, int32_t current,
+                                     SocBatterySettings *batterySettings) {
+  return voltage - soc_multiply_fraction(current, batterySettings->internal_resistance);
+}
+
+int32_t soc_charge_after_transition(int32_t old_charge, int32_t voltage, int32_t current,
+                                    int32_t elapsed_time, SocBatterySettings *batterySettings) {
+  int32_t charge_change =
+      soc_multiply_fraction(current * elapsed_time, batterySettings->current_efficiency);
+  int32_t new_charge = old_charge + charge_change;
+  int32_t adjusted_voltage = soc_current_adjusted_voltage(voltage, current, batterySettings);
+
+  int32_t minimum_charge = soc_minimum_charge_for_voltage(adjusted_voltage, batterySettings);
+  if (new_charge <= minimum_charge) {
+    return minimum_charge;
+  }
+
+  int32_t maximum_charge = soc_maximum_charge_for_voltage(adjusted_voltage, batterySettings);
+  if (new_charge >= maximum_charge) {
+    return maximum_charge;
+  }
+
+  return new_charge;
 }
