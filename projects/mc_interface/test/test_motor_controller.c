@@ -44,8 +44,8 @@ static void prv_fake_bus_measurement(MotorControllerCanId id, float bus_voltage,
     .msg_id = WAVESCULPTOR_MEASUREMENT_ID_BUS,
   };
   WaveSculptorCanData can_data = { 0 };
-  can_data.bus_measurement.bus_voltage = bus_voltage;
-  can_data.bus_measurement.bus_current = bus_current;
+  can_data.bus_measurement.bus_voltage_v = bus_voltage;
+  can_data.bus_measurement.bus_current_a = bus_current;
   GenericCanMsg motor_bus_msg = {
     .id = can_id.raw,
     .data = can_data.raw,
