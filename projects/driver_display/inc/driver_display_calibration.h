@@ -10,7 +10,7 @@
 #define DRIVER_DISPLAY_CALIBRATION_PERIOD_MS 10
 #define DRIVER_DISPLAY_CALIBRATION_SAMPLE_SIZE 1000
 #define DRIVER_DISPLAY_CALIBRATION_START_THRESHOLD 400
-#define CALIBRATION_FLASH_PAGE NUM_FLASH_PAGES-1
+#define CALIBRATION_FLASH_PAGE NUM_FLASH_PAGES - 1
 
 typedef enum {
   DRIVER_DISPLAY_CALIBRATION_LOWER_BOUND = 0,
@@ -28,7 +28,7 @@ typedef struct DriverDisplayCalibrationStorage {
 
 typedef struct DriverDisplayCalibrationFlashStorage {
   DriverDisplayBrightnessCalibrationData data;
-  void* ptr;
+  void *ptr;
 } FlashCalibrationStorage;
 
 // Initializes the calibration module
@@ -43,4 +43,3 @@ StatusCode driver_display_calibration_init(const DriverDisplayBrightnessSettings
 // The bound parameter specifies which bound to adjust
 StatusCode driver_display_calibration_bounds(DriverDisplayCalibrationStorage *storage,
                                              DriverDisplayCalibrationBounds bound);
-

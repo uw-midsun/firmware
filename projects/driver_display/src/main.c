@@ -38,7 +38,8 @@ int main(void) {
   FlashCalibrationStorage flash_storage = { 0 };
 
   // Load data from persist layer
-  persist_init(&s_persist_storage, CALIBRATION_FLASH_PAGE, &flash_storage, sizeof(flash_storage), false);
+  persist_init(&s_persist_storage, CALIBRATION_FLASH_PAGE, &flash_storage, sizeof(flash_storage),
+               false);
   persist_ctrl_periodic(&s_persist_storage, false);
 
   LOG_DEBUG("Loaded settings max: %d min: %d\n", flash_storage.data.max, flash_storage.data.min);
@@ -52,7 +53,7 @@ int main(void) {
   driver_display_calibration_bounds(&s_calibration_storage, DRIVER_DISPLAY_CALIBRATION_UPPER_BOUND);
   driver_display_calibration_bounds(&s_calibration_storage, DRIVER_DISPLAY_CALIBRATION_LOWER_BOUND);
 #endif
-  
+
   // Init brightness module
   driver_display_brightness_init(&s_brightness_storage, driver_display_brightness_config_load(),
                                  &s_calibration_data);
