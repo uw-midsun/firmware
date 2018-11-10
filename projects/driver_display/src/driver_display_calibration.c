@@ -31,41 +31,9 @@ static void prv_adc_callback(AdcChannel adc_channel, void *context) {
   adc_read_raw(adc_channel, adc_reading);
 }
 
-#if 0
-static void driver_display_calibration_start_timer_callback(SoftTimerId timer_id, void *context) {
-  DriverDisplayCalibrationStartDetection* start_detection = context;
-  if (start_detection->sample_sum < DRIVER_DISPLAY_CALIBRATION_START_THRESHOLD) {
-    printf("Should start calibration now\n");
-
-    start_detection->started = true;
-
-    return;
-  }
-  printf("Reading total %d threshold %d\n", start_detection->sample_sum, DRIVER_DISPLAY_CALIBRATION_START_THRESHOLD);
-  start_detection->sample_count = start_detection->sample_sum = 0;
-
-  soft_timer_start_millis(1000, driver_display_calibration_start_timer_callback, start_detection, NULL);
-}
-
-static void driver_display_calibration_start_adc_read(AdcChannel adc_channel, void* context) {
-  uint16_t reading;
-  adc_read_raw(adc_channel, &reading);
-
-  DriverDisplayCalibrationStartDetection* start_detection = context;
-  
-  ++(start_detection->sample_count);
-  start_detection->sample_sum += reading;
-  
-  if (!start_detection->started) {
-    adc_register_callback(adc_channel, driver_display_calibration_start_adc_read, start_detection);
-  }
-}
-#endif
-
 StatusCode driver_display_calibration_init(const DriverDisplayBrightnessSettings *settings,
                                            DriverDisplayBrightnessCalibrationData *data,
-                                           DriverDisplayCalibrationStorage *storage,
-                                           DriverDisplayCalibrationStartDetection* detection) {
+                                           DriverDisplayCalibrationStorage *storage) {
   if (storage == NULL || data == NULL || settings == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
@@ -88,27 +56,6 @@ StatusCode driver_display_calibration_init(const DriverDisplayBrightnessSettings
   storage->adc_channel = adc_channel;
 
   adc_register_callback(adc_channel, prv_adc_callback, NULL);
-
-  /** Button calibration
-   * Also in driver_display_calibration_init, call soft_timer_set_millis on another function after 1000 ms
-   * That function should check (1000 ms later) for ADC reading
-   * Check every 1 second if the button was pressed down during the last second
-
-  AdcChannel adc_channel_calibration_start;
-  GpioAddress start_address = {
-    .port = GPIO_PORT_A, .pin = 1
-  };
-
-  status_ok_or_return(gpio_init_pin(&start_address, &adc_settings));
-  status_ok_or_return(adc_get_channel(start_address, &adc_channel_calibration_start));
-  status_ok_or_return(adc_set_channel(adc_channel_calibration_start, true));
-
-  detection->adc_channel = adc_channel_calibration_start;
-  detection->sample_count = detection->sample_sum = detection->started = 0;
-
-  adc_register_callback(adc_channel_calibration_start, driver_display_calibration_start_adc_read, detection);
-  soft_timer_start_millis(1000, driver_display_calibration_start_timer_callback, detection, NULL);
-  */
 
   return soft_timer_start_millis(DRIVER_DISPLAY_CALIBRATION_PERIOD_MS,
                                               prv_timer_callback, storage, NULL);

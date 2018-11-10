@@ -17,14 +17,6 @@ static PersistStorage s_persist_storage;
 static DriverDisplayCalibrationStorage s_calibration_storage;
 static DriverDisplayBrightnessCalibrationData s_calibration_data;
 static DriverDisplayBrightnessStorage s_brightness_storage;
-static DriverDisplayCalibrationStartDetection s_start_detection;
-
-#define CALIBRATION_FLASH_PAGE 63
-
-typedef struct FlashCalibrationStorage {
-  DriverDisplayBrightnessCalibrationData data;
-  void* ptr;
-} FlashCalibrationStorage;
 
 int main(void) {
   // Init everything to be used
@@ -43,46 +35,33 @@ int main(void) {
   can_uart_init(can_uart);
   can_uart_enable_passthrough(can_uart);
 
-  // Test calibration
-  // TODO(ELEC-434): add persist layer so that the calibration does not need to be run everytime
-
   FlashCalibrationStorage flash_storage = { 0 };
 
   // Load data from persist layer
   persist_init(&s_persist_storage, CALIBRATION_FLASH_PAGE, &flash_storage, sizeof(flash_storage), false);
   persist_ctrl_periodic(&s_persist_storage, false);
-  printf("Loaded settings max: %d min: %d\n", flash_storage.data.max, flash_storage.data.min);
+
+  LOG_DEBUG("Loaded settings max: %d min: %d\n", flash_storage.data.max, flash_storage.data.min);
+
   s_calibration_data.max = flash_storage.data.max;
   s_calibration_data.min = flash_storage.data.min;
 
+#ifndef DRIVER_DISPLAY_CONFIG_DISABLE_CALIBRATION
   driver_display_calibration_init(driver_display_brightness_config_load(), &s_calibration_data,
-                                  &s_calibration_storage,
-                                  &s_start_detection);
-  // driver_display_calibration_bounds(&s_calibration_storage, DRIVER_DISPLAY_CALIBRATION_UPPER_BOUND);
-  // driver_display_calibration_bounds(&s_calibration_storage, DRIVER_DISPLAY_CALIBRATION_LOWER_BOUND);
+                                  &s_calibration_storage);
+  driver_display_calibration_bounds(&s_calibration_storage, DRIVER_DISPLAY_CALIBRATION_UPPER_BOUND);
+  driver_display_calibration_bounds(&s_calibration_storage, DRIVER_DISPLAY_CALIBRATION_LOWER_BOUND);
+#endif
   
   // Init brightness module
   driver_display_brightness_init(&s_brightness_storage, driver_display_brightness_config_load(),
                                  &s_calibration_data);
-  
 
   while (true) {
     // If the photodiode information was unable to be read
-    /*if (s_brightness_storage.reading_ok_flag == false) {
+    if (s_brightness_storage.reading_ok_flag == false) {
       LOG_DEBUG("Failed to read photosensor ADC");
     }
-
-    // Start calibration when it detects button press
-    if (s_start_detection.started) {
-      driver_display_calibration_bounds(&s_calibration_storage, DRIVER_DISPLAY_CALIBRATION_UPPER_BOUND);
-      driver_display_calibration_bounds(&s_calibration_storage, DRIVER_DISPLAY_CALIBRATION_LOWER_BOUND);
-      break;
-    }
-    */
-  }
-
-  while (true) {
-    // Prevent from terminating
   }
   return 0;
 }
