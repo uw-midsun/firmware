@@ -2,6 +2,24 @@
 #include <stdint.h>
 #include <stdio.h>
 
+// This multiplies the value by the fractional multiplier.
+// This will obviously overflow if the result is too large.
+// It will also overflow for 2,147,483,647 * 2,147,483,647/2,147,483,647, so don't do that.
+// It rounds the result to the nearest integer, and .5s always round away from zero.
+// If this bias becomes a problem, it should be changed to round in some other manner.
+int32_t soc_multiply_fraction(int32_t value, SocFraction multiplier) {
+  int64_t product = (int64_t)value * (int64_t)multiplier.numerator;
+  int64_t round_corrected_product;
+  // != is xor. This always rounds away from zero,
+  // since integer truncation always goes towards zero.
+  if ((product < 0) != (multiplier.denominator < 0)) {
+    round_corrected_product = product - (int64_t)(multiplier.denominator / 2);
+  } else {
+    round_corrected_product = product + (int64_t)(multiplier.denominator / 2);
+  }
+  return (int32_t)(round_corrected_product / multiplier.denominator);
+}
+
 int32_t soc_minimum_charge(SocBatterySettings *batterySettings) {
   return batterySettings->voltage_to_charge[0];
 }
@@ -16,23 +34,6 @@ int32_t soc_minimum_voltage(SocBatterySettings *batterySettings) {
 
 int32_t soc_maximum_voltage(SocBatterySettings *batterySettings) {
   return batterySettings->minimum_voltage + (SOC_VOLTAGE_STEPS - 1) * batterySettings->voltage_step;
-}
-
-// This multiplies the value by the fractional multiplier.
-// This will obviously overflow if the result is too large.
-// It will also overflow for 2,147,483,647 * 2,147,483,647/2,147,483,647, so don't do that.
-// It rounds the result to the nearest integer, and .5s always round away from zero.
-// If this bias becomes a problem, it should be changed to round in some other manner.
-int32_t soc_multiply_fraction(int32_t value, SocFraction multiplier) {
-  int64_t product = (int64_t)value * (int64_t)multiplier.numerator;
-  int64_t round_corrected_product;
-  // != is xor. This always rounds away from zero.
-  if ((product < 0) != (multiplier.denominator < 0)) {
-    round_corrected_product = product - (int64_t)(multiplier.denominator / 2);
-  } else {
-    round_corrected_product = product + (int64_t)(multiplier.denominator / 2);
-  }
-  return (int32_t)(round_corrected_product / multiplier.denominator);
 }
 
 int32_t soc_charge_for_voltage(int32_t voltage, SocBatterySettings *batterySettings) {

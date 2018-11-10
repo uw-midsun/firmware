@@ -53,15 +53,39 @@ typedef struct SocBatterySettings {
 } SocBatterySettings;
 
 // These functions are all pure.
+
+// Returns the rounded product of the first integer by the second fraction.
+int32_t soc_multiply_fraction(int32_t value, SocFraction multiplier);
+
+// Returns the minimum and maximum charges of the passed |batterySettings|.
 int32_t soc_minimum_charge(SocBatterySettings *batterySettings);
 int32_t soc_maximum_charge(SocBatterySettings *batterySettings);
+
+// Returns the minimum and maximum voltages of the passed |batterySettings|.
+// Minimum voltage is just a property access, but is in a function to fit with the other functions.
 int32_t soc_minimum_voltage(SocBatterySettings *batterySettings);
 int32_t soc_maximum_voltage(SocBatterySettings *batterySettings);
-int32_t soc_multiply_fraction(int32_t value, SocFraction multiplier);
+
+// Returns the expected charge for the passed |voltage|.
+// Note the actual charge can vary by some amount.
+// This is a good place to start for initial calibration.
+// The |soc_current_adjusted_voltage| should be the voltage provided.
 int32_t soc_charge_for_voltage(int32_t voltage, SocBatterySettings *batterySettings);
+
+// Returns the minimum or maximum reasonable charge at the given |voltage|.
+// The size of the range can vary, depending on the voltage.
 int32_t soc_minimum_charge_for_voltage(int32_t voltage, SocBatterySettings *batterySettings);
 int32_t soc_maximum_charge_for_voltage(int32_t voltage, SocBatterySettings *batterySettings);
+
+// The voltage across the battery is affected by the current passing through the battery.
+// For the purposes of determining the charge in the battery, this effect should be discounted.
+// This returns the battery's voltage adjusted for this effect.
 int32_t soc_current_adjusted_voltage(int32_t voltage, int32_t current,
                                      SocBatterySettings *batterySettings);
+
+// Returns the current charge in the battery,
+// based on the |old_charge|,
+// as well as the state of the |current| for the |elapsed_time|,
+// and recalibrated if the |voltage| indicates it might be wrong.
 int32_t soc_charge_after_transition(int32_t old_charge, int32_t voltage, int32_t current,
                                     int32_t elapsed_time, SocBatterySettings *batterySettings);
