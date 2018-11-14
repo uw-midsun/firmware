@@ -338,13 +338,13 @@ StatusCode nmea_get_vtg_sentence(const char *rx_arr, NmeaVtgSentence *result) {
     }
 
     // Just discarding data we don't need
-    token = strsep(&rx_arr_copy_ptr, ",");    // Reference (true)
-    token = strsep(&rx_arr_copy_ptr, ",");    // Course over ground (magnetic)
-    token = strsep(&rx_arr_copy_ptr, ",");    // Reference (magnetic)
-    token = strsep(&rx_arr_copy_ptr, ",");    // Speed over ground (knots)
-    token = strsep(&rx_arr_copy_ptr, ",");    // Units (knots)
+    token = strsep(&rx_arr_copy_ptr, ",");  // Reference (true)
+    token = strsep(&rx_arr_copy_ptr, ",");  // Course over ground (magnetic)
+    token = strsep(&rx_arr_copy_ptr, ",");  // Reference (magnetic)
+    token = strsep(&rx_arr_copy_ptr, ",");  // Speed over ground (knots)
+    token = strsep(&rx_arr_copy_ptr, ",");  // Units (knots)
 
-    // Get speed over ground (kilometer per hour)
+    // Get speed over ground (kilometers per hour)
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       char fraction_string[5] = { 0 };
