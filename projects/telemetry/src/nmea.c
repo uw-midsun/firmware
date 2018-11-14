@@ -99,7 +99,7 @@ StatusCode nmea_sentence_type(const char *rx_arr, NmeaMessageId *result) {
     message_id[i - 3] = rx_arr[i];
   }
 
-  // Making sure array index 3 is \n
+  // Making sure array index 3 is \0
   message_id[3] = '\0';
 
   // Parsing which type of NMEA message this is
@@ -159,6 +159,7 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
     // Get rid of $GPGGA
     char *token = strsep(&rx_arr_copy_ptr, ",");
 
+    // Get time
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       char fraction_string[5] = { 0 };
@@ -169,6 +170,7 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
       result->time.sss = fraction;
     }
 
+    // Get latitude
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       char fraction_string[5] = { 0 };
@@ -179,11 +181,13 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
       result->latitude.fraction = fraction;
     }
 
+    // Get North/South indicator
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       result->north_south = token[0];
     }
 
+    // Get longitude
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       char fraction_string[5] = { 0 };
@@ -194,11 +198,13 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
       result->longitude.fraction = fraction;
     }
 
+    // Get East/West indicator
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       result->east_west = token[0];
     }
 
+    // Get position fix indicator
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       uint8_t temp_position_fix = 0;
@@ -224,12 +230,13 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
       }
     }
 
+    // Get satellites used
     token = strsep(&rx_arr_copy_ptr, ",");
-
     if (token != NULL) {
       sscanf(token, "%" SCNu16, &result->satellites_used);
     }
 
+    // Get horizontal dilution of precision
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       char fraction_string[5] = { 0 };
@@ -239,6 +246,7 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
       result->hdop_fraction = fraction;
     }
 
+    // Get mean sea level altitude
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       char fraction_string[5] = { 0 };
@@ -248,11 +256,13 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
       result->msl_altitude_fraction = fraction;
     }
 
+    // Get mean sea level altitude units
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       result->units_msl_altitude = token[0];
     }
 
+    // Get geoid separation
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       char fraction_string[5] = { 0 };
@@ -262,16 +272,19 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
       result->geoid_seperation_fraction = fraction;
     }
 
+    // Get geoid separation units
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       result->units_geoid_seperation = token[0];
     }
 
+    // Get age of differential corrections
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       sscanf(token, "%" SCNd16, &result->adc);
     }
 
+    // Get differential reference station
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       sscanf(token, "%" SCNd16, &result->drs);
@@ -313,6 +326,8 @@ StatusCode nmea_get_vtg_sentence(const char *rx_arr, NmeaVtgSentence *result) {
 
     // First call is to discard $GPVTG
     token = strsep(&rx_arr_copy_ptr, ",");
+
+    // Get course over ground (true)
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       char fraction_string[5] = { 0 };
@@ -323,11 +338,13 @@ StatusCode nmea_get_vtg_sentence(const char *rx_arr, NmeaVtgSentence *result) {
     }
 
     // Just discarding data we don't need
-    token = strsep(&rx_arr_copy_ptr, ",");
-    token = strsep(&rx_arr_copy_ptr, ",");
-    token = strsep(&rx_arr_copy_ptr, ",");
-    token = strsep(&rx_arr_copy_ptr, ",");
-    token = strsep(&rx_arr_copy_ptr, ",");
+    token = strsep(&rx_arr_copy_ptr, ",");    // Reference (true)
+    token = strsep(&rx_arr_copy_ptr, ",");    // Course over ground (magnetic)
+    token = strsep(&rx_arr_copy_ptr, ",");    // Reference (magnetic)
+    token = strsep(&rx_arr_copy_ptr, ",");    // Speed over ground (knots)
+    token = strsep(&rx_arr_copy_ptr, ",");    // Units (knots)
+
+    // Get speed over ground (kilometer per hour)
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       char fraction_string[5] = { 0 };
