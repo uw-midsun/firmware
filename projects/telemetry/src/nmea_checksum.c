@@ -4,32 +4,31 @@
 #include <stdlib.h>
 #include <string.h>
 
-// This error code makes sense because it is used in the function which
-// converts a single char (which represents a hex digit). Therefore the bounds
-// on its result is [0, 15]. 0x10 = 16 in base 10, therefore it can be
-// used as an error result because it should never occur
-#define NMEA_CHECKSUM_HEX_ERROR 0x10
-
-// Private method to convert hex char to int
-static uint8_t prv_hex_to_int(char h) {
+// Private method to convert hex char (stored in the 'h' parameter) to an int
+// Store the result in the result pointer (which cannot be NULL)
+// Returns STATUS_CODE_OK if the conversion was successful
+static StatusCode prv_hex_to_int(char h, uint8_t *result) {
+  if (result == NULL) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Cannot supply NULL pointer as arg\n");
+  }
   if ('0' <= h && h <= '9') {
-    return (uint8_t)(h - '0');
+    *result = (uint8_t)(h - '0');
+    return STATUS_CODE_OK;
   } else if ('A' <= h && h <= 'F') {
-    // We only care about uppercase because the NMEA messages are all caps
-    return (uint8_t)(h - 'A' + 10);
+    // We only care about uppercase letters because the NMEA messages are all caps
+    *result = (uint8_t)(h - 'A' + 10);
+    return STATUS_CODE_OK;
   }
   // Just to make the checksum fail
-  return NMEA_CHECKSUM_HEX_ERROR;
+  return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid char supplied, cannot convert to hex\n");
 }
 
 static StatusCode prv_checksum_to_int(char tens, char ones, uint8_t *computed) {
-  uint8_t int_tens = prv_hex_to_int(tens);
-  uint8_t int_ones = prv_hex_to_int(ones);
+  uint8_t int_tens = 0;
+  uint8_t int_ones = 0;
+  status_ok_or_return(prv_hex_to_int(tens, &int_tens));
+  status_ok_or_return(prv_hex_to_int(ones, &int_ones));
 
-  // Checks for the 16 because it is the result sent in case of error
-  if (ones == NMEA_CHECKSUM_HEX_ERROR || tens == NMEA_CHECKSUM_HEX_ERROR) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "Could not convert hex chars to ints\n");
-  }
   if (computed != NULL) {
     // Bitwise operation is equivalent to "int_tens * 16 + int_ones"
     // since both inputs are guaranteed to be [0, 15]
