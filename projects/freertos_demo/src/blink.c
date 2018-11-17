@@ -33,8 +33,10 @@ void blink_task(void *params) {
   };
 
   const GpioAddress leds[] = {
-    { .port = GPIO_PORT_B, .pin = 5 },  //
-    { .port = GPIO_PORT_B, .pin = 4 },  //
+    { .port = GPIO_PORT_B, .pin = 5 },   //
+    { .port = GPIO_PORT_B, .pin = 4 },   //
+    { .port = GPIO_PORT_B, .pin = 3 },   //
+    { .port = GPIO_PORT_A, .pin = 15 },  //
   };
 
   // Initialize LED GPIOs
