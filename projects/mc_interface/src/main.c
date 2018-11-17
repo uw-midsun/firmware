@@ -16,6 +16,7 @@
 #include "gpio_it.h"
 #include "log.h"
 #include "soft_timer.h"
+#include "debug_led.h"
 
 typedef enum {
   MOTOR_EVENT_SYSTEM_CAN_RX = 0,
@@ -113,6 +114,9 @@ int main(void) {
 
   soft_timer_start_seconds(1, prv_periodic_debug, NULL, NULL);
 
+  debug_led_init(DEBUG_LED_BLUE_A);
+  debug_led_init(DEBUG_LED_GREEN);
+  debug_led_init(DEBUG_LED_RED);
   while (true) {
     Event e = { 0 };
     while (status_ok(event_process(&e))) {

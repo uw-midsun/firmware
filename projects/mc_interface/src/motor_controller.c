@@ -6,6 +6,7 @@
 #include "critical_section.h"
 #include "soft_timer.h"
 #include "wavesculptor.h"
+#include "debug_led.h"
 
 // Torque control mode:
 // - velocity = +/-100 m/s
@@ -45,6 +46,7 @@ static void prv_bus_measurement_rx(const GenericCanMsg *msg, void *context) {
   }
 }
 
+uint8_t counter2 = 1;
 static void prv_velocity_measurement_rx(const GenericCanMsg *msg, void *context) {
   MotorControllerStorage *storage = context;
   WaveSculptorCanId can_id = { .raw = msg->id };
@@ -63,6 +65,11 @@ static void prv_velocity_measurement_rx(const GenericCanMsg *msg, void *context)
     storage->speed_rx_bitset = 0;
     storage->settings.speed_cb(storage->speed_cms, NUM_MOTOR_CONTROLLERS,
                                storage->settings.context);
+  }
+  counter2++;
+  if (counter2 % 20 == 0) {
+    counter2 = 1;
+    debug_led_toggle_state(DEBUG_LED_GREEN);
   }
 }
 

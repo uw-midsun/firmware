@@ -6,6 +6,7 @@
 #include "log.h"
 #include "mcp2515_defs.h"
 #include "delay.h"
+#include "debug_led.h"
 
 #define MCP2515_MAX_WRITE_BUFFER_LEN 10
 
@@ -267,11 +268,17 @@ StatusCode mcp2515_tx(Mcp2515Storage *storage, uint32_t id, bool extended, uint6
   return STATUS_CODE_OK;
 }
 
+uint8_t counter3 = 1;
 void mcp2515_poll(Mcp2515Storage *storage) {
   GPIOState state = NUM_GPIO_STATES;
   gpio_get_state(&storage->int_pin, &state);
 
   if (state == GPIO_STATE_LOW) {
     prv_handle_int(&storage->int_pin, storage);
+    counter3++;
+  }
+  if (counter3 % 20 == 0) {
+    counter3 = 1;
+    debug_led_toggle_state(DEBUG_LED_RED);
   }
 }
