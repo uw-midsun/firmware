@@ -6,7 +6,6 @@
 #include "delay.h"
 #include "gpio.h"
 #include "interrupt.h"
-#include "soft_timer.h"
 #include "status.h"
 #include "uart.h"
 #include "xbee.h"
@@ -40,12 +39,12 @@ static void prv_gps_set_power_state(bool powered) {
 }
 
 // Stage 1 of initialization: pull high on ON/OFF line
-static void prv_gps_init_stage_1(SoftTimerId timer_id, void *context) {
+static void prv_gps_init_stage_1() {
   gpio_set_state(s_settings->pin_on_off, GPIO_STATE_HIGH);
 }
 
 // Stage 2: set ON/OFF line to low
-static void prv_gps_init_stage_2(SoftTimerId timer_id, void *context) {
+static void prv_gps_init_stage_2() {
   gpio_set_state(s_settings->pin_on_off, GPIO_STATE_LOW);
 }
 
@@ -67,9 +66,11 @@ StatusCode gps_init(GpsSettings *settings) {
   status_ok_or_return(gpio_init_pin(s_settings->pin_on_off, s_settings->settings_on_off));
 
   prv_gps_set_power_state(true);
-  soft_timer_start_millis(1000, prv_gps_init_stage_1, NULL, NULL);
-  soft_timer_start_millis(1100, prv_gps_init_stage_2, NULL, NULL);
-  delay_s(2);
+  delay_s(1);
+  prv_gps_init_stage_1();
+  delay_ms(100);
+  prv_gps_init_stage_2();
+  delay_ms(900);
 
   // Turning off messages we don't need
   char *ggl_off = "$PSRF103,01,00,00,01*27\r\n";
