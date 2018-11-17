@@ -73,16 +73,16 @@ StatusCode gps_init(GpsSettings *settings) {
   delay_ms(900);
 
   // Turning off messages we don't need
-  char *ggl_off = "$PSRF103,01,00,00,01*27\r\n";
+  char *ggl_off = GPS_GLL_OFF;
   uart_tx(s_settings->port, (uint8_t *)&ggl_off, strlen(ggl_off));
 
-  char *gsa_off = "$PSRF103,02,00,00,01*26\r\n";
+  char *gsa_off = GPS_GSA_OFF;
   uart_tx(s_settings->port, (uint8_t *)&gsa_off, strlen(gsa_off));
 
-  char *gsv_off = "$PSRF103,03,00,00,01*27\r\n";
+  char *gsv_off = GPS_GSV_OFF;
   uart_tx(s_settings->port, (uint8_t *)&gsv_off, strlen(gsv_off));
 
-  char *rmc_off = "$PSRF103,04,00,00,01*20\r\n";
+  char *rmc_off = GPS_RMC_OFF;
   uart_tx(s_settings->port, (uint8_t *)&rmc_off, strlen(rmc_off));
 
   return STATUS_CODE_OK;

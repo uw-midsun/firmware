@@ -14,6 +14,11 @@
 // A GGA message will be around a hundred characters.
 #define GPS_MAX_NMEA_LENGTH 128
 
+#define GPS_GLL_OFF "$PSRF103,01,00,00,01*27\r\n"
+#define GPS_GSA_OFF "$PSRF103,02,00,00,01*26\r\n"
+#define GPS_GSV_OFF "$PSRF103,03,00,00,01*27\r\n"
+#define GPS_RMC_OFF "$PSRF103,04,00,00,01*20\r\n"
+
 // This struct basically contains all the info about pins etc.
 // Check this document on page 4:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/evm-gps-f4.pdf
