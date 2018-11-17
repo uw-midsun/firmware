@@ -7,6 +7,8 @@
 #include "mcp2515_defs.h"
 #include "delay.h"
 #include "debug_led.h"
+#include "soft_timer.h"
+#include "log.h"
 
 #define MCP2515_MAX_WRITE_BUFFER_LEN 10
 
@@ -111,12 +113,14 @@ static void prv_handle_error(Mcp2515Storage *storage, uint8_t int_flags, uint8_t
   // Clear flags
   if (int_flags & MCP2515_CANINT_EFLAG) {
     // Clear error flag
+    LOG_DEBUG("MCP2515_CANINT_EFLAG error\n");
     prv_bit_modify(storage, MCP2515_CTRL_REG_CANINTF, MCP2515_CANINT_EFLAG, 0);
   }
 
   if (err_flags & (MCP2515_EFLG_RX0_OVERFLOW | MCP2515_EFLG_RX1_OVERFLOW)) {
     // RX overflow - clear error flags
     uint8_t clear = 0;
+    LOG_DEBUG("MCP2515_EFLG_RX0_OVERFLOW | MCP2515_EFLG_RX1_OVERFLOW error\n");
     prv_write(storage, MCP2515_CTRL_REG_EFLG, &clear, 1);
   }
 
@@ -126,6 +130,7 @@ static void prv_handle_error(Mcp2515Storage *storage, uint8_t int_flags, uint8_t
 
   if (err_flags & MCP2515_EFLG_TX_BUS_OFF) {
     // Bus off - attempt to recover by resetting the chip?
+    LOG_DEBUG("MCP2515_EFLG_TX_BUS_OFF error\n");
     if (storage->bus_err_cb != NULL) {
       storage->bus_err_cb(&storage->errors, storage->context);
     }
@@ -269,6 +274,25 @@ StatusCode mcp2515_tx(Mcp2515Storage *storage, uint32_t id, bool extended, uint6
 }
 
 uint8_t counter3 = 1;
+uint64_t counter4 = 0;
+void mcp2515_watchdog(SoftTimerID timer_id, void *context) {
+  Mcp2515Storage *storage = context;
+  if (counter4 == 0) {
+    prv_handle_int(&storage->int_pin, storage);
+    LOG_DEBUG("Interrupt timeout\n");
+    // uint8_t clear = 0;
+    // prv_write(storage, MCP2515_CTRL_REG_EFLG, &clear, 1);
+    // clear = 0;
+    // prv_write(storage, MCP2515_CTRL_REG_CANINTF, &clear, 1);
+  }
+
+  
+  counter4 = 0;
+  if (!status_ok(soft_timer_start_seconds(15, mcp2515_watchdog, storage, NULL))) {
+    LOG_DEBUG("Could not start MCP watchdog 2\n");
+  }
+}
+
 void mcp2515_poll(Mcp2515Storage *storage) {
   GPIOState state = NUM_GPIO_STATES;
   gpio_get_state(&storage->int_pin, &state);
@@ -276,6 +300,7 @@ void mcp2515_poll(Mcp2515Storage *storage) {
   if (state == GPIO_STATE_LOW) {
     prv_handle_int(&storage->int_pin, storage);
     counter3++;
+    counter4++;
   }
   if (counter3 % 20 == 0) {
     counter3 = 1;

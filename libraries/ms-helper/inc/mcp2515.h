@@ -11,6 +11,7 @@
 #include "gpio.h"
 #include "spi.h"
 #include "status.h"
+#include "soft_timer.h"
 
 // Called on CAN messsage RX
 typedef void (*Mcp2515RxCb)(uint32_t id, bool extended, uint64_t data, size_t dlc, void *context);
@@ -73,3 +74,5 @@ StatusCode mcp2515_tx(Mcp2515Storage *storage, uint32_t id, bool extended, uint6
 
 // Poll interrupt pin for updates
 void mcp2515_poll(Mcp2515Storage *storage);
+
+void mcp2515_watchdog(SoftTimerID timer_id, void *context);

@@ -17,6 +17,7 @@
 #include "log.h"
 #include "soft_timer.h"
 #include "debug_led.h"
+#include "status.h"
 
 typedef enum {
   MOTOR_EVENT_SYSTEM_CAN_RX = 0,
@@ -117,6 +118,9 @@ int main(void) {
   debug_led_init(DEBUG_LED_BLUE_A);
   debug_led_init(DEBUG_LED_GREEN);
   debug_led_init(DEBUG_LED_RED);
+  if(!status_ok(soft_timer_start_seconds(15, mcp2515_watchdog, s_can_mcp2515.mcp2515, NULL))){
+    LOG_DEBUG("Could not start MCP watchdog\n");
+  }
   while (true) {
     Event e = { 0 };
     while (status_ok(event_process(&e))) {
