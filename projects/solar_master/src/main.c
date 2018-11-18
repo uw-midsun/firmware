@@ -63,8 +63,8 @@ int main(void) {
   static uint8_t slave_addr_lookup_reverse[8] = { 0, 0, 1, 0, 0, 0, 0, 0 };
 
   Mcp3427PinState adc_address_map[SOLAR_MASTER_NUM_SOLAR_SLAVES][2] = {
-    {MCP3427_PIN_STATE_FLOAT, MCP3427_PIN_STATE_FLOAT}, 
-    {MCP3427_PIN_STATE_LOW, MCP3427_PIN_STATE_HIGH}
+    { MCP3427_PIN_STATE_FLOAT, MCP3427_PIN_STATE_FLOAT },
+    { MCP3427_PIN_STATE_LOW, MCP3427_PIN_STATE_HIGH }
   };
 
   // Move this loop to solar_master_slave.c init?
@@ -74,11 +74,11 @@ int main(void) {
     temp_slave_settings.Adr1 = adc_address_map[i][1];
     status = mcp3427_init(&(s_slave_mcp3427[i]), &temp_slave_settings);
     if (!status_ok(status)) {
-      LOG_DEBUG("Error initializing Solar Slave ADC with addressing pins %i, %i.\n", temp_slave_settings.Adr0, temp_slave_settings.Adr1);
+      LOG_DEBUG("Error initializing Solar Slave ADC with addressing pins %i, %i.\n",
+                temp_slave_settings.Adr0, temp_slave_settings.Adr1);
       continue;
     }
-    status =
-        solar_master_slave_init(&(s_slave_storage[i]), &(s_slave_mcp3427[i]));
+    status = solar_master_slave_init(&(s_slave_storage[i]), &(s_slave_mcp3427[i]));
     if (!status_ok(status)) {
       LOG_DEBUG("Error initializing Solar Master Slave.\n");
     }

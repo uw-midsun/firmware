@@ -30,7 +30,8 @@ static void prv_periodic_tx_telemetry(SoftTimerID timer_id, void *context) {
                       SOLAR_MASTER_TEMP_SCALING_FACTOR / SOLAR_MASTER_MCP3427_SAMPLE_SIZE);
 
     module_id = i;
-    LOG_DEBUG("module: %i, voltage: %i, current: %i, temp: %i\n", module_id, voltage, current, temp);
+    LOG_DEBUG("module: %i, voltage: %i, current: %i, temp: %i\n", module_id, voltage, current,
+              temp);
     if (storage->board == SOLAR_MASTER_CONFIG_BOARD_FRONT) {
       module_id |= (1 << 3);
       CAN_TRANSMIT_SOLAR_DATA_FRONT(module_id, voltage, current, temp);

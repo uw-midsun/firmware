@@ -25,8 +25,8 @@ static void prv_voltage_reading_cb(uint32_t value, void *context) {
         (averaged_voltage / SOLAR_MASTER_MCP3427_SAMPLE_SIZE) * SOLAR_MASTER_VOLTAGE_SCALING_FACTOR;
     averaged_temp =
         (averaged_temp / SOLAR_MASTER_MCP3427_SAMPLE_SIZE) * SOLAR_MASTER_TEMP_SCALING_FACTOR;
-    printf("%p: Voltage: %i mV, Temperature: %i mV\n", (void *)slave->mcp3427, (int)averaged_voltage,
-           (int)averaged_temp);
+    printf("%p: Voltage: %i mV, Temperature: %i mV\n", (void *)slave->mcp3427,
+    (int)averaged_voltage, (int)averaged_temp);
     */
   }
 }

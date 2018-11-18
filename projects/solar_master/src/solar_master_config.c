@@ -72,7 +72,7 @@ StatusCode solar_master_config_init(void) {
   }
   s_config.board =
       (state == GPIO_STATE_HIGH) ? SOLAR_MASTER_CONFIG_BOARD_FRONT : SOLAR_MASTER_CONFIG_BOARD_REAR;
-  
+
   s_config.can_settings->device_id = device_id_lookup[s_config.board];
   return STATUS_CODE_OK;
 }

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "i2c.h"
 #include "can.h"
 #include "can_msg_defs.h"
+#include "i2c.h"
 #include "log.h"
 #include "mcp3427.h"
 #include "solar_master_event.h"
