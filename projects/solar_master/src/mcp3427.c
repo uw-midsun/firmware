@@ -5,7 +5,7 @@
 #include "soft_timer.h"
 
 #define MCP3427_FSM_NAME "MCP3427 FSM"
-#define MCP3427_MAX_CONV_TIME_MS 200
+#define MCP3427_MAX_CONV_TIME_MS 50
 
 FSM_DECLARE_STATE(channel_1_trigger);
 FSM_DECLARE_STATE(channel_1_readback);
@@ -34,7 +34,7 @@ FSM_STATE_TRANSITION(channel_2_readback) {
 
 static void prv_raise_ready(SoftTimerID timer_id, void *context) {
   Mcp3427Storage *storage = (Mcp3427Storage *)context;
-  event_raise(storage->data_ready_event, 0);
+  event_raise(storage->data_ready_event, storage->addr ^ (MCP3427_DEVICE_CODE << 3));
 }
 
 static uint16_t s_data_mask_lookup[] = {
@@ -50,12 +50,13 @@ static void prv_channel_ready(struct FSM *fsm, const Event *e, void *context) {
   // The third byte is the config/status byte. It contains the ready bit.
   uint8_t config = read_data[2];
   // If the latest data is not ready, we log it.
+
   if (config & MCP3427_RDY_MASK) {
     LOG_WARN("Ready bit not cleared. Data may not be the latest data available.\n");
     if (storage->fault_callback != NULL) {
       storage->fault_callback(storage->fault_context);
     }
-    event_raise(storage->data_trigger_event, 0);
+    event_raise(storage->data_trigger_event, storage->addr ^ (MCP3427_DEVICE_CODE << 3));
     return;
   }
 
@@ -75,7 +76,7 @@ static void prv_channel_ready(struct FSM *fsm, const Event *e, void *context) {
     storage->callback(data, storage->context);
   }
 
-  event_raise(storage->data_trigger_event, 0);
+  event_raise(storage->data_trigger_event, storage->addr ^ (MCP3427_DEVICE_CODE << 3));
 }
 
 // Trigger data read. Schedule a data ready event to be raised.
@@ -84,6 +85,7 @@ static void prv_channel_trigger(struct FSM *fsm, const Event *e, void *context) 
   // We want to trigger a read. So we set the ready bit.
   // If operating in continuous conversion mode, setting this bit has no effect.
   uint8_t config = storage->config;
+
   config |= MCP3427_RDY_MASK;
   // Setting the current channel we want to read from. We just flip it from the
   // previous read.
@@ -112,6 +114,7 @@ StatusCode mcp3427_init(Mcp3427Storage *storage, Mcp3427Setting *setting) {
   fsm_state_init(channel_2_readback, prv_channel_ready);
   storage->port = setting->port;
   storage->addr = s_addr_lookup[setting->Adr0][setting->Adr1] | (MCP3427_DEVICE_CODE << 3);
+
   // Writing configuration to the chip (see section 5.3.3 of manual).
   uint8_t config = 0;
   // Note: Here, channel gets defaulted to 0.

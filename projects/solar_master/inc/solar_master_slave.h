@@ -4,8 +4,9 @@
 #include <stdio.h>
 #include "log.h"
 #include "mcp3427.h"
+#include "mcp3427defs.h"
 
-#define SOLAR_MASTER_NUM_SOLAR_SLAVES 1
+#define SOLAR_MASTER_NUM_SOLAR_SLAVES 2
 
 #define SOLAR_MASTER_MCP3427_SAMPLE_SIZE 5
 
@@ -15,8 +16,8 @@ typedef struct SolarMasterSlave {
   Mcp3427Storage *mcp3427;
   int32_t averaging_voltage[SOLAR_MASTER_MCP3427_SAMPLE_SIZE];
   int32_t averaging_temp[SOLAR_MASTER_MCP3427_SAMPLE_SIZE];
-  int32_t sliding_sum_voltage;
-  int32_t sliding_sum_temp;
+  int32_t sliding_sum_voltage_mv;
+  int32_t sliding_sum_temp_mv;
   uint32_t counter;
 } SolarMasterSlave;
 
