@@ -34,7 +34,7 @@ const Mcp3427Setting slave_mcp3427_settings = {
   .port = I2C_PORT_2,
 };
 
-CANSettings can_settings = {
+CanSettings can_settings = {
   .bitrate = CAN_HW_BITRATE_500KBPS,
   .tx = { .port = GPIO_PORT_A, .pin = 12 },
   .rx = { .port = GPIO_PORT_A, .pin = 11 },
@@ -59,12 +59,12 @@ const uint16_t device_id_lookup[NUM_SOLAR_MASTER_CONFIG_BOARDS] = {
 };
 
 // We'll ignore mode_sel_1 because there's only two solar masters.
-static const GPIOAddress s_mode_sel_0 = { .port = GPIO_PORT_A, .pin = 9 };
-static const GPIOAddress s_mode_sel_1 = { .port = GPIO_PORT_A, .pin = 10 };
+static const GpioAddress s_mode_sel_0 = { .port = GPIO_PORT_A, .pin = 9 };
+static const GpioAddress s_mode_sel_1 = { .port = GPIO_PORT_A, .pin = 10 };
 
 StatusCode solar_master_config_init(void) {
   // Getting board type.
-  GPIOState state = NUM_GPIO_STATES;
+  GpioState state = NUM_GPIO_STATES;
   StatusCode status = gpio_get_state(&s_mode_sel_0, &state);
   if (!status_ok(status)) {
     LOG_DEBUG("Error getting board type.\n");

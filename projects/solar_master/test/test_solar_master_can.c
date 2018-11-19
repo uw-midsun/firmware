@@ -17,7 +17,7 @@
 
 static SolarMasterCanStorage s_solar_master_can_storage = { 0 };
 
-static StatusCode prv_ack_request(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_request(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                   uint16_t remaining, void *context) {
   (void)context;
   TEST_ASSERT_EQUAL(SYSTEM_CAN_DEVICE_SOLAR_MASTER_FRONT, device);
@@ -33,7 +33,7 @@ void setup_test(void) {
   soft_timer_init();
   event_queue_init();
 
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     // clang-format on
     .loopback = true,
     .bitrate = CAN_HW_BITRATE_500KBPS,
@@ -52,7 +52,7 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_solar_master_can_rx_handler(void) {
-  const CANAckRequest ack_req = {
+  const CanAckRequest ack_req = {
     .callback = prv_ack_request,
     .context = NULL,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_SOLAR_MASTER_FRONT),

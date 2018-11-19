@@ -21,7 +21,7 @@ typedef struct SolarMasterConfig {
   I2CSettings *slave_i2c_settings;
   I2CSettings *current_i2c_settings;
   Mcp3427Setting *slave_mcp3427_settings_base;
-  CANSettings *can_settings;
+  CanSettings *can_settings;
   SolarMasterConfigBoard board;
 } SolarMasterConfig;
 

@@ -32,7 +32,7 @@ FSM_STATE_TRANSITION(channel_2_readback) {
   FSM_ADD_TRANSITION(storage->data_trigger_event, channel_1_trigger);
 }
 
-static void prv_raise_ready(SoftTimerID timer_id, void *context) {
+static void prv_raise_ready(SoftTimerId timer_id, void *context) {
   Mcp3427Storage *storage = (Mcp3427Storage *)context;
   event_raise(storage->data_ready_event, storage->addr ^ (MCP3427_DEVICE_CODE << 3));
 }
@@ -43,7 +43,7 @@ static uint16_t s_data_mask_lookup[] = {
   [MCP3427_SAMPLE_RATE_16_BIT] = MCP3427_DATA_MASK_16_BIT,  //
 };
 
-static void prv_channel_ready(struct FSM *fsm, const Event *e, void *context) {
+static void prv_channel_ready(struct Fsm *fsm, const Event *e, void *context) {
   Mcp3427Storage *storage = (Mcp3427Storage *)context;
   uint8_t read_data[MCP3427_NUM_DATA_BYTES] = { 0 };
   StatusCode status = i2c_read(storage->port, storage->addr, read_data, MCP3427_NUM_DATA_BYTES);
@@ -80,7 +80,7 @@ static void prv_channel_ready(struct FSM *fsm, const Event *e, void *context) {
 }
 
 // Trigger data read. Schedule a data ready event to be raised.
-static void prv_channel_trigger(struct FSM *fsm, const Event *e, void *context) {
+static void prv_channel_trigger(struct Fsm *fsm, const Event *e, void *context) {
   Mcp3427Storage *storage = (Mcp3427Storage *)context;
   // We want to trigger a read. So we set the ready bit.
   // If operating in continuous conversion mode, setting this bit has no effect.

@@ -49,7 +49,7 @@ int main(void) {
   }
 
   // Initialize current sense ADC
-  GPIOAddress current_ready_pin = CURRENT_ADC_READY_PIN;
+  GpioAddress current_ready_pin = CURRENT_ADC_READY_PIN;
   ads1015_init(&s_current_ads1015, SOLAR_MASTER_CURRENT_I2C_BUS_PORT, SOLAR_MASTER_CURRENT_ADC_ADDR,
                &current_ready_pin);
   status = solar_master_current_init(&s_current_storage, &s_current_ads1015);

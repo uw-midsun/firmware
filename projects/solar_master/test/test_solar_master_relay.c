@@ -10,7 +10,7 @@
 #include "solar_master_event.h"
 #include "solar_master_relay.h"
 
-static const GPIOAddress s_relay_address = {
+static const GpioAddress s_relay_address = {
   .port = GPIO_PORT_A,  //
   .pin = 8,             //
 };
@@ -23,14 +23,14 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_solar_master_relay_init(void) {
-  GPIOState state;
+  GpioState state;
   TEST_ASSERT_OK(gpio_get_state(&s_relay_address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_LOW, state);
 }
 
 void test_solar_master_relay_process_event(void) {
   Event test_event = { .id = SOLAR_MASTER_EVENT_RELAY_STATE, .data = EE_RELAY_STATE_CLOSE };
-  GPIOState state;
+  GpioState state;
   TEST_ASSERT_OK(solar_master_relay_process_event(&test_event));
   TEST_ASSERT_OK(gpio_get_state(&s_relay_address, &state));
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);

@@ -5,13 +5,13 @@
 #include "status.h"
 
 // Relay address is the same across all boards.
-static const GPIOAddress s_relay_address = {
+static const GpioAddress s_relay_address = {
   .port = GPIO_PORT_A,  //
   .pin = 8,             //
 };
 
 StatusCode solar_master_relay_init(void) {
-  GPIOSettings settings = {
+  GpioSettings settings = {
     .direction = GPIO_DIR_OUT,       //
     .state = GPIO_STATE_LOW,         //
     .resistor = GPIO_RES_NONE,       //

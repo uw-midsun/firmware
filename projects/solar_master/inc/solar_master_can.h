@@ -15,8 +15,8 @@ typedef struct SolarMasterCanStorage {
   SolarMasterConfigBoard board;
   SolarMasterCurrent *current_storage;
   SolarMasterSlave *slave_storage;
-  CANStorage can_storage;
+  CanStorage can_storage;
 } SolarMasterCanStorage;
 
-StatusCode solar_master_can_init(SolarMasterCanStorage *storage, const CANSettings *can_settings,
+StatusCode solar_master_can_init(SolarMasterCanStorage *storage, const CanSettings *can_settings,
                                  SolarMasterConfigBoard board);

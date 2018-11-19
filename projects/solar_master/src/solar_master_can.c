@@ -1,6 +1,6 @@
 #include "solar_master_can.h"
 
-static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_rx_handler(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   // Storage for extracting message data.
   uint8_t relay_state = 0;
   switch (msg->msg_id) {
@@ -14,7 +14,7 @@ static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckSta
   return event_raise(SOLAR_MASTER_EVENT_RELAY_STATE, relay_state);
 }
 
-static void prv_periodic_tx_telemetry(SoftTimerID timer_id, void *context) {
+static void prv_periodic_tx_telemetry(SoftTimerId timer_id, void *context) {
   SolarMasterCanStorage *storage = context;
   uint16_t current = (uint16_t)(
       ((uint32_t)storage->current_storage->sliding_sum -
@@ -43,7 +43,7 @@ static void prv_periodic_tx_telemetry(SoftTimerID timer_id, void *context) {
                           NULL);
 }
 
-StatusCode solar_master_can_init(SolarMasterCanStorage *storage, const CANSettings *can_settings,
+StatusCode solar_master_can_init(SolarMasterCanStorage *storage, const CanSettings *can_settings,
                                  SolarMasterConfigBoard board) {
   status_ok_or_return(can_init(&storage->can_storage, can_settings));
   storage->board = board;

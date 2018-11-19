@@ -55,14 +55,14 @@ typedef struct Mcp3427Storage {
   I2CAddress addr;
   uint8_t config;
   uint16_t sensor_data[NUM_MCP3427_CHANNELS];
-  EventID data_trigger_event;
-  EventID data_ready_event;
+  EventId data_trigger_event;
+  EventId data_ready_event;
   Mcp3427Callback callback;
   void *context;
   Mcp3427FaultCallback fault_callback;
   void *fault_context;
   Mcp3427SampleRate sample_rate;
-  FSM fsm;
+  Fsm fsm;
 } Mcp3427Storage;
 
 // Initializes the ADC by configuring the adc with the selected settings.
