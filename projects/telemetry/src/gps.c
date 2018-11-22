@@ -20,11 +20,11 @@ static NmeaVtgSentence *s_vtg_data = NULL;
 // This method will be called every time the GPS sends data.
 static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
   NmeaMessageId messageId = NMEA_MESSAGE_ID_UNKNOWN;
-  status_ok_or_return(nmea_sentence_type(rx_arr, messageId));
+  status_ok_or_return(nmea_sentence_type((char *)&rx_arr, &messageId));
   if (messageId == NMEA_MESSAGE_ID_GGA) {
-    nmea_get_gga_sentence(rx_arr, s_gga_data);
+    nmea_get_gga_sentence((char *)&rx_arr, &s_gga_data);
   } else if (messageId == NMEA_MESSAGE_ID_VTG) {
-    nmea_get_vtg_sentence(rx_arr, s_vtg_data);
+    nmea_get_vtg_sentence((char *)&rx_arr, &s_vtg_data);
   }
 }
 
