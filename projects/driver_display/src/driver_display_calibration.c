@@ -55,10 +55,7 @@ StatusCode driver_display_calibration_init(const DriverDisplayBrightnessSettings
 
   storage->adc_channel = adc_channel;
 
-  adc_register_callback(adc_channel, prv_adc_callback, NULL);
-
-  return soft_timer_start_millis(DRIVER_DISPLAY_CALIBRATION_PERIOD_MS, prv_timer_callback, storage,
-                                 NULL);
+  return adc_register_callback(adc_channel, prv_adc_callback, NULL);
 }
 
 StatusCode driver_display_calibration_bounds(DriverDisplayCalibrationStorage *storage,
