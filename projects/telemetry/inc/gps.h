@@ -7,6 +7,7 @@
 // in is the GGA message (Global Positioning System Fix Data). It contains latitude and
 // longitude.
 #include <stdbool.h>
+#include "nmea.h"
 #include "status.h"
 #include "uart.h"
 
@@ -37,3 +38,9 @@ typedef struct {
 
 // Initialized the GPS module
 StatusCode gps_init();
+
+// Gets GGA data (coordinates, time)
+StatusCode gps_get_gga_data(NmeaGgaSentence* result);
+
+// Gets VTG data (speed, heading)
+StatusCode gps_get_vtg_data(NmeaVtgSentence* result);
