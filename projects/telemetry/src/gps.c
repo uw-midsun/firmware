@@ -6,10 +6,10 @@
 #include "delay.h"
 #include "gpio.h"
 #include "interrupt.h"
+#include "nmea.h"
 #include "status.h"
 #include "uart.h"
 #include "xbee.h"
-#include "nmea.h"
 
 // A large struct to store data and settings. Since the GPS should only be initialized once
 static GpsSettings *s_settings = NULL;
