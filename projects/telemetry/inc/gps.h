@@ -15,10 +15,11 @@
 // A GGA message will be around a hundred characters.
 #define GPS_MAX_NMEA_LENGTH 128
 
-#define GPS_GLL_OFF "$PSRF103,01,00,00,01*27\r\n"
-#define GPS_GSA_OFF "$PSRF103,02,00,00,01*26\r\n"
-#define GPS_GSV_OFF "$PSRF103,03,00,00,01*27\r\n"
-#define GPS_RMC_OFF "$PSRF103,04,00,00,01*20\r\n"
+// Messages to transmit to the GPS module to turn off unneeded messages
+#define GPS_GLL_OFF "$PSRF103,01,00,00,01*27\r\n" // GLL: Geographic Position - Latitude/Longitude
+#define GPS_GSA_OFF "$PSRF103,02,00,00,01*26\r\n" // GSA: GPS DOP and Active Satellites
+#define GPS_GSV_OFF "$PSRF103,03,00,00,01*27\r\n" // GSV: GPS Satellites in View
+#define GPS_RMC_OFF "$PSRF103,04,00,00,01*20\r\n" // RMC: Recommended Minimum Specific GPS Data
 
 // This struct basically contains all the info about pins etc.
 // Check this document on page 4:
