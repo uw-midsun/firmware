@@ -44,12 +44,14 @@ static void prv_reset(Mcp2515Storage *storage) {
 }
 
 static void prv_read(Mcp2515Storage *storage, uint8_t addr, uint8_t *read_data, size_t read_len) {
+  CRITICAL_SECTION_AUTOEND;
   uint8_t payload[] = { MCP2515_CMD_READ, addr };
   spi_exchange(storage->spi_port, payload, sizeof(payload), read_data, read_len);
 }
 
 static void prv_write(Mcp2515Storage *storage, uint8_t addr, uint8_t *write_data,
                       size_t write_len) {
+  CRITICAL_SECTION_AUTOEND;
   uint8_t payload[MCP2515_MAX_WRITE_BUFFER_LEN];
   payload[0] = MCP2515_CMD_WRITE;
   payload[1] = addr;
@@ -59,6 +61,7 @@ static void prv_write(Mcp2515Storage *storage, uint8_t addr, uint8_t *write_data
 
 // See 12.10: *addr = (data & mask) | (*addr & ~mask)
 static void prv_bit_modify(Mcp2515Storage *storage, uint8_t addr, uint8_t mask, uint8_t data) {
+  CRITICAL_SECTION_AUTOEND;
   uint8_t payload[] = { MCP2515_CMD_BIT_MODIFY, addr, mask, data };
   spi_exchange(storage->spi_port, payload, sizeof(payload), NULL, 0);
 }
@@ -275,15 +278,35 @@ StatusCode mcp2515_tx(Mcp2515Storage *storage, uint32_t id, bool extended, uint6
 
 uint8_t counter3 = 1;
 uint64_t counter4 = 0;
+const uint8_t registers[] = { MCP2515_CTRL_REG_BFPCTRL,    // RX pins disabled by default
+                              MCP2515_CTRL_REG_TXRTSCTRL,  // TX pins input by default
+                              MCP2515_CTRL_REG_CANSTAT,
+                              MCP2515_CTRL_REG_CANCTRL,
+                              MCP2515_CTRL_REG_TEC,
+                              MCP2515_CTRL_REG_REC,
+                              MCP2515_CTRL_REG_CNF3,
+                              MCP2515_CTRL_REG_CNF2,
+                              MCP2515_CTRL_REG_CNF1,
+                              MCP2515_CTRL_REG_CANINTE,
+                              MCP2515_CTRL_REG_CANINTF,
+                              MCP2515_CTRL_REG_EFLG,
+                              MCP2515_CTRL_REG_TXB0CTRL,
+                              MCP2515_CTRL_REG_TXB1CTRL,
+                              MCP2515_CTRL_REG_TXB2CTRL,
+                              MCP2515_CTRL_REG_RXB0CTRL,
+                              MCP2515_CTRL_REG_RXB1CTRL };
 void mcp2515_watchdog(SoftTimerID timer_id, void *context) {
   Mcp2515Storage *storage = context;
   if (counter4 == 0) {
     prv_handle_int(&storage->int_pin, storage);
     LOG_DEBUG("Interrupt timeout\n");
-    // uint8_t clear = 0;
-    // prv_write(storage, MCP2515_CTRL_REG_EFLG, &clear, 1);
-    // clear = 0;
-    // prv_write(storage, MCP2515_CTRL_REG_CANINTF, &clear, 1);
+    
+    // Read the status of the Receive buffer registers
+    for (size_t i = 0; i < SIZEOF_ARRAY(registers); i++) {
+      uint8_t data = 0;
+      prv_read(storage, registers[i], &data, 1);
+      LOG_DEBUG("0x%x: read 0x%x\n", registers[i], data);
+    }
   }
 
   

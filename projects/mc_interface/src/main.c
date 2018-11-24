@@ -57,7 +57,7 @@ static void prv_setup_motor_can(void) {
     .cs = { .port = GPIO_PORT_B, 12 },
     .int_pin = { .port = GPIO_PORT_A, 8 },
 
-    .can_bitrate = MCP2515_BITRATE_250KBPS,
+    .can_bitrate = MCP2515_BITRATE_500KBPS,
     .loopback = false,
   };
 
