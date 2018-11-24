@@ -14,6 +14,7 @@
 // A large struct to store data and settings. Since the GPS should only be initialized once
 static GpsSettings *s_settings = NULL;
 
+// These structs will store incoming GGA and VTG messages.
 static NmeaGgaSentence *s_gga_data = NULL;
 static NmeaVtgSentence *s_vtg_data = NULL;
 
@@ -56,14 +57,20 @@ StatusCode gps_init(GpsSettings *settings) {
   }
   s_settings = settings;
 
+  GpioSettings telemetry_settings_gpio_general = {
+    .direction = GPIO_DIR_OUT,  // The pin needs to output.
+    .state = GPIO_STATE_LOW,    // Start in the "off" state.
+    .alt_function = GPIO_ALTFN_NONE,
+  };
+
   // Initializes UART
   StatusCode ret =
       uart_init(s_settings->port, s_settings->uart_settings, &s_settings->uart_storage);
   uart_set_rx_handler(s_settings->port, prv_gps_callback, NULL);
 
   // Initializes the pins
-  status_ok_or_return(gpio_init_pin(s_settings->pin_power, s_settings->settings_power));
-  status_ok_or_return(gpio_init_pin(s_settings->pin_on_off, s_settings->settings_on_off));
+  status_ok_or_return(gpio_init_pin(s_settings->pin_power, &telemetry_settings_gpio_general));
+  status_ok_or_return(gpio_init_pin(s_settings->pin_on_off, &telemetry_settings_gpio_general));
 
   prv_gps_set_power_state(true);
   delay_s(1);

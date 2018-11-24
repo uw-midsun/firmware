@@ -33,9 +33,7 @@ GpioAddress telemetry_gps_pins[] = {
   { .port = GPIO_PORT_B, .pin = 4 },  // Pin GPS on_off
 };
 
-GpsSettings telemetry_gps_settings = { .settings_power = &telemetry_settings_gpio_general,
-                                       .settings_on_off = &telemetry_settings_gpio_general,
-                                       .pin_power = &telemetry_gps_pins[0],
+GpsSettings telemetry_gps_settings = { .pin_power = &telemetry_gps_pins[0],
                                        .pin_on_off = &telemetry_gps_pins[1],
                                        .uart_settings = &telemetry_gps_uart_settings,
                                        .port = UART_PORT_2 };

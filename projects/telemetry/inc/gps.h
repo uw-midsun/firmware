@@ -15,7 +15,7 @@
 // A GGA message will be around a hundred characters.
 #define GPS_MAX_NMEA_LENGTH 128
 
-// Messages to transmit to the GPS module to turn off unneeded messages
+// NMEA sentences to transmit to the GPS module to turn off unneeded messages
 #define GPS_GLL_OFF "$PSRF103,01,00,00,01*27\r\n" // GLL: Geographic Position - Latitude/Longitude
 #define GPS_GSA_OFF "$PSRF103,02,00,00,01*26\r\n" // GSA: GPS DOP and Active Satellites
 #define GPS_GSV_OFF "$PSRF103,03,00,00,01*27\r\n" // GSV: GPS Satellites in View
@@ -27,8 +27,6 @@
 typedef struct {
   UartPort port;
   UartSettings *uart_settings;    // The uart settings to be used
-  GpioSettings *settings_power;   // Pin which provides power
-  GpioSettings *settings_on_off;  // Pin to trigger power up
   GpioAddress *pin_rx;            // Pin addresses
   GpioAddress *pin_tx;
   GpioAddress *pin_power;
