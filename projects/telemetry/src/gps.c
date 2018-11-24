@@ -88,18 +88,18 @@ StatusCode gps_init(GpsSettings *settings) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gps_get_gga_data(NmeaGgaSentence* result) {
+StatusCode gps_get_gga_data(NmeaGgaSentence *result) {
   if (s_settings == NULL) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "GPS module is uninitialized.");
   }
-  result = s_gga_data;
+  *result = *s_gga_data;
   return STATUS_CODE_OK;
 }
 
-StatusCode gps_get_vtg_data(NmeaVtgSentence* result) {
+StatusCode gps_get_vtg_data(NmeaVtgSentence *result) {
   if (s_settings == NULL) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "GPS module is uninitialized.");
   }
-  result = s_vtg_data;
+  *result = *s_vtg_data;
   return STATUS_CODE_OK;
 }

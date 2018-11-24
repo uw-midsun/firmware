@@ -40,7 +40,7 @@ typedef struct {
 StatusCode gps_init();
 
 // Gets GGA data (coordinates, time)
-StatusCode gps_get_gga_data(NmeaGgaSentence* result);
+StatusCode gps_get_gga_data(NmeaGgaSentence *result);
 
 // Gets VTG data (speed, heading)
-StatusCode gps_get_vtg_data(NmeaVtgSentence* result);
+StatusCode gps_get_vtg_data(NmeaVtgSentence *result);
