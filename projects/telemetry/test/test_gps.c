@@ -1,8 +1,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "can_hw.h"
-#include "can_uart.h"
 #include "delay.h"
 #include "event_queue.h"
 #include "gpio.h"
@@ -14,7 +12,6 @@
 #include "test_helpers.h"
 #include "uart.h"
 #include "unity.h"
-#include "wait.h"
 
 static bool gga_called = false;
 static bool vtg_called = false;
@@ -69,7 +66,7 @@ void test_gps_guards(void) {
 void test_gps_output(void) {
   NmeaGgaSentence *gga_test = NULL;
   NmeaVtgSentence *vtg_test = NULL;
-  
+
   TEST_ASSERT_OK(gps_init(&telemetry_gps_settings));
   TEST_ASSERT_EQUAL(STATUS_CODE_RESOURCE_EXHAUSTED, gps_init(&telemetry_gps_settings));
 
