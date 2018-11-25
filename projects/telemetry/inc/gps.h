@@ -53,3 +53,7 @@ StatusCode gps_get_gga_data(NmeaGgaSentence *result);
 
 // Gets VTG data (speed, heading)
 StatusCode gps_get_vtg_data(NmeaVtgSentence *result);
+
+// Register callback functions
+StatusCode gps_register_callback(GpsGgaCallback gga_callback, GpsVtgCallback vtg_callback,
+                                 void *context);

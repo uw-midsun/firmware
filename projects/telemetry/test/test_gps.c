@@ -16,6 +16,22 @@
 #include "unity.h"
 #include "wait.h"
 
+static bool gga_called = false;
+static bool vtg_called = false;
+
+static NmeaGgaSentence *gga_test = NULL;
+static NmeaVtgSentence *vtg_test = NULL;
+
+void prv_gps_gga_callback(NmeaGgaSentence *gga_sentence, void *context) {
+  gga_called = true;
+  gga_test = gga_sentence;
+}
+
+void prv_gps_vtg_callback(NmeaVtgSentence *vtg_sentence, void *context) {
+  vtg_called = true;
+  vtg_test = vtg_sentence;
+}
+
 UartSettings telemetry_gps_uart_settings = {
   .baudrate = 9600,
   .tx = { .port = GPIO_PORT_A, .pin = 2 },
@@ -44,10 +60,10 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_gps_guards(void) {
-  NmeaGgaSentence *gga_test = NULL;
-  NmeaVtgSentence *vtg_test = NULL;
   TEST_ASSERT_EQUAL(STATUS_CODE_UNINITIALIZED, gps_get_gga_data(gga_test));
-  TEST_ASSERT_EQUAL(STATUS_CODE_UNIMPLEMENTED, gps_get_vtg_data(vtg_test));
+  TEST_ASSERT_EQUAL(STATUS_CODE_UNINITIALIZED, gps_get_vtg_data(vtg_test));
+  TEST_ASSERT_EQUAL(STATUS_CODE_UNINITIALIZED,
+                    gps_register_callback(prv_gps_gga_callback, prv_gps_vtg_callback, NULL));
   TEST_ASSERT_OK(gps_init(&telemetry_gps_settings));
   TEST_ASSERT_EQUAL(STATUS_CODE_RESOURCE_EXHAUSTED, gps_init(&telemetry_gps_settings));
 }
@@ -56,4 +72,11 @@ void test_gps_output(void) {
   NmeaGgaSentence *gga_test = NULL;
   NmeaVtgSentence *vtg_test = NULL;
   TEST_ASSERT_OK(gps_init(&telemetry_gps_settings));
+  TEST_ASSERT_OK(gps_register_callback(prv_gps_gga_callback, prv_gps_vtg_callback, NULL));
+  while (!gga_called) {
+  }
+  while (!vtg_called) {
+  }
+  TEST_ASSERT_OK(gps_get_gga_data(gga_test));
+  TEST_ASSERT_OK(gps_get_vtg_data(vtg_test));
 }
