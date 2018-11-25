@@ -59,18 +59,21 @@ void setup_test(void) {
 
 void teardown_test(void) {}
 
-void test_gps_output(void) {
-  NmeaGgaSentence *gga_test = NULL;
-  NmeaVtgSentence *vtg_test = NULL;
-
+void test_gps_guards(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_UNINITIALIZED, gps_get_gga_data(gga_test));
   TEST_ASSERT_EQUAL(STATUS_CODE_UNINITIALIZED, gps_get_vtg_data(vtg_test));
   TEST_ASSERT_EQUAL(STATUS_CODE_UNINITIALIZED,
                     gps_register_callback(prv_gps_gga_callback, prv_gps_vtg_callback, NULL));
+}
 
+void test_gps_output(void) {
+  NmeaGgaSentence *gga_test = NULL;
+  NmeaVtgSentence *vtg_test = NULL;
+  
   TEST_ASSERT_OK(gps_init(&telemetry_gps_settings));
   TEST_ASSERT_EQUAL(STATUS_CODE_RESOURCE_EXHAUSTED, gps_init(&telemetry_gps_settings));
-  
+
+  // Ensure that callbacks are called
   TEST_ASSERT_OK(gps_register_callback(prv_gps_gga_callback, prv_gps_vtg_callback, NULL));
   while (!gga_called) {
   }
