@@ -9,23 +9,25 @@
 #include "nmea.h"
 #include "status.h"
 #include "uart.h"
-#include "xbee.h"
 
 // A large struct to store data and settings. Since the GPS should only be initialized once
 static GpsSettings *s_settings = NULL;
-
-// These structs will store incoming GGA and VTG messages.
-static NmeaGgaSentence *s_gga_data = NULL;
-static NmeaVtgSentence *s_vtg_data = NULL;
+static GpsStorage *s_storage = NULL;
 
 // This method will be called every time the GPS sends data.
 static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
   NmeaMessageId messageId = NMEA_MESSAGE_ID_UNKNOWN;
   nmea_sentence_type((char *)&rx_arr, &messageId);
   if (messageId == NMEA_MESSAGE_ID_GGA) {
-    nmea_get_gga_sentence((char *)&rx_arr, s_gga_data);
+    nmea_get_gga_sentence((char *)&rx_arr, s_storage->gga_data);
+    if (s_storage->gga_callback != NULL) {
+      s_storage->gga_callback(s_storage->gga_data, s_storage->context);
+    }
   } else if (messageId == NMEA_MESSAGE_ID_VTG) {
-    nmea_get_vtg_sentence((char *)&rx_arr, s_vtg_data);
+    nmea_get_vtg_sentence((char *)&rx_arr, s_storage->vtg_data);
+    if (s_storage->vtg_callback != NULL) {
+      s_storage->vtg_callback(s_storage->vtg_data, s_storage->context);
+    }
   }
 }
 
@@ -99,7 +101,7 @@ StatusCode gps_get_gga_data(NmeaGgaSentence *result) {
   if (s_settings == NULL) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "GPS module is uninitialized.\n");
   }
-  *result = *s_gga_data;
+  *result = *s_storage->gga_data;
   return STATUS_CODE_OK;
 }
 
@@ -107,6 +109,17 @@ StatusCode gps_get_vtg_data(NmeaVtgSentence *result) {
   if (s_settings == NULL) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "GPS module is uninitialized.\n");
   }
-  *result = *s_vtg_data;
+  *result = *s_storage->vtg_data;
+  return STATUS_CODE_OK;
+}
+
+StatusCode gps_register_callback(GpsGgaCallback gga_callback, GpsVtgCallback vtg_callback,
+                                 void *context) {
+  if (s_settings == NULL) {
+    return status_msg(STATUS_CODE_UNINITIALIZED, "GPS module is uninitialized.\n");
+  }
+  s_storage->gga_callback = gga_callback;
+  s_storage->vtg_callback = vtg_callback;
+  s_storage->context = context;
   return STATUS_CODE_OK;
 }

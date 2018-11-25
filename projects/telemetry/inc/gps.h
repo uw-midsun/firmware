@@ -21,6 +21,9 @@
 #define GPS_GSV_OFF "$PSRF103,03,00,00,01*27\r\n" // GSV: GPS Satellites in View
 #define GPS_RMC_OFF "$PSRF103,04,00,00,01*20\r\n" // RMC: Recommended Minimum Specific GPS Data
 
+typedef void (*GpsGgaCallback)(NmeaGgaSentence *gga_data, void *context);
+typedef void (*GpsVtgCallback)(NmeaVtgSentence *vtg_data, void *context);
+
 // This struct basically contains all the info about pins etc.
 // Check this document on page 4:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/evm-gps-f4.pdf
@@ -32,8 +35,15 @@ typedef struct {
   GpioAddress *pin_power;
   GpioAddress *pin_on_off;
   UartStorage uart_storage;
-  volatile char gga_data[GPS_MAX_NMEA_LENGTH];  // Stores raw NMEA messages sent by the chip
 } GpsSettings;
+
+typedef struct {
+  NmeaGgaSentence *gga_data;
+  NmeaVtgSentence *vtg_data;
+  GpsGgaCallback gga_callback;
+  GpsVtgCallback vtg_callback;
+  void *context;
+} GpsStorage;
 
 // Initialized the GPS module
 StatusCode gps_init();
