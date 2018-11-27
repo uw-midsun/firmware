@@ -1,5 +1,5 @@
 /*
- * FreeRTOS Kernel V10.1.0
+ * FreeRTOS Kernel V10.1.1
  * Copyright (C) 2018 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -1183,3 +1183,4 @@ typedef StaticStreamBuffer_t StaticMessageBuffer_t;
 #endif
 
 #endif /* INC_FREERTOS_H */
+
