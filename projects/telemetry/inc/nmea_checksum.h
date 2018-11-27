@@ -10,7 +10,7 @@
 #include "status.h"
 
 // Computes the checksum for a given NMEA message.
-// Starts at the second characer of `message`,
+// Starts at the second character of `message`,
 // and continues until the `*` character, or until `message_len` characters
 // are processed, whichever comes first.
 StatusCode nmea_checksum_compute(char *message, size_t message_len, uint8_t *checksum);
