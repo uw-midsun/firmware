@@ -56,7 +56,6 @@ class CanDataSource:
             A tuple containing the system CAN bus message ID and the message
             data.
         """
-        pass
 
     def run(self):
         """Start reading from the CAN data source.
