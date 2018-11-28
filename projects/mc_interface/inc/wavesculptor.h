@@ -280,23 +280,6 @@ typedef struct WaveSculptorOdometerBusAhMeasurement {
 static_assert(sizeof(WaveSculptorOdometerBusAhMeasurement) == 8,
               "WaveSculptorOdometerBusAhMeasurement is not 8 bytes");
 
-typedef struct WavesculptorStatusInfo {
-  uint16_t limit_flags;
-  uint16_t error_flags;
-  uint16_t active_motor;
-  uint16_t reserved;
-} WavesculptorStatusInfo;
-
-typedef struct WavesculptorSinkMotorTempMeasurement {
-  float motor_temp;
-  float heatsink_temp;
-} WavesculptorSinkMotorTempMeasurement;
-
-typedef struct WavesculptorSinkAirInCpuTempMeasurement {
-  float cpu_temp;
-  float air_in_temp;
-} WavesculptorSinkAirInCpuTempMeasurement;
-
 typedef union WaveSculptorCanData {
   uint64_t raw;
   WaveSculptorDriveCmd drive_cmd;
