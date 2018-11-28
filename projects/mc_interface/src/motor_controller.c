@@ -18,6 +18,8 @@
 // - velocity = 0
 // - current = braking force
 
+static uint8_t s_velocity_led_counter = 1;
+
 static void prv_bus_measurement_rx(const GenericCanMsg *msg, void *context) {
   MotorControllerStorage *storage = context;
   WaveSculptorCanId can_id = { .raw = msg->id };
@@ -46,7 +48,6 @@ static void prv_bus_measurement_rx(const GenericCanMsg *msg, void *context) {
   }
 }
 
-uint8_t counter2 = 1;
 static void prv_velocity_measurement_rx(const GenericCanMsg *msg, void *context) {
   MotorControllerStorage *storage = context;
   WaveSculptorCanId can_id = { .raw = msg->id };
@@ -66,9 +67,9 @@ static void prv_velocity_measurement_rx(const GenericCanMsg *msg, void *context)
     storage->settings.speed_cb(storage->speed_cms, NUM_MOTOR_CONTROLLERS,
                                storage->settings.context);
   }
-  counter2++;
-  if (counter2 % 20 == 0) {
-    counter2 = 1;
+  s_velocity_led_counter++;
+  if (s_velocity_led_counter % 20 == 0) {
+    s_velocity_led_counter = 1;
     debug_led_toggle_state(DEBUG_LED_GREEN);
   }
 }

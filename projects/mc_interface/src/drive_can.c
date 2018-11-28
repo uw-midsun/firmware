@@ -5,6 +5,8 @@
 #include "can_unpack.h"
 #include "debug_led.h"
 
+static uint8_t s_system_can_led_counter = 1;
+
 static StatusCode prv_handle_drive(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   MotorControllerStorage *controller = context;
   int16_t pedal = 0, direction = 0, cruise = 0, mech_brake = 0;
@@ -28,12 +30,11 @@ static StatusCode prv_handle_drive(const CanMessage *msg, void *context, CanAckS
   return STATUS_CODE_OK;
 }
 
-uint8_t counter1 = 1;
 static void prv_handle_speed(int16_t speed_cms[], size_t num_speeds, void *context) {
   CAN_TRANSMIT_MOTOR_VELOCITY((uint16_t)speed_cms[0], (uint16_t)speed_cms[1]);
-  counter1++;
-  if (counter1 % 20 == 0) {
-    counter1 = 1;
+  s_system_can_led_counter++;
+  if (s_system_can_led_counter % 20 == 0) {
+    s_system_can_led_counter = 1;
     debug_led_toggle_state(DEBUG_LED_BLUE_A);
   }
 }

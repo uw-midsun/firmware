@@ -11,6 +11,9 @@
 
 #define MCP2515_MAX_WRITE_BUFFER_LEN 10
 
+static uint8_t s_interrupt_led_counter = 1;
+static uint64_t s_watchdog_counter = 0;
+
 typedef struct Mcp2515TxBuffer {
   uint8_t id;
   uint8_t data;
@@ -32,6 +35,16 @@ static const Mcp2515TxBuffer s_tx_buffers[] = {
 static const Mcp2515RxBuffer s_rx_buffers[] = {
   { .id = MCP2515_READ_RXB0SIDH, .data = MCP2515_READ_RXB0D0, .int_flag = MCP2515_CANINT_RX0IE },
   { .id = MCP2515_READ_RXB1SIDH, .data = MCP2515_READ_RXB1D0, .int_flag = MCP2515_CANINT_RX1IE },
+};
+
+static const uint8_t s_status_registers[] = {
+  MCP2515_CTRL_REG_BFPCTRL,    // RX pins disabled by default
+  MCP2515_CTRL_REG_TXRTSCTRL,  // TX pins input by default
+  MCP2515_CTRL_REG_CANSTAT,   MCP2515_CTRL_REG_CANCTRL,  MCP2515_CTRL_REG_TEC,
+  MCP2515_CTRL_REG_REC,       MCP2515_CTRL_REG_CNF3,     MCP2515_CTRL_REG_CNF2,
+  MCP2515_CTRL_REG_CNF1,      MCP2515_CTRL_REG_CANINTE,  MCP2515_CTRL_REG_CANINTF,
+  MCP2515_CTRL_REG_EFLG,      MCP2515_CTRL_REG_TXB0CTRL, MCP2515_CTRL_REG_TXB1CTRL,
+  MCP2515_CTRL_REG_TXB2CTRL,  MCP2515_CTRL_REG_RXB0CTRL, MCP2515_CTRL_REG_RXB1CTRL
 };
 
 // SPI commands - See Table 12-1
@@ -279,32 +292,21 @@ StatusCode mcp2515_tx(Mcp2515Storage *storage, uint32_t id, bool extended, uint6
   return STATUS_CODE_OK;
 }
 
-uint8_t counter3 = 1;
-uint64_t counter4 = 0;
-const uint8_t registers[] = {
-  MCP2515_CTRL_REG_BFPCTRL,    // RX pins disabled by default
-  MCP2515_CTRL_REG_TXRTSCTRL,  // TX pins input by default
-  MCP2515_CTRL_REG_CANSTAT,   MCP2515_CTRL_REG_CANCTRL,  MCP2515_CTRL_REG_TEC,
-  MCP2515_CTRL_REG_REC,       MCP2515_CTRL_REG_CNF3,     MCP2515_CTRL_REG_CNF2,
-  MCP2515_CTRL_REG_CNF1,      MCP2515_CTRL_REG_CANINTE,  MCP2515_CTRL_REG_CANINTF,
-  MCP2515_CTRL_REG_EFLG,      MCP2515_CTRL_REG_TXB0CTRL, MCP2515_CTRL_REG_TXB1CTRL,
-  MCP2515_CTRL_REG_TXB2CTRL,  MCP2515_CTRL_REG_RXB0CTRL, MCP2515_CTRL_REG_RXB1CTRL
-};
 void mcp2515_watchdog(SoftTimerId timer_id, void *context) {
   Mcp2515Storage *storage = context;
-  if (counter4 == 0) {
+  if (s_watchdog_counter == 0) {
     prv_handle_int(&storage->int_pin, storage);
     LOG_DEBUG("Interrupt timeout\n");
 
     // Read the status of the Receive buffer registers
-    for (size_t i = 0; i < SIZEOF_ARRAY(registers); i++) {
+    for (size_t i = 0; i < SIZEOF_ARRAY(s_status_registers); i++) {
       uint8_t data = 0;
-      prv_read(storage, registers[i], &data, 1);
-      LOG_DEBUG("0x%x: read 0x%x\n", registers[i], data);
+      prv_read(storage, s_status_registers[i], &data, 1);
+      LOG_DEBUG("0x%x: read 0x%x\n", s_status_registers[i], data);
     }
   }
 
-  counter4 = 0;
+  s_watchdog_counter = 0;
   if (!status_ok(soft_timer_start_seconds(15, mcp2515_watchdog, storage, NULL))) {
     LOG_DEBUG("Could not start MCP watchdog 2\n");
   }
@@ -316,11 +318,11 @@ void mcp2515_poll(Mcp2515Storage *storage) {
 
   if (state == GPIO_STATE_LOW) {
     prv_handle_int(&storage->int_pin, storage);
-    counter3++;
-    counter4++;
+    s_interrupt_led_counter++;
+    s_watchdog_counter++;
   }
-  if (counter3 % 20 == 0) {
-    counter3 = 1;
+  if (s_interrupt_led_counter % 20 == 0) {
+    s_interrupt_led_counter = 1;
     debug_led_toggle_state(DEBUG_LED_RED);
   }
 }
