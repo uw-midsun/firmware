@@ -49,7 +49,7 @@ static void prv_handle_info_cb(const GenericCanMsg *msg, void *context) {
   }
 }
 
-static void prv_periodic_cmd(SoftTimerID timer_id, void *context) {
+static void prv_periodic_cmd(SoftTimerId timer_id, void *context) {
   const ChargerCanTxData tx_data = {
     .data_impl = {
       .max_voltage = SWAP_UINT16(s_charger.max_voltage),
@@ -69,12 +69,12 @@ static void prv_periodic_cmd(SoftTimerID timer_id, void *context) {
   soft_timer_start_millis(CHARGER_BROADCAST_PERIOD_MS, prv_periodic_cmd, NULL, NULL);
 }
 
-static void prv_delay_start(SoftTimerID timer_id, void *context) {
+static void prv_delay_start(SoftTimerId timer_id, void *context) {
   LOG_DEBUG("Beginning charge\n");
   s_charger.charging = true;
 }
 
-static void prv_delay_relay_slave(SoftTimerID timer_id, void *context) {
+static void prv_delay_relay_slave(SoftTimerId timer_id, void *context) {
   LOG_DEBUG("Closing slave relay\n");
   CAN_TRANSMIT_BATTERY_RELAY_SLAVE(NULL, EE_RELAY_STATE_CLOSE);
   soft_timer_start_millis(2000, prv_delay_start, NULL, NULL);

@@ -8,11 +8,11 @@
 #include "status.h"
 
 typedef struct RelaySettings {
-  GPIOAddress battery_main_power_pin;
-  GPIOAddress battery_slave_power_pin;
-  GPIOAddress motor_power_pin;
-  GPIOAddress solar_front_power_pin;
-  GPIOAddress solar_rear_power_pin;
+  GpioAddress battery_main_power_pin;
+  GpioAddress battery_slave_power_pin;
+  GpioAddress motor_power_pin;
+  GpioAddress solar_front_power_pin;
+  GpioAddress solar_rear_power_pin;
   bool loopback;
 } RelaySettings;
 

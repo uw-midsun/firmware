@@ -27,13 +27,13 @@ typedef enum {
 
 static MotorControllerStorage s_controller_storage;
 static GenericCanMcp2515 s_can_mcp2515;
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 static SequencedRelayStorage s_relay_storage;
 static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
-static UARTStorage s_uart_storage;
+static UartStorage s_uart_storage;
 
 static void prv_setup_system_can(void) {
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,
     .bitrate = MC_CFG_CAN_BITRATE,
     .rx_event = MOTOR_EVENT_SYSTEM_CAN_RX,
@@ -64,8 +64,8 @@ static void prv_setup_motor_can(void) {
   generic_can_mcp2515_init(&s_can_mcp2515, &mcp2515_settings);
 }
 
-static void prv_periodic_debug(SoftTimerID timer_id, void *context) {
-  CANMessage msg = { 0 };
+static void prv_periodic_debug(SoftTimerId timer_id, void *context) {
+  CanMessage msg = { 0 };
   can_pack_impl_u16(&msg, 0, SYSTEM_CAN_MESSAGE_MOTOR_DEBUG, 8, s_can_mcp2515.mcp2515->errors.eflg, s_can_mcp2515.mcp2515->errors.tec, s_can_mcp2515.mcp2515->errors.rec, 0);
   can_transmit(&msg, NULL);
 

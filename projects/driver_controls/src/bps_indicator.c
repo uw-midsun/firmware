@@ -8,8 +8,8 @@
 #include "exported_enums.h"
 #include "input_event.h"
 
-static StatusCode prv_handle_heartbeat(const CANMessage *msg, void *context,
-                                       CANAckStatus *ack_reply) {
+static StatusCode prv_handle_heartbeat(const CanMessage *msg, void *context,
+                                       CanAckStatus *ack_reply) {
   uint8_t data = 0;
   CAN_UNPACK_BPS_HEARTBEAT(msg, &data);
 
@@ -23,8 +23,8 @@ static StatusCode prv_handle_heartbeat(const CANMessage *msg, void *context,
   return STATUS_CODE_OK;
 }
 
-static StatusCode prv_handle_powertrain_fault(const CANMessage *msg, void *context,
-                                              CANAckStatus *ack_reply) {
+static StatusCode prv_handle_powertrain_fault(const CanMessage *msg, void *context,
+                                              CanAckStatus *ack_reply) {
   event_raise_priority(EVENT_PRIORITY_HIGHEST, INPUT_EVENT_BPS_FAULT, 0);
 
   return STATUS_CODE_OK;

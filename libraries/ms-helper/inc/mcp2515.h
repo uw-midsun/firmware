@@ -34,14 +34,14 @@ typedef enum {
 } Mcp2515Bitrate;
 
 typedef struct Mcp2515Settings {
-  SPIPort spi_port;
+  SpiPort spi_port;
   uint32_t spi_baudrate;
-  GPIOAddress mosi;
-  GPIOAddress miso;
-  GPIOAddress sclk;
-  GPIOAddress cs;
+  GpioAddress mosi;
+  GpioAddress miso;
+  GpioAddress sclk;
+  GpioAddress cs;
 
-  GPIOAddress int_pin;
+  GpioAddress int_pin;
 
   bool loopback;
   Mcp2515Bitrate can_bitrate;
@@ -52,8 +52,8 @@ typedef struct Mcp2515Settings {
 } Mcp2515Settings;
 
 typedef struct Mcp2515Storage {
-  SPIPort spi_port;
-  GPIOAddress int_pin;
+  SpiPort spi_port;
+  GpioAddress int_pin;
 
   Mcp2515RxCb rx_cb;
   Mcp2515BusErrorCb bus_err_cb;
@@ -75,4 +75,4 @@ StatusCode mcp2515_tx(Mcp2515Storage *storage, uint32_t id, bool extended, uint6
 // Poll interrupt pin for updates
 void mcp2515_poll(Mcp2515Storage *storage);
 
-void mcp2515_watchdog(SoftTimerID timer_id, void *context);
+void mcp2515_watchdog(SoftTimerId timer_id, void *context);

@@ -17,7 +17,7 @@ static void prv_rx_can_mcp2515(const GenericCanMsg *msg, void *context) {
   LOG_DEBUG("RX MCP2515: 0x%lx\n", msg->id);
 }
 
-static void prv_periodic_tx(SoftTimerID timer_id, void *context) {
+static void prv_periodic_tx(SoftTimerId timer_id, void *context) {
   static uint32_t i = 0;
   i = (i + 1) % 0x7FF;
 

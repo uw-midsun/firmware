@@ -20,7 +20,7 @@ void event_queue_init(void) {
   }
 }
 
-StatusCode event_raise_priority(EventPriority priority, EventID id, uint16_t data) {
+StatusCode event_raise_priority(EventPriority priority, EventId id, uint16_t data) {
   if (priority >= NUM_EVENT_PRIORITIES) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }

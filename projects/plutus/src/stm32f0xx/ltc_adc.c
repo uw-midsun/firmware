@@ -15,8 +15,8 @@ uint8_t s_filter_modes[NUM_LTC_ADC_FILTER_MODES] = {
   LTC2484_REJECTION_60HZ,
 };
 
-static void prv_toggle_pin_altfn(GPIOAddress addr, bool enable) {
-  GPIOSettings settings = {
+static void prv_toggle_pin_altfn(GpioAddress addr, bool enable) {
+  GpioSettings settings = {
     .direction = GPIO_DIR_IN,
     .state = GPIO_STATE_HIGH,
     .resistor = GPIO_RES_NONE,
@@ -32,7 +32,7 @@ static void prv_toggle_pin_altfn(GPIOAddress addr, bool enable) {
   gpio_init_pin(&addr, &settings);
 }
 
-static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
+static void prv_ltc_adc_read(SoftTimerId timer_id, void *context) {
   LtcAdcStorage *storage = (LtcAdcStorage *)context;
 
   // Pull CS low so we can check for MISO to go low, signalling that the
@@ -44,7 +44,7 @@ static void prv_ltc_adc_read(SoftTimerID timer_id, void *context) {
 
   // According to the Timing Characteristics (p.5 in the datasheet), we should
   // expect 149.9ms for conversion time (in the worst case).
-  GPIOState state = NUM_GPIO_STATES;
+  GpioState state = NUM_GPIO_STATES;
   gpio_get_state(&storage->miso, &state);
 
   // Restore CS high so we can trigger a SPI exchange
@@ -102,7 +102,7 @@ StatusCode ltc_adc_init(LtcAdcStorage *storage, const LtcAdcSettings *settings) 
   storage->miso = settings->miso;
 
   // The LTC2484 uses SPI Mode 0 (see Figure 5 on p.20 in the datasheet)
-  SPISettings spi_config = {
+  SpiSettings spi_config = {
     .baudrate = settings->spi_baudrate,
     .mode = SPI_MODE_0,
     .mosi = settings->mosi,

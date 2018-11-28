@@ -33,7 +33,7 @@ static bool s_connected;
 static bool s_bps_fault;
 static bool s_charging;
 
-static StatusCode prv_handle_heartbeat(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_handle_heartbeat(const CanMessage *msg, void *context, CANAckStatus *ack_reply) {
   // Respond to BPS heartbeat
   CANAckStatus status = CAN_ACK_STATUS_OK;
   CANId bps_heartbeat_ack = {
@@ -53,7 +53,7 @@ static StatusCode prv_handle_heartbeat(const CANMessage *msg, void *context, CAN
   return STATUS_CODE_OK;
 }
 
-static StatusCode prv_handle_battery_vc(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_handle_battery_vc(const CanMessage *msg, void *context, CANAckStatus *ack_reply) {
   uint32_t voltage = 0;
   int32_t current = 0;
   CAN_UNPACK_BATTERY_AGGREGATE_VC(msg, &voltage, (uint32_t *)&current);
@@ -71,7 +71,7 @@ static void prv_charger_info(uint16_t voltage, uint16_t current, ChargerCanStatu
   CAN_TRANSMIT_CHARGER_INFO(voltage, current, status.raw);
 }
 
-static void prv_start_charge(SoftTimerID timer_id, void *context) {
+static void prv_start_charge(SoftTimerId timer_id, void *context) {
   charger_start(STANDALONE_CHARGER_MAX_VOLTAGE, STANDALONE_CHARGER_MAX_CURRENT);
 }
 

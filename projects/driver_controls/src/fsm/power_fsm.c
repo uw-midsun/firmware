@@ -83,7 +83,7 @@ static bool prv_guard_off(const Event *e) {
 }
 
 // Power FSM output functions
-static void prv_off_output(FSM *fsm, const Event *e, void *context) {
+static void prv_off_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   power_distribution_controller_send_update(EE_POWER_STATE_IDLE);
 
@@ -98,7 +98,7 @@ static void prv_off_output(FSM *fsm, const Event *e, void *context) {
   LOG_DEBUG("Off\n");
 }
 
-static void prv_drive_output(FSM *fsm, const Event *e, void *context) {
+static void prv_drive_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   power_distribution_controller_send_update(EE_POWER_STATE_DRIVE);
 
@@ -110,7 +110,7 @@ static void prv_drive_output(FSM *fsm, const Event *e, void *context) {
   LOG_DEBUG("Drive\n");
 }
 
-static void prv_fault_output(FSM *fsm, const Event *e, void *context) {
+static void prv_fault_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
 
   if (e->id == INPUT_EVENT_BPS_FAULT && e->data) {
@@ -125,7 +125,7 @@ static void prv_fault_output(FSM *fsm, const Event *e, void *context) {
   LOG_DEBUG("Fault\n");
 }
 
-static void prv_charge_output(FSM *fsm, const Event *e, void *context) {
+static void prv_charge_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   power_distribution_controller_send_update(EE_POWER_STATE_CHARGE);
 
@@ -138,7 +138,7 @@ static void prv_charge_output(FSM *fsm, const Event *e, void *context) {
   LOG_DEBUG("Charging\n");
 }
 
-StatusCode power_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
+StatusCode power_fsm_init(Fsm *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_off, prv_off_output);
   fsm_state_init(state_off_brake, prv_off_output);
   fsm_state_init(state_charging, prv_charge_output);

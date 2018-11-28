@@ -13,7 +13,7 @@ typedef void (*CanUartRxCb)(const struct CanUart *can_uart, uint32_t id, bool ex
                             const uint64_t *data, size_t dlc, void *context);
 
 typedef struct CanUart {
-  UARTPort uart;
+  UartPort uart;
   CanUartRxCb rx_cb;
   void *context;
 } CanUart;

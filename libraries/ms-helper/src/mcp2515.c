@@ -140,7 +140,7 @@ static void prv_handle_error(Mcp2515Storage *storage, uint8_t int_flags, uint8_t
   }
 }
 
-static void prv_handle_int(const GPIOAddress *address, void *context) {
+static void prv_handle_int(const GpioAddress *address, void *context) {
   Mcp2515Storage *storage = context;
 
   // Read CANINTF and EFLG
@@ -164,7 +164,7 @@ StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings
   storage->context = settings->context;
   storage->int_pin = settings->int_pin;
 
-  const SPISettings spi_settings = {
+  const SpiSettings spi_settings = {
     .baudrate = settings->spi_baudrate,
     .mode = SPI_MODE_0,
     .mosi = settings->mosi,
@@ -207,7 +207,7 @@ StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings
   }
 
   // Active-low interrupt pin
-  const GPIOSettings gpio_settings = {
+  const GpioSettings gpio_settings = {
     .direction = GPIO_DIR_IN,
   };
   return gpio_init_pin(&settings->int_pin, &gpio_settings);
@@ -295,7 +295,7 @@ const uint8_t registers[] = { MCP2515_CTRL_REG_BFPCTRL,    // RX pins disabled b
                               MCP2515_CTRL_REG_TXB2CTRL,
                               MCP2515_CTRL_REG_RXB0CTRL,
                               MCP2515_CTRL_REG_RXB1CTRL };
-void mcp2515_watchdog(SoftTimerID timer_id, void *context) {
+void mcp2515_watchdog(SoftTimerId timer_id, void *context) {
   Mcp2515Storage *storage = context;
   if (counter4 == 0) {
     prv_handle_int(&storage->int_pin, storage);
@@ -317,7 +317,7 @@ void mcp2515_watchdog(SoftTimerID timer_id, void *context) {
 }
 
 void mcp2515_poll(Mcp2515Storage *storage) {
-  GPIOState state = NUM_GPIO_STATES;
+  GpioState state = NUM_GPIO_STATES;
   gpio_get_state(&storage->int_pin, &state);
 
   if (state == GPIO_STATE_LOW) {

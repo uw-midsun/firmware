@@ -25,21 +25,21 @@
 // Check for thread exit once every 10ms
 #define CAN_HW_THREAD_EXIT_PERIOD_US 10000
 
-typedef struct CANHwEventHandler {
-  CANHwEventHandlerCb callback;
+typedef struct CanHwEventHandler {
+  CanHwEventHandlerCb callback;
   void *context;
-} CANHwEventHandler;
+} CanHwEventHandler;
 
-typedef struct CANHwSocketData {
+typedef struct CanHwSocketData {
   int can_fd;
   struct can_frame rx_frame;
   Fifo tx_fifo;
   struct can_frame tx_frames[CAN_HW_TX_FIFO_LEN];
   struct can_filter filters[CAN_HW_MAX_FILTERS];
   size_t num_filters;
-  CANHwEventHandler handlers[NUM_CAN_HW_EVENTS];
+  CanHwEventHandler handlers[NUM_CAN_HW_EVENTS];
   uint32_t delay_us;
-} CANHwSocketData;
+} CanHwSocketData;
 
 static pthread_t s_rx_pthread_id;
 static pthread_t s_tx_pthread_id;
@@ -50,9 +50,9 @@ static sem_t s_tx_sem;
 // Locked if the TX/RX threads should be alive, unlocked on exit
 static pthread_mutex_t s_keep_alive = PTHREAD_MUTEX_INITIALIZER;
 
-static CANHwSocketData s_socket_data = { .can_fd = -1 };
+static CanHwSocketData s_socket_data = { .can_fd = -1 };
 
-static uint32_t prv_get_delay(CANHwBitrate bitrate) {
+static uint32_t prv_get_delay(CanHwBitrate bitrate) {
   const uint32_t delay_us[NUM_CAN_HW_BITRATES] = {
     1000,  // 125 kbps
     500,   // 250 kbps
@@ -127,7 +127,7 @@ static void *prv_tx_thread(void *arg) {
   return NULL;
 }
 
-StatusCode can_hw_init(const CANHwSettings *settings) {
+StatusCode can_hw_init(const CanHwSettings *settings) {
   if (s_socket_data.can_fd != -1) {
     // Request threads to exit
     close(s_socket_data.can_fd);
@@ -201,12 +201,12 @@ StatusCode can_hw_init(const CANHwSettings *settings) {
 }
 
 // Registers a callback for the given event
-StatusCode can_hw_register_callback(CANHwEvent event, CANHwEventHandlerCb callback, void *context) {
+StatusCode can_hw_register_callback(CanHwEvent event, CanHwEventHandlerCb callback, void *context) {
   if (event >= NUM_CAN_HW_EVENTS) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  s_socket_data.handlers[event] = (CANHwEventHandler){
+  s_socket_data.handlers[event] = (CanHwEventHandler){
     .callback = callback,  //
     .context = context,    //
   };
@@ -233,7 +233,7 @@ StatusCode can_hw_add_filter(uint32_t mask, uint32_t filter, bool extended) {
   return STATUS_CODE_OK;
 }
 
-CANHwBusStatus can_hw_bus_status(void) {
+CanHwBusStatus can_hw_bus_status(void) {
   return CAN_HW_BUS_STATUS_OK;
 }
 

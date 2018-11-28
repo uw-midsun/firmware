@@ -48,7 +48,7 @@ static const uint32_t s_i2c_timing[] = {
 static void prv_recover_lockup(I2CPort port) {
   I2CSettings *settings = &s_port[port].settings;
 
-  GPIOSettings scl_settings = {
+  GpioSettings scl_settings = {
     .direction = GPIO_DIR_OUT,
     .alt_function = GPIO_ALTFN_NONE,
     .state = GPIO_STATE_LOW,
@@ -104,7 +104,7 @@ StatusCode i2c_init(I2CPort i2c, const I2CSettings *settings) {
   RCC_APB1PeriphClockCmd(s_port[i2c].periph, ENABLE);
   RCC_I2CCLKConfig(RCC_I2C1CLK_SYSCLK);
 
-  GPIOSettings io_settings = {
+  GpioSettings io_settings = {
     .direction = GPIO_DIR_OUT_OD,  //
     .alt_function = GPIO_ALTFN_1,  //
   };

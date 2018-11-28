@@ -7,7 +7,7 @@
 #include "ltc_afe_impl.h"
 #include "plutus_event.h"
 
-static void prv_periodic_discharge_bitset(SoftTimerID timer_id, void *context) {
+static void prv_periodic_discharge_bitset(SoftTimerId timer_id, void *context) {
   LtcAfeStorage *afe = context;
   uint64_t data = { 0 };
   memcpy(&data, afe->discharge_bitset, sizeof(data));
@@ -17,7 +17,7 @@ static void prv_periodic_discharge_bitset(SoftTimerID timer_id, void *context) {
                    NULL);
 }
 
-static StatusCode prv_handle_can_bitset(const CANMessage *msg, void *context,
+static StatusCode prv_handle_can_bitset(const CanMessage *msg, void *context,
                                         CANAckStatus *ack_reply) {
   LtcAfeStorage *afe = context;
 

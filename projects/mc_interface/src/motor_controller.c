@@ -117,7 +117,7 @@ static void prv_temp_info_rx(const GenericCanMsg *msg, void *context) {
   }
 }
 
-static void prv_periodic_tx(SoftTimerID timer_id, void *context) {
+static void prv_periodic_tx(SoftTimerId timer_id, void *context) {
   MotorControllerStorage *storage = context;
 
   GenericCanMsg msg = { .dlc = 8, .extended = false };

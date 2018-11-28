@@ -24,10 +24,10 @@ static const uint32_t s_resistance_lookup[] = {
 // Used for converting the lookup table index with corresponding temperatures
 #define THERMISTOR_LOOKUP_RANGE (SIZEOF_ARRAY(s_resistance_lookup) - 1)
 
-StatusCode thermistor_init(ThermistorStorage *storage, GPIOAddress thermistor_gpio,
+StatusCode thermistor_init(ThermistorStorage *storage, GpioAddress thermistor_gpio,
                            ThermistorPosition position) {
   storage->position = position;
-  GPIOSettings gpio_settings = {
+  GpioSettings gpio_settings = {
     .direction = GPIO_DIR_IN,
     .state = GPIO_STATE_LOW,
     .resistor = GPIO_RES_NONE,

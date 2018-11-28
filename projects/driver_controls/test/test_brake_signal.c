@@ -22,11 +22,11 @@
     TEST_ASSERT_EQUAL((state), s_brake_state);                        \
   })
 
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 static EELightState s_brake_state = false;
 
-static StatusCode prv_light_state_cb(const CANMessage *msg, void *context,
-                                     CANAckStatus *ack_reply) {
+static StatusCode prv_light_state_cb(const CanMessage *msg, void *context,
+                                     CanAckStatus *ack_reply) {
   uint8_t light_id = 0, state = 0;
   CAN_UNPACK_LIGHTS_STATE(msg, &light_id, &state);
   TEST_ASSERT_EQUAL(EE_LIGHT_TYPE_BRAKES, light_id);
@@ -40,7 +40,7 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
 
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,
     .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = INPUT_EVENT_CAN_RX,

@@ -19,7 +19,7 @@
 #include "unity.h"
 
 static GenericCanNetwork s_can;
-static CANStorage s_storage;
+static CanStorage s_storage;
 
 // GenericCanRxCb
 static void prv_can_rx_callback(const GenericCanMsg *msg, void *context) {
@@ -35,7 +35,7 @@ void setup_test(void) {
   soft_timer_init();
   gpio_init();
 
-  const CANSettings can_settings = {
+  const CanSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHARGER,
     .bitrate = CAN_HW_BITRATE_250KBPS,
     .tx = { GPIO_PORT_A, 12 },
@@ -57,7 +57,7 @@ void test_generic_can(void) {
 
   volatile uint8_t counter = 0;
 
-  CANId raw_id = {
+  CanId raw_id = {
     .source_id = SYSTEM_CAN_DEVICE_CHARGER,
     .msg_id = 30,
     .type = CAN_MSG_TYPE_DATA,

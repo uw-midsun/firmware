@@ -34,8 +34,8 @@ static const SolarMasterConfig s_config[NUM_SOLAR_MASTER_BOARDS] = {
 
 static CANStorage s_can_storage;
 
-static StatusCode prv_handle_relay_msg(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
-  GPIOAddress *relay_addr = context;
+static StatusCode prv_handle_relay_msg(const CanMessage *msg, void *context, CANAckStatus *ack_reply) {
+  GpioAddress *relay_addr = context;
 
   uint8_t relay_state = 0;
   CAN_UNPACK_SOLAR_RELAY_FRONT(msg, &relay_state);
@@ -50,9 +50,9 @@ int main(void) {
   interrupt_init();
   soft_timer_init();
 
-  const GPIOSettings addr_settings = { .direction = GPIO_DIR_IN };
-  GPIOAddress addr_pin = SOLAR_MASTER_CFG_ADDR_PIN;
-  GPIOState addr_state = NUM_GPIO_STATES;
+  const GpioSettings addr_settings = { .direction = GPIO_DIR_IN };
+  GpioAddress addr_pin = SOLAR_MASTER_CFG_ADDR_PIN;
+  GpioState addr_state = NUM_GPIO_STATES;
   gpio_init_pin(&addr_pin, &addr_settings);
   gpio_get_state(&addr_pin, &addr_state);
 

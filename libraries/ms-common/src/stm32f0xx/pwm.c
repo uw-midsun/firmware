@@ -25,7 +25,7 @@ static TIM_TypeDef *s_timer_def[NUM_PWM_TIMERS] = {
   [PWM_TIMER_17] = TIM17,  //
 };
 
-static void prv_enable_periph_clock(PWMTimer timer) {
+static void prv_enable_periph_clock(PwmTimer timer) {
   switch (timer) {
     case PWM_TIMER_1:
       RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);
@@ -50,7 +50,7 @@ static void prv_enable_periph_clock(PWMTimer timer) {
   }
 }
 
-StatusCode pwm_init(PWMTimer timer, uint16_t period_us) {
+StatusCode pwm_init(PwmTimer timer, uint16_t period_us) {
   if (timer >= NUM_PWM_TIMERS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid timer id");
   } else if (period_us == 0) {
@@ -79,14 +79,14 @@ StatusCode pwm_init(PWMTimer timer, uint16_t period_us) {
   return STATUS_CODE_OK;
 }
 
-uint16_t pwm_get_period(PWMTimer timer) {
+uint16_t pwm_get_period(PwmTimer timer) {
   if (timer >= NUM_PWM_TIMERS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid timer id");
   }
   return s_period_us[timer];
 }
 
-StatusCode pwm_set_pulse(PWMTimer timer, uint16_t pulse_width_us) {
+StatusCode pwm_set_pulse(PwmTimer timer, uint16_t pulse_width_us) {
   if (timer >= NUM_PWM_TIMERS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid timer id");
   } else if (s_period_us[timer] == 0) {
@@ -119,7 +119,7 @@ StatusCode pwm_set_pulse(PWMTimer timer, uint16_t pulse_width_us) {
   return STATUS_CODE_OK;
 }
 
-StatusCode pwm_set_dc(PWMTimer timer, uint16_t dc) {
+StatusCode pwm_set_dc(PwmTimer timer, uint16_t dc) {
   if (timer >= NUM_PWM_TIMERS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid timer id");
   } else if (dc > 100) {

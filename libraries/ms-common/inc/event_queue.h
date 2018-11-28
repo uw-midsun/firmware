@@ -19,7 +19,7 @@
 #include "status.h"
 
 #define EVENT_QUEUE_SIZE 20
-typedef uint16_t EventID;
+typedef uint16_t EventId;
 
 typedef enum {
   EVENT_PRIORITY_HIGHEST = 0,
@@ -31,7 +31,7 @@ typedef enum {
 } EventPriority;
 
 typedef struct Event {
-  EventID id;
+  EventId id;
   uint16_t data;
 } Event;
 
@@ -39,7 +39,7 @@ typedef struct Event {
 void event_queue_init(void);
 
 // Raises an event in the global event queue at the default priority.
-StatusCode event_raise_priority(EventPriority priority, EventID id, uint16_t data);
+StatusCode event_raise_priority(EventPriority priority, EventId id, uint16_t data);
 
 // Raises an event in the global event queue at the default priority. Provided for legacy
 // compatibility.

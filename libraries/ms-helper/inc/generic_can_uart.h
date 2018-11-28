@@ -14,4 +14,4 @@ typedef struct GenericCanUart {
 } GenericCanUart;
 
 // Initialize |can_uart| to use CAN UART on |port|.
-StatusCode generic_can_uart_init(GenericCanUart *can_uart, UARTPort port);
+StatusCode generic_can_uart_init(GenericCanUart *can_uart, UartPort port);

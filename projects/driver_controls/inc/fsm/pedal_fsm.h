@@ -7,4 +7,4 @@
 #include "event_arbiter.h"
 #include "fsm.h"
 
-StatusCode pedal_fsm_init(FSM *fsm, EventArbiterStorage *storage);
+StatusCode pedal_fsm_init(Fsm *fsm, EventArbiterStorage *storage);

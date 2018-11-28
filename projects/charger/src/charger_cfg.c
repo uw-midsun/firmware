@@ -12,7 +12,7 @@
 #include "status.h"
 #include "uart.h"
 
-static CANSettings s_can_settings = {
+static CanSettings s_can_settings = {
   .device_id = SYSTEM_CAN_DEVICE_CHARGER,
   .bitrate = CAN_HW_BITRATE_500KBPS,
   .tx = { GPIO_PORT_A, 12 },
@@ -23,11 +23,11 @@ static CANSettings s_can_settings = {
   .loopback = false,
 };
 
-CANSettings *charger_cfg_load_can_settings(void) {
+CanSettings *charger_cfg_load_can_settings(void) {
   return &s_can_settings;
 }
 
-static UARTSettings s_uart_settings = {
+static UartSettings s_uart_settings = {
   .baudrate = 115200,
   .rx_handler = NULL,
   .context = NULL,
@@ -36,16 +36,16 @@ static UARTSettings s_uart_settings = {
   .alt_fn = GPIO_ALTFN_4,
 };
 
-UARTSettings *charger_cfg_load_uart_settings(void) {
+UartSettings *charger_cfg_load_uart_settings(void) {
   return &s_uart_settings;
 }
 
-UARTPort charger_cfg_load_uart_port(void) {
+UartPort charger_cfg_load_uart_port(void) {
   return UART_PORT_3;
 }
 
-GPIOAddress charger_cfg_load_charger_pin(void) {
-  return ((GPIOAddress){ GPIO_PORT_A, 15 });
+GpioAddress charger_cfg_load_charger_pin(void) {
+  return ((GpioAddress){ GPIO_PORT_A, 15 });
 }
 
 static GenericCanNetwork s_can_storage;

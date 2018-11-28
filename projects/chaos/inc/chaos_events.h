@@ -16,7 +16,7 @@ typedef enum {
   CHAOS_EVENT_MAYBE_RETRY_RELAY,
   CHAOS_EVENT_SET_RELAY_RETRIES,
   NUM_CHAOS_EVENTS_CAN,  // 9
-} ChaosEventsCAN;
+} ChaosEventsCan;
 
 // State transition messages in the event queue (only 1 should be in the queue at a time so order is
 // irrelevant).
@@ -39,7 +39,7 @@ typedef enum {
   CHAOS_EVENT_DELAY_MS,
   CHAOS_EVENT_DELAY_DONE,
   NUM_CHAOS_EVENTS_FSM  // 27
-} ChaosEventsFSM;
+} ChaosEventsFsm;
 
 // Used for the sequence generator that schedules and order events for the other FSMs.
 typedef enum {

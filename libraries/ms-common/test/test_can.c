@@ -14,10 +14,10 @@ typedef enum {
   TEST_CAN_EVENT_FAULT,
 } TestCanEvent;
 
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 
-static StatusCode prv_rx_callback(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
-  CANMessage *rx_msg = context;
+static StatusCode prv_rx_callback(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
+  CanMessage *rx_msg = context;
   *rx_msg = *msg;
 
   if (msg->msg_id == TEST_CAN_UNKNOWN_MSG_ID) {
@@ -27,7 +27,7 @@ static StatusCode prv_rx_callback(const CANMessage *msg, void *context, CANAckSt
   return STATUS_CODE_OK;
 }
 
-static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                    uint16_t num_remaining, void *context) {
   uint16_t *device_acked = context;
   *device_acked = device;
@@ -35,9 +35,9 @@ static StatusCode prv_ack_callback(CANMessageID msg_id, uint16_t device, CANAckS
   return STATUS_CODE_OK;
 }
 
-static StatusCode prv_ack_callback_status(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_ack_callback_status(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                           uint16_t num_remaining, void *context) {
-  CANAckStatus *ret_status = context;
+  CanAckStatus *ret_status = context;
   *ret_status = status;
 
   return STATUS_CODE_OK;
@@ -58,7 +58,7 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
 
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .device_id = TEST_CAN_DEVICE_ID,
     .bitrate = CAN_HW_BITRATE_125KBPS,
     .rx_event = TEST_CAN_EVENT_RX,
@@ -76,12 +76,12 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_can_basic(void) {
-  volatile CANMessage rx_msg = { 0 };
+  volatile CanMessage rx_msg = { 0 };
   can_register_rx_handler(0x6, prv_rx_callback, &rx_msg);
   can_register_rx_handler(0x1, prv_rx_callback, &rx_msg);
   can_register_rx_handler(0x5, prv_rx_callback, &rx_msg);
 
-  CANMessage msg = {
+  CanMessage msg = {
     .msg_id = 0x5,              //
     .type = CAN_MSG_TYPE_DATA,  //
     .data = 0x1,                //
@@ -106,13 +106,13 @@ void test_can_basic(void) {
 }
 
 void test_can_filter(void) {
-  volatile CANMessage rx_msg = { 0 };
+  volatile CanMessage rx_msg = { 0 };
   can_add_filter(0x2);
 
   can_register_rx_handler(0x1, prv_rx_callback, &rx_msg);
   can_register_rx_handler(0x2, prv_rx_callback, &rx_msg);
 
-  CANMessage msg = {
+  CanMessage msg = {
     .msg_id = 0x1,               //
     .type = CAN_MSG_TYPE_DATA,   //
     .data = 0x1122334455667788,  //
@@ -142,17 +142,17 @@ void test_can_filter(void) {
 }
 
 void test_can_ack(void) {
-  volatile CANMessage rx_msg = { 0 };
+  volatile CanMessage rx_msg = { 0 };
   volatile uint16_t device_acked = CAN_MSG_INVALID_DEVICE;
 
-  CANMessage msg = {
+  CanMessage msg = {
     .msg_id = 0x1,               //
     .type = CAN_MSG_TYPE_DATA,   //
     .data = 0x1122334455667788,  //
     .dlc = 8,                    //
   };
 
-  CANAckRequest ack_req = {
+  CanAckRequest ack_req = {
     .callback = prv_ack_callback,                                     //
     .context = &device_acked,                                         //
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_CAN_DEVICE_ID),  //
@@ -185,15 +185,15 @@ void test_can_ack(void) {
 }
 
 void test_can_ack_expire(void) {
-  volatile CANAckStatus ack_status = NUM_CAN_ACK_STATUSES;
-  CANMessage msg = {
+  volatile CanAckStatus ack_status = NUM_CAN_ACK_STATUSES;
+  CanMessage msg = {
     .msg_id = 0x1,               //
     .type = CAN_MSG_TYPE_DATA,   //
     .data = 0x1122334455667788,  //
     .dlc = 8,                    //
   };
 
-  CANAckRequest ack_req = {
+  CanAckRequest ack_req = {
     .callback = prv_ack_callback_status,                              //
     .context = &ack_status,                                           //
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_CAN_DEVICE_ID),  //
@@ -209,16 +209,16 @@ void test_can_ack_expire(void) {
 }
 
 void test_can_ack_status(void) {
-  volatile CANAckStatus ack_status = NUM_CAN_ACK_STATUSES;
-  volatile CANMessage rx_msg = { 0 };
-  CANMessage msg = {
+  volatile CanAckStatus ack_status = NUM_CAN_ACK_STATUSES;
+  volatile CanMessage rx_msg = { 0 };
+  CanMessage msg = {
     .msg_id = TEST_CAN_UNKNOWN_MSG_ID,
     .type = CAN_MSG_TYPE_DATA,
     .data = 0x1122334455667788,
     .dlc = 8,
   };
 
-  CANAckRequest ack_req = {
+  CanAckRequest ack_req = {
     .callback = prv_ack_callback_status,                              //
     .context = &ack_status,                                           //
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(TEST_CAN_DEVICE_ID),  //
@@ -250,8 +250,8 @@ void test_can_ack_status(void) {
 }
 
 void test_can_default(void) {
-  volatile CANMessage rx_msg = { 0 };
-  CANMessage msg = {
+  volatile CanMessage rx_msg = { 0 };
+  CanMessage msg = {
     .msg_id = 0x1,              //
     .type = CAN_MSG_TYPE_DATA,  //
     .data = 0x1,                //

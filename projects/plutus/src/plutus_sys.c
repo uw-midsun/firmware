@@ -40,7 +40,7 @@ static StatusCode prv_init_common(PlutusSysStorage *storage, PlutusSysType type)
   soft_timer_init();
   event_queue_init();
 
-  const CANSettings can_settings = {
+  const CanSettings can_settings = {
     .device_id = s_specifics[type].can_device,
     .bitrate = PLUTUS_CFG_CAN_BITRATE,
     .rx_event = PLUTUS_EVENT_CAN_RX,
@@ -70,11 +70,11 @@ static StatusCode prv_init_common(PlutusSysStorage *storage, PlutusSysType type)
                                                     heartbeat_rx_auto_ack_handler, NULL));
 
   // TODO(ELEC-439): drive fans using PWM
-  GPIOSettings fan_settings = {
+  GpioSettings fan_settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,
   };
-  GPIOAddress fan_1 = PLUTUS_CFG_FAN_1, fan_2 = PLUTUS_CFG_FAN_2;
+  GpioAddress fan_1 = PLUTUS_CFG_FAN_1, fan_2 = PLUTUS_CFG_FAN_2;
   gpio_init_pin(&fan_1, &fan_settings);
   gpio_init_pin(&fan_2, &fan_settings);
 
@@ -82,11 +82,11 @@ static StatusCode prv_init_common(PlutusSysStorage *storage, PlutusSysType type)
 }
 
 PlutusSysType plutus_sys_get_type(void) {
-  const GPIOSettings gpio_settings = { .direction = GPIO_DIR_IN };
-  GPIOAddress board_selector = PLUTUS_CFG_BOARD_TYPE_SEL;
+  const GpioSettings gpio_settings = { .direction = GPIO_DIR_IN };
+  GpioAddress board_selector = PLUTUS_CFG_BOARD_TYPE_SEL;
   gpio_init_pin(&board_selector, &gpio_settings);
 
-  GPIOState state = NUM_GPIO_STATES;
+  GpioState state = NUM_GPIO_STATES;
   gpio_get_state(&board_selector, &state);
 
   return (state == GPIO_STATE_HIGH) ? PLUTUS_SYS_TYPE_MASTER : PLUTUS_SYS_TYPE_SLAVE;
@@ -102,7 +102,7 @@ StatusCode plutus_sys_init(PlutusSysStorage *storage, PlutusSysType type) {
 
   status_ok_or_return(prv_init_common(storage, type));
 
-  GPIOAddress killswitch = PLUTUS_CFG_KILLSWITCH;
+  GpioAddress killswitch = PLUTUS_CFG_KILLSWITCH;
   if (type == PLUTUS_SYS_TYPE_MASTER) {
     // Master also handles:
     // LTC AFE/ADC

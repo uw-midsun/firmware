@@ -5,8 +5,8 @@
 #include "exported_enums.h"
 #include "plutus_cfg.h"
 
-static StatusCode prv_handle_heartbeat_ack(CANMessageID msg_id, uint16_t device,
-                                           CANAckStatus status, uint16_t num_remaining,
+static StatusCode prv_handle_heartbeat_ack(CanMessageId msg_id, uint16_t device,
+                                           CanAckStatus status, uint16_t num_remaining,
                                            void *context) {
   BpsHeartbeatStorage *storage = context;
 
@@ -30,7 +30,7 @@ static StatusCode prv_handle_heartbeat_ack(CANMessageID msg_id, uint16_t device,
 }
 
 static StatusCode prv_handle_state(BpsHeartbeatStorage *storage) {
-  CANAckRequest ack_request = {
+  CanAckRequest ack_request = {
     .callback = prv_handle_heartbeat_ack,
     .context = storage,
     .expected_bitset = storage->expected_bitset,
@@ -47,7 +47,7 @@ static StatusCode prv_handle_state(BpsHeartbeatStorage *storage) {
   return STATUS_CODE_OK;
 }
 
-static void prv_periodic_heartbeat(SoftTimerID timer_id, void *context) {
+static void prv_periodic_heartbeat(SoftTimerId timer_id, void *context) {
   BpsHeartbeatStorage *storage = context;
 
   prv_handle_state(storage);
