@@ -12,7 +12,7 @@ def parse_data(file_name):
     for row in log_reader:
         # Data is logged in the format (timestamp, (can_id, data, len(data))).
         timestamp = row[0]
-        can_id = ord(row[1])
+        can_id = int(row[1], 16)
         can_data = int(row[2], 16)
         data_len = int(row[3])
 
