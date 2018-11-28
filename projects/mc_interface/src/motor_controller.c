@@ -25,15 +25,15 @@ static void prv_bus_measurement_rx(const GenericCanMsg *msg, void *context) {
 
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
     if (can_id.device_id == storage->settings.ids[i].motor_controller) {
-      storage->bus_measurement[i].bus_voltage = (int16_t)(can_data.bus_measurement.bus_voltage);
-      storage->bus_measurement[i].bus_current = (int16_t)(can_data.bus_measurement.bus_current);
+      storage->bus_measurement[i].bus_voltage = (int16_t)(can_data.bus_measurement.bus_voltage_v);
+      storage->bus_measurement[i].bus_current = (int16_t)(can_data.bus_measurement.bus_current_a);
       storage->bus_rx_bitset |= 1 << i;
 
       if (i == 0) {
         // This controller is deemed to be the source of truth during cruise - copy setpoint
         storage->cruise_current_percentage =
-            fabsf(can_data.bus_measurement.bus_current / storage->settings.max_bus_current);
-        storage->cruise_is_braking = (can_data.bus_measurement.bus_current < 0.0f);
+            fabsf(can_data.bus_measurement.bus_current_a / storage->settings.max_bus_current);
+        storage->cruise_is_braking = (can_data.bus_measurement.bus_current_a < 0.0f);
       }
     }
   }
@@ -80,8 +80,8 @@ static void prv_status_info_rx(const GenericCanMsg *msg, void *context) {
 
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
     if (can_id.device_id == storage->settings.ids[i].motor_controller) {
-      storage->status_flags[i].limit = can_data.status_info.limit_flags;
-      storage->status_flags[i].error = can_data.status_info.error_flags;
+      storage->status_flags[i].limit = can_data.status_info.limit_flags.raw;
+      storage->status_flags[i].error = can_data.status_info.error_flags.raw;
       storage->status_rx_bitset |= 1 << i;
       break;
     }
@@ -102,8 +102,8 @@ static void prv_temp_info_rx(const GenericCanMsg *msg, void *context) {
 
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
     if (can_id.device_id == storage->settings.ids[i].motor_controller) {
-      storage->temp_measurement[i].heatsink_temp = can_data.sink_motor_temp.heatsink_temp * 10;
-      storage->temp_measurement[i].motor_temp = can_data.sink_motor_temp.motor_temp * 10;
+      storage->temp_measurement[i].heatsink_temp = can_data.sink_motor_temp_measurement.heatsink_temp_c * 10;
+      storage->temp_measurement[i].motor_temp = can_data.sink_motor_temp_measurement.motor_temp_c * 10;
       storage->temp_rx_bitset |= 1 << i;
       break;
     }
@@ -178,7 +178,7 @@ StatusCode motor_controller_init(MotorControllerStorage *controller,
                                                 prv_status_info_rx, GENERIC_CAN_EMPTY_MASK,
                                                 can_id.raw, false, controller));
 
-    can_id.msg_id = WAVESCULPTOR_MEASUREMENT_ID_SINK_MOTOR_TEMP;
+    can_id.msg_id = WAVESCULPTOR_MEASUREMENT_ID_SINK_MOTOR_TEMPERATURE;
     status_ok_or_return(generic_can_register_rx(controller->settings.motor_can,
                                                 prv_temp_info_rx, GENERIC_CAN_EMPTY_MASK,
                                                 can_id.raw, false, controller));
