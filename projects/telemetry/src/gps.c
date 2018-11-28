@@ -118,7 +118,9 @@ StatusCode gps_register_callback(GpsGgaCallback gga_callback, GpsVtgCallback vtg
   if (s_settings == NULL) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "GPS module is uninitialized.\n");
   }
-  GpsStorage temp_storage = {.gga_callback = gga_callback, .vtg_callback = vtg_callback, .context = context};
+  GpsStorage temp_storage = {
+    .gga_callback = gga_callback, .vtg_callback = vtg_callback, .context = context
+  };
   s_storage = &temp_storage;
   return STATUS_CODE_OK;
 }

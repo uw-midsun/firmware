@@ -13,8 +13,8 @@
 #include "uart.h"
 #include "unity.h"
 
-static NmeaGgaSentence *gga_test = {0};
-static NmeaVtgSentence *vtg_test = {0};
+static NmeaGgaSentence *gga_test = { 0 };
+static NmeaVtgSentence *vtg_test = { 0 };
 
 static bool gga_called = false;
 static bool vtg_called = false;
@@ -64,8 +64,8 @@ void test_gps_guards(void) {
 }
 
 void test_gps_output(void) {
-  NmeaGgaSentence gga_result = {0};
-  NmeaVtgSentence vtg_result = {0};
+  NmeaGgaSentence gga_result = { 0 };
+  NmeaVtgSentence vtg_result = { 0 };
 
   TEST_ASSERT_OK(gps_init(&telemetry_gps_settings));
   TEST_ASSERT_EQUAL(STATUS_CODE_RESOURCE_EXHAUSTED, gps_init(&telemetry_gps_settings));
