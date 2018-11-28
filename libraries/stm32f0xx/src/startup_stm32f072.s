@@ -127,7 +127,8 @@ LoopFillZerobss:
 
 /* Call the retarget intitialization function.*/
   bl retarget_init
-  bl git_version_init
+  /* It appears that the version change breaks the motor controller interface*/
+  /* bl git_version_init*/
 
 /* Call the application's entry point.*/
   bl main
