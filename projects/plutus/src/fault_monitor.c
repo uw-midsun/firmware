@@ -84,7 +84,7 @@ static void prv_extract_aux_result(uint16_t *result_arr, size_t len, void *conte
   if (fault) {
     bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
 <<<<<<< HEAD
-                        EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_TEMP);
+                              EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_TEMP);
 =======
                               EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_TEMP);
 >>>>>>> bfd1bcf

@@ -4,9 +4,9 @@
 #include <string.h>
 #include "can_transmit.h"
 #include "critical_section.h"
+#include "debug_led.h"
 #include "soft_timer.h"
 #include "wavesculptor.h"
-#include "debug_led.h"
 
 // Torque control mode:
 // - velocity = +/-100 m/s
@@ -102,8 +102,10 @@ static void prv_temp_info_rx(const GenericCanMsg *msg, void *context) {
 
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
     if (can_id.device_id == storage->settings.ids[i].motor_controller) {
-      storage->temp_measurement[i].heatsink_temp = can_data.sink_motor_temp_measurement.heatsink_temp_c * 10;
-      storage->temp_measurement[i].motor_temp = can_data.sink_motor_temp_measurement.motor_temp_c * 10;
+      storage->temp_measurement[i].heatsink_temp =
+          can_data.sink_motor_temp_measurement.heatsink_temp_c * 10;
+      storage->temp_measurement[i].motor_temp =
+          can_data.sink_motor_temp_measurement.motor_temp_c * 10;
       storage->temp_rx_bitset |= 1 << i;
       break;
     }
@@ -174,14 +176,14 @@ StatusCode motor_controller_init(MotorControllerStorage *controller,
                                                 can_id.raw, false, controller));
 
     can_id.msg_id = WAVESCULPTOR_MEASUREMENT_ID_STATUS;
-    status_ok_or_return(generic_can_register_rx(controller->settings.motor_can,
-                                                prv_status_info_rx, GENERIC_CAN_EMPTY_MASK,
-                                                can_id.raw, false, controller));
+    status_ok_or_return(generic_can_register_rx(controller->settings.motor_can, prv_status_info_rx,
+                                                GENERIC_CAN_EMPTY_MASK, can_id.raw, false,
+                                                controller));
 
     can_id.msg_id = WAVESCULPTOR_MEASUREMENT_ID_SINK_MOTOR_TEMPERATURE;
-    status_ok_or_return(generic_can_register_rx(controller->settings.motor_can,
-                                                prv_temp_info_rx, GENERIC_CAN_EMPTY_MASK,
-                                                can_id.raw, false, controller));
+    status_ok_or_return(generic_can_register_rx(controller->settings.motor_can, prv_temp_info_rx,
+                                                GENERIC_CAN_EMPTY_MASK, can_id.raw, false,
+                                                controller));
   }
 
   return soft_timer_start_millis(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS, prv_periodic_tx, controller,
@@ -193,8 +195,7 @@ StatusCode motor_controller_set_update_cbs(MotorControllerStorage *controller,
                                            MotorControllerSpeedCb speed_cb,
                                            MotorControllerBusMeasurementCb bus_measurement_cb,
                                            MotorControllerStatusCb status_cb,
-                                           MotorControllerTempCb temp_cb,
-                                           void *context) {
+                                           MotorControllerTempCb temp_cb, void *context) {
   bool disabled = critical_section_start();
   controller->settings.speed_cb = speed_cb;
   controller->settings.bus_measurement_cb = bus_measurement_cb;

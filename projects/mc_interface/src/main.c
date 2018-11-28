@@ -1,23 +1,22 @@
 #include "can.h"
 #include "can_msg_defs.h"
+#include "can_transmit.h"
+#include "debug_led.h"
 #include "drive_can.h"
+#include "generic_can_mcp2515.h"
 #include "generic_can_uart.h"
 #include "gpio.h"
+#include "gpio_it.h"
 #include "heartbeat_rx.h"
 #include "interrupt.h"
+#include "log.h"
 #include "mc_cfg.h"
 #include "motor_controller.h"
 #include "sequenced_relay.h"
+#include "soft_timer.h"
+#include "status.h"
 #include "uart.h"
 #include "wait.h"
-#include "log.h"
-#include "can_transmit.h"
-#include "generic_can_mcp2515.h"
-#include "gpio_it.h"
-#include "log.h"
-#include "soft_timer.h"
-#include "debug_led.h"
-#include "status.h"
 
 typedef enum {
   MOTOR_EVENT_SYSTEM_CAN_RX = 0,
@@ -66,7 +65,8 @@ static void prv_setup_motor_can(void) {
 
 static void prv_periodic_debug(SoftTimerId timer_id, void *context) {
   CanMessage msg = { 0 };
-  can_pack_impl_u16(&msg, 0, SYSTEM_CAN_MESSAGE_MOTOR_DEBUG, 8, s_can_mcp2515.mcp2515->errors.eflg, s_can_mcp2515.mcp2515->errors.tec, s_can_mcp2515.mcp2515->errors.rec, 0);
+  can_pack_impl_u16(&msg, 0, SYSTEM_CAN_MESSAGE_MOTOR_DEBUG, 8, s_can_mcp2515.mcp2515->errors.eflg,
+                    s_can_mcp2515.mcp2515->errors.tec, s_can_mcp2515.mcp2515->errors.rec, 0);
   can_transmit(&msg, NULL);
 
   soft_timer_start_seconds(1, prv_periodic_debug, NULL, NULL);
@@ -118,7 +118,7 @@ int main(void) {
   debug_led_init(DEBUG_LED_BLUE_A);
   debug_led_init(DEBUG_LED_GREEN);
   debug_led_init(DEBUG_LED_RED);
-  if(!status_ok(soft_timer_start_seconds(15, mcp2515_watchdog, s_can_mcp2515.mcp2515, NULL))){
+  if (!status_ok(soft_timer_start_seconds(15, mcp2515_watchdog, s_can_mcp2515.mcp2515, NULL))) {
     LOG_DEBUG("Could not start MCP watchdog\n");
   }
   while (true) {

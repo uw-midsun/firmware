@@ -33,13 +33,15 @@ typedef struct MotorControllerStatusFlags {
   uint16_t error;
   uint16_t limit;
 } MotorControllerStatusFlags;
-typedef void (*MotorControllerStatusCb)(MotorControllerStatusFlags statuses[], size_t num_statuses, void *context);
+typedef void (*MotorControllerStatusCb)(MotorControllerStatusFlags statuses[], size_t num_statuses,
+                                        void *context);
 
 typedef struct MotorControllerTempMeasurement {
   int16_t motor_temp;
   int16_t heatsink_temp;
 } MotorControllerTempMeasurement;
-typedef void (*MotorControllerTempCb)(MotorControllerTempMeasurement measurements[], size_t num_measurements, void *context);
+typedef void (*MotorControllerTempCb)(MotorControllerTempMeasurement measurements[],
+                                      size_t num_measurements, void *context);
 
 typedef enum {
   MOTOR_CONTROLLER_LEFT,
@@ -106,8 +108,7 @@ StatusCode motor_controller_set_update_cbs(MotorControllerStorage *controller,
                                            MotorControllerSpeedCb speed_cb,
                                            MotorControllerBusMeasurementCb bus_measurement_cb,
                                            MotorControllerStatusCb status_cb,
-                                           MotorControllerTempCb temp_cb,
-                                           void *context);
+                                           MotorControllerTempCb temp_cb, void *context);
 
 // Switch the motor controllers to throttle control
 // |throttle| should be -EE_DRIVE_OUTPUT_DENOMINATOR to EE_DRIVE_OUTPUT_DENOMINATOR

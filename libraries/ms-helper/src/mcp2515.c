@@ -2,13 +2,12 @@
 #include <stddef.h>
 #include <string.h>
 #include "critical_section.h"
+#include "debug_led.h"
+#include "delay.h"
 #include "gpio_it.h"
 #include "log.h"
 #include "mcp2515_defs.h"
-#include "delay.h"
-#include "debug_led.h"
 #include "soft_timer.h"
-#include "log.h"
 
 #define MCP2515_MAX_WRITE_BUFFER_LEN 10
 
@@ -189,9 +188,12 @@ StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings
   // CANINTF: clear all IRQ flags
   // EFLG: clear all error flags
   const uint8_t registers[] = {
-    0x05, MCP2515_CNF2_BTLMODE_CNF3 | MCP2515_CNF2_SAMPLE_3X | (0x07 << 3),
-    settings->can_bitrate, MCP2515_CANINT_EFLAG | MCP2515_CANINT_RX1IE | MCP2515_CANINT_RX0IE,
-    0x00, 0x00,
+    0x05,
+    MCP2515_CNF2_BTLMODE_CNF3 | MCP2515_CNF2_SAMPLE_3X | (0x07 << 3),
+    settings->can_bitrate,
+    MCP2515_CANINT_EFLAG | MCP2515_CANINT_RX1IE | MCP2515_CANINT_RX0IE,
+    0x00,
+    0x00,
   };
   prv_write(storage, MCP2515_CTRL_REG_CNF3, registers, SIZEOF_ARRAY(registers));
 
@@ -213,7 +215,8 @@ StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings
   return gpio_init_pin(&settings->int_pin, &gpio_settings);
 }
 
-StatusCode mcp2515_register_cbs(Mcp2515Storage *storage, Mcp2515RxCb rx_cb, Mcp2515BusErrorCb bus_err_cb, void *context) {
+StatusCode mcp2515_register_cbs(Mcp2515Storage *storage, Mcp2515RxCb rx_cb,
+                                Mcp2515BusErrorCb bus_err_cb, void *context) {
   bool disabled = critical_section_start();
   storage->rx_cb = rx_cb;
   storage->bus_err_cb = bus_err_cb;
@@ -278,29 +281,21 @@ StatusCode mcp2515_tx(Mcp2515Storage *storage, uint32_t id, bool extended, uint6
 
 uint8_t counter3 = 1;
 uint64_t counter4 = 0;
-const uint8_t registers[] = { MCP2515_CTRL_REG_BFPCTRL,    // RX pins disabled by default
-                              MCP2515_CTRL_REG_TXRTSCTRL,  // TX pins input by default
-                              MCP2515_CTRL_REG_CANSTAT,
-                              MCP2515_CTRL_REG_CANCTRL,
-                              MCP2515_CTRL_REG_TEC,
-                              MCP2515_CTRL_REG_REC,
-                              MCP2515_CTRL_REG_CNF3,
-                              MCP2515_CTRL_REG_CNF2,
-                              MCP2515_CTRL_REG_CNF1,
-                              MCP2515_CTRL_REG_CANINTE,
-                              MCP2515_CTRL_REG_CANINTF,
-                              MCP2515_CTRL_REG_EFLG,
-                              MCP2515_CTRL_REG_TXB0CTRL,
-                              MCP2515_CTRL_REG_TXB1CTRL,
-                              MCP2515_CTRL_REG_TXB2CTRL,
-                              MCP2515_CTRL_REG_RXB0CTRL,
-                              MCP2515_CTRL_REG_RXB1CTRL };
+const uint8_t registers[] = {
+  MCP2515_CTRL_REG_BFPCTRL,    // RX pins disabled by default
+  MCP2515_CTRL_REG_TXRTSCTRL,  // TX pins input by default
+  MCP2515_CTRL_REG_CANSTAT,   MCP2515_CTRL_REG_CANCTRL,  MCP2515_CTRL_REG_TEC,
+  MCP2515_CTRL_REG_REC,       MCP2515_CTRL_REG_CNF3,     MCP2515_CTRL_REG_CNF2,
+  MCP2515_CTRL_REG_CNF1,      MCP2515_CTRL_REG_CANINTE,  MCP2515_CTRL_REG_CANINTF,
+  MCP2515_CTRL_REG_EFLG,      MCP2515_CTRL_REG_TXB0CTRL, MCP2515_CTRL_REG_TXB1CTRL,
+  MCP2515_CTRL_REG_TXB2CTRL,  MCP2515_CTRL_REG_RXB0CTRL, MCP2515_CTRL_REG_RXB1CTRL
+};
 void mcp2515_watchdog(SoftTimerId timer_id, void *context) {
   Mcp2515Storage *storage = context;
   if (counter4 == 0) {
     prv_handle_int(&storage->int_pin, storage);
     LOG_DEBUG("Interrupt timeout\n");
-    
+
     // Read the status of the Receive buffer registers
     for (size_t i = 0; i < SIZEOF_ARRAY(registers); i++) {
       uint8_t data = 0;
@@ -309,7 +304,6 @@ void mcp2515_watchdog(SoftTimerId timer_id, void *context) {
     }
   }
 
-  
   counter4 = 0;
   if (!status_ok(soft_timer_start_seconds(15, mcp2515_watchdog, storage, NULL))) {
     LOG_DEBUG("Could not start MCP watchdog 2\n");
