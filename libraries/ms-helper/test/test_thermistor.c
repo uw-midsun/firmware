@@ -226,23 +226,40 @@ void test_temperature_calculation(void) {
 // Test temperature to resistance
 void test_resistance_lookup(void) {
   uint16_t resistance = 0;
-
-  // 10 Degrees
-  thermistor_calculate_resistance(100, &resistance);
-  TEST_ASSERT_UINT16_WITHIN(100, 17925, resistance);
-
-  // 25 Degrees
-  thermistor_calculate_resistance(250, &resistance);
-  TEST_ASSERT_UINT16_WITHIN(100, 10000, resistance);
-
-  // 65 Degrees
-  thermistor_calculate_resistance(650, &resistance);
-  TEST_ASSERT_UINT16_WITHIN(100, 2586, resistance);
-
   // Over 100 degrees
   TEST_ASSERT_NOT_OK(thermistor_calculate_resistance(1010, &resistance));
 
+  // Exact: No interpolation required
+  // 10 Degrees
+  thermistor_calculate_resistance(100, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(1, 17925, resistance);
+
+  // 25 Degrees
+  thermistor_calculate_resistance(250, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(1, 10000, resistance);
+
+  // 65 Degrees
+  thermistor_calculate_resistance(650, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(1, 2586, resistance);
+
   // At exactly 100 degrees
   thermistor_calculate_resistance(1000, &resistance);
-  TEST_ASSERT_UINT16_WITHIN(100, 973, resistance);
+  TEST_ASSERT_UINT16_WITHIN(1, 973, resistance);
+
+  // Test some interpolated values
+  // 12.5 degrees
+  thermistor_calculate_resistance(125, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(1, 16210, resistance);
+
+  // 50.5 degrees
+  thermistor_calculate_resistance(505, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(1, 4093, resistance);
+
+  // 74.7 degrees
+  thermistor_calculate_resistance(747, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(1, 1941, resistance);
+
+  // 75.5 degrees
+  thermistor_calculate_resistance(755, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(1, 1897, resistance);
 }

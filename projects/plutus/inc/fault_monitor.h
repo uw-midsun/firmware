@@ -46,7 +46,8 @@ typedef struct FaultMonitorStorage {
   int32_t discharge_current_limit;
   int32_t min_charge_current;
 
-  // in 100uV - node voltage of thermistors
+  // Equivalent thermistor voltages at set discharge/charge temperature limits
+  // Measured in 100 uV units
   uint16_t discharge_temp_node_limit;
   uint16_t charge_temp_node_limit;
 } FaultMonitorStorage;
