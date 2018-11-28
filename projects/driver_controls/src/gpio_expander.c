@@ -20,25 +20,21 @@ static void prv_interrupt_handler(const GpioAddress *address, void *context) {
   uint8_t intf = 0;
   uint8_t gpio = 0;
 
-  // Read the contents of the GPIO registers
+  // Read the contents of the interrupt flag and GPIO registers - INTCAP may have missed a change
+  i2c_read_reg(expander->port, expander->addr, MCP23008_INTF, &intf, 1);
   i2c_read_reg(expander->port, expander->addr, MCP23008_GPIO, &gpio, 1);
 
-  uint8_t changed = expander->prev_state ^ gpio;
-  expander->prev_state = gpio;
-
   // Identify all pins with a pending interrupt and execute their callbacks
-  while (changed != 0) {
-    GpioExpanderPin current_pin = (GpioExpanderPin)(__builtin_ffs(changed) - 1);
+  while (intf != 0) {
+    GpioExpanderPin current_pin = (GpioExpanderPin)(__builtin_ffs(intf) - 1);
 
     if (expander->callbacks[current_pin].func != NULL) {
       expander->callbacks[current_pin].func(current_pin, (gpio >> current_pin) & 1,
                                             expander->callbacks[current_pin].context);
     }
 
-    changed &= ~(1 << current_pin);
+    intf &= ~(1 << current_pin);
   }
-
-  soft_timer_start_millis(GPIO_EXPANDER_POLL_PERIOD_MS, prv_poll_timeout, expander, NULL);
 }
 
 // Set a specific bit in a given register
@@ -62,6 +58,7 @@ StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioE
   memset(expander, 0, sizeof(*expander));
   expander->port = port;
   expander->addr = MCP23008_ADDRESS + addr;
+  expander->int_pin.port = NUM_GPIO_PORTS;
 
   // If we don't have an interrupt pin registered, this will be an output-only IO expander.
   if (interrupt_pin != NULL) {
@@ -104,6 +101,9 @@ StatusCode gpio_expander_init_pin(GpioExpanderStorage *expander, GpioExpanderPin
     return status_code(STATUS_CODE_INVALID_ARGS);
   } else if (pin >= NUM_GPIO_EXPANDER_PINS) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
+  } else if (expander->int_pin.port == NUM_GPIO_PORTS && settings->direction != GPIO_DIR_OUT) {
+    // If there's no interrupt pin, this expander is output-only
+    return status_code(STATUS_CODE_INTERNAL_ERROR);
   }
 
   // Set the direction of the data I/O

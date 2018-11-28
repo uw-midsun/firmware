@@ -4,7 +4,6 @@
 #include "bps_heartbeat.h"
 #include "current_sense.h"
 #include "ltc_afe.h"
-#include "thermistor.h"
 
 typedef struct FaultMonitorSettings {
   LtcAfeStorage *ltc_afe;
@@ -37,9 +36,7 @@ typedef struct FaultMonitorResult {
 typedef struct FaultMonitorStorage {
   FaultMonitorSettings settings;
   FaultMonitorResult result;
-  size_t num_afe_fsm_faults;
-  uint8_t cell_faults[PLUTUS_CFG_AFE_TOTAL_CELLS];
-  uint8_t temp_faults[PLUTUS_CFG_AFE_TOTAL_CELLS];
+  size_t num_afe_faults;
 
   // in uA
   int32_t charge_current_limit;

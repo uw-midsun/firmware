@@ -11,11 +11,6 @@
 // This module supports AFEs with fewer than 12 cells using the |cell/aux_bitset|.
 // Note that due to the long conversion delays required, we use an FSM to return control to the
 // application.
-//
-// Due to time constraints, we didn't have time to implement cell balancing properly. To allow
-// cell balancing after sealing the pack, we support a cell discharge bitset to be set over CAN.
-// We periodically dump the discharge bitset over CAN for telemetry. For thermal reasons, only
-// one cell should ever be discharging per AFE.
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -28,9 +23,6 @@
 
 #define LTC_AFE_MAX_CELLS_PER_DEVICE 12
 #define LTC_AFE_MAX_TOTAL_CELLS (PLUTUS_CFG_AFE_DEVICES_IN_CHAIN * LTC_AFE_MAX_CELLS_PER_DEVICE)
-
-static_assert(PLUTUS_CFG_AFE_DEVICES_IN_CHAIN * sizeof(uint16_t) <= sizeof(uint64_t),
-              "Discharge bitset will not fit in CAN message!");
 
 #if defined(__GNUC__)
 #define _PACKED __attribute__((packed))

@@ -30,7 +30,7 @@ FSM_DECLARE_STATE(state_fault);
 
 // Power FSM transition table definitions
 FSM_STATE_TRANSITION(state_off) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_on);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_charging);
   FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_off_brake);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
@@ -73,9 +73,6 @@ static bool prv_guard_off(const Event *e) {
     case INPUT_EVENT_POWER_STATE_CHARGE:
     case INPUT_EVENT_POWER_STATE_FAULT:
     case INPUT_EVENT_POWER_STATE_DRIVE:
-    case INPUT_EVENT_HEADLIGHT_STATE_OFF:
-    case INPUT_EVENT_HAZARDS_STATE_OFF:
-    case INPUT_EVENT_CENTER_CONSOLE_HAZARDS_PRESSED:
       return true;
     default:
       return false;
@@ -113,9 +110,7 @@ static void prv_drive_output(Fsm *fsm, const Event *e, void *context) {
 static void prv_fault_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
 
-  if (e->id == INPUT_EVENT_BPS_FAULT && e->data) {
-    bps_indicator_set_fault();
-  }
+  bps_indicator_set_fault();
 
   // Disable periodic drive output updates if not running
   drive_output_set_enabled(drive_output_global(), false);

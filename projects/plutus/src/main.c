@@ -41,9 +41,6 @@ int main(void) {
       .ltc_afe = &s_plutus.ltc_afe,
       .current_sense = &s_plutus.current_sense,
 
-      .overtemp_charge = PLUTUS_CFG_OVERTEMP_CHARGE,
-      .overtemp_discharge = PLUTUS_CFG_OVERTEMP_DISCHARGE,
-
       .overvoltage = PLUTUS_CFG_CELL_OVERVOLTAGE,
       .undervoltage = PLUTUS_CFG_CELL_UNDERVOLTAGE,
 

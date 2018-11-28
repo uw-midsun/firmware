@@ -11,7 +11,7 @@
 #include "i2c.h"
 #include "soft_timer.h"
 
-#define GPIO_EXPANDER_POLL_PERIOD_MS 100
+#define GPIO_EXPANDER_POLL_PERIOD_MS 1000
 
 typedef enum {
   GPIO_EXPANDER_PIN_0 = 0,
@@ -51,8 +51,7 @@ typedef struct GpioExpanderStorage {
   GpioAddress int_pin;
 } GpioExpanderStorage;
 
-// Initialize the expander with an address to connect to its INT pin.
-// If |interrupt_pin| is NULL, it assumes the IO expander is output-only.
+// Initialize the expander with an address to connect to its INT pin
 StatusCode gpio_expander_init(GpioExpanderStorage *expander, I2CPort port, GpioExpanderAddress addr,
                               const GpioAddress *interrupt_pin);
 

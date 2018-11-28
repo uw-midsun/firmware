@@ -53,7 +53,6 @@ static StatusCode prv_init_common(PlutusSysStorage *storage, PlutusSysType type)
 
   status_ok_or_return(can_add_filter(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT));
   status_ok_or_return(can_add_filter(SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT));
-  status_ok_or_return(can_add_filter(SYSTEM_CAN_MESSAGE_SET_DISCHARGE_BITSET));
   status_ok_or_return(can_add_filter(s_specifics[type].relay_msg));
 
   const SequencedRelaySettings relay_settings = {

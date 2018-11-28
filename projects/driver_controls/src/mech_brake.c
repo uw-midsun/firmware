@@ -40,7 +40,7 @@ static void prv_callback_channel(Ads1015Channel channel, void *context) {
   StatusCode ret = mech_brake_get_position(storage, &position);
 
   if (status_ok(ret)) {
-    if ((position > storage->pressed_threshold_position && !storage->prev_pressed) ||
+    if (position > storage->pressed_threshold_position ||
         (position > storage->unpressed_threshold_position && storage->prev_pressed)) {
       event_raise(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, (uint16_t)position);
       storage->prev_pressed = true;

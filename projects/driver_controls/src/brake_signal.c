@@ -11,7 +11,6 @@
 #include "can_transmit.h"
 #include "exported_enums.h"
 #include "input_event.h"
-#include "log.h"
 
 typedef struct BrakeSignalInputState {
   bool prev_signal_state;
@@ -42,8 +41,7 @@ bool brake_signal_process_event(const Event *e) {
     case INPUT_EVENT_POWER_STATE_DRIVE:
     case INPUT_EVENT_POWER_STATE_CHARGE:
     case INPUT_EVENT_POWER_STATE_FAULT:
-      s_brake_state.input_state.power_state =
-          (e->id == INPUT_EVENT_POWER_STATE_DRIVE || e->id == INPUT_EVENT_POWER_STATE_CHARGE);
+      s_brake_state.input_state.power_state = e->id == INPUT_EVENT_POWER_STATE_DRIVE;
       break;
 
     case INPUT_EVENT_MECHANICAL_BRAKE_PRESSED:

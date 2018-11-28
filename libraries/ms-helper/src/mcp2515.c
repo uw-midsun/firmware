@@ -205,7 +205,7 @@ StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings
   uint8_t readback[sizeof(registers)] = { 0 };
   prv_read(storage, MCP2515_CTRL_REG_CNF3, readback, SIZEOF_ARRAY(readback));
   for (size_t i = 0; i < SIZEOF_ARRAY(readback); i++) {
-    LOG_DEBUG("%d: read 0x%x\n", i, readback[i]);
+    LOG_DEBUG("%d: read 0x%x\n", (int)i, readback[i]);
   }
 
   // Active-low interrupt pin

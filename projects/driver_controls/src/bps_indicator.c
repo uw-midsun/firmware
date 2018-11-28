@@ -3,7 +3,6 @@
 #include "can_msg_defs.h"
 #include "can_transmit.h"
 #include "can_unpack.h"
-#include "center_console.h"
 #include "debug_led.h"
 #include "exported_enums.h"
 #include "input_event.h"
@@ -15,11 +14,7 @@ static StatusCode prv_handle_heartbeat(const CanMessage *msg, void *context,
 
   EEBpsHeartbeatState state = data;
   if (state != EE_BPS_HEARTBEAT_STATE_OK) {
-    uint8_t strobe_mask =
-        EE_BPS_HEARTBEAT_STATE_FAULT_LTC_AFE_CELL | EE_BPS_HEARTBEAT_STATE_FAULT_LTC_AFE_TEMP |
-        EE_BPS_HEARTBEAT_STATE_FAULT_LTC_AFE_FSM | EE_BPS_HEARTBEAT_STATE_FAULT_LTC_ADC;
-    bool should_strobe = !!(state & strobe_mask);
-    event_raise_priority(EVENT_PRIORITY_HIGHEST, INPUT_EVENT_BPS_FAULT, should_strobe);
+    event_raise_priority(EVENT_PRIORITY_HIGHEST, INPUT_EVENT_BPS_FAULT, 0);
   }
 
   return STATUS_CODE_OK;

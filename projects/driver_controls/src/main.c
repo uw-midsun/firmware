@@ -57,7 +57,6 @@ typedef enum {
 } DriverControlsFsm;
 
 static GpioExpanderStorage s_console_expander;
-static GpioExpanderStorage s_console_expander_out;
 static CenterConsoleStorage s_console;
 static DcCalibBlob s_calib_blob;
 static Ads1015Storage s_pedal_ads1015;
@@ -107,9 +106,9 @@ int main(void) {
   can_add_filter(SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY);
 
   const I2CSettings i2c_settings = {
-    .speed = I2C_SPEED_STANDARD,  //
-    .sda = DC_CFG_I2C_BUS_SDA,    //
-    .scl = DC_CFG_I2C_BUS_SCL,    //
+    .speed = I2C_SPEED_FAST,    //
+    .sda = DC_CFG_I2C_BUS_SDA,  //
+    .scl = DC_CFG_I2C_BUS_SCL,  //
   };
 
   i2c_init(DC_CFG_I2C_BUS_PORT, &i2c_settings);
@@ -118,9 +117,7 @@ int main(void) {
   GpioAddress console_int_pin = DC_CFG_CONSOLE_IO_INT_PIN;
   gpio_expander_init(&s_console_expander, DC_CFG_I2C_BUS_PORT, DC_CFG_CONSOLE_IO_ADDR,
                      &console_int_pin);
-  gpio_expander_init(&s_console_expander_out, DC_CFG_I2C_BUS_PORT, DC_CFG_CONSOLE_IO_OUT_ADDR,
-                     NULL);
-  center_console_init(&s_console, &s_console_expander, &s_console_expander_out);
+  center_console_init(&s_console, &s_console_expander);
 #endif
 
 #ifndef DC_CFG_DISABLE_CONTROL_STALK
@@ -139,9 +136,9 @@ int main(void) {
 
   const MechBrakeSettings mech_brake_settings = {
     .ads1015 = &s_pedal_ads1015,
-    .brake_pressed_threshold_percentage = EE_DRIVE_OUTPUT_MECH_BRAKE_PERCENTAGE + 5,
-    .brake_unpressed_threshold_percentage = EE_DRIVE_OUTPUT_MECH_BRAKE_PERCENTAGE - 5,
-    .bounds_tolerance_percentage = 10,
+    .brake_pressed_threshold_percentage = 55,
+    .brake_unpressed_threshold_percentage = 45,
+    .bounds_tolerance_percentage = 5,
     .channel = ADS1015_CHANNEL_2,
   };
   mech_brake_init(mech_brake_global(), &mech_brake_settings, &dc_calib_blob->mech_brake_calib);
@@ -185,9 +182,6 @@ int main(void) {
         case INPUT_EVENT_DRIVE_UPDATE_REQUESTED:
         case INPUT_EVENT_CAN_RX:
         case INPUT_EVENT_CAN_TX:
-        case INPUT_EVENT_MECHANICAL_BRAKE_RELEASED:
-        case INPUT_EVENT_MECHANICAL_BRAKE_PRESSED:
-        case INPUT_EVENT_SPEED_UPDATE:
           break;
         default:
           LOG_DEBUG("e %d %d\n", e.id, e.data);
@@ -198,7 +192,6 @@ int main(void) {
       cruise_handle_event(cruise_global(), &e);
       event_arbiter_process_event(&s_event_arbiter, &e);
       brake_signal_process_event(&e);
-      center_console_process_event(&s_console, &e);
     }
   }
 }

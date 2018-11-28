@@ -1,7 +1,6 @@
 #include "bps_heartbeat.h"
 #include "can_transmit.h"
 #include "debug_led.h"
-#include "exported_enums.h"
 #include "log.h"
 #include "plutus_cfg.h"
 

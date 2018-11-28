@@ -1,6 +1,5 @@
 #include "thermistor.h"
 #include <limits.h>
-#include <math.h>
 #include <stdint.h>
 #include "log.h"
 
@@ -80,7 +79,7 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint16_t *temperature
 StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms,
                                      uint16_t *temperature_dc) {
   // Find the approximate target temperature from the arguments passed
-  for (uint16_t i = 0; i < THERMISTOR_LOOKUP_RANGE; i++) {
+  for (uint16_t i = 0; i < SIZEOF_ARRAY(s_resistance_lookup) - 1; i++) {
     if (thermistor_resistance_ohms * 1000 <= s_resistance_lookup[i] &&
         thermistor_resistance_ohms * 1000 >= s_resistance_lookup[i + 1]) {
       // Return the temperature with the linear approximation in deciCelsius
