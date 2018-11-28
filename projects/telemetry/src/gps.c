@@ -19,14 +19,14 @@ static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
   NmeaMessageId messageId = NMEA_MESSAGE_ID_UNKNOWN;
   nmea_sentence_type((char *)&rx_arr, &messageId);
   if (messageId == NMEA_MESSAGE_ID_GGA) {
-    nmea_get_gga_sentence((char *)&rx_arr, s_storage->gga_data);
+    nmea_get_gga_sentence((char *)&rx_arr, &s_storage->gga_data);
     if (s_storage->gga_callback != NULL) {
-      s_storage->gga_callback(s_storage->gga_data, s_storage->context);
+      s_storage->gga_callback(&s_storage->gga_data, s_storage->context);
     }
   } else if (messageId == NMEA_MESSAGE_ID_VTG) {
-    nmea_get_vtg_sentence((char *)&rx_arr, s_storage->vtg_data);
+    nmea_get_vtg_sentence((char *)&rx_arr, &s_storage->vtg_data);
     if (s_storage->vtg_callback != NULL) {
-      s_storage->vtg_callback(s_storage->vtg_data, s_storage->context);
+      s_storage->vtg_callback(&s_storage->vtg_data, s_storage->context);
     }
   }
 }
@@ -101,7 +101,7 @@ StatusCode gps_get_gga_data(NmeaGgaSentence *result) {
   if (s_settings == NULL) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "GPS module is uninitialized.\n");
   }
-  *result = *s_storage->gga_data;
+  *result = s_storage->gga_data;
   return STATUS_CODE_OK;
 }
 
@@ -109,7 +109,7 @@ StatusCode gps_get_vtg_data(NmeaVtgSentence *result) {
   if (s_settings == NULL) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "GPS module is uninitialized.\n");
   }
-  *result = *s_storage->vtg_data;
+  *result = s_storage->vtg_data;
   return STATUS_CODE_OK;
 }
 
@@ -118,8 +118,7 @@ StatusCode gps_register_callback(GpsGgaCallback gga_callback, GpsVtgCallback vtg
   if (s_settings == NULL) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "GPS module is uninitialized.\n");
   }
-  s_storage->gga_callback = gga_callback;
-  s_storage->vtg_callback = vtg_callback;
-  s_storage->context = context;
+  GpsStorage temp_storage = {.gga_callback = gga_callback, .vtg_callback = vtg_callback, .context = context};
+  s_storage = &temp_storage;
   return STATUS_CODE_OK;
 }

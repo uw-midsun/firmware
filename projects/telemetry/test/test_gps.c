@@ -13,11 +13,11 @@
 #include "uart.h"
 #include "unity.h"
 
+static NmeaGgaSentence *gga_test = {0};
+static NmeaVtgSentence *vtg_test = {0};
+
 static bool gga_called = false;
 static bool vtg_called = false;
-
-static NmeaGgaSentence *gga_test = NULL;
-static NmeaVtgSentence *vtg_test = NULL;
 
 void prv_gps_gga_callback(NmeaGgaSentence *gga_sentence, void *context) {
   gga_called = true;
@@ -64,18 +64,14 @@ void test_gps_guards(void) {
 }
 
 void test_gps_output(void) {
-  NmeaGgaSentence *gga_test = NULL;
-  NmeaVtgSentence *vtg_test = NULL;
+  NmeaGgaSentence gga_result = {0};
+  NmeaVtgSentence vtg_result = {0};
 
   TEST_ASSERT_OK(gps_init(&telemetry_gps_settings));
   TEST_ASSERT_EQUAL(STATUS_CODE_RESOURCE_EXHAUSTED, gps_init(&telemetry_gps_settings));
 
-  // Ensure that callbacks are called
   TEST_ASSERT_OK(gps_register_callback(prv_gps_gga_callback, prv_gps_vtg_callback, NULL));
-  while (!gga_called) {
-  }
-  while (!vtg_called) {
-  }
-  TEST_ASSERT_OK(gps_get_gga_data(gga_test));
-  TEST_ASSERT_OK(gps_get_vtg_data(vtg_test));
+
+  TEST_ASSERT_OK(gps_get_gga_data(&gga_result));
+  TEST_ASSERT_OK(gps_get_vtg_data(&vtg_result));
 }

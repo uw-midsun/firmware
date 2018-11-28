@@ -38,8 +38,8 @@ typedef struct {
 } GpsSettings;
 
 typedef struct {
-  NmeaGgaSentence *gga_data;
-  NmeaVtgSentence *vtg_data;
+  NmeaGgaSentence gga_data;
+  NmeaVtgSentence vtg_data;
   GpsGgaCallback gga_callback;
   GpsVtgCallback vtg_callback;
   void *context;
