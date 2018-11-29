@@ -53,11 +53,12 @@ static void prv_gps_init_stage_2() {
 
 // Initialization of this chip is described on page 10 of:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
-StatusCode gps_init(GpsSettings *settings) {
+StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
   if (s_settings != NULL) {
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "Cannot reinitialize GPS\n");
   }
   s_settings = settings;
+  s_storage = storage;
 
   GpioSettings telemetry_settings_gpio_general = {
     .direction = GPIO_DIR_OUT,  // The pin needs to output.
@@ -118,9 +119,8 @@ StatusCode gps_register_callback(GpsGgaCallback gga_callback, GpsVtgCallback vtg
   if (s_settings == NULL) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "GPS module is uninitialized.\n");
   }
-  GpsStorage temp_storage = {
-    .gga_callback = gga_callback, .vtg_callback = vtg_callback, .context = context
-  };
-  s_storage = &temp_storage;
+  s_storage->gga_callback = gga_callback;
+  s_storage->vtg_callback = vtg_callback;
+  s_storage->context = context;
   return STATUS_CODE_OK;
 }
