@@ -38,7 +38,7 @@ GpsSettings telemetry_gps_settings = { .pin_power = &telemetry_gps_pins[0],
                                        .uart_settings = &telemetry_gps_uart_settings,
                                        .port = UART_PORT_2 };
 
-GpsStorage telemetry_gps_storage = {0};
+GpsStorage telemetry_gps_storage = { 0 };
 
 CanUart telemetry_can_uart_settings = {
   .uart = XBEE_UART_PORT,

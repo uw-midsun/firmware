@@ -47,7 +47,7 @@ GpsSettings telemetry_gps_settings = { .pin_power = &telemetry_gps_pins[0],
                                        .uart_settings = &telemetry_gps_uart_settings,
                                        .port = UART_PORT_2 };
 
-GpsStorage telemetry_gps_storage = {0};
+GpsStorage telemetry_gps_storage = { 0 };
 
 void setup_test(void) {
   interrupt_init();
@@ -70,7 +70,8 @@ void test_gps_output(void) {
   NmeaVtgSentence vtg_result = { 0 };
 
   TEST_ASSERT_OK(gps_init(&telemetry_gps_settings, &telemetry_gps_storage));
-  TEST_ASSERT_EQUAL(STATUS_CODE_RESOURCE_EXHAUSTED, gps_init(&telemetry_gps_settings, &telemetry_gps_storage));
+  TEST_ASSERT_EQUAL(STATUS_CODE_RESOURCE_EXHAUSTED,
+                    gps_init(&telemetry_gps_settings, &telemetry_gps_storage));
 
   TEST_ASSERT_OK(gps_register_callback(&prv_gps_gga_callback, &prv_gps_vtg_callback, NULL));
 
