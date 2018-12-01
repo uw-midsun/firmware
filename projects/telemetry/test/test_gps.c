@@ -66,8 +66,8 @@ void test_gps_guards(void) {
 }
 
 void test_gps_output(void) {
-  NmeaGgaSentence gga_result = { 0 };
-  NmeaVtgSentence vtg_result = { 0 };
+  char* gga_result;
+  char* vtg_result;
 
   TEST_ASSERT_OK(gps_init(&telemetry_gps_settings, &telemetry_gps_storage));
   TEST_ASSERT_EQUAL(STATUS_CODE_RESOURCE_EXHAUSTED,

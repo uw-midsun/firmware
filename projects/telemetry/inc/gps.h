@@ -7,6 +7,7 @@
 // in is the GGA message (Global Positioning System Fix Data). It contains latitude and
 // longitude.
 #include <stdbool.h>
+#include <string.h>
 #include "nmea.h"
 #include "status.h"
 #include "uart.h"
