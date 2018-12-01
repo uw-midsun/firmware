@@ -44,7 +44,7 @@ typedef struct {
 StatusCode gps_init(GpsSettings *settings, GpsStorage *storage);
 
 // Gets GGA data (coordinates, time)
-StatusCode gps_get_gga_data(char *result);
+StatusCode gps_get_gga_data(char **result);
 
 // Gets VTG data (speed, heading)
-StatusCode gps_get_vtg_data(char *result);
+StatusCode gps_get_vtg_data(char **result);

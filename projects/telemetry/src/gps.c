@@ -19,9 +19,9 @@ static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
   NmeaMessageId messageId = NMEA_MESSAGE_ID_UNKNOWN;
   nmea_sentence_type((char *)&rx_arr, &messageId);
   if (messageId == NMEA_MESSAGE_ID_GGA) {
-    strncpy(s_storage->gga_data, rx_arr, GPS_MAX_NMEA_LENGTH);
+    strncpy(s_storage->gga_data, (char *)&rx_arr, GPS_MAX_NMEA_LENGTH);
   } else if (messageId == NMEA_MESSAGE_ID_VTG) {
-    strncpy(s_storage->vtg_data, rx_arr, GPS_MAX_NMEA_LENGTH);
+    strncpy(s_storage->vtg_data, (char *)&rx_arr, GPS_MAX_NMEA_LENGTH);
   }
 }
 
@@ -92,7 +92,7 @@ StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gps_get_gga_data(char *result) {
+StatusCode gps_get_gga_data(char **result) {
   if (s_settings == NULL) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "GPS module is uninitialized.\n");
   }
@@ -100,7 +100,7 @@ StatusCode gps_get_gga_data(char *result) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gps_get_vtg_data(char *result) {
+StatusCode gps_get_vtg_data(char **result) {
   if (s_settings == NULL) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "GPS module is uninitialized.\n");
   }
