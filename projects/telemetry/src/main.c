@@ -9,11 +9,11 @@
 #include "gps.h"
 #include "interrupt.h"
 #include "log.h"
+#include "nmea.h"
 #include "soft_timer.h"
 #include "uart.h"
 #include "wait.h"
 #include "xbee.h"
-#include "nmea.h"
 
 GpioSettings telemetry_settings_gpio_general = {
   .direction = GPIO_DIR_OUT,  // The pin needs to output.

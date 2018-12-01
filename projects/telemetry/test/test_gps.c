@@ -61,4 +61,4 @@ void test_gps_output(void) {
 
   TEST_ASSERT_OK(gps_get_gga_data(&gga_result));
   TEST_ASSERT_OK(gps_get_vtg_data(&vtg_result));
-} 
+}
