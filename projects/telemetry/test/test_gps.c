@@ -72,6 +72,8 @@ void test_gps_output(void) {
 
   TEST_ASSERT_OK(gps_register_callback(prv_gps_gga_callback, prv_gps_vtg_callback, NULL));
 
+  delay_s(2);
+
   TEST_ASSERT_OK(gps_get_gga_data(&gga_result));
   TEST_ASSERT_OK(gps_get_vtg_data(&vtg_result));
 }
