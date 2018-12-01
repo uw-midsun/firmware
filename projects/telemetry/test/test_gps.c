@@ -17,7 +17,7 @@ UartSettings telemetry_gps_uart_settings = {
   .baudrate = 9600,
   .tx = { .port = GPIO_PORT_A, .pin = 2 },
   .rx = { .port = GPIO_PORT_A, .pin = 3 },
-  .alt_fn = GPIO_ALTFN_1,
+  .alt_fn = GPIO_ALTFN_NONE,
 };
 
 // The pin numbers to use for providing power and turning the GPS on and off
@@ -43,15 +43,15 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_gps_guards(void) {
-  char *gga_test;
-  char *vtg_test;
+  uint8_t *gga_test = NULL;
+  uint8_t *vtg_test = NULL;
   TEST_ASSERT_EQUAL(STATUS_CODE_UNINITIALIZED, gps_get_gga_data(&gga_test));
   TEST_ASSERT_EQUAL(STATUS_CODE_UNINITIALIZED, gps_get_vtg_data(&vtg_test));
 }
 
 void test_gps_output(void) {
-  char *gga_result;
-  char *vtg_result;
+  uint8_t *gga_result = NULL;
+  uint8_t *vtg_result = NULL;
 
   TEST_ASSERT_OK(gps_init(&telemetry_gps_settings, &telemetry_gps_storage));
   TEST_ASSERT_EQUAL(STATUS_CODE_RESOURCE_EXHAUSTED,
@@ -61,4 +61,4 @@ void test_gps_output(void) {
 
   TEST_ASSERT_OK(gps_get_gga_data(&gga_result));
   TEST_ASSERT_OK(gps_get_vtg_data(&vtg_result));
-}
+} 

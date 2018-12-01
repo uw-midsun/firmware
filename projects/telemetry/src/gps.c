@@ -17,11 +17,11 @@ static GpsStorage *s_storage = NULL;
 // This method will be called every time the GPS sends data.
 static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
   NmeaMessageId messageId = NMEA_MESSAGE_ID_UNKNOWN;
-  nmea_sentence_type((char *)&rx_arr, &messageId);
+  nmea_sentence_type((char *)rx_arr, &messageId);
   if (messageId == NMEA_MESSAGE_ID_GGA) {
-    strncpy(s_storage->gga_data, (char *)&rx_arr, GPS_MAX_NMEA_LENGTH);
+    s_storage->gga_data = rx_arr;
   } else if (messageId == NMEA_MESSAGE_ID_VTG) {
-    strncpy(s_storage->vtg_data, (char *)&rx_arr, GPS_MAX_NMEA_LENGTH);
+    s_storage->vtg_data = rx_arr;
   }
 }
 
@@ -78,21 +78,21 @@ StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
 
   // Turning off messages we don't need
   char *ggl_off = GPS_GLL_OFF;
-  uart_tx(s_settings->port, (uint8_t *)&ggl_off, strlen(ggl_off));
+  uart_tx(s_settings->port, (uint8_t *)ggl_off, strlen(ggl_off));
 
   char *gsa_off = GPS_GSA_OFF;
-  uart_tx(s_settings->port, (uint8_t *)&gsa_off, strlen(gsa_off));
+  uart_tx(s_settings->port, (uint8_t *)gsa_off, strlen(gsa_off));
 
   char *gsv_off = GPS_GSV_OFF;
-  uart_tx(s_settings->port, (uint8_t *)&gsv_off, strlen(gsv_off));
+  uart_tx(s_settings->port, (uint8_t *)gsv_off, strlen(gsv_off));
 
   char *rmc_off = GPS_RMC_OFF;
-  uart_tx(s_settings->port, (uint8_t *)&rmc_off, strlen(rmc_off));
+  uart_tx(s_settings->port, (uint8_t *)rmc_off, strlen(rmc_off));
 
   return STATUS_CODE_OK;
 }
 
-StatusCode gps_get_gga_data(char **result) {
+StatusCode gps_get_gga_data(uint8_t **result) {
   if (s_settings == NULL) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "GPS module is uninitialized.\n");
   }
@@ -100,7 +100,7 @@ StatusCode gps_get_gga_data(char **result) {
   return STATUS_CODE_OK;
 }
 
-StatusCode gps_get_vtg_data(char **result) {
+StatusCode gps_get_vtg_data(uint8_t **result) {
   if (s_settings == NULL) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "GPS module is uninitialized.\n");
   }

@@ -13,11 +13,12 @@
 #include "uart.h"
 #include "wait.h"
 #include "xbee.h"
+#include "nmea.h"
 
 GpioSettings telemetry_settings_gpio_general = {
   .direction = GPIO_DIR_OUT,  // The pin needs to output.
   .state = GPIO_STATE_LOW,    // Start in the "off" state.
-  .alt_function = GPIO_ALTFN_NONE,
+  .alt_function = GPIO_ALTFN_1,
 };
 
 UartSettings telemetry_gps_uart_settings = {

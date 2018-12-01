@@ -36,15 +36,15 @@ typedef struct {
 } GpsSettings;
 
 typedef struct {
-  volatile char gga_data[GPS_MAX_NMEA_LENGTH];
-  volatile char vtg_data[GPS_MAX_NMEA_LENGTH];
+  uint8_t *gga_data;
+  uint8_t *vtg_data;
 } GpsStorage;
 
 // Initialized the GPS module
 StatusCode gps_init(GpsSettings *settings, GpsStorage *storage);
 
 // Gets GGA data (coordinates, time)
-StatusCode gps_get_gga_data(char **result);
+StatusCode gps_get_gga_data(uint8_t **result);
 
 // Gets VTG data (speed, heading)
-StatusCode gps_get_vtg_data(char **result);
+StatusCode gps_get_vtg_data(uint8_t **result);
