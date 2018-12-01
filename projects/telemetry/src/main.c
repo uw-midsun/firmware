@@ -38,6 +38,8 @@ GpsSettings telemetry_gps_settings = { .pin_power = &telemetry_gps_pins[0],
                                        .uart_settings = &telemetry_gps_uart_settings,
                                        .port = UART_PORT_2 };
 
+GpsStorage telemetry_gps_storage = { 0 };
+
 CanUart telemetry_can_uart_settings = {
   .uart = XBEE_UART_PORT,
   .rx_cb = NULL,
@@ -63,7 +65,7 @@ int main(void) {
     return 0;
   }
 
-  ret = gps_init(&telemetry_gps_settings);
+  ret = gps_init(&telemetry_gps_settings, &telemetry_gps_storage);
   if (!status_ok(ret)) {
     LOG_CRITICAL("Telemetry project could not initialize GPS\n");
   }

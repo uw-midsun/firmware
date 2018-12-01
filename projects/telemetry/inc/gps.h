@@ -40,7 +40,7 @@ typedef struct {
 } GpsStorage;
 
 // Initialized the GPS module
-StatusCode gps_init();
+StatusCode gps_init(GpsSettings *settings, GpsStorage *storage);
 
 // Gets GGA data (coordinates, time)
 StatusCode gps_get_gga_data(char *result);

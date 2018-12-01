@@ -47,11 +47,12 @@ static void prv_gps_init_stage_2() {
 
 // Initialization of this chip is described on page 10 of:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
-StatusCode gps_init(GpsSettings *settings) {
+StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
   if (s_settings != NULL) {
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "Cannot reinitialize GPS\n");
   }
   s_settings = settings;
+  s_storage = storage;
 
   GpioSettings telemetry_settings_gpio_general = {
     .direction = GPIO_DIR_OUT,  // The pin needs to output.
