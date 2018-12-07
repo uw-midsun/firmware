@@ -36,8 +36,8 @@ typedef struct {
 } GpsSettings;
 
 typedef struct {
-  uint8_t *gga_data;
-  uint8_t *vtg_data;
+  volatile uint8_t gga_data[GPS_MAX_NMEA_LENGTH];
+  volatile uint8_t vtg_data[GPS_MAX_NMEA_LENGTH];
 } GpsStorage;
 
 // Initialized the GPS module
