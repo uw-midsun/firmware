@@ -87,8 +87,6 @@ int main(void) {
     LOG_CRITICAL("Telemetry project could not enable uart passthrough. Quitting...\n");
   }
 
-  uint8_t *ggaTest = NULL;
-
   while (true) {
   }
 
