@@ -50,7 +50,7 @@ int main(void) {
 
   // Initialize current sense ADC
   GpioAddress current_ready_pin = CURRENT_ADC_READY_PIN;
-  ads1015_init(&s_current_ads1015, SOLAR_MASTER_CURRENT_I2C_BUS_PORT, SOLAR_MASTER_CURRENT_ADC_ADDR,
+  ads1015_init(&s_current_ads1015, config->current_i2c_port, SOLAR_MASTER_CURRENT_ADC_ADDR,
                &current_ready_pin);
   status = solar_master_current_init(&s_current_storage, &s_current_ads1015);
   if (!status_ok(status)) {
@@ -60,11 +60,18 @@ int main(void) {
   // Initialize voltage/temp (slave) reading adcs
   // Some information must be hardcoded
   // Need to coordinate identifying slave modules with driver controls and telemetry
-  static uint8_t slave_addr_lookup_reverse[8] = { 0, 0, 1, 0, 0, 0, 0, 0 };
+  static const uint8_t slave_addr_lookup_reverse[8] = { 0, 1, 2, 3, 4, 5, 0, 0 };
 
-  Mcp3427PinState adc_address_map[SOLAR_MASTER_NUM_SOLAR_SLAVES][2] = {
-    { MCP3427_PIN_STATE_FLOAT, MCP3427_PIN_STATE_FLOAT },
-    { MCP3427_PIN_STATE_LOW, MCP3427_PIN_STATE_HIGH }
+  // The switches on the ith slave board must be set up to set the Adr0 and Adr1 pins to match
+  // adc_address_map[i]
+  // See the MCP3427 datasheet section 5.3 for details
+  static const Mcp3427PinState adc_address_map[SOLAR_MASTER_NUM_SOLAR_SLAVES][2] = {
+    { MCP3427_PIN_STATE_LOW, MCP3427_PIN_STATE_LOW },     // I2C Address 0x68 i.e. 0x68 ^ 0x00
+    { MCP3427_PIN_STATE_LOW, MCP3427_PIN_STATE_FLOAT },   // I2C Address 0x69 i.e. 0x68 ^ 0x01
+    { MCP3427_PIN_STATE_LOW, MCP3427_PIN_STATE_HIGH },    // I2C Address 0x70 i.e. 0x68 ^ 0x02
+    { MCP3427_PIN_STATE_FLOAT, MCP3427_PIN_STATE_LOW },   // I2C Address 0x71 i.e. 0x68 ^ 0x03
+    { MCP3427_PIN_STATE_HIGH, MCP3427_PIN_STATE_LOW },    // I2C Address 0x72 i.e. 0x68 ^ 0x04
+    { MCP3427_PIN_STATE_HIGH, MCP3427_PIN_STATE_FLOAT },  // I2C Address 0x73 i.e. 0x68 ^ 0x05
   };
 
   // Move this loop to solar_master_slave.c init?

@@ -6,7 +6,7 @@
 #include "mcp3427.h"
 #include "mcp3427defs.h"
 
-#define SOLAR_MASTER_NUM_SOLAR_SLAVES 2
+#define SOLAR_MASTER_NUM_SOLAR_SLAVES 6
 
 #define SOLAR_MASTER_MCP3427_SAMPLE_SIZE 5
 

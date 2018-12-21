@@ -9,6 +9,21 @@
 
 // Config provider for solar_master. Needs gpio to be initialized.
 
+#define SOLAR_MASTER_I2C_BUS_SDA \
+  { GPIO_PORT_B, 11 }
+
+#define SOLAR_MASTER_I2C_BUS_SCL \
+  { GPIO_PORT_B, 10 }
+
+#define SOLAR_CURRENT_I2C_BUS_SDA \
+  { GPIO_PORT_B, 9 }
+
+#define SOLAR_CURRENT_I2C_BUS_SCL \
+  { GPIO_PORT_B, 8 }
+
+#define SOLAR_MASTER_CURRENT_I2C_BUS_PORT I2C_PORT_1
+#define SOLAR_MASTER_SLAVE_I2C_BUS_PORT I2C_PORT_2
+
 typedef enum {
   SOLAR_MASTER_CONFIG_BOARD_FRONT = 0,
   SOLAR_MASTER_CONFIG_BOARD_REAR,

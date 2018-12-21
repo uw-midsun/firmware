@@ -1,7 +1,6 @@
 #pragma once
-// Module for interfacing
-// Requires ADS1015, event queue to be initialized
-// Monitors ADS1015 over I2C and raises events on input state change.
+// Module for interfacing with the ADS1015, reading values from the hall effect sensor.
+// Requires ADS1015 to be initialized
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -18,7 +17,6 @@
 #define SOLAR_MASTER_CURRENT_GRADIENT 264
 #define SOLAR_MASTER_CURRENT_INTERCEPT 336
 
-#define SOLAR_MASTER_CURRENT_I2C_BUS_PORT I2C_PORT_1
 #define SOLAR_MASTER_CURRENT_ADC_ADDR 0
 
 #define SOLAR_MASTER_CURRENT_SAMPLE_SIZE 100

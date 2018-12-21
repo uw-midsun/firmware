@@ -1,17 +1,5 @@
 #include "solar_master_config.h"
 
-#define SOLAR_MASTER_I2C_BUS_SDA \
-  { GPIO_PORT_B, 11 }
-
-#define SOLAR_MASTER_I2C_BUS_SCL \
-  { GPIO_PORT_B, 10 }
-
-#define SOLAR_CURRENT_I2C_BUS_SDA \
-  { GPIO_PORT_B, 9 }
-
-#define SOLAR_CURRENT_I2C_BUS_SCL \
-  { GPIO_PORT_B, 8 }
-
 // TODO(ELEC-502): Add I2C high speed support to the driver.
 const I2CSettings slave_i2c_settings = {
   .speed = I2C_SPEED_STANDARD,      //
@@ -31,7 +19,7 @@ const Mcp3427Setting slave_mcp3427_settings = {
   .Adr1 = MCP3427_PIN_STATE_FLOAT,
   .amplifier_gain = MCP3427_AMP_GAIN_1,
   .conversion_mode = MCP3427_CONVERSION_MODE_CONTINUOUS,
-  .port = I2C_PORT_2,
+  .port = SOLAR_MASTER_SLAVE_I2C_BUS_PORT,
 };
 
 CanSettings can_settings = {
@@ -45,8 +33,8 @@ CanSettings can_settings = {
 };
 
 static SolarMasterConfig s_config = {
-  .slave_i2c_port = I2C_PORT_2,
-  .current_i2c_port = I2C_PORT_1,
+  .slave_i2c_port = SOLAR_MASTER_SLAVE_I2C_BUS_PORT,
+  .current_i2c_port = SOLAR_MASTER_CURRENT_I2C_BUS_PORT,
   .slave_i2c_settings = &slave_i2c_settings,
   .current_i2c_settings = &current_i2c_settings,
   .slave_mcp3427_settings_base = &slave_mcp3427_settings,
