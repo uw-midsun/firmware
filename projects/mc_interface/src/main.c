@@ -9,6 +9,7 @@
 #include "mcp2515.h"
 #include "motor_controller.h"
 #include "sequenced_relay.h"
+#include "uart.h"
 #include "wait.h"
 
 typedef enum {

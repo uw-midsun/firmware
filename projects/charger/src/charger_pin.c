@@ -1,7 +1,7 @@
 #include "charger_pin.h"
 
 #include <stddef.h>
-#include <stdbool.h
+#include <stdbool.h>
 
 #include "adc.h"
 #include "charger_events.h"
