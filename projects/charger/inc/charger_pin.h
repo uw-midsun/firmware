@@ -21,4 +21,4 @@
 
 // Inits the charger proximity pin and configures a soft timer to periodically check the ADC.
 // |address| is expected to persist.
-StatusCode charger_pin_init(const GPIOAddress *address);
+StatusCode charger_pin_init(const GpioAddress *address);

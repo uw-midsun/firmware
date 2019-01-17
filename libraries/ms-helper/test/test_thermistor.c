@@ -12,7 +12,7 @@
 // Each value is used for a different test case
 // Channel 0~3 used for thermistor = R1. Channel 4~6 used for thermistor = R2. Channel 7 & REF used
 // for producing errors.
-StatusCode TEST_MOCK(adc_read_converted)(ADCChannel adc_channel, uint16_t *reading) {
+StatusCode TEST_MOCK(adc_read_converted)(AdcChannel adc_channel, uint16_t *reading) {
   switch (adc_channel) {
     case (ADC_CHANNEL_0):
       *reading = 2900;  // Used for testing out of range temperatures
@@ -48,12 +48,12 @@ StatusCode TEST_MOCK(adc_read_converted)(ADCChannel adc_channel, uint16_t *readi
   return STATUS_CODE_OK;
 }
 
-StatusCode TEST_MOCK(adc_get_channel)(GPIOAddress address, ADCChannel *adc_channel) {
+StatusCode TEST_MOCK(adc_get_channel)(GpioAddress address, AdcChannel *adc_channel) {
   *adc_channel = address.pin;
   return STATUS_CODE_OK;
 }
 
-StatusCode TEST_MOCK(adc_set_channel)(ADCChannel adc_channel, bool new_state) {
+StatusCode TEST_MOCK(adc_set_channel)(AdcChannel adc_channel, bool new_state) {
   return STATUS_CODE_OK;
 }
 
@@ -64,7 +64,7 @@ void teardown_test(void) {}
 // Tests thermistor calculations with thermistor = R2
 // Tests the thermistor at a standard temperature(10 degrees)
 void test_thermistor_normal(void) {
-  GPIOAddress gpio_addr = {
+  GpioAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 1,
   };
@@ -79,7 +79,7 @@ void test_thermistor_normal(void) {
 
 // Tests the lower bound of the resistance-temperature lookup table (0 deg)
 void test_thermistor_min_temp(void) {
-  GPIOAddress gpio_addr = {
+  GpioAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 2,
   };
@@ -94,7 +94,7 @@ void test_thermistor_min_temp(void) {
 
 // Tests the upper bound of the resistance-temperature lookup table (100 deg)
 void test_thermistor_max_temp(void) {
-  GPIOAddress gpio_addr = {
+  GpioAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 3,
   };
@@ -112,7 +112,7 @@ void test_thermistor_max_temp(void) {
 // Tests thermistor calculations with thermistor = R1
 // Tests the thermistor at a standard temperature(10 degrees)
 void test_thermistor_normal_alt(void) {
-  GPIOAddress gpio_addr = {
+  GpioAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 4,
   };
@@ -127,7 +127,7 @@ void test_thermistor_normal_alt(void) {
 
 // Tests the lower bound of the resistance-temperature lookup table (0 deg)
 void test_thermistor_min_temp_alt(void) {
-  GPIOAddress gpio_addr = {
+  GpioAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 5,
   };
@@ -142,7 +142,7 @@ void test_thermistor_min_temp_alt(void) {
 
 // Tests the upper bound of the resistance-temperature lookup table (100 deg)
 void test_thermistor_max_temp_alt(void) {
-  GPIOAddress gpio_addr = {
+  GpioAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 6,
   };
@@ -157,7 +157,7 @@ void test_thermistor_max_temp_alt(void) {
 
 // Tests for a temperature greater the lookup tables ranges
 void test_thermistor_exceed_range(void) {
-  GPIOAddress gpio_addr = {
+  GpioAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 0,
   };
@@ -171,7 +171,7 @@ void test_thermistor_exceed_range(void) {
 
 // Tests for a temperature smaller than the lookup tables ranges
 void test_thermistor_under_range(void) {
-  GPIOAddress gpio_addr = {
+  GpioAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 7,
   };
@@ -187,7 +187,7 @@ void test_thermistor_under_range(void) {
 
 // Tests for NULL node voltage reading
 void test_zero_node_voltage(void) {
-  GPIOAddress gpio_addr = {
+  GpioAddress gpio_addr = {
     .port = GPIO_PORT_A,
     .pin = 7,
   };
@@ -221,4 +221,45 @@ void test_temperature_calculation(void) {
   // 90 Degrees
   thermistor_calculate_temp(1268, &temperature);
   TEST_ASSERT_UINT16_WITHIN(200, 900, temperature);
+}
+
+// Test temperature to resistance
+void test_resistance_lookup(void) {
+  uint16_t resistance = 0;
+  // Over 100 degrees
+  TEST_ASSERT_NOT_OK(thermistor_calculate_resistance(1010, &resistance));
+
+  // Exact: No interpolation required
+  // 10 Degrees
+  thermistor_calculate_resistance(100, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(1, 17925, resistance);
+
+  // 25 Degrees
+  thermistor_calculate_resistance(250, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(1, 10000, resistance);
+
+  // 65 Degrees
+  thermistor_calculate_resistance(650, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(1, 2586, resistance);
+
+  // At exactly 100 degrees
+  thermistor_calculate_resistance(1000, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(1, 973, resistance);
+
+  // Test some interpolated values
+  // 12.5 degrees
+  thermistor_calculate_resistance(125, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(1, 16210, resistance);
+
+  // 50.5 degrees
+  thermistor_calculate_resistance(505, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(1, 4093, resistance);
+
+  // 74.7 degrees
+  thermistor_calculate_resistance(747, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(1, 1941, resistance);
+
+  // 75.5 degrees
+  thermistor_calculate_resistance(755, &resistance);
+  TEST_ASSERT_UINT16_WITHIN(1, 1897, resistance);
 }

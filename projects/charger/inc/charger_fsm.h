@@ -34,4 +34,4 @@
 #include "fsm.h"
 
 // Initializes |fsm| as a charger FSM.
-void charger_fsm_init(FSM *fsm);
+void charger_fsm_init(Fsm *fsm);

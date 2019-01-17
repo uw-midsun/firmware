@@ -24,7 +24,7 @@ typedef struct PersistStorage {
   uintptr_t prev_flash_addr;
   uint32_t prev_hash;
   FlashPage page;
-  SoftTimerID timer_id;
+  SoftTimerId timer_id;
 } PersistStorage;
 
 // Attempt to load stored data into the provided blob and retains the blob to commit periodically

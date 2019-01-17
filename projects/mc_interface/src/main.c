@@ -19,14 +19,14 @@ typedef enum {
 } MotorEvent;
 
 static MotorControllerStorage s_controller_storage;
-static GenericCanMcp2515 s_can_mcp2515;
-static CANStorage s_can_storage;
+static GenericCanUart s_can_uart;
+static CanStorage s_can_storage;
 static SequencedRelayStorage s_relay_storage;
 static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
-static UARTStorage s_uart_storage;
+static UartStorage s_uart_storage;
 
 static void prv_setup_system_can(void) {
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,
     .bitrate = MC_CFG_CAN_BITRATE,
     .rx_event = MOTOR_EVENT_SYSTEM_CAN_RX,
@@ -41,15 +41,11 @@ static void prv_setup_system_can(void) {
 }
 
 static void prv_setup_motor_can(void) {
-  Mcp2515Settings mcp2515_settings = {
-    .spi_port = SPI_PORT_2,
-    .baudrate = 750000,
-    .mosi = { .port = GPIO_PORT_B, 15 },
-    .miso = { .port = GPIO_PORT_B, 14 },
-    .sclk = { .port = GPIO_PORT_B, 13 },
-    .cs = { .port = GPIO_PORT_B, 12 },
-    .int_pin = { .port = GPIO_PORT_A, 8 },
-    .loopback = false,
+  UartSettings uart_settings = {
+    .baudrate = MC_CFG_CAN_UART_BAUDRATE,
+    .tx = MC_CFG_CAN_UART_TX,
+    .rx = MC_CFG_CAN_UART_RX,
+    .alt_fn = MC_CFG_CAN_UART_ALTFN,
   };
 
   generic_can_mcp2515_init(&s_can_mcp2515, &mcp2515_settings);

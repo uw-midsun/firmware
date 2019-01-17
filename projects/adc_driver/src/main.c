@@ -7,20 +7,20 @@
 #include "interrupt.h"
 #include "log.h"
 
-void test_callback(ADCChannel adc_channel, void *context) {
+void test_callback(AdcChannel adc_channel, void *context) {
   uint16_t *adc_reading = (uint16_t *)context;
   adc_read_converted(adc_channel, adc_reading);
 }
 
 int main() {
-  GPIOAddress address[] = { { GPIO_PORT_A, 0 }, { GPIO_PORT_A, 1 }, { GPIO_PORT_A, 2 },
+  GpioAddress address[] = { { GPIO_PORT_A, 0 }, { GPIO_PORT_A, 1 }, { GPIO_PORT_A, 2 },
                             { GPIO_PORT_A, 3 }, { GPIO_PORT_A, 4 }, { GPIO_PORT_A, 5 },
                             { GPIO_PORT_A, 6 }, { GPIO_PORT_A, 7 }, { GPIO_PORT_B, 0 },
                             { GPIO_PORT_A, 1 }, { GPIO_PORT_B, 0 }, { GPIO_PORT_B, 1 },
                             { GPIO_PORT_C, 2 }, { GPIO_PORT_C, 3 }, { GPIO_PORT_C, 4 },
                             { GPIO_PORT_C, 5 } };
 
-  GPIOSettings settings = {
+  GpioSettings settings = {
     GPIO_DIR_IN,        //
     GPIO_STATE_LOW,     //
     GPIO_RES_NONE,      //
@@ -39,7 +39,7 @@ int main() {
 
   adc_init(ADC_MODE_SINGLE);
 
-  for (ADCChannel i = ADC_CHANNEL_10; i < ADC_CHANNEL_14; i++) {
+  for (AdcChannel i = ADC_CHANNEL_10; i < ADC_CHANNEL_14; i++) {
     adc_set_channel(i, true);
     adc_register_callback(i, test_callback, &adc_readings[i]);
   }

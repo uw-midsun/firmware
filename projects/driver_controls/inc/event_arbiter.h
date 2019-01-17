@@ -18,7 +18,7 @@
 typedef bool (*EventArbiterGuardFn)(const Event *e);
 
 typedef struct EventArbiterGuard {
-  FSM *fsm;
+  Fsm *fsm;
   EventArbiterGuardFn guard_fn;
 } EventArbiterGuard;
 
@@ -32,7 +32,7 @@ StatusCode event_arbiter_init(EventArbiterStorage *storage);
 
 // Registers an FSM and initializes an arbiter with the given event check function
 // A NULL event check allows all events by default.
-EventArbiterGuard *event_arbiter_add_fsm(EventArbiterStorage *storage, FSM *fsm,
+EventArbiterGuard *event_arbiter_add_fsm(EventArbiterStorage *storage, Fsm *fsm,
                                          EventArbiterGuardFn guard_fn);
 
 StatusCode event_arbiter_set_guard_fn(EventArbiterGuard *guard, EventArbiterGuardFn guard_fn);

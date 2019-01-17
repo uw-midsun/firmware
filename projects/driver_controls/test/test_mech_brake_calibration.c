@@ -43,7 +43,7 @@ void setup_test(void) {
 
   i2c_init(DC_CFG_I2C_BUS_PORT, &i2c_settings);
 
-  GPIOAddress ready_pin = DC_CFG_PEDAL_ADC_RDY_PIN;
+  GpioAddress ready_pin = DC_CFG_PEDAL_ADC_RDY_PIN;
 
   const MechBrakeSettings calib_settings = {
     .ads1015 = &s_ads1015_storage,

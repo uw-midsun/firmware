@@ -9,7 +9,7 @@
 
 // Switches the blinker state, raises a LIGHTS_EVENT_GPIO_OFF or LIGHTS_EVENT_GPIO_ON event with
 // the appropriate peripheral, and schedules a new timer.
-static void prv_timer_callback(SoftTimerID timer_id, void *context) {
+static void prv_timer_callback(SoftTimerId timer_id, void *context) {
   LightsBlinker *blinker = (LightsBlinker *)context;
   blinker->state = !blinker->state;
   // Choose whether to raise an ON or OFF event.
@@ -21,7 +21,7 @@ static void prv_timer_callback(SoftTimerID timer_id, void *context) {
       blinker->blink_count++;
     }
     if (blinker->blink_count >= blinker->blink_count_threshold) {
-      event_raise(LIGHTS_EVENT_SYNC, 0);
+      event_raise(LIGHTS_EVENT_SYNC_TX, 0);
       blinker->blink_count = 0;
     }
   }

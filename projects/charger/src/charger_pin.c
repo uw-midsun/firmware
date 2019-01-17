@@ -1,7 +1,7 @@
 #include "charger_pin.h"
 
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #include "adc.h"
 #include "charger_events.h"
@@ -12,10 +12,10 @@
 #include "soft_timer.h"
 #include "status.h"
 
-static void prv_poll_value(SoftTimerID id, void *context) {
-  GPIOAddress *addr = context;
+static void prv_poll_value(SoftTimerId id, void *context) {
+  GpioAddress *addr = context;
 
-  ADCChannel chan = NUM_ADC_CHANNELS;
+  AdcChannel chan = NUM_ADC_CHANNELS;
   adc_get_channel(*addr, &chan);
   uint16_t millivolts = UINT16_MAX;
   StatusCode status = adc_read_converted(chan, &millivolts);
@@ -32,8 +32,8 @@ static void prv_poll_value(SoftTimerID id, void *context) {
   soft_timer_start_millis(CHARGER_PIN_POLL_PERIOD_MS, prv_poll_value, addr, NULL);
 }
 
-StatusCode charger_pin_init(const GPIOAddress *address) {
-  const GPIOSettings settings = {
+StatusCode charger_pin_init(const GpioAddress *address) {
+  const GpioSettings settings = {
     .state = GPIO_STATE_LOW,
     .direction = GPIO_DIR_IN,
     .resistor = GPIO_RES_NONE,
@@ -41,7 +41,7 @@ StatusCode charger_pin_init(const GPIOAddress *address) {
   };
   status_ok_or_return(gpio_init_pin(address, &settings));
 
-  ADCChannel chan = NUM_ADC_CHANNELS;
+  AdcChannel chan = NUM_ADC_CHANNELS;
   adc_get_channel(*address, &chan);
   adc_set_channel(chan, true);
 

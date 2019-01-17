@@ -11,7 +11,7 @@ endif
 # Defines default variables and targets
 $(T)_DIR := $($(TARGET_TYPE)_DIR)/$(T)
 
-$(T)_PREBUILD_CMD := 
+$(T)_PREBUILD_CMD :=
 $(T)_SRC_ROOT := $($(T)_DIR)/src
 $(T)_OBJ_ROOT := $(OBJ_CACHE)/$(T)
 $(T)_INC_DIRS := $($(T)_DIR)/inc $($(T)_DIR)/inc/$(PLATFORM)

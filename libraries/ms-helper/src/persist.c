@@ -31,7 +31,7 @@ typedef struct PersistHeader {
   uint32_t size_bytes;
 } PersistHeader;
 
-static void prv_periodic_commit(SoftTimerID timer_id, void *context) {
+static void prv_periodic_commit(SoftTimerId timer_id, void *context) {
   PersistStorage *persist = context;
 
   if (persist->prev_flash_addr == PERSIST_INVALID_ADDR) {

@@ -17,10 +17,10 @@
 #include "soft_timer.h"
 #include "wait.h"
 
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 static ChargerCanStatus s_charger_status;
 static ChargerStorage s_charger_storage;
-static FSM s_charger_fsm;
+static Fsm s_charger_fsm;
 
 // TODO(ELEC-355): Add support for polling the ADC/PWM signal from the charging station.
 
@@ -35,14 +35,14 @@ int main(void) {
   adc_init(ADC_MODE_CONTINUOUS);
 
   // CAN
-  const CANSettings *can_settings = charger_cfg_load_can_settings();
+  const CanSettings *can_settings = charger_cfg_load_can_settings();
   can_init(&s_can_storage, can_settings);
 
   // Charger Cfg
   charger_cfg_init_settings();
 
   // Charger Pin
-  const GPIOAddress pin_addr = charger_cfg_load_charger_pin();
+  const GpioAddress pin_addr = charger_cfg_load_charger_pin();
   charger_pin_init(&pin_addr);
 
   // Charger Controller

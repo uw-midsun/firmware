@@ -15,7 +15,7 @@ static FaultMonitorStorage s_fault_monitor;
 
 static size_t s_telemetry_counter = 0;
 
-static void prv_periodic_tx_debug(SoftTimerID timer_id, void *context) {
+static void prv_periodic_tx_debug(SoftTimerId timer_id, void *context) {
   FaultMonitorResult *result = &s_fault_monitor.result;
 
   if (s_telemetry_counter < PLUTUS_CFG_AFE_TOTAL_CELLS) {
@@ -46,6 +46,9 @@ int main(void) {
 
       .overcurrent_charge = PLUTUS_CFG_OVERCURRENT_DISCHARGE,
       .overcurrent_discharge = PLUTUS_CFG_OVERCURRENT_CHARGE,
+
+      .overtemp_charge = PLUTUS_CFG_OVERTEMP_CHARGE,
+      .overtemp_discharge = PLUTUS_CFG_OVERTEMP_DISCHARGE,
     };
 
     fault_monitor_init(&s_fault_monitor, &fault_settings);

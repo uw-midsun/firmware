@@ -69,12 +69,12 @@ StatusCode charger_controller_init(ChargerStorage *storage, const ChargerSetting
   }
   s_charger_status = status;
   s_storage = storage;
-  memcpy(&s_storage->relay_control_pin, &settings->relay_control_pin, sizeof(GPIOAddress));
+  memcpy(&s_storage->relay_control_pin, &settings->relay_control_pin, sizeof(GpioAddress));
   memcpy(&s_storage->relay_control_pin_secondary, &settings->relay_control_pin_secondary,
-         sizeof(GPIOAddress));
-  memcpy(&s_storage->pilot_select_pin, &settings->pilot_select_pin, sizeof(GPIOAddress));
+         sizeof(GpioAddress));
+  memcpy(&s_storage->pilot_select_pin, &settings->pilot_select_pin, sizeof(GpioAddress));
 
-  const GPIOSettings gpio_settings = {
+  const GpioSettings gpio_settings = {
     .state = GPIO_STATE_LOW,
     .alt_function = GPIO_ALTFN_NONE,
     .direction = GPIO_DIR_OUT,

@@ -7,7 +7,7 @@
 #include "fsm.h"
 #include "notify.h"
 
-static bool prv_safe_charging_guard(const FSM *fsm, const Event *e, void *context) {
+static bool prv_safe_charging_guard(const Fsm *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
   (void)context;
@@ -41,7 +41,7 @@ FSM_STATE_TRANSITION(state_charging) {
   FSM_ADD_TRANSITION(CHARGER_EVENT_STOP_CHARGING, state_connected);
 }
 
-static void prv_state_disconnected(FSM *fsm, const Event *e, void *context) {
+static void prv_state_disconnected(Fsm *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
   (void)context;
@@ -50,7 +50,7 @@ static void prv_state_disconnected(FSM *fsm, const Event *e, void *context) {
   notify_cease();
 }
 
-static void prv_state_connected(FSM *fsm, const Event *e, void *context) {
+static void prv_state_connected(Fsm *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
   (void)context;
@@ -59,7 +59,7 @@ static void prv_state_connected(FSM *fsm, const Event *e, void *context) {
   notify_post();
 }
 
-static void prv_state_charging(FSM *fsm, const Event *e, void *context) {
+static void prv_state_charging(Fsm *fsm, const Event *e, void *context) {
   (void)fsm;
   (void)e;
   (void)context;
@@ -67,7 +67,7 @@ static void prv_state_charging(FSM *fsm, const Event *e, void *context) {
   charger_controller_set_state(CHARGER_STATE_START);
 }
 
-void charger_fsm_init(FSM *fsm) {
+void charger_fsm_init(Fsm *fsm) {
   fsm_state_init(state_disconnected, prv_state_disconnected);
   fsm_state_init(state_connected, prv_state_connected);
   fsm_state_init(state_charging, prv_state_charging);

@@ -20,14 +20,14 @@
 #define CAN_SLAVE_UART_ALTFN GPIO_ALTFN_4
 #define CAN_SLAVE_CAN_BITRATE CAN_HW_BITRATE_500KBPS
 
-static UARTStorage s_uart_storage;
+static UartStorage s_uart_storage;
 
 static void prv_init_periph(void) {
   gpio_init();
   interrupt_init();
   soft_timer_init();
 
-  UARTSettings uart_settings = {
+  UartSettings uart_settings = {
     .baudrate = CAN_SLAVE_UART_BAUDRATE,  //
     .tx = CAN_SLAVE_UART_TX,              //
     .rx = CAN_SLAVE_UART_RX,              //
@@ -35,7 +35,7 @@ static void prv_init_periph(void) {
   };
   uart_init(CAN_SLAVE_UART_PORT, &uart_settings, &s_uart_storage);
 
-  CANHwSettings can_hw_settings = {
+  CanHwSettings can_hw_settings = {
     .tx = { .port = GPIO_PORT_A, .pin = 12 },  //
     .rx = { .port = GPIO_PORT_A, .pin = 11 },  //
     .bitrate = CAN_SLAVE_CAN_BITRATE,          //

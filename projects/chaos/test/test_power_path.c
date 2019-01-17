@@ -54,13 +54,13 @@ static volatile uint8_t s_dcdc_uv = UINT8_MAX;
 static volatile uint8_t s_aux_ov = UINT8_MAX;
 static volatile uint8_t s_aux_uv = UINT8_MAX;
 
-static StatusCode prv_handle_uvov(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_handle_uvov(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   LOG_DEBUG("Handled\n");
   CAN_UNPACK_OVUV_DCDC_AUX(msg, &s_dcdc_ov, &s_dcdc_uv, &s_aux_ov, &s_aux_uv);
   return STATUS_CODE_OK;
 }
 
-static StatusCode prv_handle_vc(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
+static StatusCode prv_handle_vc(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   LOG_DEBUG("Handled\n");
   uint16_t aux_v = UINT8_MAX;
   uint16_t aux_c = UINT8_MAX;
@@ -99,7 +99,7 @@ static PowerPathCfg s_ppc = {
             .monitoring_active = false },
 };
 
-static CANStorage s_can_storage;
+static CanStorage s_can_storage;
 
 void setup_test(void) {
   event_queue_init();
@@ -109,7 +109,7 @@ void setup_test(void) {
   gpio_it_init();
   adc_init(ADC_MODE_CONTINUOUS);
 
-  CANSettings can_settings = {
+  CanSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
     .bitrate = CAN_HW_BITRATE_125KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,
@@ -127,7 +127,7 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_power_path_uv_ov(void) {
-  volatile CANMessage rx_msg = { 0 };
+  volatile CanMessage rx_msg = { 0 };
   can_register_rx_handler(SYSTEM_CAN_MESSAGE_OVUV_DCDC_AUX, prv_handle_uvov, &rx_msg);
 
   TEST_ASSERT_OK(power_path_source_monitor_enable(&s_ppc.aux_bat, TEST_POWER_PATH_ADC_PERIOD_MS));

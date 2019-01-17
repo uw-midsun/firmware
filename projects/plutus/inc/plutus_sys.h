@@ -32,7 +32,7 @@ typedef enum {
 } PlutusSysType;
 
 typedef struct PlutusSysStorage {
-  CANStorage can;
+  CanStorage can;
   LtcAfeStorage ltc_afe;
   CurrentSenseStorage current_sense;
   BpsHeartbeatStorage bps_heartbeat;

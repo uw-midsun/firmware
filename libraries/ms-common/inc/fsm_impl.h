@@ -6,16 +6,16 @@
 // transition tables. If needed, we could add simple guards quite easily.
 
 // Forward-declares the state's transition function (prv_fsm_[state])
-// and declares a State object populated with its name and transition function
+// and declares a FsmState object populated with its name and transition function
 #define _FSM_DECLARE_STATE(state) \
   _FSM_STATE_TRANSITION(state);   \
-  static State state = { .name = #state, .table = prv_fsm_##state }
+  static FsmState state = { .name = #state, .table = prv_fsm_##state }
 
 // This is used for both forward-declaration and the actual function declaration
 // Since we're implementing the transition table as a function, we can't rely on a return value
 // so we pass in a pointer to be modified on transitions.
 #define _FSM_STATE_TRANSITION(state) \
-  static void prv_fsm_##state(FSM *fsm, const Event *e, bool *transitioned)
+  static void prv_fsm_##state(Fsm *fsm, const Event *e, bool *transitioned)
 
 // Represents a transition through a conditional. This should only be used in transition functions.
 // This keeps track of states and signals that a transition has occurred through the pointer.

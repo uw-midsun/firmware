@@ -24,10 +24,10 @@
 #define TEST_RELAY_DELAY_MS 50
 
 static RelayRetryServiceStorage s_relay_retry_storage;
-static CANStorage s_storage;
+static CanStorage s_storage;
 
-static StatusCode prv_rx_handler(const CANMessage *msg, void *context, CANAckStatus *ack_reply) {
-  CANAckStatus *status = context;
+static StatusCode prv_rx_handler(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
+  CanAckStatus *status = context;
   *ack_reply = *status;
   LOG_DEBUG("Handled; responded with %u\n", *ack_reply);
   return STATUS_CODE_OK;
@@ -41,7 +41,7 @@ void setup_test(void) {
   Event e = { .id = CHAOS_EVENT_SET_RELAY_RETRIES, .data = RELAY_RETRY_SERVICE_DEFAULT_ATTEMPTS };
   relay_retry_service_update(&e);
 
-  CANSettings settings = {
+  CanSettings settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
     .bitrate = CAN_HW_BITRATE_125KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,
@@ -62,8 +62,8 @@ void setup_test(void) {
     .solar_rear_power_pin = { GPIO_PORT_A, 0 },
     .loopback = true,
   };
-  GPIOAddress addr = { GPIO_PORT_A, 0 };
-  GPIOSettings gpio_settings = {
+  GpioAddress addr = { GPIO_PORT_A, 0 };
+  GpioSettings gpio_settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_HIGH,
   };
@@ -88,7 +88,7 @@ typedef struct TestRelayParams {
 // the 4 different success/failure combinations for opening and closing. Essentially checks all
 // success cases, handling of failures, etc.
 void test_relay_cycle(void) {
-  CANAckStatus ack_status = CAN_ACK_STATUS_OK;
+  CanAckStatus ack_status = CAN_ACK_STATUS_OK;
 
   can_register_rx_default_handler(prv_rx_handler, &ack_status);
 
@@ -175,7 +175,7 @@ void test_relay_cycle(void) {
 // Validates that the retry limit is a cap on the number of attempts at triggering a Relay.
 void test_relay_retry_limit(void) {
   // Handler config.
-  CANAckStatus ack_status = CAN_ACK_STATUS_INVALID;
+  CanAckStatus ack_status = CAN_ACK_STATUS_INVALID;
   can_register_rx_default_handler(prv_rx_handler, &ack_status);
 
   // Start the FSM.
@@ -214,7 +214,7 @@ void test_relay_retry_limit(void) {
 
 // Validate that the events are in fact separate FSMs and don't interfere with each other.
 void test_relay_concurrent(void) {
-  CANAckStatus ack_status = CAN_ACK_STATUS_OK;
+  CanAckStatus ack_status = CAN_ACK_STATUS_OK;
 
   can_register_rx_default_handler(prv_rx_handler, &ack_status);
 

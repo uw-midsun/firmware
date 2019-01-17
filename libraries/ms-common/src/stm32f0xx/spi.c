@@ -7,15 +7,15 @@ typedef struct {
   void (*rcc_cmd)(uint32_t periph, FunctionalState state);
   uint32_t periph;
   SPI_TypeDef *base;
-  GPIOAddress cs;
-} SPIPortData;
+  GpioAddress cs;
+} SpiPortData;
 
-static SPIPortData s_port[NUM_SPI_PORTS] = {
+static SpiPortData s_port[NUM_SPI_PORTS] = {
   [SPI_PORT_1] = { .rcc_cmd = RCC_APB2PeriphClockCmd, .periph = RCC_APB2Periph_SPI1, .base = SPI1 },
   [SPI_PORT_2] = { .rcc_cmd = RCC_APB1PeriphClockCmd, .periph = RCC_APB1Periph_SPI2, .base = SPI2 },
 };
 
-StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
+StatusCode spi_init(SpiPort spi, const SpiSettings *settings) {
   if (spi >= NUM_SPI_PORTS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid SPI port.");
   } else if (settings->mode >= NUM_SPI_MODES) {
@@ -37,7 +37,7 @@ StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
   s_port[spi].rcc_cmd(s_port[spi].periph, ENABLE);
   s_port[spi].cs = settings->cs;
 
-  GPIOSettings gpio_settings = {
+  GpioSettings gpio_settings = {
     .alt_function = GPIO_ALTFN_0,  //
     .direction = GPIO_DIR_IN,      //
     .state = GPIO_STATE_HIGH,      //
@@ -73,7 +73,7 @@ StatusCode spi_init(SPIPort spi, const SPISettings *settings) {
   return STATUS_CODE_OK;
 }
 
-StatusCode spi_exchange(SPIPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *rx_data,
+StatusCode spi_exchange(SpiPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *rx_data,
                         size_t rx_len) {
   if (spi >= NUM_SPI_PORTS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid SPI port.");

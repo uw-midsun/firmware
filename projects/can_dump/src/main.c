@@ -20,7 +20,7 @@ int main(void) {
   gpio_init();
   soft_timer_init();
 
-  const CANHwSettings can_hw_settings = {
+  const CanHwSettings can_hw_settings = {
     .bitrate = CAN_HW_BITRATE_500KBPS,
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },
@@ -31,11 +31,11 @@ int main(void) {
   generic_can_register_rx((GenericCan *)&s_can, prv_can_rx_callback, 0, 0, true, NULL);
   generic_can_register_rx((GenericCan *)&s_can, prv_can_rx_callback, 0, 0, false, NULL);
 
-  GPIOSettings led_settings = {
+  GpioSettings led_settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_LOW,
   };
-  GPIOAddress led = { .port = GPIO_PORT_A, .pin = 15 };
+  GpioAddress led = { .port = GPIO_PORT_A, .pin = 15 };
   gpio_init_pin(&led, &led_settings);
 
   printf("hello\n");

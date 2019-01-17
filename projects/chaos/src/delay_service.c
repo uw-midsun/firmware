@@ -4,11 +4,11 @@
 #include "event_queue.h"
 #include "soft_timer.h"
 
-static SoftTimerID s_timer_id = SOFT_TIMER_INVALID_TIMER;
+static SoftTimerId s_timer_id = SOFT_TIMER_INVALID_TIMER;
 
-static void prv_delay_end(SoftTimerID timer_id, void *context) {
+static void prv_delay_end(SoftTimerId timer_id, void *context) {
   (void)timer_id;
-  SoftTimerID *id = context;
+  SoftTimerId *id = context;
   event_raise(CHAOS_EVENT_DELAY_DONE, 0);
   *id = SOFT_TIMER_INVALID_TIMER;
 }

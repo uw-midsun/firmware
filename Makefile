@@ -128,7 +128,7 @@ $(foreach lib,$(VALID_LIBRARIES),$(call include_lib,$(lib)))
 # Includes all projects so make can find their targets
 $(foreach proj,$(VALID_PROJECTS),$(call include_proj,$(proj)))
 
-IGNORE_CLEANUP_LIBS := CMSIS STM32F0xx_StdPeriph_Driver unity
+IGNORE_CLEANUP_LIBS := CMSIS FreeRTOS STM32F0xx_StdPeriph_Driver unity
 FIND_PATHS := $(addprefix -o -path $(LIB_DIR)/,$(IGNORE_CLEANUP_LIBS))
 FIND := find $(PROJ_DIR) $(LIB_DIR) \
 			  \( $(wordlist 2,$(words $(FIND_PATHS)),$(FIND_PATHS)) \) -prune -o \
@@ -179,7 +179,7 @@ $(BIN_DIR)/%.bin: $(BIN_DIR)/%$(PLATFORM_EXT)
 
 # clean and remake rules, use reallyclean to clean everything
 
-.PHONY: clean reallyclean remake new socketcan update_codegen
+.PHONY: clean reallyclean remake new socketcan update_codegen .FORCE
 
 new:
 	@python3 $(MAKE_DIR)/new_target.py $(NEW_TYPE) $(PROJECT)$(LIBRARY)

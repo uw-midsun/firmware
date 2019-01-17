@@ -13,9 +13,9 @@
 #include "gpio.h"
 
 typedef struct ChargerStorage {
-  GPIOAddress relay_control_pin;
-  GPIOAddress relay_control_pin_secondary;
-  GPIOAddress pilot_select_pin;
+  GpioAddress relay_control_pin;
+  GpioAddress relay_control_pin_secondary;
+  GpioAddress pilot_select_pin;
 } ChargerStorage;
 
 typedef struct ChargerSettings {
@@ -23,9 +23,9 @@ typedef struct ChargerSettings {
   uint16_t max_current;
   GenericCan *can;
   GenericCan *can_mcp2515;
-  GPIOAddress relay_control_pin;
-  GPIOAddress relay_control_pin_secondary;
-  GPIOAddress pilot_select_pin;
+  GpioAddress relay_control_pin;
+  GpioAddress relay_control_pin_secondary;
+  GpioAddress pilot_select_pin;
 } ChargerSettings;
 
 // Initializes the charger controller. Expects |settings| to be fully populated. |storage must

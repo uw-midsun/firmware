@@ -25,7 +25,7 @@ typedef struct CruiseStorage {
   volatile int16_t target_speed_cms;   // m/s * 100
   volatile int16_t current_speed_cms;  // From motor controllers
   int16_t offset_cms;
-  SoftTimerID repeat_timer;  // Repeats offset while increment/decrement is held
+  SoftTimerId repeat_timer;  // Repeats offset while increment/decrement is held
   size_t repeat_counter;
 } CruiseStorage;
 

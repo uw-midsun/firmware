@@ -8,13 +8,13 @@
 static volatile uint8_t s_callback_runs = 0;
 static volatile bool s_callback_ran = false;
 
-void prv_callback(ADCChannel adc_channel, void *context) {
+void prv_callback(AdcChannel adc_channel, void *context) {
   s_callback_runs++;
   s_callback_ran = true;
 }
 
 // Check multiple samples to ensure they are within the correct range
-void prv_adc_check_range(ADCChannel adc_channel) {
+void prv_adc_check_range(AdcChannel adc_channel) {
   uint16_t raw_reading = 0;
   uint16_t conv_reading = 0;
 
@@ -28,14 +28,14 @@ void prv_adc_check_range(ADCChannel adc_channel) {
 }
 
 void setup_test() {
-  GPIOSettings settings = {
+  GpioSettings settings = {
     GPIO_DIR_IN,        //
     GPIO_STATE_LOW,     //
     GPIO_RES_NONE,      //
     GPIO_ALTFN_ANALOG,  //
   };
 
-  GPIOAddress address[] = { {
+  GpioAddress address[] = { {
                                 GPIO_PORT_A,  //
                                 0,            //
                             },
@@ -169,8 +169,8 @@ void test_read_continuous(void) {
 }
 
 void test_adc_get_channel() {
-  ADCChannel adc_channel;
-  GPIOAddress address[] = {
+  AdcChannel adc_channel;
+  GpioAddress address[] = {
     {
         .port = GPIO_PORT_A,
     },

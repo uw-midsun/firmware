@@ -63,31 +63,31 @@ FSM_STATE_TRANSITION(headlight_highbeam) {
   FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_FAULT, headlight_off);
 }
 
-static void prv_headlight_off_output(FSM *fsm, const Event *e, void *context) {
+static void prv_headlight_off_output(Fsm *fsm, const Event *e, void *context) {
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_DRL, EE_LIGHT_STATE_OFF);
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_LOW_BEAMS, EE_LIGHT_STATE_OFF);
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_HIGH_BEAMS, EE_LIGHT_STATE_OFF);
 }
 
-static void prv_headlight_lowbeam_output(FSM *fsm, const Event *e, void *context) {
+static void prv_headlight_lowbeam_output(Fsm *fsm, const Event *e, void *context) {
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_DRL, EE_LIGHT_STATE_OFF);
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_LOW_BEAMS, EE_LIGHT_STATE_ON);
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_HIGH_BEAMS, EE_LIGHT_STATE_OFF);
 }
 
-static void prv_headlight_drl_output(FSM *fsm, const Event *e, void *context) {
+static void prv_headlight_drl_output(Fsm *fsm, const Event *e, void *context) {
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_DRL, EE_LIGHT_STATE_ON);
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_LOW_BEAMS, EE_LIGHT_STATE_OFF);
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_HIGH_BEAMS, EE_LIGHT_STATE_OFF);
 }
 
-static void prv_headlight_highbeam_output(FSM *fsm, const Event *e, void *context) {
+static void prv_headlight_highbeam_output(Fsm *fsm, const Event *e, void *context) {
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_DRL, EE_LIGHT_STATE_OFF);
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_LOW_BEAMS, EE_LIGHT_STATE_OFF);
   CAN_TRANSMIT_LIGHTS_STATE(EE_LIGHT_TYPE_HIGH_BEAMS, EE_LIGHT_STATE_ON);
 }
 
-StatusCode headlight_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
+StatusCode headlight_fsm_init(Fsm *fsm, EventArbiterStorage *storage) {
   fsm_state_init(headlight_off, prv_headlight_off_output);
   fsm_state_init(headlight_lowbeam, prv_headlight_lowbeam_output);
   fsm_state_init(headlight_drl, prv_headlight_drl_output);

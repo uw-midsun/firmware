@@ -10,7 +10,7 @@
 // * A5: Lowbeams
 // * A6: Hazards
 
-static const EventID s_events[NUM_CENTER_CONSOLE_INPUTS] = {
+static const EventId s_events[NUM_CENTER_CONSOLE_INPUTS] = {
   INPUT_EVENT_CENTER_CONSOLE_POWER,
   INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE,
   INPUT_EVENT_CENTER_CONSOLE_DIRECTION_NEUTRAL,
@@ -20,7 +20,7 @@ static const EventID s_events[NUM_CENTER_CONSOLE_INPUTS] = {
   INPUT_EVENT_CENTER_CONSOLE_HAZARDS_RELEASED,
 };
 
-static void prv_raise_event_cb(GpioExpanderPin pin, GPIOState state, void *context) {
+static void prv_raise_event_cb(GpioExpanderPin pin, GpioState state, void *context) {
   CenterConsoleStorage *storage = context;
 
   switch (pin) {
@@ -38,7 +38,7 @@ static void prv_raise_event_cb(GpioExpanderPin pin, GPIOState state, void *conte
 }
 
 StatusCode center_console_init(CenterConsoleStorage *storage, GpioExpanderStorage *expander) {
-  const GPIOSettings gpio_settings = { .direction = GPIO_DIR_IN };
+  const GpioSettings gpio_settings = { .direction = GPIO_DIR_IN };
 
   for (size_t i = 0; i < NUM_CENTER_CONSOLE_INPUTS; i++) {
     gpio_expander_init_pin(expander, i, &gpio_settings);

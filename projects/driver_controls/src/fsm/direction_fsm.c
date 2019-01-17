@@ -52,7 +52,7 @@ static bool prv_guard_prevent_cruise(const Event *e) {
 }
 
 // Direction selector FSM output functions
-static void prv_forward_output(FSM *fsm, const Event *e, void *context) {
+static void prv_forward_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_DIRECTION,
                       EE_DRIVE_OUTPUT_DIRECTION_FORWARD);
@@ -64,7 +64,7 @@ static void prv_forward_output(FSM *fsm, const Event *e, void *context) {
   }
 }
 
-static void prv_neutral_output(FSM *fsm, const Event *e, void *context) {
+static void prv_neutral_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_DIRECTION,
                       EE_DRIVE_OUTPUT_DIRECTION_NEUTRAL);
@@ -76,7 +76,7 @@ static void prv_neutral_output(FSM *fsm, const Event *e, void *context) {
   }
 }
 
-static void prv_reverse_output(FSM *fsm, const Event *e, void *context) {
+static void prv_reverse_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_DIRECTION,
                       EE_DRIVE_OUTPUT_DIRECTION_REVERSE);
@@ -88,7 +88,7 @@ static void prv_reverse_output(FSM *fsm, const Event *e, void *context) {
   }
 }
 
-StatusCode direction_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
+StatusCode direction_fsm_init(Fsm *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_forward, prv_forward_output);
   fsm_state_init(state_neutral, prv_neutral_output);
   fsm_state_init(state_reverse, prv_reverse_output);

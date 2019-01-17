@@ -9,25 +9,25 @@
 typedef struct ChaosConfig {
   PowerPathCfg power_path;
   // Roof
-  const GPIOAddress telemetry_power;
-  const GPIOAddress array_sense_power;
-  const GPIOAddress rear_camera_power;
+  const GpioAddress telemetry_power;
+  const GpioAddress array_sense_power;
+  const GpioAddress rear_camera_power;
   // Front
-  const GPIOAddress themis_power;
-  const GPIOAddress driver_display_power;
-  const GPIOAddress front_lights_power;
+  const GpioAddress themis_power;
+  const GpioAddress driver_display_power;
+  const GpioAddress front_lights_power;
   // Misc
-  const GPIOAddress battery_box_power;
-  const GPIOAddress motor_interface_power;
-  const GPIOAddress rear_lights_power;
-  const GPIOAddress pjb_fan;
+  const GpioAddress battery_box_power;
+  const GpioAddress motor_interface_power;
+  const GpioAddress rear_lights_power;
+  const GpioAddress pjb_fan;
   // Unused but available pins
-  const GPIOAddress spare_protected_power;
-  const GPIOAddress spare_unprotected_power;
+  const GpioAddress spare_protected_power;
+  const GpioAddress spare_unprotected_power;
   // Debug LEDs
-  // const GPIOAddress led1_power;
-  // const GPIOAddress led2_power;
-  // const GPIOAddress led3_power;
+  // const GpioAddress led1_power;
+  // const GpioAddress led2_power;
+  // const GpioAddress led3_power;
 } ChaosConfig;
 
 // Returns a lazy static pointer to the global ChaosConfig struct.
