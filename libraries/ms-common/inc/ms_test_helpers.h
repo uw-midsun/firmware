@@ -4,7 +4,6 @@
 // All require event_queue to be initialized.
 
 #include "can.h"
-#include "delay.h"
 #include "event_queue.h"
 #include "fsm.h"
 #include "status.h"
@@ -19,17 +18,15 @@
     } while (status != STATUS_CODE_OK);   \
   })
 
-// The following require CAN, interrupts, and soft timers to be initialized.
+// The following require CAN to be initialized.
 
 // Send a TX message over CAN and RX it.
 #define MS_TEST_HELPER_CAN_TX_RX(tx_event, rx_event) \
   ({                                                 \
     Event e = { 0, 0 };                              \
-    delay_ms(5);                                     \
     MS_TEST_HELPER_AWAIT_EVENT(e);                   \
     TEST_ASSERT_EQUAL((tx_event), e.id);             \
     TEST_ASSERT_TRUE(can_process_event(&e));         \
-    delay_ms(5);                                     \
     MS_TEST_HELPER_AWAIT_EVENT(e);                   \
     TEST_ASSERT_EQUAL((rx_event), e.id);             \
     TEST_ASSERT_TRUE(can_process_event(&e));         \
