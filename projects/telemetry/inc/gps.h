@@ -43,8 +43,8 @@ typedef struct {
 // Initialized the GPS module
 StatusCode gps_init(GpsSettings *settings, GpsStorage *storage);
 
-// Gets GGA data (coordinates, time)
+// Gets most recent GGA data (coordinates, time)
 StatusCode gps_get_gga_data(uint8_t **result);
 
-// Gets VTG data (speed, heading)
+// Gets most recent VTG data (speed, heading)
 StatusCode gps_get_vtg_data(uint8_t **result);

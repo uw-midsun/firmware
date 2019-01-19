@@ -10,7 +10,7 @@
 #include "status.h"
 #include "uart.h"
 
-// A large struct to store data and settings. Since the GPS should only be initialized once
+// Two structs to store data and settings. Since the GPS should only be initialized once
 static GpsSettings *s_settings = NULL;
 static GpsStorage *s_storage = NULL;
 
@@ -18,9 +18,9 @@ static GpsStorage *s_storage = NULL;
 static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
   NmeaMessageId messageId = NMEA_MESSAGE_ID_UNKNOWN;
   nmea_sentence_type((char *)rx_arr, &messageId);
-  if (messageId == NMEA_MESSAGE_ID_GGA) {
+  if (messageId == NMEA_MESSAGE_ID_GGA) {         // GGA message
     strncpy((char *)s_storage->gga_data, (char *)rx_arr, GPS_MAX_NMEA_LENGTH);
-  } else if (messageId == NMEA_MESSAGE_ID_VTG) {
+  } else if (messageId == NMEA_MESSAGE_ID_VTG) {  // VTG message
     strncpy((char *)s_storage->vtg_data, (char *)rx_arr, GPS_MAX_NMEA_LENGTH);
   }
 }
@@ -51,6 +51,8 @@ StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
   if (s_settings != NULL) {
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "Cannot reinitialize GPS\n");
   }
+
+  // Initialize both structs
   s_settings = settings;
   s_storage = storage;
 
@@ -92,6 +94,7 @@ StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
   return STATUS_CODE_OK;
 }
 
+// Retrieve most recent GGA message
 StatusCode gps_get_gga_data(uint8_t **result) {
   if (s_settings == NULL) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "GPS module is uninitialized.\n");
@@ -100,6 +103,7 @@ StatusCode gps_get_gga_data(uint8_t **result) {
   return STATUS_CODE_OK;
 }
 
+// Retrieve most recent VTG message
 StatusCode gps_get_vtg_data(uint8_t **result) {
   if (s_settings == NULL) {
     return status_msg(STATUS_CODE_UNINITIALIZED, "GPS module is uninitialized.\n");
