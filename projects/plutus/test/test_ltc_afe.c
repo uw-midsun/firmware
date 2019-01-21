@@ -12,7 +12,7 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#define TEST_LTC_AFE_NUM_SAMPLES 100
+#define TEST_LTC_AFE_NUM_SAMPLES 1000
 // Maximum total measurement error in filtered mode - +/-2.8mV
 // Maximum peak-to-peak at 7kHz: +/-250uV
 #define TEST_LTC_AFE_VOLTAGE_VARIATION 5
@@ -78,12 +78,15 @@ void test_ltc_afe_read_all_voltage_repeated_within_tolerances(void) {
   // the idea here is that we repeatedly take samples and verify that the values being read
   // are within an acceptable tolerance
   struct {
-    uint16_t min;
-    uint16_t max;
+    uint32_t min;
+    uint32_t max;
+    uint32_t avg; 
+
   } bounds[PLUTUS_CFG_AFE_TOTAL_CELLS] = { 0 };
 
   for (int i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {
     bounds[i].min = UINT16_MAX;
+    bounds[i].avg = 0; 
   }
 
   for (int sample = 0; sample < TEST_LTC_AFE_NUM_SAMPLES; ++sample) {
@@ -93,21 +96,31 @@ void test_ltc_afe_read_all_voltage_repeated_within_tolerances(void) {
     for (int cell = 0; cell < PLUTUS_CFG_AFE_TOTAL_CELLS; ++cell) {
       bounds[cell].min = MIN(bounds[cell].min, s_result_arr[cell]);
       bounds[cell].max = MAX(bounds[cell].max, s_result_arr[cell]);
+      bounds[cell].avg = bounds[cell].avg + s_result_arr[cell]; 
     }
   }
 
+  LOG_DEBUG("START\n"); 
+  LOG_DEBUG("AFE Cell, Average, Min, Max, Delta\n");
+
   for (size_t i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {
-    uint16_t delta = bounds[i].max - bounds[i].min;
-    LOG_DEBUG("C%d delta %d (min %d, max %d)\n", i, delta, bounds[i].min, bounds[i].max);
+    uint32_t delta = bounds[i].max - bounds[i].min;
+    //LOG_DEBUG("C%d delta %li (min %li, max %li)\n", i, delta, bounds[i].min, bounds[i].max);
+    //LOG_DEBUG("C%d average %li\n", i, bounds[i].avg); 
+    LOG_DEBUG("%d, %li, %li, %li, %li\n", i, bounds[i].avg, bounds[i].min, bounds[i].max, delta); 
   }
+
+  LOG_DEBUG("END\n"); 
 }
 
 void test_ltc_afe_read_all_aux_repeated_within_tolerances(void) {
   // the idea here is that we repeatedly take samples and verify that the values being read
   // are within an acceptable tolerance
+/*
   struct {
     uint16_t min;
     uint16_t max;
+    uint16_t avg; 
   } bounds[PLUTUS_CFG_AFE_TOTAL_CELLS] = { 0 };
 
   for (int i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {
@@ -121,13 +134,16 @@ void test_ltc_afe_read_all_aux_repeated_within_tolerances(void) {
     for (int cell = 0; cell < PLUTUS_CFG_AFE_TOTAL_CELLS; ++cell) {
       bounds[cell].min = MIN(bounds[cell].min, s_result_arr[cell]);
       bounds[cell].max = MAX(bounds[cell].max, s_result_arr[cell]);
+      bounds[cell].avg = bounds[cell].avg + s_result_arr[cell];
     }
   }
 
   for (size_t i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {
     uint16_t delta = bounds[i].max - bounds[i].min;
     LOG_DEBUG("C%d aux delta %d (min %d, max %d)\n", i, delta, bounds[i].min, bounds[i].max);
+    LOG_DEBUG("C%d average: %d\n", i, bounds[i].avg); 
   }
+*/
 }
 
 void test_ltc_afe_toggle_discharge_cells_valid_range(void) {
