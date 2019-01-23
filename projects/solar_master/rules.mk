@@ -9,5 +9,5 @@
 $(T)_DEPS := ms-common ms-helper
 
 ifeq (x86,$(PLATFORM))
-$(T)_EXCLUDE_TESTS := solar_master_slave 
+$(T)_EXCLUDE_TESTS := solar_master_slave solar_master_current 
 endif
