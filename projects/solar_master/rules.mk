@@ -7,3 +7,7 @@
 
 # Specify the libraries you want to include
 $(T)_DEPS := ms-common ms-helper
+
+ifeq (x86,$(PLATFORM))
+$(T)_EXCLUDE_TESTS := solar_master_slave 
+endif
