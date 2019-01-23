@@ -91,7 +91,7 @@ int main(void) {
     }
   }
 
-  // Initialize lights_can.
+  // Initialize solar_master_can.
   s_solar_master_can_storage.current_storage = &s_current_storage;
   s_solar_master_can_storage.slave_storage = s_slave_storage;
   status = solar_master_can_init(&s_solar_master_can_storage, config->can_settings, config->board);
