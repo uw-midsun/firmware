@@ -1,6 +1,11 @@
 #pragma once
+// Handles Center Console IO
+// Requires GPIO, GPIO Interrupts, event queue, soft timer to be initialized
+
 #include "gpio.h"
 #include "gpio_it.h"
+
+#define CENTER_CONSOLE_POLL_PERIOD_MS 1000
 
 typedef enum {
   CENTER_CONSOLE_INPUT_POWER = 0,
