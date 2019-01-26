@@ -71,9 +71,9 @@
                     CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
 // possibly change to CAN_PACK_PEDAL_OUTPUT with throttle and mech brake
-#define CAN_PACK_MECH_BRAKE(msg_ptr, state_u64)                                             \
- can_pack_impl_u64((msg_ptr), SYSTEM_CAN_DEVICE_PEDAL_CONTROLS, SYSTEM_CAN_MESSAGE_MECH_BRAKE, 8,   \
-                  (state_u64))
+#define CAN_PACK_MECH_BRAKE(msg_ptr, state_u64)                                                    \
+  can_pack_impl_u64((msg_ptr), SYSTEM_CAN_DEVICE_PEDAL_CONTROLS, SYSTEM_CAN_MESSAGE_MECH_BRAKE, 8, \
+                    (state_u64))
 
 // it might make sense to carve up this CAN pack since data will come from different boards
 #define CAN_PACK_DRIVE_OUTPUT(msg_ptr, throttle_u16, direction_u16, cruise_control_u16,            \

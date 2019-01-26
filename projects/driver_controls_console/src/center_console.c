@@ -1,7 +1,7 @@
 #include "center_console.h"
+#include "cc_cfg.h"
 #include "input_event.h"
 #include "log.h"
-#include "cc_cfg.h"
 #include "soft_timer.h"
 // Inputs are as follows:
 // * A0: Lowbeams
@@ -61,10 +61,7 @@ static void prv_event_callback(const GpioAddress *address, void *context)) {
 }
 
 StatusCode center_console_init(CenterConsoleStorage *storage) {
-  const GpioSettings gpio_settings =
-  {
-    .direction = GPIO_DIR_IN
-  };
+  const GpioSettings gpio_settings = { .direction = GPIO_DIR_IN };
   const InterruptSettings interrupt_settings = {
     .type = INTERRUPT_TYPE_INTERRUPT,
     .priority = INTERRUPT_PRIORITY_NORMAL,
@@ -72,16 +69,16 @@ StatusCode center_console_init(CenterConsoleStorage *storage) {
 
   // Initialize all pins with callback on INTERRUPT_EDGE_FALLING except for
   // CC_CFG_CONSOLE_HAZARDS_PIN
-  for (size_t i = 0; i < NUM_CENTER_CONSOLE_INPUTS-1; i++) {
+  for (size_t i = 0; i < NUM_CENTER_CONSOLE_INPUTS - 1; i++) {
     gpio_init_pin(&s_gpio_addresses[i], &gpio_settings);
     gpio_it_register_interrupt(&s_gpio_addresses[i], &interrupt_settings, INTERRUPT_EDGE_FALLING,
-                              prv_event_callback, &s_events[i]);
+                               prv_event_callback, &s_events[i]);
   }
 
   GpioAddress hazards_address = CC_CFG_CONSOLE_HAZARDS_PIN;
   gpio_init_pin(&hazards_address, &gpio_settings);
   gpio_it_register_interrupt(&hazards_address, &interrupt_settings, INTERRUPT_EDGE_RISING,
-                            prv_event_callback, &s_event[NUM_CENTER_CONSOLE_INPUTS-1]);
+                             prv_event_callback, &s_event[NUM_CENTER_CONSOLE_INPUTS - 1]);
 
   // periodically trigger interrupts
   soft_timer_start_millis(CENTER_CONSOLE_POLL_PERIOD_MS, prv_poll_timeout, NULL, NULL);
