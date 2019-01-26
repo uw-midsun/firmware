@@ -21,7 +21,7 @@ static Fsm s_fsm[NUM_CONSOLE_CONTROLS_FSMS];
 
 static CanStorage s_can;
 
-int main() {
+int main(void) {
   gpio_init();
   interrupt_init();
   gpio_it_init();
@@ -42,10 +42,22 @@ int main() {
     .loopback = false,
   };
   can_init(&s_can, &can_settings);
-
   can_add_filter(SYSTEM_CAN_MESSAGE_POWER_STATE);
 
   center_console_init(&s_console);
+
+  // BPS heartbeat
+  bps_indicator_init();
+
+
+  // Not sure that this does anything since NULL context is being passed
+  // and none of the functions called on callback raise an event
+  // Powertrain heartbeat
+  heartbeat_rx_register_handler(&s_powertrain_heartbeat, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
+                                heartbeat_rx_auto_ack_handler, NULL);
+
+  // Mech Brake
+  mech_brake_indicator_init();
 
   drive_output_init(drive_output_global(), INPUT_EVENT_DRIVE_WATCHDOG_FAULT,
                     INPUT_EVENT_DRIVE_UPDATE_REQUESTED);

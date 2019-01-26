@@ -70,6 +70,12 @@
                     SYSTEM_CAN_MESSAGE_MC_ERROR_LIMITS, 4, (error_id_u16), (limits_u16), \
                     CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
+// possibly change to CAN_PACK_PEDAL_OUTPUT with throttle and mech brake
+#define CAN_PACK_MECH_BRAKE(msg_ptr, state_u64)                                             \
+ can_pack_impl_u64((msg_ptr), SYSTEM_CAN_DEVICE_PEDAL_CONTROLS, SYSTEM_CAN_MESSAGE_MECH_BRAKE, 8,   \
+                  (state_u64))
+
+// it might make sense to carve up this CAN pack since data will come from different boards
 #define CAN_PACK_DRIVE_OUTPUT(msg_ptr, throttle_u16, direction_u16, cruise_control_u16,            \
                               mechanical_brake_state_u16)                                          \
   can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT, \
