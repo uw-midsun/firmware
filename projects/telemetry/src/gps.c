@@ -18,7 +18,7 @@ static GpsStorage *s_storage = NULL;
 static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
   NmeaMessageId messageId = NMEA_MESSAGE_ID_UNKNOWN;
   nmea_sentence_type((char *)rx_arr, &messageId);
-  if (messageId == NMEA_MESSAGE_ID_GGA) {         // GGA message
+  if (messageId == NMEA_MESSAGE_ID_GGA) {  // GGA message
     strncpy((char *)s_storage->gga_data, (char *)rx_arr, GPS_MAX_NMEA_LENGTH);
   } else if (messageId == NMEA_MESSAGE_ID_VTG) {  // VTG message
     strncpy((char *)s_storage->vtg_data, (char *)rx_arr, GPS_MAX_NMEA_LENGTH);
