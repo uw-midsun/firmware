@@ -25,12 +25,11 @@ SCRIPT_DIR := $(PLATFORM_DIR)/scripts
 CDEFINES := USE_STDPERIPH_DRIVER STM32F072 HSE_VALUE=32000000
 CFLAGS := -Wall -Wextra -Werror -g3 -Os -std=c11 -Wno-discarded-qualifiers \
 					-Wno-unused-variable -Wno-unused-parameter -Wsign-conversion -Wpointer-arith \
-					-ffunction-sections -fdata-sections -fno-builtin \
-					-Wl,--undefined=uxTopUsedPriority \
+					-ffunction-sections -fdata-sections \
 					$(ARCH_CFLAGS) $(addprefix -D,$(CDEFINES))
 
 # Linker flags
-LDFLAGS := -L$(LDSCRIPT_DIR) -Tstm32f0.ld -fuse-linker-plugin \
+LDFLAGS := -L$(LDSCRIPT_DIR) -Tstm32f0.ld -Wl,--gc-sections -Wl,--undefined=uxTopUsedPriority \
            --specs=nosys.specs --specs=nano.specs
 
 # Device openocd config file
