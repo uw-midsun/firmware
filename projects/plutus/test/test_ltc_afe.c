@@ -143,3 +143,35 @@ void test_ltc_afe_toggle_discharge_cells_invalid_range(void) {
 
   TEST_ASSERT_NOT_OK(status);
 }
+
+void test_ltc_afe_toggle_discharge_cells_mapping(void) {
+  // Modules we wish to enable
+  uint16_t enable_modules[] = {
+    1u, 2u, 3u, 5u, 8u
+  };
+
+  StatusCode status = NUM_STATUS_CODES;
+  // Ensure that all modules are set to off
+  for (uint16_t cell = 0u; cell < PLUTUS_CFG_AFE_TOTAL_CELLS; ++cell) {
+    status = ltc_afe_toggle_cell_discharge(&s_afe, cell, false);
+    TEST_ASSERT_OK(status);
+  }
+
+  // Now turn on bleed resistors for these specific modules
+  for (size_t i = 0u; i < SIZEOF_ARRAY(enable_modules); ++i) {
+    status = ltc_afe_toggle_cell_discharge(&s_afe, enable_modules[i], true);
+    TEST_ASSERT_OK(status);
+  }
+
+  // Check the discharge mapping
+  for (size_t i = 0u; i < SIZEOF_ARRAY(enable_modules); ++i) {
+    // First lookup the physical index via the discharge_cell_lookup map
+    uint16_t physical_index = s_afe.discharge_cell_lookup[enable_modules[i]];
+
+    // Then separate it into the device and module
+    uint16_t device = physical_index / LTC_AFE_MAX_CELLS_PER_DEVICE;
+    uint16_t device_module = physical_index % LTC_AFE_MAX_CELLS_PER_DEVICE;
+
+    TEST_ASSERT_EQUAL(1u, ((uint16_t)(s_afe.discharge_bitset[device] >> device_module)) & 1u);
+  }
+}
