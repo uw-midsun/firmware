@@ -33,7 +33,7 @@ typedef struct ConsoleOutputStorage {
 // Set the events to be raised in the case of a fault or to request a data update
 // Starts periodic console output as disabled
 StatusCode console_output_init(ConsoleOutputStorage *storage, EventId fault_event,
-                             EventId update_req_event);
+                               EventId update_req_event);
 
 // Control whether periodic console output is enabled (ex. disable when the car is off)
 // Note that if a fault occurs, periodic console output will be disabled.
@@ -41,7 +41,8 @@ StatusCode console_output_set_enabled(ConsoleOutputStorage *storage, bool enable
 
 // Throttle and steering angle expect sign-extended 12-bit values.
 // Use EEConsoleOutputDirection for direction.
-StatusCode console_output_update(ConsoleOutputStorage *storage, ConsoleOutputSource source, int16_t data);
+StatusCode console_output_update(ConsoleOutputStorage *storage, ConsoleOutputSource source,
+                                 int16_t data);
 
 // Returns a pointer to the global console output storage.
 // Note that this only exists because our FSMs already use their context pointers for event arbiters

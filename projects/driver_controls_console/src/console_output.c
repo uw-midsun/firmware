@@ -43,7 +43,7 @@ static void prv_broadcast_cb(SoftTimerId timer_id, void *context) {
 }
 
 StatusCode console_output_init(ConsoleOutputStorage *storage, EventId fault_event,
-                             EventId update_req_event) {
+                               EventId update_req_event) {
   memset(storage, 0, sizeof(*storage));
   storage->fault_event = fault_event;
   storage->update_req_event = update_req_event;
@@ -79,7 +79,7 @@ StatusCode console_output_set_enabled(ConsoelOutputStorage *storage, bool enable
 }
 
 StatusCode console_output_update(ConsoelOutputStorage *storage, ConsoleOutputSource source,
-                               int16_t data) {
+                                 int16_t data) {
   if (source >= NUM_CONSOLE_OUTPUT_SOURCES) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }

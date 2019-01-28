@@ -12,8 +12,7 @@ static StatusCode prv_handle_mech_brake(const CanMessage *msg, void *context,
 
   if (mech_brake_pressed) {
     event_raise(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, mech_brake_position);
-  }
-  else {
+  } else {
     event_raised(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, mech_brake_position);
   }
 }

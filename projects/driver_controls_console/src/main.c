@@ -2,13 +2,13 @@
 #include "cc_cfg.h"
 #include "center_console.h"
 #include "console_output.h"
+#include "direction_fsm.h"
 #include "event_arbiter.h"
+#include "hazards_fsm.h"
+#include "headlights_fsm.h"
 #include "input_event.h"
 #include "mech_brake_indicator.h"
 #include "power_distribution_controller.h"
-#include "direction_fsm.h"
-#include "hazards_fsm.h"
-#include "headlights_fsm.h"
 #include "power_fsm.h"
 
 typedef StatusCode (*ConsoleControlsFsmInitFn)(Fsm *fsm, EventArbiterStorage *storage);
@@ -65,7 +65,7 @@ int main(void) {
   mech_brake_indicator_init();
 
   console_output_init(console_output_global(), INPUT_EVENT_CONSOLE_WATCHDOG_FAULT,
-                    INPUT_EVENT_CONSOLE_UPDATE_REQUESTED);
+                      INPUT_EVENT_CONSOLE_UPDATE_REQUESTED);
 
   event_arbiter_init(&s_event_arbiter);
   ConsoleControlsFsmInitFn init_fns[] = {
