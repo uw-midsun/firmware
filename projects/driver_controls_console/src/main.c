@@ -1,5 +1,11 @@
+#include "bps_indicator.h"
 #include "cc_cfg.h"
-
+#include "center_console.h"
+#include "console_output.h"
+#include "event_arbiter.h"
+#include "input_event.h"
+#include "mech_brake_indicator.h"
+#include "power_distribution_controller.h"
 #include "direction_fsm.h"
 #include "hazards_fsm.h"
 #include "headlights_fsm.h"
@@ -58,11 +64,11 @@ int main(void) {
   // Mech Brake
   mech_brake_indicator_init();
 
-  drive_output_init(drive_output_global(), INPUT_EVENT_DRIVE_WATCHDOG_FAULT,
-                    INPUT_EVENT_DRIVE_UPDATE_REQUESTED);
+  console_output_init(console_output_global(), INPUT_EVENT_CONSOLE_WATCHDOG_FAULT,
+                    INPUT_EVENT_CONSOLE_UPDATE_REQUESTED);
 
   event_arbiter_init(&s_event_arbiter);
-  DriverControlsFsmInitFn init_fns[] = {
+  ConsoleControlsFsmInitFn init_fns[] = {
     direction_fsm_init, power_fsm_init, headlight_fsm_init, turn_signal_fsm_init, hazards_fsm_init,
   };
   for (size_t i = 0; i < NUM_CONSOLE_CONTROLS_FSMS; i++) {

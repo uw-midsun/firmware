@@ -2,7 +2,7 @@
 // Shared events for FSMs
 #include "event_queue.h"
 
-// ID definitions for the console input events.
+// ID definitions for the driver input events.
 typedef enum {
   INPUT_EVENT_CONSOLE_WATCHDOG_FAULT = 0,
   INPUT_EVENT_CAN_RX,
