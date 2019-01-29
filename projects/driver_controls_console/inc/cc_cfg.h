@@ -7,9 +7,9 @@
 #define CC_CFG_CAN_BITRATE CAN_HW_BITRATE_500KBPS
 
 #define CC_CFG_CAN_RX \
-  { GPIO_PORT_A, 3 }
+  { GPIO_PORT_A, 11 }
 #define CC_CFG_CAN_TX \
-  { GPIO_PORT_A, 2 }
+  { GPIO_PORT_A, 12 }
 
 // Console control IO pins
 #define CC_CFG_CONSOLE_POWER_PIN \

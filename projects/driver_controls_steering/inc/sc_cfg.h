@@ -8,6 +8,6 @@
 #define SC_CFG_CAN_BITRATE CAN_HW_BITRATE_500KBPS
 
 #define CC_CFG_CAN_RX \
-  { GPIO_PORT_B, 7 }
+  { GPIO_PORT_B, 11 }
 #define CC_CFG_CAN_TX \
-  { GPIO_PORT_B, 6 }
+  { GPIO_PORT_B, 12 }
