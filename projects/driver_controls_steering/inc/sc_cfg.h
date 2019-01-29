@@ -1,0 +1,13 @@
+#pragma once
+// Steering controls config file
+
+// #define SC_CFG_DISABLE_CONTROL_STALK
+// #define SC_CFG_DEBUG_PRINT_EVENTS
+
+#define SC_CFG_CAN_DEVICE_ID SYSTEM_CAN_DEVICE_STEERING_CONTROLS
+#define SC_CFG_CAN_BITRATE CAN_HW_BITRATE_500KBPS
+
+#define CC_CFG_CAN_RX \
+  { GPIO_PORT_B, 7 }
+#define CC_CFG_CAN_TX \
+  { GPIO_PORT_B, 6 }

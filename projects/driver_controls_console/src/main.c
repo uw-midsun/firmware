@@ -1,14 +1,21 @@
+#include "gpio.h"
+#include "gpio_it.h"
+#include "input_event.h"
+#include "interrupt.h"
+#include "log.h"
+
 #include "bps_indicator.h"
 #include "cc_cfg.h"
 #include "center_console.h"
 #include "console_output.h"
-#include "direction_fsm.h"
 #include "event_arbiter.h"
-#include "hazards_fsm.h"
-#include "headlights_fsm.h"
 #include "input_event.h"
 #include "mech_brake_indicator.h"
 #include "power_distribution_controller.h"
+
+#include "direction_fsm.h"
+#include "hazards_fsm.h"
+#include "headlights_fsm.h"
 #include "power_fsm.h"
 
 typedef StatusCode (*ConsoleControlsFsmInitFn)(Fsm *fsm, EventArbiterStorage *storage);

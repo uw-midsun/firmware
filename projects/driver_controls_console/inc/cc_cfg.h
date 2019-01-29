@@ -1,13 +1,15 @@
 #pragma once
 // Console controls config file
 
+// #define CC_CFG_DEBUG_PRINT_EVENTS
+
 #define CC_CFG_CAN_DEVICE_ID SYSTEM_CAN_DEVICE_CONSOLE_CONTROLS
 #define CC_CFG_CAN_BITRATE CAN_HW_BITRATE_500KBPS
 
 #define CC_CFG_CAN_RX \
-  { GPIO_PORT_A, -1 }  // Need to update this when the boards arrive
+  { GPIO_PORT_A, 3 }
 #define CC_CFG_CAN_TX \
-  { GPIO_PORT_A, -1 }  // Need to update this when the boards arrive
+  { GPIO_PORT_A, 2 }
 
 // Console control IO pins
 #define CC_CFG_CONSOLE_POWER_PIN \
