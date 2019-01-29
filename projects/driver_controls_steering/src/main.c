@@ -29,11 +29,11 @@ int main(void) {
   };
   can_init(&s_can, &can_settings);
 
-  #ifndef SC_CFG_DISABLE_CONTROL_STALK
-    GpioAddress stalk_int_pin = SC_CFG_STALK_IO_INT_PIN;
-    GpioAddress stalk_ready_pin = SC_CFG_STALK_ADC_RDY_PIN;
-    gpio_expander_init(&s_stalk_expander, SC_CFG_I2C_BUS_PORT, SC_CFG_STALK_IO_ADDR, &stalk_int_pin);
-    ads1015_init(&s_stalk_ads1015, SC_CFG_I2C_BUS_PORT, SC_CFG_STALK_ADC_ADDR, &stalk_ready_pin);
-    control_stalk_init(&s_stalk, &s_stalk_ads1015, &s_stalk_expander);
-  #endif
+#ifndef SC_CFG_DISABLE_CONTROL_STALK
+  GpioAddress stalk_int_pin = SC_CFG_STALK_IO_INT_PIN;
+  GpioAddress stalk_ready_pin = SC_CFG_STALK_ADC_RDY_PIN;
+  gpio_expander_init(&s_stalk_expander, SC_CFG_I2C_BUS_PORT, SC_CFG_STALK_IO_ADDR, &stalk_int_pin);
+  ads1015_init(&s_stalk_ads1015, SC_CFG_I2C_BUS_PORT, SC_CFG_STALK_ADC_ADDR, &stalk_ready_pin);
+  control_stalk_init(&s_stalk, &s_stalk_ads1015, &s_stalk_expander);
+#endif
 }
