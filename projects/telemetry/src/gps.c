@@ -35,16 +35,6 @@ static void prv_gps_set_power_state(bool powered) {
   }
 }
 
-// Stage 1 of initialization: pull high on ON/OFF line
-static void prv_gps_init_stage_1() {
-  gpio_set_state(s_settings->pin_on_off, GPIO_STATE_HIGH);
-}
-
-// Stage 2: set ON/OFF line to low
-static void prv_gps_init_stage_2() {
-  gpio_set_state(s_settings->pin_on_off, GPIO_STATE_LOW);
-}
-
 // Initialization of this chip is described on page 10 of:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
 StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
@@ -73,9 +63,13 @@ StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
 
   prv_gps_set_power_state(true);
   delay_s(1);
-  prv_gps_init_stage_1();
+
+  // Pull high on ON/OFF line
+  gpio_set_state(s_settings->pin_on_off, GPIO_STATE_HIGH);
   delay_ms(100);
-  prv_gps_init_stage_2();
+
+  //Set ON/OFF line to low
+  gpio_set_state(s_settings->pin_on_off, GPIO_STATE_LOW);
   delay_ms(900);
 
   // Turning off messages we don't need

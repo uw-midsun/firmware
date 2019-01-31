@@ -13,7 +13,6 @@
 #include "soft_timer.h"
 #include "uart.h"
 #include "wait.h"
-#include "xbee.h"
 
 GpioSettings telemetry_settings_gpio_general = {
   .direction = GPIO_DIR_OUT,  // The pin needs to output.
@@ -41,50 +40,15 @@ GpsSettings telemetry_gps_settings = { .pin_power = &telemetry_gps_pins[0],
 
 GpsStorage telemetry_gps_storage = { 0 };
 
-CanUart telemetry_can_uart_settings = {
-  .uart = XBEE_UART_PORT,
-  .rx_cb = NULL,
-  .context = NULL,
-};
-
-CanHwSettings telemetry_can_hw_settings = {
-  .tx = { .port = GPIO_PORT_A, .pin = 12 },
-  .rx = { .port = GPIO_PORT_A, .pin = 11 },
-  .bitrate = CAN_HW_BITRATE_500KBPS,
-  .loopback = false,
-};
-
 int main(void) {
   interrupt_init();
   gpio_init();
   soft_timer_init();
   event_queue_init();
 
-  StatusCode ret = xbee_init();
-  if (!status_ok(ret)) {
-    LOG_CRITICAL("Telemetry project could not initialize xbee. Quitting...\n");
-    return 0;
-  }
-
-  ret = gps_init(&telemetry_gps_settings, &telemetry_gps_storage);
+  StatusCode ret = gps_init(&telemetry_gps_settings, &telemetry_gps_storage);
   if (!status_ok(ret)) {
     LOG_CRITICAL("Telemetry project could not initialize GPS\n");
-  }
-
-  ret = can_hw_init(&telemetry_can_hw_settings);
-  if (!status_ok(ret)) {
-    LOG_CRITICAL("Telemetry project could not initialize can_hw. Quitting...\n");
-  }
-
-  ret = can_uart_init(&telemetry_can_uart_settings);
-  if (!status_ok(ret)) {
-    LOG_CRITICAL("Telemetry project could not initialize can_uart. Quitting...\n");
-    return 0;
-  }
-
-  ret = can_uart_enable_passthrough(&telemetry_can_uart_settings);
-  if (!status_ok(ret)) {
-    LOG_CRITICAL("Telemetry project could not enable uart passthrough. Quitting...\n");
   }
 
   while (true) {
