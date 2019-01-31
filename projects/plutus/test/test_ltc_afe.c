@@ -146,9 +146,7 @@ void test_ltc_afe_toggle_discharge_cells_invalid_range(void) {
 
 void test_ltc_afe_toggle_discharge_cells_mapping(void) {
   // Modules we wish to enable
-  uint16_t enable_modules[] = {
-    1u, 2u, 3u, 5u, 8u
-  };
+  uint16_t enable_modules[] = { 1u, 2u, 3u, 5u, 8u };
 
   StatusCode status = NUM_STATUS_CODES;
   // Ensure that all modules are set to off
