@@ -68,7 +68,7 @@ StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
   gpio_set_state(s_settings->pin_on_off, GPIO_STATE_HIGH);
   delay_ms(100);
 
-  //Set ON/OFF line to low
+  // Set ON/OFF line to low
   gpio_set_state(s_settings->pin_on_off, GPIO_STATE_LOW);
   delay_ms(900);
 
