@@ -57,20 +57,32 @@ StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
       uart_init(s_settings->port, s_settings->uart_settings, &s_settings->uart_storage);
   uart_set_rx_handler(s_settings->port, prv_gps_callback, NULL);
 
+  if (!status_ok(ret)) {
+    return status_msg(STATUS_CODE_INTERNAL_ERROR, "Error initializing UART ports");
+  }
+
   // Initializes the pins
-  status_ok_or_return(gpio_init_pin(s_settings->pin_power, &telemetry_settings_gpio_general));
-  status_ok_or_return(gpio_init_pin(s_settings->pin_on_off, &telemetry_settings_gpio_general));
+  ret |= gpio_init_pin(s_settings->pin_power, &telemetry_settings_gpio_general);
+  ret |= gpio_init_pin(s_settings->pin_on_off, &telemetry_settings_gpio_general);
+
+  if (!status_ok(ret)) {
+    return status_msg(STATUS_CODE_INTERNAL_ERROR, "Error initializing GPIO Pins");
+  }
 
   prv_gps_set_power_state(true);
   delay_s(1);
 
   // Pull high on ON/OFF line
-  gpio_set_state(s_settings->pin_on_off, GPIO_STATE_HIGH);
+  ret |= gpio_set_state(s_settings->pin_on_off, GPIO_STATE_HIGH);
   delay_ms(100);
 
-  //Set ON/OFF line to low
-  gpio_set_state(s_settings->pin_on_off, GPIO_STATE_LOW);
+  // Set ON/OFF line to low
+  ret |= gpio_set_state(s_settings->pin_on_off, GPIO_STATE_LOW);
   delay_ms(900);
+
+  if (!status_ok(ret)) {
+    return status_msg(STATUS_CODE_INTERNAL_ERROR, "Error turning on GPS Module");
+  }
 
   // Turning off messages we don't need
   char *ggl_off = GPS_GLL_OFF;
