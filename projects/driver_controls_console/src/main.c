@@ -2,7 +2,6 @@
 #include "gpio.h"
 #include "gpio_it.h"
 #include "i2c.h"
-#include "input_event.h"
 #include "interrupt.h"
 #include "log.h"
 
