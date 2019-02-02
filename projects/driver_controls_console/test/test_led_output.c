@@ -69,8 +69,7 @@ void test_led_output_direction(void) {
   TEST_ASSERT_EQUAL(reverseState, GPIO_STATE_LOW);
 
 #ifdef TEST_LED_OUTPUT_PRINT_AND_DELAY
-  LOG_DEBUG(
-      "The drive LED should now be on.\n The neutral and reverse LEDs should be off.\n");
+  LOG_DEBUG("The drive LED should now be on.\n The neutral and reverse LEDs should be off.\n");
   delay_s(5);
 #endif
 
@@ -87,8 +86,7 @@ void test_led_output_direction(void) {
   TEST_ASSERT_EQUAL(reverseState, GPIO_STATE_LOW);
 
 #ifdef TEST_LED_OUTPUT_PRINT_AND_DELAY
-  LOG_DEBUG(
-      "The neutral LED should now be on.\n The drive and reverse LEDs should be off.\n");
+  LOG_DEBUG("The neutral LED should now be on.\n The drive and reverse LEDs should be off.\n");
   delay_s(5);
 #endif
 
@@ -105,8 +103,7 @@ void test_led_output_direction(void) {
   TEST_ASSERT_EQUAL(reverseState, GPIO_STATE_HIGH);
 
 #ifdef TEST_LED_OUTPUT_PRINT_AND_DELAY
-  LOG_DEBUG(
-      "The reverse LED should now be on.\n The drive and neutral LEDs should be off.\n");
+  LOG_DEBUG("The reverse LED should now be on.\n The drive and neutral LEDs should be off.\n");
   delay_s(5);
 #endif
 }
