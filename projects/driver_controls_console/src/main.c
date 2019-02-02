@@ -1,6 +1,7 @@
 #include "can.h"
 #include "gpio.h"
 #include "gpio_it.h"
+#include "i2c.h"
 #include "input_event.h"
 #include "interrupt.h"
 #include "log.h"
@@ -36,6 +37,7 @@ static Fsm s_fsms[NUM_CONSOLE_CONTROLS_FSMS];
 
 static CanStorage s_can;
 static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
+static GpioExpanderStorage s_led_expander;
 
 int main(void) {
   gpio_init();
@@ -59,6 +61,17 @@ int main(void) {
   };
   can_init(&s_can, &can_settings);
   can_add_filter(SYSTEM_CAN_MESSAGE_POWER_STATE);
+
+  // GPIO Expander for LEDs
+  const I2CSettings i2c_settings = {
+    .speed = I2C_SPEED_FAST,    //
+    .sda = CC_CFG_I2C_BUS_SDA,  //
+    .scl = CC_CFG_I2C_BUS_SCL,  //
+  };
+  i2c_init(CC_CFG_I2C_BUS_PORT, &i2c_settings);
+  gpio_expander_init(&s_led_expander, CC_CFG_I2C_BUS_PORT, CC_CFG_CONSOLE_IO_ADDR,
+                    NULL);
+  led_output_init(&s_led_expander);
 
   center_console_init(&s_console);
 
@@ -100,7 +113,7 @@ int main(void) {
 #endif
 
       can_process_event(&e);
-      power_distribution_controller_retry(&e);  // Needed for powering up?
+      power_distribution_controller_retry(&e);
       event_arbiter_process_event(&s_event_arbiter, &e);
     }
   }
