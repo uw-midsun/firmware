@@ -13,7 +13,7 @@
 GpioExpanderStorage s_expander;
 
 void setup_test(void) {
-  LOG_DEBUG("I'm Connected!\n");
+  
   const I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,    //
     .sda = CC_CFG_I2C_BUS_SDA,  //
