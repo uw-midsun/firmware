@@ -2,7 +2,7 @@
 // Note that this is accomplished by transitioning back to the current state.
 #include "direction_fsm.h"
 #include <stddef.h>
-#include "drive_output.h"
+#include "console_output.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
 #include "input_event.h"
@@ -17,7 +17,7 @@ FSM_DECLARE_STATE(state_reverse);
 // Direction selector FSM transition table definitions
 
 FSM_STATE_TRANSITION(state_forward) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_forward);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CONSOLE_UPDATE_REQUESTED, state_forward);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_NEUTRAL, state_neutral);
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE, state_reverse);
@@ -28,14 +28,14 @@ FSM_STATE_TRANSITION(state_forward) {
 }
 
 FSM_STATE_TRANSITION(state_neutral) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_neutral);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CONSOLE_UPDATE_REQUESTED, state_neutral);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE, state_reverse);
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE, state_forward);
 }
 
 FSM_STATE_TRANSITION(state_reverse) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_reverse);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CONSOLE_UPDATE_REQUESTED, state_reverse);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE, state_forward);
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_NEUTRAL, state_neutral);
@@ -54,11 +54,11 @@ static bool prv_guard_prevent_cruise(const Event *e) {
 // Direction selector FSM output functions
 static void prv_forward_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
-  drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_DIRECTION,
-                      EE_DRIVE_OUTPUT_DIRECTION_FORWARD);
+  console_output_update(console_output_global(), CONSOLE_OUTPUT_SOURCE_DIRECTION,
+                      EE_CONSOLE_OUTPUT_DIRECTION_FORWARD);
   event_arbiter_set_guard_fn(guard, NULL);
 
-  if (e->id != INPUT_EVENT_DRIVE_UPDATE_REQUESTED) {
+  if (e->id != INPUT_EVENT_CONSOLE_UPDATE_REQUESTED) {
     event_raise(INPUT_EVENT_DIRECTION_STATE_FORWARD, 0);
     LOG_DEBUG("Forward\n");
   }
@@ -66,11 +66,11 @@ static void prv_forward_output(Fsm *fsm, const Event *e, void *context) {
 
 static void prv_neutral_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
-  drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_DIRECTION,
-                      EE_DRIVE_OUTPUT_DIRECTION_NEUTRAL);
+  console_output_update(console_output_global(), CONSOLE_OUTPUT_SOURCE_DIRECTION,
+                      EE_CONSOLE_OUTPUT_DIRECTION_NEUTRAL);
   event_arbiter_set_guard_fn(guard, prv_guard_prevent_cruise);
 
-  if (e->id != INPUT_EVENT_DRIVE_UPDATE_REQUESTED) {
+  if (e->id != INPUT_EVENT_CONSOLE_UPDATE_REQUESTED) {
     event_raise(INPUT_EVENT_DIRECTION_STATE_NEUTRAL, 0);
     LOG_DEBUG("Neutral\n");
   }
@@ -78,11 +78,11 @@ static void prv_neutral_output(Fsm *fsm, const Event *e, void *context) {
 
 static void prv_reverse_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
-  drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_DIRECTION,
-                      EE_DRIVE_OUTPUT_DIRECTION_REVERSE);
+  console_output_update(console_output_global(), CONSOLE_OUTPUT_SOURCE_DIRECTION,
+                      EE_CONSOLE_OUTPUT_DIRECTION_REVERSE);
   event_arbiter_set_guard_fn(guard, prv_guard_prevent_cruise);
 
-  if (e->id != INPUT_EVENT_DRIVE_UPDATE_REQUESTED) {
+  if (e->id != INPUT_EVENT_CONSOLE_UPDATE_REQUESTED) {
     event_raise(INPUT_EVENT_DIRECTION_STATE_REVERSE, 0);
     LOG_DEBUG("Reverse\n");
   }

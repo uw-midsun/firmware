@@ -14,7 +14,7 @@
 #include "power_fsm.h"
 
 #include "bps_indicator.h"
-#include "drive_output.h"
+#include "console_output.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
 #include "input_event.h"
@@ -87,20 +87,20 @@ static void prv_off_output(Fsm *fsm, const Event *e, void *context) {
   // Clear BPS indicators
   bps_indicator_clear_fault();
 
-  // Disable periodic drive output updates if not running
-  drive_output_set_enabled(drive_output_global(), false);
+  // Disable periodic console output updates if not running
+  console_output_set_enabled(console_output_global(), false);
   event_arbiter_set_guard_fn(guard, prv_guard_off);
 
   event_raise(INPUT_EVENT_POWER_STATE_OFF, 0);
   LOG_DEBUG("Off\n");
 }
 
-static void prv_drive_output(Fsm *fsm, const Event *e, void *context) {
+static void prv_console_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   power_distribution_controller_send_update(EE_POWER_STATE_DRIVE);
 
   // Allow all events and begin sending periodic drive commands
-  drive_output_set_enabled(drive_output_global(), true);
+  console_output_set_enabled(console_output_global(), true);
   event_arbiter_set_guard_fn(guard, NULL);
 
   event_raise(INPUT_EVENT_POWER_STATE_DRIVE, 0);
@@ -112,8 +112,8 @@ static void prv_fault_output(Fsm *fsm, const Event *e, void *context) {
 
   bps_indicator_set_fault();
 
-  // Disable periodic drive output updates if not running
-  drive_output_set_enabled(drive_output_global(), false);
+  // Disable periodic console output updates if not running
+  console_output_set_enabled(console_output_global(), false);
   event_arbiter_set_guard_fn(guard, prv_guard_off);
 
   event_raise(INPUT_EVENT_POWER_STATE_FAULT, 0);
@@ -124,8 +124,8 @@ static void prv_charge_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   power_distribution_controller_send_update(EE_POWER_STATE_CHARGE);
 
-  // Disable periodic drive output updates if not running
-  drive_output_set_enabled(drive_output_global(), false);
+  // Disable periodic console output updates if not running
+  console_output_set_enabled(console_output_global(), false);
   // Allow lights, etc to turn on
   event_arbiter_set_guard_fn(guard, NULL);
 
@@ -137,7 +137,7 @@ StatusCode power_fsm_init(Fsm *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_off, prv_off_output);
   fsm_state_init(state_off_brake, prv_off_output);
   fsm_state_init(state_charging, prv_charge_output);
-  fsm_state_init(state_on, prv_drive_output);
+  fsm_state_init(state_on, prv_console_output);
   fsm_state_init(state_fault, prv_fault_output);
 
   EventArbiterGuard *guard = event_arbiter_add_fsm(storage, fsm, prv_guard_off);

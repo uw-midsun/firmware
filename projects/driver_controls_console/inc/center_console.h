@@ -22,4 +22,4 @@ typedef struct CenterConsoleStorage {
 } CenterConsoleStorage;
 
 // Sets up the expander as inputs to raise the associated events
-StatusCode center_console_init(CenterConsoleStorage *storage, GpioExpanderStorage *expander);
+StatusCode center_console_init(CenterConsoleStorage *storage);

@@ -58,20 +58,17 @@
                       CAN_UNPACK_IMPL_EMPTY)
 
 #define CAN_UNPACK_CONSOLE_OUTPUT(msg_ptr, direction_u16)                                     \
-  can_unpack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_CONSOLE_CONTROLS,                          \
-                      SYSTEM_CAN_MESSAGE_MECH_BRAKE, 2, (direction_u16), CAN_PACK_IMPL_EMPTY, \
-                      CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
+  can_unpack_impl_u16((msg_ptr), 2, (direction_u16), CAN_UNPACK_IMPL_EMPTY, \
+                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
 #define CAN_UNPACK_STEERING_OUTPUT(msg_ptr, cruise_control_u16)                                    \
-  can_unpack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_STEERING_CONTROLS,                              \
-                      SYSTEM_CAN_MESSAGE_MECH_BRAKE, 2, (cruise_control_u16), CAN_PACK_IMPL_EMPTY, \
-                      CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
+  can_unpack_impl_u16((msg_ptr), 2, (cruise_control_u16), CAN_UNPACK_IMPL_EMPTY, \
+                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
 #define CAN_UNPACK_PEDAL_OUTPUT(msg_ptr, throttle_u16, mech_brake_position_u16,                   \
                                 mech_brake_pressed_u16)                                           \
-  can_unpack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_PEDAL_CONTROLS, SYSTEM_CAN_MESSAGE_MECH_BRAKE, \
-                      6, (throttle_u16), (mech_brake_state_u16), (mech_brake_pressed_u16),        \
-                      CAN_PACK_IMPL_EMPTY)
+  can_unpack_impl_u16((msg_ptr), 6, (throttle_u16), (mech_brake_position_u16), (mech_brake_pressed_u16),        \
+                      CAN_UNPACK_IMPL_EMPTY)
 
 #define CAN_UNPACK_CRUISE_TARGET(msg_ptr, target_speed_u8_ptr)                            \
   can_unpack_impl_u8((msg_ptr), 1, (target_speed_u8_ptr), CAN_UNPACK_IMPL_EMPTY,          \

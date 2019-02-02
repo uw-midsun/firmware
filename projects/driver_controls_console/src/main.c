@@ -1,3 +1,4 @@
+#include "can.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "input_event.h"
@@ -9,13 +10,14 @@
 #include "center_console.h"
 #include "console_output.h"
 #include "event_arbiter.h"
+#include "heartbeat_rx.h"
 #include "input_event.h"
 #include "mech_brake_indicator.h"
 #include "power_distribution_controller.h"
 
 #include "direction_fsm.h"
 #include "hazards_fsm.h"
-#include "headlights_fsm.h"
+#include "headlight_fsm.h"
 #include "power_fsm.h"
 
 typedef StatusCode (*ConsoleControlsFsmInitFn)(Fsm *fsm, EventArbiterStorage *storage);
@@ -30,9 +32,10 @@ typedef enum {
 
 static CenterConsoleStorage s_console;
 static EventArbiterStorage s_event_arbiter;
-static Fsm s_fsm[NUM_CONSOLE_CONTROLS_FSMS];
+static Fsm s_fsms[NUM_CONSOLE_CONTROLS_FSMS];
 
 static CanStorage s_can;
+static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
 
 int main(void) {
   gpio_init();
@@ -44,7 +47,7 @@ int main(void) {
   // crc32_init();
   // flash_init();
 
-  const CanSettings can_settings{
+  const CanSettings can_settings = {
     .device_id = CC_CFG_CAN_DEVICE_ID,
     .bitrate = CC_CFG_CAN_BITRATE,
     .rx_event = INPUT_EVENT_CAN_RX,
@@ -76,7 +79,10 @@ int main(void) {
 
   event_arbiter_init(&s_event_arbiter);
   ConsoleControlsFsmInitFn init_fns[] = {
-    direction_fsm_init, power_fsm_init, headlight_fsm_init, turn_signal_fsm_init, hazards_fsm_init,
+    direction_fsm_init,
+    power_fsm_init,
+    headlight_fsm_init,
+    hazards_fsm_init
   };
   for (size_t i = 0; i < NUM_CONSOLE_CONTROLS_FSMS; i++) {
     init_fns[i](&s_fsms[i], &s_event_arbiter);

@@ -56,7 +56,7 @@ StatusCode console_output_init(ConsoleOutputStorage *storage, EventId fault_even
   return STATUS_CODE_OK;
 }
 
-StatusCode console_output_set_enabled(ConsoelOutputStorage *storage, bool enabled) {
+StatusCode console_output_set_enabled(ConsoleOutputStorage *storage, bool enabled) {
   soft_timer_cancel(storage->watchdog_timer);
   soft_timer_cancel(storage->output_timer);
 
@@ -78,7 +78,7 @@ StatusCode console_output_set_enabled(ConsoelOutputStorage *storage, bool enable
   return STATUS_CODE_OK;
 }
 
-StatusCode console_output_update(ConsoelOutputStorage *storage, ConsoleOutputSource source,
+StatusCode console_output_update(ConsoleOutputStorage *storage, ConsoleOutputSource source,
                                  int16_t data) {
   if (source >= NUM_CONSOLE_OUTPUT_SOURCES) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
