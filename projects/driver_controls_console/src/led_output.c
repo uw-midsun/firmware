@@ -10,12 +10,12 @@
 // * GP6: Lowbeams
 // * GP7: Hazards
 
-static GpioExpanderStorage* s_expander;
+static GpioExpanderStorage *s_expander;
 static GpioState s_power_led = GPIO_STATE_LOW;
 static GpioState s_drl_led = GPIO_STATE_LOW;
 static GpioState s_low_beam_led = GPIO_STATE_LOW;
 
-StatusCode led_output_init(GpioExpanderStorage* storage) {
+StatusCode led_output_init(GpioExpanderStorage *storage) {
   s_expander = storage;
 
   const GpioSettings gpio_settings = { .direction = GPIO_DIR_OUT };
@@ -25,10 +25,10 @@ StatusCode led_output_init(GpioExpanderStorage* storage) {
   return STATUS_CODE_OK;
 }
 
-StatusCode led_output_process_event(Event* e) {
+StatusCode led_output_process_event(Event *e) {
   EventId id = e->id;
 
-  switch(id) {
+  switch (id) {
     case INPUT_EVENT_CENTER_CONSOLE_POWER:
       s_power_led ^= 1;
       gpio_expander_set_state(s_expander, CC_CFG_PWR_LED, s_power_led);

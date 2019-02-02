@@ -1,9 +1,9 @@
 #include "cc_cfg.h"
 #include "delay.h"
 #include "event_queue.h"
+#include "gpio_expander.h"
 #include "i2c.h"
 #include "input_event.h"
-#include "gpio_expander.h"
 #include "led_output.h"
 #include "log.h"
 #include "test_helpers.h"
@@ -13,7 +13,6 @@
 GpioExpanderStorage s_expander;
 
 void setup_test(void) {
-  
   const I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,    //
     .sda = CC_CFG_I2C_BUS_SDA,  //
@@ -22,8 +21,7 @@ void setup_test(void) {
 
   i2c_init(CC_CFG_I2C_BUS_PORT, &i2c_settings);
 
-  gpio_expander_init(&s_expander, CC_CFG_I2C_BUS_PORT, CC_CFG_CONSOLE_IO_ADDR,
-                    NULL);
+  gpio_expander_init(&s_expander, CC_CFG_I2C_BUS_PORT, CC_CFG_CONSOLE_IO_ADDR, NULL);
 
   led_output_init(&s_expander);
 }
@@ -71,7 +69,8 @@ void test_led_output_direction(void) {
   TEST_ASSERT_EQUAL(reverseState, GPIO_STATE_LOW);
 
 #ifdef TEST_LED_OUTPUT_PRINT_AND_DELAY
-  LOG_DEBUG("The drive LED should now be on.\n The neutral and reverse LEDs \
+  LOG_DEBUG(
+      "The drive LED should now be on.\n The neutral and reverse LEDs \
             should be off.\n");
   delay_s(5);
 #endif
@@ -89,7 +88,8 @@ void test_led_output_direction(void) {
   TEST_ASSERT_EQUAL(reverseState, GPIO_STATE_LOW);
 
 #ifdef TEST_LED_OUTPUT_PRINT_AND_DELAY
-  LOG_DEBUG("The neutral LED should now be on.\n The drive and reverse LEDs \
+  LOG_DEBUG(
+      "The neutral LED should now be on.\n The drive and reverse LEDs \
             should be off.\n");
   delay_s(5);
 #endif
@@ -107,7 +107,8 @@ void test_led_output_direction(void) {
   TEST_ASSERT_EQUAL(reverseState, GPIO_STATE_HIGH);
 
 #ifdef TEST_LED_OUTPUT_PRINT_AND_DELAY
-  LOG_DEBUG("The reverse LED should now be on.\n The drive and neutral LEDs \
+  LOG_DEBUG(
+      "The reverse LED should now be on.\n The drive and neutral LEDs \
             should be off.\n");
   delay_s(5);
 #endif

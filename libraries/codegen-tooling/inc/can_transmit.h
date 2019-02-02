@@ -121,14 +121,13 @@
     status;                                               \
   })
 
-#define CAN_TRANSMIT_PEDAL_OUTPUT(throttle_u16, mech_brake_position_u16,    \
-                                  mech_brake_pressed_u16)                   \
-  ({                                                                        \
-  CanMessage msg = { 0 };                                                   \
+#define CAN_TRANSMIT_PEDAL_OUTPUT(throttle_u16, mech_brake_position_u16, mech_brake_pressed_u16) \
+  ({                                                                                             \
+    CanMessage msg = { 0 };                                                                      \
     CAN_PACK_PEDAL_OUTPUT(&msg, (throttle_u16), (mech_brake_position_u16)), \
-                          (mech_brake_pressed_u16));                        \
-    StatusCode status = can_transmit(&msg, NULL);                           \
-    status;                                                                 \
+                          (mech_brake_pressed_u16));                                             \
+    StatusCode status = can_transmit(&msg, NULL);                                                \
+    status;                                                                                      \
   })
 
 #define CAN_TRANSMIT_CRUISE_TARGET(target_speed_u8)  \

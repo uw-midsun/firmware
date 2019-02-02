@@ -70,8 +70,7 @@ int main(void) {
     .scl = CC_CFG_I2C_BUS_SCL,  //
   };
   i2c_init(CC_CFG_I2C_BUS_PORT, &i2c_settings);
-  gpio_expander_init(&s_led_expander, CC_CFG_I2C_BUS_PORT, CC_CFG_CONSOLE_IO_ADDR,
-                    NULL);
+  gpio_expander_init(&s_led_expander, CC_CFG_I2C_BUS_PORT, CC_CFG_CONSOLE_IO_ADDR, NULL);
   led_output_init(&s_led_expander);
 
   center_console_init(&s_console);
@@ -92,12 +91,8 @@ int main(void) {
                       INPUT_EVENT_CONSOLE_UPDATE_REQUESTED);
 
   event_arbiter_init(&s_event_arbiter);
-  ConsoleControlsFsmInitFn init_fns[] = {
-    direction_fsm_init,
-    power_fsm_init,
-    headlight_fsm_init,
-    hazards_fsm_init
-  };
+  ConsoleControlsFsmInitFn init_fns[] = { direction_fsm_init, power_fsm_init, headlight_fsm_init,
+                                          hazards_fsm_init };
   for (size_t i = 0; i < NUM_CONSOLE_CONTROLS_FSMS; i++) {
     init_fns[i](&s_fsms[i], &s_event_arbiter);
   }

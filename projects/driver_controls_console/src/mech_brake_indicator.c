@@ -11,9 +11,11 @@ static StatusCode prv_handle_mech_brake(const CanMessage *msg, void *context,
   CAN_UNPACK_PEDAL_OUTPUT(msg, &throttle, &mech_brake_position, &mech_brake_pressed);
 
   if (mech_brake_pressed) {
-    event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, mech_brake_position);
+    event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_MECHANICAL_BRAKE_PRESSED,
+                         mech_brake_position);
   } else {
-    event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, mech_brake_position);
+    event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_MECHANICAL_BRAKE_RELEASED,
+                         mech_brake_position);
   }
 
   return STATUS_CODE_OK;
