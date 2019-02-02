@@ -116,6 +116,7 @@ int main(void) {
       can_process_event(&e);
       power_distribution_controller_retry(&e);
       event_arbiter_process_event(&s_event_arbiter, &e);
+      led_output_process_event(&e);
     }
   }
 }

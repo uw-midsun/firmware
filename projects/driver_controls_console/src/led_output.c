@@ -10,7 +10,7 @@
 // * GP6: Lowbeams
 // * GP7: Hazards
 
-static GpioExpanderStorage* s_exapnder;
+static GpioExpanderStorage* s_expander;
 static GpioState s_power_led = GPIO_STATE_LOW;
 static GpioState s_drl_led = GPIO_STATE_LOW;
 static GpioState s_low_beam_led = GPIO_STATE_LOW;
