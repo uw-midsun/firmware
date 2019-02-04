@@ -55,3 +55,4 @@ StatusCode steering_angle_get_position(SteeringAngleStorage *storage);
 
 StatusCode steering_angle_get_position_test(SteeringAngleStorage *steering_angle_storage,
                                             int16_t reading);
+                                            
