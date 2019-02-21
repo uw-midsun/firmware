@@ -84,22 +84,24 @@ int main(void) {
   control_stalk_init(&s_stalk, &s_stalk_ads1015, &s_stalk_expander);
 #endif
 
-cruise_init(cruise_global());
-steering_output_init(steering_output_global(), INPUT_EVENT_STEERING_WATCHDOG_FAULT,
-                    INPUT_EVENT_STEERING_UPDATE_REQUESTED);
+  cruise_init(cruise_global());
+  steering_output_init(steering_output_global(), INPUT_EVENT_STEERING_WATCHDOG_FAULT,
+                       INPUT_EVENT_STEERING_UPDATE_REQUESTED);
 
-event_arbiter_init(&s_event_arbiter);
-SteeringControlsFsmInitFn init_fns[] = {
-  cruise_fsm_init, turn_signal_fsm_init,  horn_fsm_init,
-};
+  event_arbiter_init(&s_event_arbiter);
+  SteeringControlsFsmInitFn init_fns[] = {
+    cruise_fsm_init,
+    turn_signal_fsm_init,
+    horn_fsm_init,
+  };
 
-for (size_t i = 0; i < NUM_STEERING_CONTROLS_FSMS; i++) {
-  init_fns[i](&s_fsms[i], &s_event_arbiter);
-}
+  for (size_t i = 0; i < NUM_STEERING_CONTROLS_FSMS; i++) {
+    init_fns[i](&s_fsms[i], &s_event_arbiter);
+  }
 
-LOG_DEBUG("Steering Controls initialized\n");
+  LOG_DEBUG("Steering Controls initialized\n");
 
-Event e;
+  Event e;
   while (true) {
     if (status_ok(event_process(&e))) {
 #ifdef DC_CFG_DEBUG_PRINT_EVENTS
@@ -118,7 +120,3 @@ Event e;
     }
   }
 }
-
-
-
-

@@ -17,4 +17,3 @@
   { GPIO_PORT_B, 9 }
 #define SC_CFG_I2C_BUS_SCL \
   { GPIO_PORT_B, 8 }
-

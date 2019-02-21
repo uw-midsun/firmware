@@ -1,11 +1,10 @@
-#include "drive_output.h"
 #include <string.h>
 #include "can_transmit.h"
 #include "debug_led.h"
+#include "drive_output.h"
 #include "exported_enums.h"
 #include "log.h"
 #include "misc.h"
-
 
 #define STEERING_OUTPUT_VALID_WATCHDOG ((1 << NUM_STEERING_OUTPUT_SOURCES) - 1)
 
@@ -15,7 +14,7 @@ static void prv_watchdog_cb(SoftTimerId timer_id, void *context) {
   SteeringOutputStorage *storage = context;
 
   // We're missing at least one updated response
-  if (storage->watchdog !=  STEERING_OUTPUT_VALID_WATCHDOG) {
+  if (storage->watchdog != STEERING_OUTPUT_VALID_WATCHDOG) {
     // Error - raise a warning, clear stored data
     LOG_DEBUG("Steering output watchdog: 0x%x\n", storage->watchdog);
     memset(storage->data, 0, sizeof(storage->data));
@@ -44,7 +43,7 @@ static void prv_broadcast_cb(SoftTimerId timer_id, void *context) {
 }
 
 StatusCode steering_output_init(SteeringOutputStorage *storage, EventId fault_event,
-                             EventId update_req_event) {
+                                EventId update_req_event) {
   memset(storage, 0, sizeof(*storage));
   storage->fault_event = fault_event;
   storage->update_req_event = update_req_event;
@@ -78,7 +77,7 @@ StatusCode steering_output_set_enabled(SteeringOutputStorage *storage, bool enab
 }
 
 StatusCode steering_output_update(SteeringOutputStorage *storage, SteeringOutputSource source,
-                               int16_t data) {
+                                  int16_t data) {
   if (source >= NUM_STEERING_OUTPUT_SOURCES) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }

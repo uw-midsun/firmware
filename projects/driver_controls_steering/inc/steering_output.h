@@ -15,10 +15,7 @@
 // How often to request state updates and broadcast drive commands
 #define STEERING_OUTPUT_BROADCAST_MS 100
 
-typedef enum {
-  STEERING_OUTPUT_SOURCE_CRUISE,
-  NUM_STEERING_OUTPUT_SOURCES
-} SteeringOutputSource;
+typedef enum { STEERING_OUTPUT_SOURCE_CRUISE, NUM_STEERING_OUTPUT_SOURCES } SteeringOutputSource;
 
 typedef struct SteeringOutputStorage {
   int16_t data[NUM_STEERING_OUTPUT_SOURCES];
@@ -33,13 +30,14 @@ typedef struct SteeringOutputStorage {
 // Set the events to be raised in the case of a fault or to request a data update
 // Starts periodic steering output as disabled
 StatusCode steering_output_init(SteeringOutputStorage *storage, EventId fault_event,
-                             EventId update_req_event);
+                                EventId update_req_event);
 
 // Control whether periodic steering output is enabled (ex. disable when the car is off)
 // Note that if a fault occurs, periodic steering output will be disabled.
 StatusCode steering_output_set_enabled(SteeringOutputStorage *storage, bool enabled);
 
-StatusCode steering_output_update(SteeringOutputStorage *storage, SteeringOutputSource source, int16_t data);
+StatusCode steering_output_update(SteeringOutputStorage *storage, SteeringOutputSource source,
+                                  int16_t data);
 
 // Returns a pointer to the global steering output storage.
 // Note that this only exists because our FSMs already use their context pointers for event arbiters
