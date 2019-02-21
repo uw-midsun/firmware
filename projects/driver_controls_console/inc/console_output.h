@@ -39,8 +39,6 @@ StatusCode console_output_init(ConsoleOutputStorage *storage, EventId fault_even
 // Note that if a fault occurs, periodic console output will be disabled.
 StatusCode console_output_set_enabled(ConsoleOutputStorage *storage, bool enabled);
 
-// Throttle and steering angle expect sign-extended 12-bit values.
-// Use EEConsoleOutputDirection for direction.
 StatusCode console_output_update(ConsoleOutputStorage *storage, ConsoleOutputSource source,
                                  int16_t data);
 

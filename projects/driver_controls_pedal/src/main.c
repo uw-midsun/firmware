@@ -91,6 +91,8 @@ int main(void) {
   pedal_output_init(pedal_output_global(), INPUT_EVENT_PEDAL_WATCHDOG_FAULT,
                     INPUT_EVENT_PEDAL_UPDATE_REQUESTED);
 
+  brake_signal_init();
+
   event_arbiter_init(&s_event_arbiter);
   PedalControlsFsmInitFn init_fns[] = { mechanical_brake_fsm_init, pedal_fsm_init };
 

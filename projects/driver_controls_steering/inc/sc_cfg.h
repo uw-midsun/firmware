@@ -11,3 +11,10 @@
   { GPIO_PORT_A, 11 }
 #define CC_CFG_CAN_TX \
   { GPIO_PORT_A, 12 }
+
+#define SC_CFG_I2C_BUS_PORT I2C_PORT_1
+#define SC_CFG_I2C_BUS_SDA \
+  { GPIO_PORT_B, 9 }
+#define SC_CFG_I2C_BUS_SCL \
+  { GPIO_PORT_B, 8 }
+

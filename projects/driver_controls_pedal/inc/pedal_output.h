@@ -38,7 +38,7 @@ StatusCode pedal_output_init(PedalOutputStorage *storage, EventId fault_event,
 StatusCode pedal_output_set_enabled(PedalOutputStorage *storage, bool enabled);
 
 // Throttle and steering angle expect sign-extended 12-bit values.
-// Use EEDriveOutputDirection for direction.
+// Use EEPedalOutputDirection for direction.
 StatusCode pedal_output_update(PedalOutputStorage *storage, PedalOutputSource source, int16_t data);
 
 // Returns a pointer to the global pedal output storage.

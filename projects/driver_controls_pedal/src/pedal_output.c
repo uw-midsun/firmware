@@ -99,8 +99,8 @@ StatusCode pedal_output_update(PedalOutputStorage *storage, PedalOutputSource so
       // Sign changed rapidly or torque increased rapidly - limit change
       data = storage->data[source] + ((data > 0) ? 100 : -100);
 
-      data = MIN(data, EE_DRIVE_OUTPUT_DENOMINATOR);
-      data = MAX(data, -EE_DRIVE_OUTPUT_DENOMINATOR);
+      data = MIN(data, EE_PEDAL_OUTPUT_DENOMINATOR);
+      data = MAX(data, -EE_PEDAL_OUTPUT_DENOMINATOR);
     }
   }
 
