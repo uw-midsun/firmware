@@ -1,7 +1,7 @@
 #include "headlight_fsm.h"
 #include "can_transmit.h"
 #include "exported_enums.h"
-#include "input_event.h"
+#include "cc_input_event.h"
 
 FSM_DECLARE_STATE(headlight_off);
 FSM_DECLARE_STATE(headlight_lowbeam);

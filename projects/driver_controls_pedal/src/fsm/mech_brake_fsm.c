@@ -3,7 +3,7 @@
 #include "drive_output.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
-#include "input_event.h"
+#include "pc_input_event.h"
 #include "log.h"
 #include "mech_brake.h"
 #include "mechanical_brake_fsm.h"

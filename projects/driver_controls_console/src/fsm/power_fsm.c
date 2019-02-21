@@ -17,7 +17,7 @@
 #include "console_output.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
-#include "input_event.h"
+#include "cc_input_event.h"
 #include "log.h"
 #include "power_distribution_controller.h"
 

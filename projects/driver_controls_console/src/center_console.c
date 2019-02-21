@@ -1,6 +1,6 @@
 #include "center_console.h"
 #include "cc_cfg.h"
-#include "input_event.h"
+#include "cc_input_event.h"
 #include "log.h"
 #include "soft_timer.h"
 // Inputs are as follows:

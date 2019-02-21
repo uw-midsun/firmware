@@ -4,7 +4,7 @@
 #include "mech_brake.h"
 #include "throttle.h"
 
-typedef struct DcCalibBlob {
+typedef struct PcCalibBlob {
   ThrottleCalibrationData throttle_calib;
   MechBrakeCalibrationData mech_brake_calib;
-} DcCalibBlob;
+} PcCalibBlob;

@@ -5,7 +5,7 @@
 #include "can_unpack.h"
 #include "debug_led.h"
 #include "exported_enums.h"
-#include "input_event.h"
+#include "cc_input_event.h"
 
 static StatusCode prv_handle_heartbeat(const CanMessage *msg, void *context,
                                        CanAckStatus *ack_reply) {

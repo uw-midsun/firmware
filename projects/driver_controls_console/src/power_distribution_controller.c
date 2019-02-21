@@ -8,7 +8,7 @@
 #include "can_transmit.h"
 #include "event_queue.h"
 #include "exported_enums.h"
-#include "input_event.h"
+#include "cc_input_event.h"
 #include "status.h"
 
 static EEPowerState s_last_state = NUM_EE_POWER_STATES;

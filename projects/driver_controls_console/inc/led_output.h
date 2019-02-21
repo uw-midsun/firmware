@@ -4,7 +4,7 @@
 // in the LED IO-Expander
 
 #include "gpio_expander.h"
-#include "input_event.h"
+#include "cc_input_event.h"
 #include "status.h"
 
 // Initialize all relevant pins in the LED IO-Expander

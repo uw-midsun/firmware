@@ -4,7 +4,7 @@
 #include "drive_output.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
-#include "input_event.h"
+#include "pc_input_event.h"
 #include "log.h"
 #include "throttle.h"
 
