@@ -3,8 +3,8 @@
 // Processes events from the center console and changes the states of LEDs
 // in the LED IO-Expander
 
-#include "gpio_expander.h"
 #include "cc_input_event.h"
+#include "gpio_expander.h"
 #include "status.h"
 
 // Initialize all relevant pins in the LED IO-Expander

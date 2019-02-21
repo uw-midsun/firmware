@@ -4,8 +4,8 @@
 #include "drive_output.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
-#include "pc_input_event.h"
 #include "log.h"
+#include "pc_input_event.h"
 #include "throttle.h"
 
 // Pedal FSM state definitions

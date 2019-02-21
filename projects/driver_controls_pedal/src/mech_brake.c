@@ -10,9 +10,9 @@
 #include "gpio_it.h"
 
 #include "exported_enums.h"
-#include "pc_input_event.h"
 #include "log.h"
 #include "mech_brake.h"
+#include "pc_input_event.h"
 #include "soft_timer.h"
 #include "status.h"
 #include "wait.h"

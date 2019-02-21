@@ -14,8 +14,8 @@
 #include <string.h>
 #include "critical_section.h"
 #include "event_queue.h"
-#include "pc_input_event.h"
 #include "log.h"
+#include "pc_input_event.h"
 
 static ThrottleStorage s_throttle_storage;
 

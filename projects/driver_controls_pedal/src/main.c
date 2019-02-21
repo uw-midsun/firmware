@@ -2,16 +2,16 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "calib.h"
 #include "event_queue.h"
 #include "gpio.h"
 #include "gpio_it.h"
-#include "pc_input_event.h"
+#include "i2c.h"
 #include "interrupt.h"
 #include "log.h"
+#include "pc_input_event.h"
 #include "soft_timer.h"
 #include "throttle.h"
-#include "i2c.h"
-#include "calib.h"
 
 #include "event_arbiter.h"
 #include "mechanical_brake_fsm.h"
@@ -20,9 +20,9 @@
 
 #include "can.h"
 #include "crc32.h"
+#include "flash.h"
 #include "pc_calib.h"
 #include "pc_cfg.h"
-#include "flash.h"
 
 typedef StatusCode (*PedalControlsFsmInitFn)(Fsm *fsm, EventArbiterStorage *storage);
 
@@ -41,7 +41,6 @@ static CanStorage s_can;
 static Fsm s_fsms[NUM_PEDAL_CONTROLS_FSMS];
 
 int main(void) {
-
   gpio_init();
   interrupt_init();
   gpio_it_init();
@@ -93,9 +92,7 @@ int main(void) {
                     INPUT_EVENT_PEDAL_UPDATE_REQUESTED);
 
   event_arbiter_init(&s_event_arbiter);
-  PedalControlsFsmInitFn init_fns[] = {
-    mechanical_brake_fsm_init, pedal_fsm_init
-  };
+  PedalControlsFsmInitFn init_fns[] = { mechanical_brake_fsm_init, pedal_fsm_init };
 
   for (size_t i = 0; i < NUM_PEDAL_CONTROLS_FSMS; i++) {
     init_fns[i](&s_fsms[i], &s_event_arbiter);

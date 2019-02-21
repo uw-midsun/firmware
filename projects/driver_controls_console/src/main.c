@@ -7,11 +7,11 @@
 
 #include "bps_indicator.h"
 #include "cc_cfg.h"
+#include "cc_input_event.h"
 #include "center_console.h"
 #include "console_output.h"
 #include "event_arbiter.h"
 #include "heartbeat_rx.h"
-#include "cc_input_event.h"
 #include "led_output.h"
 #include "mech_brake_indicator.h"
 #include "power_distribution_controller.h"
