@@ -1,4 +1,5 @@
 #include "spi.h"
+#include <stdbool.h>
 #include "gpio.h"
 #include "spi_mcu.h"
 #include "stm32f0xx.h"
@@ -73,12 +74,7 @@ StatusCode spi_init(SpiPort spi, const SpiSettings *settings) {
   return STATUS_CODE_OK;
 }
 
-StatusCode spi_exchange(SpiPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *rx_data,
-                        size_t rx_len) {
-  if (spi >= NUM_SPI_PORTS) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid SPI port.");
-  }
-  gpio_set_state(&s_port[spi].cs, GPIO_STATE_LOW);
+StatusCode spi_transmit(SpiPort spi, uint8_t *tx_data, size_t tx_len) {
 
   for (size_t i = 0; i < tx_len; i++) {
     while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_TXE) == RESET) {
@@ -87,18 +83,36 @@ StatusCode spi_exchange(SpiPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *r
 
     while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_RXNE) == RESET) {
     }
-    SPI_ReceiveData8(s_port[spi].base);
   }
+
+  return STATUS_CODE_OK;
+}
+
+StatusCode spi_receive(SpiPort spi, uint8_t *rx_data, size_t rx_len, uint8_t placeholder) {
 
   for (size_t i = 0; i < rx_len; i++) {
     while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_TXE) == RESET) {
     }
-    SPI_SendData8(s_port[spi].base, 0x00);
+    SPI_SendData8(s_port[spi].base, placeholder);
 
     while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_RXNE) == RESET) {
     }
     rx_data[i] = SPI_ReceiveData8(s_port[spi].base);
   }
+
+  return STATUS_CODE_OK;
+}
+
+StatusCode spi_exchange(SpiPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *rx_data,
+                        size_t rx_len) {
+  if (spi >= NUM_SPI_PORTS) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid SPI port.");
+  }
+  gpio_set_state(&s_port[spi].cs, GPIO_STATE_LOW);
+
+  spi_transmit(spi, tx_data, tx_len);
+
+  spi_receive(spi, rx_data, rx_len, 0x00);
 
   gpio_set_state(&s_port[spi].cs, GPIO_STATE_HIGH);
 

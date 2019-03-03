@@ -1,6 +1,7 @@
 #pragma once
 // Generic blocking SPI driver
 // Requires GPIO to be initialized.
+#include <stdbool.h>
 #include <stddef.h>
 #include "gpio.h"
 #include "spi_mcu.h"
@@ -28,5 +29,17 @@ typedef struct {
 // exactly as requested. Please verify that the actual baudrate is within bounds.
 StatusCode spi_init(SpiPort spi, const SpiSettings *settings);
 
+// This method will send |tx_len| bytes from |tx_data| to the spi port |spi|. It will not
+// change the CS line state. The response bytes will be discarded.
+StatusCode spi_transmit(SpiPort spi, uint8_t *tx_data, size_t tx_len);
+
+// This method will receive |rx_len| bytes and place it into |rx_data| from the spi port
+// |spi|. It will not change the CS line state. In order to receive data this method will
+// send the byte specified by the |placeholder| parameter.
+StatusCode spi_receive(SpiPort spi, uint8_t *rx_data, size_t rx_len, uint8_t placeholder);
+
+// This method is a wrapper for |spi_transmit| and |spi_receive|. First it will call
+// |spi_transmit|, then |spi_receive|. Before tx and rx, CS will be pulled low. After,
+// CS will be pulled high.
 StatusCode spi_exchange(SpiPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *rx_data,
                         size_t rx_len);
