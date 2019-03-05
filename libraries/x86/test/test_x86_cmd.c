@@ -38,7 +38,7 @@ void test_x86_cmd_client(void) {
 
   const char *cmd = "test a b c d";
   LOG_DEBUG("Sending command: \"%s\"\n", cmd);
-  x86_socket_write(client_fd, cmd, strlen(cmd));
+  TEST_ASSERT_TRUE(status_ok(x86_socket_write(client_fd, cmd, strlen(cmd))));
 
   while (!received) {
   }
