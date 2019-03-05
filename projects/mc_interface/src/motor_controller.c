@@ -44,8 +44,7 @@ static void prv_bus_measurement_rx(const GenericCanMsg *msg, void *context) {
                                          storage->settings.context);
   }
 }
-""
-static void prv_velocity_measurement_rx(const GenericCanMsg *msg, void *context) {
+"" static void prv_velocity_measurement_rx(const GenericCanMsg *msg, void *context) {
   MotorControllerStorage *storage = context;
   WaveSculptorCanId can_id = { .raw = msg->id };
   WaveSculptorCanData can_data = { .raw = msg->data };
