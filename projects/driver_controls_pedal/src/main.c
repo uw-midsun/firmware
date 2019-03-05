@@ -61,11 +61,6 @@ int main(void) {
   };
   can_init(&s_can, &can_settings);
 
-  can_add_filter(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT);
-  can_add_filter(SYSTEM_CAN_MESSAGE_POWER_STATE);
-  can_add_filter(SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT);
-  can_add_filter(SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY);
-
   const I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,    //
     .sda = PC_CFG_I2C_BUS_SDA,  //
