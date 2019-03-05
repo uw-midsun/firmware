@@ -105,3 +105,4 @@ script:
   - make pylint
   - make test_format
   - find /lib/modules/$(uname -r) -type f -name '*.ko'
+  - uname -a
