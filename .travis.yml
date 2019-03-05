@@ -4,6 +4,8 @@
 # This implictly uses full virtualisation, which allows adding kernel modules
 dist: xenial
 
+sudo: required
+
 notifications:
   email: false
 
@@ -26,7 +28,7 @@ addons:
       # ubuntu-toolchain-r-test
       - gcc-7
       - g++-7
-      # llvm-toolchain-trusty-5.0
+      # llvm-toolchain-xenial-5
       - clang-5.0
       - clang-format-5.0
       # trusty repos
@@ -100,3 +102,4 @@ script:
   - make lint
   - make pylint
   - make test_format
+  - find /lib/modules/$(uname -r) -type f -name '*.ko'
