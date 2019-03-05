@@ -63,7 +63,6 @@ int main(void) {
   can_add_filter(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT);
   can_add_filter(SYSTEM_CAN_MESSAGE_POWER_STATE);
   can_add_filter(SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT);
- 
 
   // GPIO Expander for LEDs
   const I2CSettings i2c_settings = {
