@@ -1,9 +1,8 @@
-# Use full virtualisation to allow adding kernel modules
-sudo: true
-
-# Use trusty
+# Use Xenial
 #   https://docs.travis-ci.com/user/trusty-ci-environment/
-dist: trusty
+#
+# This implictly uses full virtualisation, which allows adding kernel modules
+dist: xenial
 
 notifications:
   email: false
@@ -20,12 +19,12 @@ branches:
 addons:
   apt:
     sources:
-      - ubuntu-toolchain-r-test
-      - llvm-toolchain-trusty-5.0
+      - ppa:ubuntu-toolchain-r/test
+      - llvm-toolchain-xenial-5.0
     packages:
       # ubuntu-toolchain-r-test
-      - gcc-6
-      - g++-6
+      - gcc-7
+      - g++-7
       # llvm-toolchain-trusty-5.0
       - clang-5.0
       - clang-format-5.0
@@ -55,7 +54,7 @@ before_script:
     fi
   - export PATH=${PATH}:${GCC_DIR}/bin
 
-  - ln -sf `which gcc-6` ${HOME}/.local/bin/gcc
+  - ln -sf `which gcc-7` ${HOME}/.local/bin/gcc
 
   # build GNU Make 4.1 from source
   # TODO: cache this block as well
