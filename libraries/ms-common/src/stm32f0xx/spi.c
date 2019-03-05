@@ -94,7 +94,7 @@ StatusCode spi_rx(SpiPort spi, uint8_t *rx_data, size_t rx_len, uint8_t placehol
 
     while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_RXNE) == RESET) {
     }
-    rx_data[i] = spi_rxData8(s_port[spi].base);
+    rx_data[i] = SPI_ReceiveData8(s_port[spi].base);
   }
 
   return STATUS_CODE_OK;
