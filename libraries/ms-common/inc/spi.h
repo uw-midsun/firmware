@@ -38,7 +38,10 @@ StatusCode spi_transmit(SpiPort spi, uint8_t *tx_data, size_t tx_len);
 StatusCode spi_receive(SpiPort spi, uint8_t *rx_data, size_t rx_len, uint8_t placeholder);
 
 // This method will set the state of the CS line for a given spi port
-StatusCode spi_set_cs_state(SpiPort spi, GpioState state);
+StatusCode spi_cs_set_state(SpiPort spi, GpioState state);
+
+// Gets the CS state of a given spi port and assigns it to the state that is passed in.
+StatusCode spi_cs_get_state(SpiPort spi, GpioState *input_state);
 
 // This method is a wrapper for |spi_transmit| and |spi_receive|. First it will call
 // |spi_transmit|, then |spi_receive|. Before tx and rx, CS will be pulled low. After,
