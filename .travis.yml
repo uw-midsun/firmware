@@ -19,7 +19,7 @@ language: c
 addons:
   apt:
     sources:
-      - ppa:ubuntu-toolchain-r/test
+      - sourceline: ppa:ubuntu-toolchain-r/test
       - llvm-toolchain-xenial-5.0
     packages:
       # ubuntu-toolchain-r-test
