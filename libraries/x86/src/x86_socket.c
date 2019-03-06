@@ -171,13 +171,15 @@ int test_x86_socket_client_init(const char *module_name) {
 
   int result = X86_SOCKET_INVALID_FD;
 
-  for (int i = 0; i < 5 && result == X86_SOCKET_INVALID_FD; i++) {
+  for (int i = 0; i < 5; i++) {
     result = connect(client_fd, (struct sockaddr_un *)&addr,
                      offsetof(struct sockaddr_un, sun_path) + 1 + strlen(addr.sun_path + 1));
 
-    if (result == X86_SOCKET_INVALID_FD) {
-      LOG_CRITICAL("Failed to connect to socket: %s\n", strerror(errno));
+    if (result != X86_SOCKET_INVALID_FD) {
+      break;
     }
+
+    LOG_CRITICAL("Failed to connect to socket: %s\n", strerror(errno));
     sleep(1);
   }
 
