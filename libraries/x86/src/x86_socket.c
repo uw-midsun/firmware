@@ -45,7 +45,6 @@ static void *prv_server_thread(void *context) {
   X86SocketThread *thread = context;
 
   x86_interrupt_pthread_init();
-  pthread_barrier_wait(&thread->barrier);
 
   int server_fd = X86_SOCKET_INVALID_FD;
   if (!status_ok(prv_setup_socket(thread, &server_fd))) {
@@ -54,6 +53,7 @@ static void *prv_server_thread(void *context) {
   }
 
   LOG_DEBUG("Started RX server for %s (PID %d)\n", thread->module_name, getpid());
+  pthread_barrier_wait(&thread->barrier);
 
   // Mutex unlocked when thread should exit
   while (pthread_mutex_trylock(&thread->keep_alive) != 0) {
@@ -169,18 +169,11 @@ int test_x86_socket_client_init(const char *module_name) {
   snprintf(addr.sun_path + 1, sizeof(addr.sun_path) - 1, "%d/%s/%s", getpid(),
            program_invocation_short_name, module_name);
 
-  int result = X86_SOCKET_INVALID_FD;
+  int result = connect(client_fd, (struct sockaddr_un *)&addr,
+                       offsetof(struct sockaddr_un, sun_path) + 1 + strlen(addr.sun_path + 1));
 
-  for (int i = 0; i < 5; i++) {
-    result = connect(client_fd, (struct sockaddr_un *)&addr,
-                     offsetof(struct sockaddr_un, sun_path) + 1 + strlen(addr.sun_path + 1));
-
-    if (result != X86_SOCKET_INVALID_FD) {
-      break;
-    }
-
+  if (result < 0) {
     LOG_CRITICAL("Failed to connect to socket: %s\n", strerror(errno));
-    sleep(1);
   }
 
   return client_fd;
