@@ -35,6 +35,7 @@ static void prv_broadcast_cb(SoftTimerId timer_id, void *context) {
   event_raise(storage->update_req_event, 0);
 
   CAN_TRANSMIT_PEDAL_OUTPUT((uint16_t)storage->data[PEDAL_OUTPUT_SOURCE_THROTTLE],
+                            (uint16_t)storage->data[PEDAL_OUTPUT_SOURCE_THROTTLE_STATE],
                             (uint16_t)storage->data[PEDAL_OUTPUT_SOURCE_MECH_BRAKE]);
 
   debug_led_toggle_state(DEBUG_LED_BLUE_A);

@@ -10,12 +10,15 @@
 #include "interrupt.h"
 #include "log.h"
 
+#include "bps_indicator.h"
 #include "calib.h"
 #include "control_stalk.h"
 #include "cruise.h"
 #include "debug_led.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
+#include "heartbeat_rx.h"
+#include "power_state_indicator.h"
 #include "sc_cfg.h"
 #include "sc_input_event.h"
 #include "soft_timer.h"
@@ -39,6 +42,7 @@ static Fsm s_fsms[NUM_STEERING_CONTROLS_FSMS];
 
 static ControlStalk s_stalk;
 static EventArbiterStorage s_event_arbiter;
+static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
 
 int main(void) {
   gpio_init();
@@ -61,8 +65,19 @@ int main(void) {
   };
   can_init(&s_can, &can_settings);
 
-  control_stalk_init(&s_stalk);
+  // Power state
+  power_state_indicator_init();
 
+  // BPS heartbeat
+  bps_indicator_init();
+
+  // Not sure that this does anything since NULL context is being passed
+  // and none of the functions called on callback raise an event
+  // Powertrain heartbeat
+  heartbeat_rx_register_handler(&s_powertrain_heartbeat, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
+                                heartbeat_rx_auto_ack_handler, NULL);
+
+  control_stalk_init(&s_stalk);
   cruise_init(cruise_global());
   steering_output_init(steering_output_global(), INPUT_EVENT_STEERING_WATCHDOG_FAULT,
                        INPUT_EVENT_STEERING_UPDATE_REQUESTED);
