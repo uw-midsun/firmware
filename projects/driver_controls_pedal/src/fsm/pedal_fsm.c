@@ -1,11 +1,11 @@
 // Updates to the pedal output module are driven by the update requested events
 
 #include "pedal_fsm.h"
-#include "pedal_output.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
 #include "log.h"
 #include "pc_input_event.h"
+#include "pedal_output.h"
 #include "throttle.h"
 
 // Pedal FSM state definitions

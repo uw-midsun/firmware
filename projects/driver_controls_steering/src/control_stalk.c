@@ -1,10 +1,10 @@
 #include "control_stalk.h"
 #include <string.h>
+#include "gpio.h"
+#include "gpio_it.h"
 #include "log.h"
 #include "sc_cfg.h"
 #include "sc_input_event.h"
-#include "gpio.h"
-#include "gpio_it.h"
 
 // The A6 control stalks have two types of inputs: analog and digital.
 // Analog inputs are either floating, 2.1818 kOhms to GND, or 681 Ohms to GND. We tie a resistor
@@ -25,7 +25,6 @@
 // * A7: HIGH_BEAM_FWD
 // * B0: HIGH_BEAM_BACK
 
-
 // 4096 codes for +/-4.096V -> LSB = 2mV
 #define CONTROL_STALK_THRESHOLD(ohms) ((1 << 12) / 2 * (ohms) / ((CONTROL_STALK_RESISTOR) + (ohms)))
 // 2k181 +10% resistor = ~2k4, -10% = 1k963
@@ -41,11 +40,8 @@ static const GpioAddress s_analog_gpio_addresses[CONTROL_STALK_ANALOG_INPUTS] = 
 };
 
 static const GpioAddress s_digital_gpio_addresses[CONTROL_STALK_DIGITAL_INPUTS] = {
-  SC_CFG_CC_SET_PIN,
-  SC_CFG_CC_ON_OFF_PIN,
-  SC_CFG_LANE_ASSIST_PIN,
-  SC_CFG_HIGH_BEAM_FWD_PIN,
-  SC_CFG_HIGH_BEAM_BACK_PIN,
+  SC_CFG_CC_SET_PIN,        SC_CFG_CC_ON_OFF_PIN,      SC_CFG_LANE_ASSIST_PIN,
+  SC_CFG_HIGH_BEAM_FWD_PIN, SC_CFG_HIGH_BEAM_BACK_PIN,
 };
 
 // ADC channel to Event ID
@@ -150,8 +146,9 @@ StatusCode control_stalk_init(ControlStalk *stalk) {
   // Initialize Digital Pins with Interrupts
   for (size_t pin = 0; pin < CONTROL_STALK_DIGITAL_INPUTS; pin++) {
     status_ok_or_return(gpio_init_pin(&s_digital_gpio_addresses[pin], &gpio_settings));
-    status_ok_or_return(gpio_it_register_interrupt(&s_digital_gpio_addresses[pin], &interrupt_settings, INTERRUPT_EDGE_FALLING,
-                               prv_digital_cb, s_digital_mapping[pin]));
+    status_ok_or_return(gpio_it_register_interrupt(&s_digital_gpio_addresses[pin],
+                                                   &interrupt_settings, INTERRUPT_EDGE_FALLING,
+                                                   prv_digital_cb, s_digital_mapping[pin]));
   }
 
   for (AdcChannel channel = 0; channel < CONTROL_STALK_ANALOG_INPUTS; channel++) {

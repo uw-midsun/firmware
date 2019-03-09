@@ -1,12 +1,12 @@
 // Updates to the pedal output module are driven by the update requested events
 
-#include "pedal_output.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
 #include "log.h"
 #include "mech_brake.h"
 #include "mechanical_brake_fsm.h"
 #include "pc_input_event.h"
+#include "pedal_output.h"
 
 // Mechanical Brake FSM state definitions
 FSM_DECLARE_STATE(state_engaged);

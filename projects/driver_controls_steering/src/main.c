@@ -16,8 +16,8 @@
 #include "debug_led.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
-#include "sc_input_event.h"
 #include "sc_cfg.h"
+#include "sc_input_event.h"
 #include "soft_timer.h"
 #include "steering_output.h"
 

@@ -1,7 +1,7 @@
+#include "steering_output.h"
 #include <string.h>
 #include "can_transmit.h"
 #include "debug_led.h"
-#include "steering_output.h"
 #include "exported_enums.h"
 #include "log.h"
 #include "misc.h"
