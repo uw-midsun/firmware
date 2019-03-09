@@ -22,7 +22,7 @@ static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CanAckS
   (void)num_remaining;
   (void)context;
   if (status == CAN_ACK_STATUS_TIMEOUT) {
-    event_raise(INPUT_EVENT_BPS_FAULT, 0);
+    event_raise(INPUT_EVENT_CENTER_CONSOLE_BPS_FAULT, 0);
   } else if (status == CAN_ACK_STATUS_INVALID) {
     event_raise(INPUT_EVENT_RETRY_POWER_STATE, s_last_state);
   }

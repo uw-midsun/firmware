@@ -52,9 +52,9 @@ int main(void) {
   const CanSettings can_settings = {
     .device_id = CC_CFG_CAN_DEVICE_ID,
     .bitrate = CC_CFG_CAN_BITRATE,
-    .rx_event = INPUT_EVENT_CAN_RX,
-    .tx_event = INPUT_EVENT_CAN_TX,
-    .fault_event = INPUT_EVENT_CAN_FAULT,
+    .rx_event = INPUT_EVENT_CENTER_CONSOLE_CAN_RX,
+    .tx_event = INPUT_EVENT_CENTER_CONSOLE_CAN_TX,
+    .fault_event = INPUT_EVENT_CENTER_CONSOLE_CAN_FAULT,
     .tx = CC_CFG_CAN_RX,
     .rx = CC_CFG_CAN_TX,
     .loopback = false,
@@ -88,8 +88,8 @@ int main(void) {
   // Mech Brake
   mech_brake_indicator_init();
 
-  console_output_init(console_output_global(), INPUT_EVENT_CONSOLE_WATCHDOG_FAULT,
-                      INPUT_EVENT_CONSOLE_UPDATE_REQUESTED);
+  console_output_init(console_output_global(), INPUT_EVENT_CENTER_CONSOLE_WATCHDOG_FAULT,
+                      INPUT_EVENT_CENTER_CONSOLE_UPDATE_REQUESTED);
 
   event_arbiter_init(&s_event_arbiter);
   ConsoleControlsFsmInitFn init_fns[] = { direction_fsm_init, power_fsm_init, headlight_fsm_init,

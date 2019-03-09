@@ -17,7 +17,7 @@ FSM_DECLARE_STATE(state_reverse);
 // Direction selector FSM transition table definitions
 
 FSM_STATE_TRANSITION(state_forward) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_CONSOLE_UPDATE_REQUESTED, state_forward);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_UPDATE_REQUESTED, state_forward);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_NEUTRAL, state_neutral);
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE, state_reverse);
@@ -28,14 +28,14 @@ FSM_STATE_TRANSITION(state_forward) {
 }
 
 FSM_STATE_TRANSITION(state_neutral) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_CONSOLE_UPDATE_REQUESTED, state_neutral);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_UPDATE_REQUESTED, state_neutral);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE, state_reverse);
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE, state_forward);
 }
 
 FSM_STATE_TRANSITION(state_reverse) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_CONSOLE_UPDATE_REQUESTED, state_reverse);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_UPDATE_REQUESTED, state_reverse);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE, state_forward);
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_NEUTRAL, state_neutral);
@@ -58,7 +58,7 @@ static void prv_forward_output(Fsm *fsm, const Event *e, void *context) {
                         EE_CONSOLE_OUTPUT_DIRECTION_FORWARD);
   event_arbiter_set_guard_fn(guard, NULL);
 
-  if (e->id != INPUT_EVENT_CONSOLE_UPDATE_REQUESTED) {
+  if (e->id != INPUT_EVENT_CENTER_CONSOLE_UPDATE_REQUESTED) {
     event_raise(INPUT_EVENT_DIRECTION_STATE_FORWARD, 0);
     LOG_DEBUG("Forward\n");
   }
@@ -70,7 +70,7 @@ static void prv_neutral_output(Fsm *fsm, const Event *e, void *context) {
                         EE_CONSOLE_OUTPUT_DIRECTION_NEUTRAL);
   event_arbiter_set_guard_fn(guard, prv_guard_prevent_cruise);
 
-  if (e->id != INPUT_EVENT_CONSOLE_UPDATE_REQUESTED) {
+  if (e->id != INPUT_EVENT_CENTER_CONSOLE_UPDATE_REQUESTED) {
     event_raise(INPUT_EVENT_DIRECTION_STATE_NEUTRAL, 0);
     LOG_DEBUG("Neutral\n");
   }
@@ -82,7 +82,7 @@ static void prv_reverse_output(Fsm *fsm, const Event *e, void *context) {
                         EE_CONSOLE_OUTPUT_DIRECTION_REVERSE);
   event_arbiter_set_guard_fn(guard, prv_guard_prevent_cruise);
 
-  if (e->id != INPUT_EVENT_CONSOLE_UPDATE_REQUESTED) {
+  if (e->id != INPUT_EVENT_CENTER_CONSOLE_UPDATE_REQUESTED) {
     event_raise(INPUT_EVENT_DIRECTION_STATE_REVERSE, 0);
     LOG_DEBUG("Reverse\n");
   }
