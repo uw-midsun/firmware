@@ -7,7 +7,7 @@
 #include "event_queue.h"
 #include "gpio.h"
 #include "gpio_it.h"
-#include "input_event.h"
+#include "sc_input_event.h"
 #include "interrupt.h"
 #include "log.h"
 #include "soft_timer.h"

@@ -23,8 +23,8 @@ FSM_STATE_TRANSITION(state_forward) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE, state_reverse);
 
   // Revert back to neutral on power off/fault
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_OFF, state_neutral);
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_FAULT, state_neutral);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER_STATE_OFF, state_neutral);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER_STATE_FAULT, state_neutral);
 }
 
 FSM_STATE_TRANSITION(state_neutral) {
@@ -41,14 +41,14 @@ FSM_STATE_TRANSITION(state_reverse) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_NEUTRAL, state_neutral);
 
   // Revert back to neutral on power off/fault
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_OFF, state_neutral);
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_FAULT, state_neutral);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER_STATE_OFF, state_neutral);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER_STATE_FAULT, state_neutral);
 }
 
 // Direction selector FSM arbiter guard functions
 static bool prv_guard_prevent_cruise(const Event *e) {
   // Cruise control is forbidden in neutral/reverse for obvious reasons
-  return e->id != INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME;
+  return e->id != INPUT_EVENT_CENTER_CONSOLE_CONTROL_STALK_ANALOG_CC_RESUME;
 }
 
 // Direction selector FSM output functions

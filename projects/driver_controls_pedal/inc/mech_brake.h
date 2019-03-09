@@ -4,7 +4,7 @@
 // Requires ADS1015 and soft timers to be initialized.
 //
 // The module reads brake inputs from ADS1015, then converts those readings into a numerator value
-// with EE_DRIVE_OUTPUT_DENOMINATOR as the denominator. This numerator value is called the position.
+// with EE_PEDAL_OUTPUT_DENOMINATOR as the denominator. This numerator value is called the position.
 // At the same time, it raises events, INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, and
 // INPUT_EVENT_MECHANICAL_BRAKE_UNPRESSED. These events contain the numerator value that corresponds
 // to the input reading of the ADC. We use a windowed reading such that once the brake is pressed it

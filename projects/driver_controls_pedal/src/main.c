@@ -12,11 +12,13 @@
 #include "pc_input_event.h"
 #include "soft_timer.h"
 #include "throttle.h"
+#include "can_msg_defs.h"
 
 #include "event_arbiter.h"
-#include "mechanical_brake_fsm.h"
+#include "mech_brake_fsm.h"
 #include "pedal_fsm.h"
 #include "pedal_output.h"
+#include "brake_signal.h"
 
 #include "can.h"
 #include "crc32.h"
@@ -52,9 +54,9 @@ int main(void) {
   const CanSettings can_settings = {
     .device_id = PC_CFG_CAN_DEVICE_ID,
     .bitrate = PC_CFG_CAN_BITRATE,
-    .rx_event = INPUT_EVENT_CAN_RX,
-    .tx_event = INPUT_EVENT_CAN_TX,
-    .fault_event = INPUT_EVENT_CAN_FAULT,
+    .rx_event = INPUT_EVENT_PEDAL_CAN_RX,
+    .tx_event = INPUT_EVENT_PEDAL_CAN_TX,
+    .fault_event = INPUT_EVENT_PEDAL_CAN_FAULT,
     .tx = PC_CFG_CAN_TX,
     .rx = PC_CFG_CAN_RX,
     .loopback = false,
@@ -106,8 +108,8 @@ int main(void) {
         case INPUT_EVENT_PEDAL_COAST:
         case INPUT_EVENT_PEDAL_BRAKE:
         case INPUT_EVENT_PEDAL_UPDATE_REQUESTED:
-        case INPUT_EVENT_CAN_RX:
-        case INPUT_EVENT_CAN_TX:
+        case INPUT_EVENT_PEDAL_CAN_RX:
+        case INPUT_EVENT_PEDAL_CAN_TX:
           break;
         default:
           LOG_DEBUG("e %d %d\n", e.id, e.data);

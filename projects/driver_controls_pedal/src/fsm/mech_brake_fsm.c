@@ -4,7 +4,7 @@
 #include "exported_enums.h"
 #include "log.h"
 #include "mech_brake.h"
-#include "mechanical_brake_fsm.h"
+#include "mech_brake_fsm.h"
 #include "pc_input_event.h"
 #include "pedal_output.h"
 
@@ -14,17 +14,17 @@ FSM_DECLARE_STATE(state_disengaged);
 
 // Mechanical Brake FSM transition table definitions
 FSM_STATE_TRANSITION(state_engaged) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_engaged);
+  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_UPDATE_REQUESTED, state_engaged);
 
-  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_engaged);
-  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_disengaged);
+  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_PRESSED, state_engaged);
+  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_RELEASED, state_disengaged);
 }
 
 FSM_STATE_TRANSITION(state_disengaged) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_disengaged);
+  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_UPDATE_REQUESTED, state_disengaged);
 
-  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_engaged);
-  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_disengaged);
+  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_PRESSED, state_engaged);
+  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_RELEASED, state_disengaged);
 }
 
 // Mechanical Brake FSM arbiter functions
@@ -32,7 +32,7 @@ static bool prv_guard_engaged(const Event *e) {
   // While the brakes are engaged, the car shouldn't allow the car to enter cruise control.
   // Motor controller interface should ignore throttle state if mechanical brake is engaged.
   switch (e->id) {
-    case INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME:
+    case INPUT_EVENT_PEDAL_CONTROL_STALK_ANALOG_CC_RESUME:
       return false;
     default:
       return true;
@@ -45,8 +45,8 @@ static bool prv_guard_disengaged(const Event *e) {
 
   // Needs a listener - these events will not be raised locally
   switch (e->id) {
-    case INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE:
-    case INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE:
+    case INPUT_EVENT_PEDAL_CENTER_CONSOLE_DIRECTION_DRIVE:
+    case INPUT_EVENT_PEDAL_CENTER_CONSOLE_DIRECTION_REVERSE:
       return false;
     default:
       return true;

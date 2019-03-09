@@ -3,7 +3,7 @@
 #include "can_unpack.h"
 #include "event_queue.h"
 #include "exported_enums.h"
-#include "input_event.h"
+#include "pc_input_event.h"
 #include "interrupt.h"
 #include "log.h"
 #include "ms_test_helpers.h"
@@ -18,7 +18,7 @@
 
 #define TEST_BRAKE_SIGNAL_EXPECT_STATE(state)                         \
   ({                                                                  \
-    MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX); \
+    MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_PEDAL_CAN_TX, INPUT_EVENT_PEDAL_CAN_RX); \
     TEST_ASSERT_EQUAL((state), s_brake_state);                        \
   })
 
@@ -41,11 +41,11 @@ void setup_test(void) {
   soft_timer_init();
 
   CanSettings can_settings = {
-    .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,
+    .device_id = SYSTEM_CAN_DEVICE_PEDAL_CONTROLS,
     .bitrate = CAN_HW_BITRATE_500KBPS,
-    .rx_event = INPUT_EVENT_CAN_RX,
-    .tx_event = INPUT_EVENT_CAN_TX,
-    .fault_event = INPUT_EVENT_CAN_FAULT,
+    .rx_event = INPUT_EVENT_PEDAL_CAN_RX,
+    .tx_event = INPUT_EVENT_PEDAL_CAN_TX,
+    .fault_event = INPUT_EVENT_PEDAL_CAN_FAULT,
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },
     .loopback = true,
@@ -66,17 +66,17 @@ void test_brake_signal_inputs(void) {
   Event e = { 0 };
 
   // Mech brake should only turn on the brake signal if we enter drive
-  TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, 0);
+  TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_PRESSED, 0);
   // Nothing should have happened, so we shouldn't have any events
   TEST_ASSERT_NOT_OK(event_process(&e));
 
   // Enter drive - expect brake light on
-  TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_POWER_STATE_DRIVE, 0);
-  TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, 0);
+  TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_PEDAL_POWER_STATE_DRIVE, 0);
+  TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_PRESSED, 0);
   TEST_BRAKE_SIGNAL_EXPECT_STATE(EE_LIGHT_STATE_ON);
 
   // Stop mech braking - light should turn off
-  TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, 0);
+  TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_RELEASED, 0);
   TEST_BRAKE_SIGNAL_EXPECT_STATE(EE_LIGHT_STATE_OFF);
 
   // Try brake lights from regen braking
@@ -84,16 +84,16 @@ void test_brake_signal_inputs(void) {
   TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_PEDAL_BRAKE, 0);
   TEST_ASSERT_NOT_OK(event_process(&e));
 
-  TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_DIRECTION_STATE_FORWARD, 0);
+  TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_PEDAL_DIRECTION_STATE_FORWARD, 0);
   TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_SPEED_UPDATE, BRAKE_SIGNAL_MIN_SPEED_CMS);
   TEST_BRAKE_SIGNAL_EXPECT_STATE(EE_LIGHT_STATE_ON);
 
   // Turn off the car and turn it back on
-  TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_POWER_STATE_OFF, 0);
+  TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_PEDAL_POWER_STATE_OFF, 0);
   // Neutral event is usually raised by the direction FSM in response to power state off
-  TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_DIRECTION_STATE_NEUTRAL, 0);
+  TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_PEDAL_DIRECTION_STATE_NEUTRAL, 0);
   TEST_BRAKE_SIGNAL_EXPECT_STATE(EE_LIGHT_STATE_OFF);
-  TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_POWER_STATE_DRIVE, 0);
+  TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_PEDAL_POWER_STATE_DRIVE, 0);
 
   // The direction is now neutral, so regen braking shouldn't cause the light to turn on
   TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_PEDAL_BRAKE, 0);
@@ -101,6 +101,6 @@ void test_brake_signal_inputs(void) {
   TEST_ASSERT_NOT_OK(event_process(&e));
 
   // Now move into drive
-  TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_DIRECTION_STATE_FORWARD, 0);
+  TEST_BRAKE_SIGNAL_CLOCK_EVENT(INPUT_EVENT_PEDAL_DIRECTION_STATE_FORWARD, 0);
   TEST_BRAKE_SIGNAL_EXPECT_STATE(EE_LIGHT_STATE_ON);
 }

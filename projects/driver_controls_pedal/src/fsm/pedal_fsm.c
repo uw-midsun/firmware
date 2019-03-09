@@ -16,21 +16,21 @@ FSM_DECLARE_STATE(state_accel);
 
 // Pedal FSM transition table definitions
 FSM_STATE_TRANSITION(state_brake) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_brake);
+  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_UPDATE_REQUESTED, state_brake);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_COAST, state_coast);
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_ACCEL, state_accel);
 }
 
 FSM_STATE_TRANSITION(state_coast) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_coast);
+  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_UPDATE_REQUESTED, state_coast);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_BRAKE, state_brake);
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_ACCEL, state_accel);
 }
 
 FSM_STATE_TRANSITION(state_accel) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_accel);
+  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_UPDATE_REQUESTED, state_accel);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_BRAKE, state_brake);
   FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_COAST, state_coast);
@@ -57,7 +57,7 @@ static void prv_update_pedal_output(void) {
 
 static bool prv_brake_guard(const Event *e) {
   // Prevent entering cruise if braking
-  return e->id != INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME;
+  return e->id != INPUT_EVENT_PEDAL_CONTROL_STALK_ANALOG_CC_RESUME;
 }
 
 // Pedal FSM output functions

@@ -34,9 +34,9 @@ void setup_test(void) {
   CanSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,
     .bitrate = CAN_HW_BITRATE_500KBPS,
-    .rx_event = INPUT_EVENT_CAN_RX,
-    .tx_event = INPUT_EVENT_CAN_TX,
-    .fault_event = INPUT_EVENT_CAN_FAULT,
+    .rx_event = INPUT_EVENT_CENTER_CONSOLE_CAN_RX,
+    .tx_event = INPUT_EVENT_CENTER_CONSOLE_CAN_TX,
+    .fault_event = INPUT_EVENT_CENTER_CONSOLE_CAN_FAULT,
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },
     .loopback = true,
@@ -60,7 +60,7 @@ void test_bps_indicator_heartbeat(void) {
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_DRIVER_CONTROLS),
   };
   CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, EE_BPS_HEARTBEAT_STATE_OK);
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
   // Nothing should have happened, so no events should have been raised
   TEST_ASSERT_NOT_OK(event_process(&e));
@@ -69,14 +69,14 @@ void test_bps_indicator_heartbeat(void) {
   CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, EE_BPS_HEARTBEAT_STATE_FAULT_KILLSWITCH);
   // Event is raised during ACK, so split up the processing
   // BPS heartbeat TX + RX
-  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
   // Raise BPS fault event
   TEST_ASSERT_OK(event_process(&e));
-  TEST_ASSERT_EQUAL(INPUT_EVENT_BPS_FAULT, e.id);
+  TEST_ASSERT_EQUAL(INPUT_EVENT_CENTER_CONSOLE_BPS_FAULT, e.id);
 
   // BPS heartbeat ACK TX/RX
-  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 }
 
 void test_bps_indicator_fault(void) {
@@ -86,10 +86,10 @@ void test_bps_indicator_fault(void) {
   // Set fault - start strobes
   expected_state = EE_LIGHT_STATE_ON;
   TEST_ASSERT_OK(bps_indicator_set_fault());
-  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
   // Clear fault - should have cleared strobe
   expected_state = EE_LIGHT_STATE_OFF;
   bps_indicator_clear_fault();
-  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 }

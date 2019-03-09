@@ -24,7 +24,7 @@ static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CanAckS
   if (status == CAN_ACK_STATUS_TIMEOUT) {
     event_raise(INPUT_EVENT_CENTER_CONSOLE_BPS_FAULT, 0);
   } else if (status == CAN_ACK_STATUS_INVALID) {
-    event_raise(INPUT_EVENT_RETRY_POWER_STATE, s_last_state);
+    event_raise(INPUT_EVENT_CENTER_CONSOLE_RETRY_POWER_STATE, s_last_state);
   }
   return STATUS_CODE_OK;
 }
@@ -43,7 +43,7 @@ StatusCode power_distribution_controller_send_update(EEPowerState power_state) {
 }
 
 StatusCode power_distribution_controller_retry(const Event *e) {
-  if (e->id == INPUT_EVENT_RETRY_POWER_STATE) {
+  if (e->id == INPUT_EVENT_CENTER_CONSOLE_RETRY_POWER_STATE) {
     if (e->data <= NUM_EE_POWER_STATES) {
       return power_distribution_controller_send_update(e->data);
     }

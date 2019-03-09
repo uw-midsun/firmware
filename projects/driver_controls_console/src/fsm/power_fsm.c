@@ -31,28 +31,28 @@ FSM_DECLARE_STATE(state_fault);
 // Power FSM transition table definitions
 FSM_STATE_TRANSITION(state_off) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_charging);
-  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_PRESSED, state_off_brake);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_MECHANICAL_BRAKE_PRESSED, state_off_brake);
 
-  FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_BPS_FAULT, state_fault);
 }
 
 FSM_STATE_TRANSITION(state_off_brake) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_on);
-  FSM_ADD_TRANSITION(INPUT_EVENT_MECHANICAL_BRAKE_RELEASED, state_off);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_MECHANICAL_BRAKE_RELEASED, state_off);
 
-  FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_BPS_FAULT, state_fault);
 }
 
 FSM_STATE_TRANSITION(state_charging) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_off);
 
-  FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_BPS_FAULT, state_fault);
 }
 
 FSM_STATE_TRANSITION(state_on) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER, state_off);
 
-  FSM_ADD_TRANSITION(INPUT_EVENT_BPS_FAULT, state_fault);
+  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_BPS_FAULT, state_fault);
 }
 
 FSM_STATE_TRANSITION(state_fault) {
@@ -66,13 +66,13 @@ static bool prv_guard_off(const Event *e) {
   // This also prevents lights, etc. from being turned on unless the unprotected rail is powered.
   switch (e->id) {
     case INPUT_EVENT_CENTER_CONSOLE_POWER:
-    case INPUT_EVENT_MECHANICAL_BRAKE_RELEASED:
-    case INPUT_EVENT_MECHANICAL_BRAKE_PRESSED:
-    case INPUT_EVENT_BPS_FAULT:
-    case INPUT_EVENT_POWER_STATE_OFF:
-    case INPUT_EVENT_POWER_STATE_CHARGE:
-    case INPUT_EVENT_POWER_STATE_FAULT:
-    case INPUT_EVENT_POWER_STATE_DRIVE:
+    case INPUT_EVENT_CENTER_CONSOLE_MECHANICAL_BRAKE_RELEASED:
+    case INPUT_EVENT_CENTER_CONSOLE_MECHANICAL_BRAKE_PRESSED:
+    case INPUT_EVENT_CENTER_CONSOLE_BPS_FAULT:
+    case INPUT_EVENT_CENTER_CONSOLE_POWER_STATE_OFF:
+    case INPUT_EVENT_CENTER_CONSOLE_POWER_STATE_CHARGE:
+    case INPUT_EVENT_CENTER_CONSOLE_POWER_STATE_FAULT:
+    case INPUT_EVENT_CENTER_CONSOLE_POWER_STATE_DRIVE:
       return true;
     default:
       return false;
@@ -91,7 +91,7 @@ static void prv_off_output(Fsm *fsm, const Event *e, void *context) {
   console_output_set_enabled(console_output_global(), false);
   event_arbiter_set_guard_fn(guard, prv_guard_off);
 
-  event_raise(INPUT_EVENT_POWER_STATE_OFF, 0);
+  event_raise(INPUT_EVENT_CENTER_CONSOLE_POWER_STATE_OFF, 0);
   LOG_DEBUG("Off\n");
 }
 
@@ -103,7 +103,7 @@ static void prv_console_output(Fsm *fsm, const Event *e, void *context) {
   console_output_set_enabled(console_output_global(), true);
   event_arbiter_set_guard_fn(guard, NULL);
 
-  event_raise(INPUT_EVENT_POWER_STATE_DRIVE, 0);
+  event_raise(INPUT_EVENT_CENTER_CONSOLE_POWER_STATE_DRIVE, 0);
   LOG_DEBUG("Drive\n");
 }
 
@@ -116,7 +116,7 @@ static void prv_fault_output(Fsm *fsm, const Event *e, void *context) {
   console_output_set_enabled(console_output_global(), false);
   event_arbiter_set_guard_fn(guard, prv_guard_off);
 
-  event_raise(INPUT_EVENT_POWER_STATE_FAULT, 0);
+  event_raise(INPUT_EVENT_CENTER_CONSOLE_POWER_STATE_FAULT, 0);
   LOG_DEBUG("Fault\n");
 }
 
@@ -129,7 +129,7 @@ static void prv_charge_output(Fsm *fsm, const Event *e, void *context) {
   // Allow lights, etc to turn on
   event_arbiter_set_guard_fn(guard, NULL);
 
-  event_raise(INPUT_EVENT_POWER_STATE_CHARGE, 0);
+  event_raise(INPUT_EVENT_CENTER_CONSOLE_POWER_STATE_CHARGE, 0);
   LOG_DEBUG("Charging\n");
 }
 

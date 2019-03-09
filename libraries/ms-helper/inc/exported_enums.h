@@ -25,7 +25,7 @@ typedef enum {
   NUM_EE_CHARGER_CONN_STATES,
 } EEChargerConnState;
 
-// Drive output
+// Pedal output
 // Mech brake + throttle
 #define EE_PEDAL_OUTPUT_DENOMINATOR (1 << 12)
 // Arbitrary 5% minimum pressure before considering it as engaged

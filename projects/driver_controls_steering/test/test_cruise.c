@@ -3,7 +3,7 @@
 #include "cruise.h"
 #include "delay.h"
 #include "event_queue.h"
-#include "input_event.h"
+#include "sc_input_event.h"
 #include "interrupt.h"
 #include "log.h"
 #include "ms_test_helpers.h"
@@ -23,9 +23,9 @@ void setup_test(void) {
   CanSettings can_settings = {
     .device_id = TEST_CRUISE_DEVICE_ID,
     .bitrate = CAN_HW_BITRATE_125KBPS,
-    .rx_event = INPUT_EVENT_CAN_RX,
-    .tx_event = INPUT_EVENT_CAN_TX,
-    .fault_event = INPUT_EVENT_CAN_FAULT,
+    .rx_event = INPUT_EVENT_STEERING_CAN_RX,
+    .tx_event = INPUT_EVENT_STEERING_CAN_TX,
+    .fault_event = INPUT_EVENT_STEERING_CAN_FAULT,
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },
     .loopback = true,
@@ -64,34 +64,34 @@ void test_cruise_can(void) {
   // Send motor velocity messages - hit "set" to use current speed and observe target speed
   LOG_DEBUG("Positive velocity\n");
   CAN_TRANSMIT_MOTOR_VELOCITY(20, 10);
-  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_STEERING_CAN_TX, INPUT_EVENT_STEERING_CAN_RX);
   TEST_ASSERT_TRUE(cruise_handle_event(cruise, &event_set));
   TEST_ASSERT_OK(event_process(&e));
   TEST_ASSERT_EQUAL(INPUT_EVENT_SPEED_UPDATE, e.id);
   TEST_ASSERT_EQUAL((20 + 10) / 2, e.data);
-  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_STEERING_CAN_TX, INPUT_EVENT_STEERING_CAN_RX);
   TEST_ASSERT_EQUAL((20 + 10) / 2, cruise_get_target_cms(cruise));
 
   // Handle negative velocity properly
   LOG_DEBUG("Negative velocity (average positive)\n");
   CAN_TRANSMIT_MOTOR_VELOCITY((uint16_t)-10, 20);
-  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_STEERING_CAN_TX, INPUT_EVENT_STEERING_CAN_RX);
   TEST_ASSERT_TRUE(cruise_handle_event(cruise, &event_set));
   TEST_ASSERT_OK(event_process(&e));
   TEST_ASSERT_EQUAL(INPUT_EVENT_SPEED_UPDATE, e.id);
   TEST_ASSERT_EQUAL((-10 + 20) / 2, e.data);
-  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_STEERING_CAN_TX, INPUT_EVENT_STEERING_CAN_RX);
   TEST_ASSERT_EQUAL((-10 + 20) / 2, cruise_get_target_cms(cruise));
 
   // If average velocity is negative, cap to 0 (ex. reversing)
   LOG_DEBUG("Negative velocity (cap to 0)\n");
   CAN_TRANSMIT_MOTOR_VELOCITY((uint16_t)-40, (uint16_t)-40);
-  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_STEERING_CAN_TX, INPUT_EVENT_STEERING_CAN_RX);
   TEST_ASSERT_TRUE(cruise_handle_event(cruise, &event_set));
   TEST_ASSERT_OK(event_process(&e));
   TEST_ASSERT_EQUAL(INPUT_EVENT_SPEED_UPDATE, e.id);
   TEST_ASSERT_EQUAL(0, e.data);
-  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_STEERING_CAN_TX, INPUT_EVENT_STEERING_CAN_RX);
   TEST_ASSERT_EQUAL(0, cruise_get_target_cms(cruise));
 }
 
