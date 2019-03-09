@@ -1,8 +1,8 @@
 #include <stdbool.h>
 #include <string.h>
 #include "log.h"
-#include "unity.h"
 #include "test_helpers.h"
+#include "unity.h"
 #include "x86_cmd.h"
 
 static char s_cmd[30];
