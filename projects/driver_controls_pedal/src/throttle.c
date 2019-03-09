@@ -16,6 +16,7 @@
 #include "event_queue.h"
 #include "log.h"
 #include "pc_input_event.h"
+#include "pedal_output.h"
 
 static ThrottleStorage s_throttle_storage;
 
@@ -116,6 +117,7 @@ static void prv_raise_event_timer_callback(SoftTimerId timer_id, void *context) 
         storage->position.numerator = prv_get_numerator_zone(reading_main, zone, storage);
         storage->reading_ok_flag = true;
         event_raise(pedal_events[zone], storage->position.numerator);
+        pedal_output_update(pedal_output_global(), PEDAL_OUTPUT_SOURCE_THROTTLE_STATE, zone);
         break;
       }
     }
@@ -125,6 +127,7 @@ static void prv_raise_event_timer_callback(SoftTimerId timer_id, void *context) 
     storage->reading_ok_flag = false;
     storage->position.zone = NUM_THROTTLE_ZONES;
     event_raise(INPUT_EVENT_PEDAL_FAULT, 0);
+    pedal_output_update(pedal_output_global(), PEDAL_OUTPUT_SOURCE_THROTTLE_STATE, EE_THROTTLE_FAULT);
   }
 
   soft_timer_start_millis(THROTTLE_UPDATE_PERIOD_MS, prv_raise_event_timer_callback, context, NULL);

@@ -38,6 +38,14 @@ typedef enum {
   NUM_EE_CONSOLE_OUTPUT_DIRECTIONS,
 } EEConsoleOutputDirection;
 
+typedef enum {
+  EE_THROTTLE_BRAKE = 0,
+  EE_THROTTLE_COAST,
+  EE_THROTTLE_ACCEL,
+  EE_THROTTLE_FAULT,
+  NUM_EE_THROTTLE_POSITIONS,
+} EEThrottleState;
+
 // Light type to be used with a SYSTEM_CAN_MESSAGE_LIGHTS_STATE message.
 typedef enum EELightType {
   EE_LIGHT_TYPE_HIGH_BEAMS = 0,
