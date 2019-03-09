@@ -6,11 +6,11 @@
 #include "can_ack.h"
 #include "can_msg_defs.h"
 #include "can_unpack.h"
+#include "cc_input_event.h"
 #include "delay.h"
 #include "event_queue.h"
 #include "exported_enums.h"
 #include "gpio.h"
-#include "cc_input_event.h"
 #include "interrupt.h"
 #include "ms_test_helpers.h"
 #include "soft_timer.h"
@@ -68,25 +68,29 @@ void test_emergency_fault(void) {
   Event e = { 0 };
   // Send once and ACK.
   power_distribution_controller_send_update(EE_POWER_STATE_IDLE);
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CENTER_CONSOLE_CAN_TX,
+                                    INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
 
   // Fail once then succeed
   ctx.returned_status = CAN_ACK_STATUS_INVALID;
   power_distribution_controller_send_update(EE_POWER_STATE_IDLE);
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CENTER_CONSOLE_CAN_TX,
+                                    INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_RETRY_POWER_STATE, e.id);
   TEST_ASSERT_EQUAL(EE_POWER_STATE_IDLE, e.data);
   ctx.returned_status = CAN_ACK_STATUS_OK;
   TEST_ASSERT_OK(power_distribution_controller_retry(&e));
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CENTER_CONSOLE_CAN_TX,
+                                    INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
 
   // Timeout (major issue)
   ctx.returned_status = CAN_ACK_STATUS_TIMEOUT;
   power_distribution_controller_send_update(EE_POWER_STATE_IDLE);
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CENTER_CONSOLE_CAN_TX,
+                                    INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(INPUT_EVENT_CENTER_CONSOLE_BPS_FAULT, e.id);
 }

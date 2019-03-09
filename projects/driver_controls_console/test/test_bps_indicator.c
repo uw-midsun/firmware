@@ -60,7 +60,8 @@ void test_bps_indicator_heartbeat(void) {
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_DRIVER_CONTROLS),
   };
   CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, EE_BPS_HEARTBEAT_STATE_OK);
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CENTER_CONSOLE_CAN_TX,
+                                    INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
   // Nothing should have happened, so no events should have been raised
   TEST_ASSERT_NOT_OK(event_process(&e));

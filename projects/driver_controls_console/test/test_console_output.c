@@ -19,7 +19,8 @@ void setup_test(void) {
   soft_timer_init();
   event_queue_init();
 
-  console_output_init(&s_storage, TEST_CONSOLE_OUTPUT_EVENT_FAULT, TEST_CONSOLE_OUTPUT_EVENT_UPDATE_REQ);
+  console_output_init(&s_storage, TEST_CONSOLE_OUTPUT_EVENT_FAULT,
+                      TEST_CONSOLE_OUTPUT_EVENT_UPDATE_REQ);
 }
 
 void teardown_test(void) {}

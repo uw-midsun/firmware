@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "calib.h"
+#include "can_msg_defs.h"
 #include "event_queue.h"
 #include "gpio.h"
 #include "gpio_it.h"
@@ -12,13 +13,12 @@
 #include "pc_input_event.h"
 #include "soft_timer.h"
 #include "throttle.h"
-#include "can_msg_defs.h"
 
+#include "brake_signal.h"
 #include "event_arbiter.h"
 #include "mech_brake_fsm.h"
 #include "pedal_fsm.h"
 #include "pedal_output.h"
-#include "brake_signal.h"
 
 #include "can.h"
 #include "crc32.h"

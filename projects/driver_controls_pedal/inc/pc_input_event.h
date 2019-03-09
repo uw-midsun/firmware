@@ -17,28 +17,27 @@ typedef enum {
   INPUT_EVENT_PEDAL_ACCEL,
   INPUT_EVENT_PEDAL_FAULT,
 
-   // Pedal Power state events
+  // Pedal Power state events
   INPUT_EVENT_PEDAL_POWER_STATE_OFF,
   INPUT_EVENT_PEDAL_POWER_STATE_DRIVE,
   INPUT_EVENT_PEDAL_POWER_STATE_CHARGE,
   INPUT_EVENT_PEDAL_POWER_STATE_FAULT,
 
-  //Pedal Control Stalk events
+  // Pedal Control Stalk events
   INPUT_EVENT_PEDAL_CONTROL_STALK_ANALOG_CC_RESUME,
-  
-  //Pedal Centre Console events
+
+  // Pedal Centre Console events
   INPUT_EVENT_PEDAL_CENTER_CONSOLE_DIRECTION_DRIVE,
   INPUT_EVENT_PEDAL_CENTER_CONSOLE_DIRECTION_REVERSE,
 
-  //Pedal direction events
+  // Pedal direction events
   // Direction state events
   INPUT_EVENT_PEDAL_DIRECTION_STATE_NEUTRAL,
   INPUT_EVENT_PEDAL_DIRECTION_STATE_FORWARD,
   INPUT_EVENT_PEDAL_DIRECTION_STATE_REVERSE,
 
-  //Pedal speed event
+  // Pedal speed event
   INPUT_EVENT_PEDAL_SPEED_UPDATE,
-
 
   NUM_INPUT_EVENTS,
 } InputEvent;

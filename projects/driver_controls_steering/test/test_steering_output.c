@@ -1,9 +1,9 @@
 #include "delay.h"
-#include "steering_output.h"
 #include "event_queue.h"
 #include "interrupt.h"
 #include "log.h"
 #include "soft_timer.h"
+#include "steering_output.h"
 #include "test_helpers.h"
 #include "unity.h"
 
@@ -19,7 +19,8 @@ void setup_test(void) {
   soft_timer_init();
   event_queue_init();
 
-  steering_output_init(&s_storage, TEST_STEERING_OUTPUT_EVENT_FAULT, TEST_STEERING_OUTPUT_EVENT_UPDATE_REQ);
+  steering_output_init(&s_storage, TEST_STEERING_OUTPUT_EVENT_FAULT,
+                       TEST_STEERING_OUTPUT_EVENT_UPDATE_REQ);
 }
 
 void teardown_test(void) {}
