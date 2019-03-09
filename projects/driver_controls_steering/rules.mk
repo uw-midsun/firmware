@@ -6,4 +6,8 @@
 # $(T)_SRC: $(T)_DIR/src{/$(PLATFORM)}/*.{c,s}
 
 # Specify the libraries you want to include
-$(T)_DEPS := ms-common
+$(T)_DEPS := ms-common ms-helper
+
+$(T)_INC_DIRS := $($(T)_INC_DIRS) $($(T)_DIR)/inc/fsm
+$(T)_SRC_DIRS := $($(T)_SRC_ROOT) $($(T)_SRC_ROOT)/$(PLATFORM) $($(T)_SRC_ROOT)/fsm
+$(T)_SRC := $(call find_in,$($(T)_SRC_DIRS),*.c)

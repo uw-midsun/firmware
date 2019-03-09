@@ -1,6 +1,6 @@
-// Updates to the drive output module are driven by the update requested events
+// Updates to the pedal output module are driven by the update requested events
 
-#include "drive_output.h"
+#include "pedal_output.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
 #include "log.h"
@@ -42,6 +42,8 @@ static bool prv_guard_engaged(const Event *e) {
 static bool prv_guard_disengaged(const Event *e) {
   // The brake must be engaged in order for gear shifts to happen.
   // We allow shifting into neutral at any time.
+
+  // Needs a listener - these events will not be raised locally
   switch (e->id) {
     case INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE:
     case INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE:
@@ -58,7 +60,7 @@ static void prv_engaged_output(Fsm *fsm, const Event *e, void *context) {
 
   int16_t position = INT16_MAX;
   if (status_ok(mech_brake_get_position(mech_brake_global(), &position))) {
-    drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_MECH_BRAKE, position);
+    pedal_output_update(pedal_output_global(), PEDAL_OUTPUT_SOURCE_MECH_BRAKE, position);
   }
 }
 
@@ -68,7 +70,7 @@ static void prv_disengaged_output(Fsm *fsm, const Event *e, void *context) {
 
   int16_t position = INT16_MAX;
   if (status_ok(mech_brake_get_position(mech_brake_global(), &position))) {
-    drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_MECH_BRAKE, position);
+    pedal_output_update(pedal_output_global(), PEDAL_OUTPUT_SOURCE_MECH_BRAKE, position);
   }
 }
 

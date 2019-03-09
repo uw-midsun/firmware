@@ -3,7 +3,7 @@
 #include "ads1015_def.h"
 #include "delay.h"
 #include "gpio_it.h"
-#include "input_event.h"
+#include "pc_input_event.h"
 #include "interrupt.h"
 #include "log.h"
 #include "test_helpers.h"

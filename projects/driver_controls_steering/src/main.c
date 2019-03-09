@@ -2,50 +2,35 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "bps_indicator.h"
-#include "calib.h"
-#include "center_console.h"
-#include "control_stalk.h"
-#include "debug_led.h"
-#include "event_queue.h"
+#include "can.h"
+#include "can_msg_defs.h"
 #include "gpio.h"
 #include "gpio_it.h"
-#include "heartbeat_rx.h"
 #include "i2c.h"
-#include "input_event.h"
 #include "interrupt.h"
 #include "log.h"
-#include "power_distribution_controller.h"
+
+#include "calib.h"
+#include "control_stalk.h"
+#include "cruise.h"
+#include "debug_led.h"
+#include "event_arbiter.h"
+#include "event_queue.h"
+#include "sc_input_event.h"
+#include "sc_cfg.h"
 #include "soft_timer.h"
-#include "throttle.h"
+#include "steering_output.h"
 
 #include "cruise_fsm.h"
-#include "direction_fsm.h"
-#include "event_arbiter.h"
-#include "mechanical_brake_fsm.h"
-#include "pedal_fsm.h"
-#include "power_fsm.h"
-
-#include "brake_signal.h"
-#include "hazards_fsm.h"
-#include "headlight_fsm.h"
 #include "horn_fsm.h"
 #include "turn_signal_fsm.h"
-
-#include "cruise.h"
-#include "drive_output.h"
-
-#include "can.h"
-#include "crc32.h"
-#include "dc_calib.h"
-#include "dc_cfg.h"
-#include "flash.h"
 
 typedef StatusCode (*SteeringControlsFsmInitFn)(Fsm *fsm, EventArbiterStorage *storage);
 
 typedef enum {
   STEERING_CONTROLS_FSM_CRUISE = 0,
   STEERING_CONTROLS_FSM_TURN_SIGNALS,
+  STEERING_CONTROLS_FSM_HORN,
   NUM_STEERING_CONTROLS_FSMS,
 } SteeringControlsFsm;
 
@@ -53,7 +38,7 @@ static CanStorage s_can;
 static Fsm s_fsms[NUM_STEERING_CONTROLS_FSMS];
 
 static ControlStalk s_stalk;
-static Ads1015Storage s_stalk_ads1015;
+static EventArbiterStorage s_event_arbiter;
 
 int main(void) {
   gpio_init();
@@ -67,21 +52,16 @@ int main(void) {
   const CanSettings can_settings = {
     .device_id = SC_CFG_CAN_DEVICE_ID,
     .bitrate = SC_CFG_CAN_BITRATE,
-    .rx_event = INPUT_EVENT_CAN_RX,
-    .tx_event = INPUT_EVENT_CAN_TX,
-    .fault_event = INPUT_EVENT_CAN_FAULT,
+    .rx_event = INPUT_EVENT_STEERING_CAN_RX,
+    .tx_event = INPUT_EVENT_STEERING_CAN_TX,
+    .fault_event = INPUT_EVENT_STEERING_CAN_FAULT,
     .tx = SC_CFG_CAN_TX,
     .rx = SC_CFG_CAN_RX,
     .loopback = false,
   };
   can_init(&s_can, &can_settings);
-  can_add_filter(SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY);
 
-  GpioAddress stalk_int_pin = SC_CFG_STALK_IO_INT_PIN;
-  GpioAddress stalk_ready_pin = SC_CFG_STALK_ADC_RDY_PIN;
-  gpio_expander_init(&s_stalk_expander, SC_CFG_I2C_BUS_PORT, SC_CFG_STALK_IO_ADDR, &stalk_int_pin);
-  ads1015_init(&s_stalk_ads1015, SC_CFG_I2C_BUS_PORT, SC_CFG_STALK_ADC_ADDR, &stalk_ready_pin);
-  control_stalk_init(&s_stalk, &s_stalk_ads1015, &s_stalk_expander);
+  control_stalk_init(&s_stalk);
 
   cruise_init(cruise_global());
   steering_output_init(steering_output_global(), INPUT_EVENT_STEERING_WATCHDOG_FAULT,
@@ -103,11 +83,11 @@ int main(void) {
   Event e;
   while (true) {
     if (status_ok(event_process(&e))) {
-#ifdef DC_CFG_DEBUG_PRINT_EVENTS
+#ifdef SC_CFG_DEBUG_PRINT_EVENTS
       switch (e.id) {
-        case INPUT_EVENT_DRIVE_UPDATE_REQUESTED:
-        case INPUT_EVENT_CAN_RX:
-        case INPUT_EVENT_CAN_TX:
+        case INPUT_EVENT_STEERING_UPDATE_REQUESTED:
+        case INPUT_EVENT_STEERING_CAN_RX:
+        case INPUT_EVENT_STEERING_CAN_TX:
           break;
         default:
           LOG_DEBUG("e %d %d\n", e.id, e.data);

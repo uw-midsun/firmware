@@ -1,7 +1,7 @@
-// Updates to the drive output module are driven by the update requested events
+// Updates to the pedal output module are driven by the update requested events
 
 #include "pedal_fsm.h"
-#include "drive_output.h"
+#include "pedal_output.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
 #include "log.h"
@@ -37,7 +37,7 @@ FSM_STATE_TRANSITION(state_accel) {
 }
 
 // Pedal FSM output functions
-static void prv_update_drive_output(void) {
+static void prv_update_pedal_output(void) {
   ThrottlePosition position = { 0 };
   // TODO(ELEC-431): Could just remove UPDATE_REQUESTED transitions and use the actual events + data
   StatusCode status = throttle_get_position(throttle_global(), &position);
@@ -52,7 +52,7 @@ static void prv_update_drive_output(void) {
   };
 
   int16_t throttle_position = zone_multiplier[position.zone] * position.numerator;
-  drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_THROTTLE, throttle_position);
+  pedal_output_update(pedal_output_global(), PEDAL_OUTPUT_SOURCE_THROTTLE, throttle_position);
 }
 
 static bool prv_brake_guard(const Event *e) {
@@ -66,8 +66,8 @@ static void prv_brake_output(Fsm *fsm, const Event *e, void *context) {
   event_arbiter_set_guard_fn(guard, prv_brake_guard);
 
   // Mechanical brake can cause the throttle zone to be in a non-brake zone while in brake state
-  // We'll still update the drive output with the throttle position for telemetry
-  prv_update_drive_output();
+  // We'll still update the pedal output with the throttle position for telemetry
+  prv_update_pedal_output();
 }
 
 static void prv_not_brake_output(Fsm *fsm, const Event *e, void *context) {
@@ -75,7 +75,7 @@ static void prv_not_brake_output(Fsm *fsm, const Event *e, void *context) {
   event_arbiter_set_guard_fn(guard, NULL);
 
   // Should just be coast/accel
-  prv_update_drive_output();
+  prv_update_pedal_output();
 }
 
 StatusCode pedal_fsm_init(Fsm *fsm, EventArbiterStorage *storage) {

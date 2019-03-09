@@ -2,7 +2,7 @@
 #include "can_transmit.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
-#include "input_event.h"
+#include "sc_input_event.h"
 
 // Turn signal FSM state definitions
 FSM_DECLARE_STATE(state_no_signal);
@@ -16,16 +16,16 @@ FSM_STATE_TRANSITION(state_no_signal) {
 }
 
 FSM_STATE_TRANSITION(state_left_signal) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_OFF, state_no_signal);
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_FAULT, state_no_signal);
+  FSM_ADD_TRANSITION(INPUT_EVENT_STEERING_POWER_STATE_OFF, state_no_signal);
+  FSM_ADD_TRANSITION(INPUT_EVENT_STEERING_POWER_STATE_FAULT, state_no_signal);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_NONE, state_no_signal);
   FSM_ADD_TRANSITION(INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_RIGHT, state_right_signal);
 }
 
 FSM_STATE_TRANSITION(state_right_signal) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_OFF, state_no_signal);
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_FAULT, state_no_signal);
+  FSM_ADD_TRANSITION(INPUT_EVENT_STEERING_POWER_STATE_OFF, state_no_signal);
+  FSM_ADD_TRANSITION(INPUT_EVENT_STEERING_POWER_STATE_FAULT, state_no_signal);
 
   FSM_ADD_TRANSITION(INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_LEFT, state_left_signal);
   FSM_ADD_TRANSITION(INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_NONE, state_no_signal);

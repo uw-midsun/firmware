@@ -7,9 +7,9 @@
 #define SC_CFG_CAN_DEVICE_ID SYSTEM_CAN_DEVICE_STEERING_CONTROLS
 #define SC_CFG_CAN_BITRATE CAN_HW_BITRATE_500KBPS
 
-#define CC_CFG_CAN_RX \
+#define SC_CFG_CAN_RX \
   { GPIO_PORT_A, 11 }
-#define CC_CFG_CAN_TX \
+#define SC_CFG_CAN_TX \
   { GPIO_PORT_A, 12 }
 
 #define SC_CFG_I2C_BUS_PORT I2C_PORT_1
@@ -17,3 +17,23 @@
   { GPIO_PORT_B, 9 }
 #define SC_CFG_I2C_BUS_SCL \
   { GPIO_PORT_B, 8 }
+
+// Stalk I/O Pins
+#define SC_CFG_AN0_CC_DISTANCE_PIN \
+  { GPIO_PORT_A, 0 }
+#define SC_CFG_AN1_CC_SPEED_PIN \
+  { GPIO_PORT_A, 1 }
+#define SC_CFG_AN2_CC_CANCEL_RESUME_PIN \
+  { GPIO_PORT_A, 2 }
+#define SC_CFG_AN3_CC_TURN_SIGNAL_PIN \
+  { GPIO_PORT_A, 3 }
+#define SC_CFG_CC_SET_PIN \
+  { GPIO_PORT_A, 4 }
+#define SC_CFG_CC_ON_OFF_PIN \
+  { GPIO_PORT_A, 5 }
+#define SC_CFG_LANE_ASSIST_PIN \
+  { GPIO_PORT_A, 6 }
+#define SC_CFG_HIGH_BEAM_FWD_PIN \
+  { GPIO_PORT_A, 7 }
+#define SC_CFG_HIGH_BEAM_BACK_PIN \
+  { GPIO_PORT_B, 0 }
