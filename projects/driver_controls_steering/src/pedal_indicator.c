@@ -1,8 +1,8 @@
 #include "pedal_indicator.h"
 #include "can_msg_defs.h"
 #include "can_unpack.h"
-#include "sc_input_event.h"
 #include "exported_enums.h"
+#include "sc_input_event.h"
 
 static StatusCode prv_handle_mech_brake(const CanMessage *msg, void *context,
                                         CanAckStatus *ack_reply) {
@@ -19,7 +19,7 @@ static StatusCode prv_handle_mech_brake(const CanMessage *msg, void *context,
                          mech_brake_pressed);
   }
 
-  switch(throttle_state) {
+  switch (throttle_state) {
     case EE_THROTTLE_BRAKE:
       event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_STEERING_PEDAL_BRAKE, 0);
       break;

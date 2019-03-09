@@ -6,13 +6,12 @@
 #include "sc_input_event.h"
 
 static StatusCode prv_handle_power_state(const CanMessage *msg, void *context,
-                                        CanAckStatus *ack_reply) {
+                                         CanAckStatus *ack_reply) {
   uint8_t state = 0;
   CAN_UNPACK_POWER_STATE(msg, &state);
 
   if (state == EE_POWER_STATE_IDLE) {
-    event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_STEERING_POWER_STATE_OFF,
-                         0);
+    event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_STEERING_POWER_STATE_OFF, 0);
   }
 
   return STATUS_CODE_OK;
