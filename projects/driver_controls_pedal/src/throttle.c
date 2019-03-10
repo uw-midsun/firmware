@@ -14,6 +14,7 @@
 #include <string.h>
 #include "critical_section.h"
 #include "event_queue.h"
+#include "exported_enums.h"
 #include "log.h"
 #include "pc_input_event.h"
 #include "pedal_output.h"

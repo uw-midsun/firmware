@@ -3,7 +3,7 @@
 #include "can_msg_defs.h"
 #include "can_transmit.h"
 #include "can_unpack.h"
-#include "cc_input_event.h"
+#include "pc_input_event.h"
 #include "debug_led.h"
 #include "exported_enums.h"
 
@@ -14,7 +14,7 @@ static StatusCode prv_handle_heartbeat(const CanMessage *msg, void *context,
 
   EEBpsHeartbeatState state = data;
   if (state != EE_BPS_HEARTBEAT_STATE_OK) {
-    event_raise_priority(EVENT_PRIORITY_HIGHEST, INPUT_EVENT_CENTER_CONSOLE_BPS_FAULT, 0);
+    event_raise_priority(EVENT_PRIORITY_HIGHEST, INPUT_EVENT_PEDAL_POWER_STATE_FAULT, 0);
   }
 
   return STATUS_CODE_OK;
@@ -22,7 +22,7 @@ static StatusCode prv_handle_heartbeat(const CanMessage *msg, void *context,
 
 static StatusCode prv_handle_powertrain_fault(const CanMessage *msg, void *context,
                                               CanAckStatus *ack_reply) {
-  event_raise_priority(EVENT_PRIORITY_HIGHEST, INPUT_EVENT_CENTER_CONSOLE_BPS_FAULT, 0);
+  event_raise_priority(EVENT_PRIORITY_HIGHEST, INPUT_EVENT_PEDAL_POWER_STATE_FAULT, 0);
 
   return STATUS_CODE_OK;
 }

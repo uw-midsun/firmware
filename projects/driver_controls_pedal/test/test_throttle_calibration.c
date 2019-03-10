@@ -1,7 +1,7 @@
 #include "ads1015.h"
 #include "calib.h"
 #include "crc32.h"
-#include "dc_calib.h"
+#include "pc_calib.h"
 #include "delay.h"
 #include "event_queue.h"
 #include "flash.h"
