@@ -2,11 +2,13 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "bps_indicator.h"
 #include "calib.h"
 #include "can_msg_defs.h"
 #include "event_queue.h"
 #include "gpio.h"
 #include "gpio_it.h"
+#include "heartbeat_rx.h"
 #include "i2c.h"
 #include "interrupt.h"
 #include "log.h"
@@ -19,6 +21,7 @@
 #include "mech_brake_fsm.h"
 #include "pedal_fsm.h"
 #include "pedal_output.h"
+#include "power_state_indicator.h"
 
 #include "can.h"
 #include "crc32.h"
@@ -41,6 +44,7 @@ static EventArbiterStorage s_event_arbiter;
 static Fsm s_fsms[NUM_PEDAL_CONTROLS_FSMS];
 static CanStorage s_can;
 static Fsm s_fsms[NUM_PEDAL_CONTROLS_FSMS];
+static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
 
 int main(void) {
   gpio_init();
@@ -70,6 +74,16 @@ int main(void) {
   };
 
   i2c_init(PC_CFG_I2C_BUS_PORT, &i2c_settings);
+
+  // Power state indicator
+  power_state_indicator_init();
+
+  // BPS heartbeat
+  bps_indicator_init();
+
+  // Powertrain heartbeat
+  heartbeat_rx_register_handler(&s_powertrain_heartbeat, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
+                                heartbeat_rx_auto_ack_handler, NULL);
 
   GpioAddress pedal_ads1015_ready = PC_CFG_PEDAL_ADC_RDY_PIN;
   ads1015_init(&s_pedal_ads1015, PC_CFG_I2C_BUS_PORT, PC_CFG_PEDAL_ADC_ADDR, &pedal_ads1015_ready);

@@ -71,8 +71,6 @@ int main(void) {
   // BPS heartbeat
   bps_indicator_init();
 
-  // Not sure that this does anything since NULL context is being passed
-  // and none of the functions called on callback raise an event
   // Powertrain heartbeat
   heartbeat_rx_register_handler(&s_powertrain_heartbeat, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
                                 heartbeat_rx_auto_ack_handler, NULL);
