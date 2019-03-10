@@ -50,8 +50,8 @@ int main(void) {
   gpio_it_init();
   soft_timer_init();
   event_queue_init();
-  // crc32_init();
-  // flash_init();
+  crc32_init();
+  flash_init();
 
   const CanSettings can_settings = {
     .device_id = SC_CFG_CAN_DEVICE_ID,
