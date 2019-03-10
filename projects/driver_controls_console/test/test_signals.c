@@ -1,11 +1,11 @@
 #include "can.h"
 #include "can_unpack.h"
+#include "cc_input_event.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
 #include "hazards_fsm.h"
 #include "headlight_fsm.h"
 #include "horn_fsm.h"
-#include "cc_input_event.h"
 #include "interrupt.h"
 #include "log.h"
 #include "ms_test_helpers.h"
@@ -148,13 +148,15 @@ void test_signals_headlights(void) {
   prv_clock_expected_lights(expected_lights, SIZEOF_ARRAY(expected_lights));
 
   LOG_DEBUG("Also turning on highbeams\n");
-  TEST_SIGNALS_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_CONTROL_STALK_DIGITAL_HEADLIGHT_FWD_PRESSED, true);
+  TEST_SIGNALS_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_CONTROL_STALK_DIGITAL_HEADLIGHT_FWD_PRESSED,
+                           true);
   expected_lights[0].state = EE_LIGHT_STATE_OFF;
   expected_lights[2].state = EE_LIGHT_STATE_ON;
   prv_clock_expected_lights(expected_lights, SIZEOF_ARRAY(expected_lights));
 
   LOG_DEBUG("Turning off highbeams - revert to DRLs\n");
-  TEST_SIGNALS_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_CONTROL_STALK_DIGITAL_HEADLIGHT_FWD_RELEASED, true);
+  TEST_SIGNALS_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_CONTROL_STALK_DIGITAL_HEADLIGHT_FWD_RELEASED,
+                           true);
   expected_lights[0].state = EE_LIGHT_STATE_ON;
   expected_lights[2].state = EE_LIGHT_STATE_OFF;
   prv_clock_expected_lights(expected_lights, SIZEOF_ARRAY(expected_lights));
@@ -165,7 +167,8 @@ void test_signals_headlights(void) {
   prv_clock_expected_lights(expected_lights, SIZEOF_ARRAY(expected_lights));
 
   LOG_DEBUG("Turning on highbeams\n");
-  TEST_SIGNALS_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_CONTROL_STALK_DIGITAL_HEADLIGHT_FWD_PRESSED, true);
+  TEST_SIGNALS_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_CONTROL_STALK_DIGITAL_HEADLIGHT_FWD_PRESSED,
+                           true);
   expected_lights[2].state = EE_LIGHT_STATE_ON;
   prv_clock_expected_lights(expected_lights, SIZEOF_ARRAY(expected_lights));
   prv_dump_fsms();
@@ -179,7 +182,8 @@ void test_signals_headlights(void) {
   prv_clock_expected_lights(expected_lights, SIZEOF_ARRAY(expected_lights));
 
   LOG_DEBUG("Turning off highbeams - revert to DRLs\n");
-  TEST_SIGNALS_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_CONTROL_STALK_DIGITAL_HEADLIGHT_FWD_RELEASED, true);
+  TEST_SIGNALS_CLOCK_EVENT(INPUT_EVENT_CENTER_CONSOLE_CONTROL_STALK_DIGITAL_HEADLIGHT_FWD_RELEASED,
+                           true);
   expected_lights[0].state = EE_LIGHT_STATE_ON;
   expected_lights[2].state = EE_LIGHT_STATE_OFF;
   prv_clock_expected_lights(expected_lights, SIZEOF_ARRAY(expected_lights));
