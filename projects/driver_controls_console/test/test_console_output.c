@@ -1,5 +1,5 @@
-#include "delay.h"
 #include "console_output.h"
+#include "delay.h"
 #include "event_queue.h"
 #include "interrupt.h"
 #include "log.h"
