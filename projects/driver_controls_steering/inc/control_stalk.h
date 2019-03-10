@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <stddef.h>
 #include "adc.h"
+#include "ads1015.h"
 #include "soft_timer.h"
 
 // Resistor divider value in ohms

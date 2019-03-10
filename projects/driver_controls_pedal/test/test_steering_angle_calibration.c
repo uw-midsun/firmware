@@ -5,7 +5,7 @@
 #include "steering_angle_calibration.h"
 
 #include "ads1015.h"
-#include "dc_cfg.h"
+#include "pc_cfg.h"
 #include "delay.h"
 #include "gpio.h"
 #include "gpio_it.h"
@@ -27,11 +27,11 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
 
-  GPIOAddress ready_pin = DC_CFG_PEDAL_ADC_RDY_PIN;
+  GpioAddress ready_pin = PC_CFG_PEDAL_ADC_RDY_PIN;
   const I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,
-    .scl = DC_CFG_I2C_BUS_SCL,
-    .sda = DC_CFG_I2C_BUS_SDA,
+    .scl = PC_CFG_I2C_BUS_SCL,
+    .sda = PC_CFG_I2C_BUS_SDA,
   };
 
   SteeringAngleSettings calib_settings = {
@@ -40,9 +40,9 @@ void setup_test(void) {
   };
   steering_angle_calib_init(&s_calibration_storage, &calib_settings);
 
-  i2c_init(DC_CFG_I2C_BUS_PORT, &i2c_settings);
+  i2c_init(PC_CFG_I2C_BUS_PORT, &i2c_settings);
 
-  ads1015_init(s_calibration_storage.settings->ads1015, DC_CFG_I2C_BUS_PORT, ADS1015_ADDRESS_GND,
+  ads1015_init(s_calibration_storage.settings->ads1015, PC_CFG_I2C_BUS_PORT, ADS1015_ADDRESS_GND,
                &ready_pin);
 }
 

@@ -3,7 +3,7 @@
 #include "event_queue.h"
 #include "gpio_expander.h"
 #include "i2c.h"
-#include "input_event.h"
+#include "cc_input_event.h"
 #include "led_output.h"
 #include "log.h"
 #include "test_helpers.h"

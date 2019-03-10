@@ -47,7 +47,7 @@ void test_pedal_output_working(void) {
   TEST_ASSERT_NOT_OK(ret);
 
   // Reenable and fault
-  drive_output_set_enabled(&s_storage, true);
+  pedal_output_set_enabled(&s_storage, true);
   delay_ms(PEDAL_OUTPUT_WATCHDOG_MS);
   ret = event_process(&e);
   TEST_ASSERT_OK(ret);
