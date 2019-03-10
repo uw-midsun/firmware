@@ -45,7 +45,6 @@ static void *prv_server_thread(void *context) {
   X86SocketThread *thread = context;
 
   x86_interrupt_pthread_init();
-  pthread_barrier_wait(&thread->barrier);
 
   int server_fd = X86_SOCKET_INVALID_FD;
   if (!status_ok(prv_setup_socket(thread, &server_fd))) {
@@ -54,6 +53,7 @@ static void *prv_server_thread(void *context) {
   }
 
   LOG_DEBUG("Started RX server for %s (PID %d)\n", thread->module_name, getpid());
+  pthread_barrier_wait(&thread->barrier);
 
   // Mutex unlocked when thread should exit
   while (pthread_mutex_trylock(&thread->keep_alive) != 0) {
@@ -150,6 +150,7 @@ StatusCode x86_socket_write(int client_fd, const char *tx_data, size_t tx_len) {
   ssize_t write_len = write(client_fd, tx_data, tx_len);
 
   if (write_len < 0) {
+    LOG_CRITICAL("x86_socket_write failed: %s\n", strerror(errno));
     return status_code(STATUS_CODE_INTERNAL_ERROR);
   }
 
@@ -159,11 +160,21 @@ StatusCode x86_socket_write(int client_fd, const char *tx_data, size_t tx_len) {
 int test_x86_socket_client_init(const char *module_name) {
   // Set up connection to abstract domain socket @[pid]/[prog]/test_x86_socket
   int client_fd = socket(AF_UNIX, SOCK_SEQPACKET, 0);
+
+  if (client_fd < 0) {
+    LOG_CRITICAL("Failed to create socket: %s\n", strerror(errno));
+  }
+
   struct sockaddr_un addr = { .sun_family = AF_UNIX };
   snprintf(addr.sun_path + 1, sizeof(addr.sun_path) - 1, "%d/%s/%s", getpid(),
            program_invocation_short_name, module_name);
-  connect(client_fd, (struct sockaddr_un *)&addr,
-          offsetof(struct sockaddr_un, sun_path) + 1 + strlen(addr.sun_path + 1));
+
+  int result = connect(client_fd, (struct sockaddr_un *)&addr,
+                       offsetof(struct sockaddr_un, sun_path) + 1 + strlen(addr.sun_path + 1));
+
+  if (result < 0) {
+    LOG_CRITICAL("Failed to connect to socket: %s\n", strerror(errno));
+  }
 
   return client_fd;
 }
