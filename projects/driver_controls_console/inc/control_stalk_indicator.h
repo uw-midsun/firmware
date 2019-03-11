@@ -1,0 +1,16 @@
+#pragma once
+// Handles Control Stalk events
+// Requires CAN, event queue to be initialized
+
+//Raises INPUT_EVENT_CENTER_CONSOLE_CONTROL_STALK_ANALOG_CC_RESUME,
+//INPUT_EVENT_CENTER_CONSOLE_CONTROL_STALK_DIGITAL_HEADLIGHT_FWD_PRESSED,
+//INPUT_EVENT_CENTER_CONSOLE_CONTROL_STALK_DIGITAL_HEADLIGHT_FWD_RELEASED,
+//INPUT_EVENT_CENTER_CONSOLE_CONTROL_STALK_ANALOG_TURN_SIGNAL_LEFT, or 
+//INPUT_EVENT_CENTER_CONSOLE_CONTROL_STALK_ANALOG_TURN_SIGNAL_RIGHT
+
+#include "can.h"
+#include "status.h"
+#include "exported_enums.h"
+
+// Register CAN rx handler for Control stalk
+StatusCode control_stalk_indicator_init();

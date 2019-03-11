@@ -13,13 +13,13 @@ static StatusCode prv_handle_drive(const CanMessage *msg, void *context, CanAckS
   status_ok_or_return(CAN_UNPACK_CONSOLE_OUTPUT(msg, (uint16_t *)&direction));
 
   // Basic input validation
-  if (direction < 0 || direction >= NUM_EE_DRIVE_OUTPUT_DIRECTIONS || cruise < 0 ||
-      pedal < -EE_DRIVE_OUTPUT_DENOMINATOR || pedal > EE_DRIVE_OUTPUT_DENOMINATOR ||
-      mech_brake < 0 || mech_brake > EE_DRIVE_OUTPUT_DENOMINATOR) {
+  if (direction < 0 || direction >= NUM_EE_PEDAL_OUTPUT_DIRECTIONS || cruise < 0 ||
+      pedal < -EE_PEDAL_OUTPUT_DENOMINATOR || pedal > EE_PEDAL_OUTPUT_DENOMINATOR ||
+      mech_brake < 0 || mech_brake > EE_PEDAL_OUTPUT_DENOMINATOR) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
-  if (mech_brake > EE_DRIVE_OUTPUT_MECH_THRESHOLD) {
+  if (mech_brake > EE_PEDAL_OUTPUT_MECH_THRESHOLD) {
     // Mechanical brake is active - force into coast/regen
     motor_controller_set_throttle(controller, MIN(0, pedal), direction);
   } else if (cruise > 0) {
