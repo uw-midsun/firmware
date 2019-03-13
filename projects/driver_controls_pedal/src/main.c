@@ -5,6 +5,7 @@
 #include "bps_indicator.h"
 #include "calib.h"
 #include "can_msg_defs.h"
+#include "direction_indicator.h"
 #include "event_queue.h"
 #include "gpio.h"
 #include "gpio_it.h"
@@ -77,6 +78,9 @@ int main(void) {
 
   // Power state indicator
   power_state_indicator_init();
+
+  // Direction state indicator
+  direction_indicator_init();
 
   // BPS heartbeat
   bps_indicator_init();
