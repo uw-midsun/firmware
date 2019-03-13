@@ -38,8 +38,8 @@ static StatusCode prv_rx_handler(const CanMessage *msg, void *context, CanAckSta
     case SYSTEM_CAN_MESSAGE_LIGHTS_STATE:
       status_ok_or_return(CAN_UNPACK_LIGHTS_STATE(msg, &param_1, &param_2));
       LightsEvent e_id;
-      status_ok_or_return(
-          prv_get_event_id((LightsCanEventType) settings->event_type[param_1], (EELightState)param_2, &e_id));
+      status_ok_or_return(prv_get_event_id((LightsCanEventType)settings->event_type[param_1],
+                                           (EELightState)param_2, &e_id));
       return event_raise(e_id, settings->event_data_lookup[param_1]);
     case SYSTEM_CAN_MESSAGE_HORN:
       status_ok_or_return(CAN_UNPACK_HORN(msg, &param_1));

@@ -20,12 +20,12 @@ static StatusCode prv_handle_drive(const CanMessage *msg, void *context, CanAckS
 
   if (mech_brake > EE_DRIVE_OUTPUT_MECH_THRESHOLD) {
     // Mechanical brake is active - force into coast/regen
-    motor_controller_set_throttle(controller, MIN(0, pedal), (EEDriveOutputDirection) direction);
+    motor_controller_set_throttle(controller, MIN(0, pedal), (EEDriveOutputDirection)direction);
   } else if (cruise > 0) {
     // Enter cruise state
     motor_controller_set_cruise(controller, cruise);
   } else {
-    motor_controller_set_throttle(controller, pedal, (EEDriveOutputDirection) direction);
+    motor_controller_set_throttle(controller, pedal, (EEDriveOutputDirection)direction);
   }
 
   return STATUS_CODE_OK;
