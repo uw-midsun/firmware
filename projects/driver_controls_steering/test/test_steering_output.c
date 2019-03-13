@@ -58,11 +58,7 @@ void test_steering_output_working(void) {
 void test_steering_output_watchdog(void) {
   steering_output_set_enabled(&s_storage, true);
 
-  for (size_t i = 0; i < (NUM_STEERING_OUTPUT_SOURCES - 1); i++) {
-    // Update all sources but one
-    steering_output_update(&s_storage, i, i * 100);
-  }
-
+  // Don't update the single output source
   delay_ms(STEERING_OUTPUT_WATCHDOG_MS);
 
   // Should have raised a fault event since we were missing a source

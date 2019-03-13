@@ -4,6 +4,7 @@
 
 #include "can.h"
 #include "can_msg_defs.h"
+#include "crc32.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "i2c.h"
@@ -17,6 +18,7 @@
 #include "debug_led.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
+#include "flash.h"
 #include "heartbeat_rx.h"
 #include "power_state_indicator.h"
 #include "sc_cfg.h"
@@ -25,6 +27,7 @@
 #include "steering_output.h"
 
 #include "cruise_fsm.h"
+#include "highbeam_fsm.h"
 #include "horn_fsm.h"
 #include "turn_signal_fsm.h"
 
@@ -83,8 +86,9 @@ int main(void) {
   event_arbiter_init(&s_event_arbiter);
   SteeringControlsFsmInitFn init_fns[] = {
     cruise_fsm_init,
-    turn_signal_fsm_init,
+    highbeam_fsm_init,
     horn_fsm_init,
+    turn_signal_fsm_init,
   };
 
   for (size_t i = 0; i < NUM_STEERING_CONTROLS_FSMS; i++) {
