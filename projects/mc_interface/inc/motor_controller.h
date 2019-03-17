@@ -93,7 +93,7 @@ StatusCode motor_controller_set_update_cbs(MotorControllerStorage *controller,
 // |throttle| should be -EE_PEDAL_OUTPUT_DENOMINATOR to EE_PEDAL_OUTPUT_DENOMINATOR
 // where |throttle| < 0: brake, |throttle| == 0: coast, |throttle| > 0: accel
 StatusCode motor_controller_set_throttle(MotorControllerStorage *controller, int16_t throttle,
-                                         EEPedalOutputDirection direction);
+                                         EEDriveOutputDirection direction);
 
 // Switch the motor controllers to cruise control
 StatusCode motor_controller_set_cruise(MotorControllerStorage *controller, int16_t speed_cms);

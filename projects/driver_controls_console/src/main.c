@@ -9,13 +9,12 @@
 #include "cc_cfg.h"
 #include "cc_input_event.h"
 #include "center_console.h"
-#include "console_output.h"
+#include "drive_output.h"
 #include "crc32.h"
 #include "event_arbiter.h"
 #include "flash.h"
 #include "heartbeat_rx.h"
 #include "led_output.h"
-#include "mech_brake_indicator.h"
 #include "power_distribution_controller.h"
 
 #include "direction_fsm.h"
@@ -86,10 +85,7 @@ int main(void) {
   heartbeat_rx_register_handler(&s_powertrain_heartbeat, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
                                 heartbeat_rx_auto_ack_handler, NULL);
 
-  // Mech Brake
-  mech_brake_indicator_init();
-
-  console_output_init(console_output_global(), INPUT_EVENT_CENTER_CONSOLE_WATCHDOG_FAULT,
+  drive_output_init(drive_output_global(), INPUT_EVENT_CENTER_CONSOLE_WATCHDOG_FAULT,
                       INPUT_EVENT_CENTER_CONSOLE_UPDATE_REQUESTED);
 
   event_arbiter_init(&s_event_arbiter);

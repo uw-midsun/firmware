@@ -105,12 +105,14 @@
     status;                                                       \
   })
 
-#define CAN_TRANSMIT_CONSOLE_OUTPUT(direction_u16)  \
-  ({                                                \
-    CanMessage msg = { 0 };                         \
-    CAN_PACK_CONSOLE_OUTPUT(&msg, (direction_u16)); \
-    StatusCode status = can_transmit(&msg, NULL);   \
-    status;                                         \
+#define CAN_TRANSMIT_DRIVE_OUTPUT(throttle_u16, direction_u16, cruise_control_u16,     \
+                                  mech_brake_u16)                          \
+  ({                                                                                   \
+    CanMessage msg = { 0 };                                                            \
+    CAN_PACK_DRIVE_OUTPUT(&msg, (throttle_u16), (direction_u16), (cruise_control_u16), \
+                          (mech_brake_u16));                               \
+    StatusCode status = can_transmit(&msg, NULL);                                      \
+    status;                                                                            \
   })
 
 #define CAN_TRANSMIT_STEERING_OUTPUT(cruise_control_u16)  \
@@ -128,7 +130,7 @@
     StatusCode status = can_transmit(&msg, NULL);                                              \
     status;                                                                                    \
   })
-
+  
 #define CAN_TRANSMIT_CRUISE_TARGET(target_speed_u8)  \
   ({                                                 \
     CanMessage msg = { 0 };                          \

@@ -45,8 +45,8 @@ static bool prv_guard_disengaged(const Event *e) {
 
   // Needs a listener - these events will not be raised locally
   switch (e->id) {
-    case INPUT_EVENT_PEDAL_CENTER_CONSOLE_DIRECTION_DRIVE:
-    case INPUT_EVENT_PEDAL_CENTER_CONSOLE_DIRECTION_REVERSE:
+    case INPUT_EVENT_PEDAL_DIRECTION_STATE_FORWARD:
+    case INPUT_EVENT_PEDAL_DIRECTION_STATE_REVERSE:
       return false;
     default:
       return true;

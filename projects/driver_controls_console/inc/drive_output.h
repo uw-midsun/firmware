@@ -1,8 +1,9 @@
 #pragma once
-// Drive command output module
+// Center Console acts as the master board for driver controls; it listens for messages
+// from the pedal boards and steering board, packs that data and forms the drive output message
 // Requires soft timers and CAN to be initialized.
 //
-// Periodically broadcasts a drive command to the motor controllers with the current state
+// Periodically broadcasts a console command to the motor controllers with the current state
 // Requires data to be updated periodically to ensure that data is not stale.
 #include <stdint.h>
 #include "event_queue.h"
@@ -12,7 +13,7 @@
 #define DRIVE_OUTPUT_CRUISE_DISABLED_SPEED 0
 // Arbitrary timeout - all data should be updated at least once within this timeout period
 #define DRIVE_OUTPUT_WATCHDOG_MS 1000
-// How often to request state updates and broadcast drive commands
+// How often to request state updates and broadcast console commands
 #define DRIVE_OUTPUT_BROADCAST_MS 100
 
 typedef enum {
@@ -23,7 +24,7 @@ typedef enum {
   NUM_DRIVE_OUTPUT_SOURCES
 } DriveOutputSource;
 
-typedef struct DriveOutputStorage {
+typedef struct ConsoleOutputStorage {
   int16_t data[NUM_DRIVE_OUTPUT_SOURCES];
   int16_t pedal_requested_data;
   EventId fault_event;
@@ -36,15 +37,14 @@ typedef struct DriveOutputStorage {
 // Set the events to be raised in the case of a fault or to request a data update
 // Starts periodic drive output as disabled
 StatusCode drive_output_init(DriveOutputStorage *storage, EventId fault_event,
-                             EventId update_req_event);
+                               EventId update_req_event);
 
 // Control whether periodic drive output is enabled (ex. disable when the car is off)
 // Note that if a fault occurs, periodic drive output will be disabled.
 StatusCode drive_output_set_enabled(DriveOutputStorage *storage, bool enabled);
 
-// Throttle and steering angle expect sign-extended 12-bit values.
-// Use EEDriveOutputDirection for direction.
-StatusCode drive_output_update(DriveOutputStorage *storage, DriveOutputSource source, int16_t data);
+StatusCode drive_output_update(DriveOutputStorage *storage, DriveOutputSource source,
+                                 int16_t data);
 
 // Returns a pointer to the global drive output storage.
 // Note that this only exists because our FSMs already use their context pointers for event arbiters

@@ -11,6 +11,7 @@
 #include "can.h"
 #include "exported_enums.h"
 #include "status.h"
+#include "drive_output.h"
 
-// Register CAN rx handler for Control stalk
-StatusCode control_stalk_indicator_init();
+// Register CAN rx handler for the steering board
+StatusCode steering_indicator_init();

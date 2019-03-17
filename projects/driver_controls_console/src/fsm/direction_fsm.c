@@ -3,7 +3,7 @@
 #include "direction_fsm.h"
 #include <stddef.h>
 #include "cc_input_event.h"
-#include "console_output.h"
+#include "drive_output.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
 #include "log.h"
@@ -54,8 +54,8 @@ static bool prv_guard_prevent_cruise(const Event *e) {
 // Direction selector FSM output functions
 static void prv_forward_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
-  console_output_update(console_output_global(), CONSOLE_OUTPUT_SOURCE_DIRECTION,
-                        EE_CONSOLE_OUTPUT_DIRECTION_FORWARD);
+  drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_DIRECTION,
+                        EE_DRIVE_OUTPUT_DIRECTION_FORWARD);
   event_arbiter_set_guard_fn(guard, NULL);
 
   if (e->id != INPUT_EVENT_CENTER_CONSOLE_UPDATE_REQUESTED) {
@@ -66,8 +66,8 @@ static void prv_forward_output(Fsm *fsm, const Event *e, void *context) {
 
 static void prv_neutral_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
-  console_output_update(console_output_global(), CONSOLE_OUTPUT_SOURCE_DIRECTION,
-                        EE_CONSOLE_OUTPUT_DIRECTION_NEUTRAL);
+  drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_DIRECTION,
+                        EE_DRIVE_OUTPUT_DIRECTION_NEUTRAL);
   event_arbiter_set_guard_fn(guard, prv_guard_prevent_cruise);
 
   if (e->id != INPUT_EVENT_CENTER_CONSOLE_UPDATE_REQUESTED) {
@@ -78,8 +78,8 @@ static void prv_neutral_output(Fsm *fsm, const Event *e, void *context) {
 
 static void prv_reverse_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
-  console_output_update(console_output_global(), CONSOLE_OUTPUT_SOURCE_DIRECTION,
-                        EE_CONSOLE_OUTPUT_DIRECTION_REVERSE);
+  drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_DIRECTION,
+                        EE_DRIVE_OUTPUT_DIRECTION_REVERSE);
   event_arbiter_set_guard_fn(guard, prv_guard_prevent_cruise);
 
   if (e->id != INPUT_EVENT_CENTER_CONSOLE_UPDATE_REQUESTED) {

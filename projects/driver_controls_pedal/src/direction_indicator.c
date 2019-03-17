@@ -7,17 +7,20 @@
 
 static StatusCode prv_handle_direction(const CanMessage *msg, void *context,
                                        CanAckStatus *ack_reply) {
-  uint16_t direction = 0;
-  CAN_UNPACK_CONSOLE_OUTPUT(msg, &direction);
+
+  int16_t pedal = 0, direction = 0, cruise = 0, mech_brake = 0;
+
+  CAN_UNPACK_DRIVE_OUTPUT(msg, (uint16_t *)&pedal, (uint16_t *)&direction,
+                                              (uint16_t *)&cruise, (uint16_t *)&mech_brake);
 
   switch (direction) {
-    case EE_CONSOLE_OUTPUT_DIRECTION_NEUTRAL:
+    case EE_DRIVE_OUTPUT_DIRECTION_NEUTRAL:
       event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_PEDAL_DIRECTION_STATE_NEUTRAL, 0);
       break;
-    case EE_CONSOLE_OUTPUT_DIRECTION_FORWARD:
+    case EE_DRIVE_OUTPUT_DIRECTION_FORWARD:
       event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_PEDAL_DIRECTION_STATE_FORWARD, 0);
       break;
-    case EE_CONSOLE_OUTPUT_DIRECTION_REVERSE:
+    case EE_DRIVE_OUTPUT_DIRECTION_REVERSE:
       event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_PEDAL_DIRECTION_STATE_REVERSE, 0);
       break;
 
@@ -30,6 +33,6 @@ static StatusCode prv_handle_direction(const CanMessage *msg, void *context,
 }
 
 StatusCode direction_indicator_init() {
-  can_register_rx_handler(SYSTEM_CAN_MESSAGE_CONSOLE_OUTPUT, prv_handle_direction, NULL);
+  can_register_rx_handler(SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT, prv_handle_direction, NULL);
   return STATUS_CODE_OK;
 }

@@ -1,5 +1,5 @@
 #pragma once
-// Handles Mechanical Brake presses
+// Handles Mechanical Brake presses and retreives pedal data
 // Requires CAN, event queue to be initialized
 
 // Raises a INPUT_EVENT_MECHANICAL_BRAKE_PRESSED or
@@ -7,6 +7,7 @@
 #include "can.h"
 #include "exported_enums.h"
 #include "status.h"
+#include "drive_output.h"
 
 // Register CAN rx handler for Mech Brake press
-StatusCode mech_brake_indicator_init();
+StatusCode pedal_indicator_init();

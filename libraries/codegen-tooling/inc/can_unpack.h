@@ -57,9 +57,10 @@
   can_unpack_impl_u16((msg_ptr), 4, (error_id_u16_ptr), (limits_u16_ptr), CAN_UNPACK_IMPL_EMPTY, \
                       CAN_UNPACK_IMPL_EMPTY)
 
-#define CAN_UNPACK_CONSOLE_OUTPUT(msg_ptr, direction_u16)                                          \
-  can_unpack_impl_u16((msg_ptr), 2, (direction_u16), CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, \
-                      CAN_UNPACK_IMPL_EMPTY)
+#define CAN_UNPACK_DRIVE_OUTPUT(msg_ptr, throttle_u16_ptr, direction_u16_ptr,           \
+                                cruise_control_u16_ptr, mechanical_brake_state_u16_ptr) \
+  can_unpack_impl_u16((msg_ptr), 8, (throttle_u16_ptr), (direction_u16_ptr),            \
+                      (cruise_control_u16_ptr), (mechanical_brake_state_u16_ptr))
 
 #define CAN_UNPACK_STEERING_OUTPUT(msg_ptr, cruise_control_u16)                  \
   can_unpack_impl_u16((msg_ptr), 2, (cruise_control_u16), CAN_UNPACK_IMPL_EMPTY, \

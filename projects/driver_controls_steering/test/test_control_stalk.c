@@ -18,7 +18,6 @@
 #define TEST_CONTROL_STALK_I2C_PORT I2C_PORT_2
 
 static Ads1015Storage s_ads1015;
-static GpioExpanderStorage s_expander;
 static ControlStalk s_stalk;
 
 void setup_test(void) {
@@ -44,9 +43,8 @@ void setup_test(void) {
     .port = GPIO_PORT_A,  //
     .pin = 8,             //
   };
-  gpio_expander_init(&s_expander, TEST_CONTROL_STALK_I2C_PORT, GPIO_EXPANDER_ADDRESS_0, &int_pin);
 
-  TEST_ASSERT_OK(control_stalk_init(&s_stalk, &s_ads1015, &s_expander));
+  TEST_ASSERT_OK(control_stalk_init(&s_stalk));
 }
 
 void teardown_test(void) {}

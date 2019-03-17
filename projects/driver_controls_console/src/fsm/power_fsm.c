@@ -15,7 +15,7 @@
 
 #include "bps_indicator.h"
 #include "cc_input_event.h"
-#include "console_output.h"
+#include "drive_output.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
 #include "log.h"
@@ -88,7 +88,7 @@ static void prv_off_output(Fsm *fsm, const Event *e, void *context) {
   bps_indicator_clear_fault();
 
   // Disable periodic console output updates if not running
-  console_output_set_enabled(console_output_global(), false);
+  drive_output_set_enabled(drive_output_global(), false);
   event_arbiter_set_guard_fn(guard, prv_guard_off);
 
   event_raise(INPUT_EVENT_CENTER_CONSOLE_POWER_STATE_OFF, 0);
@@ -100,7 +100,7 @@ static void prv_console_output(Fsm *fsm, const Event *e, void *context) {
   power_distribution_controller_send_update(EE_POWER_STATE_DRIVE);
 
   // Allow all events and begin sending periodic drive commands
-  console_output_set_enabled(console_output_global(), true);
+  drive_output_set_enabled(drive_output_global(), true);
   event_arbiter_set_guard_fn(guard, NULL);
 
   event_raise(INPUT_EVENT_CENTER_CONSOLE_POWER_STATE_DRIVE, 0);
@@ -113,7 +113,7 @@ static void prv_fault_output(Fsm *fsm, const Event *e, void *context) {
   bps_indicator_set_fault();
 
   // Disable periodic console output updates if not running
-  console_output_set_enabled(console_output_global(), false);
+  drive_output_set_enabled(drive_output_global(), false);
   event_arbiter_set_guard_fn(guard, prv_guard_off);
 
   event_raise(INPUT_EVENT_CENTER_CONSOLE_POWER_STATE_FAULT, 0);
@@ -125,7 +125,7 @@ static void prv_charge_output(Fsm *fsm, const Event *e, void *context) {
   power_distribution_controller_send_update(EE_POWER_STATE_CHARGE);
 
   // Disable periodic console output updates if not running
-  console_output_set_enabled(console_output_global(), false);
+  drive_output_set_enabled(drive_output_global(), false);
   // Allow lights, etc to turn on
   event_arbiter_set_guard_fn(guard, NULL);
 

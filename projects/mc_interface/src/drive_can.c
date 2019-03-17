@@ -8,12 +8,11 @@ static StatusCode prv_handle_drive(const CanMessage *msg, void *context, CanAckS
   MotorControllerStorage *controller = context;
   int16_t pedal = 0, direction = 0, cruise = 0, mech_brake = 0;
 
-  status_ok_or_return(CAN_UNPACK_PEDAL_OUTPUT(msg, (uint16_t *)&pedal), (uint16_t *)&mech_brake));
-  status_ok_or_return(NCA_UNPACK_STEERING_OUTPUT(msg, (uint16_t *)&cruise));
-  status_ok_or_return(CAN_UNPACK_CONSOLE_OUTPUT(msg, (uint16_t *)&direction));
+  status_ok_or_return(CAN_UNPACK_DRIVE_OUTPUT(msg, (uint16_t *)&pedal, (uint16_t *)&direction,
+                                              (uint16_t *)&cruise, (uint16_t *)&mech_brake));
 
   // Basic input validation
-  if (direction < 0 || direction >= NUM_EE_PEDAL_OUTPUT_DIRECTIONS || cruise < 0 ||
+  if (direction < 0 || direction >= NUM_EE_DRIVE_OUTPUT_DIRECTIONS || cruise < 0 ||
       pedal < -EE_PEDAL_OUTPUT_DENOMINATOR || pedal > EE_PEDAL_OUTPUT_DENOMINATOR ||
       mech_brake < 0 || mech_brake > EE_PEDAL_OUTPUT_DENOMINATOR) {
     return status_code(STATUS_CODE_INVALID_ARGS);
