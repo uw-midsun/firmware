@@ -45,10 +45,10 @@
                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,               \
                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
-#define CAN_PACK_POWER_STATE(msg_ptr, power_state_u8)                                             \
+#define CAN_PACK_POWER_STATE(msg_ptr, power_state_u8)                                            \
   can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, SYSTEM_CAN_MESSAGE_POWER_STATE, \
-                   1, (power_state_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                 \
-                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                 \
+                   1, (power_state_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                \
                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_POWERTRAIN_HEARTBEAT(msg_ptr) \
@@ -70,11 +70,10 @@
                     SYSTEM_CAN_MESSAGE_MC_ERROR_LIMITS, 4, (error_id_u16), (limits_u16), \
                     CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
-#define CAN_PACK_DRIVE_OUTPUT(msg_ptr, throttle_u16, direction_u16, cruise_control_u16, \
-                              mech_brake_u16 )                                         \
+#define CAN_PACK_DRIVE_OUTPUT(msg_ptr, throttle_u16, direction_u16, cruise_control_u16,            \
+                              mech_brake_u16)                                                      \
   can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT, \
-                    8, (throttle_u16), (direction_u16), (cruise_control_u16),                      \
-                    (mech_brake_u16))
+                    8, (throttle_u16), (direction_u16), (cruise_control_u16), (mech_brake_u16))
 
 #define CAN_PACK_STEERING_OUTPUT(msg_ptr, cruise_control_u16)                    \
   can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_STEERING_CONTROLS,              \
@@ -109,10 +108,10 @@
 #define CAN_PACK_LIGHTS_SYNC(msg_ptr) \
   can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_LIGHTS_REAR, SYSTEM_CAN_MESSAGE_LIGHTS_SYNC)
 
-#define CAN_PACK_LIGHTS_STATE(msg_ptr, light_id_u8, light_state_u8)                                \
+#define CAN_PACK_LIGHTS_STATE(msg_ptr, light_id_u8, light_state_u8)                               \
   can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, SYSTEM_CAN_MESSAGE_LIGHTS_STATE, \
-                   2, (light_id_u8), (light_state_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,   \
-                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                  \
+                   2, (light_id_u8), (light_state_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,  \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                 \
                    CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_HORN(msg_ptr, state_u8)                                                       \

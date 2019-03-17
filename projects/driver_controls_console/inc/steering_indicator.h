@@ -9,9 +9,9 @@
 // INPUT_EVENT_CENTER_CONSOLE_CONTROL_STALK_ANALOG_TURN_SIGNAL_RIGHT
 
 #include "can.h"
+#include "drive_output.h"
 #include "exported_enums.h"
 #include "status.h"
-#include "drive_output.h"
 
 // Register CAN rx handler for the steering board
 StatusCode steering_indicator_init();

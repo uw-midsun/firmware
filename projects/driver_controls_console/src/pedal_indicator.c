@@ -3,9 +3,7 @@
 #include "can_unpack.h"
 #include "cc_input_event.h"
 
-static StatusCode prv_handle_pedal(const CanMessage *msg, void *context,
-                                        CanAckStatus *ack_reply) {
-  
+static StatusCode prv_handle_pedal(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   DriveOutputStorage *storage = context;
 
   uint16_t throttle = 0;

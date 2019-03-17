@@ -4,8 +4,7 @@
 #include "cc_input_event.h"
 
 static StatusCode prv_handle_steering(const CanMessage *msg, void *context,
-                                        CanAckStatus *ack_reply) {
-  
+                                      CanAckStatus *ack_reply) {
   DriveOutputStorage *storage = context;
 
   uint16_t cruise = 0;

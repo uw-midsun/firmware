@@ -37,14 +37,13 @@ typedef struct ConsoleOutputStorage {
 // Set the events to be raised in the case of a fault or to request a data update
 // Starts periodic drive output as disabled
 StatusCode drive_output_init(DriveOutputStorage *storage, EventId fault_event,
-                               EventId update_req_event);
+                             EventId update_req_event);
 
 // Control whether periodic drive output is enabled (ex. disable when the car is off)
 // Note that if a fault occurs, periodic drive output will be disabled.
 StatusCode drive_output_set_enabled(DriveOutputStorage *storage, bool enabled);
 
-StatusCode drive_output_update(DriveOutputStorage *storage, DriveOutputSource source,
-                                 int16_t data);
+StatusCode drive_output_update(DriveOutputStorage *storage, DriveOutputSource source, int16_t data);
 
 // Returns a pointer to the global drive output storage.
 // Note that this only exists because our FSMs already use their context pointers for event arbiters

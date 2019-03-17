@@ -1,5 +1,5 @@
-#include "drive_output.h"
 #include "delay.h"
+#include "drive_output.h"
 #include "event_queue.h"
 #include "interrupt.h"
 #include "log.h"
@@ -13,4 +13,4 @@ void setup_test(void) {
 
 void teardown_test(void) {}
 
-void test_control_stalk_indicator(void){}
+void test_control_stalk_indicator(void) {}

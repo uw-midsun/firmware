@@ -9,8 +9,8 @@
 #include "cc_cfg.h"
 #include "cc_input_event.h"
 #include "center_console.h"
-#include "drive_output.h"
 #include "crc32.h"
+#include "drive_output.h"
 #include "event_arbiter.h"
 #include "flash.h"
 #include "heartbeat_rx.h"
@@ -86,7 +86,7 @@ int main(void) {
                                 heartbeat_rx_auto_ack_handler, NULL);
 
   drive_output_init(drive_output_global(), INPUT_EVENT_CENTER_CONSOLE_WATCHDOG_FAULT,
-                      INPUT_EVENT_CENTER_CONSOLE_UPDATE_REQUESTED);
+                    INPUT_EVENT_CENTER_CONSOLE_UPDATE_REQUESTED);
 
   event_arbiter_init(&s_event_arbiter);
   ConsoleControlsFsmInitFn init_fns[] = { direction_fsm_init, power_fsm_init, headlight_fsm_init,

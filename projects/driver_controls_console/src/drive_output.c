@@ -33,7 +33,7 @@ static void prv_broadcast_cb(SoftTimerId timer_id, void *context) {
 
   // Note that this will usually output stale data from the previous update request
   event_raise(storage->update_req_event, 0);
-  
+
   CAN_TRANSMIT_DRIVE_OUTPUT((uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_THROTTLE],
                             (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_DIRECTION],
                             (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_CRUISE],
@@ -46,7 +46,7 @@ static void prv_broadcast_cb(SoftTimerId timer_id, void *context) {
 }
 
 StatusCode drive_output_init(DriveOutputStorage *storage, EventId fault_event,
-                               EventId update_req_event) {
+                             EventId update_req_event) {
   memset(storage, 0, sizeof(*storage));
   storage->fault_event = fault_event;
   storage->update_req_event = update_req_event;
@@ -82,7 +82,7 @@ StatusCode drive_output_set_enabled(DriveOutputStorage *storage, bool enabled) {
 }
 
 StatusCode drive_output_update(DriveOutputStorage *storage, DriveOutputSource source,
-                                 int16_t data) {
+                               int16_t data) {
   if (source >= NUM_DRIVE_OUTPUT_SOURCES) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }

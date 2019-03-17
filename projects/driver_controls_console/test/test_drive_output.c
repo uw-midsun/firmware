@@ -1,5 +1,5 @@
-#include "drive_output.h"
 #include "delay.h"
+#include "drive_output.h"
 #include "event_queue.h"
 #include "interrupt.h"
 #include "log.h"
@@ -19,8 +19,7 @@ void setup_test(void) {
   soft_timer_init();
   event_queue_init();
 
-  drive_output_init(&s_storage, TEST_DRIVE_OUTPUT_EVENT_FAULT,
-                      TEST_DRIVE_OUTPUT_EVENT_UPDATE_REQ);
+  drive_output_init(&s_storage, TEST_DRIVE_OUTPUT_EVENT_FAULT, TEST_DRIVE_OUTPUT_EVENT_UPDATE_REQ);
 }
 
 void teardown_test(void) {}

@@ -5,9 +5,9 @@
 // Raises a INPUT_EVENT_MECHANICAL_BRAKE_PRESSED or
 // INPUT_EVENT_MECHANICAL_BRAKE_RELEASED for Power FSM
 #include "can.h"
+#include "drive_output.h"
 #include "exported_enums.h"
 #include "status.h"
-#include "drive_output.h"
 
 // Register CAN rx handler for Mech Brake press
 StatusCode pedal_indicator_init();
