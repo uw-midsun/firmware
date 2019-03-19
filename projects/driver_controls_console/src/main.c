@@ -16,6 +16,8 @@
 #include "heartbeat_rx.h"
 #include "led_output.h"
 #include "power_distribution_controller.h"
+#include "pedal_indicator.h"
+#include "steering_indicator.h"
 
 #include "direction_fsm.h"
 #include "hazards_fsm.h"
@@ -59,10 +61,13 @@ int main(void) {
     .rx = CC_CFG_CAN_TX,
     .loopback = false,
   };
+
   can_init(&s_can, &can_settings);
   can_add_filter(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT);
   can_add_filter(SYSTEM_CAN_MESSAGE_POWER_STATE);
   can_add_filter(SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT);
+  can_add_filter(SYSTEM_CAN_DEVICE_PEDAL_CONTROLS);
+  can_add_filter(SYSTEM_CAN_DEVICE_STEERING_CONTROLS);
 
   // GPIO Expander for LEDs
   const I2CSettings i2c_settings = {
@@ -78,6 +83,10 @@ int main(void) {
 
   // BPS heartbeat
   bps_indicator_init();
+
+  pedal_indicator_init();
+  steering_indicator_init();
+
 
   // Not sure that this does anything since NULL context is being passed
   // and none of the functions called on callback raise an event

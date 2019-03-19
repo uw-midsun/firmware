@@ -8,4 +8,4 @@
 #include "status.h"
 
 // Register CAN rx handler for Mech Brake press
-StatusCode mech_brake_indicator_init();
+StatusCode pedal_indicator_init();

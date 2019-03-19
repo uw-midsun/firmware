@@ -21,6 +21,7 @@
 #include "flash.h"
 #include "heartbeat_rx.h"
 #include "power_state_indicator.h"
+#include "pedal_indicator.h"
 #include "sc_cfg.h"
 #include "sc_input_event.h"
 #include "soft_timer.h"
@@ -66,10 +67,17 @@ int main(void) {
     .rx = SC_CFG_CAN_RX,
     .loopback = false,
   };
+
   can_init(&s_can, &can_settings);
+  can_add_filter(SYSTEM_CAN_DEVICE_DRIVER_CONTROLS);
+  can_add_filter(SYSTEM_CAN_DEVICE_PEDAL_CONTROLS);
 
   // Power state
   power_state_indicator_init();
+
+
+  //Pedal indicator
+  pedal_indicator_init();
 
   // BPS heartbeat
   bps_indicator_init();
