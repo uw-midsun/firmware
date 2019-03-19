@@ -20,8 +20,8 @@
 #include "event_queue.h"
 #include "flash.h"
 #include "heartbeat_rx.h"
-#include "power_state_indicator.h"
 #include "pedal_indicator.h"
+#include "power_state_indicator.h"
 #include "sc_cfg.h"
 #include "sc_input_event.h"
 #include "soft_timer.h"
@@ -75,8 +75,7 @@ int main(void) {
   // Power state
   power_state_indicator_init();
 
-
-  //Pedal indicator
+  // Pedal indicator
   pedal_indicator_init();
 
   // BPS heartbeat

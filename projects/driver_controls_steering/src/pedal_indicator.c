@@ -4,8 +4,7 @@
 #include "exported_enums.h"
 #include "sc_input_event.h"
 
-static StatusCode prv_handle_pedal(const CanMessage *msg, void *context,
-                                        CanAckStatus *ack_reply) {
+static StatusCode prv_handle_pedal(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   uint16_t throttle = 0;
   uint16_t throttle_state = 0;
   uint16_t mech_brake = 0;

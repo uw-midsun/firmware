@@ -15,8 +15,8 @@
 #include "flash.h"
 #include "heartbeat_rx.h"
 #include "led_output.h"
-#include "power_distribution_controller.h"
 #include "pedal_indicator.h"
+#include "power_distribution_controller.h"
 #include "steering_indicator.h"
 
 #include "direction_fsm.h"
@@ -86,7 +86,6 @@ int main(void) {
 
   pedal_indicator_init();
   steering_indicator_init();
-
 
   // Not sure that this does anything since NULL context is being passed
   // and none of the functions called on callback raise an event

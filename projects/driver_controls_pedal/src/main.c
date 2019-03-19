@@ -66,7 +66,7 @@ int main(void) {
     .rx = PC_CFG_CAN_RX,
     .loopback = false,
   };
-  
+
   can_init(&s_can, &can_settings);
   can_add_filter(SYSTEM_CAN_DEVICE_DRIVER_CONTROLS);
   can_add_filter(SYSTEM_CAN_DEVICE_STEERING_CONTROLS);
