@@ -84,7 +84,10 @@ int main(void) {
   // BPS heartbeat
   bps_indicator_init();
 
+  // Pedal state indicator
   pedal_indicator_init();
+
+  // Steering state indicator
   steering_indicator_init();
 
   // Not sure that this does anything since NULL context is being passed
