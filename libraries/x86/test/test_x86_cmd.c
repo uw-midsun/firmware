@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "log.h"
+#include "test_helpers.h"
 #include "unity.h"
 #include "x86_cmd.h"
 
@@ -38,7 +39,7 @@ void test_x86_cmd_client(void) {
 
   const char *cmd = "test a b c d";
   LOG_DEBUG("Sending command: \"%s\"\n", cmd);
-  x86_socket_write(client_fd, cmd, strlen(cmd));
+  TEST_ASSERT_OK(x86_socket_write(client_fd, cmd, strlen(cmd)));
 
   while (!received) {
   }
