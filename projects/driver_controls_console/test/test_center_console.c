@@ -1,5 +1,5 @@
-#include "center_console.h"
 #include "cc_input_event.h"
+#include "center_console.h"
 #include "event_queue.h"
 #include "gpio.h"
 #include "gpio_it.h"
@@ -26,11 +26,10 @@ void teardown_test(void) {}
 void test_center_console_readback(void) {
   Event e;
 
-  while(true) {
+  while (true) {
     wait();
-    while(status_ok(event_process(&e))) {
-
-      switch(e.id) {
+    while (status_ok(event_process(&e))) {
+      switch (e.id) {
         case INPUT_EVENT_CENTER_CONSOLE_POWER:
           LOG_DEBUG("POWER\n");
           break;
