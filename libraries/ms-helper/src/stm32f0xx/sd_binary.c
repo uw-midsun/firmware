@@ -29,12 +29,12 @@
  ******************************************************************************
  */
 
+#include "sd_binary.h"
 #include <stdbool.h>
 #include <string.h>
 #include "delay.h"
 #include "gpio.h"
 #include "log.h"
-#include "sd_binary.h"
 #include "spi.h"
 
 #define SD_SEND_SIZE 6
@@ -464,5 +464,8 @@ StatusCode sd_init_module(SpiSettings *settings, SpiPort spi_port) {
 }
 
 bool sd_is_initialized() {
-  return s_initialized;
+  SdResponse res = prv_send_cmd(SD_CMD_STATUS, 0, SD_DUMMY_BYTE, SD_RESPONSE_R2);
+  prv_write_dummy(1);
+
+  return s_initialized && res.r1 == 0 && res.r2 == 0;
 }

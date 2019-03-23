@@ -55,8 +55,6 @@ typedef struct SdResponse {
 } SdResponse;
 
 StatusCode sd_init_module(SpiSettings *settings, SpiPort port);
-uint8_t sd_write_byte(uint8_t byte);
-SdResponse sd_send_cmd(uint8_t cmd, uint32_t arg, uint8_t crc, SdResponseType expected);
 bool sd_card_init();
 
 bool sd_read_blocks(uint32_t *pData, uint32_t readAddr, uint32_t numberOfBlocks);
