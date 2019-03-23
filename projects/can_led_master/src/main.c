@@ -16,7 +16,6 @@
 #include "can_interval.h"
 #include "can_msg_defs.h"
 #include "can_transmit.h"
-#include "can_unpack.h"
 #include "event_queue.h"
 
 #include "log.h" 
@@ -27,30 +26,15 @@ typedef enum {
   TEST_EVENT_CAN_FAULT = 3, 
 } TestEvent;
 
-struct debug_leds {
-    GpioAddress debug_led[4]; 
-  }; 
-
 static CanStorage s_can_storage = { 0 };
 
 uint16_t LED_GREEN = 0x1; 
 
-StatusCode led_cb(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
-  struct debug_leds *ptr = (struct debug_leds *) context; 
-  uint16_t led_state = 0;
-  CAN_UNPACK_LED(msg, &led_state);
-
-  if (led_state == 1) {
-    gpio_set_state(&(ptr->debug_led[0]), GPIO_STATE_LOW); 
-  }
-
-  else {
-    gpio_set_state(&(ptr->debug_led[0]), GPIO_STATE_HIGH); 
-  }
-
-  return STATUS_CODE_OK; 
-  }
-
+static void periodic_blink_led(SoftTimerId timer_id, void *context) {
+  LED_GREEN = LED_GREEN ^ 0x1 << 0; 
+  CAN_TRANSMIT_LED(LED_GREEN); 
+  soft_timer_start_millis(500, periodic_blink_led, NULL, NULL);
+}
 
 int main(void) {
   gpio_init();
@@ -60,38 +44,11 @@ int main(void) {
   gpio_it_init();
   soft_timer_init();
   event_queue_init();
-
-  static const GpioAddress led_green = {
-    .port = GPIO_PORT_B, 
-    .pin = 5,
-  }; 
-
-  GpioSettings led_settings = {
-    .direction = GPIO_DIR_OUT,        // The pin needs to output.
-    .state = GPIO_STATE_HIGH,         // Start in the "on" state.
-    .alt_function = GPIO_ALTFN_NONE,  // No connections to peripherals.
-    .resistor = GPIO_RES_NONE,        // No need of a resistor to modify floating logic levels.
-  };
-
-  struct debug_leds led = {
-    .debug_led = {
-      { .port = GPIO_PORT_B, .pin = 5 },   //
-      { .port = GPIO_PORT_B, .pin = 4 },   //
-      { .port = GPIO_PORT_B, .pin = 3 },   //
-      { .port = GPIO_PORT_A, .pin = 15 },  //
-    }
-  }; 
-
-  GpioAddress *green_led_addr = &led.debug_led[0]; 
-
-  gpio_init_pin(green_led_addr, &led_settings);
-
-  struct debug_leds *led_addr = &led; 
-
+  
   Event e = { 0 };
 
  const CanSettings can_settings = {
-    .device_id = SYSTEM_CAN_DEVICE_TEST_SLAVE,
+    .device_id = SYSTEM_CAN_DEVICE_TEST_MASTER,
     .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = TEST_EVENT_CAN_RX,
     .tx_event = TEST_EVENT_CAN_TX,
@@ -103,14 +60,13 @@ int main(void) {
 
   StatusCode status = can_init(&s_can_storage, &can_settings);
 
-  can_register_rx_handler(SYSTEM_CAN_MESSAGE_LED, led_cb, (void*)led_addr);
+  soft_timer_start_millis(500, periodic_blink_led, NULL, NULL); 
 
   while (true) {
   
     while (status_ok(event_process(&e))) {
       can_process_event(&e);
     }
-
   }
 
   return 0;
