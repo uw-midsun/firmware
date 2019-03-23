@@ -328,3 +328,11 @@
     StatusCode status = can_transmit(&msg, NULL); \
     status;                                       \
   })
+
+#define CAN_TRANSMIT_LED(green_led_bitset_u16)    \
+  ({                                              \
+    CanMessage msg = { 0 };                       \
+    CAN_PACK_LED(&msg, (green_led_bitset_u16));   \
+    StatusCode status = can_transmit(&msg, NULL); \
+    status;                                       \
+  })

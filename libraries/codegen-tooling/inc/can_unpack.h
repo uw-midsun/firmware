@@ -162,3 +162,7 @@
 #define CAN_UNPACK_LINEAR_ACCELERATION(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
 
 #define CAN_UNPACK_ANGULAR_ROTATION(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
+
+#define CAN_UNPACK_LED(msg_ptr, green_led_bitset_u16_ptr)                              \
+  can_unpack_impl_u16((msg_ptr), 2, (green_led_bitset_u16_ptr), CAN_UNPACK_IMPL_EMPTY, \
+                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)

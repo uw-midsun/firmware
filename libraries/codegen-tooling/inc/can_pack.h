@@ -199,3 +199,8 @@
 #define CAN_PACK_ANGULAR_ROTATION(msg_ptr)                       \
   can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_SENSOR_BOARD, \
                       SYSTEM_CAN_MESSAGE_ANGULAR_ROTATION)
+
+#define CAN_PACK_LED(msg_ptr, green_led_bitset_u16)                                      \
+  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_TEST_MASTER, SYSTEM_CAN_MESSAGE_LED, 2, \
+                    (green_led_bitset_u16), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,    \
+                    CAN_PACK_IMPL_EMPTY)
