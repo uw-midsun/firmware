@@ -89,6 +89,7 @@ int main(void) {
   cruise_init(cruise_global());
   steering_output_init(steering_output_global(), INPUT_EVENT_STEERING_WATCHDOG_FAULT,
                        INPUT_EVENT_STEERING_UPDATE_REQUESTED);
+  steering_output_set_enabled(steering_output_global(), true);
 
   event_arbiter_init(&s_event_arbiter);
   SteeringControlsFsmInitFn init_fns[] = {

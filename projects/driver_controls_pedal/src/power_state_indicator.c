@@ -4,7 +4,6 @@
 #include "can_unpack.h"
 #include "exported_enums.h"
 #include "pc_input_event.h"
-#include "pedal_output.h"
 
 static StatusCode prv_handle_power_state(const CanMessage *msg, void *context,
                                          CanAckStatus *ack_reply) {
@@ -14,20 +13,16 @@ static StatusCode prv_handle_power_state(const CanMessage *msg, void *context,
   switch (state) {
     case EE_POWER_STATE_IDLE:
       event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_PEDAL_POWER_STATE_OFF, 0);
-      pedal_output_set_enabled(pedal_output_global(), false);
       break;
     case EE_POWER_STATE_CHARGE:
       event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_PEDAL_POWER_STATE_CHARGE, 0);
-      pedal_output_set_enabled(pedal_output_global(), false);
       break;
     case EE_POWER_STATE_DRIVE:
       event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_PEDAL_POWER_STATE_DRIVE, 0);
-      pedal_output_set_enabled(pedal_output_global(), true);
       break;
 
     default:
       event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_PEDAL_POWER_STATE_OFF, 0);
-      pedal_output_set_enabled(pedal_output_global(), false);
       break;
   }
 

@@ -108,6 +108,7 @@ int main(void) {
 
   pedal_output_init(pedal_output_global(), INPUT_EVENT_PEDAL_WATCHDOG_FAULT,
                     INPUT_EVENT_PEDAL_UPDATE_REQUESTED);
+  pedal_output_set_enabled(pedal_output_global(), true);
 
   brake_signal_init();
 
