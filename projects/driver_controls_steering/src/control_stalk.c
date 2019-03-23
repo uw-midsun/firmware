@@ -71,36 +71,35 @@ static const EventId s_analog_mapping[CONTROL_STALK_ANALOG_INPUTS][NUM_CONTROL_S
 // Active-low
 static const EventId s_digital_mapping[CONTROL_STALK_DIGITAL_INPUTS][NUM_GPIO_STATES] = {
   {
-      INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED,
       INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_RELEASED,
+      INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED,
   },
   {
-      INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_ON,
       INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_OFF,
+      INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_ON,
   },
   {
       // TODO(ELEC-461): revert when mech brake added
       // INPUT_EVENT_STEERING_MECHANICAL_BRAKE_PRESSED,
       // INPUT_EVENT_STEERING_MECHANICAL_BRAKE_RELEASED,
-      INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_LANE_ASSIST_PRESSED,
       INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_LANE_ASSIST_RELEASED,
+      INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_LANE_ASSIST_PRESSED,
       // Mech brake has been added so this should be good (?)
   },
   {
-      INPUT_EVENT_CONTROL_STALK_DIGITAL_HIGH_BEAM_FWD_PRESSED,
       INPUT_EVENT_CONTROL_STALK_DIGITAL_HIGH_BEAM_FWD_RELEASED,
+      INPUT_EVENT_CONTROL_STALK_DIGITAL_HIGH_BEAM_FWD_PRESSED,
   },
   {
-      INPUT_EVENT_CONTROL_STALK_DIGITAL_HIGH_BEAM_BACK_PRESSED,
       INPUT_EVENT_CONTROL_STALK_DIGITAL_HIGH_BEAM_BACK_RELEASED,
+      INPUT_EVENT_CONTROL_STALK_DIGITAL_HIGH_BEAM_BACK_PRESSED,
   },
 };
 
 static void prv_analog_cb(AdcChannel channel, void *context) {
   ControlStalk *stalk = context;
   uint16_t reading = 0;
-  adc_read_raw(channel, &reading);
-
+  adc_read_converted(channel, &reading);
   ControlStalkState state = CONTROL_STALK_STATE_FLOATING;
   if (reading <= CONTROL_STALK_681_OHMS_THRESHOLD) {
     state = CONTROL_STALK_STATE_681_OHMS;
@@ -130,32 +129,40 @@ void prv_digital_cb(const GpioAddress *address, void *context) {
 StatusCode control_stalk_init(ControlStalk *stalk) {
   memset(stalk, 0, sizeof(*stalk));
 
-  GpioSettings gpio_settings = {
+  const GpioSettings digital_gpio_settings = {
     .direction = GPIO_DIR_IN,
-    .resistor = GPIO_RES_PULLUP,
+    .state = GPIO_STATE_LOW,
+    .resistor = GPIO_RES_PULLDOWN,
+    .alt_function = GPIO_ALTFN_NONE,
+  };
+  const GpioSettings analog_gpio_settings = {
+    .direction = GPIO_DIR_IN,
+    .state = GPIO_STATE_LOW,
+    .resistor = GPIO_RES_NONE,
+    .alt_function = GPIO_ALTFN_ANALOG,
   };
   const InterruptSettings interrupt_settings = {
     .type = INTERRUPT_TYPE_INTERRUPT,
     .priority = INTERRUPT_PRIORITY_NORMAL,
   };
 
-  // Initialize Analog Pins
-  for (size_t pin = 0; pin < CONTROL_STALK_ANALOG_INPUTS; pin++) {
-    status_ok_or_return(gpio_init_pin(&s_analog_gpio_addresses[pin], &gpio_settings));
-  }
-
   // Initialize Digital Pins with Interrupts
   for (size_t pin = 0; pin < CONTROL_STALK_DIGITAL_INPUTS; pin++) {
-    status_ok_or_return(gpio_init_pin(&s_digital_gpio_addresses[pin], &gpio_settings));
+    status_ok_or_return(gpio_init_pin(&s_digital_gpio_addresses[pin], &digital_gpio_settings));
     status_ok_or_return(gpio_it_register_interrupt(&s_digital_gpio_addresses[pin],
-                                                   &interrupt_settings, INTERRUPT_EDGE_FALLING,
+                                                   &interrupt_settings, INTERRUPT_EDGE_RISING_FALLING,
                                                    prv_digital_cb, s_digital_mapping[pin]));
   }
 
-  for (AdcChannel channel = 0; channel < CONTROL_STALK_ANALOG_INPUTS; channel++) {
+  // Initialize Analog Pins
+  AdcChannel channel = NUM_ADC_CHANNELS;
+  for (size_t pin = 0; pin < CONTROL_STALK_ANALOG_INPUTS; pin++) {
+    status_ok_or_return(gpio_init_pin(&s_analog_gpio_addresses[pin], &analog_gpio_settings));
+    status_ok_or_return(adc_get_channel(s_analog_gpio_addresses[pin], &channel));
+
     stalk->states[channel] = NUM_CONTROL_STALK_STATES;
-    adc_set_channel(channel, true);
-    adc_register_callback(channel, prv_analog_cb, stalk);
+    status_ok_or_return(adc_set_channel(channel, true));
+    status_ok_or_return(adc_register_callback(channel, prv_analog_cb, stalk));
   }
 
   return STATUS_CODE_OK;
