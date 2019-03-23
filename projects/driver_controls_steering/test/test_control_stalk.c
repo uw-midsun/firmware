@@ -149,7 +149,7 @@ void test_control_stalks_readback(void) {
           LOG_DEBUG("ANALOG_CC_SPEED_PLUS\n");
           break;
 
-        //CC_CANCEL/RESUME
+        // CC_CANCEL/RESUME
         case INPUT_EVENT_CONTROL_STALK_ANALOG_CC_DIGITAL:
           LOG_DEBUG("ANALOG_CC_DIGITAL\n");
           break;

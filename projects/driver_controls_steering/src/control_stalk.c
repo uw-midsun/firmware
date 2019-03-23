@@ -149,9 +149,9 @@ StatusCode control_stalk_init(ControlStalk *stalk) {
   // Initialize Digital Pins with Interrupts
   for (size_t pin = 0; pin < CONTROL_STALK_DIGITAL_INPUTS; pin++) {
     status_ok_or_return(gpio_init_pin(&s_digital_gpio_addresses[pin], &digital_gpio_settings));
-    status_ok_or_return(gpio_it_register_interrupt(&s_digital_gpio_addresses[pin],
-                                                   &interrupt_settings, INTERRUPT_EDGE_RISING_FALLING,
-                                                   prv_digital_cb, s_digital_mapping[pin]));
+    status_ok_or_return(gpio_it_register_interrupt(
+        &s_digital_gpio_addresses[pin], &interrupt_settings, INTERRUPT_EDGE_RISING_FALLING,
+        prv_digital_cb, s_digital_mapping[pin]));
   }
 
   // Initialize Analog Pins
