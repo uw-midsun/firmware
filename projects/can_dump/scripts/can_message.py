@@ -57,6 +57,8 @@ MESSAGE_LOOKUP = {
     35: ('Motor Bus Measurement', '<hhhh', data_dump),
     36: ('Motor Velocity', '<hh', data_dump),
     43: ('Aux & DC/DC V/C', '<HHHH', data_dump),
+    48: ('Steering Output', '<h', data_dump),
+    49: ('Pedal Output', '<hhh', data_dump),
 }
 
 

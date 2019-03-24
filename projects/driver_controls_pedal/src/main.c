@@ -68,8 +68,8 @@ int main(void) {
   };
 
   can_init(&s_can, &can_settings);
-  can_add_filter(SYSTEM_CAN_DEVICE_DRIVER_CONTROLS);
-  can_add_filter(SYSTEM_CAN_DEVICE_STEERING_CONTROLS);
+  can_add_filter(SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT);
+  can_add_filter(SYSTEM_CAN_MESSAGE_POWER_STATE);
 
   const I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,    //

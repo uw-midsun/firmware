@@ -34,5 +34,5 @@ typedef enum {
   // Pedal speed event
   INPUT_EVENT_PEDAL_SPEED_UPDATE,
 
-  NUM_INPUT_EVENTS,
+  NUM_PEDAL_INPUT_EVENTS,
 } InputEvent;

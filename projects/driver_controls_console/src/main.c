@@ -66,8 +66,8 @@ int main(void) {
   can_add_filter(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT);
   can_add_filter(SYSTEM_CAN_MESSAGE_POWER_STATE);
   can_add_filter(SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT);
-  can_add_filter(SYSTEM_CAN_DEVICE_PEDAL_CONTROLS);
-  can_add_filter(SYSTEM_CAN_DEVICE_STEERING_CONTROLS);
+  can_add_filter(SYSTEM_CAN_MESSAGE_PEDAL_OUTPUT);
+  can_add_filter(SYSTEM_CAN_MESSAGE_STEERING_OUTPUT);
 
   // GPIO Expander for LEDs
   const I2CSettings i2c_settings = {
@@ -98,6 +98,7 @@ int main(void) {
 
   drive_output_init(drive_output_global(), INPUT_EVENT_CENTER_CONSOLE_WATCHDOG_FAULT,
                     INPUT_EVENT_CENTER_CONSOLE_UPDATE_REQUESTED);
+  drive_output_set_enabled(drive_output_global(), true)
 
   event_arbiter_init(&s_event_arbiter);
   ConsoleControlsFsmInitFn init_fns[] = { direction_fsm_init, power_fsm_init, headlight_fsm_init,
