@@ -50,8 +50,6 @@ static void prv_callback_channel(Ads1015Channel channel, void *context) {
     }
   }
 
-  LOG_DEBUG()
-
   pedal_output_update(pedal_output_global(), PEDAL_OUTPUT_SOURCE_MECH_BRAKE, position);
 }
 
