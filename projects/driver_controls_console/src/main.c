@@ -100,7 +100,7 @@ int main(void) {
                     INPUT_EVENT_CENTER_CONSOLE_UPDATE_REQUESTED);
   drive_output_set_enabled(drive_output_global(), true)
 
-  event_arbiter_init(&s_event_arbiter);
+      event_arbiter_init(&s_event_arbiter);
   ConsoleControlsFsmInitFn init_fns[] = { direction_fsm_init, power_fsm_init, headlight_fsm_init,
                                           hazards_fsm_init };
   for (size_t i = 0; i < NUM_CONSOLE_CONTROLS_FSMS; i++) {
