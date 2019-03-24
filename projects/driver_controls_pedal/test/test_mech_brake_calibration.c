@@ -40,7 +40,7 @@ void setup_test(void) {
     .sda = PC_CFG_I2C_BUS_SDA,
   };
 
-  i2c_init(PC_CFG_I2C_BUS_PORT, &i2c_settings);
+  i2c_init(I2C_PORT_2, &i2c_settings);
 
   GpioAddress ready_pin = PC_CFG_PEDAL_ADC_RDY_PIN;
 
@@ -50,7 +50,7 @@ void setup_test(void) {
   };
 
   event_queue_init();
-  ads1015_init(&s_ads1015_storage, PC_CFG_I2C_BUS_PORT, PC_CFG_PEDAL_ADC_ADDR, &ready_pin);
+  ads1015_init(&s_ads1015_storage, I2C_PORT_2, PC_CFG_PEDAL_ADC_ADDR, &ready_pin);
 
   TEST_ASSERT_OK(calib_init(&s_calib_blob, sizeof(s_calib_blob), true));
   mech_brake_calibration_init(&s_calibration_storage, &calib_settings);

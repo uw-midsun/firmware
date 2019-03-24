@@ -49,6 +49,10 @@ static void prv_callback_channel(Ads1015Channel channel, void *context) {
       storage->prev_pressed = false;
     }
   }
+
+  LOG_DEBUG()
+
+  pedal_output_update(pedal_output_global(), PEDAL_OUTPUT_SOURCE_MECH_BRAKE, position);
 }
 
 StatusCode mech_brake_init(MechBrakeStorage *storage, const MechBrakeSettings *settings,

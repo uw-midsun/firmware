@@ -21,6 +21,7 @@
 #include "ads1015.h"
 #include "soft_timer.h"
 #include "status.h"
+#include "pedal_output.h"
 
 typedef struct MechBrakeCalibrationData {
   int16_t zero_value;
