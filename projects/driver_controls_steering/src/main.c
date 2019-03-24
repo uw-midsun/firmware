@@ -69,8 +69,8 @@ int main(void) {
   };
 
   can_init(&s_can, &can_settings);
-  can_add_filter(SYSTEM_CAN_DEVICE_DRIVER_CONTROLS);
-  can_add_filter(SYSTEM_CAN_DEVICE_PEDAL_CONTROLS);
+  can_add_filter(SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT);
+  can_add_filter(SYSTEM_CAN_MESSAGE_PEDAL_OUTPUT);
 
   // Power state
   power_state_indicator_init();

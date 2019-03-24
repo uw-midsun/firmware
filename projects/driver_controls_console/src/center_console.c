@@ -32,15 +32,6 @@ static const EventId s_events[NUM_CENTER_CONSOLE_INPUTS] = {
   INPUT_EVENT_CENTER_CONSOLE_HAZARDS_RELEASED,
 };
 
-static void prv_poll_timeout(SoftTimerId timer_id, void *context) {
-  // force trigger an interrupt
-  for (int i = 0; i < NUM_CENTER_CONSOLE_INPUTS; i++) {
-    gpio_it_trigger_interrupt(&s_gpio_addresses[i]);
-  }
-
-  soft_timer_start_millis(CENTER_CONSOLE_POLL_PERIOD_MS, prv_poll_timeout, NULL, NULL);
-}
-
 static void prv_event_callback(const GpioAddress *address, void *context) {
   EventId *temp = context;
   EventId event = *temp;
@@ -78,11 +69,8 @@ StatusCode center_console_init(CenterConsoleStorage *storage) {
 
   GpioAddress hazards_address = CC_CFG_CONSOLE_HAZARDS_PIN;
   gpio_init_pin(&hazards_address, &gpio_settings);
-  gpio_it_register_interrupt(&hazards_address, &interrupt_settings, INTERRUPT_EDGE_RISING,
+  gpio_it_register_interrupt(&hazards_address, &interrupt_settings, INTERRUPT_EDGE_RISING_FALLING,
                              prv_event_callback, &s_events[NUM_CENTER_CONSOLE_INPUTS - 1]);
-
-  // periodically trigger interrupts
-  soft_timer_start_millis(CENTER_CONSOLE_POLL_PERIOD_MS, prv_poll_timeout, NULL, NULL);
 
   return STATUS_CODE_OK;
 }
