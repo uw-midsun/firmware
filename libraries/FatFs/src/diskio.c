@@ -10,6 +10,7 @@
 #include "ff.h"			/* Obtains integer types */
 #include "diskio.h"		/* Declarations of disk functions */
 #include "sd_binary.h"
+#include <stdio.h>
 
 
 /*-----------------------------------------------------------------------*/
@@ -20,7 +21,7 @@ DSTATUS disk_status (
 	BYTE pdrv		/* Physical drive number to identify the drive */
 )
 {
-  if (sd_is_initialized()) {
+  if (status_ok(sd_is_initialized((SpiPort) pdrv))) {
 		return 0;
 	}
 
@@ -34,10 +35,10 @@ DSTATUS disk_status (
 /*-----------------------------------------------------------------------*/
 
 DSTATUS disk_initialize (
-	BYTE pdrv				/* Physical drive nmuber to identify the drive */
+	BYTE pdrv				/* Physical drive number to identify the drive */
 )
 {
-	if (sd_card_init()) {
+	if (status_ok(sd_card_init((SpiPort) pdrv))) {
     return 0;
   }
 
@@ -58,7 +59,7 @@ DRESULT disk_read (
 )
 {
 	// https://community.st.com/thread/13977
-  if (sd_read_blocks((uint32_t *)buff, (uint64_t)(sector)*SD_BLOCK_SIZE, count)) {
+  if (status_ok(sd_read_blocks((SpiPort) pdrv, (uint32_t *)buff, (uint64_t)(sector)*SD_BLOCK_SIZE, count))) {
     return RES_OK;
   }
 
@@ -74,13 +75,13 @@ DRESULT disk_read (
 #if FF_FS_READONLY == 0
 
 DRESULT disk_write (
-	BYTE pdrv,			/* Physical drive nmuber to identify the drive */
+	BYTE pdrv,			/* Physical drive number to identify the drive */
 	const BYTE *buff,	/* Data to be written */
 	DWORD sector,		/* Start sector in LBA */
 	UINT count			/* Number of sectors to write */
 )
 {
-	if (sd_write_blocks((uint32_t *)buff, (uint64_t)(sector)*SD_BLOCK_SIZE, count)) {
+	if (status_ok(sd_write_blocks((SpiPort) pdrv, (uint32_t *)buff, (uint64_t)(sector)*SD_BLOCK_SIZE, count))) {
     return RES_OK;
   }
   return RES_ERROR;
@@ -99,7 +100,7 @@ DRESULT disk_ioctl (
 	void *buff		/* Buffer to send/receive control data */
 )
 {
-if (!sd_is_initialized()) {
+if (!status_ok(sd_is_initialized((SpiPort) pdrv))) {
     return RES_NOTRDY;
   }
 

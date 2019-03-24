@@ -1,8 +1,13 @@
 #pragma once
-// fix test_soft_timer_preempt
-// This is the backend for the SD card reader. As a user you only need to initialize
-// this module with sd_init_module and then use FatFs. All of these other functions
-// are not for public consumption are are only used internally by FatFs.
+//
+// This is a driver to read and write binary data to an SDHC card.
+// The suggested usage is to initialize the SD card, and then use
+// FatFs to write to it.
+//
+// This module requires that the SPI port which the card is mounted
+// on is already initialized. As well, soft timers and interrupts
+// must be initialized
+//
 #include <stdbool.h>
 #include <stdint.h>
 #include "gpio.h"
@@ -54,10 +59,12 @@ typedef struct SdResponse {
   uint8_t r5;
 } SdResponse;
 
-StatusCode sd_init_module(SpiSettings *settings, SpiPort port);
-bool sd_card_init();
+// For SDHC and SDXC cards, the address provided to these functions should be the block address
 
-bool sd_read_blocks(uint32_t *pData, uint32_t readAddr, uint32_t numberOfBlocks);
-bool sd_write_blocks(uint32_t *pData, uint32_t writeAddr, uint32_t numberOfBlocks);
-bool sd_multi_write_blocks(uint32_t *buff, uint32_t writeAddr, uint32_t numberOfBlocks);
-bool sd_is_initialized();
+StatusCode sd_card_init(SpiPort spi);
+StatusCode sd_read_blocks(SpiPort spi, uint32_t *pData, uint32_t readAddr, uint32_t numberOfBlocks);
+StatusCode sd_write_blocks(SpiPort spi, uint32_t *pData, uint32_t writeAddr,
+                           uint32_t numberOfBlocks);
+StatusCode sd_multi_write_blocks(SpiPort spi, uint32_t *buff, uint32_t writeAddr,
+                                 uint32_t numberOfBlocks);
+StatusCode sd_is_initialized(SpiPort spi);
