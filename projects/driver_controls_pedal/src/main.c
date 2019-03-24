@@ -124,7 +124,7 @@ int main(void) {
   Event e;
   while (true) {
     if (status_ok(event_process(&e))) {
-#ifdef DC_CFG_DEBUG_PRINT_EVENTS
+#ifdef PC_CFG_DEBUG_PRINT_EVENTS
       switch (e.id) {
         case INPUT_EVENT_PEDAL_ACCEL:
         case INPUT_EVENT_PEDAL_COAST:
@@ -132,7 +132,6 @@ int main(void) {
         case INPUT_EVENT_PEDAL_UPDATE_REQUESTED:
         case INPUT_EVENT_PEDAL_CAN_RX:
         case INPUT_EVENT_PEDAL_CAN_TX:
-          break;
         default:
           LOG_DEBUG("e %d %d\n", e.id, e.data);
       }

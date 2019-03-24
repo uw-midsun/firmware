@@ -40,6 +40,5 @@ static StatusCode prv_handle_pedal(const CanMessage *msg, void *context, CanAckS
 }
 
 StatusCode pedal_indicator_init(void) {
-  can_register_rx_handler(SYSTEM_CAN_MESSAGE_PEDAL_OUTPUT, prv_handle_pedal, NULL);
-  return STATUS_CODE_OK;
+  return can_register_rx_handler(SYSTEM_CAN_MESSAGE_PEDAL_OUTPUT, prv_handle_pedal, NULL);
 }

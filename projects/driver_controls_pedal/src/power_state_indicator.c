@@ -30,6 +30,5 @@ static StatusCode prv_handle_power_state(const CanMessage *msg, void *context,
 }
 
 StatusCode power_state_indicator_init() {
-  can_register_rx_handler(SYSTEM_CAN_MESSAGE_POWER_STATE, prv_handle_power_state, NULL);
-  return STATUS_CODE_OK;
+  return can_register_rx_handler(SYSTEM_CAN_MESSAGE_POWER_STATE, prv_handle_power_state, NULL);
 }

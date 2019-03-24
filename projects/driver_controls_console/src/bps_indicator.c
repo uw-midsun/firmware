@@ -29,8 +29,8 @@ static StatusCode prv_handle_powertrain_fault(const CanMessage *msg, void *conte
 
 StatusCode bps_indicator_init(void) {
   debug_led_init(DEBUG_LED_RED);
-  can_register_rx_handler(SYSTEM_CAN_MESSAGE_POWER_DISTRIBUTION_FAULT, prv_handle_powertrain_fault,
-                          NULL);
+  status_ok_or_return(can_register_rx_handler(SYSTEM_CAN_MESSAGE_POWER_DISTRIBUTION_FAULT, prv_handle_powertrain_fault,
+                          NULL));
   return can_register_rx_handler(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT, prv_handle_heartbeat, NULL);
 }
 

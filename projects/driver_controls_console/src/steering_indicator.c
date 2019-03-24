@@ -17,6 +17,5 @@ static StatusCode prv_handle_steering(const CanMessage *msg, void *context,
 }
 
 StatusCode steering_indicator_init(void) {
-  can_register_rx_handler(SYSTEM_CAN_MESSAGE_STEERING_OUTPUT, prv_handle_steering, NULL);
-  return STATUS_CODE_OK;
+  return can_register_rx_handler(SYSTEM_CAN_MESSAGE_STEERING_OUTPUT, prv_handle_steering, NULL);
 }
