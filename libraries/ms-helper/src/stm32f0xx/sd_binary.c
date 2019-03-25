@@ -316,7 +316,6 @@ StatusCode sd_write_blocks(SpiPort spi, uint32_t *pData, uint32_t WriteAddr,
     if (response.r1 != SD_R1_NO_ERROR) {
       prv_pulse_idle(spi);
       return status_msg(STATUS_CODE_INTERNAL_ERROR, "SD card error\n");
-      ;
     }
 
     prv_write_dummy(spi, SD_DUMMY_COUNT_CONST);
@@ -340,7 +339,6 @@ StatusCode sd_write_blocks(SpiPort spi, uint32_t *pData, uint32_t WriteAddr,
       // Quit and return failed status
       prv_pulse_idle(spi);
       return status_msg(STATUS_CODE_INTERNAL_ERROR, "SD card error\n");
-      ;
     }
   }
   volatile uint8_t dataresponse;
