@@ -153,7 +153,7 @@ static StatusCode prv_sd_get_data_response(SpiPort spi) {
   return status_code(STATUS_CODE_INTERNAL_ERROR);
 }
 
-void prv_pulse_idle(SpiPort spi) {
+static void prv_pulse_idle(SpiPort spi) {
   spi_cs_set_state(spi, GPIO_STATE_HIGH);
   prv_write_read_byte(spi, SD_DUMMY_BYTE);
 }
