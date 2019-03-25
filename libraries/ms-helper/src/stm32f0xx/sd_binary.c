@@ -30,7 +30,6 @@
  */
 
 #include "sd_binary.h"
-#include <stdbool.h>
 #include <string.h>
 #include "delay.h"
 #include "gpio.h"

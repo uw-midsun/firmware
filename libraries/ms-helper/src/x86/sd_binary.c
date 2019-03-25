@@ -1,9 +1,5 @@
 #include "sd_binary.h"
-#include <stdbool.h>
 #include <string.h>
-#include "delay.h"
-#include "gpio.h"
-#include "log.h"
 #include "spi.h"
 
 StatusCode sd_card_init(SpiPort spi) {
