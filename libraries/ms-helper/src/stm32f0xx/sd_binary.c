@@ -284,7 +284,7 @@ StatusCode sd_read_blocks(SpiPort spi, uint32_t *pData, uint32_t ReadAddr,
       return status_msg(STATUS_CODE_TIMEOUT, "SD card timeout\n");
     }
 
-    // Sets the CS line to high to end the read protocol
+    // Sets the CS line to high to end the read transaction
     spi_cs_set_state(spi, GPIO_STATE_HIGH);
     prv_write_read_byte(spi, SD_DUMMY_BYTE);
   }
@@ -341,11 +341,6 @@ StatusCode sd_write_blocks(SpiPort spi, uint32_t *pData, uint32_t WriteAddr,
       return status_msg(STATUS_CODE_INTERNAL_ERROR, "SD card error\n");
     }
   }
-  volatile uint8_t dataresponse;
-  uint16_t timeout = SD_NUM_RETRIES;
-  while ((dataresponse = prv_read_byte(spi)) == 0x00 && SD_NUM_RETRIES) {
-    timeout--;
-  }
 
   prv_pulse_idle(spi);
   return STATUS_CODE_OK;
@@ -401,11 +396,6 @@ StatusCode sd_multi_write_blocks(SpiPort spi, uint32_t *pData, uint32_t WriteAdd
       prv_pulse_idle(spi);
       return status_code(STATUS_CODE_INTERNAL_ERROR);
     }
-    volatile uint8_t dataresponse;
-    uint16_t timeout = 0xFFFF;
-    while ((dataresponse = prv_read_byte(spi)) == 0x00 && timeout) {
-      timeout--;
-    }
   }
 
   // Write the block data to SD
@@ -420,6 +410,7 @@ StatusCode sd_multi_write_blocks(SpiPort spi, uint32_t *pData, uint32_t WriteAdd
     timeout--;
   }
 
+  prv_pulse_idle(spi);
   return STATUS_CODE_OK;
 }
 
