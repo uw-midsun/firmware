@@ -14,6 +14,9 @@
 #include "spi.h"
 #include "status.h"
 
+// The block size on the SD card
+#define SD_BLOCK_SIZE (512)
+
 typedef enum {
   SD_RESPONSE_R1 = 0,
   SD_RESPONSE_R1B,
@@ -39,15 +42,10 @@ StatusCode sd_card_init(SpiPort spi);
 
 // Read block from the SD card. |dest| is where the read blocks will be written into. Make sure that
 // this buffer is large enough for the content
-StatusCode sd_read_blocks(SpiPort spi, uint32_t *dest, uint32_t readAddr, uint32_t numberOfBlocks);
+StatusCode sd_read_blocks(SpiPort spi, uint8_t *dest, uint32_t readAddr, uint32_t numberOfBlocks);
 
-// Write data from |src| to the specified address on the SD card
-StatusCode sd_write_blocks(SpiPort spi, uint32_t *src, uint32_t writeAddr, uint32_t numberOfBlocks);
-
-// Same as |sd_write_blocks|, but uses a different mechanism internally. Use this one for multiple
-// blocks. Use the other one for single blocks.
-StatusCode sd_multi_write_blocks(SpiPort spi, uint32_t *src, uint32_t writeAddr,
-                                 uint32_t numberOfBlocks);
+// Write blocks to the SD card from |src| to a location on the SD card specified by |writeAddr|
+StatusCode sd_write_blocks(SpiPort spi, uint8_t *src, uint32_t writeAddr, uint32_t numberOfBlocks);
 
 // Determines whether the SD card is ready in on a given SPI port
 StatusCode sd_is_initialized(SpiPort spi);

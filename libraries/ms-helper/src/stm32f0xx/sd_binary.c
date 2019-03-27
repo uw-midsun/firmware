@@ -45,9 +45,6 @@
 // Amount of times to retry when doing initialization
 #define SD_NUM_RETRIES 100
 
-// The block size on the SD card
-#define SD_BLOCK_SIZE (512)
-
 // The default byte to send
 #define SD_DUMMY_BYTE (0xFF)
 
@@ -274,8 +271,7 @@ StatusCode sd_wait_data(SpiPort spi, uint8_t data) {
   return STATUS_CODE_OK;
 }
 
-StatusCode sd_read_blocks(SpiPort spi, uint32_t *pData, uint32_t ReadAddr,
-                          uint32_t NumberOfBlocks) {
+StatusCode sd_read_blocks(SpiPort spi, uint8_t *dest, uint32_t ReadAddr, uint32_t NumberOfBlocks) {
   uint32_t offset = 0;
   SdResponse response;
 
@@ -305,7 +301,7 @@ StatusCode sd_read_blocks(SpiPort spi, uint32_t *pData, uint32_t ReadAddr,
     // Now look for the data token to signify the start of the data
     if (status_ok(sd_wait_data(spi, SD_TOKEN_START_DATA_SINGLE_BLOCK_READ))) {
       // Read the SD block data : read 512 bytes of data
-      spi_rx(spi, (uint8_t *)pData + offset, SD_BLOCK_SIZE, 0xFF);
+      spi_rx(spi, dest + offset, SD_BLOCK_SIZE, 0xFF);
 
       // Set next read address
       offset += SD_BLOCK_SIZE;
@@ -325,9 +321,7 @@ StatusCode sd_read_blocks(SpiPort spi, uint32_t *pData, uint32_t ReadAddr,
   return STATUS_CODE_OK;
 }
 
-StatusCode sd_write_blocks(SpiPort spi, uint32_t *pData, uint32_t WriteAddr,
-                           uint32_t NumberOfBlocks) {
-  uint32_t offset = 0;
+static StatusCode prv_sd_write_block(SpiPort spi, uint8_t *src, uint32_t WriteAddr) {
   SdResponse response;
 
   // Send CMD16 (SD_CMD_SET_BLOCKLEN) to set the size of the block and
@@ -338,48 +332,45 @@ StatusCode sd_write_blocks(SpiPort spi, uint32_t *pData, uint32_t WriteAddr,
     return status_msg(STATUS_CODE_INTERNAL_ERROR, "SD card error\n");
   }
 
-  // Data transfer
-  while (NumberOfBlocks--) {
-    // Send CMD24 (SD_CMD_WRITE_SINGLE_BLOCK) to write blocks  and
-    // Check if the SD acknowledged the write block command: R1 response (0x00: no errors)
+  // Send CMD24 (SD_CMD_WRITE_SINGLE_BLOCK) to write blocks  and
+  // Check if the SD acknowledged the write block command: R1 response (0x00: no errors)
 
-    response = prv_send_cmd(spi, SD_CMD_WRITE_SINGLE_BLOCK, (WriteAddr + offset) / SD_BLOCK_SIZE,
-                            0xFF, SD_RESPONSE_R1);
-    if (response.r1 != SD_R1_NO_ERROR) {
-      prv_pulse_idle(spi);
-      return status_msg(STATUS_CODE_INTERNAL_ERROR, "SD card error\n");
-    }
+  response =
+      prv_send_cmd(spi, SD_CMD_WRITE_SINGLE_BLOCK, WriteAddr / SD_BLOCK_SIZE, 0xFF, SD_RESPONSE_R1);
+  if (response.r1 != SD_R1_NO_ERROR) {
+    prv_pulse_idle(spi);
+    return status_msg(STATUS_CODE_INTERNAL_ERROR, "SD card error\n");
+  }
 
-    prv_write_dummy(spi, SD_DUMMY_COUNT_CONST);
+  prv_write_dummy(spi, SD_DUMMY_COUNT_CONST);
 
-    // Send the data token to signify the start of the data
-    uint8_t dat = SD_TOKEN_START_DATA_SINGLE_BLOCK_WRITE;
-    spi_tx(spi, &dat, 1);
+  // Send the data token to signify the start of the data
+  uint8_t dat = SD_TOKEN_START_DATA_SINGLE_BLOCK_WRITE;
+  spi_tx(spi, &dat, 1);
 
-    // Write the block data to SD
-    spi_tx(spi, (uint8_t *)pData + offset, SD_BLOCK_SIZE);
+  // Write the block data to SD
+  spi_tx(spi, src, SD_BLOCK_SIZE);
 
-    // Set next write address
-    offset += SD_BLOCK_SIZE;
+  // Put CRC bytes (not really needed by us, but required by SD)
+  uint8_t crc = 0x00;
+  spi_tx(spi, &crc, 1);
+  spi_tx(spi, &crc, 1);
 
-    // Put CRC bytes (not really needed by us, but required by SD)
-    uint8_t crc = 0x00;
-    spi_tx(spi, &crc, 1);
-    spi_tx(spi, &crc, 1);
-
-    if (!status_ok(prv_sd_get_data_response(spi))) {
-      // Quit and return failed status
-      prv_pulse_idle(spi);
-      return status_msg(STATUS_CODE_INTERNAL_ERROR, "SD card error\n");
-    }
+  if (!status_ok(prv_sd_get_data_response(spi))) {
+    // Quit and return failed status
+    prv_pulse_idle(spi);
+    return status_msg(STATUS_CODE_INTERNAL_ERROR, "SD card error\n");
   }
 
   prv_pulse_idle(spi);
   return STATUS_CODE_OK;
 }
 
-StatusCode sd_multi_write_blocks(SpiPort spi, uint32_t *pData, uint32_t WriteAddr,
-                                 uint32_t NumberOfBlocks) {
+StatusCode sd_write_blocks(SpiPort spi, uint8_t *src, uint32_t WriteAddr, uint32_t NumberOfBlocks) {
+  if (!NumberOfBlocks) {
+    return prv_sd_write_block(spi, src, WriteAddr);
+  }
+
   uint32_t offset = 0;
   SdResponse response;
 
@@ -410,7 +401,7 @@ StatusCode sd_multi_write_blocks(SpiPort spi, uint32_t *pData, uint32_t WriteAdd
     spi_tx(spi, &dat, 1);
 
     // Write the block data to SD
-    spi_tx(spi, (uint8_t *)pData + offset, SD_BLOCK_SIZE);
+    spi_tx(spi, src + offset, SD_BLOCK_SIZE);
 
     // Set next write address
     offset += SD_BLOCK_SIZE;
@@ -420,10 +411,7 @@ StatusCode sd_multi_write_blocks(SpiPort spi, uint32_t *pData, uint32_t WriteAdd
     spi_tx(spi, &crc, 1);
     spi_tx(spi, &crc, 1);
 
-    // Read data response
-    uint8_t res = prv_sd_get_data_response(spi);
-
-    if (res != SD_DATA_OK) {
+    if (!status_ok(prv_sd_get_data_response(spi))) {
       // Quit and return failed status
       prv_pulse_idle(spi);
       return status_code(STATUS_CODE_INTERNAL_ERROR);
@@ -436,6 +424,7 @@ StatusCode sd_multi_write_blocks(SpiPort spi, uint32_t *pData, uint32_t WriteAdd
 
   prv_write_dummy(spi, SD_DUMMY_COUNT_CONST);
 
+  // Catch the last busy response
   volatile uint8_t dataresponse;
   uint16_t timeout = 0xFFFF;
   while ((dataresponse = prv_read_byte(spi)) == 0x00 && timeout) {
