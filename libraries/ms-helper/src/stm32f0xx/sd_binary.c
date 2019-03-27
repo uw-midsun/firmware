@@ -45,6 +45,38 @@
 // Amount of times to retry when doing initialization
 #define SD_NUM_RETRIES 100
 
+// The block size on the SD card
+#define SD_BLOCK_SIZE (512)
+
+// The default byte to send
+#define SD_DUMMY_BYTE (0xFF)
+
+// Misc definitions for SD card things
+#define SD_R1_NO_ERROR (0x00)
+#define SD_R1_IN_IDLE_STATE (0x01)
+#define SD_R1_ILLEGAL_COMMAND (0x04)
+
+#define SD_TOKEN_START_DATA_SINGLE_BLOCK_READ (0xFE)
+#define SD_TOKEN_START_DATA_SINGLE_BLOCK_WRITE (0xFE)
+#define SD_TOKEN_START_DATA_MULTI_BLOCK_WRITE (0xFC)
+#define SD_TOKEN_STOP_DATA_MULTI_BLOCK_WRITE (0xFD)
+
+#define SD_CMD_GO_IDLE_STATE (0)
+#define SD_CMD_SEND_IF_COND (8)
+#define SD_CMD_STATUS (13)
+#define SD_CMD_SET_BLOCKLEN (16)
+#define SD_CMD_READ_SINGLE_BLOCK (17)
+#define SD_CMD_WRITE_SINGLE_BLOCK (24)
+#define SD_CMD_WRITE_MULTI_BLOCK (25)
+#define SD_CMD_SD_APP_OP_COND (41)
+#define SD_CMD_APP_CMD (55)
+#define SD_CMD_READ_OCR (58)
+
+#define SD_DATA_OK (0x05)
+#define SD_DATA_CRC_ERROR (0x0B)
+#define SD_DATA_WRITE_ERROR (0x0D)
+#define SD_DATA_OTHER_ERROR (0xFF)
+
 static uint8_t prv_read_byte(SpiPort spi) {
   uint8_t result = 0x00;
   spi_rx(spi, &result, 1, 0xFF);
