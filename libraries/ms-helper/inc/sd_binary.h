@@ -17,24 +17,6 @@
 // The block size on the SD card
 #define SD_BLOCK_SIZE (512)
 
-typedef enum {
-  SD_RESPONSE_R1 = 0,
-  SD_RESPONSE_R1B,
-  SD_RESPONSE_R2,
-  SD_RESPONSE_R3,
-  SD_RESPONSE_R4R5,
-  SD_RESPONSE_R7,
-  NUM_SD_RESPONSES
-} SdResponseType;
-
-typedef struct SdResponse {
-  uint8_t r1;
-  uint8_t r2;
-  uint8_t r3;
-  uint8_t r4;
-  uint8_t r5;
-} SdResponse;
-
 // For SDHC and SDXC cards, the address provided to these functions should be the block address
 
 // Initialize the SD card on a given SPI port
