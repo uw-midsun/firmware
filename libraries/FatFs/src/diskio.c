@@ -59,7 +59,7 @@ DRESULT disk_read (
 )
 {
 	// https://community.st.com/thread/13977
-  if (status_ok(sd_read_blocks((SpiPort) pdrv, (uint32_t *)buff, (uint64_t)(sector)*SD_BLOCK_SIZE, count))) {
+  if (status_ok(sd_read_blocks((SpiPort) pdrv, buff, (uint64_t)(sector)*SD_BLOCK_SIZE, count))) {
     return RES_OK;
   }
 
@@ -81,7 +81,7 @@ DRESULT disk_write (
 	UINT count			/* Number of sectors to write */
 )
 {
-	if (status_ok(sd_write_blocks((SpiPort) pdrv, (uint32_t *)buff, (uint64_t)(sector)*SD_BLOCK_SIZE, count))) {
+	if (status_ok(sd_write_blocks((SpiPort) pdrv, buff, (uint64_t)(sector)*SD_BLOCK_SIZE, count))) {
     return RES_OK;
   }
   return RES_ERROR;

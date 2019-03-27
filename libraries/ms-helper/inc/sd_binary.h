@@ -14,32 +14,8 @@
 #include "spi.h"
 #include "status.h"
 
+// The block size on the SD card
 #define SD_BLOCK_SIZE (512)
-
-#define SD_R1_NO_ERROR (0x00)
-#define SD_R1_IN_IDLE_STATE (0x01)
-#define SD_R1_ILLEGAL_COMMAND (0x04)
-#define SD_TOKEN_START_DATA_SINGLE_BLOCK_READ (0xFE)
-#define SD_TOKEN_START_DATA_SINGLE_BLOCK_WRITE (0xFE)
-#define SD_TOKEN_START_DATA_MULTI_BLOCK_WRITE (0xFC)
-#define SD_TOKEN_STOP_DATA_MULTI_BLOCK_WRITE (0xFD)
-#define SD_DUMMY_BYTE (0xFF)
-
-#define SD_CMD_GO_IDLE_STATE (0)
-#define SD_CMD_SEND_IF_COND (8)
-#define SD_CMD_STATUS (13)
-#define SD_CMD_SET_BLOCKLEN (16)
-#define SD_CMD_READ_SINGLE_BLOCK (17)
-#define SD_CMD_WRITE_SINGLE_BLOCK (24)
-#define SD_CMD_WRITE_MULTI_BLOCK (25)
-#define SD_CMD_SD_APP_OP_COND (41)
-#define SD_CMD_APP_CMD (55)
-#define SD_CMD_READ_OCR (58)
-
-#define SD_DATA_OK (0x05)
-#define SD_DATA_CRC_ERROR (0x0B)
-#define SD_DATA_WRITE_ERROR (0x0D)
-#define SD_DATA_OTHER_ERROR (0xFF)
 
 typedef enum {
   SD_RESPONSE_R1 = 0,
@@ -61,10 +37,16 @@ typedef struct SdResponse {
 
 // For SDHC and SDXC cards, the address provided to these functions should be the block address
 
+// Initialize the SD card on a given SPI port
 StatusCode sd_card_init(SpiPort spi);
-StatusCode sd_read_blocks(SpiPort spi, uint32_t *pData, uint32_t readAddr, uint32_t numberOfBlocks);
-StatusCode sd_write_blocks(SpiPort spi, uint32_t *pData, uint32_t writeAddr,
-                           uint32_t numberOfBlocks);
-StatusCode sd_multi_write_blocks(SpiPort spi, uint32_t *buff, uint32_t writeAddr,
-                                 uint32_t numberOfBlocks);
+
+// Read block from the SD card. |dest| is where the read blocks will be written into. Make sure that
+// this buffer is large enough for the content
+StatusCode sd_read_blocks(SpiPort spi, uint8_t *dest, uint32_t readAddr, uint32_t numberOfBlocks);
+
+// Same as |sd_write_blocks|, but uses a different mechanism internally. Use this one for multiple
+// blocks. Use the other one for single blocks.
+StatusCode sd_write_blocks(SpiPort spi, uint8_t *src, uint32_t writeAddr, uint32_t numberOfBlocks);
+
+// Determines whether the SD card is ready in on a given SPI port
 StatusCode sd_is_initialized(SpiPort spi);

@@ -42,14 +42,14 @@ int main(void) {
     return 0;
   }
 
+  //
+  // Writing to SD card
+  //
+
   FATFS FatFs = { 0 };
   FRESULT fr = { 0 };
   FIL fil = { 0 };
-  char *line =
-      "1234Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula "
-      "quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim "
-      "justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede "
-      "mollis pretium.SD TESTTTTT dapibus. Vivamus 159\n";
+  char *line = "HELLO SD CARD";
 
   UINT btw = strlen(line);
   UINT written = 0;
@@ -74,6 +74,11 @@ int main(void) {
     fr = f_write(&fil, line, btw, &written);
   }
 
+  if (btw != written) {
+    LOG_CRITICAL("Bytes written is not the same as write length (%d, %d)\n", (int)btw,
+                 (int)written);
+  }
+
   // Close the file
   fr = f_close(&fil);
 
@@ -81,6 +86,34 @@ int main(void) {
     LOG_CRITICAL("Could not close file. FatFs error %d\n", fr);
     return 0;
   }
+
+  //
+  // Reading from SD card
+  //
+
+  uint32_t read_length = strlen(line);
+
+  // Open the file just to read from it
+  fr = f_open(&fil, "1:message.txt", FA_READ);
+
+  if (fr != FR_OK) {
+    LOG_CRITICAL("Could open file for read. FatFs error %d\n", fr);
+    return 0;
+  }
+
+  const uint32_t to_read = 25;
+
+  char read_line[to_read];
+  memset(read_line, 0, to_read * sizeof(char));
+
+  fr = f_read(&fil, read_line, to_read, &written);
+
+  if (fr != FR_OK) {
+    LOG_CRITICAL("Could read file. FatFs error %d\n", fr);
+    return 0;
+  }
+
+  LOG_DEBUG("Read %d bytes from file: %s\n", (int)written, read_line);
 
   fr = f_mount(NULL, "1:", 0);
 
