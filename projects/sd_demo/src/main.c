@@ -8,6 +8,8 @@
 #include "spi.h"
 #include "status.h"
 
+#define READ_BUF_SIZE 25
+
 SpiSettings spi_settings = { .cs = { .port = GPIO_PORT_A, .pin = 4 },
                              .sclk = { .port = GPIO_PORT_B, .pin = 13 },
                              .mosi = { .port = GPIO_PORT_B, .pin = 15 },  // DI
@@ -101,12 +103,10 @@ int main(void) {
     return 0;
   }
 
-  const uint32_t to_read = 25;
+  char read_line[READ_BUF_SIZE];
+  memset(read_line, 0, READ_BUF_SIZE * sizeof(char));
 
-  char read_line[to_read];
-  memset(read_line, 0, to_read * sizeof(char));
-
-  fr = f_read(&fil, read_line, to_read, &written);
+  fr = f_read(&fil, read_line, READ_BUF_SIZE, &written);
 
   if (fr != FR_OK) {
     LOG_CRITICAL("Could read file. FatFs error %d\n", fr);
