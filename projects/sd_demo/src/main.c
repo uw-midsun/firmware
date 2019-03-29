@@ -10,12 +10,12 @@
 
 #define READ_BUF_SIZE 25
 
-SpiSettings spi_settings = { .cs = { .port = GPIO_PORT_A, .pin = 4 },
-                             .sclk = { .port = GPIO_PORT_B, .pin = 13 },
-                             .mosi = { .port = GPIO_PORT_B, .pin = 15 },  // DI
-                             .miso = { .port = GPIO_PORT_B, .pin = 14 },  // DO
-                             .mode = SPI_MODE_0,
-                             .baudrate = 1200000 };
+static SpiSettings s_spi_settings = { .cs = { .port = GPIO_PORT_A, .pin = 4 },
+                                      .sclk = { .port = GPIO_PORT_B, .pin = 13 },
+                                      .mosi = { .port = GPIO_PORT_B, .pin = 15 },  // DI
+                                      .miso = { .port = GPIO_PORT_B, .pin = 14 },  // DO
+                                      .mode = SPI_MODE_0,
+                                      .baudrate = 1200000 };
 
 static void prv_test_callback(const Status *status) {
   printf("CODE: %d:%s:%s %s\n", status->code, status->source, status->caller, status->message);
@@ -39,7 +39,7 @@ int main(void) {
   delay_s(1);
 
   // Initialize SD card
-  if (!status_ok(spi_init(SPI_PORT_2, &spi_settings))) {
+  if (!status_ok(spi_init(SPI_PORT_2, &s_spi_settings))) {
     LOG_CRITICAL("Failed to initialize the Spi module\n");
     return 0;
   }
@@ -72,9 +72,7 @@ int main(void) {
     return 0;
   }
 
-  for (uint32_t i = 0; i < 1; i++) {
-    fr = f_write(&fil, line, btw, &written);
-  }
+  fr = f_write(&fil, line, btw, &written);
 
   if (btw != written) {
     LOG_CRITICAL("Bytes written is not the same as write length (%d, %d)\n", (int)btw,

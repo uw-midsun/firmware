@@ -10,7 +10,6 @@
 #include "ff.h"			/* Obtains integer types */
 #include "diskio.h"		/* Declarations of disk functions */
 #include "sd_binary.h"
-#include <stdio.h>
 
 
 /*-----------------------------------------------------------------------*/
