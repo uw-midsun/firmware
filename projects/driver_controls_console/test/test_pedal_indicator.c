@@ -5,7 +5,6 @@
 #include "delay.h"
 #include "event_queue.h"
 #include "exported_enums.h"
-#include "gpio.h"
 #include "interrupt.h"
 #include "log.h"
 #include "ms_test_helpers.h"
@@ -17,7 +16,6 @@
 static CanStorage s_can_storage;
 
 void setup_test(void) {
-  gpio_init();
   interrupt_init();
   soft_timer_init();
   event_queue_init();
