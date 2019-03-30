@@ -50,6 +50,6 @@ void test_steering_indicator_cruise(void) {
   Event e;
   TEST_ASSERT_NOT_OK(event_process(&e));
 
-  DriveOutputStorage* storage = drive_output_global();
+  DriveOutputStorage *storage = drive_output_global();
   TEST_ASSERT_EQUAL(cruise, storage->data[DRIVE_OUTPUT_SOURCE_CRUISE]);
 }
