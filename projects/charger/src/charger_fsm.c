@@ -18,6 +18,7 @@ static bool prv_safe_charging_guard(const Fsm *fsm, const Event *e, void *contex
 FSM_DECLARE_STATE(state_disconnected);
 FSM_DECLARE_STATE(state_connected);
 FSM_DECLARE_STATE(state_charging);
+FSM_DECLARE_STATE(state_error);
 
 FSM_STATE_TRANSITION(state_disconnected) {
   // Interrupt driven events on the charger pin.
@@ -40,6 +41,12 @@ FSM_STATE_TRANSITION(state_charging) {
   // Controlled by permissions. Will be forcibly kicked to this state if the charger state is
   // identified as dangerous by the charger_controller module.
   FSM_ADD_TRANSITION(CHARGER_EVENT_STOP_CHARGING, state_connected);
+}
+
+FSM_STATE_TRANSITION(state_error) {
+  //transition out of error state should only transition to disconnected
+  FSM_ADD_TRANSITION(CHARGER_EVENT_DISCONNECTED, state_disconnected);
+
 }
 
 static void prv_state_disconnected(Fsm *fsm, const Event *e, void *context) {
@@ -74,9 +81,20 @@ static void prv_state_charging(Fsm *fsm, const Event *e, void *context) {
   charger_controller_set_state(CHARGER_STATE_START);
 }
 
+static void prv_state_error(Fsm *fsm, const Event *e, void *context) {
+  LOG_DEBUG("ENTERED ERROR\n");
+  (void)fsm;
+  (void)e;
+  (void)context;
+
+  charger_controller_set_state(CHARGER_STATE_STOP);
+  notify_cease();
+}
+
 void charger_fsm_init(Fsm *fsm) {
   fsm_state_init(state_disconnected, prv_state_disconnected);
   fsm_state_init(state_connected, prv_state_connected);
   fsm_state_init(state_charging, prv_state_charging);
+  fsm_state_init(state_error, prv_state_error);
   fsm_init(fsm, "ChargerFSM", &state_disconnected, NULL);
 }

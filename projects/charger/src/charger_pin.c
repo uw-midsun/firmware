@@ -40,6 +40,16 @@ static void prv_poll_pilot_pwm(SoftTimerId id, void *context) {
   if (pwm_max_current < 0 ) { //update 0 to be current being pulled
     event_raise(CHARGER_EVENT_DISCONNECTED, 0);
   }
+  if (pwm_voltage > 2 && pwm_voltage < 7) {
+    event_raise(CHARGER_EVENT_START_CHARGING, 0);
+  } else if (pwm_voltage > 8 && pwm_voltage < 10) {
+    event_raise(CHARGER_EVENT_STOP_CHARGING, 0);
+  } else if (pwm_voltage > 11 && pwm_voltage < 13) {
+    event_raise(CHARGER_EVENT_DISCONNECTED, 0);
+  } else {
+    event_raise(CHARGER_EVENT_ERROR, 0);
+  }
+
 }
 
 StatusCode charger_pin_init(const GpioAddress *address) {
