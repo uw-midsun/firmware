@@ -5,6 +5,7 @@
 #include "delay.h"
 #include "drive_output.h"
 #include "event_queue.h"
+#include "gpio.h"
 #include "interrupt.h"
 #include "log.h"
 #include "ms_test_helpers.h"
@@ -43,6 +44,7 @@ static StatusCode prv_handle_output(const CanMessage *msg, void *context, CanAck
 }
 
 void setup_test(void) {
+  gpio_init();
   interrupt_init();
   soft_timer_init();
   event_queue_init();
@@ -68,7 +70,7 @@ void teardown_test(void) {}
 
 void test_drive_output_working(void) {
   // clear the event queue
-  Event e = { 0, 0 };
+  Event e;
   while (status_ok(event_process(&e))) {
   }
 
