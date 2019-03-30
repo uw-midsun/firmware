@@ -17,8 +17,11 @@
 // Threshold to consider a charger pin to be connected in mV. See the J1772 Charging standard for
 // the proximity detection pin voltages. Above this threshold the charger is considered to be
 // disconnected or unlatched so we shouldn't try to charge.
-#define CHARGER_PIN_CONNECTED_THRESHOLD 1820
+#define CHARGER_PIN_CONNECTED_THRESHOLD 18200
+//THRESHOLD INCREASED IN ORDER TO TEST WITH CONNECTED STATE
 
 // Inits the charger proximity pin and configures a soft timer to periodically check the ADC.
 // |address| is expected to persist.
 StatusCode charger_pin_init(const GpioAddress *address);
+
+StatusCode pwm_pin_init(const GpioAddress *address);

@@ -1,7 +1,9 @@
 #include "fsm.h"
+#include "log.h"
 
 void fsm_init(Fsm *fsm, const char *name, FsmState *default_state, void *context) {
   fsm->name = name;
+  LOG_DEBUG("%s\n", name);
   fsm->context = context;
   fsm->current_state = default_state;
 }

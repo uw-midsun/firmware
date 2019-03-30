@@ -3,6 +3,7 @@
 
 #include "adc.h"
 #include "can.h"
+#include "charger_events.h"
 #include "can_interval.h"
 #include "charger_cfg.h"
 #include "charger_controller.h"
@@ -13,6 +14,7 @@
 #include "gpio.h"
 #include "gpio_it.h"
 #include "interrupt.h"
+#include "log.h"
 #include "notify.h"
 #include "soft_timer.h"
 #include "wait.h"
@@ -60,7 +62,6 @@ int main(void) {
   while (true) {
     do {
       status = event_process(&e);
-
       // All events are interrupt driven so it is safe to wait while the event_queue is empty.
       if (status == STATUS_CODE_EMPTY) {
         wait();
@@ -68,6 +69,8 @@ int main(void) {
     } while (status != STATUS_CODE_OK);
 
     fsm_process_event(&s_charger_fsm, &e);
+    LOG_DEBUG("Event: %d\n", e.id);
+    //LOG_DEBUG("FSM curState: %d\n", s_charger_fsm);
     can_process_event(&e);
   }
 

@@ -32,6 +32,16 @@ static void prv_poll_value(SoftTimerId id, void *context) {
   soft_timer_start_millis(CHARGER_PIN_POLL_PERIOD_MS, prv_poll_value, addr, NULL);
 }
 
+static void prv_poll_pilot_pwm(SoftTimerId id, void *context) {
+  // Add voltage and current measurements from pilot pin
+  uint16_t pwm_voltage; //duty cycle % in decimal * 12V
+  uint16_t pwm_max_current; //from duty cycle calculation (as per datasheet)
+
+  if (pwm_max_current < 0 ) { //update 0 to be current being pulled
+    event_raise(CHARGER_EVENT_DISCONNECTED, 0);
+  }
+}
+
 StatusCode charger_pin_init(const GpioAddress *address) {
   const GpioSettings settings = {
     .state = GPIO_STATE_LOW,
@@ -46,4 +56,22 @@ StatusCode charger_pin_init(const GpioAddress *address) {
   adc_set_channel(chan, true);
 
   return soft_timer_start_millis(CHARGER_PIN_POLL_PERIOD_MS, prv_poll_value, address, NULL);
+}
+
+
+StatusCode pwm_pin_init(const GpioAddress *address) {
+  const GpioSettings settings = {
+    .state = GPIO_STATE_LOW,
+    .direction = GPIO_DIR_IN,
+    .resistor = GPIO_RES_NONE,
+    .alt_function = GPIO_ALTFN_ANALOG,
+  };
+  status_ok_or_return(gpio_init_pin(address, &settings));
+
+  AdcChannel chan = NUM_ADC_CHANNELS;
+  adc_get_channel(*address, &chan);
+  adc_set_channel(chan, true);
+
+  return soft_timer_start_millis(CHARGER_PIN_POLL_PERIOD_MS, prv_poll_value, address, NULL);
+
 }
