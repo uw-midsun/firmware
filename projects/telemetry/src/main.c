@@ -3,16 +3,13 @@
 #include <stdint.h>
 #include "can_hw.h"
 #include "can_uart.h"
-#include "delay.h"
 #include "event_queue.h"
-#include "gpio.h"
 #include "gps.h"
 #include "interrupt.h"
 #include "log.h"
 #include "nmea.h"
 #include "soft_timer.h"
 #include "uart.h"
-#include "wait.h"
 
 UartSettings telemetry_gps_uart_settings = {
   .baudrate = 9600,
