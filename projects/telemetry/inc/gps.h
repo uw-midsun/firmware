@@ -16,6 +16,9 @@
 // A GGA message will be around a hundred characters.
 #define GPS_MAX_NMEA_LENGTH 128
 
+// NMEA sentence to turn GPS module on
+#define GPS_FULL_POWER "PLSC,200,1*0F\r\n" 
+
 // NMEA sentences to transmit to the GPS module to turn off unneeded messages
 #define GPS_GLL_OFF "$PSRF103,01,00,00,01*27\r\n"  // GLL: Geographic Position - Latitude/Longitude
 #define GPS_GSA_OFF "$PSRF103,02,00,00,01*26\r\n"  // GSA: GPS DOP and Active Satellites

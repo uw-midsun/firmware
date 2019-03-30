@@ -3,8 +3,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include "delay.h"
-#include "gpio.h"
 #include "interrupt.h"
 #include "nmea.h"
 #include "status.h"
@@ -25,16 +23,6 @@ static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
   }
 }
 
-// The GPS power line will be connected to a 3V pin. This method will
-// control if that pin is providing power or not.
-static void prv_gps_set_power_state(bool powered) {
-  if (powered) {
-    gpio_set_state(s_settings->pin_power, GPIO_STATE_HIGH);
-  } else {
-    gpio_set_state(s_settings->pin_power, GPIO_STATE_LOW);
-  }
-}
-
 // Initialization of this chip is described on page 10 of:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
 StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
@@ -46,38 +34,13 @@ StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
   s_settings = settings;
   s_storage = storage;
 
-  GpioSettings telemetry_settings_gpio_general = {
-    .direction = GPIO_DIR_OUT,  // The pin needs to output.
-    .state = GPIO_STATE_LOW,    // Start in the "off" state.
-    .alt_function = GPIO_ALTFN_1,
-  };
-
   // Initializes UART
   uart_init(s_settings->port, s_settings->uart_settings, &s_settings->uart_storage);
   uart_set_rx_handler(s_settings->port, prv_gps_callback, NULL);
 
-  // Initializes the pins
-  StatusCode ret = gpio_init_pin(s_settings->pin_power, &telemetry_settings_gpio_general);
-  ret |= gpio_init_pin(s_settings->pin_on_off, &telemetry_settings_gpio_general);
-
-  if (!status_ok(ret)) {
-    return status_msg(STATUS_CODE_INTERNAL_ERROR, "Error initializing GPIO Pins");
-  }
-
-  prv_gps_set_power_state(true);
-  delay_s(1);
-
-  // Pull high on ON/OFF line
-  ret |= gpio_set_state(s_settings->pin_on_off, GPIO_STATE_HIGH);
-  delay_ms(100);
-
-  // Set ON/OFF line to low
-  ret |= gpio_set_state(s_settings->pin_on_off, GPIO_STATE_LOW);
-  delay_ms(900);
-
-  if (!status_ok(ret)) {
-    return status_msg(STATUS_CODE_INTERNAL_ERROR, "Error turning on GPS Module");
-  }
+  // Set GPS module to full power
+  char *full_power = GPS_FULL_POWER;
+  uart_tx(s_settings->port, (uint8_t *)full_power, strlen(full_power));
 
   // Turning off messages we don't need
   char *ggl_off = GPS_GLL_OFF;
