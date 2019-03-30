@@ -41,6 +41,6 @@ typedef enum {
   // Center console mech brake events
   INPUT_EVENT_CENTER_CONSOLE_MECH_BRAKE_PRESSED,
   INPUT_EVENT_CENTER_CONSOLE_MECH_BRAKE_RELEASED,
-  
+
   NUM_CENTER_CONSOLE_INPUT_EVENTS,
 } InputEvent;

@@ -6,7 +6,7 @@
 
 static StatusCode prv_handle_pedal(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   DriveOutputStorage *storage = context;
-  
+
   uint16_t throttle = 0;
   uint16_t mech_brake = 0;
   uint16_t throttle_state = 0;
