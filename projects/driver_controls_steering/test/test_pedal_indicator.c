@@ -1,7 +1,5 @@
 #include "can.h"
 #include "can_transmit.h"
-#include "sc_cfg.h"
-#include "sc_input_event.h"
 #include "delay.h"
 #include "event_queue.h"
 #include "exported_enums.h"
@@ -10,6 +8,8 @@
 #include "log.h"
 #include "ms_test_helpers.h"
 #include "pedal_indicator.h"
+#include "sc_cfg.h"
+#include "sc_input_event.h"
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
@@ -60,11 +60,9 @@ void test_pedal_indicator_brake_released(void) {
   Event e;
   TEST_ASSERT_OK(event_process(&e));
   TEST_ASSERT_EQUAL(INPUT_EVENT_STEERING_MECH_BRAKE_RELEASED, e.id);
-
 }
 
-void test_pedal_indicator_throttle_brake(void){
-  
+void test_pedal_indicator_throttle_brake(void) {
   uint16_t throttle_state = EE_THROTTLE_BRAKE;
   CAN_TRANSMIT_PEDAL_OUTPUT(0, throttle_state, 0);
 
@@ -76,10 +74,9 @@ void test_pedal_indicator_throttle_brake(void){
 
   TEST_ASSERT_OK(event_process(&e));
   TEST_ASSERT_EQUAL(INPUT_EVENT_STEERING_PEDAL_BRAKE, e.id);
-
 }
 
-void test_pedal_indicator_throttle_coast(void){
+void test_pedal_indicator_throttle_coast(void) {
   uint16_t throttle_state = EE_THROTTLE_COAST;
   CAN_TRANSMIT_PEDAL_OUTPUT(0, throttle_state, 0);
 
@@ -93,7 +90,7 @@ void test_pedal_indicator_throttle_coast(void){
   TEST_ASSERT_EQUAL(INPUT_EVENT_STEERING_PEDAL_COAST, e.id);
 }
 
-void test_pedal_indicator_throttle_accel(void){
+void test_pedal_indicator_throttle_accel(void) {
   uint16_t throttle_state = EE_THROTTLE_ACCEL;
   CAN_TRANSMIT_PEDAL_OUTPUT(0, throttle_state, 0);
 
@@ -107,7 +104,7 @@ void test_pedal_indicator_throttle_accel(void){
   TEST_ASSERT_EQUAL(INPUT_EVENT_STEERING_PEDAL_ACCEL, e.id);
 }
 
-void test_pedal_inidicator_throttle_fault(void){
+void test_pedal_inidicator_throttle_fault(void) {
   uint16_t throttle_state = EE_THROTTLE_FAULT;
   CAN_TRANSMIT_PEDAL_OUTPUT(0, throttle_state, 0);
 
@@ -116,4 +113,3 @@ void test_pedal_inidicator_throttle_fault(void){
   TEST_ASSERT_OK(event_process(&e));
   TEST_ASSERT_EQUAL(INPUT_EVENT_STEERING_PEDAL_FAULT, e.id);
 }
-

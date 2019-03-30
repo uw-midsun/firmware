@@ -5,8 +5,8 @@
 #include "gpio_it.h"
 #include "interrupt.h"
 #include "log.h"
-#include "pc_input_event.h"
 #include "pc_cfg.h"
+#include "pc_input_event.h"
 #include "test_helpers.h"
 #include "throttle.h"
 #include "unity.h"
@@ -59,7 +59,7 @@ void setup_test(void) {
   interrupt_init();
   gpio_it_init();
   soft_timer_init();
-   const I2CSettings i2c_settings = {
+  const I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,
     .scl = PC_CFG_I2C_BUS_SCL,
     .sda = PC_CFG_I2C_BUS_SDA,

@@ -1,15 +1,15 @@
 #include "can.h"
 #include "can_transmit.h"
-#include "pc_cfg.h"
-#include "pc_input_event.h"
 #include "delay.h"
+#include "direction_indicator.h"
 #include "event_queue.h"
 #include "exported_enums.h"
 #include "gpio.h"
 #include "interrupt.h"
 #include "log.h"
 #include "ms_test_helpers.h"
-#include "direction_indicator.h"
+#include "pc_cfg.h"
+#include "pc_input_event.h"
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
@@ -40,8 +40,7 @@ void setup_test(void) {
 
 void teardown_test(void) {}
 
-void test_direction_indicator_neutral(void){
-
+void test_direction_indicator_neutral(void) {
   uint16_t direction = EE_DRIVE_OUTPUT_DIRECTION_NEUTRAL;
   CAN_TRANSMIT_DRIVE_OUTPUT(0, direction, 0, 0);
 
@@ -50,11 +49,9 @@ void test_direction_indicator_neutral(void){
 
   TEST_ASSERT_OK(event_process(&e));
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_DIRECTION_STATE_NEUTRAL, e.id);
-
 }
 
-void test_direction_indicator_forward(void){
-
+void test_direction_indicator_forward(void) {
   uint16_t direction = EE_DRIVE_OUTPUT_DIRECTION_FORWARD;
   CAN_TRANSMIT_DRIVE_OUTPUT(0, direction, 0, 0);
 
@@ -65,8 +62,7 @@ void test_direction_indicator_forward(void){
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_DIRECTION_STATE_FORWARD, e.id);
 }
 
-void test_direction_indicator_reverse(void){
-
+void test_direction_indicator_reverse(void) {
   uint16_t direction = EE_DRIVE_OUTPUT_DIRECTION_REVERSE;
   CAN_TRANSMIT_DRIVE_OUTPUT(0, direction, 0, 0);
 
