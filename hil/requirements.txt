@@ -1,0 +1,6 @@
+bitstruct==6.0.0
+cantools==32.13.0
+diskcache==3.1.1
+python-can==3.1.1
+textparser==0.21.1
+wrapt==1.11.1
