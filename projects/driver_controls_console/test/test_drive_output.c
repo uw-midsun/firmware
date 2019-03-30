@@ -24,8 +24,8 @@ static DriveOutputStorage s_storage;
 static TestDriveOutputData s_data;
 
 static StatusCode prv_handle_output(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
-  bool* received = context;
-  
+  bool *received = context;
+
   if (*received == false) {
     uint16_t throttle = 0;
     uint16_t direction = 0;
@@ -60,7 +60,8 @@ void setup_test(void) {
   TEST_ASSERT_OK(can_init(&s_can_storage, &can_settings));
   can_add_filter(SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT);
 
-  drive_output_init(&s_storage, INPUT_EVENT_CENTER_CONSOLE_WATCHDOG_FAULT, INPUT_EVENT_CENTER_CONSOLE_UPDATE_REQUESTED);
+  drive_output_init(&s_storage, INPUT_EVENT_CENTER_CONSOLE_WATCHDOG_FAULT,
+                    INPUT_EVENT_CENTER_CONSOLE_UPDATE_REQUESTED);
 }
 
 void teardown_test(void) {}
@@ -123,7 +124,8 @@ void test_drive_output_values(void) {
 
   // Test that the correct values are being transmitted over CAN
   bool received = false;
-  TEST_ASSERT_OK(can_register_rx_handler(SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT, prv_handle_output, &received));
+  TEST_ASSERT_OK(
+      can_register_rx_handler(SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT, prv_handle_output, &received));
   drive_output_set_enabled(&s_storage, true);
   delay_ms(DRIVE_OUTPUT_BROADCAST_MS);
 
