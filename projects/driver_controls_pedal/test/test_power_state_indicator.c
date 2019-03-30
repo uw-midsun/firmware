@@ -9,7 +9,7 @@
 #include "interrupt.h"
 #include "log.h"
 #include "ms_test_helpers.h"
-#include "direction_indicator.h"
+#include "power_state_indicator.h"
 #include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
@@ -33,46 +33,42 @@ void setup_test(void) {
     .loopback = true,
   };
   TEST_ASSERT_OK(can_init(&s_can_storage, &can_settings));
-  can_add_filter(SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT);
+  can_add_filter(SYSTEM_CAN_MESSAGE_POWER_STATE);
 
-  TEST_ASSERT_OK(direction_indicator_init());
+  TEST_ASSERT_OK(power_state_indicator_init());
 }
 
 void teardown_test(void) {}
 
-void test_direction_indicator_neutral(void){
+void test_power_state_idle(void) {
+  uint8_t power_state = EE_POWER_STATE_IDLE;
+  CAN_TRANSMIT_POWER_STATE(NULL, power_state);
 
-  uint16_t direction = EE_DRIVE_OUTPUT_DIRECTION_NEUTRAL;
-  CAN_TRANSMIT_DRIVE_OUTPUT(0, direction, 0, 0);
-
-  Event e;
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_PEDAL_CAN_TX, INPUT_EVENT_PEDAL_CAN_RX);
 
+  Event e;
   TEST_ASSERT_OK(event_process(&e));
-  TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_DIRECTION_STATE_NEUTRAL, e.id);
-
+  TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_POWER_STATE_OFF, e.id);
 }
 
-void test_direction_indicator_forward(void){
-
-  uint16_t direction = EE_DRIVE_OUTPUT_DIRECTION_FORWARD;
-  CAN_TRANSMIT_DRIVE_OUTPUT(0, direction, 0, 0);
+void test_power_state_charge(void) {
+  uint8_t power_state = EE_POWER_STATE_CHARGE;
+  CAN_TRANSMIT_POWER_STATE(NULL, power_state);
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_PEDAL_CAN_TX, INPUT_EVENT_PEDAL_CAN_RX);
 
   Event e;
   TEST_ASSERT_OK(event_process(&e));
-  TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_DIRECTION_STATE_FORWARD, e.id);
+  TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_POWER_STATE_CHARGE, e.id);
 }
 
-void test_direction_indicator_reverse(void){
-
-  uint16_t direction = EE_DRIVE_OUTPUT_DIRECTION_REVERSE;
-  CAN_TRANSMIT_DRIVE_OUTPUT(0, direction, 0, 0);
+void test_power_state_drive(void) {
+  uint8_t power_state = EE_POWER_STATE_DRIVE;
+  CAN_TRANSMIT_POWER_STATE(NULL, power_state);
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_PEDAL_CAN_TX, INPUT_EVENT_PEDAL_CAN_RX);
 
   Event e;
   TEST_ASSERT_OK(event_process(&e));
-  TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_DIRECTION_STATE_REVERSE, e.id);
+  TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_POWER_STATE_DRIVE, e.id);
 }

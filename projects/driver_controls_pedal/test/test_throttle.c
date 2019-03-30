@@ -6,6 +6,7 @@
 #include "interrupt.h"
 #include "log.h"
 #include "pc_input_event.h"
+#include "pc_cfg.h"
 #include "test_helpers.h"
 #include "throttle.h"
 #include "unity.h"
@@ -58,18 +59,18 @@ void setup_test(void) {
   interrupt_init();
   gpio_it_init();
   soft_timer_init();
-  I2CSettings i2c_settings = {
-    .speed = I2C_SPEED_FAST,                   //
-    .scl = { .port = GPIO_PORT_B, .pin = 8 },  //
-    .sda = { .port = GPIO_PORT_B, .pin = 9 },  //
+   const I2CSettings i2c_settings = {
+    .speed = I2C_SPEED_FAST,
+    .scl = PC_CFG_I2C_BUS_SCL,
+    .sda = PC_CFG_I2C_BUS_SDA,
   };
-  i2c_init(I2C_PORT_1, &i2c_settings);
+  i2c_init(PC_CFG_I2C_BUS_PORT, &i2c_settings);
   GpioAddress ready_pin = {
     .port = GPIO_PORT_A,  //
     .pin = 10,            //
   };
   event_queue_init();
-  ads1015_init(&s_ads1015_storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
+  ads1015_init(&s_ads1015_storage, PC_CFG_I2C_BUS_PORT, ADS1015_ADDRESS_GND, &ready_pin);
   prv_set_calibration_data(&s_calibration_data);
   throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage);
 }

@@ -11,10 +11,10 @@ static StatusCode prv_handle_pedal(const CanMessage *msg, void *context, CanAckS
   CAN_UNPACK_PEDAL_OUTPUT(msg, &throttle, &throttle_state, &mech_brake);
 
   if (mech_brake > EE_PEDAL_OUTPUT_MECH_THRESHOLD) {
-    event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_STEERING_MECHANICAL_BRAKE_PRESSED,
+    event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_STEERING_MECH_BRAKE_PRESSED,
                          mech_brake);
   } else {
-    event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_STEERING_MECHANICAL_BRAKE_RELEASED,
+    event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_STEERING_MECH_BRAKE_RELEASED,
                          mech_brake);
   }
 

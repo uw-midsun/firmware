@@ -49,8 +49,8 @@ void setup_test(void) {
     .sda = PC_CFG_I2C_BUS_SDA,
   };
 
-  i2c_init(I2C_PORT_1, &i2c_settings);
-  ads1015_init(&s_ads1015, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
+  i2c_init(PC_CFG_I2C_BUS_PORT, &i2c_settings);
+  ads1015_init(&s_ads1015, PC_CFG_I2C_BUS_PORT, ADS1015_ADDRESS_GND, &ready_pin);
 
   steering_angle_init(&s_steering_angle_storage, &s_angle_calib_data, &settings);
   prv_set_calibration_data(&s_angle_calib_data);
