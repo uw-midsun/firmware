@@ -14,29 +14,15 @@
 #include "uart.h"
 #include "wait.h"
 
-GpioSettings telemetry_settings_gpio_general = {
-  .direction = GPIO_DIR_OUT,  // The pin needs to output.
-  .state = GPIO_STATE_LOW,    // Start in the "off" state.
-  .alt_function = GPIO_ALTFN_1,
-};
-
 UartSettings telemetry_gps_uart_settings = {
   .baudrate = 9600,
-  .tx = { .port = GPIO_PORT_A, .pin = 2 },
-  .rx = { .port = GPIO_PORT_A, .pin = 3 },
-  .alt_fn = GPIO_ALTFN_1,
+  .tx = { .port = GPIO_PORT_B, .pin = 10 },
+  .rx = { .port = GPIO_PORT_B, .pin = 11 },
+  .alt_fn = GPIO_ALTFN_4,
 };
 
-// The pin numbers to use for providing power and turning the GPS on and off
-GpioAddress telemetry_gps_pins[] = {
-  { .port = GPIO_PORT_B, .pin = 3 },  // Pin GPS power
-  { .port = GPIO_PORT_B, .pin = 4 },  // Pin GPS on_off
-};
-
-GpsSettings telemetry_gps_settings = { .pin_power = &telemetry_gps_pins[0],
-                                       .pin_on_off = &telemetry_gps_pins[1],
-                                       .uart_settings = &telemetry_gps_uart_settings,
-                                       .port = UART_PORT_2 };
+GpsSettings telemetry_gps_settings = { .uart_settings = &telemetry_gps_uart_settings,
+                                       .port = UART_PORT_3 };
 
 GpsStorage telemetry_gps_storage = { 0 };
 
