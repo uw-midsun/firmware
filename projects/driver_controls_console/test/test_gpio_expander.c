@@ -1,8 +1,10 @@
+#include "cc_cfg.h"
 #include "gpio_expander.h"
 #include "gpio_it.h"
 #include "i2c.h"
 #include "interrupt.h"
 #include "log.h"
+#include "soft_timer.h"
 #include "test_helpers.h"
 #include "unity.h"
 
@@ -17,25 +19,20 @@ void setup_test(void) {
   gpio_init();
   interrupt_init();
   gpio_it_init();
+  soft_timer_init();
 
   I2CSettings settings = {
     .speed = I2C_SPEED_FAST,    //
-    .sda = { GPIO_PORT_B, 9 },  //
-    .scl = { GPIO_PORT_B, 8 },  //
+    .sda = CC_CFG_I2C_BUS_SDA,  //
+    .scl = CC_CFG_I2C_BUS_SCL,  //
   };
-
-  i2c_init(I2C_PORT_1, &settings);
-
-  GpioAddress int_pin = { GPIO_PORT_A, 2 };
-  TEST_ASSERT_OK(gpio_expander_init(&s_expander, I2C_PORT_1, GPIO_EXPANDER_ADDRESS_0, &int_pin));
+  i2c_init(CC_CFG_I2C_BUS_PORT, &settings);
+  gpio_expander_init(&s_expander, CC_CFG_I2C_BUS_PORT, CC_CFG_CONSOLE_IO_ADDR, NULL);
 }
 
 void teardown_test(void) {}
 
 void test_gpio_expander_init_pin(void) {
-  GpioSettings input_settings = {
-    .direction = GPIO_DIR_IN,  //
-  };
   GpioSettings output_settings = {
     .direction = GPIO_DIR_OUT,  //
     .state = GPIO_STATE_HIGH,   //
@@ -44,7 +41,6 @@ void test_gpio_expander_init_pin(void) {
                     gpio_expander_init_pin(&s_expander, NUM_GPIO_EXPANDER_PINS, &output_settings));
 
   TEST_ASSERT_OK(gpio_expander_init_pin(&s_expander, GPIO_EXPANDER_PIN_0, &output_settings));
-  TEST_ASSERT_OK(gpio_expander_init_pin(&s_expander, GPIO_EXPANDER_PIN_1, &input_settings));
 }
 
 void test_gpio_expander_register_callback(void) {

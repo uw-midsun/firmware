@@ -2,10 +2,14 @@
 #include "cc_input_event.h"
 #include "delay.h"
 #include "event_queue.h"
+#include "gpio.h"
+#include "gpio_it.h"
 #include "gpio_expander.h"
 #include "i2c.h"
+#include "interrupt.h"
 #include "led_output.h"
 #include "log.h"
+#include "soft_timer.h"
 #include "test_helpers.h"
 
 #define TEST_LED_OUTPUT_PRINT_AND_DELAY
@@ -13,6 +17,11 @@
 GpioExpanderStorage s_expander;
 
 void setup_test(void) {
+  gpio_init();
+  interrupt_init();
+  gpio_it_init();
+  soft_timer_init();
+
   const I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,    //
     .sda = CC_CFG_I2C_BUS_SDA,  //
