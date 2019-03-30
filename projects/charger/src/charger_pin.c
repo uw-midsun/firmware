@@ -34,12 +34,11 @@ static void prv_poll_value(SoftTimerId id, void *context) {
 
 static void prv_poll_pilot_pwm(SoftTimerId id, void *context) {
   // Add voltage and current measurements from pilot pin
-  uint16_t pwm_voltage; //duty cycle % in decimal * 12V
+  uint16_t pwm_voltage = 0; //duty cycle % in decimal * 12V
   uint16_t pwm_max_current; //from duty cycle calculation (as per datasheet)
 
-  if (pwm_max_current < 0 ) { //update 0 to be current being pulled
-    event_raise(CHARGER_EVENT_DISCONNECTED, 0);
-  }
+  //Use pwm_max_current to either update max current setting or make comparison
+
   if (pwm_voltage > 2 && pwm_voltage < 7) {
     event_raise(CHARGER_EVENT_START_CHARGING, 0);
   } else if (pwm_voltage > 8 && pwm_voltage < 10) {
@@ -82,6 +81,6 @@ StatusCode pwm_pin_init(const GpioAddress *address) {
   adc_get_channel(*address, &chan);
   adc_set_channel(chan, true);
 
-  return soft_timer_start_millis(CHARGER_PIN_POLL_PERIOD_MS, prv_poll_value, address, NULL);
+  return soft_timer_start_millis(CHARGER_PIN_POLL_PERIOD_MS, prv_poll_pilot_pwm, address, NULL);
 
 }

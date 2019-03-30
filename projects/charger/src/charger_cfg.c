@@ -47,7 +47,7 @@ GpioAddress charger_cfg_load_charger_pin(void) {
   return ((GpioAddress){ GPIO_PORT_A, 7 });
 }
 
-GpioAddress charger_cfg_load_charger_pin(void) {
+GpioAddress charger_cfg_load_pilot_pin(void) {
   return ((GpioAddress){ GPIO_PORT_A, 5});
 }
 

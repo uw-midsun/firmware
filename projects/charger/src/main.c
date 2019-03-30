@@ -47,6 +47,9 @@ int main(void) {
   const GpioAddress pin_addr = charger_cfg_load_charger_pin();
   charger_pin_init(&pin_addr);
 
+  const GpioAddress pilot_pin_addr = charger_cfg_load_pilot_pin();
+  charger_pin_init(&pilot_pin_addr);
+
   // Charger Controller
   const ChargerSettings *charger_settings = charger_cfg_load_settings();
   charger_controller_init(&s_charger_storage, charger_settings, &s_charger_status);
