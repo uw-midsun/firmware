@@ -10,6 +10,7 @@
 #include "interrupt.h"
 #include "log.h"
 #include "pc_calib.h"
+#include "pc_cfg.h"
 #include "soft_timer.h"
 #include "throttle.h"
 #include "throttle_calibration.h"
@@ -28,18 +29,15 @@ void setup_test(void) {
   crc32_init();
   flash_init();
 
-  I2CSettings i2c_settings = {
-    .speed = I2C_SPEED_FAST,                   //
-    .sda = { .port = GPIO_PORT_B, .pin = 9 },  //
-    .scl = { .port = GPIO_PORT_B, .pin = 8 },  //
+  const I2CSettings i2c_settings = {
+    .speed = I2C_SPEED_FAST,
+    .scl = PC_CFG_I2C_BUS_SCL,
+    .sda = PC_CFG_I2C_BUS_SDA,
   };
-  i2c_init(I2C_PORT_1, &i2c_settings);
-  GpioAddress ready_pin = {
-    .port = GPIO_PORT_A,  //
-    .pin = 10,            //
-  };
+  i2c_init(PC_CFG_I2C_BUS_PORT, &i2c_settings);
+  GpioAddress ready_pin = PC_CFG_PEDAL_ADC_RDY_PIN;
   event_queue_init();
-  ads1015_init(&s_ads1015_storage, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
+  ads1015_init(&s_ads1015_storage, PC_CFG_I2C_BUS_PORT, ADS1015_ADDRESS_GND, &ready_pin);
 
   ThrottleCalibrationSettings calib_settings = {
     .ads1015 = &s_ads1015_storage,
