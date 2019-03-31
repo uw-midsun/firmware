@@ -21,11 +21,13 @@
 // - Exits immediately in case of fault
 //
 // Transition Table:
-// | From \ To    | Disconnected | Connected | Charging |
-// | Disconnected |       \      |     Y     |     N    |
-// | Connected    |       Y      |     \     |   G(Y)   |
-// | Charging     |       Y      |     Y     |     \    |
+// | From \ To                     | Disconnected | Connected | Charging | Conn, Charg. perm. |
+// | Disconnected                  |       \      |     Y     |     N    |         Y          |
+// | Connected                     |       Y      |     \     |     N    |         Y          |
+// | Connected, charing permission |       Y      |   N_C(Y)  |    G(Y)  |         \          |
+// | Charging                      |       Y      |     Y     |     \    |         Y          |
 //
+// *Error state also exists, should only transition to disconnected
 // \ - Self-edge not allowed.
 // Y - Allowed.
 // N - Not allowed.

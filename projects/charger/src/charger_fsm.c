@@ -16,6 +16,7 @@ static bool prv_safe_charging_guard(const Fsm *fsm, const Event *e, void *contex
 }
 
 FSM_DECLARE_STATE(state_disconnected);
+FSM_DECLARE_STATE(state_connected_charing_allowed);
 FSM_DECLARE_STATE(state_connected);
 FSM_DECLARE_STATE(state_charging);
 FSM_DECLARE_STATE(state_error);
@@ -23,16 +24,33 @@ FSM_DECLARE_STATE(state_error);
 FSM_STATE_TRANSITION(state_disconnected) {
   // Interrupt driven events on the charger pin.
   FSM_ADD_TRANSITION(CHARGER_EVENT_CONNECTED, state_connected);
+
+  FSM_ADD_TRANSITION(CHARGER_EVENT_CONNECTED_CHARGING_ALLOWED, state_connected_charing_allowed);
 }
 
 FSM_STATE_TRANSITION(state_connected) {
   // Interrupt driven events on the charger pin.
   FSM_ADD_TRANSITION(CHARGER_EVENT_DISCONNECTED, state_disconnected);
 
+  FSM_ADD_TRANSITION(CHARGER_EVENT_STATE_CONNECTED_CHARGING_ALLOWED, state_connected_charing_allowed)
+
+}
+
+//Intermediate connected state - vehicle connected but vehicle not ready to accept energy - changes driven primarily by pilot pin
+FSM_STATE_TRANSITION(CHARGER_EVENT_STATE_CONNECTED_CHARGING_ALLOWED, state_connected_charing_allowed) {
+  // Interrupt driven events on the charger pin.
+  FSM_ADD_TRANSITION(CHARGER_EVENT_DISCONNECTED, state_disconnected);
+
+  //Pilot voltage at ~9V, should go back to Connected to prevent invalid charging requests
+  FSM_ADD_TRANSITION(CHARGER_EVENT_CONNECTED_NO_CHARGING_ALLOWED, state_connected);
+
+
   // Requires permissions and that the charger is in a safe state. This is guarded to prevent
   // re-entry into this state in the event permission is given but the charger is deemed unsafe.
   FSM_ADD_GUARDED_TRANSITION(CHARGER_EVENT_START_CHARGING, prv_safe_charging_guard, state_charging);
 }
+
+
 
 FSM_STATE_TRANSITION(state_charging) {
   // Interrupt driven events on the charger pin.
@@ -61,7 +79,18 @@ static void prv_state_disconnected(Fsm *fsm, const Event *e, void *context) {
 }
 
 static void prv_state_connected(Fsm *fsm, const Event *e, void *context) {
-  LOG_DEBUG("ENTERED CONNECTED\n");
+  LOG_DEBUG("ENTERED CONNECTED, CHARGING NOT ALLOWED\n");
+
+  (void)fsm;
+  (void)e;
+  (void)context;
+
+  charger_controller_set_state(CHARGER_STATE_STOP);
+  notify_cease();
+}
+
+static void prv_state_connected_charing_allowed(Fsm *fsm, const Event *e, void *context) {
+  LOG_DEBUG("ENTERED CONNECTED, CHARGING ALLOWED\n");
 
   (void)fsm;
   (void)e;
@@ -95,6 +124,7 @@ void charger_fsm_init(Fsm *fsm) {
   fsm_state_init(state_disconnected, prv_state_disconnected);
   fsm_state_init(state_connected, prv_state_connected);
   fsm_state_init(state_charging, prv_state_charging);
+  fsm_state_init(state_connected_charing_allowed, prv_state_connected_charing_allowed);
   fsm_state_init(state_error, prv_state_error);
   fsm_init(fsm, "ChargerFSM", &state_disconnected, NULL);
 }
