@@ -59,7 +59,8 @@ void setup_test(void) {
   TEST_ASSERT_OK(can_init(&s_can_storage, &can_settings));
   can_add_filter(SYSTEM_CAN_MESSAGE_PEDAL_OUTPUT);
 
-  pedal_output_init(&s_storage, INPUT_EVENT_PEDAL_WATCHDOG_FAULT, INPUT_EVENT_PEDAL_UPDATE_REQUESTED);
+  pedal_output_init(&s_storage, INPUT_EVENT_PEDAL_WATCHDOG_FAULT,
+                    INPUT_EVENT_PEDAL_UPDATE_REQUESTED);
 }
 
 void teardown_test(void) {}
