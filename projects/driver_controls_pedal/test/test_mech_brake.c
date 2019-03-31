@@ -101,7 +101,7 @@ void test_mech_brake_percentage_in_released_zone(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
   delay_ms(10);
 
-  //Consume the backlog of events.
+  // Consume the backlog of events.
   while (STATUS_CODE_OK == event_process(&e)) {
     TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_RELEASED, e.id);
   }

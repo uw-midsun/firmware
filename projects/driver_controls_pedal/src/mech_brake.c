@@ -77,10 +77,10 @@ StatusCode mech_brake_init(MechBrakeStorage *storage, const MechBrakeSettings *s
   storage->unpressed_threshold_position =
       settings->brake_unpressed_threshold_percentage * EE_PEDAL_OUTPUT_DENOMINATOR / 100;
 
-  status_ok_or_return(ads1015_configure_channel(storage->ads1015, storage->channel, true, NULL, NULL));
+  status_ok_or_return(
+      ads1015_configure_channel(storage->ads1015, storage->channel, true, NULL, NULL));
 
-  return soft_timer_start_millis(10, prv_raise_event_timer_callback, storage,
-                                 NULL);
+  return soft_timer_start_millis(10, prv_raise_event_timer_callback, storage, NULL);
 }
 
 StatusCode mech_brake_get_position(MechBrakeStorage *storage, int16_t *position) {
