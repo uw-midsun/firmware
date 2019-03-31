@@ -32,7 +32,7 @@ Mcp2515Settings *charger_cfg_load_mcp2515_settings(void);
 // Returns the GpioAddress of the charger_pin.
 GpioAddress charger_cfg_load_charger_pin(void);
 
-GpioAddress charger_cfg_load_pwm_in(void);
+GpioAddress charger_cfg_load_pilot_pin(void);
 
 // Required before |charger_cfg_load_settings|, requires UART and CAN to be running.
 StatusCode charger_cfg_init_settings(void);

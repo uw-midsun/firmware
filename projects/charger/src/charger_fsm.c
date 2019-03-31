@@ -32,12 +32,12 @@ FSM_STATE_TRANSITION(state_connected) {
   // Interrupt driven events on the charger pin.
   FSM_ADD_TRANSITION(CHARGER_EVENT_DISCONNECTED, state_disconnected);
 
-  FSM_ADD_TRANSITION(CHARGER_EVENT_STATE_CONNECTED_CHARGING_ALLOWED, state_connected_charing_allowed)
+  FSM_ADD_TRANSITION(CHARGER_EVENT_CONNECTED_CHARGING_ALLOWED, state_connected_charing_allowed);
 
 }
 
 //Intermediate connected state - vehicle connected but vehicle not ready to accept energy - changes driven primarily by pilot pin
-FSM_STATE_TRANSITION(CHARGER_EVENT_STATE_CONNECTED_CHARGING_ALLOWED, state_connected_charing_allowed) {
+FSM_STATE_TRANSITION(state_connected_charing_allowed) {
   // Interrupt driven events on the charger pin.
   FSM_ADD_TRANSITION(CHARGER_EVENT_DISCONNECTED, state_disconnected);
 

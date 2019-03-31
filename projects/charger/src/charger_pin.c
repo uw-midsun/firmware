@@ -40,9 +40,9 @@ static void prv_poll_pilot_pwm(SoftTimerId id, void *context) {
   //Use pwm_max_current to either update max current setting or make comparison
 
   if (pwm_voltage > 2 && pwm_voltage < 7) {
-    event_raise(CHARGER_EVENT_STATE_CONNECTED_CHARGING_ALLOWED, 0);
-    else if (pwm_voltage > 8 && pwm_voltage < 10) {
-      event_raise(CHARGER_EVENT_CONNECTED_NO_CHARGING_ALLOWED, 0);
+    event_raise(CHARGER_EVENT_CONNECTED_CHARGING_ALLOWED, 0);
+  }  else if (pwm_voltage > 8 && pwm_voltage < 10) {
+    event_raise(CHARGER_EVENT_CONNECTED_NO_CHARGING_ALLOWED, 0);
   } else if (pwm_voltage > 11 && pwm_voltage < 13) {
     event_raise(CHARGER_EVENT_DISCONNECTED, 0);
   } else {
