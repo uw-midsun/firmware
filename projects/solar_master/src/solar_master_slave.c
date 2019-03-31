@@ -6,7 +6,7 @@ static void prv_voltage_reading_cb(uint32_t value, void *context) {
   slave->sliding_sum_voltage_mv -= slave->averaging_voltage[slave->counter];
   slave->sliding_sum_temp_mv -= slave->averaging_temp[slave->counter];
   slave->averaging_voltage[slave->counter] = (int32_t)value >> 16;
-  slave->averaging_temp[slave->counter] = (int32_t)(value && ((1 << 16) - 1));
+  slave->averaging_temp[slave->counter] = (int32_t)(value & ((1 << 16) - 1));
   slave->sliding_sum_voltage_mv += slave->averaging_voltage[slave->counter];
   slave->sliding_sum_temp_mv += slave->averaging_temp[slave->counter++];
   if (slave->counter == SOLAR_MASTER_MCP3427_SAMPLE_SIZE) {

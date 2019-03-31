@@ -68,7 +68,7 @@ void teardown_test(void) {}
 
 void test_sequenced_relay_can(void) {
   // Ask to close the relay
-  volatile CanAckStatus status = NUM_STATUS_CODES;
+  volatile CanAckStatus status = NUM_CAN_ACK_STATUSES;
   CanAckRequest ack_request = {
     .callback = prv_ack_cb,
     .context = &status,
