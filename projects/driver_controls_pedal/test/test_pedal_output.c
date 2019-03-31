@@ -74,6 +74,11 @@ void test_pedal_output_working(void) {
 
   delay_ms(PEDAL_OUTPUT_WATCHDOG_MS);
 
+  //clear the event queue
+  Event a;
+  while (status_ok(event_process(&a))) {
+  }
+
   // Should not have raised a fault event
   Event e = { 0 };
   while (status_ok(event_process(&e))) {

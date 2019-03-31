@@ -64,6 +64,11 @@ void test_steering_output_working(void) {
 
   delay_ms(STEERING_OUTPUT_WATCHDOG_MS);
 
+  //clear the event queue
+  Event a;
+  while (status_ok(event_process(&a))) {
+  }
+
   // Should not have raised a fault event
   Event e = { 0 };
   while (status_ok(event_process(&e))) {
