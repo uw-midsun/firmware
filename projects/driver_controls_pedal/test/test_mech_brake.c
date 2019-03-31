@@ -99,15 +99,16 @@ void test_mech_brake_percentage_in_released_zone(void) {
   Event e;
 
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
-  delay_ms(5);
-  // Consume the backlog of events.
+  delay_ms(10);
+
+  //Consume the backlog of events.
   while (STATUS_CODE_OK == event_process(&e)) {
     TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_RELEASED, e.id);
   }
 
   s_mocked_reading = 2088;  // 50 %
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
-  delay_ms(5);
+  delay_ms(10);
   // Consume the backlog of events.
   while (STATUS_CODE_OK == event_process(&e)) {
     TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_RELEASED, e.id);
@@ -115,7 +116,7 @@ void test_mech_brake_percentage_in_released_zone(void) {
 
   s_mocked_reading = 3000;  // 73 %
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
-  delay_ms(5);
+  delay_ms(10);
   bool flushed = false;
   // Consume the backlog of events.
   while (STATUS_CODE_OK == event_process(&e)) {
@@ -137,7 +138,7 @@ void test_mech_brake_percentage_in_pressed_then_unpressed_zone(void) {
   Event e;
 
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
-  delay_ms(5);
+  delay_ms(10);
   // Consume the backlog of events.
   while (STATUS_CODE_OK == event_process(&e)) {
     TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_PRESSED, e.id);
@@ -145,7 +146,7 @@ void test_mech_brake_percentage_in_pressed_then_unpressed_zone(void) {
 
   s_mocked_reading = 2088;  // 50 %
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
-  delay_ms(5);
+  delay_ms(10);
   // Consume the backlog of events.
   while (STATUS_CODE_OK == event_process(&e)) {
     TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_PRESSED, e.id);
@@ -153,7 +154,7 @@ void test_mech_brake_percentage_in_pressed_then_unpressed_zone(void) {
 
   s_mocked_reading = 822;  // 20 %
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
-  delay_ms(5);
+  delay_ms(10);
   bool flushed = false;
   // Consume the backlog of events.
   while (STATUS_CODE_OK == event_process(&e)) {
@@ -177,7 +178,7 @@ void test_mech_brake_percentage_below_bounds(void) {
 
   TEST_ASSERT_EQUAL(STATUS_CODE_OUT_OF_RANGE,
                     mech_brake_get_position(&s_mech_brake_storage, &position));
-  delay_ms(5);
+  delay_ms(10);
 }
 
 void test_mech_brake_percentage_above_bounds(void) {
@@ -188,7 +189,7 @@ void test_mech_brake_percentage_above_bounds(void) {
 
   TEST_ASSERT_EQUAL(STATUS_CODE_OUT_OF_RANGE,
                     mech_brake_get_position(&s_mech_brake_storage, &position));
-  delay_ms(5);
+  delay_ms(10);
 }
 
 void test_mech_brake_percentage_within_lower_tolerance(void) {
@@ -198,7 +199,7 @@ void test_mech_brake_percentage_within_lower_tolerance(void) {
   Event e;
 
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
-  delay_ms(5);
+  delay_ms(10);
   TEST_ASSERT_OK(event_process(&e));
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_RELEASED, e.id);
 }
@@ -210,7 +211,7 @@ void test_mech_brake_percentage_within_upper_tolerance(void) {
   Event e;
 
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
-  delay_ms(5);
+  delay_ms(10);
   TEST_ASSERT_OK(event_process(&e));
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_PRESSED, e.id);
 }
