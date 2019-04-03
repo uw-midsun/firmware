@@ -48,7 +48,7 @@ GpioAddress charger_cfg_load_charger_pin(void) {
 }
 
 GpioAddress charger_cfg_load_pilot_pin(void) {
-  return ((GpioAddress){ GPIO_PORT_A, 5});
+  return ((GpioAddress){ GPIO_PORT_A, 5 });
 }
 
 static GenericCanNetwork s_can_storage;

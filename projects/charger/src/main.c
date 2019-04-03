@@ -3,10 +3,10 @@
 
 #include "adc.h"
 #include "can.h"
-#include "charger_events.h"
 #include "can_interval.h"
 #include "charger_cfg.h"
 #include "charger_controller.h"
+#include "charger_events.h"
 #include "charger_fsm.h"
 #include "charger_pin.h"
 #include "event_queue.h"
@@ -73,7 +73,7 @@ int main(void) {
 
     fsm_process_event(&s_charger_fsm, &e);
     LOG_DEBUG("Event: %d\n", e.id);
-    //LOG_DEBUG("FSM curState: %d\n", s_charger_fsm);
+    // LOG_DEBUG("FSM curState: %d\n", s_charger_fsm);
     can_process_event(&e);
   }
 

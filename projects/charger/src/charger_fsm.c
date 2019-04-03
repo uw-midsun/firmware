@@ -5,8 +5,8 @@
 #include "charger_controller.h"
 #include "charger_events.h"
 #include "fsm.h"
-#include "notify.h"
 #include "log.h"
+#include "notify.h"
 
 static bool prv_safe_charging_guard(const Fsm *fsm, const Event *e, void *context) {
   (void)fsm;
@@ -39,12 +39,13 @@ FSM_STATE_TRANSITION(state_connected) {
   FSM_ADD_TRANSITION(CHARGER_EVENT_ERROR, state_error);
 }
 
-//Intermediate connected state - vehicle connected but vehicle not ready to accept energy - changes driven primarily by pilot pin
+// Intermediate connected state - vehicle connected but vehicle not ready to accept energy - changes
+// driven primarily by pilot pin
 FSM_STATE_TRANSITION(state_connected_charing_allowed) {
   // Interrupt driven events on the charger pin.
   FSM_ADD_TRANSITION(CHARGER_EVENT_DISCONNECTED, state_disconnected);
 
-  //Pilot voltage at ~9V, should go back to Connected to prevent invalid charging requests
+  // Pilot voltage at ~9V, should go back to Connected to prevent invalid charging requests
   FSM_ADD_TRANSITION(CHARGER_EVENT_CONNECTED_NO_CHARGING_ALLOWED, state_connected);
 
   // Requires permissions and that the charger is in a safe state. This is guarded to prevent
@@ -53,8 +54,6 @@ FSM_STATE_TRANSITION(state_connected_charing_allowed) {
 
   FSM_ADD_TRANSITION(CHARGER_EVENT_ERROR, state_error);
 }
-
-
 
 FSM_STATE_TRANSITION(state_charging) {
   // Interrupt driven events on the charger pin.
@@ -65,13 +64,11 @@ FSM_STATE_TRANSITION(state_charging) {
   FSM_ADD_TRANSITION(CHARGER_EVENT_STOP_CHARGING, state_connected);
 
   FSM_ADD_TRANSITION(CHARGER_EVENT_ERROR, state_error);
-
 }
 
 FSM_STATE_TRANSITION(state_error) {
-  //transition out of error state should only transition to disconnected
+  // transition out of error state should only transition to disconnected
   FSM_ADD_TRANSITION(CHARGER_EVENT_DISCONNECTED, state_disconnected);
-  
 }
 
 static void prv_state_disconnected(Fsm *fsm, const Event *e, void *context) {

@@ -18,7 +18,7 @@
 // the proximity detection pin voltages. Above this threshold the charger is considered to be
 // disconnected or unlatched so we shouldn't try to charge.
 #define CHARGER_PIN_CONNECTED_THRESHOLD 18200
-//THRESHOLD INCREASED IN ORDER TO TEST WITH CONNECTED STATE
+// THRESHOLD INCREASED IN ORDER TO TEST WITH CONNECTED STATE
 
 // Inits the charger proximity pin and configures a soft timer to periodically check the ADC.
 // |address| is expected to persist.
