@@ -1,17 +1,11 @@
 #include "chaos_events.h"
 #include "charger.h"
 
-#include <stddef.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "can.h"
 #include "can_ack.h"
 #include "can_msg_defs.h"
 #include "can_transmit.h"
 #include "can_unpack.h"
-#include "chaos_events.h"
 #include "dc_cfg.h"
 #include "delay.h"
 #include "event_queue.h"
