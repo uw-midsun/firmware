@@ -66,6 +66,8 @@ void test_charger_fsm_transitions(void) {
   TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
   e.id = CHARGER_EVENT_STOP_CHARGING;
   TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
+  e.id = CHARGER_EVENT_CONNECTED_CHARGING_ALLOWED;
+  TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
 
   // Transition to connected and blocked transitions
   e.id = CHARGER_EVENT_CONNECTED;
@@ -73,6 +75,12 @@ void test_charger_fsm_transitions(void) {
   TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
   e.id = CHARGER_EVENT_STOP_CHARGING;
   TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
+  e.id = CHARGER_EVENT_START_CHARGING;
+  TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
+
+  //Transition to connected, charging allowed
+  e.id = CHARGER_EVENT_CONNECTED_CHARGING_ALLOWED;
+  TEST_ASSERT_TRUE(fsm_process_event(&fsm, &e));
 
   // Prevent transition to charging
   status.hw_fault = true;
@@ -88,6 +96,10 @@ void test_charger_fsm_transitions(void) {
   TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
   e.id = CHARGER_EVENT_START_CHARGING;
   TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
+  e.id = CHARGER_EVENT_CONNECTED_CHARGING_ALLOWED;
+  TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
+  e.id = CHARGER_EVENT_CONNECTED_NO_CHARGING_ALLOWED;
+  TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
 
   // Transition back to disconnected
   e.id = CHARGER_EVENT_STOP_CHARGING;
@@ -98,12 +110,33 @@ void test_charger_fsm_transitions(void) {
   // Go back to charging
   e.id = CHARGER_EVENT_CONNECTED;
   TEST_ASSERT_TRUE(fsm_process_event(&fsm, &e));
+  e.id = CHARGER_EVENT_CONNECTED_CHARGING_ALLOWED;
+  TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
   e.id = CHARGER_EVENT_START_CHARGING;
   TEST_ASSERT_TRUE(fsm_process_event(&fsm, &e));
 
   // Finally go to not charging directly
   e.id = CHARGER_EVENT_DISCONNECTED;
   TEST_ASSERT_TRUE(fsm_process_event(&fsm, &e));
+
+  //Go to error state
+  e.id = CHARGER_EVENT_ERROR;
+  TEST_ASSERT_TRUE(fsm_process_event(&fsm, &e));
+
+  //Test error state only escapes through disconnected
+  e.id = CHARGER_EVENT_CONNECTED;
+  TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
+  e.id = CHARGER_EVENT_CONNECTED_CHARGING_ALLOWED;
+  TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
+  e.id = CHARGER_EVENT_CONNECTED_NO_CHARGING_ALLOWED
+  TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
+  e.id = CHARGER_EVENT_START_CHARGING;
+  TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
+  e.id = CHARGER_EVENT_STOP_CHARGING;
+  TEST_ASSERT_FALSE(fsm_process_event(&fsm, &e));
+  e.id = CHARGER_EVENT_DISCONNECTED;
+  TEST_ASSERT_TRUE(fsm_process_event(&fsm, &e));
+
 }
 
 // TODO(ELEC-355): Add full integration test.
