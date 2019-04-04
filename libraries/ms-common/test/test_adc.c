@@ -5,29 +5,16 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-static GPIOAddress address[] = { {
-                                     GPIO_PORT_A,  //
-                                     0,            //
-                                 },
-                                 {
-                                     GPIO_PORT_A,  //
-                                     1,            //
-                                 },
-                                 {
-                                     GPIO_PORT_A,  //
-                                     2,            //
-                                 } };
-
 static volatile uint8_t s_callback_runs = 0;
 static volatile bool s_callback_ran = false;
 
-void prv_callback(ADCChannel adc_channel, void *context) {
+void prv_callback(AdcChannel adc_channel, void *context) {
   s_callback_runs++;
   s_callback_ran = true;
 }
 
 // Check multiple samples to ensure they are within the correct range
-void prv_adc_check_range(ADCChannel adc_channel) {
+void prv_adc_check_range(AdcChannel adc_channel) {
   uint16_t raw_reading = 0;
   uint16_t conv_reading = 0;
 
@@ -41,12 +28,25 @@ void prv_adc_check_range(ADCChannel adc_channel) {
 }
 
 void setup_test() {
-  GPIOSettings settings = {
+  GpioSettings settings = {
     GPIO_DIR_IN,        //
     GPIO_STATE_LOW,     //
     GPIO_RES_NONE,      //
     GPIO_ALTFN_ANALOG,  //
   };
+
+  GpioAddress address[] = { {
+                                GPIO_PORT_A,  //
+                                0,            //
+                            },
+                            {
+                                GPIO_PORT_A,  //
+                                1,            //
+                            },
+                            {
+                                GPIO_PORT_A,  //
+                                2,            //
+                            } };
 
   gpio_init();
   interrupt_init();
@@ -91,7 +91,7 @@ void test_set_callback(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, adc_register_callback(ADC_CHANNEL_2, prv_callback, NULL));
 }
 
-void test_single() {
+void test_single(void) {
   uint16_t reading;
 
   // Initialize the ADC to single mode and configure the channels
@@ -148,7 +148,7 @@ void test_continuous() {
   TEST_ASSERT_TRUE(s_callback_runs > 0);
 }
 
-void test_read_single() {
+void test_read_single(void) {
   // Check that both the raw readings and converted readings are within the expected range
   adc_init(ADC_MODE_SINGLE);
 
@@ -158,7 +158,7 @@ void test_read_single() {
   prv_adc_check_range(ADC_CHANNEL_0);
 }
 
-void test_read_continuous() {
+void test_read_continuous(void) {
   // Check that both the raw readings and converted readings are within the expected range
   adc_init(ADC_MODE_CONTINUOUS);
 
@@ -169,8 +169,8 @@ void test_read_continuous() {
 }
 
 void test_adc_get_channel() {
-  ADCChannel adc_channel;
-  GPIOAddress address[] = {
+  AdcChannel adc_channel;
+  GpioAddress address[] = {
     {
         .port = GPIO_PORT_A,
     },

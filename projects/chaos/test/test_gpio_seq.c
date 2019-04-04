@@ -21,14 +21,14 @@ void teardown_test(void) {}
 
 // Verify that the init and set_state calls work as intended.
 void test_gpio_seq(void) {
-  const GPIOSettings settings = {
+  const GpioSettings settings = {
     .direction = GPIO_DIR_OUT,
     .state = GPIO_STATE_LOW,
     .resistor = GPIO_RES_NONE,
     .alt_function = GPIO_ALTFN_NONE,
   };
 
-  const GPIOAddress addrs[] = {
+  const GpioAddress addrs[] = {
     { .port = 0, .pin = 1 },
     { .port = 0, .pin = 2 },
     { .port = 0, .pin = 3 },
@@ -38,7 +38,7 @@ void test_gpio_seq(void) {
   TEST_ASSERT_OK(
       gpio_seq_set_state(addrs, SIZEOF_ARRAY(addrs), GPIO_STATE_HIGH, TEST_GPIO_SEQ_DELAY_US));
 
-  GPIOState state = GPIO_STATE_LOW;
+  GpioState state = GPIO_STATE_LOW;
   for (uint16_t i = 0; i < SIZEOF_ARRAY(addrs); i++) {
     TEST_ASSERT_OK(gpio_get_state(&addrs[i], &state));
     TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, state);

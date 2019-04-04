@@ -3,13 +3,13 @@ VALID_PLATFORMS := $(patsubst $(PLATFORMS_DIR)/%/platform.mk,%,$(wildcard $(PLAT
 VALID_LIBRARIES := $(patsubst $(LIB_DIR)/%/rules.mk,%,$(wildcard $(LIB_DIR)/*/rules.mk))
 
 # Rules:
-# - For any universal operations (reallyclean, lint), do not expect args
+# - For any universal operations (clean, lint), do not expect args
 # - For build/test all, just check for a valid PLATFORM.
 # - If new project, just make sure one of PROJECT or LIBRARY is defined
 # - For test, gdb, and program, check to see if PLATFORM and {PROJECT or {LIBRARY and TEST}} are valid
 # - For build, check if PLATFORM and {PROJECT or LIBRARY} are valid
 
-ifneq (,$(filter reallyclean lint format build_all test_all test_format socketcan update_codegen,$(MAKECMDGOALS)))
+ifneq (,$(filter clean lint pylint format build_all test_all test_format socketcan update_codegen,$(MAKECMDGOALS)))
   # Universal operation: do nothing - args are not used or only PLATFORM is checked
 else ifneq (,$(filter new,$(MAKECMDGOALS)))
   # New project: just make sure PROJECT or LIBRARY is defined

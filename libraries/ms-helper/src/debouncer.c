@@ -10,31 +10,31 @@
 #define DEBOUNCER_INTERRUPT_MASKING_DURATION_MS 50
 
 // This is the callback for the soft timer. If there is a button input, it runs the user's callback.
-static void prv_timer_callback(SoftTimerID timer_id, void *context) {
-  DebouncerInfo *debouncer_info = context;
+static void prv_timer_callback(SoftTimerId timer_id, void *context) {
+  DebouncerStorage *debouncer = context;
 
-  GPIOState current_state;
-  gpio_get_state(&debouncer_info->address, &current_state);
-  if (debouncer_info->callback && current_state == debouncer_info->state) {
-    debouncer_info->callback(&debouncer_info->address, debouncer_info->context);
+  GpioState current_state;
+  gpio_get_state(&debouncer->address, &current_state);
+  if (debouncer->callback && current_state == debouncer->state) {
+    debouncer->callback(&debouncer->address, debouncer->context);
   }
-  gpio_it_mask_interrupt(&debouncer_info->address, false);
+  gpio_it_mask_interrupt(&debouncer->address, false);
 }
 
 // This is the interrupt callback to start off the debouncing
-static void prv_it_callback(const GPIOAddress *address, void *context) {
-  DebouncerInfo *debouncer_info = context;
-  gpio_get_state(address, &debouncer_info->state);
+static void prv_it_callback(const GpioAddress *address, void *context) {
+  DebouncerStorage *debouncer = context;
+  gpio_get_state(address, &debouncer->state);
 
   gpio_it_mask_interrupt(address, true);
 
-  soft_timer_start_millis(DEBOUNCER_INTERRUPT_MASKING_DURATION_MS, prv_timer_callback,
-                          debouncer_info, NULL);
+  soft_timer_start_millis(DEBOUNCER_INTERRUPT_MASKING_DURATION_MS, prv_timer_callback, debouncer,
+                          NULL);
 }
 
-StatusCode debouncer_init_pin(DebouncerInfo *debouncer_info, const GPIOAddress *address,
-                              GPIOItCallback callback, void *context) {
-  GPIOSettings gpio_settings = {
+StatusCode debouncer_init_pin(DebouncerStorage *debouncer, const GpioAddress *address,
+                              GpioItCallback callback, void *context) {
+  GpioSettings gpio_settings = {
     .direction = GPIO_DIR_IN,   //
     .resistor = GPIO_RES_NONE,  //
   };
@@ -46,10 +46,10 @@ StatusCode debouncer_init_pin(DebouncerInfo *debouncer_info, const GPIOAddress *
     .priority = INTERRUPT_PRIORITY_LOW,
   };
 
-  debouncer_info->address = *address;
-  debouncer_info->callback = callback;
-  debouncer_info->context = context;
+  debouncer->address = *address;
+  debouncer->callback = callback;
+  debouncer->context = context;
 
   return gpio_it_register_interrupt(address, &interrupt_settings, INTERRUPT_EDGE_RISING_FALLING,
-                                    prv_it_callback, debouncer_info);
+                                    prv_it_callback, debouncer);
 }

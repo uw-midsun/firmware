@@ -18,7 +18,7 @@ typedef enum {
   POWER_PATH_SOURCE_ID_DCDC = 0,
   POWER_PATH_SOURCE_ID_AUX_BAT,
   NUM_POWER_PATH_SOURCE_IDS,
-} PowerPathSourceID;
+} PowerPathSourceId;
 
 // For storing voltage and current values.
 typedef struct PowerPathVCReadings {
@@ -28,31 +28,35 @@ typedef struct PowerPathVCReadings {
 
 // For storing the Power Path Source (eg AUX Battery vs DCDCs).
 typedef struct PowerPathSource {
-  const PowerPathSourceID id;
-  const GPIOAddress uv_ov_pin;
-  const GPIOAddress voltage_pin;
-  const GPIOAddress current_pin;
+  const PowerPathSourceId id;
+  const GpioAddress uv_ov_pin;
+  const GpioAddress voltage_pin;
+  const GpioAddress current_pin;
   volatile PowerPathVCReadings readings;
   PowerPathConversionFn current_convert_fn;
   PowerPathConversionFn voltage_convert_fn;
-  uint32_t period_us;
-  SoftTimerID timer_id;
+  uint32_t period_millis;
+  SoftTimerId timer_id;
   bool monitoring_active;
 } PowerPathSource;
 
 // For storing the power path configuration.
 typedef struct PowerPathCfg {
-  const GPIOAddress enable_pin;
-  const GPIOAddress shutdown_pin;
+  const GpioAddress enable_pin;
+  const GpioAddress shutdown_pin;
   PowerPathSource aux_bat;
   PowerPathSource dcdc;
+  uint32_t period_millis;
 } PowerPathCfg;
 
 // Configures the GPIO pins for the power path.
 StatusCode power_path_init(PowerPathCfg *pp);
 
+// Starts sending data periodically over CAN.
+StatusCode power_path_send_data_daemon(PowerPathCfg *pp, uint32_t period_millis);
+
 // Starts monitoring the specified power source periodically.
-StatusCode power_path_source_monitor_enable(PowerPathSource *source, uint32_t period_us);
+StatusCode power_path_source_monitor_enable(PowerPathSource *source, uint32_t period_millis);
 
 // Stops monitoring the specified power source periodically.
 StatusCode power_path_source_monitor_disable(PowerPathSource *source);

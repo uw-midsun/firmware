@@ -19,46 +19,13 @@
 #include "interrupt.h"
 #include "log.h"
 #include "misc.h"
+#include "ms_test_helpers.h"
 #include "soft_timer.h"
 #include "status.h"
 #include "test_helpers.h"
 #include "unity.h"
 
-#define NUM_CAN_RX_HANDLERS 4
-
-static CANStorage s_storage;
-static CANRxHandler s_rx_handlers[NUM_CAN_RX_HANDLERS];
-
-static void prv_transmit(uint16_t times) {
-  Event e = { 0 };
-  StatusCode status = NUM_STATUS_CODES;
-  for (uint16_t i = 0; i < times; i++) {
-    // TX
-    do {
-      status = event_process(&e);
-    } while (status == STATUS_CODE_EMPTY);
-    TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_TX, e.id);
-    TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-    // RX
-    do {
-      status = event_process(&e);
-    } while (status == STATUS_CODE_EMPTY);
-    TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_RX, e.id);
-    TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-    // TX
-    do {
-      status = event_process(&e);
-    } while (status == STATUS_CODE_EMPTY);
-    TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_TX, e.id);
-    TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-    // RX
-    do {
-      status = event_process(&e);
-    } while (status == STATUS_CODE_EMPTY);
-    TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_RX, e.id);
-    TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-  }
-}
+static CanStorage s_storage;
 
 void setup_test(void) {
   interrupt_init();
@@ -66,7 +33,7 @@ void setup_test(void) {
   gpio_init();
   soft_timer_init();
 
-  CANSettings settings = {
+  CanSettings settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
     .bitrate = CAN_HW_BITRATE_125KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,
@@ -77,8 +44,7 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  can_init(&settings, &s_storage, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
-  can_add_filter(SYSTEM_CAN_MESSAGE_BPS_HEARTBEAT);
+  can_init(&s_storage, &settings);
   TEST_ASSERT_OK(powertrain_heartbeat_init());
 }
 
@@ -90,8 +56,12 @@ void test_powertrain_heartbeat_watchdog(void) {
   e.id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE;
   TEST_ASSERT_TRUE(powertrain_heartbeat_process_event(&e));
 
-  // Send 3 times (all three will have ack failures).
-  prv_transmit(3);
+  // Send 5 times (all will have ack failures).
+  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
 
   // Watchdog should activate.
   do {
@@ -104,13 +74,14 @@ void test_powertrain_heartbeat_watchdog(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
 }
 
-void test_stop_heartbeat(void) {
+void test_powertrain_heartbeat_stop_heartbeat(void) {
   Event e = { 0 };
   StatusCode status = NUM_STATUS_CODES;
   e.id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE;
   TEST_ASSERT_TRUE(powertrain_heartbeat_process_event(&e));
 
-  prv_transmit(1);
+  // Immediately send heartbeat update
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
 
   e.id = CHAOS_EVENT_SEQUENCE_EMERGENCY;
   TEST_ASSERT_TRUE(powertrain_heartbeat_process_event(&e));
@@ -120,8 +91,8 @@ void test_stop_heartbeat(void) {
   TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
 }
 
-void test_kick_watchdog(void) {
-  CANMessage msg = {
+void test_powertrain_heartbeat_kick_watchdog(void) {
+  CanMessage msg = {
     .type = CAN_MSG_TYPE_ACK,
     .msg_id = SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
   };
@@ -131,12 +102,7 @@ void test_kick_watchdog(void) {
   e.id = CHAOS_EVENT_SEQUENCE_DRIVE_DONE;
   TEST_ASSERT_TRUE(powertrain_heartbeat_process_event(&e));
 
-  do {
-    status = event_process(&e);
-  } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_TX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-
+  // Send heartbeat - watchdog should be kicked (manually ACK message)
   msg.source_id = SYSTEM_CAN_DEVICE_PLUTUS;
   TEST_ASSERT_OK(can_ack_handle_msg(&s_storage.ack_requests, &msg));
   msg.source_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS;
@@ -144,24 +110,13 @@ void test_kick_watchdog(void) {
   msg.source_id = SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER;
   TEST_ASSERT_OK(can_ack_handle_msg(&s_storage.ack_requests, &msg));
 
-  do {
-    status = event_process(&e);
-  } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_RX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-  do {
-    status = event_process(&e);
-  } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_TX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
-  do {
-    status = event_process(&e);
-  } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_EQUAL(CHAOS_EVENT_CAN_RX, e.id);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
 
-  // Skip the two messages that should send
-  prv_transmit(2);
+  // We will TX 4 more times before the watchdog times out
+  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX(CHAOS_EVENT_CAN_TX, CHAOS_EVENT_CAN_RX);
 
   // Watchdog should trigger.
   do {

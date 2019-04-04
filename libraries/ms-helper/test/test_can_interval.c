@@ -20,7 +20,6 @@
 #define TEST_CAN_INTERVAL_FAULT 1
 #define TEST_CAN_INTERVAL_SEND_DELAY_US 100000
 #define TEST_CAN_INTERVAL_PERIOD_US 1000000
-#define NUM_GENERIC_CAN_RX_HANDLERS 5
 
 static GenericCanHw s_can;
 
@@ -38,7 +37,7 @@ void setup_test(void) {
   soft_timer_init();
   gpio_init();
 
-  const CANHwSettings can_settings = {
+  const CanHwSettings can_settings = {
     .bitrate = CAN_HW_BITRATE_250KBPS,
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },

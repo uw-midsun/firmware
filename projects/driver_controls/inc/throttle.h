@@ -28,9 +28,6 @@
 
 // The time period between every update of the pedal readings.
 #define THROTTLE_UPDATE_PERIOD_MS 10
-// Arbitrary maximum desync counter - this is used to handle rapid changes in pedal position
-// Currently ~100ms
-#define THROTTLE_MAX_DESYNC_COUNT 10
 
 // The range used for pedal's position in within a zone or the whole range.
 #define THROTTLE_DENOMINATOR (1 << 12)
@@ -85,8 +82,6 @@ typedef struct ThrottleStorage {
   Ads1015Storage *pedal_ads1015_storage;
   ThrottleCalibrationData *calibration_data;
   ThrottlePosition position;
-  uint32_t desync_counter;
-  bool reading_updated_flag;
   bool reading_ok_flag;
 } ThrottleStorage;
 
@@ -97,3 +92,7 @@ StatusCode throttle_init(ThrottleStorage *storage, ThrottleCalibrationData *cali
 
 // Gets the current position of the pedal (writes to ThrottlePosition *position).
 StatusCode throttle_get_position(ThrottleStorage *storage, ThrottlePosition *position);
+
+// Returns a pointer to the global throttle storage.
+// Note that this only exists because our FSMs already use their context pointers for event arbiters
+ThrottleStorage *throttle_global(void);

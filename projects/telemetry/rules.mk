@@ -5,5 +5,5 @@
 # $(T)_INC_DIRS: $(T)_DIR/inc{/$(PLATFORM)}
 # $(T)_SRC: $(T)_DIR/src{/$(PLATFORM)}/*.{c,s}
 
-# Specify the device library you want to include
-$(T)_DEPS := ms-common
+# Specify the libraries you want to include
+$(T)_DEPS := ms-common ms-helper

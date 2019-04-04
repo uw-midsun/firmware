@@ -54,12 +54,12 @@ static const LightsGpioOutput s_mock_outputs[] = {
 
 // Array of event-to-peripheral-set mappings.
 static const LightsGpioEventMapping s_mock_event_mappings[] = {
-  { .peripheral = TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERAL_1,  //
-    .output_mapping =                                        //
+  { .peripheral = (LightsEventGpioPeripheral)TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERAL_1,  //
+    .output_mapping =                                                                   //
     LIGHTS_GPIO_OUTPUT_BIT(TEST_LIGHTS_GPIO_MOCK_OUTPUT_1) |
     LIGHTS_GPIO_OUTPUT_BIT(TEST_LIGHTS_GPIO_MOCK_OUTPUT_3) },
-  { .peripheral = TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERAL_2,  //
-    .output_mapping =                                        //
+  { .peripheral = (LightsEventGpioPeripheral)TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERAL_2,  //
+    .output_mapping =                                                                   //
     LIGHTS_GPIO_OUTPUT_BIT(TEST_LIGHTS_GPIO_MOCK_OUTPUT_2) |
     LIGHTS_GPIO_OUTPUT_BIT(TEST_LIGHTS_GPIO_MOCK_OUTPUT_4) }
 };
@@ -80,7 +80,7 @@ void teardown_test(void) {}
 
 // Tests that all lights are initialized to be turned off.
 void test_lights_gpio_init(void) {
-  GPIOState state;
+  GpioState state;
   for (uint8_t i = 0; i < s_mock_config.num_outputs; i++) {
     TEST_ASSERT_OK(gpio_get_state(&s_mock_config.outputs[i].address, &state));
     TEST_ASSERT_EQUAL((s_mock_config.outputs[i].polarity == LIGHTS_GPIO_POLARITY_ACTIVE_HIGH)
@@ -109,7 +109,7 @@ void test_lights_gpio_output_mapping(void) {
   const Event test_event = { .id = LIGHTS_EVENT_GPIO_ON,
                              .data = TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERAL_1 };
   TEST_ASSERT_OK(lights_gpio_process_event(&s_mock_config, &test_event));
-  GPIOState gpio_state;
+  GpioState gpio_state;
   TEST_ASSERT_OK(
       gpio_get_state(&s_mock_outputs[TEST_LIGHTS_GPIO_MOCK_OUTPUT_1].address, &gpio_state));
   TEST_ASSERT_EQUAL(GPIO_STATE_HIGH, gpio_state);
@@ -123,7 +123,7 @@ void test_lights_gpio_polarity_check(void) {
   const Event test_event = { .id = LIGHTS_EVENT_GPIO_ON,
                              .data = TEST_LIGHTS_GPIO_MOCK_EVENT_PERIPHERAL_2 };
   TEST_ASSERT_OK(lights_gpio_process_event(&s_mock_config, &test_event));
-  GPIOState gpio_state;
+  GpioState gpio_state;
   // First output has polarity active low, we expect it to be low when turned ON.
   TEST_ASSERT_OK(
       gpio_get_state(&s_mock_outputs[TEST_LIGHTS_GPIO_MOCK_OUTPUT_2].address, &gpio_state));

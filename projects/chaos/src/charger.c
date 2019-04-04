@@ -17,8 +17,8 @@ typedef struct ChargerStorage {
 static ChargerStorage s_storage;
 
 // CanRxHandlerCb
-static StatusCode prv_handle_charger_conn_state(const CANMessage *msg, void *context,
-                                                CANAckStatus *ack_reply) {
+static StatusCode prv_handle_charger_conn_state(const CanMessage *msg, void *context,
+                                                CanAckStatus *ack_reply) {
   (void)context;
   (void)ack_reply;
   CAN_UNPACK_CHARGER_CONN_STATE(msg, (uint8_t *)&s_storage.conn_state);
@@ -46,7 +46,7 @@ StatusCode charger_set_state(EEChargerSetRelayState state) {
 }
 
 bool charger_process_event(const Event *e) {
-  if (e->id != CHAOS_EVENT_CHARGER_OPEN || e->id != CHAOS_EVENT_CHARGER_CLOSE) {
+  if (e->id != CHAOS_EVENT_CHARGER_OPEN && e->id != CHAOS_EVENT_CHARGER_CLOSE) {
     return false;
   }
 

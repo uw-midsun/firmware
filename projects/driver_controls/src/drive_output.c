@@ -1,20 +1,24 @@
 #include "drive_output.h"
 #include <string.h>
 #include "can_transmit.h"
+#include "debug_led.h"
+#include "exported_enums.h"
 #include "log.h"
+#include "misc.h"
 
 #define DRIVE_OUTPUT_VALID_WATCHDOG ((1 << NUM_DRIVE_OUTPUT_SOURCES) - 1)
 
 static DriveOutputStorage s_storage;
 
-static void prv_watchdog_cb(SoftTimerID timer_id, void *context) {
+static void prv_watchdog_cb(SoftTimerId timer_id, void *context) {
   DriveOutputStorage *storage = context;
 
   // We're missing at least one updated response
   if (storage->watchdog != DRIVE_OUTPUT_VALID_WATCHDOG) {
-    // Error - raise a warning, disable periodic drive storage
-    soft_timer_cancel(storage->output_timer);
-    event_raise(storage->fault_event, 0);
+    // Error - raise a warning, clear stored data
+    LOG_DEBUG("Drive output watchdog: 0x%x\n", storage->watchdog);
+    memset(storage->data, 0, sizeof(storage->data));
+    event_raise_priority(EVENT_PRIORITY_HIGHEST, storage->fault_event, 0);
   }
 
   // Reset watchdog
@@ -24,34 +28,33 @@ static void prv_watchdog_cb(SoftTimerID timer_id, void *context) {
                           &storage->watchdog_timer);
 }
 
-static void prv_broadcast_cb(SoftTimerID timer_id, void *context) {
+static void prv_broadcast_cb(SoftTimerId timer_id, void *context) {
   DriveOutputStorage *storage = context;
 
+  // Note that this will usually output stale data from the previous update request
   event_raise(storage->update_req_event, 0);
-  // note that this will usually output stale data from the previous update request
 
-  LOG_DEBUG("Drive output: throttle %d cruise %d direction %d mech brake %d\n",
-            storage->data[DRIVE_OUTPUT_SOURCE_THROTTLE], storage->data[DRIVE_OUTPUT_SOURCE_CRUISE],
-            storage->data[DRIVE_OUTPUT_SOURCE_DIRECTION],
-            storage->data[DRIVE_OUTPUT_SOURCE_MECH_BRAKE]);
+  CAN_TRANSMIT_DRIVE_OUTPUT((uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_THROTTLE],
+                            (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_DIRECTION],
+                            (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_CRUISE],
+                            (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_MECH_BRAKE]);
 
-  CAN_TRANSMIT_MOTOR_CONTROLS((uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_THROTTLE],
-                              (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_CRUISE],
-                              (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_DIRECTION],
-                              (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_MECH_BRAKE]);
+  debug_led_toggle_state(DEBUG_LED_BLUE_A);
 
   soft_timer_start_millis(DRIVE_OUTPUT_BROADCAST_MS, prv_broadcast_cb, context,
                           &storage->output_timer);
 }
 
-StatusCode drive_output_init(DriveOutputStorage *storage, EventID fault_event,
-                             EventID update_req_event) {
+StatusCode drive_output_init(DriveOutputStorage *storage, EventId fault_event,
+                             EventId update_req_event) {
   memset(storage, 0, sizeof(*storage));
   storage->fault_event = fault_event;
   storage->update_req_event = update_req_event;
 
   storage->watchdog_timer = SOFT_TIMER_INVALID_TIMER;
   storage->output_timer = SOFT_TIMER_INVALID_TIMER;
+
+  debug_led_init(DEBUG_LED_BLUE_A);
 
   return STATUS_CODE_OK;
 }
@@ -82,6 +85,25 @@ StatusCode drive_output_update(DriveOutputStorage *storage, DriveOutputSource so
                                int16_t data) {
   if (source >= NUM_DRIVE_OUTPUT_SOURCES) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
+  }
+
+  if (source == DRIVE_OUTPUT_SOURCE_THROTTLE) {
+    int16_t prev_data = storage->data[source];
+    bool data_negative = data < 0, prev_negative = prev_data < 0;
+
+    int16_t abs_diff = abs(data - prev_data);
+    int16_t torque_diff = (data - prev_data) * (data_negative ? -1 : 1);
+
+    if (data == 0) {
+      // Attempting to be in coast, so don't worry about it
+    } else if ((data_negative != prev_negative && abs_diff > 1000) ||
+               (data_negative == prev_negative && torque_diff > 1000)) {
+      // Sign changed rapidly or torque increased rapidly - limit change
+      data = storage->data[source] + ((data > 0) ? 100 : -100);
+
+      data = MIN(data, EE_DRIVE_OUTPUT_DENOMINATOR);
+      data = MAX(data, -EE_DRIVE_OUTPUT_DENOMINATOR);
+    }
   }
 
   storage->data[source] = data;

@@ -4,29 +4,39 @@
 #include <string.h>
 
 #include "event_queue.h"
-#include "pqueue_backed.h"
+#include "fifo.h"
+#include "status.h"
 
 typedef struct EventQueue {
-  PQueueBacked pqueue;
-  PQueueNode queue_nodes[EVENT_QUEUE_SIZE + 1];
-  Event event_nodes[EVENT_QUEUE_SIZE];
+  Fifo fifos[NUM_EVENT_PRIORITIES];
+  Event event_nodes[NUM_EVENT_PRIORITIES][EVENT_QUEUE_SIZE];
 } EventQueue;
 
 static EventQueue s_queue;
 
 void event_queue_init(void) {
-  pqueue_backed_init(&s_queue.pqueue, s_queue.queue_nodes, s_queue.event_nodes);
+  for (size_t i = 0; i < NUM_EVENT_PRIORITIES; i++) {
+    fifo_init(&s_queue.fifos[i], s_queue.event_nodes[i]);
+  }
 }
 
-StatusCode event_raise(EventID id, uint16_t data) {
-  const Event e = {
+StatusCode event_raise_priority(EventPriority priority, EventId id, uint16_t data) {
+  if (priority >= NUM_EVENT_PRIORITIES) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+  Event e = {
     .id = id,      //
     .data = data,  //
   };
 
-  return pqueue_backed_push(&s_queue.pqueue, &e, id);
+  return fifo_push(&s_queue.fifos[priority], &e);
 }
 
 StatusCode event_process(Event *e) {
-  return pqueue_backed_pop(&s_queue.pqueue, e);
+  for (size_t i = 0; i < NUM_EVENT_PRIORITIES; i++) {
+    if (s_queue.fifos[i].num_elems > 0) {
+      return fifo_pop(&s_queue.fifos[i], e);
+    }
+  }
+  return status_code(STATUS_CODE_EMPTY);
 }

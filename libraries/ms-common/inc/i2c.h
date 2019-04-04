@@ -1,7 +1,7 @@
 #pragma once
 // Blocking I2C master driver
 // Requires GPIO to be initialized
-
+//
 // Supports 7-bit addresses, does not support fast mode plus
 #include <stddef.h>
 #include <stdint.h>
@@ -19,8 +19,8 @@ typedef enum {
 
 typedef struct {
   I2CSpeed speed;
-  GPIOAddress sda;
-  GPIOAddress scl;
+  GpioAddress sda;
+  GpioAddress scl;
 } I2CSettings;
 
 StatusCode i2c_init(I2CPort i2c, const I2CSettings *settings);

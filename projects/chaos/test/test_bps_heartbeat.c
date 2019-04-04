@@ -11,6 +11,7 @@
 #include "chaos_events.h"
 #include "delay.h"
 #include "event_queue.h"
+#include "exported_enums.h"
 #include "fsm.h"
 #include "gpio.h"
 #include "interrupt.h"
@@ -20,13 +21,9 @@
 #include "test_helpers.h"
 #include "unity.h"
 
-#define NUM_CAN_RX_HANDLERS 2
+static CanStorage s_storage;
 
-static CANStorage s_storage;
-static CANRxHandler s_rx_handlers[NUM_CAN_RX_HANDLERS];
-static CANAckRequests s_can_ack_requests;
-
-static StatusCode prv_bps_ack_request(CANMessageID msg_id, uint16_t device, CANAckStatus status,
+static StatusCode prv_bps_ack_request(CanMessageId msg_id, uint16_t device, CanAckStatus status,
                                       uint16_t remaining, void *context) {
   (void)context;
   TEST_ASSERT_EQUAL(SYSTEM_CAN_DEVICE_CHAOS, device);
@@ -41,7 +38,7 @@ void setup_test(void) {
   interrupt_init();
   soft_timer_init();
 
-  CANSettings settings = {
+  CanSettings settings = {
     .device_id = SYSTEM_CAN_DEVICE_CHAOS,
     .bitrate = CAN_HW_BITRATE_125KBPS,
     .rx_event = CHAOS_EVENT_CAN_RX,
@@ -52,15 +49,14 @@ void setup_test(void) {
     .loopback = true,
   };
 
-  can_init(&settings, &s_storage, s_rx_handlers, SIZEOF_ARRAY(s_rx_handlers));
-  can_ack_init(&s_can_ack_requests);
+  can_init(&s_storage, &settings);
   TEST_ASSERT_OK(bps_heartbeat_init());
 }
 
 void teardown_test(void) {}
 
 void test_bps_heartbeat_watchdog_kick(void) {
-  const CANAckRequest ack_req = {
+  const CanAckRequest ack_req = {
     .callback = prv_bps_ack_request,
     .context = NULL,
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_CHAOS),
@@ -70,20 +66,20 @@ void test_bps_heartbeat_watchdog_kick(void) {
   StatusCode status = NUM_STATUS_CODES;
 
   // Auto Start
-  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, BPS_HEARTBEAT_STATE_OK);
+  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, EE_BPS_HEARTBEAT_STATE_OK);
   // Send HB
   // TX
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   // In theory these latter three events are in indeterminate order but it doesn't matter
   // RX
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   // HB Timer is started
 
@@ -92,30 +88,30 @@ void test_bps_heartbeat_watchdog_kick(void) {
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
   // RX
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   delay_ms(BPS_HEARTBEAT_EXPECTED_PERIOD_MS / 2);
 
   // Send the HB again
-  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, BPS_HEARTBEAT_STATE_OK);
+  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, EE_BPS_HEARTBEAT_STATE_OK);
   // Send HB
   // TX
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   // In theory these latter three events are in indeterminate order but it doesn't matter
   // RX
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   // HB Timer is started
 
@@ -124,12 +120,12 @@ void test_bps_heartbeat_watchdog_kick(void) {
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
   // RX
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   // Delay long enough the first watchdog would expire but not the second.
   delay_ms(BPS_HEARTBEAT_EXPECTED_PERIOD_MS * 3 / 4);
@@ -142,20 +138,20 @@ void test_bps_heartbeat_watchdog_kick(void) {
   TEST_ASSERT_EQUAL(CHAOS_EVENT_SEQUENCE_EMERGENCY, e.id);
 
   // Verify that it auto restarts.
-  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, BPS_HEARTBEAT_STATE_OK);
+  CAN_TRANSMIT_BPS_HEARTBEAT(&ack_req, EE_BPS_HEARTBEAT_STATE_OK);
   // Send HB
   // TX
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   // In theory these latter three events are in indeterminate order but it doesn't matter
   // RX
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   // HB Timer is started
 
@@ -164,12 +160,12 @@ void test_bps_heartbeat_watchdog_kick(void) {
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
   // RX
   do {
     status = event_process(&e);
   } while (status == STATUS_CODE_EMPTY);
-  TEST_ASSERT_TRUE(fsm_process_event(CAN_FSM, &e));
+  TEST_ASSERT_TRUE(can_process_event(&e));
 
   // Verify that the watchdog actually expires.
   delay_ms(BPS_HEARTBEAT_EXPECTED_PERIOD_MS + BPS_HEARTBEAT_EXPECTED_PERIOD_MS / 10);
