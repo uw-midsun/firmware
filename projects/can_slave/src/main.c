@@ -12,15 +12,28 @@
 #include "wait.h"
 
 #define CAN_SLAVE_UART_BAUDRATE 115200
-#define CAN_SLAVE_UART_PORT UART_PORT_3
+#define CAN_SLAVE_UART_PORT UART_PORT_2
 #define CAN_SLAVE_UART_TX \
-  { .port = GPIO_PORT_B, .pin = 10 }
+  { .port = GPIO_PORT_A, .pin = 2 }
 #define CAN_SLAVE_UART_RX \
-  { .port = GPIO_PORT_B, .pin = 11 }
-#define CAN_SLAVE_UART_ALTFN GPIO_ALTFN_4
+  { .port = GPIO_PORT_A, .pin = 3 }
+#define CAN_SLAVE_UART_ALTFN GPIO_ALTFN_1
 #define CAN_SLAVE_CAN_BITRATE CAN_HW_BITRATE_500KBPS
 
 static UartStorage s_uart_storage;
+
+
+static const GpioAddress REG_EN = {
+  .port = GPIO_PORT_B, .pin = 12
+}; 
+
+static const GpioAddress FAN_EN = {
+  .port = GPIO_PORT_B, .pin = 9
+}; 
+
+static const GpioAddress DISPLAY_EN = {
+  .port = GPIO_PORT_B, .pin = 8
+}; 
 
 static void prv_init_periph(void) {
   gpio_init();
@@ -43,6 +56,18 @@ static void prv_init_periph(void) {
   };
 
   can_hw_init(&can_hw_settings);
+
+    GpioSettings pin_settings = {
+    .direction = GPIO_DIR_OUT,        // The pin needs to output.
+    .state = GPIO_STATE_HIGH,         // Start in the "on" state.
+    .alt_function = GPIO_ALTFN_NONE,  // No connections to peripherals.
+    .resistor = GPIO_RES_NONE,        // No need of a resistor to modify floating logic levels.
+  };
+
+  gpio_init_pin(&REG_EN, &pin_settings);
+  gpio_init_pin(&FAN_EN, &pin_settings);
+  gpio_init_pin(&DISPLAY_EN, &pin_settings);
+  
 }
 
 int main(void) {
