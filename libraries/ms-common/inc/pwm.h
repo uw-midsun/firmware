@@ -17,7 +17,7 @@
 #define pwm_init_hz(timer, frequency) pwm_init((timer), 1000000 / (frequency))
 
 // Initializes the PWM for a set timer with a period in microseconds.
-StatusCode pwm_init(PwmTimer timer, uint16_t period_us);
+StatusCode pwm_init(PwmTimer timer, uint32_t period_us);
 
 // Gets the current period of a specified PWM timer in microseconds.
 uint16_t pwm_get_period(PwmTimer timer);

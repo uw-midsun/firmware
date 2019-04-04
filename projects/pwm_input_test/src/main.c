@@ -2,38 +2,53 @@
 #include "pwm.h"
 #include "pwm_input.h"
 #include "wait.h"
+#include "interrupt.h"
+#include "log.h"
+#include "delay.h"
+#include "soft_timer.h"
 
-void TIM1_IRQHandler(void) {
+void TIM1_CC_IRQHandler(void) {
+  // LOG_DEBUG("lmao\n");
   pwm_input_handle_interrupt();
 }
 
-int main(void) {
+static void prv_test_callback(const Status *status) {
+  printf("CODE: %d:%s:%s %s\n", status->code, status->source, status->caller, status->message);
+}
 
-  // Set a PWM signal of 1000ms with a duty cycle of 50%
-  // Should blink for half a second
-  pwm_init(PWM_TIMER_3, 1000);
-  pwm_set_dc(PWM_TIMER_3, 50);
+int main(void) {
+  interrupt_init();
+  soft_timer_init();
+
+  status_register_callback(prv_test_callback);
   gpio_init();
 
 // Use port for Green LED
-  GPIOAddress output = {
-    .port = GPIO_PORT_C,
-    .pin = 9,
+  GpioAddress output = {
+    .port = GPIO_PORT_B,
+    .pin = 4,
   };
 
-  GPIOSettings output_settings = {
+  GpioSettings output_settings = {
     .direction = GPIO_DIR_OUT,
-    .alt_function = GPIO_ALTFN_0
+    .alt_function = GPIO_ALTFN_1
   };
 
   gpio_init_pin(&output, &output_settings);
 
-  GPIOAddress input = {
+  // Set a PWM signal of 1000ms with a duty cycle of 50%
+  // Should blink for half a second
+
+  // The second parameter is in us
+  pwm_init(PWM_TIMER_3, 10000);
+  pwm_set_dc(PWM_TIMER_3, 95);
+
+  GpioAddress input = {
     .port = GPIO_PORT_A,
     .pin = 9
   };
 
-  GPIOSettings input_settings = {
+  GpioSettings input_settings = {
     .direction = GPIO_DIR_IN,
     .alt_function = GPIO_ALTFN_2
   };
@@ -44,8 +59,19 @@ int main(void) {
   // Use TIM1_CH2 to use pin PA9
 
   // Pray this works
+  // status_msg(STATUS_CODE_EMPTY, "Test\n");
+
+  GpioState state = GPIO_STATE_LOW;
   for (;;) {
-    wait();
+    // For testing that PWM is actually working
+    // gpio_get_state(&input, &state);
+    // if (state == GPIO_STATE_HIGH) {
+    //   LOG_DEBUG("High\n");
+    // } else {
+    //   LOG_DEBUG("Low\n");
+    // }
+    LOG_DEBUG("DC: %d, Period: %d\n", (int) pwm_input_get_dc(), (int) pwm_input_get_period());
+    delay_ms(500);
   }
 
 }
