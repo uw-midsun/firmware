@@ -24,7 +24,7 @@ StatusCode steering_angle_calib_init(SteeringAngleCalibrationStorage *storage,
 }
 // calculations for range/midpoint
 static uint16_t prv_calc_midpoint(SteeringAngleCalibrationPointData point_data) {
-  return (point_data.max_reading + point_data.min_reading) / 2;
+  return (uint16_t)((point_data.max_reading + point_data.min_reading) / 2);
 }
 // primary calibration function, calibrates the steering_angle calibration data
 // From calibration storage
