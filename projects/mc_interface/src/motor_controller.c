@@ -165,7 +165,7 @@ StatusCode motor_controller_set_throttle(MotorControllerStorage *controller, int
   bool disabled = critical_section_start();
   controller->timeout_counter = 0;
   controller->target_velocity_ms = target_velocity,
-  controller->target_current_percentage = (float)throttle / EE_DRIVE_OUTPUT_DENOMINATOR;
+  controller->target_current_percentage = (float)throttle / EE_PEDAL_OUTPUT_DENOMINATOR;
   controller->target_mode = MOTOR_CONTROLLER_MODE_TORQUE;
   critical_section_end(disabled);
 

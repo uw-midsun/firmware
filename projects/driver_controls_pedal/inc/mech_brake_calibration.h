@@ -37,3 +37,4 @@ StatusCode mech_brake_sample(MechBrakeCalibrationStorage *storage, MechBrakeCali
 // Retrieves the calibrated values.
 StatusCode mech_brake_get_calib_data(MechBrakeCalibrationStorage *storage,
                                      MechBrakeCalibrationData *calib_data);
+                                     

@@ -146,7 +146,7 @@ void test_motor_controller_throttle_forward(void) {
   motor_controller_set_throttle(&s_storage, 100, EE_DRIVE_OUTPUT_DIRECTION_FORWARD);
   delay_ms(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS * 2);
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
-    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_DRIVE_OUTPUT_DENOMINATOR,
+    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_PEDAL_OUTPUT_DENOMINATOR,
                             s_drive_cmds[i].motor_current_percentage);
     TEST_ASSERT_EQUAL_FLOAT(WAVESCULPTOR_FORWARD_VELOCITY, s_drive_cmds[i].motor_velocity_ms);
   }
@@ -161,7 +161,7 @@ void test_motor_controller_throttle_forward(void) {
   motor_controller_set_throttle(&s_storage, -100, EE_DRIVE_OUTPUT_DIRECTION_FORWARD);
   delay_ms(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS * 2);
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
-    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_DRIVE_OUTPUT_DENOMINATOR,
+    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_PEDAL_OUTPUT_DENOMINATOR,
                             s_drive_cmds[i].motor_current_percentage);
     TEST_ASSERT_EQUAL_FLOAT(0.0f, s_drive_cmds[i].motor_velocity_ms);
   }
@@ -196,7 +196,7 @@ void test_motor_controller_throttle_reverse(void) {
   motor_controller_set_throttle(&s_storage, 100, EE_DRIVE_OUTPUT_DIRECTION_REVERSE);
   delay_ms(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS * 2);
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
-    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_DRIVE_OUTPUT_DENOMINATOR,
+    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_PEDAL_OUTPUT_DENOMINATOR,
                             s_drive_cmds[i].motor_current_percentage);
     TEST_ASSERT_EQUAL_FLOAT(WAVESCULPTOR_REVERSE_VELOCITY, s_drive_cmds[i].motor_velocity_ms);
   }
@@ -211,7 +211,7 @@ void test_motor_controller_throttle_reverse(void) {
   motor_controller_set_throttle(&s_storage, -100, EE_DRIVE_OUTPUT_DIRECTION_REVERSE);
   delay_ms(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS * 2);
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
-    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_DRIVE_OUTPUT_DENOMINATOR,
+    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_PEDAL_OUTPUT_DENOMINATOR,
                             s_drive_cmds[i].motor_current_percentage);
     TEST_ASSERT_EQUAL_FLOAT(0.0f, s_drive_cmds[i].motor_velocity_ms);
   }
@@ -222,7 +222,7 @@ void test_motor_controller_watchdog(void) {
   motor_controller_set_throttle(&s_storage, 100, EE_DRIVE_OUTPUT_DIRECTION_FORWARD);
   delay_ms(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS * 2);
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
-    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_DRIVE_OUTPUT_DENOMINATOR,
+    TEST_ASSERT_EQUAL_FLOAT((float)100 / EE_PEDAL_OUTPUT_DENOMINATOR,
                             s_drive_cmds[i].motor_current_percentage);
     TEST_ASSERT_EQUAL_FLOAT(WAVESCULPTOR_FORWARD_VELOCITY, s_drive_cmds[i].motor_velocity_ms);
   }
