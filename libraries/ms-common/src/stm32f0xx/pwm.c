@@ -7,7 +7,7 @@
 #include "stm32f0xx_rcc.h"
 #include "stm32f0xx_tim.h"
 
-static uint32_t s_period_us[NUM_PWM_TIMERS] = {
+static uint16_t s_period_us[NUM_PWM_TIMERS] = {
   [PWM_TIMER_1] = 0,   //
   [PWM_TIMER_3] = 0,   //
   [PWM_TIMER_14] = 0,  //
@@ -50,7 +50,7 @@ static void prv_enable_periph_clock(PwmTimer timer) {
   }
 }
 
-StatusCode pwm_init(PwmTimer timer, uint32_t period_us) {
+StatusCode pwm_init(PwmTimer timer, uint16_t period_us) {
   if (timer >= NUM_PWM_TIMERS) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid timer id");
   } else if (period_us == 0) {

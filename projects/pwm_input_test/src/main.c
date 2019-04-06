@@ -40,8 +40,8 @@ int main(void) {
   // Should blink for half a second
 
   // The second parameter is in us
-  pwm_init(PWM_TIMER_3, 10000);
-  pwm_set_dc(PWM_TIMER_3, 95);
+  pwm_init(PWM_TIMER_3, 65534);
+  pwm_set_dc(PWM_TIMER_3, 0);
 
   GpioAddress input = {
     .port = GPIO_PORT_A,
@@ -61,17 +61,18 @@ int main(void) {
   // Pray this works
   // status_msg(STATUS_CODE_EMPTY, "Test\n");
 
-  GpioState state = GPIO_STATE_LOW;
-  for (;;) {
-    // For testing that PWM is actually working
-    // gpio_get_state(&input, &state);
-    // if (state == GPIO_STATE_HIGH) {
-    //   LOG_DEBUG("High\n");
-    // } else {
-    //   LOG_DEBUG("Low\n");
-    // }
-    LOG_DEBUG("DC: %d, Period: %d\n", (int) pwm_input_get_dc(), (int) pwm_input_get_period());
-    delay_ms(500);
+  while(1) {
+    for (int i = 0; i < 100; i ++) {
+      // For testing that PWM is actually working
+      // gpio_get_state(&input, &state);
+      // if (state == GPIO_STATE_HIGH) {
+      //   debug_led_set_state(DEBUG_LED_RED, false);
+      // } else {
+      //   debug_led_set_state(DEBUG_LED_RED, true);
+      // }
+      LOG_DEBUG("DC: %d, Period: %d\n", (int) pwm_input_get_dc(), (int) pwm_input_get_period());
+      delay_ms(500);
+      pwm_set_dc(PWM_TIMER_3, i);
+    }
   }
-
 }
