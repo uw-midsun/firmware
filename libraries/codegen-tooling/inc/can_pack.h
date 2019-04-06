@@ -54,7 +54,7 @@
 #define CAN_PACK_POWERTRAIN_HEARTBEAT(msg_ptr) \
   can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_CHAOS, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT)
 
-#define CAN_PACK_MOTOR_CONTROLLER_RESET(msg_ptr)                     \
+#define CAN_PACK_MOTOR_CONTROLLER_RESET(msg_ptr)                    \
   can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, \
                       SYSTEM_CAN_MESSAGE_MOTOR_CONTROLLER_RESET)
 
