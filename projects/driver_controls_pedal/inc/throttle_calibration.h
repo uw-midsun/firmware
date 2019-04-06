@@ -81,4 +81,3 @@ StatusCode throttle_calibration_sample(ThrottleCalibrationStorage *storage,
 // Calculates and stores calibration settings
 StatusCode throttle_calibration_result(ThrottleCalibrationStorage *storage,
                                        ThrottleCalibrationData *calib_data);
-                                       

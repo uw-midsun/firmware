@@ -208,4 +208,3 @@
 #define CAN_PACK_ANGULAR_ROTATION(msg_ptr)                       \
   can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_SENSOR_BOARD, \
                       SYSTEM_CAN_MESSAGE_ANGULAR_ROTATION)
-                      

@@ -20,4 +20,3 @@
   { GPIO_PORT_B, 11 }
 #define PC_CFG_I2C_BUS_SCL \
   { GPIO_PORT_B, 10 }
-  
