@@ -25,11 +25,11 @@ typedef enum {
   NUM_EE_CHARGER_CONN_STATES,
 } EEChargerConnState;
 
-// Drive output
+// Pedal output
 // Mech brake + throttle
-#define EE_DRIVE_OUTPUT_DENOMINATOR (1 << 12)
+#define EE_PEDAL_OUTPUT_DENOMINATOR (1 << 12)
 // Arbitrary 5% minimum pressure before considering it as engaged
-#define EE_DRIVE_OUTPUT_MECH_THRESHOLD (5 * (EE_DRIVE_OUTPUT_DENOMINATOR) / 100)
+#define EE_PEDAL_OUTPUT_MECH_THRESHOLD (5 * (EE_PEDAL_OUTPUT_DENOMINATOR) / 100)
 
 typedef enum {
   EE_DRIVE_OUTPUT_DIRECTION_NEUTRAL = 0,
@@ -37,6 +37,14 @@ typedef enum {
   EE_DRIVE_OUTPUT_DIRECTION_REVERSE,
   NUM_EE_DRIVE_OUTPUT_DIRECTIONS,
 } EEDriveOutputDirection;
+
+typedef enum {
+  EE_THROTTLE_BRAKE = 0,
+  EE_THROTTLE_COAST,
+  EE_THROTTLE_ACCEL,
+  EE_THROTTLE_FAULT,
+  NUM_EE_THROTTLE_POSITIONS,
+} EEThrottleState;
 
 // Light type to be used with a SYSTEM_CAN_MESSAGE_LIGHTS_STATE message.
 typedef enum EELightType {
