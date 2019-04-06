@@ -1,0 +1,22 @@
+#pragma once
+// Pedal controls config file
+
+// #define PC_CFG_DEBUG_PRINT_EVENTS
+
+#define PC_CFG_CAN_DEVICE_ID SYSTEM_CAN_DEVICE_PEDAL_CONTROLS
+#define PC_CFG_CAN_BITRATE CAN_HW_BITRATE_500KBPS
+
+#define PC_CFG_CAN_RX \
+  { GPIO_PORT_A, 11 }
+#define PC_CFG_CAN_TX \
+  { GPIO_PORT_A, 12 }
+
+#define PC_CFG_PEDAL_ADC_RDY_PIN \
+  { GPIO_PORT_E, 2 }
+#define PC_CFG_PEDAL_ADC_ADDR ADS1015_ADDRESS_GND
+
+#define PC_CFG_I2C_BUS_PORT I2C_PORT_2
+#define PC_CFG_I2C_BUS_SDA \
+  { GPIO_PORT_B, 11 }
+#define PC_CFG_I2C_BUS_SCL \
+  { GPIO_PORT_B, 10 }
