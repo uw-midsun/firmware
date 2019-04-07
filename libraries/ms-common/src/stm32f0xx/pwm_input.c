@@ -45,23 +45,23 @@ StatusCode pwm_input_init() {
 
   TIM_PWMIConfig(TIM3, &tim_icinit);
 
-  TIM_SelectInputTrigger(TIM3, TIM_TS_ITR0);
-  //TIM_SelectSlaveMode(TIM3, TIM_SlaveMode_Reset);
-  //TIM_SelectMasterSlaveMode(TIM3, TIM_MasterSlaveMode_Enable);
-  //TIM_SelectOutputTrigger(TIM3, TIM_TRGOSource_Reset);
+  TIM_SelectInputTrigger(TIM3, TIM_TS_TI2FP2);
+  TIM_SelectSlaveMode(TIM3, TIM_SlaveMode_Reset);
+  TIM_SelectMasterSlaveMode(TIM3, TIM_MasterSlaveMode_Enable);
+  TIM_SelectOutputTrigger(TIM3, TIM_TRGOSource_Reset);
   TIM_Cmd(TIM3, ENABLE);
-  TIM_ITConfig(TIM3, TIM_IT_CC1 | TIM_IT_CC2, ENABLE);
+  TIM_ITConfig(TIM3, TIM_IT_CC1, ENABLE);
 
   return STATUS_CODE_OK;
 }
 
 StatusCode pwm_input_handle_interrupt() {
-  TIM_ClearITPendingBit(TIM3, TIM_IT_CC1 | TIM_IT_CC2);
+  TIM_ClearITPendingBit(TIM3, TIM_IT_CC1);
 
-  uint32_t IC2Value = TIM_GetCapture2(TIM3);
+  uint32_t IC2Value = TIM_GetCapture1(TIM3);
 
   if (IC2Value != 0) {
-    uint32_t IC2Value_2 = TIM_GetCapture1(TIM3);
+    uint32_t IC2Value_2 = TIM_GetCapture2(TIM3);
     dc = (IC2Value_2 * 100) / IC2Value;
 
     // Not sure how to calculate period. Requires time as well

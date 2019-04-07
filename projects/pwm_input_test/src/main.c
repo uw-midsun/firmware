@@ -6,6 +6,8 @@
 #include "log.h"
 #include "delay.h"
 #include "soft_timer.h"
+#include "debug_led.h"
+#include "gpio.h"
 
 void TIM1_CC_IRQHandler(void) {
   // LOG_DEBUG("lmao\n");
@@ -13,7 +15,7 @@ void TIM1_CC_IRQHandler(void) {
 }
 
 void TIM3_IRQHandler(void) {
-  LOG_DEBUG("lmao\n");
+  // LOG_DEBUG("lmao\n");
   // TODO: Filter out other interrupts
   pwm_input_handle_interrupt();
 }
@@ -46,12 +48,13 @@ int main(void) {
   // Should blink for half a second
 
   // The second parameter is in us
-  pwm_init(PWM_TIMER_1, 65534);
-  pwm_set_dc(PWM_TIMER_1, 0);
+  PwmTimer output_timer = PWM_TIMER_1;
+  pwm_init(output_timer, 65534);
+  pwm_set_dc(output_timer, 50);
 
   GpioAddress input = {
-    .port = GPIO_PORT_A,
-    .pin = 6
+    .port = GPIO_PORT_B,
+    .pin = 4
   };
 
   GpioSettings input_settings = {
@@ -63,10 +66,9 @@ int main(void) {
   pwm_input_init();
 
   // Use TIM1_CH2 to use pin PA9
+  debug_led_init(DEBUG_LED_RED);
 
-  // Pray this works
-  // status_msg(STATUS_CODE_EMPTY, "Test\n");
-
+  GpioState state = GPIO_STATE_HIGH;
   while(1) {
     for (int i = 0; i < 100; i ++) {
       // For testing that PWM is actually working
@@ -76,9 +78,10 @@ int main(void) {
       // } else {
       //   debug_led_set_state(DEBUG_LED_RED, true);
       // }
-      LOG_DEBUG("DC: %d, Period: %d\n", (int) pwm_input_get_dc(), (int) pwm_input_get_period());
-      delay_ms(500);
-      pwm_set_dc(PWM_TIMER_1, i);
+      pwm_set_dc(output_timer, i);
+      delay_ms(50);
+      LOG_DEBUG("i: %d, DC: %d, Period: %d\n", i, (int) pwm_input_get_dc(), (int) pwm_input_get_period());
+      
     }
   }
 }
