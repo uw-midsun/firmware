@@ -59,7 +59,7 @@ StatusCode steering_angle_get_position_test(SteeringAngleStorage *steering_angle
   return prv_get_angle_percentage(steering_angle_storage, reading);
 }
 
-// Initializes steering angle storage wtih calibration data
+// Initializes steering angle storage with calibration data
 StatusCode steering_angle_init(SteeringAngleStorage *storage,
                                SteeringAngleCalibrationData *calibration_data,
                                SteeringAngleSettings *settings) {
