@@ -11,13 +11,13 @@
 
 void TIM1_CC_IRQHandler(void) {
   // LOG_DEBUG("lmao\n");
-  pwm_input_handle_interrupt();
+  pwm_input_handle_interrupt(PWM_TIMER_1);
 }
 
 void TIM3_IRQHandler(void) {
   // LOG_DEBUG("lmao\n");
   // TODO: Filter out other interrupts
-  pwm_input_handle_interrupt();
+  pwm_input_handle_interrupt(PWM_TIMER_3);
 }
 
 static void prv_test_callback(const Status *status) {
@@ -32,14 +32,24 @@ int main(void) {
   gpio_init();
 
 // Use port for Green LED
-  GpioAddress output = {
+  GpioAddress input = {
     .port = GPIO_PORT_A,
     .pin = 8,
   };
 
+  GpioSettings input_settings = {
+    .direction = GPIO_DIR_IN,
+    .alt_function = GPIO_ALTFN_2
+  };
+
+  GpioAddress output= {
+    .port = GPIO_PORT_B,
+    .pin = 4
+  };
+
   GpioSettings output_settings = {
     .direction = GPIO_DIR_OUT,
-    .alt_function = GPIO_ALTFN_2
+    .alt_function = GPIO_ALTFN_1
   };
 
   gpio_init_pin(&output, &output_settings);
@@ -48,22 +58,12 @@ int main(void) {
   // Should blink for half a second
 
   // The second parameter is in us
-  PwmTimer output_timer = PWM_TIMER_1;
+  PwmTimer output_timer = PWM_TIMER_3;
   pwm_init(output_timer, 65534);
   pwm_set_dc(output_timer, 50);
 
-  GpioAddress input = {
-    .port = GPIO_PORT_B,
-    .pin = 4
-  };
-
-  GpioSettings input_settings = {
-    .direction = GPIO_DIR_IN,
-    .alt_function = GPIO_ALTFN_1
-  };
-
   gpio_init_pin(&input, &input_settings);
-  pwm_input_init();
+  pwm_input_init(PWM_TIMER_1);
 
   // Use TIM1_CH2 to use pin PA9
   debug_led_init(DEBUG_LED_RED);
@@ -78,8 +78,8 @@ int main(void) {
       // } else {
       //   debug_led_set_state(DEBUG_LED_RED, true);
       // }
-      pwm_set_dc(output_timer, i);
-      delay_ms(50);
+      // pwm_set_dc(output_timer, i);
+      delay_ms(500);
       LOG_DEBUG("i: %d, DC: %d, Period: %d\n", i, (int) pwm_input_get_dc(), (int) pwm_input_get_period());
       
     }

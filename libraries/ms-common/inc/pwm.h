@@ -12,12 +12,18 @@
 
 #include "pwm_mcu.h"
 #include "status.h"
+#include "stm32f0xx_rcc.h"
+#include "stm32f0xx_tim.h"
+
+TIM_TypeDef *timer_def[NUM_PWM_TIMERS];
 
 // Initializes the PWM for a set timer with a specific frequency (Hz)
 #define pwm_init_hz(timer, frequency) pwm_init((timer), 1000000 / (frequency))
 
 // Initializes the PWM for a set timer with a period in microseconds.
 StatusCode pwm_init(PwmTimer timer, uint16_t period_us);
+
+void pwm_enable_periph_clock(PwmTimer timer);
 
 // Gets the current period of a specified PWM timer in microseconds.
 uint16_t pwm_get_period(PwmTimer timer);

@@ -14,13 +14,21 @@
 static volatile uint32_t period = 0;
 static volatile uint32_t dc = 0;
 
-StatusCode pwm_input_init() {
+static const IRQn_Type timer_to_irq [NUM_PWM_TIMERS] = {
+  [PWM_TIMER_1] = TIM1_CC_IRQn,   //
+  [PWM_TIMER_3] = TIM3_IRQn,   //
+  [PWM_TIMER_14] = 0,  //
+  [PWM_TIMER_15] = 0,  //
+  [PWM_TIMER_16] = 0,  //
+  [PWM_TIMER_17] = 0,  //
+};
+
+StatusCode pwm_input_init(PwmTimer timer) {
   // TIM1
-  //RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM3, ENABLE);
-  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
+  pwm_enable_periph_clock(timer);
 
   // TIM1_CC_IRQn
-  stm32f0xx_interrupt_nvic_enable(TIM3_IRQn, 0);
+  stm32f0xx_interrupt_nvic_enable(timer_to_irq[timer], 0);
 
   RCC_ClocksTypeDef clocks;
   RCC_GetClocksFreq(&clocks);
@@ -33,35 +41,36 @@ StatusCode pwm_input_init() {
     .TIM_RepetitionCounter = 0,
   };
 
-  TIM_TimeBaseInit(TIM3, &tim_init);
+  TIM_TimeBaseInit(timer_def[timer], &tim_init);
 
   TIM_ICInitTypeDef tim_icinit = {
     .TIM_Channel = TIM_Channel_1,
-    .TIM_ICPolarity = TIM_ICPolarity_Rising,
+    .TIM_ICPolarity = TIM_ICPolarity_Falling,
     .TIM_ICSelection = TIM_ICSelection_DirectTI,
     .TIM_ICPrescaler = TIM_ICPSC_DIV1,
     .TIM_ICFilter = 0x0,
   };
 
-  TIM_PWMIConfig(TIM3, &tim_icinit);
+  TIM_PWMIConfig(timer_def[timer], &tim_icinit);
 
-  TIM_SelectInputTrigger(TIM3, TIM_TS_TI2FP2);
-  TIM_SelectSlaveMode(TIM3, TIM_SlaveMode_Reset);
-  TIM_SelectMasterSlaveMode(TIM3, TIM_MasterSlaveMode_Enable);
-  TIM_SelectOutputTrigger(TIM3, TIM_TRGOSource_Reset);
-  TIM_Cmd(TIM3, ENABLE);
-  TIM_ITConfig(TIM3, TIM_IT_CC1, ENABLE);
+  TIM_SelectInputTrigger(timer_def[timer], TIM_TS_TI2FP2);
+  TIM_SelectSlaveMode(timer_def[timer], TIM_SlaveMode_Reset);
+  TIM_SelectMasterSlaveMode(timer_def[timer], TIM_MasterSlaveMode_Enable);
+  TIM_SelectOutputTrigger(timer_def[timer], TIM_TRGOSource_Reset);
+  TIM_Cmd(timer_def[timer], ENABLE);
+  TIM_ITConfig(timer_def[timer], TIM_IT_CC1, ENABLE);
 
   return STATUS_CODE_OK;
 }
 
-StatusCode pwm_input_handle_interrupt() {
-  TIM_ClearITPendingBit(TIM3, TIM_IT_CC1);
+StatusCode pwm_input_handle_interrupt(PwmTimer timer) {
 
-  uint32_t IC2Value = TIM_GetCapture1(TIM3);
+  TIM_ClearITPendingBit(timer_def[timer], TIM_IT_CC1);
+
+  uint32_t IC2Value = TIM_GetCapture2(timer_def[timer]);
 
   if (IC2Value != 0) {
-    uint32_t IC2Value_2 = TIM_GetCapture2(TIM3);
+    uint32_t IC2Value_2 = TIM_GetCapture1(timer_def[timer]);
     dc = (IC2Value_2 * 100) / IC2Value;
 
     // Not sure how to calculate period. Requires time as well
