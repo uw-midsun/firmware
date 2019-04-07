@@ -4,8 +4,7 @@ static const GpioAddress s_leds[NUM_DEBUG_LEDS] = {
   [DEBUG_LED_BLUE_A] = { .port = GPIO_PORT_B, .pin = 5 },
   [DEBUG_LED_BLUE_B] = { .port = GPIO_PORT_B, .pin = 4 },
   [DEBUG_LED_GREEN] = { .port = GPIO_PORT_B, .pin = 3 },
-  // Temporarily changed for debugging on discovery board
-  [DEBUG_LED_RED] = { .port = GPIO_PORT_C, .pin = 6 },
+  [DEBUG_LED_RED] = { .port = GPIO_PORT_A, .pin = 15 },
 };
 
 StatusCode debug_led_init(DebugLed led) {
