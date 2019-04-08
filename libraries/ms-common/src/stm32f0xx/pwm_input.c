@@ -8,6 +8,34 @@
 #include "pwm.h"
 #include "stm32f0xx.h"
 
+static void prv_input_handle_interrupt(PwmTimer timer);
+
+// These IRQHandlers may need to be freed in the future
+// so that others can use them.
+void TIM1_CC_IRQHandler(void) {
+  prv_input_handle_interrupt(PWM_TIMER_1);
+}
+
+void TIM3_IRQHandler(void) {
+  prv_input_handle_interrupt(PWM_TIMER_3);
+}
+
+void TIM14_IRQHandler(void) {
+  prv_input_handle_interrupt(PWM_TIMER_14);
+}
+
+void TIM15_IRQHandler(void) {
+  prv_input_handle_interrupt(PWM_TIMER_15);
+}
+
+void TIM16_IRQHandler(void) {
+  prv_input_handle_interrupt(PWM_TIMER_16);
+}
+
+void TIM17_IRQHandler(void) {
+  prv_input_handle_interrupt(PWM_TIMER_17);
+}
+
 typedef struct {
   void (*rcc_cmd)(uint32_t periph, FunctionalState state);
   uint32_t periph;
@@ -49,6 +77,10 @@ static PwmTimerData s_port[] = {
 static void prv_input_handle_interrupt(PwmTimer timer) {
   TIM_TypeDef *tim_location = s_port[timer].base;
 
+  if (TIM_GetITStatus(tim_location, TIM_IT_CC1) == RESET) {
+    return;
+  }
+
   TIM_ClearITPendingBit(tim_location, TIM_IT_CC1);
 
   uint32_t IC2Value_1 = TIM_GetCapture2(tim_location);
@@ -81,18 +113,6 @@ static void prv_input_handle_interrupt(PwmTimer timer) {
   if (s_port[timer].storage->callback != NULL) {
     s_port[timer].storage->callback(dc, period, s_port[timer].storage->context);
   }
-}
-
-void TIM1_CC_IRQHandler(void) {
-  prv_input_handle_interrupt(PWM_TIMER_1);
-}
-
-void TIM3_IRQHandler(void) {
-  prv_input_handle_interrupt(PWM_TIMER_3);
-}
-
-void TIM16_IRQHandler(void) {
-  prv_input_handle_interrupt(PWM_TIMER_16);
 }
 
 StatusCode pwm_input_init(PwmTimer timer, PwmInputSettings *settings, PwmInputStorage *storage) {
