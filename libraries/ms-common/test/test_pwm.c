@@ -1,4 +1,4 @@
-#include "pwm_output.h"
+#include "pwm.h"
 
 #include <stdint.h>
 
