@@ -5,6 +5,7 @@
 
 #include "critical_section.h"
 #include "gpio.h"
+#include "log.h"
 #include "pwm.h"
 #include "stm32f0xx.h"
 
@@ -77,34 +78,36 @@ static PwmTimerData s_port[] = {
 static void prv_input_handle_interrupt(PwmTimer timer) {
   TIM_TypeDef *tim_location = s_port[timer].base;
 
-  if (TIM_GetITStatus(tim_location, TIM_IT_CC1) == RESET) {
+  if (TIM_GetITStatus(tim_location, TIM_IT_Update) == SET) {
+    TIM_ClearITPendingBit(tim_location, TIM_IT_Update);
+  } else if (TIM_GetITStatus(tim_location, TIM_IT_CC1) == RESET) {
     return;
   }
 
   TIM_ClearITPendingBit(tim_location, TIM_IT_CC1);
 
-  uint32_t IC2Value_1 = TIM_GetCapture2(tim_location);
-  uint32_t IC2Value_2 = TIM_GetCapture1(tim_location);
+  uint32_t IC2Value_1 = 0;
+  uint32_t IC2Value_2 = 0;
 
   uint32_t period = 0;
   uint32_t dc = 0;
 
   if (s_port[timer].channel == TIM_Channel_2) {
-    if (IC2Value_1 != 0) {
-      dc = (IC2Value_2 * 100) / IC2Value_1;
-      period = IC2Value_1;
-    } else {
-      dc = 0;
-      period = 0;
-    }
+    IC2Value_1 = TIM_GetCapture2(tim_location);
+    IC2Value_2 = TIM_GetCapture1(tim_location);
   } else {
-    if (IC2Value_2 != 0) {
-      dc = (IC2Value_1 * 100) / IC2Value_2;
-      period = IC2Value_2;
-    } else {
-      dc = 0;
-      period = 0;
-    }
+    IC2Value_2 = TIM_GetCapture2(tim_location);
+    IC2Value_1 = TIM_GetCapture1(tim_location);
+  }
+
+  // LOG_DEBUG("Period candidate: %d\n", (int) IC2Value_1);
+
+  if (IC2Value_1 != 0) {
+    dc = (IC2Value_2 * 1000) / IC2Value_1;
+    period = IC2Value_1;
+  } else {
+    dc = 0;
+    period = 0;
   }
 
   s_port[timer].period = period;
@@ -181,6 +184,14 @@ uint32_t pwm_input_get_period(PwmTimer timer) {
 uint32_t pwm_input_get_dc(PwmTimer timer) {
   CRITICAL_SECTION_AUTOEND;
   uint32_t result = s_port[timer].dc;
+
+  if (result == 0) {
+    if (s_port[timer].storage->callback != NULL) {
+      s_port[timer].storage->callback(result, pwm_input_get_period(timer),
+                                      s_port[timer].storage->context);
+    }
+  }
+
   s_port[timer].dc = 0;
   return result;
 }

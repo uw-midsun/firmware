@@ -2,8 +2,8 @@
 #include "gpio.h"
 #include "interrupt.h"
 #include "log.h"
-#include "pwm_input.h"
 #include "pwm.h"
+#include "pwm_input.h"
 #include "soft_timer.h"
 #include "wait.h"
 
@@ -26,39 +26,51 @@ int main(void) {
 
   status_register_callback(prv_test_callback);
 
-  PwmTimer output_timer = PWM_TIMER_3;
-  PwmTimer input_timer = PWM_TIMER_1;
-
   PwmInputStorage storage = { 0 };
 
-  PwmInputSettings settings = { .channel = PWM_CHANNEL_1, .callback = prv_dc_callback };
-
-  // Pwm output
-  GpioAddress output = {
-    .port = GPIO_PORT_B,
-    .pin = 4,
+  PwmInputSettings settings = {
+    .channel = PWM_CHANNEL_2,
+    .callback = prv_dc_callback,
   };
 
-  GpioSettings output_settings = { .direction = GPIO_DIR_OUT, .alt_function = GPIO_ALTFN_1 };
+  PwmTimer input_timer = PWM_TIMER_3;
+  PwmTimer output_timer = PWM_TIMER_1;
 
-  GpioAddress input = { .port = GPIO_PORT_A, .pin = 8 };
+  GpioAddress input = {
+    .port = GPIO_PORT_B,
+    .pin = 5,
+  };
 
-  GpioSettings input_settings = { .direction = GPIO_DIR_IN, .alt_function = GPIO_ALTFN_2 };
+  GpioSettings input_settings = {
+    .direction = GPIO_DIR_IN,
+    .alt_function = GPIO_ALTFN_1,
+  };
+
+  GpioAddress output = {
+    .port = GPIO_PORT_A,
+    .pin = 8,
+  };
+
+  GpioSettings output_settings = {
+    .direction = GPIO_DIR_OUT,
+    .alt_function = GPIO_ALTFN_2,
+  };
 
   gpio_init_pin(&output, &output_settings);
+  gpio_init_pin(&input, &input_settings);
 
-  pwm_init(output_timer, 65534);
+  pwm_init(output_timer, 15000);
   pwm_set_dc(output_timer, 0);
 
-  gpio_init_pin(&input, &input_settings);
   pwm_input_init(input_timer, &settings, &storage);
 
   while (1) {
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i <= 100; i++) {
       pwm_set_dc(output_timer, i);
-      delay_ms(500);
+      delay_ms(250);
       LOG_DEBUG("i: %d DC: %d, ldc %d, Period: %d\n", i, (int)pwm_input_get_dc(input_timer),
                 (int)dc, (int)pwm_input_get_period(input_timer));
+      delay_ms(250);
     }
   }
 }
