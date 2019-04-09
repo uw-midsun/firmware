@@ -9,6 +9,8 @@
 #include "pwm.h"
 #include "stm32f0xx.h"
 
+#define MAX_DC_VALUE (1000)
+
 static void prv_input_handle_interrupt(PwmTimer timer);
 
 // These IRQHandlers may need to be freed in the future
@@ -100,14 +102,16 @@ static void prv_input_handle_interrupt(PwmTimer timer) {
     IC2Value_1 = TIM_GetCapture1(tim_location);
   }
 
-  // LOG_DEBUG("Period candidate: %d\n", (int) IC2Value_1);
-
   if (IC2Value_1 != 0) {
     dc = (IC2Value_2 * 1000) / IC2Value_1;
     period = IC2Value_1;
   } else {
     dc = 0;
     period = 0;
+  }
+
+  if (dc > MAX_DC_VALUE) {
+    dc = MAX_DC_VALUE;
   }
 
   s_port[timer].period = period;

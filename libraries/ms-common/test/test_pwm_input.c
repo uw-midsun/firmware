@@ -13,6 +13,8 @@
 #include "test_helpers.h"
 #include "unity.h"
 
+// To run this test, connect the input and output pins
+
 #define TEST_OUTPUT_PWM_TIMER PWM_TIMER_1
 #define TEST_OUTPUT_PWM_ALTFN GPIO_ALTFN_2
 #define TEST_OUTPUT_PWM_PERIOD_US 1000
