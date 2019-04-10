@@ -29,16 +29,6 @@
 
 #define TOLERANCE (2)
 
-volatile uint32_t dc = 0;
-volatile uint32_t period = 0;
-
-PwmInputStorage storage = { 0 };
-
-static void prv_dc_callback(uint32_t local_dc, uint32_t local_period, void *context) {
-  dc = local_dc;
-  period = local_period;
-}
-
 void setup_test(void) {
   interrupt_init();
   soft_timer_init();
@@ -46,6 +36,34 @@ void setup_test(void) {
 }
 
 void teardown_test(void) {}
+
+void print_reading(uint32_t dc, PwmInputReading *reading) {
+  LOG_DEBUG("DC: %d, read DC: %d | Period: %d, read period: %d\n", (int)dc, (int)reading->dc,
+            TEST_OUTPUT_PWM_PERIOD_US, (int)reading->period_us);
+}
+
+void check_pwm_value(uint32_t dc, PwmInputReading *reading) {
+  TEST_ASSERT_OK(pwm_set_dc(TEST_OUTPUT_PWM_TIMER, dc));
+  delay_ms(50);
+  TEST_ASSERT_OK(pwm_input_get_reading(TEST_INPUT_PWM_TIMER, reading));
+  print_reading(dc, reading);
+
+  // Workaround for known caveat. Please see pwm input header file for
+  // description
+  if (dc == 0) {
+    TEST_ASSERT_OK(pwm_input_get_reading(TEST_INPUT_PWM_TIMER, reading));
+    print_reading(dc, reading);
+    TEST_ASSERT_EQUAL(0, reading->dc);
+    TEST_ASSERT_EQUAL(0, reading->period_us);
+  } else {
+    TEST_ASSERT_TRUE((uint32_t)dc * 10 + TOLERANCE > reading->dc);
+    TEST_ASSERT_TRUE(((uint32_t)dc == 0 ? (uint32_t)0 : (uint32_t)dc * 10 - TOLERANCE) <=
+                     reading->dc);
+
+    TEST_ASSERT_TRUE((uint32_t)TEST_OUTPUT_PWM_PERIOD_US - TOLERANCE < reading->period_us);
+    TEST_ASSERT_TRUE((uint32_t)TEST_OUTPUT_PWM_PERIOD_US + TOLERANCE > reading->period_us);
+  }
+}
 
 void test_pwm_input(void) {
   PwmTimer input_timer = TEST_INPUT_PWM_TIMER;
@@ -65,24 +83,18 @@ void test_pwm_input(void) {
     .alt_function = TEST_OUTPUT_PWM_ALTFN,
   };
 
-  PwmInputSettings pwm_input_settings = {
-    .channel = TEST_INPUT_PWM_CHANNEL,
-    .callback = prv_dc_callback,
-  };
-
   TEST_ASSERT_OK(gpio_init_pin(&output, &output_settings));
   TEST_ASSERT_OK(gpio_init_pin(&input, &input_settings));
 
   TEST_ASSERT_OK(pwm_init(TEST_OUTPUT_PWM_TIMER, TEST_OUTPUT_PWM_PERIOD_US));
 
-  TEST_ASSERT_OK(pwm_input_init(input_timer, &pwm_input_settings, &storage));
+  TEST_ASSERT_OK(pwm_input_init(input_timer, TEST_INPUT_PWM_CHANNEL));
 
-  for (int i = 0; i <= 100; i++) {
-    TEST_ASSERT_OK(pwm_set_dc(TEST_OUTPUT_PWM_TIMER, i));
-    delay_ms(50);
-    uint32_t get_dc = pwm_input_get_dc(TEST_INPUT_PWM_TIMER);
-    LOG_DEBUG("DC: %d, read DC: %d\n", i, (int)get_dc);
-    TEST_ASSERT_TRUE((uint32_t)i * 10 + TOLERANCE > get_dc);
-    TEST_ASSERT_TRUE(((uint32_t)i == 0 ? (uint32_t)0 : (uint32_t)i * 10 - TOLERANCE) <= get_dc);
+  PwmInputReading reading = { 0 };
+
+  for (uint32_t b = 0; b < 3; b++) {
+    for (uint32_t i = 0; i <= 100; i++) {
+      check_pwm_value(i, &reading);
+    }
   }
 }

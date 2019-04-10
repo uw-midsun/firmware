@@ -2,16 +2,11 @@
 
 #include <stdint.h>
 
-StatusCode pwm_input_init(PwmTimer timer, PwmInputSettings *settings, PwmInputStorage *storage) {
+StatusCode pwm_input_init(PwmTimer timer, PwmChannel channel) {
   return status_code(STATUS_CODE_UNIMPLEMENTED);
 }
 
-uint32_t pwm_input_get_period(PwmTimer timer) {
-  status_code(STATUS_CODE_UNIMPLEMENTED);
-  return 0;
-}
-
-uint32_t pwm_input_get_dc(PwmTimer timer) {
+StatusCode pwm_input_get_reading(PwmTimer timer, PwmInputReading *reading) {
   status_code(STATUS_CODE_UNIMPLEMENTED);
   return 0;
 }
