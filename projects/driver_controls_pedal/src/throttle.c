@@ -16,7 +16,6 @@
 #include "event_queue.h"
 #include "exported_enums.h"
 #include "log.h"
-#include "pc_input_event.h"
 #include "pedal_output.h"
 
 static ThrottleStorage s_throttle_storage;
@@ -92,9 +91,9 @@ static bool prv_channels_synced(int16_t reading_main, int16_t reading_secondary,
 }
 
 // The periodic callback which checks if readings are up to date and channels are in sync.
-// If they are, the event corresponding to the pedals position is raised.
+// If they are, the pedal output is updated
 // If not, a pedal timout event is raised.
-static void prv_raise_event_timer_callback(SoftTimerId timer_id, void *context) {
+static void prv_update_pedal_output_timer_callback(SoftTimerId timer_id, void *context) {
   ThrottleStorage *storage = context;
   int16_t reading_main = INT16_MIN;
   int16_t reading_secondary = INT16_MIN;
@@ -106,9 +105,6 @@ static void prv_raise_event_timer_callback(SoftTimerId timer_id, void *context) 
       ads1015_read_raw(storage->pedal_ads1015_storage, storage->calibration_data->channel_secondary,
                        &reading_secondary);
 
-  InputEvent pedal_events[NUM_THROTTLE_ZONES] = { INPUT_EVENT_PEDAL_BRAKE, INPUT_EVENT_PEDAL_COAST,
-                                                  INPUT_EVENT_PEDAL_ACCEL };
-
   if (status_ok(primary_status) && status_ok(secondary_status) &&
       prv_channels_synced(reading_main, reading_secondary, storage)) {
     for (ThrottleZone zone = THROTTLE_ZONE_BRAKE; zone < NUM_THROTTLE_ZONES; zone++) {
@@ -117,7 +113,6 @@ static void prv_raise_event_timer_callback(SoftTimerId timer_id, void *context) 
         storage->position.zone = zone;
         storage->position.numerator = prv_get_numerator_zone(reading_main, zone, storage);
         storage->reading_ok_flag = true;
-        event_raise(pedal_events[zone], storage->position.numerator);
         pedal_output_update(pedal_output_global(), PEDAL_OUTPUT_SOURCE_THROTTLE_STATE, zone);
         break;
       }
@@ -127,12 +122,11 @@ static void prv_raise_event_timer_callback(SoftTimerId timer_id, void *context) 
   if (fault) {
     storage->reading_ok_flag = false;
     storage->position.zone = NUM_THROTTLE_ZONES;
-    event_raise(INPUT_EVENT_PEDAL_FAULT, 0);
     pedal_output_update(pedal_output_global(), PEDAL_OUTPUT_SOURCE_THROTTLE_STATE,
                         EE_THROTTLE_FAULT);
   }
 
-  soft_timer_start_millis(THROTTLE_UPDATE_PERIOD_MS, prv_raise_event_timer_callback, context, NULL);
+  soft_timer_start_millis(THROTTLE_UPDATE_PERIOD_MS, prv_update_pedal_output_timer_callback, context, NULL);
 }
 
 // Initializes the throttle by configuring the ADS1015 channels and
@@ -155,7 +149,7 @@ StatusCode throttle_init(ThrottleStorage *storage, ThrottleCalibrationData *cali
 
   storage->pedal_ads1015_storage = pedal_ads1015_storage;
 
-  return soft_timer_start_millis(THROTTLE_UPDATE_PERIOD_MS, prv_raise_event_timer_callback, storage,
+  return soft_timer_start_millis(THROTTLE_UPDATE_PERIOD_MS, prv_update_pedal_output_timer_callback, storage,
                                  NULL);
 }
 

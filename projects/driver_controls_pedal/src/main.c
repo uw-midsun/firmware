@@ -2,10 +2,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "bps_indicator.h"
 #include "calib.h"
 #include "can_msg_defs.h"
-#include "direction_indicator.h"
 #include "event_queue.h"
 #include "gpio.h"
 #include "gpio_it.h"
@@ -13,16 +11,13 @@
 #include "i2c.h"
 #include "interrupt.h"
 #include "log.h"
-#include "pc_input_event.h"
 #include "soft_timer.h"
 #include "throttle.h"
+#include "pc_input_event.h"
 
-#include "brake_signal.h"
 #include "event_arbiter.h"
-#include "mech_brake_fsm.h"
-#include "pedal_fsm.h"
 #include "pedal_output.h"
-#include "power_state_indicator.h"
+
 
 #include "can.h"
 #include "crc32.h"
@@ -30,21 +25,11 @@
 #include "pc_calib.h"
 #include "pc_cfg.h"
 
-typedef StatusCode (*PedalControlsFsmInitFn)(Fsm *fsm, EventArbiterStorage *storage);
-
-typedef enum {
-  PEDAL_CONTROLS_FSM_PEDAL = 0,
-  PEDAL_CONTROLS_FSM_MECH_BRAKE,
-  NUM_PEDAL_CONTROLS_FSMS,
-} PedalControlsFsm;
-
 static PcCalibBlob s_calib_blob;
 static Ads1015Storage s_pedal_ads1015;
 static MechBrakeStorage s_mech_brake;
 static EventArbiterStorage s_event_arbiter;
-static Fsm s_fsms[NUM_PEDAL_CONTROLS_FSMS];
 static CanStorage s_can;
-static Fsm s_fsms[NUM_PEDAL_CONTROLS_FSMS];
 static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
 
 int main(void) {
@@ -68,8 +53,6 @@ int main(void) {
   };
 
   can_init(&s_can, &can_settings);
-  can_add_filter(SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT);
-  can_add_filter(SYSTEM_CAN_MESSAGE_POWER_STATE);
 
   const I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,    //
@@ -78,15 +61,6 @@ int main(void) {
   };
 
   i2c_init(PC_CFG_I2C_BUS_PORT, &i2c_settings);
-
-  // Power state indicator
-  power_state_indicator_init();
-
-  // Direction state indicator
-  direction_indicator_init();
-
-  // BPS heartbeat
-  bps_indicator_init();
 
   // Powertrain heartbeat
   heartbeat_rx_register_handler(&s_powertrain_heartbeat, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
@@ -110,15 +84,6 @@ int main(void) {
                     INPUT_EVENT_PEDAL_UPDATE_REQUESTED);
   pedal_output_set_enabled(pedal_output_global(), true);
 
-  brake_signal_init();
-
-  event_arbiter_init(&s_event_arbiter);
-  PedalControlsFsmInitFn init_fns[] = { mechanical_brake_fsm_init, pedal_fsm_init };
-
-  for (size_t i = 0; i < NUM_PEDAL_CONTROLS_FSMS; i++) {
-    init_fns[i](&s_fsms[i], &s_event_arbiter);
-  }
-
   LOG_DEBUG("Pedal Controls initialized\n");
 
   Event e;
@@ -126,9 +91,6 @@ int main(void) {
     if (status_ok(event_process(&e))) {
 #ifdef PC_CFG_DEBUG_PRINT_EVENTS
       switch (e.id) {
-        case INPUT_EVENT_PEDAL_ACCEL:
-        case INPUT_EVENT_PEDAL_COAST:
-        case INPUT_EVENT_PEDAL_BRAKE:
         case INPUT_EVENT_PEDAL_UPDATE_REQUESTED:
         case INPUT_EVENT_PEDAL_CAN_RX:
         case INPUT_EVENT_PEDAL_CAN_TX:
@@ -137,8 +99,6 @@ int main(void) {
       }
 #endif
       can_process_event(&e);
-      event_arbiter_process_event(&s_event_arbiter, &e);
-      brake_signal_process_event(&e);
     }
   }
 }

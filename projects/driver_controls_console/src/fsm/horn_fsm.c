@@ -2,7 +2,7 @@
 #include "can_transmit.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
-#include "sc_input_event.h"
+#include "cc_input_event.h"
 
 // Horn FSM state definitions
 
@@ -18,8 +18,8 @@ FSM_STATE_TRANSITION(state_horn_off) {
 FSM_STATE_TRANSITION(state_horn_on) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CONTROL_STALK_DIGITAL_HORN_RELEASED, state_horn_off);
 
-  FSM_ADD_TRANSITION(INPUT_EVENT_STEERING_POWER_STATE_OFF, state_horn_off);
-  FSM_ADD_TRANSITION(INPUT_EVENT_STEERING_POWER_STATE_FAULT, state_horn_off);
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_OFF, state_horn_off);
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_FAULT, state_horn_off);
 }
 
 // Horn FSM output function

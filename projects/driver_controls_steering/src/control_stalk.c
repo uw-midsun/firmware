@@ -44,58 +44,6 @@ static const GpioAddress s_digital_gpio_addresses[CONTROL_STALK_DIGITAL_INPUTS] 
   SC_CFG_HIGH_BEAM_FWD_PIN, SC_CFG_HIGH_BEAM_BACK_PIN,
 };
 
-// ADC channel to Event ID
-static const EventId s_analog_mapping[CONTROL_STALK_ANALOG_INPUTS][NUM_CONTROL_STALK_STATES] = {
-  {
-      INPUT_EVENT_CONTROL_STALK_ANALOG_DISTANCE_NEUTRAL,
-      INPUT_EVENT_CONTROL_STALK_ANALOG_DISTANCE_MINUS,
-      INPUT_EVENT_CONTROL_STALK_ANALOG_DISTANCE_PLUS,
-  },
-  {
-      INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_NEUTRAL,
-      INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_MINUS,
-      INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_PLUS,
-  },
-  {
-      INPUT_EVENT_CONTROL_STALK_ANALOG_CC_DIGITAL,
-      INPUT_EVENT_CONTROL_STALK_ANALOG_CC_CANCEL,
-      INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME,
-  },
-  {
-      INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_NONE,
-      INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_RIGHT,
-      INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_LEFT,
-  },
-};
-
-// Active-low
-static const EventId s_digital_mapping[CONTROL_STALK_DIGITAL_INPUTS][NUM_GPIO_STATES] = {
-  {
-      INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_RELEASED,
-      INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED,
-  },
-  {
-      INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_OFF,
-      INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_ON,
-  },
-  {
-      // TODO(ELEC-461): revert when mech brake added
-      // INPUT_EVENT_STEERING_MECHANICAL_BRAKE_PRESSED,
-      // INPUT_EVENT_STEERING_MECHANICAL_BRAKE_RELEASED,
-      INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_LANE_ASSIST_RELEASED,
-      INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_LANE_ASSIST_PRESSED,
-      // Mech brake has been added so this should be good (?)
-  },
-  {
-      INPUT_EVENT_CONTROL_STALK_DIGITAL_HIGH_BEAM_FWD_RELEASED,
-      INPUT_EVENT_CONTROL_STALK_DIGITAL_HIGH_BEAM_FWD_PRESSED,
-  },
-  {
-      INPUT_EVENT_CONTROL_STALK_DIGITAL_HIGH_BEAM_BACK_RELEASED,
-      INPUT_EVENT_CONTROL_STALK_DIGITAL_HIGH_BEAM_BACK_PRESSED,
-  },
-};
-
 static void prv_analog_cb(AdcChannel channel, void *context) {
   ControlStalk *stalk = context;
   uint16_t reading = 0;
@@ -113,17 +61,11 @@ static void prv_analog_cb(AdcChannel channel, void *context) {
   } else {
     stalk->debounce_counter[channel]++;
   }
-
-  if (stalk->debounce_counter[channel] == CONTROL_STALK_DEBOUNCE_COUNTER_THRESHOLD) {
-    event_raise(s_analog_mapping[channel][state], 0);
-  }
 }
 
 void prv_digital_cb(const GpioAddress *address, void *context) {
-  EventId *inputEvents = context;
   GpioState state;
   gpio_get_state(address, &state);
-  event_raise(inputEvents[state], 0);
 }
 
 StatusCode control_stalk_init(ControlStalk *stalk) {
@@ -151,7 +93,7 @@ StatusCode control_stalk_init(ControlStalk *stalk) {
     status_ok_or_return(gpio_init_pin(&s_digital_gpio_addresses[pin], &digital_gpio_settings));
     status_ok_or_return(gpio_it_register_interrupt(
         &s_digital_gpio_addresses[pin], &interrupt_settings, INTERRUPT_EDGE_RISING_FALLING,
-        prv_digital_cb, s_digital_mapping[pin]));
+        prv_digital_cb, NULL));
   }
 
   // Initialize Analog Pins

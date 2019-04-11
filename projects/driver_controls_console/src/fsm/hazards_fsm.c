@@ -1,8 +1,8 @@
 #include "hazards_fsm.h"
 #include "can_transmit.h"
-#include "cc_input_event.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
+#include "cc_input_event.h"
 
 // Hazard light FSM state definitions
 FSM_DECLARE_STATE(state_hazard_off);
@@ -16,8 +16,8 @@ FSM_STATE_TRANSITION(state_hazard_off) {
 FSM_STATE_TRANSITION(state_hazard_on) {
   FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_HAZARDS_RELEASED, state_hazard_off);
 
-  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER_STATE_OFF, state_hazard_off);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_POWER_STATE_FAULT, state_hazard_off);
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_OFF, state_hazard_off);
+  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_FAULT, state_hazard_off);
 }
 
 // Hazard light FSM output function

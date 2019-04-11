@@ -2,10 +2,10 @@
 #include "can.h"
 #include "can_transmit.h"
 #include "can_unpack.h"
-#include "cc_input_event.h"
 #include "event_queue.h"
 #include "exported_enums.h"
 #include "gpio.h"
+#include "cc_input_event.h"
 #include "interrupt.h"
 #include "log.h"
 #include "ms_test_helpers.h"
@@ -60,8 +60,7 @@ void test_bps_indicator_heartbeat(void) {
     .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_DRIVER_CONTROLS),
   };
   CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, EE_BPS_HEARTBEAT_STATE_OK);
-  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CENTER_CONSOLE_CAN_TX,
-                                    INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
+  MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
   // Nothing should have happened, so no events should have been raised
   TEST_ASSERT_NOT_OK(event_process(&e));
@@ -74,7 +73,7 @@ void test_bps_indicator_heartbeat(void) {
 
   // Raise BPS fault event
   TEST_ASSERT_OK(event_process(&e));
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CENTER_CONSOLE_BPS_FAULT, e.id);
+  TEST_ASSERT_EQUAL(INPUT_EVENT_BPS_FAULT, e.id);
 
   // BPS heartbeat ACK TX/RX
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);

@@ -46,7 +46,7 @@ void test_pedal_indicator_brake_pressed(void) {
 
   Event e;
   TEST_ASSERT_OK(event_process(&e));
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CENTER_CONSOLE_MECH_BRAKE_PRESSED, e.id);
+  TEST_ASSERT_EQUAL(INPUT_EVENT_MECH_BRAKE_PRESSED, e.id);
 }
 
 void test_pedal_indicator_brake_released(void) {
@@ -57,5 +57,5 @@ void test_pedal_indicator_brake_released(void) {
 
   Event e;
   TEST_ASSERT_OK(event_process(&e));
-  TEST_ASSERT_EQUAL(INPUT_EVENT_CENTER_CONSOLE_MECH_BRAKE_RELEASED, e.id);
+  TEST_ASSERT_EQUAL(INPUT_EVENT_MECH_BRAKE_RELEASED, e.id);
 }

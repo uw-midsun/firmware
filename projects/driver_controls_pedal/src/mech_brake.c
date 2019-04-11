@@ -12,7 +12,6 @@
 #include "exported_enums.h"
 #include "log.h"
 #include "mech_brake.h"
-#include "pc_input_event.h"
 #include "soft_timer.h"
 #include "status.h"
 #include "wait.h"
@@ -34,7 +33,7 @@ static StatusCode prv_lsb_to_position(MechBrakeStorage *storage, int16_t reading
   return STATUS_CODE_OK;
 }
 
-static void prv_raise_event_timer_callback(SoftTimerId timer_id, void *context) {
+static void prv_pedal_output_update_timer_callback(SoftTimerId timer_id, void *context) {
   MechBrakeStorage *storage = context;
   int16_t position = INT16_MAX;
   StatusCode ret = mech_brake_get_position(storage, &position);
@@ -42,17 +41,15 @@ static void prv_raise_event_timer_callback(SoftTimerId timer_id, void *context) 
   if (status_ok(ret)) {
     if (position > storage->pressed_threshold_position ||
         (position > storage->unpressed_threshold_position && storage->prev_pressed)) {
-      event_raise(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_PRESSED, (uint16_t)position);
       storage->prev_pressed = true;
     } else {
-      event_raise(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_RELEASED, (uint16_t)position);
       storage->prev_pressed = false;
     }
   }
 
   pedal_output_update(pedal_output_global(), PEDAL_OUTPUT_SOURCE_MECH_BRAKE, position);
 
-  soft_timer_start_millis(10, prv_raise_event_timer_callback, context, NULL);
+  soft_timer_start_millis(10, prv_pedal_output_update_timer_callback, context, NULL);
 }
 
 StatusCode mech_brake_init(MechBrakeStorage *storage, const MechBrakeSettings *settings,
@@ -80,7 +77,7 @@ StatusCode mech_brake_init(MechBrakeStorage *storage, const MechBrakeSettings *s
   status_ok_or_return(
       ads1015_configure_channel(storage->ads1015, storage->channel, true, NULL, NULL));
 
-  return soft_timer_start_millis(10, prv_raise_event_timer_callback, storage, NULL);
+  return soft_timer_start_millis(10, prv_pedal_output_update_timer_callback, storage, NULL);
 }
 
 StatusCode mech_brake_get_position(MechBrakeStorage *storage, int16_t *position) {

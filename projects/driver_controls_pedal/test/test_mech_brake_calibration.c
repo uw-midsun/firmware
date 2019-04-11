@@ -78,22 +78,3 @@ void test_mech_brake_calibration_run(void) {
   calib_commit();
 }
 
-void test_mech_brake_calibration_verify(void) {
-  const MechBrakeSettings calib_settings = {
-    .ads1015 = &s_ads1015_storage,
-    .channel = ADS1015_CHANNEL_2,
-  };
-
-  TEST_ASSERT_OK(
-      mech_brake_init(&s_mech_brake_storage, &calib_settings, &s_calib_blob.mech_brake_calib));
-  Event e = { 0 };
-  while (true) {
-    if (status_ok(event_process(&e))) {
-      if (e.id == INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_PRESSED) {
-        LOG_DEBUG("Pressed: %d\n", e.data);
-      } else if (e.id == INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_RELEASED) {
-        LOG_DEBUG("Released: %d\n", e.data);
-      }
-    }
-  }
-}

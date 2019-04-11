@@ -10,7 +10,7 @@
 #include <string.h>
 #include "can_transmit.h"
 #include "exported_enums.h"
-#include "pc_input_event.h"
+#include "cc_input_event.h"
 
 typedef struct BrakeSignalInputState {
   bool prev_signal_state;
@@ -37,22 +37,22 @@ StatusCode brake_signal_init(void) {
 bool brake_signal_process_event(const Event *e) {
   bool processed = true;
   switch (e->id) {
-    case INPUT_EVENT_PEDAL_POWER_STATE_OFF:
-    case INPUT_EVENT_PEDAL_POWER_STATE_DRIVE:
-    case INPUT_EVENT_PEDAL_POWER_STATE_CHARGE:
-    case INPUT_EVENT_PEDAL_POWER_STATE_FAULT:
-      s_brake_state.input_state.power_state = e->id == INPUT_EVENT_PEDAL_POWER_STATE_DRIVE;
+    case INPUT_EVENT_POWER_STATE_OFF:
+    case INPUT_EVENT_POWER_STATE_DRIVE:
+    case INPUT_EVENT_POWER_STATE_CHARGE:
+    case INPUT_EVENT_POWER_STATE_FAULT:
+      s_brake_state.input_state.power_state = e->id == INPUT_EVENT_POWER_STATE_DRIVE;
       break;
 
-    case INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_PRESSED:
-    case INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_RELEASED:
-      s_brake_state.input_state.mech_brake = e->id == INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_PRESSED;
+    case INPUT_EVENT_MECH_BRAKE_PRESSED:
+    case INPUT_EVENT_MECH_BRAKE_RELEASED:
+      s_brake_state.input_state.mech_brake = e->id == INPUT_EVENT_MECH_BRAKE_PRESSED;
       break;
 
-    case INPUT_EVENT_PEDAL_DIRECTION_STATE_NEUTRAL:
-    case INPUT_EVENT_PEDAL_DIRECTION_STATE_FORWARD:
-    case INPUT_EVENT_PEDAL_DIRECTION_STATE_REVERSE:
-      s_brake_state.input_state.direction = e->id != INPUT_EVENT_PEDAL_DIRECTION_STATE_NEUTRAL;
+    case INPUT_EVENT_DIRECTION_STATE_NEUTRAL:
+    case INPUT_EVENT_DIRECTION_STATE_FORWARD:
+    case INPUT_EVENT_DIRECTION_STATE_REVERSE:
+      s_brake_state.input_state.direction = e->id != INPUT_EVENT_DIRECTION_STATE_NEUTRAL;
       break;
 
     case INPUT_EVENT_PEDAL_ACCEL:
@@ -61,7 +61,7 @@ bool brake_signal_process_event(const Event *e) {
       s_brake_state.input_state.throttle = e->id == INPUT_EVENT_PEDAL_BRAKE;
       break;
 
-    case INPUT_EVENT_PEDAL_SPEED_UPDATE:
+    case INPUT_EVENT_SPEED_UPDATE:
       s_brake_state.input_state.speed = e->data >= BRAKE_SIGNAL_MIN_SPEED_CMS;
       break;
 

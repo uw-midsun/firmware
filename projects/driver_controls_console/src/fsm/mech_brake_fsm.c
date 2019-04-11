@@ -1,12 +1,13 @@
-// Updates to the pedal output module are driven by the update requested events
+// Updates to the drive output module are driven by the update requested events
 
 #include "mech_brake_fsm.h"
+#include "drive_output.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
+#include "cc_input_event.h"
 #include "log.h"
-#include "mech_brake.h"
-#include "pc_input_event.h"
-#include "pedal_output.h"
+#include "can_msg_defs.h"
+#include "can_unpack.h"
 
 // Mechanical Brake FSM state definitions
 FSM_DECLARE_STATE(state_engaged);
@@ -14,17 +15,17 @@ FSM_DECLARE_STATE(state_disengaged);
 
 // Mechanical Brake FSM transition table definitions
 FSM_STATE_TRANSITION(state_engaged) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_UPDATE_REQUESTED, state_engaged);
+  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_engaged);
 
-  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_PRESSED, state_engaged);
-  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_RELEASED, state_disengaged);
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECH_BRAKE_PRESSED, state_engaged);
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECH_BRAKE_RELEASED, state_disengaged);
 }
 
 FSM_STATE_TRANSITION(state_disengaged) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_UPDATE_REQUESTED, state_disengaged);
+  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_disengaged);
 
-  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_PRESSED, state_engaged);
-  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_MECHANICAL_BRAKE_RELEASED, state_disengaged);
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECH_BRAKE_PRESSED, state_engaged);
+  FSM_ADD_TRANSITION(INPUT_EVENT_MECH_BRAKE_RELEASED, state_disengaged);
 }
 
 // Mechanical Brake FSM arbiter functions
@@ -32,7 +33,7 @@ static bool prv_guard_engaged(const Event *e) {
   // While the brakes are engaged, the car shouldn't allow the car to enter cruise control.
   // Motor controller interface should ignore throttle state if mechanical brake is engaged.
   switch (e->id) {
-    case INPUT_EVENT_PEDAL_CONTROL_STALK_ANALOG_CC_RESUME:
+    case INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME:
       return false;
     default:
       return true;
@@ -42,11 +43,9 @@ static bool prv_guard_engaged(const Event *e) {
 static bool prv_guard_disengaged(const Event *e) {
   // The brake must be engaged in order for gear shifts to happen.
   // We allow shifting into neutral at any time.
-
-  // Needs a listener - these events will not be raised locally
   switch (e->id) {
-    case INPUT_EVENT_PEDAL_DIRECTION_STATE_FORWARD:
-    case INPUT_EVENT_PEDAL_DIRECTION_STATE_REVERSE:
+    case INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE:
+    case INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE:
       return false;
     default:
       return true;
@@ -57,21 +56,11 @@ static bool prv_guard_disengaged(const Event *e) {
 static void prv_engaged_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   event_arbiter_set_guard_fn(guard, prv_guard_engaged);
-
-  int16_t position = INT16_MAX;
-  if (status_ok(mech_brake_get_position(mech_brake_global(), &position))) {
-    pedal_output_update(pedal_output_global(), PEDAL_OUTPUT_SOURCE_MECH_BRAKE, position);
-  }
 }
 
 static void prv_disengaged_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   event_arbiter_set_guard_fn(guard, prv_guard_disengaged);
-
-  int16_t position = INT16_MAX;
-  if (status_ok(mech_brake_get_position(mech_brake_global(), &position))) {
-    pedal_output_update(pedal_output_global(), PEDAL_OUTPUT_SOURCE_MECH_BRAKE, position);
-  }
 }
 
 StatusCode mechanical_brake_fsm_init(Fsm *fsm, EventArbiterStorage *storage) {

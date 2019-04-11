@@ -3,7 +3,7 @@
 // from the pedal boards and steering board, packs that data and forms the drive output message
 // Requires soft timers and CAN to be initialized.
 //
-// Periodically broadcasts a console command to the motor controllers with the current state
+// Periodically broadcasts a drive command to the motor controllers with the current state
 // Requires data to be updated periodically to ensure that data is not stale.
 #include <stdint.h>
 #include "event_queue.h"
@@ -24,7 +24,7 @@ typedef enum {
   NUM_DRIVE_OUTPUT_SOURCES
 } DriveOutputSource;
 
-typedef struct ConsoleOutputStorage {
+typedef struct DriveOutputStorage {
   int16_t data[NUM_DRIVE_OUTPUT_SOURCES];
   int16_t pedal_requested_data;
   EventId fault_event;
