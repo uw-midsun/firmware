@@ -11,13 +11,12 @@
 #include "i2c.h"
 #include "interrupt.h"
 #include "log.h"
+#include "pc_input_event.h"
 #include "soft_timer.h"
 #include "throttle.h"
-#include "pc_input_event.h"
 
 #include "event_arbiter.h"
 #include "pedal_output.h"
-
 
 #include "can.h"
 #include "crc32.h"

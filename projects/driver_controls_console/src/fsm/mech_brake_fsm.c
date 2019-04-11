@@ -1,13 +1,13 @@
 // Updates to the drive output module are driven by the update requested events
 
 #include "mech_brake_fsm.h"
+#include "can_msg_defs.h"
+#include "can_unpack.h"
+#include "cc_input_event.h"
 #include "drive_output.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
-#include "cc_input_event.h"
 #include "log.h"
-#include "can_msg_defs.h"
-#include "can_unpack.h"
 
 // Mechanical Brake FSM state definitions
 FSM_DECLARE_STATE(state_engaged);

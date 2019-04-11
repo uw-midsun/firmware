@@ -1,9 +1,9 @@
 #include "brake_signal.h"
 #include "can.h"
 #include "can_unpack.h"
+#include "cc_input_event.h"
 #include "event_queue.h"
 #include "exported_enums.h"
-#include "cc_input_event.h"
 #include "interrupt.h"
 #include "log.h"
 #include "ms_test_helpers.h"
@@ -16,10 +16,11 @@
     brake_signal_process_event(&_e);                        \
   })
 
-#define TEST_BRAKE_SIGNAL_EXPECT_STATE(state)                         \
-  ({                                                                  \
-    MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX); \
-    TEST_ASSERT_EQUAL((state), s_brake_state);                        \
+#define TEST_BRAKE_SIGNAL_EXPECT_STATE(state)                    \
+  ({                                                             \
+    MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX,  \
+                             INPUT_EVENT_CENTER_CONSOLE_CAN_RX); \
+    TEST_ASSERT_EQUAL((state), s_brake_state);                   \
   })
 
 static CanStorage s_can_storage;

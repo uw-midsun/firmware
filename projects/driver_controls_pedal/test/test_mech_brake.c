@@ -103,7 +103,7 @@ void test_mech_brake_percentage_in_released_zone(void) {
   s_mocked_reading = 2088;  // 50 %
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
   delay_ms(10);
- 
+
   s_mocked_reading = 3000;  // 73 %
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
   delay_ms(10);
@@ -116,15 +116,14 @@ void test_mech_brake_percentage_in_pressed_then_unpressed_zone(void) {
 
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
   delay_ms(10);
-  
+
   s_mocked_reading = 2088;  // 50 %
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
   delay_ms(10);
-  
+
   s_mocked_reading = 822;  // 20 %
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
   delay_ms(10);
-
 }
 
 void test_mech_brake_percentage_below_bounds(void) {
@@ -152,10 +151,9 @@ void test_mech_brake_percentage_within_lower_tolerance(void) {
   int16_t position = 0;
   // This is just within the lower bound of -81.
   s_mocked_reading = -80;
- 
+
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
   delay_ms(10);
-  
 }
 
 void test_mech_brake_percentage_within_upper_tolerance(void) {
@@ -165,5 +163,4 @@ void test_mech_brake_percentage_within_upper_tolerance(void) {
 
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_get_position(&s_mech_brake_storage, &position));
   delay_ms(10);
-
 }

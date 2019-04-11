@@ -23,7 +23,6 @@
 #include "soft_timer.h"
 #include "steering_output.h"
 
-
 static CanStorage s_can;
 
 static ControlStalk s_stalk;

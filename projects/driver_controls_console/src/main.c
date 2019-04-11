@@ -3,8 +3,7 @@
 #include <stdio.h>
 
 #include "bps_indicator.h"
-#include "steering_indicator.h"
-#include "pedal_indicator.h"
+#include "cc_input_event.h"
 #include "center_console.h"
 #include "debug_led.h"
 #include "event_queue.h"
@@ -12,12 +11,13 @@
 #include "gpio_it.h"
 #include "heartbeat_rx.h"
 #include "i2c.h"
-#include "cc_input_event.h"
 #include "interrupt.h"
+#include "led_output.h"
 #include "log.h"
+#include "pedal_indicator.h"
 #include "power_distribution_controller.h"
 #include "soft_timer.h"
-#include "led_output.h"
+#include "steering_indicator.h"
 
 #include "cruise_fsm.h"
 #include "direction_fsm.h"
@@ -36,8 +36,8 @@
 #include "drive_output.h"
 
 #include "can.h"
-#include "crc32.h"
 #include "cc_cfg.h"
+#include "crc32.h"
 #include "flash.h"
 
 typedef StatusCode (*DriverControlsFsmInitFn)(Fsm *fsm, EventArbiterStorage *storage);
@@ -78,7 +78,6 @@ int main(void) {
   crc32_init();
   flash_init();
 
-
   const CanSettings can_settings = {
     .device_id = CC_CFG_CAN_DEVICE_ID,
     .bitrate = CC_CFG_CAN_BITRATE,
@@ -106,8 +105,7 @@ int main(void) {
 
   i2c_init(CC_CFG_I2C_BUS_PORT, &i2c_settings);
 
-  gpio_expander_init(&s_led_expander, CC_CFG_I2C_BUS_PORT, CC_CFG_CONSOLE_IO_ADDR,
-                     NULL);
+  gpio_expander_init(&s_led_expander, CC_CFG_I2C_BUS_PORT, CC_CFG_CONSOLE_IO_ADDR, NULL);
 
   led_output_init(&s_led_expander);
   center_console_init(&s_console);
@@ -115,12 +113,11 @@ int main(void) {
   // BPS heartbeat
   bps_indicator_init();
 
-  //steering indicator
+  // steering indicator
   steering_indicator_init();
 
-  //pedal indicator 
+  // pedal indicator
   pedal_indicator_init();
-
 
   // Powertrain heartbeat
   heartbeat_rx_register_handler(&s_powertrain_heartbeat, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,

@@ -1,8 +1,8 @@
 #include "hazards_fsm.h"
 #include "can_transmit.h"
+#include "cc_input_event.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
-#include "cc_input_event.h"
 
 // Hazard light FSM state definitions
 FSM_DECLARE_STATE(state_hazard_off);

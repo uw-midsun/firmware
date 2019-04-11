@@ -77,4 +77,3 @@ void test_mech_brake_calibration_run(void) {
 
   calib_commit();
 }
-

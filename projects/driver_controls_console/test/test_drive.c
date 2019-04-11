@@ -1,4 +1,5 @@
 #include "can.h"
+#include "cc_input_event.h"
 #include "cruise_fsm.h"
 #include "delay.h"
 #include "direction_fsm.h"
@@ -8,7 +9,6 @@
 #include "hazards_fsm.h"
 #include "headlight_fsm.h"
 #include "horn_fsm.h"
-#include "cc_input_event.h"
 #include "interrupt.h"
 #include "log.h"
 #include "mech_brake_fsm.h"
@@ -21,21 +21,20 @@
 
 // Tests interaction between the drive output module and power/direction/pedal FSMs
 
-#define TEST_DRIVE_CLOCK_EVENT(event_id, should_succeed)                                      \
-  {                                                                                           \
-    Event e = { .id = (event_id) };                                                           \
-    TEST_ASSERT_EQUAL((should_succeed), event_arbiter_process_event(&s_arbiter_storage, &e)); \
-    if ((should_succeed) &&                                                                   \
-        (e.id == INPUT_EVENT_CENTER_CONSOLE_POWER || e.id == INPUT_EVENT_BPS_FAULT ||         \
-         e.id == INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE ||                                \
-         e.id == INPUT_EVENT_CENTER_CONSOLE_DIRECTION_NEUTRAL ||                              \
-         e.id == INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE ||                              \
-         e.id == INPUT_EVENT_MECH_BRAKE_PRESSED ||                                      \
-         e.id == INPUT_EVENT_MECH_BRAKE_RELEASED)) {                                    \
-      if (status_ok(event_process(&e))) {                                                     \
-        event_arbiter_process_event(&s_arbiter_storage, &e);                                  \
-      }                                                                                       \
-    }                                                                                         \
+#define TEST_DRIVE_CLOCK_EVENT(event_id, should_succeed)                                       \
+  {                                                                                            \
+    Event e = { .id = (event_id) };                                                            \
+    TEST_ASSERT_EQUAL((should_succeed), event_arbiter_process_event(&s_arbiter_storage, &e));  \
+    if ((should_succeed) &&                                                                    \
+        (e.id == INPUT_EVENT_CENTER_CONSOLE_POWER || e.id == INPUT_EVENT_BPS_FAULT ||          \
+         e.id == INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE ||                                 \
+         e.id == INPUT_EVENT_CENTER_CONSOLE_DIRECTION_NEUTRAL ||                               \
+         e.id == INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE ||                               \
+         e.id == INPUT_EVENT_MECH_BRAKE_PRESSED || e.id == INPUT_EVENT_MECH_BRAKE_RELEASED)) { \
+      if (status_ok(event_process(&e))) {                                                      \
+        event_arbiter_process_event(&s_arbiter_storage, &e);                                   \
+      }                                                                                        \
+    }                                                                                          \
   }
 
 typedef enum {

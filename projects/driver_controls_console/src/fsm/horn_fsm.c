@@ -1,8 +1,8 @@
 #include "horn_fsm.h"
 #include "can_transmit.h"
+#include "cc_input_event.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
-#include "cc_input_event.h"
 
 // Horn FSM state definitions
 

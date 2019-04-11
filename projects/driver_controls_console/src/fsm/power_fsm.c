@@ -14,10 +14,10 @@
 #include "power_fsm.h"
 
 #include "bps_indicator.h"
+#include "cc_input_event.h"
 #include "drive_output.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
-#include "cc_input_event.h"
 #include "log.h"
 #include "power_distribution_controller.h"
 

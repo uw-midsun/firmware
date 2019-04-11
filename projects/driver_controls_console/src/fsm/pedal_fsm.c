@@ -1,10 +1,10 @@
 // Updates to the drive output module are driven by the update requested events
 
 #include "pedal_fsm.h"
+#include "cc_input_event.h"
 #include "drive_output.h"
 #include "event_arbiter.h"
 #include "event_queue.h"
-#include "cc_input_event.h"
 #include "log.h"
 
 // Pedal FSM state definitions

@@ -9,8 +9,8 @@
 #include <stdbool.h>
 #include <string.h>
 #include "can_transmit.h"
-#include "exported_enums.h"
 #include "cc_input_event.h"
+#include "exported_enums.h"
 
 typedef struct BrakeSignalInputState {
   bool prev_signal_state;

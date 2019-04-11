@@ -3,7 +3,7 @@
 #include "event_queue.h"
 
 typedef enum {
-  //CAN events 
+  // CAN events
   INPUT_EVENT_STEERING_WATCHDOG_FAULT = 0,
   INPUT_EVENT_STEERING_CAN_RX,
   INPUT_EVENT_STEERING_CAN_TX,

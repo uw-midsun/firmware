@@ -2,10 +2,10 @@
 // Note that this is accomplished by transitioning back to the current state.
 #include "direction_fsm.h"
 #include <stddef.h>
+#include "cc_input_event.h"
 #include "drive_output.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
-#include "cc_input_event.h"
 #include "log.h"
 
 // Direction selector FSM state definitions

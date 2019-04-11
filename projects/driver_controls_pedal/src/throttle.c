@@ -126,7 +126,8 @@ static void prv_update_pedal_output_timer_callback(SoftTimerId timer_id, void *c
                         EE_THROTTLE_FAULT);
   }
 
-  soft_timer_start_millis(THROTTLE_UPDATE_PERIOD_MS, prv_update_pedal_output_timer_callback, context, NULL);
+  soft_timer_start_millis(THROTTLE_UPDATE_PERIOD_MS, prv_update_pedal_output_timer_callback,
+                          context, NULL);
 }
 
 // Initializes the throttle by configuring the ADS1015 channels and
@@ -149,8 +150,8 @@ StatusCode throttle_init(ThrottleStorage *storage, ThrottleCalibrationData *cali
 
   storage->pedal_ads1015_storage = pedal_ads1015_storage;
 
-  return soft_timer_start_millis(THROTTLE_UPDATE_PERIOD_MS, prv_update_pedal_output_timer_callback, storage,
-                                 NULL);
+  return soft_timer_start_millis(THROTTLE_UPDATE_PERIOD_MS, prv_update_pedal_output_timer_callback,
+                                 storage, NULL);
 }
 
 // Gets the current position of the pedal (writes to position).
