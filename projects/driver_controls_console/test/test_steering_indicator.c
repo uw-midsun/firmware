@@ -5,6 +5,7 @@
 #include "delay.h"
 #include "drive_output.h"
 #include "event_queue.h"
+#include "exported_enums.h"
 #include "interrupt.h"
 #include "log.h"
 #include "ms_test_helpers.h"
@@ -12,7 +13,6 @@
 #include "steering_indicator.h"
 #include "test_helpers.h"
 #include "unity.h"
-#include "exported_enums.h"
 
 CanStorage s_can_storage;
 
@@ -51,5 +51,4 @@ void test_steering_indicator_working(void) {
   // No event should be raised by the steering indicator
   Event e;
   TEST_ASSERT_NOT_OK(event_process(&e));
-
 }

@@ -11,8 +11,7 @@ static StatusCode prv_handle_steering(const CanMessage *msg, void *context,
   uint16_t control_stalk_analog_state = 0;
   uint16_t control_stalk_digital_state = 0;
 
-  CAN_UNPACK_STEERING_OUTPUT(msg, &control_stalk_analog_state,
-                             &control_stalk_digital_state);
+  CAN_UNPACK_STEERING_OUTPUT(msg, &control_stalk_analog_state, &control_stalk_digital_state);
 
   switch (control_stalk_analog_state) {
     case EE_CONTROL_STALK_ANALOG_DISTANCE_NEUTRAL:
