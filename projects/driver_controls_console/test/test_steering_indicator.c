@@ -42,7 +42,9 @@ void teardown_test(void) {}
 
 void test_steering_indicator_cruise(void) {
   const uint16_t cruise = 123;
-  CAN_TRANSMIT_STEERING_OUTPUT(cruise);
+  const uint16_t control_stalk_analog_state = 0;
+  const uint16_t control_stalk_digital_state = 0;
+  CAN_TRANSMIT_STEERING_OUTPUT(cruise, control_stalk_analog_state, control_stalk_digital_state);
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 

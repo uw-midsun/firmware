@@ -4,6 +4,7 @@
 #include "can_unpack.h"
 #include "cc_input_event.h"
 #include "log.h"
+#include "exported_enums.h"
 
 static StatusCode prv_handle_pedal(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   DriveOutputStorage *storage = context;
@@ -20,6 +21,23 @@ static StatusCode prv_handle_pedal(const CanMessage *msg, void *context, CanAckS
     event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_MECH_BRAKE_PRESSED, mech_brake);
   } else {
     event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_MECH_BRAKE_RELEASED, mech_brake);
+  }
+
+  switch (throttle_state) {
+    case EE_THROTTLE_BRAKE:
+      event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_PEDAL_BRAKE, 0);
+      break;
+    case EE_THROTTLE_COAST:
+      event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_PEDAL_COAST, 0);
+      break;
+    case EE_THROTTLE_ACCEL:
+      event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_PEDAL_ACCEL, 0);
+      break;
+    case EE_THROTTLE_FAULT:
+      event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_PEDAL_FAULT, 0);
+      break;
+    default:
+      break;
   }
 
   return STATUS_CODE_OK;

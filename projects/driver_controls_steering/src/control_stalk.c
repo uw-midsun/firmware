@@ -5,6 +5,8 @@
 #include "log.h"
 #include "sc_cfg.h"
 #include "sc_input_event.h"
+#include "exported_enums.h"
+#include "steering_output.h"
 
 // The A6 control stalks have two types of inputs: analog and digital.
 // Analog inputs are either floating, 2.1818 kOhms to GND, or 681 Ohms to GND. We tie a resistor
@@ -44,6 +46,60 @@ static const GpioAddress s_digital_gpio_addresses[CONTROL_STALK_DIGITAL_INPUTS] 
   SC_CFG_HIGH_BEAM_FWD_PIN, SC_CFG_HIGH_BEAM_BACK_PIN,
 };
 
+typedef int16_t StateId; 
+
+// ADC channel to state
+static const StateId s_analog_mapping[CONTROL_STALK_ANALOG_INPUTS][NUM_CONTROL_STALK_STATES] = {
+  {
+      EE_CONTROL_STALK_ANALOG_DISTANCE_NEUTRAL,
+      EE_CONTROL_STALK_ANALOG_DISTANCE_MINUS,
+      EE_CONTROL_STALK_ANALOG_DISTANCE_PLUS,
+  },
+  {
+      EE_CONTROL_STALK_ANALOG_CC_SPEED_NEUTRAL,
+      EE_CONTROL_STALK_ANALOG_CC_SPEED_MINUS,
+      EE_CONTROL_STALK_ANALOG_CC_SPEED_PLUS,
+  },
+  {
+      EE_CONTROL_STALK_ANALOG_CC_DIGITAL,
+      EE_CONTROL_STALK_ANALOG_CC_CANCEL,
+      EE_CONTROL_STALK_ANALOG_CC_RESUME,
+  },
+  {
+      EE_CONTROL_STALK_ANALOG_CC_TURN_SIGNAL_NONE,
+      EE_CONTROL_STALK_ANALOG_CC_TURN_SIGNAL_RIGHT,
+      EE_CONTROL_STALK_ANALOG_CC_TURN_SIGNAL_LEFT,
+  },
+};
+
+// Active-low
+static const StateId s_digital_mapping[CONTROL_STALK_DIGITAL_INPUTS][NUM_GPIO_STATES] = {
+  {
+      EE_CONTROL_STALK_DIGITAL_CC_SET_RELEASED,
+      EE_CONTROL_STALK_DIGITAL_CC_SET_PRESSED,
+  },
+  {
+      EE_CONTROL_STALK_DIGITAL_CC_OFF,
+      EE_CONTROL_STALK_DIGITAL_CC_ON,
+  },
+  {
+      // TODO(ELEC-461): revert when mech brake added
+      // INPUT_EVENT_STEERING_MECHANICAL_BRAKE_PRESSED,
+      // INPUT_EVENT_STEERING_MECHANICAL_BRAKE_RELEASED,
+      EE_CONTROL_STALK_DIGITAL_CC_LANE_ASSIST_RELEASED,
+      EE_CONTROL_STALK_DIGITAL_CC_LANE_ASSIST_PRESSED,
+      // Mech brake has been added so this should be good (?)
+  },
+  {
+      EE_CONTROL_STALK_DIGITAL_HIGH_BEAM_FWD_RELEASED,
+      EE_CONTROL_STALK_DIGITAL_HIGH_BEAM_FWD_PRESSED,
+  },
+  {
+      EE_CONTROL_STALK_DIGITAL_HIGH_BEAM_BACK_RELEASED,
+      EE_CONTROL_STALK_DIGITAL_HIGH_BEAM_BACK_PRESSED,
+  },
+};
+
 static void prv_analog_cb(AdcChannel channel, void *context) {
   ControlStalk *stalk = context;
   uint16_t reading = 0;
@@ -61,11 +117,17 @@ static void prv_analog_cb(AdcChannel channel, void *context) {
   } else {
     stalk->debounce_counter[channel]++;
   }
+
+  if (stalk->debounce_counter[channel] == CONTROL_STALK_DEBOUNCE_COUNTER_THRESHOLD) {
+    steering_output_update(steering_output_global(), STEERING_OUTPUT_SOURCE_CONTROL_STALK_ANALOG_STATE, s_analog_mapping[channel][state]);
+  }
 }
 
 void prv_digital_cb(const GpioAddress *address, void *context) {
+  StateId *inputStates = context;
   GpioState state;
   gpio_get_state(address, &state);
+  steering_output_update(steering_output_global(), STEERING_OUTPUT_SOURCE_CONTROL_STALK_DIGITAL_STATE, inputStates[state]);
 }
 
 StatusCode control_stalk_init(ControlStalk *stalk) {
@@ -93,7 +155,7 @@ StatusCode control_stalk_init(ControlStalk *stalk) {
     status_ok_or_return(gpio_init_pin(&s_digital_gpio_addresses[pin], &digital_gpio_settings));
     status_ok_or_return(
         gpio_it_register_interrupt(&s_digital_gpio_addresses[pin], &interrupt_settings,
-                                   INTERRUPT_EDGE_RISING_FALLING, prv_digital_cb, NULL));
+                                   INTERRUPT_EDGE_RISING_FALLING, prv_digital_cb, s_digital_mapping[pin]));
   }
 
   // Initialize Analog Pins

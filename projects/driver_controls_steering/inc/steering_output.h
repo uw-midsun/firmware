@@ -15,7 +15,12 @@
 // How often to request state updates and broadcast drive commands
 #define STEERING_OUTPUT_BROADCAST_MS 100
 
-typedef enum { STEERING_OUTPUT_SOURCE_CRUISE, NUM_STEERING_OUTPUT_SOURCES } SteeringOutputSource;
+typedef enum {
+  STEERING_OUTPUT_SOURCE_CRUISE = 0,
+  STEERING_OUTPUT_SOURCE_CONTROL_STALK_ANALOG_STATE,
+  STEERING_OUTPUT_SOURCE_CONTROL_STALK_DIGITAL_STATE,
+  NUM_STEERING_OUTPUT_SOURCES
+} SteeringOutputSource;
 
 typedef struct SteeringOutputStorage {
   int16_t data[NUM_STEERING_OUTPUT_SOURCES];
