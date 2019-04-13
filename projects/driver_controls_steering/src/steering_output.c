@@ -34,9 +34,10 @@ static void prv_broadcast_cb(SoftTimerId timer_id, void *context) {
   // Note that this will usually output stale data from the previous update request
   event_raise(storage->update_req_event, 0);
 
-  CAN_TRANSMIT_STEERING_OUTPUT((uint16_t)storage->data[STEERING_OUTPUT_SOURCE_CRUISE],
-                               (uint16_t)storage->data[STEERING_OUTPUT_SOURCE_CONTROL_STALK_ANALOG_STATE],
-                               (uint16_t)storage->data[STEERING_OUTPUT_SOURCE_CONTROL_STALK_DIGITAL_STATE]);
+  CAN_TRANSMIT_STEERING_OUTPUT(
+      (uint16_t)storage->data[STEERING_OUTPUT_SOURCE_CRUISE],
+      (uint16_t)storage->data[STEERING_OUTPUT_SOURCE_CONTROL_STALK_ANALOG_STATE],
+      (uint16_t)storage->data[STEERING_OUTPUT_SOURCE_CONTROL_STALK_DIGITAL_STATE]);
 
   debug_led_toggle_state(DEBUG_LED_BLUE_A);
 

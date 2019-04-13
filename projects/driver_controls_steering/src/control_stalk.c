@@ -1,11 +1,11 @@
 #include "control_stalk.h"
 #include <string.h>
+#include "exported_enums.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "log.h"
 #include "sc_cfg.h"
 #include "sc_input_event.h"
-#include "exported_enums.h"
 #include "steering_output.h"
 
 // The A6 control stalks have two types of inputs: analog and digital.
@@ -46,7 +46,7 @@ static const GpioAddress s_digital_gpio_addresses[CONTROL_STALK_DIGITAL_INPUTS] 
   SC_CFG_HIGH_BEAM_FWD_PIN, SC_CFG_HIGH_BEAM_BACK_PIN,
 };
 
-typedef int16_t StateId; 
+typedef int16_t StateId;
 
 // ADC channel to state
 static const StateId s_analog_mapping[CONTROL_STALK_ANALOG_INPUTS][NUM_CONTROL_STALK_STATES] = {
@@ -119,7 +119,9 @@ static void prv_analog_cb(AdcChannel channel, void *context) {
   }
 
   if (stalk->debounce_counter[channel] == CONTROL_STALK_DEBOUNCE_COUNTER_THRESHOLD) {
-    steering_output_update(steering_output_global(), STEERING_OUTPUT_SOURCE_CONTROL_STALK_ANALOG_STATE, s_analog_mapping[channel][state]);
+    steering_output_update(steering_output_global(),
+                           STEERING_OUTPUT_SOURCE_CONTROL_STALK_ANALOG_STATE,
+                           s_analog_mapping[channel][state]);
   }
 }
 
@@ -127,7 +129,8 @@ void prv_digital_cb(const GpioAddress *address, void *context) {
   StateId *inputStates = context;
   GpioState state;
   gpio_get_state(address, &state);
-  steering_output_update(steering_output_global(), STEERING_OUTPUT_SOURCE_CONTROL_STALK_DIGITAL_STATE, inputStates[state]);
+  steering_output_update(steering_output_global(),
+                         STEERING_OUTPUT_SOURCE_CONTROL_STALK_DIGITAL_STATE, inputStates[state]);
 }
 
 StatusCode control_stalk_init(ControlStalk *stalk) {
@@ -153,9 +156,9 @@ StatusCode control_stalk_init(ControlStalk *stalk) {
   // Initialize Digital Pins with Interrupts
   for (size_t pin = 0; pin < CONTROL_STALK_DIGITAL_INPUTS; pin++) {
     status_ok_or_return(gpio_init_pin(&s_digital_gpio_addresses[pin], &digital_gpio_settings));
-    status_ok_or_return(
-        gpio_it_register_interrupt(&s_digital_gpio_addresses[pin], &interrupt_settings,
-                                   INTERRUPT_EDGE_RISING_FALLING, prv_digital_cb, s_digital_mapping[pin]));
+    status_ok_or_return(gpio_it_register_interrupt(
+        &s_digital_gpio_addresses[pin], &interrupt_settings, INTERRUPT_EDGE_RISING_FALLING,
+        prv_digital_cb, s_digital_mapping[pin]));
   }
 
   // Initialize Analog Pins

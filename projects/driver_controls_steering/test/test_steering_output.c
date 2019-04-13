@@ -24,7 +24,8 @@ static StatusCode prv_handle_output(const CanMessage *msg, void *context, CanAck
     uint16_t cruise = 0;
     uint16_t control_stalk_analog_state = 0;
     uint16_t control_stalk_digital_state = 0;
-    TEST_ASSERT_OK(CAN_UNPACK_STEERING_OUTPUT(msg, &cruise, &control_stalk_analog_state, &control_stalk_digital_state));
+    TEST_ASSERT_OK(CAN_UNPACK_STEERING_OUTPUT(msg, &cruise, &control_stalk_analog_state,
+                                              &control_stalk_digital_state));
     TEST_ASSERT_EQUAL_UINT(s_cruise_output, cruise);
     *received = true;
   }

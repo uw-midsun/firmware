@@ -114,12 +114,14 @@
     status;                                                                                        \
   })
 
-#define CAN_TRANSMIT_STEERING_OUTPUT(cruise_control_u16, control_stalk_analog_state_u16, control_stalk_digital_state_u16)      \
-  ({                                                                                                                           \
-    CanMessage msg = { 0 };                                                                                                    \
-    CAN_PACK_STEERING_OUTPUT(&msg, (cruise_control_u16), (control_stalk_analog_state_u16), (control_stalk_digital_state_u16)); \
-    StatusCode status = can_transmit(&msg, NULL);                                                                              \
-    status;                                                                                                                    \
+#define CAN_TRANSMIT_STEERING_OUTPUT(cruise_control_u16, control_stalk_analog_state_u16,   \
+                                     control_stalk_digital_state_u16)                      \
+  ({                                                                                       \
+    CanMessage msg = { 0 };                                                                \
+    CAN_PACK_STEERING_OUTPUT(&msg, (cruise_control_u16), (control_stalk_analog_state_u16), \
+                             (control_stalk_digital_state_u16));                           \
+    StatusCode status = can_transmit(&msg, NULL);                                          \
+    status;                                                                                \
   })
 
 #define CAN_TRANSMIT_PEDAL_OUTPUT(throttle_u16, throttle_state_u16, mech_brake_state_u16)      \
