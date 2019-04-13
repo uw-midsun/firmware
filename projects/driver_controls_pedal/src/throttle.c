@@ -91,8 +91,7 @@ static bool prv_channels_synced(int16_t reading_main, int16_t reading_secondary,
 }
 
 // The periodic callback which checks if readings are up to date and channels are in sync.
-// If they are, the pedal output is updated
-// If not, a pedal timout event is raised.
+// If they are, the pedal output is updated with the throttle position and throttle state
 static void prv_update_pedal_output_timer_callback(SoftTimerId timer_id, void *context) {
   ThrottleStorage *storage = context;
   int16_t reading_main = INT16_MIN;
@@ -125,6 +124,21 @@ static void prv_update_pedal_output_timer_callback(SoftTimerId timer_id, void *c
     pedal_output_update(pedal_output_global(), PEDAL_OUTPUT_SOURCE_THROTTLE_STATE,
                         EE_THROTTLE_FAULT);
   }
+
+  ThrottlePosition position = { 0 };
+  StatusCode status = throttle_get_position(throttle_global(), &position);
+  if (!status_ok(status)) {
+    return;
+  }
+
+  const int16_t zone_multiplier[NUM_THROTTLE_ZONES] = {
+    [THROTTLE_ZONE_BRAKE] = -1,
+    [THROTTLE_ZONE_COAST] = 0,
+    [THROTTLE_ZONE_ACCEL] = 1,
+  };
+
+  int16_t throttle_position = zone_multiplier[position.zone] * position.numerator;
+  pedal_output_update(pedal_output_global(), PEDAL_OUTPUT_SOURCE_THROTTLE, throttle_position);
 
   soft_timer_start_millis(THROTTLE_UPDATE_PERIOD_MS, prv_update_pedal_output_timer_callback,
                           context, NULL);

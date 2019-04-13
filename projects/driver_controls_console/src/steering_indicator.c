@@ -8,14 +8,11 @@ static StatusCode prv_handle_steering(const CanMessage *msg, void *context,
                                       CanAckStatus *ack_reply) {
   DriveOutputStorage *storage = context;
 
-  uint16_t cruise = 0;
   uint16_t control_stalk_analog_state = 0;
   uint16_t control_stalk_digital_state = 0;
 
-  CAN_UNPACK_STEERING_OUTPUT(msg, &cruise, &control_stalk_analog_state,
+  CAN_UNPACK_STEERING_OUTPUT(msg, &control_stalk_analog_state,
                              &control_stalk_digital_state);
-
-  storage->data[DRIVE_OUTPUT_SOURCE_CRUISE] = (int16_t)cruise;
 
   switch (control_stalk_analog_state) {
     case EE_CONTROL_STALK_ANALOG_DISTANCE_NEUTRAL:

@@ -12,6 +12,7 @@
 #include "steering_indicator.h"
 #include "test_helpers.h"
 #include "unity.h"
+#include "exported_enums.h"
 
 CanStorage s_can_storage;
 
@@ -40,11 +41,10 @@ void setup_test(void) {
 
 void teardown_test(void) {}
 
-void test_steering_indicator_cruise(void) {
-  const uint16_t cruise = 123;
-  const uint16_t control_stalk_analog_state = 0;
-  const uint16_t control_stalk_digital_state = 0;
-  CAN_TRANSMIT_STEERING_OUTPUT(cruise, control_stalk_analog_state, control_stalk_digital_state);
+void test_steering_indicator_working(void) {
+  const uint16_t control_stalk_analog_state = 123;
+  const uint16_t control_stalk_digital_state = 123;
+  CAN_TRANSMIT_STEERING_OUTPUT(control_stalk_analog_state, control_stalk_digital_state);
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
@@ -52,6 +52,4 @@ void test_steering_indicator_cruise(void) {
   Event e;
   TEST_ASSERT_NOT_OK(event_process(&e));
 
-  DriveOutputStorage *storage = drive_output_global();
-  TEST_ASSERT_EQUAL(cruise, storage->data[DRIVE_OUTPUT_SOURCE_CRUISE]);
 }

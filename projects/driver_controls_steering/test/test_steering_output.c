@@ -15,18 +15,19 @@
 
 static CanStorage s_can_storage;
 static SteeringOutputStorage s_storage;
-static int16_t s_cruise_output;
+static int16_t s_control_stalk_analog_output;
+static int16_t s_control_stalk_digital_output;
 
 static StatusCode prv_handle_output(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
   bool *received = context;
 
   if (*received == false) {
-    uint16_t cruise = 0;
     uint16_t control_stalk_analog_state = 0;
     uint16_t control_stalk_digital_state = 0;
-    TEST_ASSERT_OK(CAN_UNPACK_STEERING_OUTPUT(msg, &cruise, &control_stalk_analog_state,
+    TEST_ASSERT_OK(CAN_UNPACK_STEERING_OUTPUT(msg, &control_stalk_analog_state,
                                               &control_stalk_digital_state));
-    TEST_ASSERT_EQUAL_UINT(s_cruise_output, cruise);
+    TEST_ASSERT_EQUAL_UINT(s_control_stalk_analog_output, control_stalk_analog_state);
+    TEST_ASSERT_EQUAL_UINT(s_control_stalk_digital_output, control_stalk_digital_state);
     *received = true;
   }
 
@@ -95,9 +96,14 @@ void test_steering_output_working(void) {
 
 void test_steering_output_values(void) {
   // Test that s_storage is updated correctly
-  s_cruise_output = 81;
-  steering_output_update(&s_storage, STEERING_OUTPUT_SOURCE_CRUISE, s_cruise_output);
-  TEST_ASSERT_EQUAL(s_cruise_output, s_storage.data[STEERING_OUTPUT_SOURCE_CRUISE]);
+  s_control_stalk_analog_output = 70;
+  s_control_stalk_digital_output = 80;
+
+  steering_output_update(&s_storage, STEERING_OUTPUT_SOURCE_CONTROL_STALK_ANALOG_STATE, s_control_stalk_analog_output);
+  steering_output_update(&s_storage, STEERING_OUTPUT_SOURCE_CONTROL_STALK_DIGITAL_STATE, s_control_stalk_digital_output);
+
+  TEST_ASSERT_EQUAL(s_control_stalk_analog_output, s_storage.data[STEERING_OUTPUT_SOURCE_CONTROL_STALK_ANALOG_STATE]);
+  TEST_ASSERT_EQUAL(s_control_stalk_digital_output, s_storage.data[STEERING_OUTPUT_SOURCE_CONTROL_STALK_DIGITAL_STATE]);
 
   // clear the event queue
   Event e;
