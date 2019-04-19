@@ -71,5 +71,8 @@ StatusCode button_led_fsm_create(Fsm *fsm, GpioExpanderStorage *expander_storage
 
   fsm_init(fsm, fsm_name, &button_led_off, &s_fsm_ctxs[button_id]);
 
+  // Initialize with low
+  gpio_expander_set_state(expander_storage, pin, GPIO_STATE_LOW);
+
   return STATUS_CODE_OK;
 }

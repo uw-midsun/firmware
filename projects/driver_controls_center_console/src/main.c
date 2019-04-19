@@ -29,7 +29,10 @@ static GpioExpanderStorage s_expander;
 
 typedef struct {
   GpioAddress address;
-  EECenterConsoleDigitalInput position;
+  // CAN event to raise
+  EECenterConsoleDigitalInput can_event;
+  // Local event to raise
+  CenterConsoleEventsButton local_event;
   CenterConsoleButtonLed button;
 } CenterConsoleInput;
 
@@ -47,50 +50,63 @@ static GpioExpanderPin s_expander_pin[NUM_CENTER_CONSOLE_BUTTON_LEDS] = {
 // Toggle buttons are either on/off
 static CenterConsoleInput s_toggle_button_input[] = {
   {
-      .address = CENTER_CONSOLE_CONFIG_PIN_LOW_BEAM,  //
-      .button = CENTER_CONSOLE_BUTTON_LED_LOW_BEAMS   //
+      .address = CENTER_CONSOLE_CONFIG_PIN_LOW_BEAM,           //
+      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_LOW_BEAM,   //
+      .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_LOW_BEAM  //
   },
-  { .address = CENTER_CONSOLE_CONFIG_PIN_HAZARDS,  //
-    .button = CENTER_CONSOLE_BUTTON_LED_HAZARDS },
-  { .address = CENTER_CONSOLE_CONFIG_PIN_DRL,  //
-    .button = CENTER_CONSOLE_BUTTON_LED_DRL },
-  { .address = CENTER_CONSOLE_CONFIG_PIN_POWER,  //
-    .button = CENTER_CONSOLE_BUTTON_LED_PWR }
+  {
+      .address = CENTER_CONSOLE_CONFIG_PIN_HAZARDS,           //
+      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_HAZARDS,   //
+      .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_HAZARDS  //
+  },
+  {
+      .address = CENTER_CONSOLE_CONFIG_PIN_DRL,           //
+      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_DRL,   //
+      .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_DRL  //
+  },
+  {
+      .address = CENTER_CONSOLE_CONFIG_PIN_POWER,           //
+      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER,   //
+      .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER  //
+  }
 };
 
 static CenterConsoleInput s_radio_button_group[] = {
   {
-      .address = CENTER_CONSOLE_CONFIG_PIN_DRIVE,        //
-      .position = EE_CENTER_CONSOLE_DIGITAL_INPUT_DRIVE  //
+      .address = CENTER_CONSOLE_CONFIG_PIN_DRIVE,               //
+      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_DRIVE,       //
+      .local_event = CENTER_CONSOLE_EVENT_BUTTON_DRIVE_PRESSED  //
   },
   {
-      .address = CENTER_CONSOLE_CONFIG_PIN_NEUTRAL,        //
-      .position = EE_CENTER_CONSOLE_DIGITAL_INPUT_NEUTRAL  //
+      .address = CENTER_CONSOLE_CONFIG_PIN_NEUTRAL,               //
+      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_NEUTRAL,       //
+      .local_event = CENTER_CONSOLE_EVENT_BUTTON_NEUTRAL_PRESSED  //
   },
   {
-      .address = CENTER_CONSOLE_CONFIG_PIN_REVERSE,        //
-      .position = EE_CENTER_CONSOLE_DIGITAL_INPUT_REVERSE  //
+      .address = CENTER_CONSOLE_CONFIG_PIN_REVERSE,               //
+      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_REVERSE,       //
+      .local_event = CENTER_CONSOLE_EVENT_BUTTON_REVERSE_PRESSED  //
   }
 };
 
 void prv_gpio_toggle_callback(const GpioAddress *address, void *context) {
-  // TODO: Do we need to debounce the input?
-  EECenterConsoleDigitalInput *button = context;
-  event_raise(CENTER_CONSOLE_EVENT_BUTTON_TOGGLE_STATE, *button);
-
-  LOG_DEBUG("ISR Button: %d\n", *button);
+  // Simple toggles just toggle state with a shared event,
+  // CENTER_CONSOLE_EVENT_BUTTON_TOGGLE_STATE, with the data field as the
+  // actual IO we are toggling
+  CenterConsoleInput *toggle_button = context;
+  event_raise(CENTER_CONSOLE_EVENT_BUTTON_TOGGLE_STATE, toggle_button->local_event);
 
   // Raise event via CAN message
-  CAN_TRANSMIT_CENTER_CONSOLE_EVENT(*button, 0);
+  CAN_TRANSMIT_CENTER_CONSOLE_EVENT(toggle_button->can_event, 0);
 }
 
 void prv_gpio_radio_callback(const GpioAddress *address, void *context) {
-  // TODO: Do we need to debounce the input?
-  EECenterConsoleDigitalInput *button = context;
-  event_raise(*button, 0);
+  // Radio buttons switch state by using the event id and passing 0 data
+  CenterConsoleInput *toggle_button = context;
+  event_raise(toggle_button->local_event, 0);
 
   // Raise event via CAN message
-  CAN_TRANSMIT_CENTER_CONSOLE_EVENT(*button, 0);
+  CAN_TRANSMIT_CENTER_CONSOLE_EVENT(toggle_button->can_event, 0);
 }
 
 void prv_adc_monitor(AdcChannel adc_channel, void *context) {
@@ -136,7 +152,7 @@ int main() {
     // Initialize GPIO Interrupts to raise events to change LED status
     gpio_it_register_interrupt(&s_toggle_button_input[i].address, &interrupt_settings,
                                INTERRUPT_EDGE_RISING, prv_gpio_toggle_callback,
-                               &s_toggle_button_input[i].button);
+                               &s_toggle_button_input[i]);
   }
   for (size_t i = 0; i < SIZEOF_ARRAY(s_radio_button_group); ++i) {
     gpio_init_pin(&s_radio_button_group[i].address, &button_input_settings);
@@ -146,9 +162,9 @@ int main() {
       .priority = INTERRUPT_PRIORITY_NORMAL  //
     };
     // Initialize GPIO Interrupts to raise events to change LED status
-    gpio_it_register_interrupt(&s_toggle_button_input[i].address, &interrupt_settings,
+    gpio_it_register_interrupt(&s_radio_button_group[i].address, &interrupt_settings,
                                INTERRUPT_EDGE_RISING, prv_gpio_radio_callback,
-                               &s_toggle_button_input[i].position);
+                               &s_radio_button_group[i]);
   }
 
   // Use I/O Expander for button LEDs
