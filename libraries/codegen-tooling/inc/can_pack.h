@@ -54,10 +54,6 @@
 #define CAN_PACK_POWERTRAIN_HEARTBEAT(msg_ptr) \
   can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_CHAOS, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT)
 
-#define CAN_PACK_MOTOR_CONTROLLER_RESET(msg_ptr)                    \
-  can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, \
-                      SYSTEM_CAN_MESSAGE_MOTOR_CONTROLLER_RESET)
-
 #define CAN_PACK_OVUV_DCDC_AUX(msg_ptr, dcdc_ov_flag_u8, dcdc_uv_flag_u8, aux_bat_ov_flag_u8, \
                                aux_bat_uv_flag_u8)                                            \
   can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_CHAOS, SYSTEM_CAN_MESSAGE_OVUV_DCDC_AUX, 4,   \
@@ -123,10 +119,15 @@
                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                  \
                    CAN_PACK_IMPL_EMPTY)
 
-#define CAN_PACK_STEERING_ANGLE(msg_ptr, steering_angle_u16)                    \
-  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,               \
-                    SYSTEM_CAN_MESSAGE_STEERING_ANGLE, 2, (steering_angle_u16), \
-                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
+#define CAN_PACK_STEERING_EVENT(msg_ptr, event_id_u16, data_u16)                      \
+  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,                     \
+                    SYSTEM_CAN_MESSAGE_STEERING_EVENT, 4, (event_id_u16), (data_u16), \
+                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
+
+#define CAN_PACK_CENTER_CONSOLE_EVENT(msg_ptr, event_id_u16, data_u16)                      \
+  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,                           \
+                    SYSTEM_CAN_MESSAGE_CENTER_CONSOLE_EVENT, 4, (event_id_u16), (data_u16), \
+                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_BATTERY_SOC(msg_ptr) \
   can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_PLUTUS, SYSTEM_CAN_MESSAGE_BATTERY_SOC)

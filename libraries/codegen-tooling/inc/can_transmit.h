@@ -79,14 +79,6 @@
     status;                                            \
   })
 
-#define CAN_TRANSMIT_MOTOR_CONTROLLER_RESET()     \
-  ({                                              \
-    CanMessage msg = { 0 };                       \
-    CAN_PACK_MOTOR_CONTROLLER_RESET(&msg);        \
-    StatusCode status = can_transmit(&msg, NULL); \
-    status;                                       \
-  })
-
 #define CAN_TRANSMIT_OVUV_DCDC_AUX(dcdc_ov_flag_u8, dcdc_uv_flag_u8, aux_bat_ov_flag_u8,     \
                                    aux_bat_uv_flag_u8)                                       \
   ({                                                                                         \
@@ -187,12 +179,20 @@
     status;                                             \
   })
 
-#define CAN_TRANSMIT_STEERING_ANGLE(steering_angle_u16)  \
-  ({                                                     \
-    CanMessage msg = { 0 };                              \
-    CAN_PACK_STEERING_ANGLE(&msg, (steering_angle_u16)); \
-    StatusCode status = can_transmit(&msg, NULL);        \
-    status;                                              \
+#define CAN_TRANSMIT_STEERING_EVENT(event_id_u16, data_u16)    \
+  ({                                                           \
+    CanMessage msg = { 0 };                                    \
+    CAN_PACK_STEERING_EVENT(&msg, (event_id_u16), (data_u16)); \
+    StatusCode status = can_transmit(&msg, NULL);              \
+    status;                                                    \
+  })
+
+#define CAN_TRANSMIT_CENTER_CONSOLE_EVENT(event_id_u16, data_u16)    \
+  ({                                                                 \
+    CanMessage msg = { 0 };                                          \
+    CAN_PACK_CENTER_CONSOLE_EVENT(&msg, (event_id_u16), (data_u16)); \
+    StatusCode status = can_transmit(&msg, NULL);                    \
+    status;                                                          \
   })
 
 #define CAN_TRANSMIT_BATTERY_SOC()                \
