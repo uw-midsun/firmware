@@ -22,17 +22,20 @@
 #include "button_led.h"
 #include "button_led_fsm.h"
 #include "button_led_radio.h"
+
 static CanStorage s_can_storage = { 0 };
 static GpioExpanderStorage s_expander;
 
 #define CENTER_CONSOLE_CAN_OUTPUT_PERIOD_MILLIS 50u
 
 typedef struct {
+  // GPIO pin
   GpioAddress address;
   // CAN event to raise
   EECenterConsoleDigitalInput can_event;
   // Local event to raise
   CenterConsoleEventsButton local_event;
+  // The reference number for the pin
   CenterConsoleButtonLed button;
 } CenterConsoleInput;
 
@@ -202,14 +205,28 @@ int main() {
   };
   GpioAddress monitor_5v = CENTER_CONSOLE_CONFIG_PIN_5V_MONITOR;
   gpio_init_pin(&monitor_5v, &adc_input_settings);
-  /* adc_init(ADC_MODE_CONTINUOUS); */
 
-  /* uint16_t rail_monitor_5v = 0u; */
-  /* adc_set_channel(ADC_CHANNEL_9, true); */
-  /* adc_register_callback(ADC_CHANNEL_9, prv_adc_monitor, (void *)&rail_monitor_5v); */
+  // TODO: Why doesn't continuous mode work smh
+  // adc_init(ADC_MODE_CONTINUOUS);
 
-  // TODO: Enable the Pi
-  // TODO: Enable the display
+  // uint16_t rail_monitor_5v = 0u;
+  // adc_set_channel(ADC_CHANNEL_9, true);
+  // adc_register_callback(ADC_CHANNEL_9, prv_adc_monitor, (void *)&rail_monitor_5v);
+
+  GpioSettings enable_output_rail = {
+    .direction = GPIO_DIR_OUT,
+    .state = GPIO_STATE_HIGH,
+    .resistor = GPIO_RES_NONE,
+    .alt_function = GPIO_ALTFN_NONE,
+  };
+  // Enable 5V rail
+  GpioAddress rail_5v = CENTER_CONSOLE_CONFIG_PIN_5V_ENABLE;
+  gpio_init_pin(&rail_5v, &enable_output_rail);
+
+  // Enable Driver Display
+  GpioAddress display_rail = CENTER_CONSOLE_CONFIG_PIN_DISPLAY_ENABLE;
+  gpio_init_pin(&display_rail, &enable_output_rail);
+
   Event e = { 0 };
   while (true) {
     while (status_ok(event_process(&e))) {
