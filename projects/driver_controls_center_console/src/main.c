@@ -22,7 +22,7 @@
 #include "button_led.h"
 #include "button_led_fsm.h"
 #include "button_led_radio.h"
-static CanStorage s_can_storage;
+static CanStorage s_can_storage = { 0 };
 static GpioExpanderStorage s_expander;
 
 #define CENTER_CONSOLE_CAN_OUTPUT_PERIOD_MILLIS 50u
@@ -30,6 +30,7 @@ static GpioExpanderStorage s_expander;
 typedef struct {
   GpioAddress address;
   EECenterConsoleDigitalInput position;
+  CenterConsoleButtonLed button;
 } CenterConsoleInput;
 
 static GpioExpanderPin s_expander_pin[NUM_CENTER_CONSOLE_BUTTON_LEDS] = {
@@ -46,21 +47,15 @@ static GpioExpanderPin s_expander_pin[NUM_CENTER_CONSOLE_BUTTON_LEDS] = {
 // Toggle buttons are either on/off
 static CenterConsoleInput s_toggle_button_input[] = {
   {
-      .address = CENTER_CONSOLE_CONFIG_PIN_LOW_BEAM,        //
-      .position = EE_CENTER_CONSOLE_DIGITAL_INPUT_LOW_BEAM  //
+      .address = CENTER_CONSOLE_CONFIG_PIN_LOW_BEAM,  //
+      .button = CENTER_CONSOLE_BUTTON_LED_LOW_BEAMS   //
   },
-  {
-      .address = CENTER_CONSOLE_CONFIG_PIN_HAZARDS,        //
-      .position = EE_CENTER_CONSOLE_DIGITAL_INPUT_HAZARDS  //
-  },
-  {
-      .address = CENTER_CONSOLE_CONFIG_PIN_DRL,        //
-      .position = EE_CENTER_CONSOLE_DIGITAL_INPUT_DRL  //
-  },
-  {
-      .address = CENTER_CONSOLE_CONFIG_PIN_POWER,        //
-      .position = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER  //
-  }
+  { .address = CENTER_CONSOLE_CONFIG_PIN_HAZARDS,  //
+    .button = CENTER_CONSOLE_BUTTON_LED_HAZARDS },
+  { .address = CENTER_CONSOLE_CONFIG_PIN_DRL,  //
+    .button = CENTER_CONSOLE_BUTTON_LED_DRL },
+  { .address = CENTER_CONSOLE_CONFIG_PIN_POWER,  //
+    .button = CENTER_CONSOLE_BUTTON_LED_PWR }
 };
 
 static CenterConsoleInput s_radio_button_group[] = {
@@ -83,6 +78,8 @@ void prv_gpio_toggle_callback(const GpioAddress *address, void *context) {
   EECenterConsoleDigitalInput *button = context;
   event_raise(CENTER_CONSOLE_EVENT_BUTTON_TOGGLE_STATE, *button);
 
+  LOG_DEBUG("ISR Button: %d\n", *button);
+
   // Raise event via CAN message
   CAN_TRANSMIT_CENTER_CONSOLE_EVENT(*button, 0);
 }
@@ -100,7 +97,7 @@ void prv_adc_monitor(AdcChannel adc_channel, void *context) {
   uint16_t *rail_monitor_5v = context;
   adc_read_converted(adc_channel, rail_monitor_5v);
 
-  // TODO: Any logic here to monitor 5V rail and raise appropriate event
+  LOG_DEBUG("adc\n");  // TODO: Any logic here to monitor 5V rail and raise appropriate event
 }
 
 int main() {
@@ -138,8 +135,8 @@ int main() {
     };
     // Initialize GPIO Interrupts to raise events to change LED status
     gpio_it_register_interrupt(&s_toggle_button_input[i].address, &interrupt_settings,
-                               INTERRUPT_EDGE_FALLING, prv_gpio_toggle_callback,
-                               &s_toggle_button_input[i].position);
+                               INTERRUPT_EDGE_RISING, prv_gpio_toggle_callback,
+                               &s_toggle_button_input[i].button);
   }
   for (size_t i = 0; i < SIZEOF_ARRAY(s_radio_button_group); ++i) {
     gpio_init_pin(&s_radio_button_group[i].address, &button_input_settings);
@@ -150,7 +147,7 @@ int main() {
     };
     // Initialize GPIO Interrupts to raise events to change LED status
     gpio_it_register_interrupt(&s_toggle_button_input[i].address, &interrupt_settings,
-                               INTERRUPT_EDGE_FALLING, prv_gpio_radio_callback,
+                               INTERRUPT_EDGE_RISING, prv_gpio_radio_callback,
                                &s_toggle_button_input[i].position);
   }
 
@@ -181,7 +178,6 @@ int main() {
   button_led_radio_init(&s_expander, &radio_settings);
 
   // Enable 5V monitor
-  adc_init(ADC_MODE_CONTINUOUS);
   GpioSettings adc_input_settings = {
     .direction = GPIO_DIR_IN,           //
     .state = GPIO_STATE_LOW,            //
@@ -190,10 +186,11 @@ int main() {
   };
   GpioAddress monitor_5v = CENTER_CONSOLE_CONFIG_PIN_5V_MONITOR;
   gpio_init_pin(&monitor_5v, &adc_input_settings);
+  /* adc_init(ADC_MODE_CONTINUOUS); */
 
-  uint16_t rail_monitor_5v = 0u;
-  adc_set_channel(ADC_CHANNEL_9, true);
-  adc_register_callback(ADC_CHANNEL_9, prv_adc_monitor, (void *)&rail_monitor_5v);
+  /* uint16_t rail_monitor_5v = 0u; */
+  /* adc_set_channel(ADC_CHANNEL_9, true); */
+  /* adc_register_callback(ADC_CHANNEL_9, prv_adc_monitor, (void *)&rail_monitor_5v); */
 
   // TODO: Enable the Pi
   // TODO: Enable the display

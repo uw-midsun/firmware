@@ -4,7 +4,8 @@
 #include "fsm.h"
 #include "gpio.h"
 
-static Fsm s_button_led_fsms[NUM_CENTER_CONSOLE_BUTTON_LEDS];
+#include "log.h"
+static Fsm s_button_led_fsms[NUM_CENTER_CONSOLE_BUTTON_LEDS] = { 0 };
 
 void button_led_init(GpioExpanderStorage *storage, GpioExpanderPin *pins) {
   button_led_fsm_init();

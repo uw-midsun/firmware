@@ -4,6 +4,7 @@
 #include "gpio.h"
 #include "input_event.h"
 
+#include "log.h"
 typedef struct ButtonFsmCtx {
   uint8_t button_id;
   GpioExpanderPin pin;
@@ -16,17 +17,21 @@ static ButtonFsmCtx s_fsm_ctxs[NUM_CENTER_CONSOLE_BUTTON_LEDS];
 // data field should be the ID of the FSM that needs to be transitioned.
 static bool prv_guard_select_button(const Fsm *fsm, const Event *e, void *context) {
   ButtonFsmCtx *fsm_ctx = context;
+
+  LOG_DEBUG("Data: %d Button ID: %d\n", e->data, fsm_ctx->button_id);
   return e->data == fsm_ctx->button_id;
 }
 
 static void prv_button_led_on(Fsm *fsm, const Event *e, void *context) {
   ButtonFsmCtx *button_fsm_ctx = context;
+  LOG_DEBUG("LED On\n");
 
   gpio_expander_set_state(button_fsm_ctx->expander_storage, button_fsm_ctx->pin, GPIO_STATE_HIGH);
 }
 
 static void prv_button_led_off(Fsm *fsm, const Event *e, void *context) {
   ButtonFsmCtx *button_fsm_ctx = context;
+  LOG_DEBUG("LED Off\n");
 
   gpio_expander_set_state(button_fsm_ctx->expander_storage, button_fsm_ctx->pin, GPIO_STATE_LOW);
 }
@@ -45,50 +50,9 @@ FSM_STATE_TRANSITION(button_led_on) {
 
 FSM_STATE_TRANSITION(button_led_off) {
   FSM_ADD_GUARDED_TRANSITION(CENTER_CONSOLE_EVENT_BUTTON_TOGGLE_STATE, prv_guard_select_button,
-                             button_led_off);
+                             button_led_on);
 }
 
-// Toggle Button Groups (like the Direction Selector Button Group)
-//
-// * Drive
-// * Neutral
-// * Reverse
-//
-// +-----+      +----------+
-// | Off |<---->| Option 1 |
-// +-----+      +----------+
-//    ^              ^
-//    |              |
-//    |              v
-//    |         +----------+
-//    +-------->| Option 2 |
-//              +----------+
-FSM_DECLARE_STATE(button_group_neutral_on);
-FSM_DECLARE_STATE(button_group_drive_on);
-FSM_DECLARE_STATE(button_group_reverse_on);
-
-FSM_STATE_TRANSITION(button_group_neutral_on) {
-  FSM_ADD_GUARDED_TRANSITION(CENTER_CONSOLE_EVENT_BUTTON_DRIVE_PRESSED, prv_guard_select_button,
-                             button_group_drive_on);
-  FSM_ADD_GUARDED_TRANSITION(CENTER_CONSOLE_EVENT_BUTTON_NEUTRAL_PRESSED, prv_guard_select_button,
-                             button_group_neutral_on);
-  FSM_ADD_GUARDED_TRANSITION(CENTER_CONSOLE_EVENT_BUTTON_REVERSE_PRESSED, prv_guard_select_button,
-                             button_group_reverse_on);
-}
-
-FSM_STATE_TRANSITION(button_group_drive_on) {
-  FSM_ADD_GUARDED_TRANSITION(CENTER_CONSOLE_EVENT_BUTTON_NEUTRAL_PRESSED, prv_guard_select_button,
-                             button_group_neutral_on);
-  FSM_ADD_GUARDED_TRANSITION(CENTER_CONSOLE_EVENT_BUTTON_REVERSE_PRESSED, prv_guard_select_button,
-                             button_group_reverse_on);
-}
-
-FSM_STATE_TRANSITION(button_group_reverse_on) {
-  FSM_ADD_GUARDED_TRANSITION(CENTER_CONSOLE_EVENT_BUTTON_DRIVE_PRESSED, prv_guard_select_button,
-                             button_group_drive_on);
-  FSM_ADD_GUARDED_TRANSITION(CENTER_CONSOLE_EVENT_BUTTON_NEUTRAL_PRESSED, prv_guard_select_button,
-                             button_group_neutral_on);
-}
 void button_led_fsm_init(void) {
   fsm_state_init(button_led_on, prv_button_led_on);
   fsm_state_init(button_led_off, prv_button_led_off);
