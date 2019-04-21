@@ -25,7 +25,7 @@ SCRIPT_DIR := $(PLATFORM_DIR)/scripts
 CDEFINES := USE_STDPERIPH_DRIVER STM32F072 HSE_VALUE=32000000
 CFLAGS := -Wall -Wextra -Werror -g3 -Os -std=c11 -Wno-discarded-qualifiers \
 					-Wno-unused-variable -Wno-unused-parameter -Wsign-conversion -Wpointer-arith \
-					-ffunction-sections -fdata-sections \
+					-ffunction-sections -fdata-sections -flto\
 					$(ARCH_CFLAGS) $(addprefix -D,$(CDEFINES))
 
 # Linker flags
@@ -41,7 +41,7 @@ OPENOCD_CFG := -s $(OPENOCD_SCRIPT_DIR) \
                -f target/stm32f0x.cfg \
                -c "$$(python3 $(SCRIPT_DIR)/select_programmer.py $(SERIAL))" \
                -f $(SCRIPT_DIR)/stm32f0-openocd.cfg \
-               -c 'stm32f0x.cpu configure -rtos FreeRTOS'
+               -c 'stm32f0x.cpu configure -rtos auto'
 
 # Platform targets
 .PHONY: program gdb target
