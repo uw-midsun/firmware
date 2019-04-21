@@ -66,12 +66,14 @@ static CenterConsoleInput s_toggle_button_input[] = {
       .address = CENTER_CONSOLE_CONFIG_PIN_DRL,           //
       .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_DRL,   //
       .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_DRL  //
-  },
-  {
-      .address = CENTER_CONSOLE_CONFIG_PIN_POWER,           //
-      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER,   //
-      .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER  //
   }
+};
+// TODO: Move this into the toggle button array once the pin gets moved to a
+// different EXTI line.
+static CenterConsoleInput s_power_input = {
+    .address = CENTER_CONSOLE_CONFIG_PIN_POWER,           //
+    .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER,   //
+    .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER  //
 };
 
 static CenterConsoleInput s_radio_button_group[] = {
@@ -98,6 +100,7 @@ void prv_gpio_toggle_callback(const GpioAddress *address, void *context) {
   // actual IO we are toggling
   CenterConsoleInput *toggle_button = context;
   event_raise(CENTER_CONSOLE_EVENT_BUTTON_TOGGLE_STATE, toggle_button->local_event);
+  LOG_DEBUG("Callback called\n");
 
   // Raise event via CAN message
   CAN_TRANSMIT_CENTER_CONSOLE_EVENT(toggle_button->can_event, 0);
@@ -157,6 +160,17 @@ int main() {
                                INTERRUPT_EDGE_RISING, prv_gpio_toggle_callback,
                                &s_toggle_button_input[i]);
   }
+  // TODO: Move this into the above once this gets fixed in hardware
+  gpio_init_pin(&s_power_input.address, &button_input_settings);
+  InterruptSettings interrupt_settings = {
+    .type = INTERRUPT_TYPE_INTERRUPT,      //
+    .priority = INTERRUPT_PRIORITY_NORMAL  //
+  };
+  // Initialize GPIO Interrupts to raise events to change LED status
+  gpio_it_register_interrupt(&s_power_input.address, &interrupt_settings,
+                             INTERRUPT_EDGE_RISING, prv_gpio_toggle_callback,
+                             &s_power_input);
+
   for (size_t i = 0; i < SIZEOF_ARRAY(s_radio_button_group); ++i) {
     gpio_init_pin(&s_radio_button_group[i].address, &button_input_settings);
 
@@ -227,8 +241,27 @@ int main() {
   GpioAddress display_rail = CENTER_CONSOLE_CONFIG_PIN_DISPLAY_ENABLE;
   gpio_init_pin(&display_rail, &enable_output_rail);
 
+  // Since LOW_BEAM (PA0) and POWER (PB0) share the same EXTI line, we can't
+  // register a separate ISR to handle based on (Port, Pin). The EXTIx line
+  // is multiplexed, and so you can't trigger the interrupt from multiple
+  // ports.
+  //
+  // As a workaround, we poll.
+  GpioAddress addr = CENTER_CONSOLE_CONFIG_PIN_POWER;
+  GpioState prev_state = GPIO_STATE_LOW;
+  GpioState state = GPIO_STATE_LOW;
+
   Event e = { 0 };
   while (true) {
+    gpio_get_state(&addr, &state);
+    if (prev_state != state) {
+      event_raise(CENTER_CONSOLE_EVENT_BUTTON_TOGGLE_STATE, s_power_input.local_event);
+
+      // Raise event via CAN message
+      CAN_TRANSMIT_CENTER_CONSOLE_EVENT(s_power_input.can_event, 0);
+    }
+    prev_state = state;
+
     while (status_ok(event_process(&e))) {
       can_process_event(&e);
 
