@@ -23,74 +23,82 @@
 #include "button_led_fsm.h"
 #include "button_led_radio.h"
 
+#include "bms_heartbeat.h"
+
 static CanStorage s_can_storage = { 0 };
 static GpioExpanderStorage s_expander;
 
-#define CENTER_CONSOLE_CAN_OUTPUT_PERIOD_MILLIS 50u
-
+// CenterConsoleInput corresponds to the Events that are raised resulting from
+// a input from a GPIO pin
 typedef struct {
-  // GPIO pin
-  GpioAddress address;
+  // GPIO pin the button is mapped to
+  GpioAddress pin_address;
   // CAN event to raise
   EECenterConsoleDigitalInput can_event;
   // Local event to raise
   CenterConsoleEventsButton local_event;
-  // The reference number for the pin
-  CenterConsoleButtonLed button;
 } CenterConsoleInput;
 
 static GpioExpanderPin s_expander_pin[NUM_CENTER_CONSOLE_BUTTON_LEDS] = {
-  [CENTER_CONSOLE_BUTTON_LED_BPS] = GPIO_EXPANDER_PIN_0,
-  [CENTER_CONSOLE_BUTTON_LED_PWR] = GPIO_EXPANDER_PIN_1,
-  [CENTER_CONSOLE_BUTTON_LED_REVERSE] = GPIO_EXPANDER_PIN_2,
-  [CENTER_CONSOLE_BUTTON_LED_NEUTRAL] = GPIO_EXPANDER_PIN_3,
-  [CENTER_CONSOLE_BUTTON_LED_DRIVE] = GPIO_EXPANDER_PIN_4,
-  [CENTER_CONSOLE_BUTTON_LED_DRL] = GPIO_EXPANDER_PIN_5,
-  [CENTER_CONSOLE_BUTTON_LED_LOW_BEAMS] = GPIO_EXPANDER_PIN_6,
-  [CENTER_CONSOLE_BUTTON_LED_HAZARDS] = GPIO_EXPANDER_PIN_7,
+  [CENTER_CONSOLE_BUTTON_LED_BPS] = CENTER_CONSOLE_CONFIG_GPIO_EXPANDER_LED_BPS,
+  [CENTER_CONSOLE_BUTTON_LED_PWR] = CENTER_CONSOLE_CONFIG_GPIO_EXPANDER_LED_POWER,
+  [CENTER_CONSOLE_BUTTON_LED_REVERSE] = CENTER_CONSOLE_CONFIG_GPIO_EXPANDER_LED_REVERSE,
+  [CENTER_CONSOLE_BUTTON_LED_NEUTRAL] = CENTER_CONSOLE_CONFIG_GPIO_EXPANDER_LED_NEUTRAL,
+  [CENTER_CONSOLE_BUTTON_LED_DRIVE] = CENTER_CONSOLE_CONFIG_GPIO_EXPANDER_LED_DRIVE,
+  [CENTER_CONSOLE_BUTTON_LED_DRL] = CENTER_CONSOLE_CONFIG_GPIO_EXPANDER_LED_DRL,
+  [CENTER_CONSOLE_BUTTON_LED_LOW_BEAMS] = CENTER_CONSOLE_CONFIG_GPIO_EXPANDER_LED_LOW_BEAMS,
+  [CENTER_CONSOLE_BUTTON_LED_HAZARDS] = CENTER_CONSOLE_CONFIG_GPIO_EXPANDER_LED_HAZARDS
 };
 
-// Toggle buttons are either on/off
-static CenterConsoleInput s_toggle_button_input[] = {
+// Momentary Switches that are used as Toggle buttons
+static CenterConsoleInput s_momentary_switch_input[] = {
   {
-      .address = CENTER_CONSOLE_CONFIG_PIN_LOW_BEAM,           //
-      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_LOW_BEAM,   //
-      .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_LOW_BEAM  //
+      .pin_address = CENTER_CONSOLE_CONFIG_PIN_LOW_BEAM,
+      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_LOW_BEAM,
+      .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_LOW_BEAM,
   },
   {
-      .address = CENTER_CONSOLE_CONFIG_PIN_HAZARDS,           //
-      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_HAZARDS,   //
-      .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_HAZARDS  //
+      .pin_address = CENTER_CONSOLE_CONFIG_PIN_DRL,
+      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_DRL,
+      .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_DRL,
   },
   {
-      .address = CENTER_CONSOLE_CONFIG_PIN_DRL,           //
-      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_DRL,   //
-      .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_DRL  //
+      .pin_address = CENTER_CONSOLE_CONFIG_PIN_POWER,
+      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER,
+      .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER,
   }
 };
 // TODO: Move this into the toggle button array once the pin gets moved to a
 // different EXTI line.
 static CenterConsoleInput s_power_input = {
-    .address = CENTER_CONSOLE_CONFIG_PIN_POWER,           //
+    .pin_address = CENTER_CONSOLE_CONFIG_PIN_POWER,           //
     .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER,   //
     .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER  //
 };
 
+// Toggle Switches that are used as Toggle buttons
+static CenterConsoleInput s_toggle_switch_input[] = { {
+    .pin_address = CENTER_CONSOLE_CONFIG_PIN_HAZARDS,
+    .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_HAZARDS,
+    .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_HAZARDS,
+} };
+
+// Momentary Switches that are used as Radio Button Group
 static CenterConsoleInput s_radio_button_group[] = {
   {
-      .address = CENTER_CONSOLE_CONFIG_PIN_DRIVE,               //
-      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_DRIVE,       //
-      .local_event = CENTER_CONSOLE_EVENT_BUTTON_DRIVE_PRESSED  //
+      .pin_address = CENTER_CONSOLE_CONFIG_PIN_DRIVE,
+      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_DRIVE,
+      .local_event = CENTER_CONSOLE_EVENT_BUTTON_DRIVE_PRESSED,
   },
   {
-      .address = CENTER_CONSOLE_CONFIG_PIN_NEUTRAL,               //
-      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_NEUTRAL,       //
-      .local_event = CENTER_CONSOLE_EVENT_BUTTON_NEUTRAL_PRESSED  //
+      .pin_address = CENTER_CONSOLE_CONFIG_PIN_NEUTRAL,
+      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_NEUTRAL,
+      .local_event = CENTER_CONSOLE_EVENT_BUTTON_NEUTRAL_PRESSED,
   },
   {
-      .address = CENTER_CONSOLE_CONFIG_PIN_REVERSE,               //
-      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_REVERSE,       //
-      .local_event = CENTER_CONSOLE_EVENT_BUTTON_REVERSE_PRESSED  //
+      .pin_address = CENTER_CONSOLE_CONFIG_PIN_REVERSE,
+      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_REVERSE,
+      .local_event = CENTER_CONSOLE_EVENT_BUTTON_REVERSE_PRESSED,
   }
 };
 
@@ -115,11 +123,20 @@ void prv_gpio_radio_callback(const GpioAddress *address, void *context) {
   CAN_TRANSMIT_CENTER_CONSOLE_EVENT(toggle_button->can_event, 0);
 }
 
-void prv_adc_monitor(AdcChannel adc_channel, void *context) {
+/* void prv_adc_monitor(AdcChannel adc_channel, void *context) { */
+void prv_adc_monitor(SoftTimerId timer_id, void *context) {
   uint16_t *rail_monitor_5v = context;
-  adc_read_converted(adc_channel, rail_monitor_5v);
 
-  LOG_DEBUG("adc\n");  // TODO: Any logic here to monitor 5V rail and raise appropriate event
+  GpioAddress monitor_5v = CENTER_CONSOLE_CONFIG_PIN_5V_MONITOR;
+  AdcChannel adc_channel_5v_monitor = NUM_ADC_CHANNELS;
+  adc_get_channel(monitor_5v, &adc_channel_5v_monitor);
+
+  adc_read_converted(adc_channel_5v_monitor, rail_monitor_5v);
+  /* LOG_DEBUG("adc\n"); */
+
+  // TODO: Any logic here to monitor 5V rail and raise appropriate event
+
+  soft_timer_start_millis(30, prv_adc_monitor, context, NULL);
 }
 
 int main() {
@@ -142,71 +159,80 @@ int main() {
   };
   status_ok_or_return(can_init(&s_can_storage, &can_settings));
 
+  // Set up Center Console Buttons
   GpioSettings button_input_settings = {
     .direction = GPIO_DIR_IN,         //
     .state = GPIO_STATE_LOW,          //
     .resistor = GPIO_RES_NONE,        //
     .alt_function = GPIO_ALTFN_NONE,  //
   };
-  for (size_t i = 0; i < SIZEOF_ARRAY(s_toggle_button_input); ++i) {
-    gpio_init_pin(&s_toggle_button_input[i].address, &button_input_settings);
+  for (size_t i = 0; i < SIZEOF_ARRAY(s_momentary_switch_input); ++i) {
+    gpio_init_pin(&s_momentary_switch_input[i].pin_address, &button_input_settings);
 
     InterruptSettings interrupt_settings = {
       .type = INTERRUPT_TYPE_INTERRUPT,      //
       .priority = INTERRUPT_PRIORITY_NORMAL  //
     };
     // Initialize GPIO Interrupts to raise events to change LED status
-    gpio_it_register_interrupt(&s_toggle_button_input[i].address, &interrupt_settings,
+    gpio_it_register_interrupt(&s_momentary_switch_input[i].pin_address, &interrupt_settings,
                                INTERRUPT_EDGE_RISING, prv_gpio_toggle_callback,
-                               &s_toggle_button_input[i]);
+                               &s_momentary_switch_input[i]);
   }
   // TODO: Move this into the above once this gets fixed in hardware
-  gpio_init_pin(&s_power_input.address, &button_input_settings);
-  InterruptSettings interrupt_settings = {
-    .type = INTERRUPT_TYPE_INTERRUPT,      //
-    .priority = INTERRUPT_PRIORITY_NORMAL  //
-  };
-  // Initialize GPIO Interrupts to raise events to change LED status
-  gpio_it_register_interrupt(&s_power_input.address, &interrupt_settings,
-                             INTERRUPT_EDGE_RISING, prv_gpio_toggle_callback,
-                             &s_power_input);
+  gpio_init_pin(&s_power_input.pin_address, &button_input_settings);
 
-  for (size_t i = 0; i < SIZEOF_ARRAY(s_radio_button_group); ++i) {
-    gpio_init_pin(&s_radio_button_group[i].address, &button_input_settings);
+  // We need a special case for the Hazards button, since it is a toggle switch
+  for (size_t i = 0; i < SIZEOF_ARRAY(s_toggle_switch_input); ++i) {
+    gpio_init_pin(&s_toggle_switch_input[i].pin_address, &button_input_settings);
 
     InterruptSettings interrupt_settings = {
       .type = INTERRUPT_TYPE_INTERRUPT,      //
       .priority = INTERRUPT_PRIORITY_NORMAL  //
     };
     // Initialize GPIO Interrupts to raise events to change LED status
-    gpio_it_register_interrupt(&s_radio_button_group[i].address, &interrupt_settings,
+    gpio_it_register_interrupt(&s_toggle_switch_input[i].pin_address, &interrupt_settings,
+                               INTERRUPT_EDGE_RISING_FALLING, prv_gpio_toggle_callback,
+                               &s_toggle_switch_input[i]);
+  }
+
+  for (size_t i = 0; i < SIZEOF_ARRAY(s_radio_button_group); ++i) {
+    gpio_init_pin(&s_radio_button_group[i].pin_address, &button_input_settings);
+
+    InterruptSettings interrupt_settings = {
+      .type = INTERRUPT_TYPE_INTERRUPT,      //
+      .priority = INTERRUPT_PRIORITY_NORMAL  //
+    };
+    // Initialize GPIO Interrupts to raise events to change LED status
+    gpio_it_register_interrupt(&s_radio_button_group[i].pin_address, &interrupt_settings,
                                INTERRUPT_EDGE_RISING, prv_gpio_radio_callback,
                                &s_radio_button_group[i]);
   }
 
   // Use I/O Expander for button LEDs
   I2CSettings settings = {
-    .speed = I2C_SPEED_FAST,     //
-    .sda = { GPIO_PORT_B, 11 },  //
-    .scl = { GPIO_PORT_B, 10 },  //
+    .speed = I2C_SPEED_FAST,                   //
+    .sda = CENTER_CONSOLE_CONFIG_PIN_I2C_SDA,  //
+    .scl = CENTER_CONSOLE_CONFIG_PIN_I2C_SDL,  //
   };
   i2c_init(I2C_PORT_2, &settings);
   // Configure the expander to be output only
   gpio_expander_init(&s_expander, I2C_PORT_2, GPIO_EXPANDER_ADDRESS_0, NULL);
   for (size_t i = 0; i < SIZEOF_ARRAY(s_expander_pin); ++i) {
+    // Start with all buttons with low
     GpioSettings output_settings = {
       .direction = GPIO_DIR_OUT,  //
-      .state = GPIO_STATE_HIGH,   //
+      .state = GPIO_STATE_LOW,    //
     };
     gpio_expander_init_pin(&s_expander, s_expander_pin[i], &output_settings);
   }
+
   // Initialize normal toggle buttons
   button_led_init(&s_expander, s_expander_pin);
   // Initialize radio button groups
   ButtonLedRadioSettings radio_settings = {
     .reverse_pin = s_expander_pin[CENTER_CONSOLE_BUTTON_LED_REVERSE],
     .neutral_pin = s_expander_pin[CENTER_CONSOLE_BUTTON_LED_NEUTRAL],
-    .drive_pin = s_expander_pin[CENTER_CONSOLE_BUTTON_LED_DRIVE]
+    .drive_pin = s_expander_pin[CENTER_CONSOLE_BUTTON_LED_DRIVE],
   };
   button_led_radio_init(&s_expander, &radio_settings);
 
@@ -219,13 +245,16 @@ int main() {
   };
   GpioAddress monitor_5v = CENTER_CONSOLE_CONFIG_PIN_5V_MONITOR;
   gpio_init_pin(&monitor_5v, &adc_input_settings);
+  AdcChannel adc_channel_5v_monitor = NUM_ADC_CHANNELS;
 
   // TODO: Why doesn't continuous mode work smh
-  // adc_init(ADC_MODE_CONTINUOUS);
+  adc_init(ADC_MODE_SINGLE);
 
-  // uint16_t rail_monitor_5v = 0u;
-  // adc_set_channel(ADC_CHANNEL_9, true);
-  // adc_register_callback(ADC_CHANNEL_9, prv_adc_monitor, (void *)&rail_monitor_5v);
+  uint16_t rail_monitor_5v = 0u;
+  adc_get_channel(monitor_5v, &adc_channel_5v_monitor);
+  adc_set_channel(adc_channel_5v_monitor, true);
+  /* adc_register_callback(ADC_CHANNEL_9, prv_adc_monitor, (void *)&rail_monitor_5v); */
+  soft_timer_start_millis(100, prv_adc_monitor, (void *)&rail_monitor_5v, NULL);
 
   GpioSettings enable_output_rail = {
     .direction = GPIO_DIR_OUT,
@@ -248,19 +277,24 @@ int main() {
   //
   // As a workaround, we poll.
   GpioAddress addr = CENTER_CONSOLE_CONFIG_PIN_POWER;
+  // state[0] = prev state
   GpioState prev_state = GPIO_STATE_LOW;
-  GpioState state = GPIO_STATE_LOW;
+  GpioState curr_state = GPIO_STATE_LOW;
 
   Event e = { 0 };
+
+  // Start BMS heartbeat handler
+  bms_heartbeat_init();
   while (true) {
-    gpio_get_state(&addr, &state);
-    if (prev_state != state) {
+    gpio_get_state(&addr, &curr_state);
+    // LOW -> HI
+    if (curr_state == GPIO_STATE_HIGH && prev_state == GPIO_STATE_LOW) {
       event_raise(CENTER_CONSOLE_EVENT_BUTTON_TOGGLE_STATE, s_power_input.local_event);
 
       // Raise event via CAN message
       CAN_TRANSMIT_CENTER_CONSOLE_EVENT(s_power_input.can_event, 0);
     }
-    prev_state = state;
+    prev_state = curr_state;
 
     while (status_ok(event_process(&e))) {
       can_process_event(&e);
