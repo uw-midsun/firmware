@@ -13,6 +13,9 @@
 
 #include "config.h"
 #include "input_event.h"
+#include "soft_timer.h"
+
+#include "log.h"
 static CanStorage s_can_storage;
 #define STEERING_ADC_PERIOD_MILLIS 50u
 
@@ -24,15 +27,20 @@ typedef enum ControlStalkState {
   NUM_CONTROL_STALK_STATES
 } ControlStalkState;
 
+// Analog Inputs
 typedef struct {
-  AdcChannel channel;
+  // CAN events to raise
+  EventId can_event[NUM_CONTROL_STALK_STATES];
+  // Pin of the Analog Input
   GpioAddress address;
-  EventId input_event[NUM_CONTROL_STALK_STATES];
 } SteeringAdcInput;
 
+// Digital Inputs
 typedef struct {
+  // CAN events to raise
+  EventId can_event[NUM_GPIO_STATES];
+  // Pin of the Digital Input
   GpioAddress pin;
-  EventId input_event[NUM_GPIO_STATES];
 } SteeringDigitalInput;
 
 // We only need the following inputs from the Steering Board:
@@ -43,26 +51,26 @@ typedef struct {
 static SteeringDigitalInput s_digital_inputs[] = {
   {
       .pin = STEERING_CONFIG_PIN_HORN,
-      .input_event =
+      .can_event =
           {
-              [GPIO_STATE_HIGH] = EE_STEERING_DIGITAL_INPUT_HORN_PRESSED,  //
-              [GPIO_STATE_LOW] = EE_STEERING_DIGITAL_INPUT_HORN_RELEASED   //
+              [GPIO_STATE_HIGH] = EE_STEERING_INPUT_HORN_PRESSED,  //
+              [GPIO_STATE_LOW] = EE_STEERING_INPUT_HORN_RELEASED   //
           },
   },
   {
       .pin = STEERING_CONFIG_PIN_CC_ON_OFF,
-      .input_event =
+      .can_event =
           {
-              [GPIO_STATE_HIGH] = EE_STEERING_DIGITAL_INPUT_CC_ON_OFF_PRESSED,  //
-              [GPIO_STATE_LOW] = EE_STEERING_DIGITAL_INPUT_CC_ON_OFF_RELEASED   //
+              [GPIO_STATE_HIGH] = EE_STEERING_INPUT_CC_ON_OFF_PRESSED,  //
+              [GPIO_STATE_LOW] = EE_STEERING_INPUT_CC_ON_OFF_RELEASED   //
           },
   },
   {
       .pin = STEERING_CONFIG_PIN_CC_SET,
-      .input_event =
+      .can_event =
           {
-              [GPIO_STATE_HIGH] = EE_STEERING_DIGITAL_INPUT_CC_SET_PRESSED,  //
-              [GPIO_STATE_LOW] = EE_STEERING_DIGITAL_INPUT_CC_SET_RELEASED   //
+              [GPIO_STATE_HIGH] = EE_STEERING_INPUT_CC_SET_PRESSED,  //
+              [GPIO_STATE_LOW] = EE_STEERING_INPUT_CC_SET_RELEASED   //
           },
   }
 };
@@ -70,75 +78,81 @@ static SteeringDigitalInput s_digital_inputs[] = {
 static SteeringAdcInput s_analog_inputs[] = {
   {
       .address = STEERING_CONFIG_PIN_CC_SPEED,
-      .channel = ADC_CHANNEL_1,
-      .input_event =
+      .can_event =
           {
-              [CONTROL_STALK_STATE_FLOATING] = EE_STEERING_ANALOG_INPUT_CC_SPEED_NEUTRAL,  //
-              [CONTROL_STALK_STATE_681_OHMS] = EE_STEERING_ANALOG_INPUT_CC_SPEED_MINUS,    //
-              [CONTROL_STALK_STATE_2181_OHMS] = EE_STEERING_ANALOG_INPUT_CC_SPEED_PLUS      //
+              [CONTROL_STALK_STATE_FLOATING] = EE_STEERING_INPUT_CC_SPEED_NEUTRAL,  //
+              [CONTROL_STALK_STATE_681_OHMS] = EE_STEERING_INPUT_CC_SPEED_MINUS,    //
+              [CONTROL_STALK_STATE_2181_OHMS] = EE_STEERING_INPUT_CC_SPEED_PLUS     //
           },
   },
   {
       .address = STEERING_CONFIG_PIN_CC_CANCEL_RESUME,
-      .channel = ADC_CHANNEL_2,
-      .input_event =
+      .can_event =
           {
-              [CONTROL_STALK_STATE_FLOATING] = EE_STEERING_ANALOG_INPUT_CC_CANCEL_RESUME_NEUTRAL,  //
-              [CONTROL_STALK_STATE_681_OHMS] = EE_STEERING_ANALOG_INPUT_CC_CANCEL_RESUME_CANCEL,    //
-              [CONTROL_STALK_STATE_2181_OHMS] = EE_STEERING_ANALOG_INPUT_CC_CANCEL_RESUME_RESUME      //
+              [CONTROL_STALK_STATE_FLOATING] = EE_STEERING_INPUT_CC_CANCEL_RESUME_NEUTRAL,  //
+              [CONTROL_STALK_STATE_681_OHMS] = EE_STEERING_INPUT_CC_CANCEL_RESUME_CANCEL,   //
+              [CONTROL_STALK_STATE_2181_OHMS] = EE_STEERING_INPUT_CC_CANCEL_RESUME_RESUME   //
           },
   },
   {
       .address = STEERING_CONFIG_PIN_TURN_SIGNAL_STALK,
-      .channel = ADC_CHANNEL_3,
-      .input_event =
+      .can_event =
           {
-              [CONTROL_STALK_STATE_FLOATING] = EE_STEERING_ANALOG_INPUT_TURN_SIGNAL_STALK_NONE,   //
-              [CONTROL_STALK_STATE_681_OHMS] = EE_STEERING_ANALOG_INPUT_TURN_SIGNAL_STALK_RIGHT,  //
-              [CONTROL_STALK_STATE_2181_OHMS] = EE_STEERING_ANALOG_INPUT_TURN_SIGNAL_STALK_LEFT    //
+              [CONTROL_STALK_STATE_FLOATING] = EE_STEERING_INPUT_TURN_SIGNAL_STALK_NONE,   //
+              [CONTROL_STALK_STATE_681_OHMS] = EE_STEERING_INPUT_TURN_SIGNAL_STALK_RIGHT,  //
+              [CONTROL_STALK_STATE_2181_OHMS] = EE_STEERING_INPUT_TURN_SIGNAL_STALK_LEFT   //
           },
   }
 };
 
 void prv_gpio_callback(const GpioAddress *address, void *context) {
-  // TODO: Do we need to debounce this?
+  LOG_DEBUG("Called\n");
   GpioState state = NUM_GPIO_STATES;
   gpio_get_state(address, &state);
 
-  EventId *input_event = context;
+  EventId *can_event = context;
   // Raise event via CAN message
-  CAN_TRANSMIT_STEERING_EVENT(input_event[(size_t)state], 0);
+  CAN_TRANSMIT_STEERING_EVENT(can_event[(size_t)state], 0);
 }
 
 // Resistor divider value in ohms
-#define CONTROL_STALK_RESISTOR 3800
+#define CONTROL_STALK_RESISTOR 1000
 // 4096 codes for +/-4.096V -> LSB = 2mV
-#define CONTROL_STALK_THRESHOLD(ohms) ((1 << 12) / 2 * (ohms) / ((CONTROL_STALK_RESISTOR) + (ohms)))
+#define CONTROL_STALK_THRESHOLD(ohms) ((1 << 12) * (ohms) / ((CONTROL_STALK_RESISTOR) + (ohms)))
 // 2k181 +10% resistor = ~2k4, -10% = 1k963
 #define CONTROL_STALK_2181_OHMS_THRESHOLD CONTROL_STALK_THRESHOLD(2400)
 // 681 +10% resistor = ~750, -10% = 613
 #define CONTROL_STALK_681_OHMS_THRESHOLD CONTROL_STALK_THRESHOLD(750)
-ControlStalkState stalk_state[NUM_ADC_CHANNELS] = {CONTROL_STALK_STATE_FLOATING};
+ControlStalkState stalk_state[NUM_ADC_CHANNELS] = { CONTROL_STALK_STATE_FLOATING };
 
-void prv_adc_callback(AdcChannel adc_channel, void *context) {
-  EventId *input_event = context;
+void prv_adc_callback(SoftTimerId timer_id, void *context) {
+  for (size_t i = 0; i < SIZEOF_ARRAY(s_analog_inputs); ++i) {
+    AdcChannel channel = NUM_ADC_CHANNELS;
+    adc_get_channel(s_analog_inputs[i].address, &channel);
 
-  uint16_t reading = 0;
-  adc_read_converted(adc_channel, &reading);
+    uint16_t reading = 0;
+    adc_read_converted(channel, &reading);
+    if (i == 2)
+    LOG_DEBUG("Input: %d Channel %d Raw Value: %d\n", i, channel, reading);
 
-  ControlStalkState state = CONTROL_STALK_STATE_FLOATING;
-  if (reading <= CONTROL_STALK_681_OHMS_THRESHOLD) {
-    state = CONTROL_STALK_STATE_681_OHMS;
-  } else if (reading <= CONTROL_STALK_2181_OHMS_THRESHOLD) {
-    state = CONTROL_STALK_STATE_2181_OHMS;
+    ControlStalkState state = CONTROL_STALK_STATE_FLOATING;
+    if (reading <= CONTROL_STALK_681_OHMS_THRESHOLD) {
+      LOG_DEBUG("Input: %d Value: 681_OHMS\n", i);
+      state = CONTROL_STALK_STATE_681_OHMS;
+    } else if (reading <= CONTROL_STALK_2181_OHMS_THRESHOLD) {
+      LOG_DEBUG("Input: %d Value: 2181_OHMS\n", i);
+      state = CONTROL_STALK_STATE_2181_OHMS;
+    }
+
+    // If the previous state has changed, then we send an input
+    if (stalk_state[channel] != state) {
+      CAN_TRANSMIT_STEERING_EVENT(s_analog_inputs[i].can_event[state], 0);
+    }
+    stalk_state[channel] = state;
   }
 
-  // TODO: Do we need to debounce this?
-  // If the previous state has changed, then we send an input
-  if (stalk_state[adc_channel] != state) {
-    CAN_TRANSMIT_STEERING_EVENT(input_event[state], 0);
-  }
-  stalk_state[adc_channel] = state;
+  // Start next soft timer
+  soft_timer_start_millis(500, prv_adc_callback, s_analog_inputs, NULL);
 }
 
 int main() {
@@ -168,13 +182,16 @@ int main() {
     .resistor = GPIO_RES_NONE,          //
     .alt_function = GPIO_ALTFN_ANALOG,  //
   };
-  adc_init(ADC_MODE_CONTINUOUS);
+  adc_init(ADC_MODE_SINGLE);
   for (size_t i = 0; i < SIZEOF_ARRAY(s_analog_inputs); ++i) {
     gpio_init_pin(&s_analog_inputs[i].address, &adc_input_settings);
-    adc_set_channel(s_analog_inputs[i].channel, true);
 
-    adc_register_callback(s_analog_inputs[i].channel, prv_adc_callback, s_analog_inputs[i].input_event);
+    AdcChannel channel = NUM_ADC_CHANNELS;
+    adc_get_channel(s_analog_inputs[i].address, &channel);
+    status_ok_or_return(adc_set_channel(channel, true));
   }
+  // Use a soft timer to check the ADC values
+  soft_timer_start_millis(500, prv_adc_callback, s_analog_inputs, NULL);
 
   // Enable Digital Inputs
   GpioSettings digital_input_settings = {
@@ -193,7 +210,7 @@ int main() {
     // Initialize GPIO Interrupts to raise events to change
     gpio_it_register_interrupt(&s_digital_inputs[i].pin, &interrupt_settings,
                                INTERRUPT_EDGE_RISING_FALLING, prv_gpio_callback,
-                               s_digital_inputs[i].input_event);
+                               s_digital_inputs[i].can_event);
   }
 
   StatusCode status = NUM_STATUS_CODES;
