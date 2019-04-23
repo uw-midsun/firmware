@@ -59,3 +59,52 @@ void test_pedal_indicator_brake_released(void) {
   TEST_ASSERT_OK(event_process(&e));
   TEST_ASSERT_EQUAL(INPUT_EVENT_MECH_BRAKE_RELEASED, e.id);
 }
+
+void test_pedal_indicator_throttle_brake(void) {
+  uint16_t throttle_state = EE_THROTTLE_BRAKE;
+  CAN_TRANSMIT_PEDAL_OUTPUT(0, throttle_state, 0);
+
+  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
+
+  
+  //need to process the mech brake event first probably 
+  Event e;
+  TEST_ASSERT_OK(event_process(&e));
+  TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_BRAKE, e.id);
+}
+
+void test_pedal_indicator_throttle_coast(void) {
+  uint16_t throttle_state = EE_THROTTLE_COAST;
+  CAN_TRANSMIT_PEDAL_OUTPUT(0, throttle_state, 0);
+
+  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
+
+  //need to process the mech brake event first probably 
+  Event e;
+  TEST_ASSERT_OK(event_process(&e));
+  TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_COAST, e.id);
+}
+
+void test_pedal_indicator_throttle_accel(void) {
+  uint16_t throttle_state = EE_THROTTLE_ACCEL;
+  CAN_TRANSMIT_PEDAL_OUTPUT(0, throttle_state, 0);
+
+  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
+
+  //need to process the mech brake event first probably 
+  Event e;
+  TEST_ASSERT_OK(event_process(&e));
+  TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_ACCEL, e.id);
+}
+
+void test_pedal_indicator_throttle_fault(void) {
+  uint16_t throttle_state = EE_THROTTLE_FAULT;
+  CAN_TRANSMIT_PEDAL_OUTPUT(0, throttle_state, 0);
+
+  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
+
+  //need to process the mech brake event first probably 
+  Event e;
+  TEST_ASSERT_OK(event_process(&e));
+  TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_FAULT, e.id);
+}
