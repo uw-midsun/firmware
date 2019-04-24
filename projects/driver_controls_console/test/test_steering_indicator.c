@@ -96,7 +96,7 @@ void test_steering_indicator_digital_cc_set(void) {
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
-   //process analog event first
+  // process analog event first
   Event a;
   event_process(&a);
 
@@ -112,7 +112,7 @@ void test_steering_indicator_digital_cc_lane_assist(void) {
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
-   //process analog event first
+  // process analog event first
   Event a;
   event_process(&a);
 
@@ -128,7 +128,7 @@ void test_steering_indicator_digital_high_beam_fwd(void) {
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
-   //process analog event first
+  // process analog event first
   Event a;
   event_process(&a);
 
@@ -144,7 +144,7 @@ void test_steering_indicator_digital_high_beam_back(void) {
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
-   //process analog event first
+  // process analog event first
   Event a;
   event_process(&a);
 

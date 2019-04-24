@@ -66,7 +66,7 @@ void test_pedal_indicator_throttle_brake(void) {
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
-  //process mech_brake event first
+  // process mech_brake event first
   Event a;
   event_process(&a);
 
@@ -81,8 +81,7 @@ void test_pedal_indicator_throttle_coast(void) {
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
-  
-  //process mech_brake event first
+  // process mech_brake event first
   Event a;
   event_process(&a);
 
@@ -97,8 +96,7 @@ void test_pedal_indicator_throttle_accel(void) {
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
-  
-  //process mech_brake event first
+  // process mech_brake event first
   Event a;
   event_process(&a);
 
@@ -113,11 +111,10 @@ void test_pedal_indicator_throttle_fault(void) {
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
-  
-  //process mech_brake event first
+  // process mech_brake event first
   Event a;
   event_process(&a);
-  
+
   Event e;
   TEST_ASSERT_OK(event_process(&e));
   TEST_ASSERT_EQUAL(INPUT_EVENT_PEDAL_FAULT, e.id);
