@@ -15,6 +15,10 @@
 #include "test_helpers.h"
 #include "unity.h"
 #include "wait.h"
+#include "steering_output.h"
+#include "exported_enums.h"
+#include "can_unpack.h"
+#include "can_msg.h"
 
 static ControlStalk s_stalk;
 
@@ -31,138 +35,140 @@ void setup_test(void) {
 
 void teardown_test(void) {}
 
-// void test_control_stalks_readback(void) {
-//   Event e;
+void test_control_stalks_readback(void) {
 
-//   const GpioAddress leds[] = {
-//     { .port = GPIO_PORT_B, .pin = 5 },   //
-//     { .port = GPIO_PORT_B, .pin = 4 },   //
-//     { .port = GPIO_PORT_B, .pin = 3 },   //
-//     { .port = GPIO_PORT_A, .pin = 15 },  //
-//   };
+  const GpioAddress leds[] = {
+    { .port = GPIO_PORT_B, .pin = 5 },   //
+    { .port = GPIO_PORT_B, .pin = 4 },   //
+    { .port = GPIO_PORT_B, .pin = 3 },   //
+    { .port = GPIO_PORT_A, .pin = 15 },  //
+  };
 
-//   GpioSettings led_settings = {
-//     .direction = GPIO_DIR_OUT,
-//     .state = GPIO_STATE_HIGH,
-//     .alt_function = GPIO_ALTFN_NONE,
-//     .resistor = GPIO_RES_NONE,
-//   };
+  GpioSettings led_settings = {
+    .direction = GPIO_DIR_OUT,
+    .state = GPIO_STATE_HIGH,
+    .alt_function = GPIO_ALTFN_NONE,
+    .resistor = GPIO_RES_NONE,
+  };
 
-//   // Init all of the LED pins
-//   for (size_t i = 0; i < SIZEOF_ARRAY(leds); i++) {
-//     gpio_init_pin(&leds[i], &led_settings);
-//   }
+  // Init all of the LED pins
+  for (size_t i = 0; i < SIZEOF_ARRAY(leds); i++) {
+    gpio_init_pin(&leds[i], &led_settings);
+  }
 
-//   while (true) {
-//     wait();
-//     while (status_ok(event_process(&e))) {
-//       LOG_DEBUG("Processing event %d, data %d\n", e.id, e.data);
+  while (true) {
 
-//       switch (e.id) {
-//         // Digital pins
+    uint16_t control_stalk_analog_state = 0;
+    uint16_t control_stalk_digital_state = 0;
 
-//         // CC_SET
-//         case INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED:
-//           LOG_DEBUG("DIGITAL_CC_SET_PRESSED\n");
-//           gpio_set_state(&leds[0], GPIO_STATE_LOW);
-//           break;
-//         case INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_RELEASED:
-//           LOG_DEBUG("DIGITAL_CC_SET_RELEASED\n");
-//           gpio_set_state(&leds[0], GPIO_STATE_HIGH);
-//           break;
-//         // CC_ON/OFF
-//         case INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_ON:
-//           LOG_DEBUG("DIGITAL_CC_ON\n");
-//           gpio_set_state(&leds[1], GPIO_STATE_LOW);
-//           break;
-//         case INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_OFF:
-//           LOG_DEBUG("DIGITAL_CC_OFF\n");
-//           gpio_set_state(&leds[1], GPIO_STATE_HIGH);
-//           break;
-//         // CC_LANE_ASSIST
-//         case INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_LANE_ASSIST_PRESSED:
-//           LOG_DEBUG("DIGITAL_CC_LANE_ASSIST_PRESSED\n");
-//           gpio_set_state(&leds[2], GPIO_STATE_LOW);
-//           break;
-//         case INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_LANE_ASSIST_RELEASED:
-//           LOG_DEBUG("DIGITAL_CC_LANE_ASSIST_RELEASED\n");
-//           gpio_set_state(&leds[2], GPIO_STATE_HIGH);
-//           break;
-//         // HIGH_BEAM_FWD
-//         case INPUT_EVENT_CONTROL_STALK_DIGITAL_HIGH_BEAM_FWD_PRESSED:
-//           LOG_DEBUG("DIGITAL_HIGH_BEAM_FWD_PRESSED\n");
-//           gpio_set_state(&leds[3], GPIO_STATE_LOW);
-//           break;
-//         case INPUT_EVENT_CONTROL_STALK_DIGITAL_HIGH_BEAM_FWD_RELEASED:
-//           LOG_DEBUG("DIGITAL_HIGH_BEAM_FWD_RELEASED\n");
-//           gpio_set_state(&leds[3], GPIO_STATE_HIGH);
-//           break;
-//         // HIGH_BEAM_BACK
-//         case INPUT_EVENT_CONTROL_STALK_DIGITAL_HIGH_BEAM_BACK_PRESSED:
-//           LOG_DEBUG("DIGITAL_HIGH_BEAM_BACK_PRESSED\n");
-//           break;
-//         case INPUT_EVENT_CONTROL_STALK_DIGITAL_HIGH_BEAM_BACK_RELEASED:
-//           LOG_DEBUG("DIGITAL_HIGH_BEAM_BACK_RELEASED\n");
-//           break;
+    CanMessage msg = {};
 
-//         // Analog Pins
+    CAN_UNPACK_STEERING_OUTPUT(&msg, &control_stalk_analog_state, &control_stalk_digital_state);
+    wait();
+      // Digital pins
+      switch (control_stalk_digital_state) {
+        // CC_SET
+        case EE_CONTROL_STALK_DIGITAL_CC_SET_PRESSED:
+          LOG_DEBUG("DIGITAL_CC_SET_PRESSED\n");
+          gpio_set_state(&leds[0], GPIO_STATE_LOW);
+          break;
+        case EE_CONTROL_STALK_DIGITAL_CC_SET_RELEASED:
+          LOG_DEBUG("DIGITAL_CC_SET_RELEASED\n");
+          gpio_set_state(&leds[0], GPIO_STATE_HIGH);
+          break;
+        // CC_ON/OFF
+        case EE_CONTROL_STALK_DIGITAL_CC_ON:
+          LOG_DEBUG("DIGITAL_CC_ON\n");
+          gpio_set_state(&leds[1], GPIO_STATE_LOW);
+          break;
+        case EE_CONTROL_STALK_DIGITAL_CC_OFF:
+          LOG_DEBUG("DIGITAL_CC_OFF\n");
+          gpio_set_state(&leds[1], GPIO_STATE_HIGH);
+          break;
+        // CC_LANE_ASSIST
+        case EE_CONTROL_STALK_DIGITAL_CC_LANE_ASSIST_PRESSED:
+          LOG_DEBUG("DIGITAL_CC_LANE_ASSIST_PRESSED\n");
+          gpio_set_state(&leds[2], GPIO_STATE_LOW);
+          break;
+        case EE_CONTROL_STALK_DIGITAL_CC_LANE_ASSIST_RELEASED:
+          LOG_DEBUG("DIGITAL_CC_LANE_ASSIST_RELEASED\n");
+          gpio_set_state(&leds[2], GPIO_STATE_HIGH);
+          break;
+        // HIGH_BEAM_FWD
+        case EE_CONTROL_STALK_DIGITAL_HIGH_BEAM_FWD_PRESSED:
+          LOG_DEBUG("DIGITAL_HIGH_BEAM_FWD_PRESSED\n");
+          gpio_set_state(&leds[3], GPIO_STATE_LOW);
+          break;
+        case EE_CONTROL_STALK_DIGITAL_HIGH_BEAM_FWD_RELEASED:
+          LOG_DEBUG("DIGITAL_HIGH_BEAM_FWD_RELEASED\n");
+          gpio_set_state(&leds[3], GPIO_STATE_HIGH);
+          break;
+        // HIGH_BEAM_BACK
+        case EE_CONTROL_STALK_DIGITAL_HIGH_BEAM_BACK_PRESSED:
+          LOG_DEBUG("DIGITAL_HIGH_BEAM_BACK_PRESSED\n");
+          break;
+        case EE_CONTROL_STALK_DIGITAL_HIGH_BEAM_BACK_RELEASED:
+          LOG_DEBUG("DIGITAL_HIGH_BEAM_BACK_RELEASED\n");
+          break;
+      }
 
-//         // TURN_SIGNAL
-//         case INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_NONE:
-//           LOG_DEBUG("ANALOG_TURN_SIGNAL_NONE\n");
-//           gpio_set_state(&leds[0], GPIO_STATE_HIGH);
-//           gpio_set_state(&leds[1], GPIO_STATE_HIGH);
-//           break;
-//         case INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_RIGHT:
-//           LOG_DEBUG("ANALOG_TURN_SIGNAL_RIGHT\n");
-//           gpio_set_state(&leds[0], GPIO_STATE_LOW);
-//           gpio_set_state(&leds[1], GPIO_STATE_HIGH);
-//           break;
-//         case INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_LEFT:
-//           LOG_DEBUG("ANALOG_TURN_SIGNAL_LEFT\n");
-//           gpio_set_state(&leds[0], GPIO_STATE_HIGH);
-//           gpio_set_state(&leds[1], GPIO_STATE_LOW);
-//           break;
+       // Analog Pins
+      switch (control_stalk_analog_state) {
+        // TURN_SIGNAL
+        case EE_CONTROL_STALK_ANALOG_CC_TURN_SIGNAL_NONE:
+          LOG_DEBUG("ANALOG_TURN_SIGNAL_NONE\n");
+          gpio_set_state(&leds[0], GPIO_STATE_HIGH);
+          gpio_set_state(&leds[1], GPIO_STATE_HIGH);
+          break;
+        case EE_CONTROL_STALK_ANALOG_CC_TURN_SIGNAL_RIGHT:
+          LOG_DEBUG("ANALOG_TURN_SIGNAL_RIGHT\n");
+          gpio_set_state(&leds[0], GPIO_STATE_LOW);
+          gpio_set_state(&leds[1], GPIO_STATE_HIGH);
+          break;
+        case EE_CONTROL_STALK_ANALOG_CC_TURN_SIGNAL_LEFT:
+          LOG_DEBUG("ANALOG_TURN_SIGNAL_LEFT\n");
+          gpio_set_state(&leds[0], GPIO_STATE_HIGH);
+          gpio_set_state(&leds[1], GPIO_STATE_LOW);
+          break;
 
-//         // CC_DISTANCE
-//         case INPUT_EVENT_CONTROL_STALK_ANALOG_DISTANCE_NEUTRAL:
-//           LOG_DEBUG("ANALOG_DISTANCE_NEUTRAL\n");
-//           gpio_set_state(&leds[2], GPIO_STATE_HIGH);
-//           break;
-//         case INPUT_EVENT_CONTROL_STALK_ANALOG_DISTANCE_MINUS:
-//           LOG_DEBUG("ANALOG_DISTANCE_MINUS\n");
-//           gpio_set_state(&leds[2], GPIO_STATE_LOW);
-//           break;
-//         case INPUT_EVENT_CONTROL_STALK_ANALOG_DISTANCE_PLUS:
-//           LOG_DEBUG("ANALOG_DISTANCE_MINUS\n");
-//           gpio_set_state(&leds[2], GPIO_STATE_LOW);
-//           break;
+        // CC_DISTANCE
+        case EE_CONTROL_STALK_ANALOG_DISTANCE_NEUTRAL:
+          LOG_DEBUG("ANALOG_DISTANCE_NEUTRAL\n");
+          gpio_set_state(&leds[2], GPIO_STATE_HIGH);
+          break;
+        case EE_CONTROL_STALK_ANALOG_DISTANCE_MINUS:
+          LOG_DEBUG("ANALOG_DISTANCE_MINUS\n");
+          gpio_set_state(&leds[2], GPIO_STATE_LOW);
+          break;
+        case EE_CONTROL_STALK_ANALOG_DISTANCE_PLUS:
+          LOG_DEBUG("ANALOG_DISTANCE_MINUS\n");
+          gpio_set_state(&leds[2], GPIO_STATE_LOW);
+          break;
 
-//         // CC_SPEED
-//         case INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_NEUTRAL:
-//           LOG_DEBUG("ANALOG_CC_SPEED_NEUTRAL\n");
-//           break;
-//         case INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_MINUS:
-//           LOG_DEBUG("ANALOG_CC_SPEED_MINUS\n");
-//           break;
-//         case INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_PLUS:
-//           LOG_DEBUG("ANALOG_CC_SPEED_PLUS\n");
-//           break;
+        // CC_SPEED
+        case EE_CONTROL_STALK_ANALOG_CC_SPEED_NEUTRAL:
+          LOG_DEBUG("ANALOG_CC_SPEED_NEUTRAL\n");
+          break;
+        case EE_CONTROL_STALK_ANALOG_CC_SPEED_MINUS:
+          LOG_DEBUG("ANALOG_CC_SPEED_MINUS\n");
+          break;
+        case EE_CONTROL_STALK_ANALOG_CC_SPEED_PLUS:
+          LOG_DEBUG("ANALOG_CC_SPEED_PLUS\n");
+          break;
 
-//         // CC_CANCEL/RESUME
-//         case INPUT_EVENT_CONTROL_STALK_ANALOG_CC_DIGITAL:
-//           LOG_DEBUG("ANALOG_CC_DIGITAL\n");
-//           break;
-//         case INPUT_EVENT_CONTROL_STALK_ANALOG_CC_CANCEL:
-//           LOG_DEBUG("ANALOG_CC_CANCEL\n");
-//           break;
-//         case INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME:
-//           LOG_DEBUG("ANALOG_CC_RESUME\n");
-//           break;
+        // CC_CANCEL/RESUME
+        case EE_CONTROL_STALK_ANALOG_CC_DIGITAL:
+          LOG_DEBUG("ANALOG_CC_DIGITAL\n");
+          break;
+        case EE_CONTROL_STALK_ANALOG_CC_CANCEL:
+          LOG_DEBUG("ANALOG_CC_CANCEL\n");
+          break;
+        case EE_CONTROL_STALK_ANALOG_CC_RESUME:
+          LOG_DEBUG("ANALOG_CC_RESUME\n");
+          break;
 
-//         default:
-//           break;
-//       }
-//     }
-//   }
-// }
+        default:
+          break;
+      }
+  }
+}

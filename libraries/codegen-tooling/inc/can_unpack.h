@@ -64,7 +64,7 @@
 
 #define CAN_UNPACK_STEERING_OUTPUT(msg_ptr, control_stalk_analog_state_u16,     \
                                    control_stalk_digital_state_u16)             \
-  can_unpack_impl_u16((msg_ptr), 2, (control_stalk_analog_state_u16),           \
+  can_unpack_impl_u16((msg_ptr), 4, (control_stalk_analog_state_u16),           \
                       (control_stalk_digital_state_u16), CAN_UNPACK_IMPL_EMPTY, \
                       CAN_UNPACK_IMPL_EMPTY)
 

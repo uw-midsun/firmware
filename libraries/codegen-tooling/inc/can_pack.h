@@ -78,7 +78,7 @@
 #define CAN_PACK_STEERING_OUTPUT(msg_ptr, control_stalk_analog_state_u16,                    \
                                  control_stalk_digital_state_u16)                            \
   can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_STEERING_CONTROLS,                          \
-                    SYSTEM_CAN_MESSAGE_STEERING_OUTPUT, 2, (control_stalk_analog_state_u16), \
+                    SYSTEM_CAN_MESSAGE_STEERING_OUTPUT, 4, (control_stalk_analog_state_u16), \
                     (control_stalk_digital_state_u16), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_PEDAL_OUTPUT(msg_ptr, throttle_u16, throttle_state_u16, mech_brake_u16)          \

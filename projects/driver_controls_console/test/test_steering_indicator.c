@@ -41,18 +41,6 @@ void setup_test(void) {
 
 void teardown_test(void) {}
 
-void test_steering_indicator_working(void) {
-  const uint16_t control_stalk_analog_state = 123;
-  const uint16_t control_stalk_digital_state = 123;
-  CAN_TRANSMIT_STEERING_OUTPUT(control_stalk_analog_state, control_stalk_digital_state);
-
-  MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
-
-  // No event should be raised by the steering indicator
-  Event e;
-  TEST_ASSERT_NOT_OK(event_process(&e));
-}
-
 void test_steering_indicator_analog_distance(void) {
   const uint16_t control_stalk_analog_state = EE_CONTROL_STALK_ANALOG_DISTANCE_NEUTRAL;
 
@@ -108,6 +96,10 @@ void test_steering_indicator_digital_cc_set(void) {
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
+   //process analog event first
+  Event a;
+  event_process(&a);
+
   Event e;
   TEST_ASSERT_OK(event_process(&e));
   TEST_ASSERT_EQUAL(INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_RELEASED, e.id);
@@ -119,6 +111,10 @@ void test_steering_indicator_digital_cc_lane_assist(void) {
   CAN_TRANSMIT_STEERING_OUTPUT(0, control_stalk_digital_state);
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
+
+   //process analog event first
+  Event a;
+  event_process(&a);
 
   Event e;
   TEST_ASSERT_OK(event_process(&e));
@@ -132,6 +128,10 @@ void test_steering_indicator_digital_high_beam_fwd(void) {
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
+   //process analog event first
+  Event a;
+  event_process(&a);
+
   Event e;
   TEST_ASSERT_OK(event_process(&e));
   TEST_ASSERT_EQUAL(INPUT_EVENT_CONTROL_STALK_DIGITAL_HEADLIGHT_FWD_RELEASED, e.id);
@@ -143,6 +143,10 @@ void test_steering_indicator_digital_high_beam_back(void) {
   CAN_TRANSMIT_STEERING_OUTPUT(0, control_stalk_digital_state);
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
+
+   //process analog event first
+  Event a;
+  event_process(&a);
 
   Event e;
   TEST_ASSERT_OK(event_process(&e));
