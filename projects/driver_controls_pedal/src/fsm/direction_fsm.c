@@ -17,78 +17,78 @@ FSM_DECLARE_STATE(state_reverse);
 // Direction selector FSM transition table definitions
 
 FSM_STATE_TRANSITION(state_forward) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_forward);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_DRIVE_UPDATE_REQUESTED, state_forward);
 
-  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_NEUTRAL, state_neutral);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE, state_reverse);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_CENTER_CONSOLE_DIRECTION_NEUTRAL, state_neutral);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_CENTER_CONSOLE_DIRECTION_REVERSE, state_reverse);
 
   // Revert back to neutral on power off/fault
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_OFF, state_neutral);
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_FAULT, state_neutral);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_POWER_STATE_OFF, state_neutral);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_POWER_STATE_FAULT, state_neutral);
 }
 
 FSM_STATE_TRANSITION(state_neutral) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_neutral);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_DRIVE_UPDATE_REQUESTED, state_neutral);
 
-  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_REVERSE, state_reverse);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE, state_forward);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_CENTER_CONSOLE_DIRECTION_REVERSE, state_reverse);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_CENTER_CONSOLE_DIRECTION_DRIVE, state_forward);
 }
 
 FSM_STATE_TRANSITION(state_reverse) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_reverse);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_DRIVE_UPDATE_REQUESTED, state_reverse);
 
-  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_DRIVE, state_forward);
-  FSM_ADD_TRANSITION(INPUT_EVENT_CENTER_CONSOLE_DIRECTION_NEUTRAL, state_neutral);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_CENTER_CONSOLE_DIRECTION_DRIVE, state_forward);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_CENTER_CONSOLE_DIRECTION_NEUTRAL, state_neutral);
 
   // Revert back to neutral on power off/fault
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_OFF, state_neutral);
-  FSM_ADD_TRANSITION(INPUT_EVENT_POWER_STATE_FAULT, state_neutral);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_POWER_STATE_OFF, state_neutral);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_POWER_STATE_FAULT, state_neutral);
 }
 
 // Direction selector FSM arbiter guard functions
 static bool prv_guard_prevent_cruise(const Event *e) {
   // Cruise control is forbidden in neutral/reverse for obvious reasons
-  return e->id != INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME;
+  return e->id != PEDAL_EVENT_INPUT_CONTROL_STALK_ANALOG_CC_RESUME;
 }
 
 // Direction selector FSM output functions
-static void prv_forward_output(FSM *fsm, const Event *e, void *context) {
+static void prv_forward_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_DIRECTION,
                       EE_DRIVE_OUTPUT_DIRECTION_FORWARD);
   event_arbiter_set_guard_fn(guard, NULL);
 
-  if (e->id != INPUT_EVENT_DRIVE_UPDATE_REQUESTED) {
-    event_raise(INPUT_EVENT_DIRECTION_STATE_FORWARD, 0);
+  if (e->id != PEDAL_EVENT_INPUT_DRIVE_UPDATE_REQUESTED) {
+    event_raise(PEDAL_EVENT_INPUT_DIRECTION_STATE_FORWARD, 0);
     LOG_DEBUG("Forward\n");
   }
 }
 
-static void prv_neutral_output(FSM *fsm, const Event *e, void *context) {
+static void prv_neutral_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_DIRECTION,
                       EE_DRIVE_OUTPUT_DIRECTION_NEUTRAL);
   event_arbiter_set_guard_fn(guard, prv_guard_prevent_cruise);
 
-  if (e->id != INPUT_EVENT_DRIVE_UPDATE_REQUESTED) {
-    event_raise(INPUT_EVENT_DIRECTION_STATE_NEUTRAL, 0);
+  if (e->id != PEDAL_EVENT_INPUT_DRIVE_UPDATE_REQUESTED) {
+    event_raise(PEDAL_EVENT_INPUT_DIRECTION_STATE_NEUTRAL, 0);
     LOG_DEBUG("Neutral\n");
   }
 }
 
-static void prv_reverse_output(FSM *fsm, const Event *e, void *context) {
+static void prv_reverse_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   drive_output_update(drive_output_global(), DRIVE_OUTPUT_SOURCE_DIRECTION,
                       EE_DRIVE_OUTPUT_DIRECTION_REVERSE);
   event_arbiter_set_guard_fn(guard, prv_guard_prevent_cruise);
 
-  if (e->id != INPUT_EVENT_DRIVE_UPDATE_REQUESTED) {
-    event_raise(INPUT_EVENT_DIRECTION_STATE_REVERSE, 0);
+  if (e->id != PEDAL_EVENT_INPUT_DRIVE_UPDATE_REQUESTED) {
+    event_raise(PEDAL_EVENT_INPUT_DIRECTION_STATE_REVERSE, 0);
     LOG_DEBUG("Reverse\n");
   }
 }
 
-StatusCode direction_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
+StatusCode direction_fsm_init(Fsm *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_forward, prv_forward_output);
   fsm_state_init(state_neutral, prv_neutral_output);
   fsm_state_init(state_reverse, prv_reverse_output);

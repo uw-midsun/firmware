@@ -1,9 +1,12 @@
 #pragma once
 // Cruise control FSM
 //
-// Note that the cruise FSM sets drive output cruise states. If set, this value
-// should override the pedal state.
+// This is responsible for handling the changes to the Drive Output messages
+// when Cruise Control mode is engaged/disengaged. The target speeds are
+// updated as such.
+//
+// Note: If Cruise Control is active, it overrides the Throttle states.
 #include "event_arbiter.h"
 #include "fsm.h"
 
-StatusCode cruise_fsm_init(FSM *fsm, EventArbiterStorage *storage);
+StatusCode cruise_fsm_init(Fsm *fsm, EventArbiterStorage *storage);

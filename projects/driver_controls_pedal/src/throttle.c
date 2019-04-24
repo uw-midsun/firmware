@@ -107,9 +107,11 @@ static void prv_raise_event_timer_callback(SoftTimerId timer_id, void *context) 
       ads1015_read_raw(storage->pedal_ads1015_storage, storage->calibration_data->channel_secondary,
                        &reading_secondary);
 
-  /* InputEvent pedal_events[NUM_THROTTLE_ZONES] = { INPUT_EVENT_PEDAL_BRAKE,
-   * INPUT_EVENT_PEDAL_COAST, */
-  /* INPUT_EVENT_PEDAL_ACCEL }; */
+  EventId pedal_events[NUM_THROTTLE_ZONES] = {
+    PEDAL_EVENT_INPUT_PEDAL_BRAKE,  //
+    PEDAL_EVENT_INPUT_PEDAL_COAST,  //
+    PEDAL_EVENT_INPUT_PEDAL_ACCEL   //
+  };
 
   if (status_ok(primary_status) && status_ok(secondary_status) &&
       prv_channels_synced(reading_main, reading_secondary, storage)) {
@@ -120,8 +122,7 @@ static void prv_raise_event_timer_callback(SoftTimerId timer_id, void *context) 
         storage->position.numerator = prv_get_numerator_zone(reading_main, zone, storage);
         storage->reading_ok_flag = true;
 
-        // TODO: Send event over CAN
-        /* event_raise(pedal_events[zone], storage->position.numerator); */
+        event_raise(pedal_events[zone], storage->position.numerator);
         break;
       }
     }
@@ -130,8 +131,7 @@ static void prv_raise_event_timer_callback(SoftTimerId timer_id, void *context) 
   if (fault) {
     storage->reading_ok_flag = false;
     storage->position.zone = NUM_THROTTLE_ZONES;
-    // TODO: Send event over CAN
-    /* event_raise(INPUT_EVENT_PEDAL_FAULT, 0); */
+    event_raise(PEDAL_EVENT_INPUT_PEDAL_FAULT, 0);
   }
 
   soft_timer_start_millis(THROTTLE_UPDATE_PERIOD_MS, prv_raise_event_timer_callback, context, NULL);

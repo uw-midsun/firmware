@@ -9,31 +9,32 @@
 #include "throttle.h"
 
 // Pedal FSM state definitions
-// We only really care about braking vs. not braking, but keep the 3 states just to be explicit
+// We only really care about braking vs. not braking, but keep the 3 states
+// just to be explicit
 FSM_DECLARE_STATE(state_brake);
 FSM_DECLARE_STATE(state_coast);
 FSM_DECLARE_STATE(state_accel);
 
 // Pedal FSM transition table definitions
 FSM_STATE_TRANSITION(state_brake) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_brake);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_DRIVE_UPDATE_REQUESTED, state_brake);
 
-  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_COAST, state_coast);
-  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_ACCEL, state_accel);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_PEDAL_COAST, state_coast);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_PEDAL_ACCEL, state_accel);
 }
 
 FSM_STATE_TRANSITION(state_coast) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_coast);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_DRIVE_UPDATE_REQUESTED, state_coast);
 
-  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_BRAKE, state_brake);
-  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_ACCEL, state_accel);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_PEDAL_BRAKE, state_brake);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_PEDAL_ACCEL, state_accel);
 }
 
 FSM_STATE_TRANSITION(state_accel) {
-  FSM_ADD_TRANSITION(INPUT_EVENT_DRIVE_UPDATE_REQUESTED, state_accel);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_DRIVE_UPDATE_REQUESTED, state_accel);
 
-  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_BRAKE, state_brake);
-  FSM_ADD_TRANSITION(INPUT_EVENT_PEDAL_COAST, state_coast);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_PEDAL_BRAKE, state_brake);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_PEDAL_COAST, state_coast);
 }
 
 // Pedal FSM output functions
@@ -56,12 +57,12 @@ static void prv_update_drive_output(void) {
 }
 
 static bool prv_brake_guard(const Event *e) {
-  // Prevent entering cruise if braking
-  return e->id != INPUT_EVENT_CONTROL_STALK_ANALOG_CC_RESUME;
+  // Do not accept attempts to enter cruise when we are braking
+  return e->id != PEDAL_EVENT_INPUT_CONTROL_STALK_ANALOG_CC_RESUME;
 }
 
 // Pedal FSM output functions
-static void prv_brake_output(FSM *fsm, const Event *e, void *context) {
+static void prv_brake_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = context;
   event_arbiter_set_guard_fn(guard, prv_brake_guard);
 
@@ -70,7 +71,7 @@ static void prv_brake_output(FSM *fsm, const Event *e, void *context) {
   prv_update_drive_output();
 }
 
-static void prv_not_brake_output(FSM *fsm, const Event *e, void *context) {
+static void prv_not_brake_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = context;
   event_arbiter_set_guard_fn(guard, NULL);
 
@@ -78,7 +79,7 @@ static void prv_not_brake_output(FSM *fsm, const Event *e, void *context) {
   prv_update_drive_output();
 }
 
-StatusCode pedal_fsm_init(FSM *fsm, EventArbiterStorage *storage) {
+StatusCode pedal_fsm_init(Fsm *fsm, EventArbiterStorage *storage) {
   fsm_state_init(state_brake, prv_brake_output);
   fsm_state_init(state_coast, prv_not_brake_output);
   fsm_state_init(state_accel, prv_not_brake_output);
