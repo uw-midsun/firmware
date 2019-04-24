@@ -6,6 +6,7 @@
 #include "critical_section.h"
 #include "soft_timer.h"
 #include "wavesculptor.h"
+#include "debug_led.h"
 
 // Torque control mode:
 // - velocity = +/-100 m/s
@@ -18,33 +19,37 @@
 // - current = braking force
 
 static void prv_bus_measurement_rx(const GenericCanMsg *msg, void *context) {
+ // bool disabled = critical_section_start();
+  debug_led_toggle_state(DEBUG_LED_RED);
   MotorControllerStorage *storage = context;
   WaveSculptorCanId can_id = { .raw = msg->id };
   WaveSculptorCanData can_data = { .raw = msg->data };
 
   for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
     if (can_id.device_id == storage->settings.ids[i].motor_controller) {
-      storage->bus_measurement[i].bus_voltage = (int16_t)(can_data.bus_measurement.bus_voltage_v);
-      storage->bus_measurement[i].bus_current = (int16_t)(can_data.bus_measurement.bus_current_a);
+      storage->bus_measurement[i].bus_voltage = (int16_t)(can_data.bus_measurement.bus_voltage);
+      storage->bus_measurement[i].bus_current = (int16_t)(can_data.bus_measurement.bus_current);
       storage->bus_rx_bitset |= 1 << i;
 
       if (i == 0) {
         // This controller is deemed to be the source of truth during cruise - copy setpoint
         storage->cruise_current_percentage =
-            fabsf(can_data.bus_measurement.bus_current_a / storage->settings.max_bus_current);
-        storage->cruise_is_braking = (can_data.bus_measurement.bus_current_a < 0.0f);
+            fabsf(can_data.bus_measurement.bus_current / storage->settings.max_bus_current);
+        storage->cruise_is_braking = (can_data.bus_measurement.bus_current < 0.0f);
       }
     }
   }
 
-  if (storage->bus_rx_bitset == (1 << NUM_MOTOR_CONTROLLERS) - 1) {
+  //if (storage->bus_rx_bitset == (1 << NUM_MOTOR_CONTROLLERS) - 1) {
     // Received speed from all motor controllers - clear bitset and broadcast
     storage->bus_rx_bitset = 0;
     storage->settings.bus_measurement_cb(storage->bus_measurement, NUM_MOTOR_CONTROLLERS,
                                          storage->settings.context);
-  }
+  //}
+   // critical_section_end(disabled);
 }
 
+uint8_t counter2 = 1;
 static void prv_velocity_measurement_rx(const GenericCanMsg *msg, void *context) {
   MotorControllerStorage *storage = context;
   WaveSculptorCanId can_id = { .raw = msg->id };
@@ -63,6 +68,55 @@ static void prv_velocity_measurement_rx(const GenericCanMsg *msg, void *context)
     storage->speed_rx_bitset = 0;
     storage->settings.speed_cb(storage->speed_cms, NUM_MOTOR_CONTROLLERS,
                                storage->settings.context);
+  }
+  counter2++;
+  if (counter2 % 20 == 0) {
+    counter2 = 1;
+    debug_led_toggle_state(DEBUG_LED_GREEN);
+  }
+}
+
+static void prv_status_info_rx(const GenericCanMsg *msg, void *context) {
+  MotorControllerStorage *storage = context;
+  WaveSculptorCanId can_id = { .raw = msg->id };
+  WaveSculptorCanData can_data = { .raw = msg->data };
+
+  for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
+    if (can_id.device_id == storage->settings.ids[i].motor_controller) {
+      storage->status_flags[i].limit = can_data.status_info.limit_flags;
+      storage->status_flags[i].error = can_data.status_info.error_flags;
+      storage->status_rx_bitset |= 1 << i;
+      break;
+    }
+  }
+
+  if (storage->status_rx_bitset == (1 << NUM_MOTOR_CONTROLLERS) - 1) {
+    // Received status from all motor controllers - clear bitset and broadcast
+    storage->status_rx_bitset = 0;
+    storage->settings.status_cb(storage->status_flags, NUM_MOTOR_CONTROLLERS,
+                                storage->settings.context);
+  }
+}
+
+static void prv_temp_info_rx(const GenericCanMsg *msg, void *context) {
+  MotorControllerStorage *storage = context;
+  WaveSculptorCanId can_id = { .raw = msg->id };
+  WaveSculptorCanData can_data = { .raw = msg->data };
+
+  for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
+    if (can_id.device_id == storage->settings.ids[i].motor_controller) {
+      storage->temp_measurement[i].heatsink_temp = can_data.sink_motor_temp.heatsink_temp * 10;
+      storage->temp_measurement[i].motor_temp = can_data.sink_motor_temp.motor_temp * 10;
+      storage->temp_rx_bitset |= 1 << i;
+      break;
+    }
+  }
+
+  if (storage->temp_rx_bitset == (1 << NUM_MOTOR_CONTROLLERS) - 1) {
+    // Received status from all motor controllers - clear bitset and broadcast
+    storage->temp_rx_bitset = 0;
+    storage->settings.temp_cb(storage->temp_measurement, NUM_MOTOR_CONTROLLERS,
+                              storage->settings.context);
   }
 }
 
@@ -121,6 +175,16 @@ StatusCode motor_controller_init(MotorControllerStorage *controller,
     status_ok_or_return(generic_can_register_rx(controller->settings.motor_can,
                                                 prv_bus_measurement_rx, GENERIC_CAN_EMPTY_MASK,
                                                 can_id.raw, false, controller));
+
+    can_id.msg_id = WAVESCULPTOR_MEASUREMENT_ID_STATUS;
+    status_ok_or_return(generic_can_register_rx(controller->settings.motor_can,
+                                                prv_status_info_rx, GENERIC_CAN_EMPTY_MASK,
+                                                can_id.raw, false, controller));
+
+    can_id.msg_id = WAVESCULPTOR_MEASUREMENT_ID_SINK_MOTOR_TEMP;
+    status_ok_or_return(generic_can_register_rx(controller->settings.motor_can,
+                                                prv_temp_info_rx, GENERIC_CAN_EMPTY_MASK,
+                                                can_id.raw, false, controller));
   }
 
   return soft_timer_start_millis(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS, prv_periodic_tx, controller,
@@ -131,10 +195,14 @@ StatusCode motor_controller_init(MotorControllerStorage *controller,
 StatusCode motor_controller_set_update_cbs(MotorControllerStorage *controller,
                                            MotorControllerSpeedCb speed_cb,
                                            MotorControllerBusMeasurementCb bus_measurement_cb,
+                                           MotorControllerStatusCb status_cb,
+                                           MotorControllerTempCb temp_cb,
                                            void *context) {
   bool disabled = critical_section_start();
   controller->settings.speed_cb = speed_cb;
   controller->settings.bus_measurement_cb = bus_measurement_cb;
+  controller->settings.status_cb = status_cb;
+  controller->settings.temp_cb = temp_cb;
   controller->settings.context = context;
   critical_section_end(disabled);
 

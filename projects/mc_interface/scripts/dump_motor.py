@@ -3,8 +3,6 @@
 import socket
 import struct
 
-MOTOR_IDS = [0x3, 0x4]
-
 def dump_msg(can_id, data):
     """Parse and print WaveSculptor data.
 
@@ -18,7 +16,7 @@ def dump_msg(can_id, data):
     device_id = can_id >> 5
     msg_id = can_id & 0x1f
 
-    is_motor = (device_id in MOTOR_IDS)
+    is_motor = (device_id == 0x3 or device_id == 0x4)
 
     msg_lookup = {
         False: {
