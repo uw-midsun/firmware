@@ -132,8 +132,7 @@ void prv_adc_callback(SoftTimerId timer_id, void *context) {
 
     uint16_t reading = 0;
     adc_read_converted(channel, &reading);
-    if (i == 2)
-    LOG_DEBUG("Input: %d Channel %d Raw Value: %d\n", i, channel, reading);
+    if (i == 2) LOG_DEBUG("Input: %d Channel %d Raw Value: %d\n", i, channel, reading);
 
     ControlStalkState state = CONTROL_STALK_STATE_FLOATING;
     if (reading <= CONTROL_STALK_681_OHMS_THRESHOLD) {
@@ -157,7 +156,7 @@ void prv_adc_callback(SoftTimerId timer_id, void *context) {
 
 int main() {
   // Standard module inits
-  gpio_init();
+  status_ok_or_return(gpio_init());
   interrupt_init();
   gpio_it_init();
   soft_timer_init();
@@ -191,7 +190,7 @@ int main() {
     status_ok_or_return(adc_set_channel(channel, true));
   }
   // Use a soft timer to check the ADC values
-  soft_timer_start_millis(500, prv_adc_callback, s_analog_inputs, NULL);
+  status_ok_or_return(soft_timer_start_millis(500, prv_adc_callback, s_analog_inputs, NULL));
 
   // Enable Digital Inputs
   GpioSettings digital_input_settings = {
@@ -201,16 +200,16 @@ int main() {
     .alt_function = GPIO_ALTFN_NONE,  //
   };
   for (size_t i = 0; i < SIZEOF_ARRAY(s_digital_inputs); ++i) {
-    gpio_init_pin(&s_digital_inputs[i].pin, &digital_input_settings);
+    status_ok_or_return(gpio_init_pin(&s_digital_inputs[i].pin, &digital_input_settings));
 
     InterruptSettings interrupt_settings = {
       .type = INTERRUPT_TYPE_INTERRUPT,      //
       .priority = INTERRUPT_PRIORITY_NORMAL  //
     };
     // Initialize GPIO Interrupts to raise events to change
-    gpio_it_register_interrupt(&s_digital_inputs[i].pin, &interrupt_settings,
-                               INTERRUPT_EDGE_RISING_FALLING, prv_gpio_callback,
-                               s_digital_inputs[i].can_event);
+    status_ok_or_return(gpio_it_register_interrupt(&s_digital_inputs[i].pin, &interrupt_settings,
+                                                   INTERRUPT_EDGE_RISING_FALLING, prv_gpio_callback,
+                                                   s_digital_inputs[i].can_event));
   }
 
   StatusCode status = NUM_STATUS_CODES;
