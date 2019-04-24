@@ -71,9 +71,9 @@ static CenterConsoleInput s_momentary_switch_input[] = {
 // TODO: Move this into the toggle button array once the pin gets moved to a
 // different EXTI line.
 static CenterConsoleInput s_power_input = {
-    .pin_address = CENTER_CONSOLE_CONFIG_PIN_POWER,           //
-    .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER,   //
-    .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER  //
+  .pin_address = CENTER_CONSOLE_CONFIG_PIN_POWER,       //
+  .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER,   //
+  .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER  //
 };
 
 // Toggle Switches that are used as Toggle buttons
