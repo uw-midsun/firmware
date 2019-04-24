@@ -198,6 +198,11 @@ StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings
     settings->can_bitrate, MCP2515_CANINT_EFLAG | MCP2515_CANINT_RX1IE | MCP2515_CANINT_RX0IE,
     0x00, 0x00,
   };
+
+  for (int i = 0; i < 6; i++) {
+    LOG_DEBUG("Register: %d, %x\n", i, registers[i]); 
+  }
+
   prv_write(storage, MCP2515_CTRL_REG_CNF3, registers, SIZEOF_ARRAY(registers));
 
   // Leave config mode
