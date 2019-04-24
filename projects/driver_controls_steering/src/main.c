@@ -120,10 +120,10 @@ void prv_gpio_callback(const GpioAddress *address, void *context) {
 // 4096 codes for +/-4.096V -> LSB = 2mV
 #define CONTROL_STALK_THRESHOLD(ohms) ((1 << 12) * (ohms) / ((CONTROL_STALK_RESISTOR) + (ohms)))
 // 2k181 +10% resistor = ~2k4, -10% = 1k963
-#define CONTROL_STALK_2181_OHMS_THRESHOLD CONTROL_STALK_THRESHOLD(2400)
+#define CONTROL_STALK_2181_OHMS_THRESHOLD CONTROL_STALK_THRESHOLD(1963)
 // 681 +10% resistor = ~750, -10% = 613
-#define CONTROL_STALK_681_OHMS_THRESHOLD CONTROL_STALK_THRESHOLD(750)
-ControlStalkState stalk_state[NUM_ADC_CHANNELS] = { CONTROL_STALK_STATE_FLOATING };
+#define CONTROL_STALK_681_OHMS_THRESHOLD CONTROL_STALK_THRESHOLD(613)
+ControlStalkState stalk_state[NUM_ADC_CHANNELS] = { NUM_CONTROL_STALK_STATES };
 
 void prv_adc_callback(SoftTimerId timer_id, void *context) {
   for (size_t i = 0; i < SIZEOF_ARRAY(s_analog_inputs); ++i) {
@@ -132,14 +132,11 @@ void prv_adc_callback(SoftTimerId timer_id, void *context) {
 
     uint16_t reading = 0;
     adc_read_converted(channel, &reading);
-    if (i == 2) LOG_DEBUG("Input: %d Channel %d Raw Value: %d\n", i, channel, reading);
 
     ControlStalkState state = CONTROL_STALK_STATE_FLOATING;
     if (reading <= CONTROL_STALK_681_OHMS_THRESHOLD) {
-      LOG_DEBUG("Input: %d Value: 681_OHMS\n", i);
       state = CONTROL_STALK_STATE_681_OHMS;
     } else if (reading <= CONTROL_STALK_2181_OHMS_THRESHOLD) {
-      LOG_DEBUG("Input: %d Value: 2181_OHMS\n", i);
       state = CONTROL_STALK_STATE_2181_OHMS;
     }
 
@@ -181,12 +178,12 @@ int main() {
     .resistor = GPIO_RES_NONE,          //
     .alt_function = GPIO_ALTFN_ANALOG,  //
   };
-  adc_init(ADC_MODE_SINGLE);
+  adc_init(ADC_MODE_CONTINUOUS);
   for (size_t i = 0; i < SIZEOF_ARRAY(s_analog_inputs); ++i) {
     gpio_init_pin(&s_analog_inputs[i].address, &adc_input_settings);
-
     AdcChannel channel = NUM_ADC_CHANNELS;
-    adc_get_channel(s_analog_inputs[i].address, &channel);
+
+    status_ok_or_return(adc_get_channel(s_analog_inputs[i].address, &channel));
     status_ok_or_return(adc_set_channel(channel, true));
   }
   // Use a soft timer to check the ADC values
@@ -215,8 +212,6 @@ int main() {
   StatusCode status = NUM_STATUS_CODES;
   Event e = { 0 };
   while (true) {
-    wait();
-
     while (status_ok(event_process(&e))) {
       can_process_event(&e);
     }
