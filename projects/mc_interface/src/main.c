@@ -32,6 +32,8 @@ static SequencedRelayStorage s_relay_storage;
 static HeartbeatRxHandlerStorage s_powertrain_heartbeat;
 static UartStorage s_uart_storage;
 
+static RelayRxStorage s_relay_rx_storage; 
+
 static void prv_setup_system_can(void) {
   CanSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER,
@@ -71,6 +73,24 @@ static void prv_periodic_debug(SoftTimerId timer_id, void *context) {
   soft_timer_start_seconds(1, prv_periodic_debug, NULL, NULL);
 }
 
+// RX Handler for SYSTEM_CAN_MESSAGE_MOTOR_RELAY
+static StatusCode prv_relay_rx(SystemCanMessage msg_id, uint8_t state, void *context) {
+  GpioAddress *relay = context; 
+  gpio_set_state(relay, state); 
+  return STATUS_CODE_OK; 
+}
+
+static StatusCode prv_motor_relay_init(GpioAddress relay_pin) {
+  // Initialize GPIO as output and state low 
+  GpioSettings gpio_settings = {
+    .direction = GPIO_DIR_OUT,
+    .state = GPIO_STATE_LOW,
+  };
+
+  gpio_init_pin(&relay_pin, &gpio_settings);
+  return relay_rx_configure_handler(&s_relay_rx_storage, SYSTEM_CAN_MESSAGE_MOTOR_RELAY,
+                                    NUM_EE_RELAY_STATES, prv_relay_rx, &relay_pin);}
+
 int main(void) {
   interrupt_init();
   gpio_init();
@@ -106,8 +126,9 @@ int main(void) {
     .right_relay = MC_CFG_RELAY_RIGHT,
     .delay_ms = MC_CFG_RELAY_DELAY_MS,
   };
-
-  sequenced_relay_init(&s_relay_storage, &relay_settings);
+  GpioAddress relay = { .port = GPIO_PORT_A, .pin = 9 }; 
+  prv_motor_relay_init(relay); 
+  //sequenced_relay_init(&s_relay_storage, &relay_settings);
 
   heartbeat_rx_register_handler(&s_powertrain_heartbeat, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT,
                                 heartbeat_rx_auto_ack_handler, NULL);
