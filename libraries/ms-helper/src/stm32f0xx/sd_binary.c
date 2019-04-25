@@ -105,8 +105,9 @@ static void prv_write_dummy(SpiPort spi, uint8_t times) {
 }
 
 static uint8_t prv_write_read_byte(SpiPort spi, uint8_t byte) {
-  spi_tx(spi, &byte, 1);
-  return prv_read_byte(spi);
+  uint8_t result = 0;
+  spi_rx(spi, &result, 1, byte);
+  return result;
 }
 
 static uint8_t prv_wait_byte(SpiPort spi) {
@@ -140,7 +141,6 @@ static SdResponse prv_send_cmd(SpiPort spi, uint8_t cmd, uint32_t arg, uint8_t c
   prv_write_dummy(spi, SD_DUMMY_COUNT_CONST);
 
   spi_tx(spi, frame, SD_SEND_SIZE);
-  spi_rx(spi, frame, SD_SEND_SIZE, 0xFF);
 
   SdResponse res = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
   switch (expected) {

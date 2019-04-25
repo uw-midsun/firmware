@@ -6,10 +6,10 @@
 # $(T)_SRC: $(T)_DIR/src{/$(PLATFORM)}/*.{c,s}
 
 # Specify the libraries you want to include
-$(T)_DEPS := ms-common
+$(T)_DEPS := ms-common FatFs ms-helper
 
 ifeq (x86,$(PLATFORM))
-$(T)_EXCLUDE_TESTS := mcp2515
+$(T)_EXCLUDE_TESTS := mcp2515 sd
 endif
 
 $(T)_test_thermistor_MOCKS := adc_read_converted adc_get_channel adc_set_channel

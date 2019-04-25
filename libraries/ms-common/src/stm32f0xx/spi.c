@@ -81,6 +81,7 @@ StatusCode spi_tx(SpiPort spi, uint8_t *tx_data, size_t tx_len) {
 
     while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_RXNE) == RESET) {
     }
+    SPI_ReceiveData8(s_port[spi].base);
   }
 
   return STATUS_CODE_OK;
