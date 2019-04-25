@@ -140,7 +140,7 @@ int main() {
 
   // CAN initialization
   const CanSettings can_settings = {
-    .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,  // TODO: Change
+    .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS_PEDAL,
     .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = PEDAL_EVENT_CAN_RX,
     .tx_event = PEDAL_EVENT_CAN_TX,
