@@ -43,4 +43,3 @@ typedef struct ControlStalk {
 // Registers callbacks for analog/digital inputs. |ads1015| and |expander| should be initialized.
 StatusCode control_stalk_init(ControlStalk *stalk, Ads1015Storage *ads1015,
                               GpioExpanderStorage *expander);
-                              
