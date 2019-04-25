@@ -15,6 +15,9 @@ typedef struct GpioItInterrupt {
   void *context;
 } GpioItInterrupt;
 
+// We only support allocating GPIO Interrupts such that they are unique for the
+// Pin, as opposed to the (Port, Pin) pair due to the way the EXTI controller
+// muxing works.
 static GpioItInterrupt s_gpio_it_interrupts[GPIO_PINS_PER_PORT];
 
 void gpio_it_init(void) {
