@@ -3,6 +3,7 @@
 #include <inttypes.h>
 #include <stddef.h>
 
+#include "interrupt.h"
 #include "unity.h"
 
 void setup_test(void) {

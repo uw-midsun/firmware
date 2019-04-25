@@ -149,7 +149,7 @@ int main() {
 
   // CAN initialization
   const CanSettings can_settings = {
-    .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,  // TODO: Change
+    .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS_CENTER_CONSOLE,
     .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = CENTER_CONSOLE_EVENT_CAN_RX,
     .tx_event = CENTER_CONSOLE_EVENT_CAN_TX,
@@ -264,7 +264,7 @@ int main() {
   };
   // Enable 5V rail
   GpioAddress rail_5v = CENTER_CONSOLE_CONFIG_PIN_5V_ENABLE;
-  gpio_init_pin(&rail_5v, &enable_output_rail);
+  /* gpio_init_pin(&rail_5v, &enable_output_rail); */
 
   // Enable Driver Display
   GpioAddress display_rail = CENTER_CONSOLE_CONFIG_PIN_DISPLAY_ENABLE;
@@ -277,9 +277,8 @@ int main() {
   //
   // As a workaround, we poll.
   GpioAddress addr = CENTER_CONSOLE_CONFIG_PIN_POWER;
-  // state[0] = prev state
   GpioState prev_state = GPIO_STATE_LOW;
-  GpioState curr_state = GPIO_STATE_LOW;
+  volatile GpioState curr_state = GPIO_STATE_LOW;
 
   Event e = { 0 };
 
