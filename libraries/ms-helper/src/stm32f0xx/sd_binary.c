@@ -105,7 +105,7 @@ static void prv_write_dummy(SpiPort spi, uint8_t times) {
 }
 
 static uint8_t prv_write_read_byte(SpiPort spi, uint8_t byte) {
-  uint8_t result = 0;
+  uint8_t result = 0x00;
   spi_rx(spi, &result, 1, byte);
   return result;
 }
