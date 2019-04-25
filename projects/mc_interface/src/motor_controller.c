@@ -40,12 +40,12 @@ static void prv_bus_measurement_rx(const GenericCanMsg *msg, void *context) {
     }
   }
 
-  //if (storage->bus_rx_bitset == (1 << NUM_MOTOR_CONTROLLERS) - 1) {
+  if (storage->bus_rx_bitset == (1 << NUM_MOTOR_CONTROLLERS) - 1) {
     // Received speed from all motor controllers - clear bitset and broadcast
     storage->bus_rx_bitset = 0;
     storage->settings.bus_measurement_cb(storage->bus_measurement, NUM_MOTOR_CONTROLLERS,
                                          storage->settings.context);
-  //}
+  }
    // critical_section_end(disabled);
 }
 
