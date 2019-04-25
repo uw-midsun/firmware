@@ -23,7 +23,7 @@ static void prv_send(SoftTimerId id, void *context) {
   CanAckRequest req = {
     .callback = prv_ack_handler,
     .context = context,
-    .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_DRIVER_CONTROLS),
+    .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_DRIVER_CONTROLS_PEDAL),
   };
   CAN_TRANSMIT_POWER_DISTRIBUTION_FAULT(&req, storage->reason);
 }
