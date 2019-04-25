@@ -7,6 +7,7 @@
 #include "soft_timer.h"
 #include "spi.h"
 #include "status.h"
+#include "unity.h"
 
 #define READ_BUF_SIZE 25
 
@@ -21,7 +22,7 @@ static void prv_test_callback(const Status *status) {
   printf("CODE: %d:%s:%s %s\n", status->code, status->source, status->caller, status->message);
 }
 
-int main(void) {
+void setup_test(void) {
   LOG_DEBUG("Starting SD card demo\n");
 
   // Useful for debugging
@@ -29,7 +30,7 @@ int main(void) {
 
   if (!status_ok(gpio_init())) {
     LOG_CRITICAL("GPIO did not init\n");
-    return 0;
+    TEST_FAIL();
   }
 
   interrupt_init();
@@ -41,9 +42,13 @@ int main(void) {
   // Initialize SD card
   if (!status_ok(spi_init(SPI_PORT_2, &s_spi_settings))) {
     LOG_CRITICAL("Failed to initialize the Spi module\n");
-    return 0;
+    TEST_FAIL();
   }
+}
 
+void teardown_test(void) {}
+
+void test_read_write(void) {
   //
   // Writing to SD card
   //
@@ -61,7 +66,7 @@ int main(void) {
 
   if (fr != FR_OK) {
     LOG_CRITICAL("Could not mount SD card. FatFs error %d\n", fr);
-    return 0;
+    TEST_FAIL();
   }
 
   // Open a text file on SPI_PORT_2
@@ -69,7 +74,7 @@ int main(void) {
 
   if (fr != FR_OK) {
     LOG_CRITICAL("Could not open message.txt. FatFs error %d\n", fr);
-    return 0;
+    TEST_FAIL();
   }
 
   fr = f_write(&fil, line, btw, &written);
@@ -84,7 +89,7 @@ int main(void) {
 
   if (fr != FR_OK) {
     LOG_CRITICAL("Could not close file. FatFs error %d\n", fr);
-    return 0;
+    TEST_FAIL();
   }
 
   //
@@ -98,7 +103,7 @@ int main(void) {
 
   if (fr != FR_OK) {
     LOG_CRITICAL("Could open file for read. FatFs error %d\n", fr);
-    return 0;
+    TEST_FAIL();
   }
 
   char read_line[READ_BUF_SIZE];
@@ -108,7 +113,7 @@ int main(void) {
 
   if (fr != FR_OK) {
     LOG_CRITICAL("Could read file. FatFs error %d\n", fr);
-    return 0;
+    TEST_FAIL();
   }
 
   LOG_DEBUG("Read %d bytes from file: %s\n", (int)written, read_line);
@@ -117,9 +122,8 @@ int main(void) {
 
   if (fr != FR_OK) {
     LOG_CRITICAL("Could not unmount SD card. FatFs error %d\n", fr);
-    return 0;
+    TEST_FAIL();
   }
 
-  LOG_DEBUG("SD demo finished successfully\n");
-  return 0;
+  TEST_ASSERT_EQUAL_STRING(line, read_line);
 }
