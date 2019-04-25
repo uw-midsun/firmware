@@ -161,7 +161,7 @@ int main() {
 
   // CAN initialization
   const CanSettings can_settings = {
-    .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,
+    .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS_STEERING,
     .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = STEERING_EVENT_CAN_RX,
     .tx_event = STEERING_EVENT_CAN_TX,
