@@ -10,9 +10,9 @@
 // pedal's position. This is used to verify if the readings are valid and "real" i.e if channels
 // are synced. If the data turns out to be stale or channels aren't synced, a timeout event will
 // be raised. The throttle_get_position function simply reads the position from storage.
-#include <string.h>
-
 #include "throttle.h"
+
+#include <string.h>
 
 #include "critical_section.h"
 #include "event_queue.h"
@@ -141,7 +141,13 @@ static void prv_raise_event_timer_callback(SoftTimerId timer_id, void *context) 
 // setting the periodic safety check callback.
 StatusCode throttle_init(ThrottleStorage *storage, ThrottleCalibrationData *calibration_data,
                          Ads1015Storage *pedal_ads1015_storage) {
-  if (storage == NULL || calibration_data == NULL || pedal_ads1015_storage == NULL) {
+  if (storage == NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+  if (calibration_data == NULL) {
+    return status_code(STATUS_CODE_INVALID_ARGS);
+  }
+  if (pedal_ads1015_storage == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
   memset(storage, 0, sizeof(*storage));

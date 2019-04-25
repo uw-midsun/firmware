@@ -1,5 +1,7 @@
 #include "event_arbiter.h"
+
 #include <stddef.h>
+
 #include "log.h"
 
 StatusCode event_arbiter_init(EventArbiterStorage *storage) {

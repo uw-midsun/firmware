@@ -1,16 +1,17 @@
+#include "mech_brake_calibration.h"
+
 #include <limits.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
-#include <stdbool.h>
 #include "ads1015.h"
 #include "delay.h"
 #include "gpio_it.h"
 #include "i2c.h"
 #include "interrupt.h"
 #include "log.h"
-#include "mech_brake_calibration.h"
 #include "soft_timer.h"
 #include "status.h"
 #include "unity.h"

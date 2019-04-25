@@ -24,6 +24,8 @@
 
 #include "config.h"
 
+#include "cruise.h"
+#include "drive_output.h"
 #include "event_arbiter.h"
 #include "fsm.h"
 #include "fsm/cruise_fsm.h"
@@ -49,6 +51,7 @@ typedef enum {
   DRIVER_CONTROLS_FSM_HORN,
   NUM_DRIVER_CONTROLS_FSMS,
 } DriverControlsFsm;
+
 static PedalCalibBlob s_calib_blob;
 static CanStorage s_can_storage;
 static Ads1015Storage s_pedal_ads1015;
@@ -148,14 +151,14 @@ int main() {
   status_ok_or_return(can_init(&s_can_storage, &can_settings));
 
   // Initialize all FSMs and the Arbiter
-  event_arbiter_init(&s_event_arbiter);
+  status_ok_or_return(event_arbiter_init(&s_event_arbiter));
   DriverControlsFsmInitFn init_fns[] = {
     cruise_fsm_init,      direction_fsm_init, mechanical_brake_fsm_init,
     pedal_fsm_init,       power_fsm_init,     headlight_fsm_init,
     turn_signal_fsm_init, hazards_fsm_init,   horn_fsm_init,
   };
   for (size_t i = 0; i < NUM_DRIVER_CONTROLS_FSMS; i++) {
-    init_fns[i](&s_fsms[i], &s_event_arbiter);
+    status_ok_or_return(init_fns[i](&s_fsms[i], &s_event_arbiter));
   }
 
   // Setup ADC readings
@@ -164,19 +167,18 @@ int main() {
     .scl = PEDAL_CONFIG_PIN_I2C_SDL,
     .sda = PEDAL_CONFIG_PIN_I2C_SDA,  //
   };
-  i2c_init(I2C_PORT_2, &i2c_settings);
-  GpioAddress ready_pin = {
-    .port = GPIO_PORT_B,  //
-    .pin = 2,             //
-  };
-  ads1015_init(&s_pedal_ads1015, I2C_PORT_1, ADS1015_ADDRESS_GND, &ready_pin);
+  status_ok_or_return(i2c_init(I2C_PORT_2, &i2c_settings));
+  GpioAddress ready_pin = PEDAL_CONFIG_PIN_ADS1015_READY;
+  status_ok_or_return(ads1015_init(&s_pedal_ads1015, I2C_PORT_2, ADS1015_ADDRESS_GND, &ready_pin));
 
   // Pedal
   // We expect to grab the calibration data, which will contain the mappings
   // for which channels are MAIN and SECONDARY
   // This should be ADS1015_CHANNEL_0 and ADS1015_CHANNEL_1
+  status_ok_or_return(calib_init(&s_calib_blob, sizeof(s_calib_blob), false));
   PedalCalibBlob *pedal_calib_blob = calib_blob();
-  throttle_init(throttle_global(), &pedal_calib_blob->throttle_calib, &s_pedal_ads1015);
+  status_ok_or_return(
+      throttle_init(throttle_global(), &pedal_calib_blob->throttle_calib, &s_pedal_ads1015));
 
   // Mechanical Brake
   const MechBrakeSettings mech_brake_settings = {
@@ -185,28 +187,37 @@ int main() {
     .bounds_tolerance_percentage = 5,
     .channel = ADS1015_CHANNEL_2,
   };
-  mech_brake_init(mech_brake_global(), &mech_brake_settings, &pedal_calib_blob->mech_brake_calib);
+  status_ok_or_return(mech_brake_init(mech_brake_global(), &mech_brake_settings,
+                                      &pedal_calib_blob->mech_brake_calib));
 
-  brake_signal_init();
+  status_ok_or_return(brake_signal_init());
+
+  // Drive Output messages
+  drive_output_init(drive_output_global(), PEDAL_EVENT_INPUT_PEDAL_WATCHDOG_FAULT,
+                    PEDAL_EVENT_INPUT_DRIVE_UPDATE_REQUESTED);
+
+  // Cruise
+  status_ok_or_return(cruise_init(cruise_global()));
 
   // Register CAN RX handlers to handle data from Driver Controls slaves
   // Steering Interface
-  can_register_rx_handler(SYSTEM_CAN_MESSAGE_STEERING_EVENT, prv_steering_rx_handler, NULL);
+  status_ok_or_return(
+      can_register_rx_handler(SYSTEM_CAN_MESSAGE_STEERING_EVENT, prv_steering_rx_handler, NULL));
   // Center Console
-  can_register_rx_handler(SYSTEM_CAN_MESSAGE_CENTER_CONSOLE_EVENT, prv_center_console_rx_handler,
-                          NULL);
+  status_ok_or_return(can_register_rx_handler(SYSTEM_CAN_MESSAGE_CENTER_CONSOLE_EVENT,
+                                              prv_center_console_rx_handler, NULL));
   // TODO: Allocate a CAN message or provide a way to disable regen braking
   // behaviour.
 
   StatusCode status = NUM_STATUS_CODES;
   Event e = { 0 };
   while (true) {
-    wait();
-
     while (status_ok(event_process(&e))) {
       can_process_event(&e);
       event_arbiter_process_event(&s_event_arbiter, &e);
+
       brake_signal_process_event(&e);
+      cruise_handle_event(cruise_global(), &e);
     }
   }
 

@@ -11,6 +11,7 @@
 // * INPUT_EVENT_CONTROL_STALK_ANALOG_CC_SPEED_MINUS: Offsets the target speed by -CRUISE_OFFSET_CMS
 #include <stdbool.h>
 #include <stdint.h>
+
 #include "event_queue.h"
 #include "soft_timer.h"
 #include "status.h"

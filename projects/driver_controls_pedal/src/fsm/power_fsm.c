@@ -51,7 +51,8 @@ FSM_STATE_TRANSITION(state_charging) {
 FSM_STATE_TRANSITION(state_on) {
   FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_CENTER_CONSOLE_POWER_PRESSED, state_off);
 
-  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_BPS_FAULT, state_fault);
+  // TODO(karlding): Uncomment this
+  // FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_BPS_FAULT, state_fault);
 }
 
 FSM_STATE_TRANSITION(state_fault) {
@@ -65,8 +66,8 @@ static bool prv_guard_off(const Event *e) {
   // This also prevents lights, etc. from being turned on unless the unprotected rail is powered.
   switch (e->id) {
     case PEDAL_EVENT_INPUT_CENTER_CONSOLE_POWER_PRESSED:
-    case PEDAL_EVENT_INPUT_MECHANICAL_BRAKE_RELEASED:
-    case PEDAL_EVENT_INPUT_MECHANICAL_BRAKE_PRESSED:
+    /* case PEDAL_EVENT_INPUT_MECHANICAL_BRAKE_RELEASED: */
+    /* case PEDAL_EVENT_INPUT_MECHANICAL_BRAKE_PRESSED: */
     case PEDAL_EVENT_INPUT_BPS_FAULT:
     case PEDAL_EVENT_INPUT_POWER_STATE_OFF:
     case PEDAL_EVENT_INPUT_POWER_STATE_CHARGE:
@@ -74,6 +75,7 @@ static bool prv_guard_off(const Event *e) {
     case PEDAL_EVENT_INPUT_POWER_STATE_DRIVE:
     case PEDAL_EVENT_INPUT_HAZARDS_STATE_OFF:
     case PEDAL_EVENT_INPUT_CENTER_CONSOLE_HAZARDS_PRESSED:
+      LOG_DEBUG("e->id: %d\n", e->id);
       return true;
     default:
       return false;
@@ -83,7 +85,8 @@ static bool prv_guard_off(const Event *e) {
 // Power FSM output functions
 static void prv_off_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
-  power_distribution_controller_send_update(EE_POWER_STATE_IDLE);
+  // TODO(karlding): Uncomment this
+  // power_distribution_controller_send_update(EE_POWER_STATE_IDLE);
 
   // Clear BPS indicators
   // bps_indicator_clear_fault();

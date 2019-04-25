@@ -1,4 +1,5 @@
 #include "cruise.h"
+
 #include "can.h"
 #include "can_msg_defs.h"
 #include "can_transmit.h"
@@ -95,6 +96,7 @@ bool cruise_handle_event(CruiseStorage *cruise, const Event *e) {
                        &cruise->repeat_timer);
       break;
     case PEDAL_EVENT_INPUT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED:
+      // Commit the current cruise target
       cruise_set_target_cms(cruise, cruise->current_speed_cms);
       break;
     default:

@@ -22,4 +22,24 @@ the effects of 2.
 
 ## States
 
-The Pedal board is responsible for arbitrating 
+The Pedal board is responsible for arbitrating
+
+##
+
+Cruise control is transactional, in that target speeds must be "requested"
+and "committed" before they can actually "enable" Cruise Control.
+
+We define 3 separate states:
+
+* Cruise Off: cruise control is off
+* Cruise Ready: cruise control is waiting to commit the Cruise Target
+* Cruise On: cruise control is active and maintaining the current Cruise Target
+
+In order to activate Cruise, we trigger Cruise Control on the Stalk using the
+`CONTROL_STALK_DIGITAL_CC_SET`, which enables the analog input. On the first
+time Cruise is activated
+
+Pressing the mechanical brake results in transitioning back to the Cruise Ready
+state, which 
+
+The `SET` button is used to "commit" the current target speed.

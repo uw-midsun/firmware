@@ -2,9 +2,14 @@
 // Drive command output module
 // Requires soft timers and CAN to be initialized.
 //
-// Periodically broadcasts a drive command to the motor controllers with the current state
-// Requires data to be updated periodically to ensure that data is not stale.
+// Periodically broadcasts a drive command to the motor controllers with the
+// current state. The current state is exposed via CAN in the form of the
+// DRIVE_OUTPUT message.
+//
+// The data is updated periodically to ensure that data is not stale via
+// raising events in the FSM every DRIVE_OUTPUT_BROADCAST_MS.
 #include <stdint.h>
+
 #include "event_queue.h"
 #include "soft_timer.h"
 #include "status.h"
@@ -24,11 +29,15 @@ typedef enum {
 } DriveOutputSource;
 
 typedef struct DriveOutputStorage {
+  // The scaled ADC reading over the denominator
   int16_t data[NUM_DRIVE_OUTPUT_SOURCES];
-  int16_t pedal_requested_data;
+  // The EventId to raise when a Pedal Fault occurs
   EventId fault_event;
+  // The EventId to raise when new data is requested
   EventId update_req_event;
+  // Used to ensure that the ADS1015 is still alive
   SoftTimerId watchdog_timer;
+  // Used to broadcast DRIVE_OUTPUT messages over CAN
   SoftTimerId output_timer;
   uint8_t watchdog;
 } DriveOutputStorage;

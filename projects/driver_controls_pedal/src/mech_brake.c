@@ -1,21 +1,15 @@
+#include "mech_brake.h"
+
 #include <limits.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
-#include <stdbool.h>
 #include "ads1015.h"
-#include "delay.h"
-#include "event_arbiter.h"
 #include "event_queue.h"
-#include "gpio_it.h"
-
 #include "exported_enums.h"
 #include "input_event.h"
 #include "log.h"
-#include "mech_brake.h"
-#include "soft_timer.h"
-#include "status.h"
-#include "wait.h"
 
 static MechBrakeStorage s_mech_brake;
 
@@ -56,6 +50,7 @@ StatusCode mech_brake_init(MechBrakeStorage *storage, const MechBrakeSettings *s
   if (storage == NULL || data == NULL || settings == NULL) {
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
+
   memset(storage, 0, sizeof(*storage));
   storage->calibration_data = *data;
   storage->channel = settings->channel;
