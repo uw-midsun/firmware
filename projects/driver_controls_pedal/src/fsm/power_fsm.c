@@ -86,7 +86,7 @@ static bool prv_guard_off(const Event *e) {
 static void prv_off_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
   // TODO(karlding): Uncomment this
-  // power_distribution_controller_send_update(EE_POWER_STATE_IDLE);
+  power_distribution_controller_send_update(EE_POWER_STATE_IDLE);
 
   // Clear BPS indicators
   // bps_indicator_clear_fault();
