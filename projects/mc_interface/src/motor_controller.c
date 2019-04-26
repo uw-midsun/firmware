@@ -19,7 +19,7 @@
 // - current = braking force
 
 static void prv_bus_measurement_rx(const GenericCanMsg *msg, void *context) {
- // bool disabled = critical_section_start();
+  bool disabled = critical_section_start();
   debug_led_toggle_state(DEBUG_LED_RED);
   MotorControllerStorage *storage = context;
   WaveSculptorCanId can_id = { .raw = msg->id };
@@ -46,7 +46,7 @@ static void prv_bus_measurement_rx(const GenericCanMsg *msg, void *context) {
     storage->settings.bus_measurement_cb(storage->bus_measurement, NUM_MOTOR_CONTROLLERS,
                                          storage->settings.context);
   }
-   // critical_section_end(disabled);
+   critical_section_end(disabled);
 }
 
 uint8_t counter2 = 1;

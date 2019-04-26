@@ -144,7 +144,7 @@ static void prv_handle_error(Mcp2515Storage *storage, uint8_t int_flags, uint8_t
 }
 
 static void prv_handle_int(const GpioAddress *address, void *context) {
-  //bool disabled = critical_section_start();
+  bool disabled = critical_section_start();
   Mcp2515Storage *storage = context;
 
   // Read CANINTF and EFLG
@@ -159,7 +159,7 @@ static void prv_handle_int(const GpioAddress *address, void *context) {
   // Either RX or error
   prv_handle_rx(storage, regs.canintf);
   prv_handle_error(storage, regs.canintf, regs.eflg);
-  //critical_section_end(disabled);
+  critical_section_end(disabled);
 }
 
 StatusCode mcp2515_init(Mcp2515Storage *storage, const Mcp2515Settings *settings) {
