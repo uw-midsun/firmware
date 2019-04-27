@@ -14,6 +14,7 @@
 #include "can.h"
 #include "can_msg_defs.h"
 #include "can_transmit.h"
+#include "can_unpack.h"
 
 #include "log.h"
 
@@ -22,6 +23,7 @@
 #include "button_led.h"
 #include "button_led_fsm.h"
 #include "button_led_radio.h"
+#include "exported_enums.h"
 
 #include "bms_heartbeat.h"
 
@@ -88,17 +90,14 @@ static CenterConsoleInput s_radio_button_group[] = {
   {
       .pin_address = CENTER_CONSOLE_CONFIG_PIN_DRIVE,
       .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_DRIVE,
-      .local_event = CENTER_CONSOLE_EVENT_BUTTON_DRIVE_PRESSED,
   },
   {
       .pin_address = CENTER_CONSOLE_CONFIG_PIN_NEUTRAL,
       .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_NEUTRAL,
-      .local_event = CENTER_CONSOLE_EVENT_BUTTON_NEUTRAL_PRESSED,
   },
   {
       .pin_address = CENTER_CONSOLE_CONFIG_PIN_REVERSE,
       .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_REVERSE,
-      .local_event = CENTER_CONSOLE_EVENT_BUTTON_REVERSE_PRESSED,
   }
 };
 
@@ -117,7 +116,6 @@ void prv_gpio_toggle_callback(const GpioAddress *address, void *context) {
 void prv_gpio_radio_callback(const GpioAddress *address, void *context) {
   // Radio buttons switch state by using the event id and passing 0 data
   CenterConsoleInput *toggle_button = context;
-  event_raise(toggle_button->local_event, 0);
 
   // Raise event via CAN message
   CAN_TRANSMIT_CENTER_CONSOLE_EVENT(toggle_button->can_event, 0);
@@ -137,6 +135,27 @@ void prv_adc_monitor(SoftTimerId timer_id, void *context) {
   // TODO: Any logic here to monitor 5V rail and raise appropriate event
 
   soft_timer_start_millis(30, prv_adc_monitor, context, NULL);
+}
+
+// Used to update the direction LED indicators
+StatusCode prv_direction_rx_handler(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
+  uint16_t throttle = 0;
+  uint16_t direction = 0;
+  uint16_t cruise_control = 0;
+  uint16_t mech_brake = 0;
+  CAN_UNPACK_DRIVE_OUTPUT(msg, &throttle, &direction, &cruise_control, &mech_brake);
+
+  EventId can_to_local_map[] = {
+    [EE_DRIVE_OUTPUT_DIRECTION_NEUTRAL] = CENTER_CONSOLE_EVENT_DRIVE_OUTPUT_DIRECTION_NEUTRAL,
+    [EE_DRIVE_OUTPUT_DIRECTION_FORWARD] = CENTER_CONSOLE_EVENT_DRIVE_OUTPUT_DIRECTION_DRIVE,
+    [EE_DRIVE_OUTPUT_DIRECTION_REVERSE] = CENTER_CONSOLE_EVENT_DRIVE_OUTPUT_DIRECTION_REVERSE,
+  };
+  if (mech_brake >= SIZEOF_ARRAY(can_to_local_map)) {
+    return status_code(STATUS_CODE_OUT_OF_RANGE);
+  }
+
+  event_raise(can_to_local_map[mech_brake], 0);
+  return STATUS_CODE_OK;
 }
 
 int main() {
@@ -186,8 +205,8 @@ int main() {
     gpio_init_pin(&s_toggle_switch_input[i].pin_address, &button_input_settings);
 
     InterruptSettings interrupt_settings = {
-      .type = INTERRUPT_TYPE_INTERRUPT,      //
-      .priority = INTERRUPT_PRIORITY_NORMAL  //
+      .type = INTERRUPT_TYPE_INTERRUPT,       //
+      .priority = INTERRUPT_PRIORITY_NORMAL,  //
     };
     // Initialize GPIO Interrupts to raise events to change LED status
     gpio_it_register_interrupt(&s_toggle_switch_input[i].pin_address, &interrupt_settings,
@@ -199,14 +218,18 @@ int main() {
     gpio_init_pin(&s_radio_button_group[i].pin_address, &button_input_settings);
 
     InterruptSettings interrupt_settings = {
-      .type = INTERRUPT_TYPE_INTERRUPT,      //
-      .priority = INTERRUPT_PRIORITY_NORMAL  //
+      .type = INTERRUPT_TYPE_INTERRUPT,       //
+      .priority = INTERRUPT_PRIORITY_NORMAL,  //
     };
     // Initialize GPIO Interrupts to raise events to change LED status
     gpio_it_register_interrupt(&s_radio_button_group[i].pin_address, &interrupt_settings,
                                INTERRUPT_EDGE_RISING, prv_gpio_radio_callback,
                                &s_radio_button_group[i]);
   }
+
+  // Enable RX handler to update Direction LEDs
+  status_ok_or_return(
+      can_register_rx_handler(SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT, prv_direction_rx_handler, NULL));
 
   // Use I/O Expander for button LEDs
   I2CSettings settings = {
@@ -275,7 +298,7 @@ int main() {
   // is multiplexed, and so you can't trigger the interrupt from multiple
   // ports.
   //
-  // As a workaround, we poll.
+  // As a workaround, we poll in the main loop
   GpioAddress addr = CENTER_CONSOLE_CONFIG_PIN_POWER;
   GpioState prev_state = GPIO_STATE_LOW;
   volatile GpioState curr_state = GPIO_STATE_LOW;
