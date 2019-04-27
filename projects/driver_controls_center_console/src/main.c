@@ -150,11 +150,11 @@ StatusCode prv_direction_rx_handler(const CanMessage *msg, void *context, CanAck
     [EE_DRIVE_OUTPUT_DIRECTION_FORWARD] = CENTER_CONSOLE_EVENT_DRIVE_OUTPUT_DIRECTION_DRIVE,
     [EE_DRIVE_OUTPUT_DIRECTION_REVERSE] = CENTER_CONSOLE_EVENT_DRIVE_OUTPUT_DIRECTION_REVERSE,
   };
-  if (mech_brake >= SIZEOF_ARRAY(can_to_local_map)) {
+  if (direction >= SIZEOF_ARRAY(can_to_local_map)) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 
-  event_raise(can_to_local_map[mech_brake], 0);
+  event_raise(can_to_local_map[direction], 0);
   return STATUS_CODE_OK;
 }
 
