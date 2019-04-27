@@ -22,7 +22,7 @@ static StatusCode prv_bms_rx(const CanMessage *msg, void *context, CanAckStatus 
     LOG_DEBUG("Emergency: BPS Fault\n");
 
     // We need to cause a transition in the LED FSM
-    event_raise(CENTER_CONSOLE_EVENT_BUTTON_TOGGLE_STATE, EE_CENTER_CONSOLE_DIGITAL_INPUT_BPS);
+    event_raise(CENTER_CONSOLE_EVENT_BUTTON_SET_STATE_ON, EE_CENTER_CONSOLE_DIGITAL_INPUT_BPS);
   }
 
   return STATUS_CODE_OK;

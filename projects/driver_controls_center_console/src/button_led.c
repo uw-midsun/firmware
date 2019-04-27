@@ -18,8 +18,6 @@ void button_led_init(GpioExpanderStorage *storage, GpioExpanderPin *pins) {
   button_led_fsm_create(&s_button_led_fsms[CENTER_CONSOLE_BUTTON_LED_PWR], storage,
                         EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER, pins[CENTER_CONSOLE_BUTTON_LED_PWR],
                         "PowerIndicator");
-  button_led_fsm_create(&s_button_led_fsms[CENTER_CONSOLE_BUTTON_LED_REVERSE], storage,
-                        EE_CENTER_CONSOLE_DIGITAL_INPUT_REVERSE,
   button_led_fsm_create(&s_button_led_fsms[CENTER_CONSOLE_BUTTON_LED_DRL], storage,
                         EE_CENTER_CONSOLE_DIGITAL_INPUT_DRL, pins[CENTER_CONSOLE_BUTTON_LED_DRL],
                         "DRLIndicator");

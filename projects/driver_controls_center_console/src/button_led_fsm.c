@@ -29,12 +29,12 @@ FSM_DECLARE_STATE(button_led_on);
 FSM_DECLARE_STATE(button_led_off);
 
 FSM_STATE_TRANSITION(button_led_on) {
-  FSM_ADD_GUARDED_TRANSITION(CENTER_CONSOLE_EVENT_BUTTON_TOGGLE_STATE, prv_guard_select_button,
+  FSM_ADD_GUARDED_TRANSITION(CENTER_CONSOLE_EVENT_BUTTON_SET_STATE_OFF, prv_guard_select_button,
                              button_led_off);
 }
 
 FSM_STATE_TRANSITION(button_led_off) {
-  FSM_ADD_GUARDED_TRANSITION(CENTER_CONSOLE_EVENT_BUTTON_TOGGLE_STATE, prv_guard_select_button,
+  FSM_ADD_GUARDED_TRANSITION(CENTER_CONSOLE_EVENT_BUTTON_SET_STATE_ON, prv_guard_select_button,
                              button_led_on);
 }
 

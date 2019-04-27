@@ -20,12 +20,12 @@
 
 #include "config.h"
 
+#include "bms_heartbeat.h"
 #include "button_led.h"
 #include "button_led_fsm.h"
 #include "button_led_radio.h"
+#include "center_console_flags.h"
 #include "exported_enums.h"
-
-#include "bms_heartbeat.h"
 
 static CanStorage s_can_storage = { 0 };
 static GpioExpanderStorage s_expander;
@@ -106,8 +106,6 @@ void prv_gpio_toggle_callback(const GpioAddress *address, void *context) {
   // CENTER_CONSOLE_EVENT_BUTTON_TOGGLE_STATE, with the data field as the
   // actual IO we are toggling
   CenterConsoleInput *toggle_button = context;
-  event_raise(CENTER_CONSOLE_EVENT_BUTTON_TOGGLE_STATE, toggle_button->local_event);
-  LOG_DEBUG("Callback called\n");
 
   // Raise event via CAN message
   CAN_TRANSMIT_CENTER_CONSOLE_EVENT(toggle_button->can_event, 0);
@@ -138,7 +136,8 @@ void prv_adc_monitor(SoftTimerId timer_id, void *context) {
 }
 
 // Used to update the direction LED indicators
-StatusCode prv_direction_rx_handler(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
+static StatusCode prv_direction_rx_handler(const CanMessage *msg, void *context,
+                                           CanAckStatus *ack_reply) {
   uint16_t throttle = 0;
   uint16_t direction = 0;
   uint16_t cruise_control = 0;
@@ -155,6 +154,59 @@ StatusCode prv_direction_rx_handler(const CanMessage *msg, void *context, CanAck
   }
 
   event_raise(can_to_local_map[direction], 0);
+  return STATUS_CODE_OK;
+}
+
+static StatusCode prv_lights_state_rx_handler(const CanMessage *msg, void *context,
+                                              CanAckStatus *ack_reply) {
+  uint8_t light_id = 0;
+  uint8_t light_state = 0;
+  CAN_UNPACK_LIGHTS_STATE(msg, &light_id, &light_state);
+
+  if (light_state >= NUM_EE_LIGHT_STATES) {
+    return status_code(STATUS_CODE_OUT_OF_RANGE);
+  }
+  if (light_id >= NUM_EE_LIGHT_TYPES) {
+    return status_code(STATUS_CODE_OUT_OF_RANGE);
+  }
+
+  EventId state_to_local_event_mapping[] = {
+    [EE_LIGHT_STATE_ON] = CENTER_CONSOLE_EVENT_BUTTON_SET_STATE_ON,
+    [EE_LIGHT_STATE_OFF] = CENTER_CONSOLE_EVENT_BUTTON_SET_STATE_OFF,
+  };
+
+  // If it's one of the Light statuses we care about then process it
+  switch (light_id) {
+    case EE_LIGHT_TYPE_HIGH_BEAMS:
+      // Fall through
+    case EE_LIGHT_TYPE_LOW_BEAMS:
+      // Fall through
+    case EE_LIGHT_TYPE_DRL:
+      // Fall through
+    case EE_LIGHT_TYPE_SIGNAL_HAZARD:
+      event_raise(state_to_local_event_mapping[light_state], light_id);
+      break;
+    default:
+      return STATUS_CODE_OK;
+  }
+
+  return STATUS_CODE_OK;
+}
+
+static StatusCode prv_power_state_rx_handler(const CanMessage *msg, void *context,
+                                             CanAckStatus *ack_reply) {
+  uint8_t power_state = 0;
+  CAN_UNPACK_POWER_STATE(msg, &power_state);
+
+  switch (power_state) {
+    case EE_POWER_STATE_DRIVE:
+      event_raise(CENTER_CONSOLE_EVENT_BUTTON_SET_STATE_ON, EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER);
+      break;
+    default:
+      event_raise(CENTER_CONSOLE_EVENT_BUTTON_SET_STATE_OFF, EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER);
+      break;
+  }
+
   return STATUS_CODE_OK;
 }
 
@@ -186,45 +238,57 @@ int main() {
     .alt_function = GPIO_ALTFN_NONE,  //
   };
   for (size_t i = 0; i < SIZEOF_ARRAY(s_momentary_switch_input); ++i) {
-    gpio_init_pin(&s_momentary_switch_input[i].pin_address, &button_input_settings);
+    status_ok_or_return(
+        gpio_init_pin(&s_momentary_switch_input[i].pin_address, &button_input_settings));
 
     InterruptSettings interrupt_settings = {
-      .type = INTERRUPT_TYPE_INTERRUPT,      //
-      .priority = INTERRUPT_PRIORITY_NORMAL  //
+      .type = INTERRUPT_TYPE_INTERRUPT,       //
+      .priority = INTERRUPT_PRIORITY_NORMAL,  //
     };
     // Initialize GPIO Interrupts to raise events to change LED status
-    gpio_it_register_interrupt(&s_momentary_switch_input[i].pin_address, &interrupt_settings,
-                               INTERRUPT_EDGE_RISING, prv_gpio_toggle_callback,
-                               &s_momentary_switch_input[i]);
+    status_ok_or_return(gpio_it_register_interrupt(
+        &s_momentary_switch_input[i].pin_address, &interrupt_settings, INTERRUPT_EDGE_RISING,
+        prv_gpio_toggle_callback, &s_momentary_switch_input[i]));
   }
+
+  // Enable RX handler to update car Lights LEDs
+  status_ok_or_return(
+      can_register_rx_handler(SYSTEM_CAN_MESSAGE_LIGHTS_STATE, prv_lights_state_rx_handler, NULL));
+
   // TODO: Move this into the above once this gets fixed in hardware
-  gpio_init_pin(&s_power_input.pin_address, &button_input_settings);
+  status_ok_or_return(gpio_init_pin(&s_power_input.pin_address, &button_input_settings));
+
+  // Enable RX handler to update power state LED
+  status_ok_or_return(
+      can_register_rx_handler(SYSTEM_CAN_MESSAGE_POWER_STATE, prv_power_state_rx_handler, NULL));
 
   // We need a special case for the Hazards button, since it is a toggle switch
   for (size_t i = 0; i < SIZEOF_ARRAY(s_toggle_switch_input); ++i) {
-    gpio_init_pin(&s_toggle_switch_input[i].pin_address, &button_input_settings);
+    status_ok_or_return(
+        gpio_init_pin(&s_toggle_switch_input[i].pin_address, &button_input_settings));
 
     InterruptSettings interrupt_settings = {
       .type = INTERRUPT_TYPE_INTERRUPT,       //
       .priority = INTERRUPT_PRIORITY_NORMAL,  //
     };
     // Initialize GPIO Interrupts to raise events to change LED status
-    gpio_it_register_interrupt(&s_toggle_switch_input[i].pin_address, &interrupt_settings,
-                               INTERRUPT_EDGE_RISING_FALLING, prv_gpio_toggle_callback,
-                               &s_toggle_switch_input[i]);
+    status_ok_or_return(gpio_it_register_interrupt(
+        &s_toggle_switch_input[i].pin_address, &interrupt_settings, INTERRUPT_EDGE_RISING_FALLING,
+        prv_gpio_toggle_callback, &s_toggle_switch_input[i]));
   }
 
   for (size_t i = 0; i < SIZEOF_ARRAY(s_radio_button_group); ++i) {
-    gpio_init_pin(&s_radio_button_group[i].pin_address, &button_input_settings);
+    status_ok_or_return(
+        gpio_init_pin(&s_radio_button_group[i].pin_address, &button_input_settings));
 
     InterruptSettings interrupt_settings = {
       .type = INTERRUPT_TYPE_INTERRUPT,       //
       .priority = INTERRUPT_PRIORITY_NORMAL,  //
     };
     // Initialize GPIO Interrupts to raise events to change LED status
-    gpio_it_register_interrupt(&s_radio_button_group[i].pin_address, &interrupt_settings,
-                               INTERRUPT_EDGE_RISING, prv_gpio_radio_callback,
-                               &s_radio_button_group[i]);
+    status_ok_or_return(gpio_it_register_interrupt(
+        &s_radio_button_group[i].pin_address, &interrupt_settings, INTERRUPT_EDGE_RISING,
+        prv_gpio_radio_callback, &s_radio_button_group[i]));
   }
 
   // Enable RX handler to update Direction LEDs
@@ -237,16 +301,16 @@ int main() {
     .sda = CENTER_CONSOLE_CONFIG_PIN_I2C_SDA,  //
     .scl = CENTER_CONSOLE_CONFIG_PIN_I2C_SDL,  //
   };
-  i2c_init(I2C_PORT_2, &settings);
+  status_ok_or_return(i2c_init(I2C_PORT_2, &settings));
   // Configure the expander to be output only
-  gpio_expander_init(&s_expander, I2C_PORT_2, GPIO_EXPANDER_ADDRESS_0, NULL);
+  status_ok_or_return(gpio_expander_init(&s_expander, I2C_PORT_2, GPIO_EXPANDER_ADDRESS_0, NULL));
   for (size_t i = 0; i < SIZEOF_ARRAY(s_expander_pin); ++i) {
     // Start with all buttons with low
     GpioSettings output_settings = {
       .direction = GPIO_DIR_OUT,  //
       .state = GPIO_STATE_LOW,    //
     };
-    gpio_expander_init_pin(&s_expander, s_expander_pin[i], &output_settings);
+    status_ok_or_return(gpio_expander_init_pin(&s_expander, s_expander_pin[i], &output_settings));
   }
 
   // Initialize normal toggle buttons
@@ -267,17 +331,18 @@ int main() {
     .alt_function = GPIO_ALTFN_ANALOG,  //
   };
   GpioAddress monitor_5v = CENTER_CONSOLE_CONFIG_PIN_5V_MONITOR;
-  gpio_init_pin(&monitor_5v, &adc_input_settings);
+  status_ok_or_return(gpio_init_pin(&monitor_5v, &adc_input_settings));
   AdcChannel adc_channel_5v_monitor = NUM_ADC_CHANNELS;
 
   // TODO: Why doesn't continuous mode work smh
   adc_init(ADC_MODE_SINGLE);
 
   uint16_t rail_monitor_5v = 0u;
-  adc_get_channel(monitor_5v, &adc_channel_5v_monitor);
-  adc_set_channel(adc_channel_5v_monitor, true);
+  status_ok_or_return(adc_get_channel(monitor_5v, &adc_channel_5v_monitor));
+  status_ok_or_return(adc_set_channel(adc_channel_5v_monitor, true));
   /* adc_register_callback(ADC_CHANNEL_9, prv_adc_monitor, (void *)&rail_monitor_5v); */
-  soft_timer_start_millis(100, prv_adc_monitor, (void *)&rail_monitor_5v, NULL);
+  status_ok_or_return(
+      soft_timer_start_millis(100, prv_adc_monitor, (void *)&rail_monitor_5v, NULL));
 
   GpioSettings enable_output_rail = {
     .direction = GPIO_DIR_OUT,
@@ -285,13 +350,17 @@ int main() {
     .resistor = GPIO_RES_NONE,
     .alt_function = GPIO_ALTFN_NONE,
   };
+#ifdef CENTER_CONSOLE_FLAG_ENABLE_5V_RAIL
   // Enable 5V rail
   GpioAddress rail_5v = CENTER_CONSOLE_CONFIG_PIN_5V_ENABLE;
-  /* gpio_init_pin(&rail_5v, &enable_output_rail); */
+  gpio_init_pin(&rail_5v, &enable_output_rail);
+#endif
 
+#ifdef CENTER_CONSOLE_FLAG_ENABLE_DISPLAY
   // Enable Driver Display
   GpioAddress display_rail = CENTER_CONSOLE_CONFIG_PIN_DISPLAY_ENABLE;
   gpio_init_pin(&display_rail, &enable_output_rail);
+#endif
 
   // Since LOW_BEAM (PA0) and POWER (PB0) share the same EXTI line, we can't
   // register a separate ISR to handle based on (Port, Pin). The EXTIx line
@@ -311,8 +380,6 @@ int main() {
     gpio_get_state(&addr, &curr_state);
     // LOW -> HI
     if (curr_state == GPIO_STATE_HIGH && prev_state == GPIO_STATE_LOW) {
-      event_raise(CENTER_CONSOLE_EVENT_BUTTON_TOGGLE_STATE, s_power_input.local_event);
-
       // Raise event via CAN message
       CAN_TRANSMIT_CENTER_CONSOLE_EVENT(s_power_input.can_event, 0);
     }

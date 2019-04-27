@@ -1,0 +1,4 @@
+#pragma once
+
+// #define CENTER_CONSOLE_FLAG_ENABLE_5V_RAIL
+// #define CENTER_CONSOLE_FLAG_ENABLE_DISPLAY
