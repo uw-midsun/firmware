@@ -32,6 +32,11 @@ void button_led_init(GpioExpanderStorage *storage, GpioExpanderPin *pins) {
 bool button_led_process_event(const Event *e) {
   bool processed = false;
   for (size_t i = 0; i < NUM_CENTER_CONSOLE_BUTTON_LEDS; ++i) {
+    // These are handled in the Radio FSM
+    if (i == CENTER_CONSOLE_BUTTON_LED_REVERSE || i == CENTER_CONSOLE_BUTTON_LED_NEUTRAL ||
+        i == CENTER_CONSOLE_BUTTON_LED_DRIVE) {
+      continue;
+    }
     processed |= fsm_process_event(&s_button_led_fsms[i], e);
   }
   return processed;

@@ -37,8 +37,6 @@ typedef struct {
   GpioAddress pin_address;
   // CAN event to raise
   EECenterConsoleDigitalInput can_event;
-  // Local event to raise
-  CenterConsoleEventsButton local_event;
 } CenterConsoleInput;
 
 static GpioExpanderPin s_expander_pin[NUM_CENTER_CONSOLE_BUTTON_LEDS] = {
@@ -57,32 +55,23 @@ static CenterConsoleInput s_momentary_switch_input[] = {
   {
       .pin_address = CENTER_CONSOLE_CONFIG_PIN_LOW_BEAM,
       .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_LOW_BEAM,
-      .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_LOW_BEAM,
   },
   {
       .pin_address = CENTER_CONSOLE_CONFIG_PIN_DRL,
       .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_DRL,
-      .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_DRL,
   },
-  {
-      .pin_address = CENTER_CONSOLE_CONFIG_PIN_POWER,
-      .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER,
-      .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER,
-  }
 };
 // TODO: Move this into the toggle button array once the pin gets moved to a
 // different EXTI line.
 static CenterConsoleInput s_power_input = {
-  .pin_address = CENTER_CONSOLE_CONFIG_PIN_POWER,       //
-  .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER,   //
-  .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER  //
+  .pin_address = CENTER_CONSOLE_CONFIG_PIN_POWER,      //
+  .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER,  //
 };
 
 // Toggle Switches that are used as Toggle buttons
 static CenterConsoleInput s_toggle_switch_input[] = { {
     .pin_address = CENTER_CONSOLE_CONFIG_PIN_HAZARDS,
     .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_HAZARDS,
-    .local_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_HAZARDS,
 } };
 
 // Momentary Switches that are used as Radio Button Group
@@ -109,6 +98,7 @@ void prv_gpio_toggle_callback(const GpioAddress *address, void *context) {
 
   // Raise event via CAN message
   CAN_TRANSMIT_CENTER_CONSOLE_EVENT(toggle_button->can_event, 0);
+  LOG_DEBUG("Center Console\n");
 }
 
 void prv_gpio_radio_callback(const GpioAddress *address, void *context) {
@@ -117,6 +107,7 @@ void prv_gpio_radio_callback(const GpioAddress *address, void *context) {
 
   // Raise event via CAN message
   CAN_TRANSMIT_CENTER_CONSOLE_EVENT(toggle_button->can_event, 0);
+  LOG_DEBUG("Center Console Radio\n");
 }
 
 /* void prv_adc_monitor(AdcChannel adc_channel, void *context) { */
@@ -144,19 +135,20 @@ static StatusCode prv_direction_rx_handler(const CanMessage *msg, void *context,
   uint16_t mech_brake = 0;
   CAN_UNPACK_DRIVE_OUTPUT(msg, &throttle, &direction, &cruise_control, &mech_brake);
 
-  EventId can_to_local_map[] = {
+  EventId can_to_local_event_map[] = {
     [EE_DRIVE_OUTPUT_DIRECTION_NEUTRAL] = CENTER_CONSOLE_EVENT_DRIVE_OUTPUT_DIRECTION_NEUTRAL,
     [EE_DRIVE_OUTPUT_DIRECTION_FORWARD] = CENTER_CONSOLE_EVENT_DRIVE_OUTPUT_DIRECTION_DRIVE,
     [EE_DRIVE_OUTPUT_DIRECTION_REVERSE] = CENTER_CONSOLE_EVENT_DRIVE_OUTPUT_DIRECTION_REVERSE,
   };
-  if (direction >= SIZEOF_ARRAY(can_to_local_map)) {
+  if (direction >= SIZEOF_ARRAY(can_to_local_event_map)) {
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 
-  event_raise(can_to_local_map[direction], 0);
+  event_raise(can_to_local_event_map[direction], 0);
   return STATUS_CODE_OK;
 }
 
+// Callback to update the Lights LEDs using CAN
 static StatusCode prv_lights_state_rx_handler(const CanMessage *msg, void *context,
                                               CanAckStatus *ack_reply) {
   uint8_t light_id = 0;
@@ -170,21 +162,21 @@ static StatusCode prv_lights_state_rx_handler(const CanMessage *msg, void *conte
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 
-  EventId state_to_local_event_mapping[] = {
+  EventId state_to_local_event_map[] = {
     [EE_LIGHT_STATE_ON] = CENTER_CONSOLE_EVENT_BUTTON_SET_STATE_ON,
     [EE_LIGHT_STATE_OFF] = CENTER_CONSOLE_EVENT_BUTTON_SET_STATE_OFF,
   };
 
   // If it's one of the Light statuses we care about then process it
   switch (light_id) {
-    case EE_LIGHT_TYPE_HIGH_BEAMS:
-      // Fall through
     case EE_LIGHT_TYPE_LOW_BEAMS:
-      // Fall through
+      event_raise(state_to_local_event_map[light_state], EE_CENTER_CONSOLE_DIGITAL_INPUT_LOW_BEAM);
+      break;
     case EE_LIGHT_TYPE_DRL:
-      // Fall through
+      event_raise(state_to_local_event_map[light_state], EE_CENTER_CONSOLE_DIGITAL_INPUT_DRL);
+      break;
     case EE_LIGHT_TYPE_SIGNAL_HAZARD:
-      event_raise(state_to_local_event_mapping[light_state], light_id);
+      event_raise(state_to_local_event_map[light_state], EE_CENTER_CONSOLE_DIGITAL_INPUT_HAZARDS);
       break;
     default:
       return STATUS_CODE_OK;
@@ -193,6 +185,7 @@ static StatusCode prv_lights_state_rx_handler(const CanMessage *msg, void *conte
   return STATUS_CODE_OK;
 }
 
+// Callback to update the Power LED
 static StatusCode prv_power_state_rx_handler(const CanMessage *msg, void *context,
                                              CanAckStatus *ack_reply) {
   uint8_t power_state = 0;
@@ -353,13 +346,13 @@ int main() {
 #ifdef CENTER_CONSOLE_FLAG_ENABLE_5V_RAIL
   // Enable 5V rail
   GpioAddress rail_5v = CENTER_CONSOLE_CONFIG_PIN_5V_ENABLE;
-  gpio_init_pin(&rail_5v, &enable_output_rail);
+  status_ok_or_return(gpio_init_pin(&rail_5v, &enable_output_rail));
 #endif
 
 #ifdef CENTER_CONSOLE_FLAG_ENABLE_DISPLAY
   // Enable Driver Display
   GpioAddress display_rail = CENTER_CONSOLE_CONFIG_PIN_DISPLAY_ENABLE;
-  gpio_init_pin(&display_rail, &enable_output_rail);
+  status_ok_or_return(gpio_init_pin(&display_rail, &enable_output_rail));
 #endif
 
   // Since LOW_BEAM (PA0) and POWER (PB0) share the same EXTI line, we can't
@@ -382,6 +375,7 @@ int main() {
     if (curr_state == GPIO_STATE_HIGH && prev_state == GPIO_STATE_LOW) {
       // Raise event via CAN message
       CAN_TRANSMIT_CENTER_CONSOLE_EVENT(s_power_input.can_event, 0);
+      LOG_DEBUG("State: %d\n", curr_state);
     }
     prev_state = curr_state;
 
