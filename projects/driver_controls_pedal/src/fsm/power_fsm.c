@@ -13,6 +13,7 @@
 
 #include "power_fsm.h"
 
+#include "bps_indicator.h"
 #include "drive_output.h"
 #include "event_arbiter.h"
 #include "exported_enums.h"
@@ -51,8 +52,7 @@ FSM_STATE_TRANSITION(state_charging) {
 FSM_STATE_TRANSITION(state_on) {
   FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_CENTER_CONSOLE_POWER_PRESSED, state_off);
 
-  // TODO(karlding): Uncomment this
-  // FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_BPS_FAULT, state_fault);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_BPS_FAULT, state_fault);
 }
 
 FSM_STATE_TRANSITION(state_fault) {
@@ -85,11 +85,9 @@ static bool prv_guard_off(const Event *e) {
 // Power FSM output functions
 static void prv_off_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
-  // TODO(karlding): Uncomment this
   power_distribution_controller_send_update(EE_POWER_STATE_IDLE);
 
-  // Clear BPS indicators
-  // bps_indicator_clear_fault();
+  bps_indicator_clear_fault();
 
   // Disable periodic drive output updates if not running
   drive_output_set_enabled(drive_output_global(), false);
@@ -115,7 +113,7 @@ static void prv_fault_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
 
   if (e->id == PEDAL_EVENT_INPUT_BPS_FAULT && e->data) {
-    // bps_indicator_set_fault();
+    bps_indicator_set_fault();
   }
 
   // Disable periodic drive output updates if not running
