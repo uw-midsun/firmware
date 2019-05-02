@@ -9,7 +9,7 @@ VALID_LIBRARIES := $(patsubst $(LIB_DIR)/%/rules.mk,%,$(wildcard $(LIB_DIR)/*/ru
 # - For test, gdb, and program, check to see if PLATFORM and {PROJECT or {LIBRARY and TEST}} are valid
 # - For build, check if PLATFORM and {PROJECT or LIBRARY} are valid
 
-ifneq (,$(filter clean lint pylint format build_all test_all test_format socketcan update_codegen,$(MAKECMDGOALS)))
+ifneq (,$(filter clean lint pylint format build_all test_all test_format socketcan update_codegen generate_system_can_c_code generate_charger_can_c_code generate_motor_can_c_code,$(MAKECMDGOALS)))
   # Universal operation: do nothing - args are not used or only PLATFORM is checked
 else ifneq (,$(filter new,$(MAKECMDGOALS)))
   # New project: just make sure PROJECT or LIBRARY is defined

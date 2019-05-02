@@ -127,7 +127,15 @@ $(foreach lib,$(VALID_LIBRARIES),$(call include_lib,$(lib)))
 # Includes all projects so make can find their targets
 $(foreach proj,$(VALID_PROJECTS),$(call include_proj,$(proj)))
 
-IGNORE_CLEANUP_LIBS := CMSIS FreeRTOS STM32F0xx_StdPeriph_Driver unity FatFs
+IGNORE_CLEANUP_LIBS := \
+	codegen-charger-can \
+	codegen-motor-can \
+	codegen-system-can \
+	CMSIS \
+	FatFs \
+	FreeRTOS \
+	STM32F0xx_StdPeriph_Driver \
+	unity
 FIND_PATHS := $(addprefix -o -path $(LIB_DIR)/,$(IGNORE_CLEANUP_LIBS))
 FIND := find $(PROJ_DIR) $(LIB_DIR) \
 			  \( $(wordlist 2,$(words $(FIND_PATHS)),$(FIND_PATHS)) \) -prune -o \
@@ -206,6 +214,18 @@ socketcan:
 .PHONY: update_codegen
 update_codegen:
 	@python make/git_fetch.py -folder=libraries/codegen-tooling -user=uw-midsun -repo=codegen-tooling -tag=latest -file=codegen-tooling-out.zip
+
+.PHONY: generate_system_can_c_code
+generate_system_can_c_code:
+	@cd libraries/codegen-system-can/; cantools generate_c_source ../../dbc/system_can.dbc
+
+.PHONY: generate_charger_can_c_code
+generate_charger_can_c_code:
+	@cd libraries/codegen-charger-can/; cantools generate_c_source ../../dbc/charger_can.dbc
+
+.PHONY: generate_motor_can_c_code
+generate_motor_can_c_code:
+	@cd libraries/codegen-motor-can/; cantools generate_c_source ../../dbc/motor_can.dbc
 
 # Dummy force target for pre-build steps
 .PHONY: .FORCE
