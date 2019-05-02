@@ -34,13 +34,15 @@ CFLAGS := -Wall \
 					-Wno-unused-parameter \
 					-Wsign-conversion \
 					-Wpointer-arith \
-					-ffunction-sections \
 					-fdata-sections \
+					-ffunction-sections \
 					-flto \
 					$(ARCH_CFLAGS) $(addprefix -D,$(CDEFINES))
 
 # Linker flags
-LDFLAGS := -L$(LDSCRIPT_DIR) -Tstm32f0.ld -Wl,--gc-sections -Wl,--undefined=uxTopUsedPriority \
+LDFLAGS := -L$(LDSCRIPT_DIR) -Tstm32f0.ld \
+           -Wl,--gc-sections \
+           -Wl,--undefined=uxTopUsedPriority \
            --specs=nosys.specs --specs=nano.specs
 
 # Device openocd config file

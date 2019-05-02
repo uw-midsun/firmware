@@ -37,9 +37,18 @@ else
   CSFLAGS := -O1 -g
 endif
 
-CFLAGS := $(CSFLAGS) -Wall -Wextra -Werror -std=gnu11 -Wno-discarded-qualifiers \
-          -Wno-unused-variable -Wno-unused-parameter -Wsign-conversion -Wpointer-arith \
-          -ffunction-sections -fdata-sections -pthread \
+CFLAGS := $(CSFLAGS) \
+          -Wall \
+          -Wextra \
+          -std=gnu11 \
+          -Wno-discarded-qualifiers \
+          -Wno-unused-variable \
+          -Wno-unused-parameter \
+          -Wsign-conversion \
+          -Wpointer-arith \
+          -ffunction-sections \
+          -fdata-sections \
+          -pthread \
           $(ARCH_CFLAGS) $(addprefix -D,$(CDEFINES))
 
 ifeq (clang,$(COMPILER))
