@@ -107,10 +107,10 @@ void prv_gpio_radio_callback(const GpioAddress *address, void *context) {
 
   // Raise event via CAN message
   CAN_TRANSMIT_CENTER_CONSOLE_EVENT(toggle_button->can_event, 0);
-  LOG_DEBUG("Center Console Radio\n");
 }
 
-/* void prv_adc_monitor(AdcChannel adc_channel, void *context) { */
+#define CENTER_CONSOLE_5V_RAIL_MONITOR_PERIOD_MILLIS 100
+
 void prv_adc_monitor(SoftTimerId timer_id, void *context) {
   uint16_t *rail_monitor_5v = context;
 
@@ -119,11 +119,11 @@ void prv_adc_monitor(SoftTimerId timer_id, void *context) {
   adc_get_channel(monitor_5v, &adc_channel_5v_monitor);
 
   adc_read_converted(adc_channel_5v_monitor, rail_monitor_5v);
-  /* LOG_DEBUG("adc\n"); */
 
   // TODO: Any logic here to monitor 5V rail and raise appropriate event
 
-  soft_timer_start_millis(30, prv_adc_monitor, context, NULL);
+  soft_timer_start_millis(CENTER_CONSOLE_5V_RAIL_MONITOR_PERIOD_MILLIS, prv_adc_monitor, context,
+                          NULL);
 }
 
 // Used to update the direction LED indicators
@@ -334,8 +334,8 @@ int main() {
   status_ok_or_return(adc_get_channel(monitor_5v, &adc_channel_5v_monitor));
   status_ok_or_return(adc_set_channel(adc_channel_5v_monitor, true));
   /* adc_register_callback(ADC_CHANNEL_9, prv_adc_monitor, (void *)&rail_monitor_5v); */
-  status_ok_or_return(
-      soft_timer_start_millis(100, prv_adc_monitor, (void *)&rail_monitor_5v, NULL));
+  status_ok_or_return(soft_timer_start_millis(CENTER_CONSOLE_5V_RAIL_MONITOR_PERIOD_MILLIS,
+                                              prv_adc_monitor, (void *)&rail_monitor_5v, NULL));
 
   GpioSettings enable_output_rail = {
     .direction = GPIO_DIR_OUT,
