@@ -30,8 +30,10 @@ FSM_STATE_TRANSITION(state_disengaged) {
 
 // Mechanical Brake FSM arbiter functions
 static bool prv_guard_engaged(const Event *e) {
-  // While the brakes are engaged, the car shouldn't allow the car to enter cruise control.
-  // Motor controller interface should ignore throttle state if mechanical brake is engaged.
+  // While the brakes are engaged, the car shouldn't allow the car to enter
+  // cruise control.
+  // Motor controller interface should ignore throttle state if mechanical
+  // brake is engaged.
   switch (e->id) {
     case PEDAL_EVENT_INPUT_CONTROL_STALK_ANALOG_CC_RESUME:
       return false;
@@ -41,10 +43,11 @@ static bool prv_guard_engaged(const Event *e) {
 }
 
 static bool prv_guard_disengaged(const Event *e) {
-  // The brake must be engaged in order for gear shifts to happen.
+  // The mechanical brake must be engaged in order for gear shifts to happen.
   // We allow shifting into neutral at any time.
   switch (e->id) {
     case PEDAL_EVENT_INPUT_CENTER_CONSOLE_DIRECTION_DRIVE:
+      // Fall through
     case PEDAL_EVENT_INPUT_CENTER_CONSOLE_DIRECTION_REVERSE:
       return false;
     default:

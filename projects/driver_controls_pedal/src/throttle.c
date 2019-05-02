@@ -108,9 +108,9 @@ static void prv_raise_event_timer_callback(SoftTimerId timer_id, void *context) 
                        &reading_secondary);
 
   EventId pedal_events[NUM_THROTTLE_ZONES] = {
-    PEDAL_EVENT_INPUT_PEDAL_BRAKE,  //
-    PEDAL_EVENT_INPUT_PEDAL_COAST,  //
-    PEDAL_EVENT_INPUT_PEDAL_ACCEL   //
+    [THROTTLE_ZONE_BRAKE] = PEDAL_EVENT_INPUT_PEDAL_BRAKE,  //
+    [THROTTLE_ZONE_COAST] = PEDAL_EVENT_INPUT_PEDAL_COAST,  //
+    [THROTTLE_ZONE_ACCEL] = PEDAL_EVENT_INPUT_PEDAL_ACCEL   //
   };
 
   if (status_ok(primary_status) && status_ok(secondary_status) &&

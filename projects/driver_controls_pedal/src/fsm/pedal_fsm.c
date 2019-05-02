@@ -47,6 +47,17 @@ static void prv_update_drive_output(void) {
     return;
   }
 
+  // Brake:
+  // We use a negative throttle value in order to denote that we are
+  // regeneratively braking. This is interpreted in the Motor Controller
+  // Interface as the % of braking force to apply.
+  //
+  // Coast:
+  // We set the torque to 0 when we want to coast.
+  //
+  // Accelerate:
+  // The throttle position maps 1:1 with the % of available torque, where all
+  // values are positive.
   const int16_t zone_multiplier[NUM_THROTTLE_ZONES] = {
     [THROTTLE_ZONE_BRAKE] = -1,
     [THROTTLE_ZONE_COAST] = 0,
@@ -67,8 +78,9 @@ static void prv_brake_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = context;
   event_arbiter_set_guard_fn(guard, prv_brake_guard);
 
-  // Mechanical brake can cause the throttle zone to be in a non-brake zone while in brake state
-  // We'll still update the drive output with the throttle position for telemetry
+  // Mechanical brake can cause the throttle zone to be in a non-brake zone
+  // while the car should be braking. We'll still update the drive output with
+  // the throttle position for telemetry
   prv_update_drive_output();
 }
 

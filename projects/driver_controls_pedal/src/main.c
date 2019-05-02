@@ -96,7 +96,14 @@ static const EventId s_steering_event_mapping[NUM_EE_STEERING_INPUTS] = {
   [EE_STEERING_INPUT_TURN_SIGNAL_STALK_RIGHT] =
       PEDAL_EVENT_INPUT_CONTROL_STALK_ANALOG_TURN_SIGNAL_RIGHT,
   [EE_STEERING_INPUT_TURN_SIGNAL_STALK_LEFT] =
-      PEDAL_EVENT_INPUT_CONTROL_STALK_ANALOG_TURN_SIGNAL_LEFT
+      PEDAL_EVENT_INPUT_CONTROL_STALK_ANALOG_TURN_SIGNAL_LEFT,
+
+  [EE_STEERING_INPUT_EVENT_CC_DISTANCE_NEUTRAL] =
+      PEDAL_EVENT_INPUT_CONTROL_STALK_ANALOG_CC_DISTANCE_NEUTRAL,
+  [EE_STEERING_INPUT_EVENT_CC_DISTANCE_MINUS] =
+      PEDAL_EVENT_INPUT_CONTROL_STALK_ANALOG_CC_DISTANCE_MINUS,
+  [EE_STEERING_INPUT_EVENT_CC_DISTANCE_PLUS] =
+      PEDAL_EVENT_INPUT_CONTROL_STALK_ANALOG_CC_DISTANCE_PLUS,
 };
 
 static StatusCode prv_steering_rx_handler(const CanMessage *msg, void *context,
@@ -193,8 +200,9 @@ int main() {
   status_ok_or_return(brake_signal_init());
 
   // Drive Output messages
-  drive_output_init(drive_output_global(), PEDAL_EVENT_INPUT_PEDAL_WATCHDOG_FAULT,
-                    PEDAL_EVENT_INPUT_DRIVE_UPDATE_REQUESTED);
+  status_ok_or_return(drive_output_init(drive_output_global(),
+                                        PEDAL_EVENT_INPUT_PEDAL_WATCHDOG_FAULT,
+                                        PEDAL_EVENT_INPUT_DRIVE_UPDATE_REQUESTED));
 
   // Cruise
   status_ok_or_return(cruise_init(cruise_global()));
