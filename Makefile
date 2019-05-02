@@ -128,10 +128,10 @@ $(foreach lib,$(VALID_LIBRARIES),$(call include_lib,$(lib)))
 $(foreach proj,$(VALID_PROJECTS),$(call include_proj,$(proj)))
 
 IGNORE_CLEANUP_LIBS := \
-	codegen-charger-can \
+	CMSIS \
+	codegen-motor-can \
 	codegen-motor-can \
 	codegen-system-can \
-	CMSIS \
 	FatFs \
 	FreeRTOS \
 	STM32F0xx_StdPeriph_Driver \
