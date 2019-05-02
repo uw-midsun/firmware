@@ -43,6 +43,7 @@ typedef enum {
 
 typedef uint32_t MotorControllerCanId;
 
+// TODO: Break this API once we switch over completely to DBC
 typedef struct MotorControllerSettings {
   GenericCan *motor_can;
   struct {
@@ -79,6 +80,7 @@ typedef struct MotorControllerStorage {
   size_t timeout_counter;
 } MotorControllerStorage;
 
+// TODO: Break this API once we switch over completely to DBC
 // |settings.motor_can| should be initialized.
 StatusCode motor_controller_init(MotorControllerStorage *controller,
                                  const MotorControllerSettings *settings);

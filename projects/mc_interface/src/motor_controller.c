@@ -1,9 +1,12 @@
 #include "motor_controller.h"
+
 #include <math.h>
 #include <stddef.h>
 #include <string.h>
+
 #include "can_transmit.h"
 #include "critical_section.h"
+#include "motor_can.h"
 #include "soft_timer.h"
 #include "wavesculptor.h"
 
@@ -69,35 +72,62 @@ static void prv_velocity_measurement_rx(const GenericCanMsg *msg, void *context)
 static void prv_periodic_tx(SoftTimerId timer_id, void *context) {
   MotorControllerStorage *storage = context;
 
-  GenericCanMsg msg = { .dlc = 8, .extended = false };
+  GenericCanMsg msg_left = {
+    .id = MOTOR_CAN_LEFT_DRIVE_COMMAND_FRAME_ID,
+    .dlc = 8u,
+    .extended = false,
+  };
+  GenericCanMsg msg_right = {
+    .id = MOTOR_CAN_RIGHT_DRIVE_COMMAND_FRAME_ID,
+    .dlc = 8,
+    .extended = false,
+  };
 
-  for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
-    WaveSculptorCanId can_id = {
-      .device_id = storage->settings.ids[i].interface,
-      .msg_id = WAVESCULPTOR_CMD_ID_DRIVE,
-    };
-    msg.id = can_id.raw;
+  // We only use Drive Commands
+  struct motor_can_left_drive_command_t left_drive_cmd = { 0 };
+  struct motor_can_right_drive_command_t right_drive_cmd = { 0 };
 
-    WaveSculptorCanData can_data = { 0 };
-    if (storage->timeout_counter > MOTOR_CONTROLLER_WATCHDOG_COUNTER) {
-      // We haven't received an update from driver controls in a while - we'll do the safe thing
-      // and send coast
-      can_data.drive_cmd.motor_velocity_ms = 0.0f;
-      can_data.drive_cmd.motor_current_percentage = 0.0f;
-    } else if (storage->target_mode == MOTOR_CONTROLLER_MODE_TORQUE || i == 0) {
-      can_data.drive_cmd.motor_velocity_ms = storage->target_velocity_ms;
-      can_data.drive_cmd.motor_current_percentage = storage->target_current_percentage;
-    } else {
-      // Velocity control (non-primary): use torque control instead, but copy the current setpoint
-      // from the primary motor controller
-      can_data.drive_cmd.motor_velocity_ms =
-          (storage->cruise_is_braking) ? 0.0f : WAVESCULPTOR_FORWARD_VELOCITY;
-      can_data.drive_cmd.motor_current_percentage = storage->cruise_current_percentage;
-    }
-    msg.data = can_data.raw;
+  if (storage->timeout_counter > MOTOR_CONTROLLER_WATCHDOG_COUNTER) {
+    // We haven't received an update from driver controls in a while. As
+    // such, we'll do the safe thing and send coast commands.
+    left_drive_cmd.motor_velocity = 0.0f, left_drive_cmd.motor_current = 0.0f;
 
-    generic_can_tx(storage->settings.motor_can, &msg);
+    right_drive_cmd.motor_velocity = 0.0f;
+    right_drive_cmd.motor_current = 0.0f;
+  } else if (storage->target_mode == MOTOR_CONTROLLER_MODE_TORQUE) {
+    // If we are in Torque Control mode, then we just send the same message
+    // to both Motor Controllers
+    left_drive_cmd.motor_velocity = storage->target_velocity_ms;
+    left_drive_cmd.motor_current = storage->target_current_percentage;
+
+    right_drive_cmd.motor_velocity = storage->target_velocity_ms;
+    right_drive_cmd.motor_current = storage->target_current_percentage;
+  } else {
+    // For Cruise Control mode, we allow the Motor Controller's control loop
+    // to perform the calculations. In order to do so, WLOG we designate the
+    // Left Motor Controller as the primary, and copy the current setpoint
+    // value (received via the Telemetry messages from the Primary) and use
+    // that as the current setpoint for the second controller.
+    left_drive_cmd.motor_velocity = storage->target_velocity_ms;
+    left_drive_cmd.motor_current = storage->target_current_percentage;
+
+    right_drive_cmd.motor_velocity =
+        (storage->cruise_is_braking) ? 0.0f : WAVESCULPTOR_FORWARD_VELOCITY;
+    right_drive_cmd.motor_current = storage->cruise_current_percentage;
   }
+
+  uint8_t data_left[MOTOR_CAN_LEFT_DRIVE_COMMAND_LENGTH] = { 0 };
+  uint8_t data_right[MOTOR_CAN_RIGHT_DRIVE_COMMAND_LENGTH] = { 0 };
+  motor_can_left_drive_command_pack(data_left, &left_drive_cmd, sizeof(data_left));
+  motor_can_right_drive_command_pack(data_right, &right_drive_cmd, sizeof(data_right));
+
+  memcpy(&msg_left.data, data_left, sizeof(data_left));
+  memcpy(&msg_right.data, data_right, sizeof(data_right));
+
+  generic_can_tx(storage->settings.motor_can, &msg_left);
+  generic_can_tx(storage->settings.motor_can, &msg_right);
+
+  // Increment watchdog counter
   storage->timeout_counter++;
 
   soft_timer_start_millis(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS, prv_periodic_tx, storage, NULL);
@@ -110,18 +140,21 @@ StatusCode motor_controller_init(MotorControllerStorage *controller,
 
   WaveSculptorCanId can_id = { 0 };
 
-  for (size_t i = 0; i < NUM_MOTOR_CONTROLLERS; i++) {
-    can_id.device_id = controller->settings.ids[i].motor_controller;
-    can_id.msg_id = WAVESCULPTOR_MEASUREMENT_ID_VELOCITY;
-    status_ok_or_return(generic_can_register_rx(controller->settings.motor_can,
-                                                prv_velocity_measurement_rx, GENERIC_CAN_EMPTY_MASK,
-                                                can_id.raw, false, controller));
+  // Velocity Measurements
+  status_ok_or_return(generic_can_register_rx(
+      controller->settings.motor_can, prv_velocity_measurement_rx, GENERIC_CAN_EMPTY_MASK,
+      MOTOR_CAN_LEFT_VELOCITY_MEASUREMENT_FRAME_ID, false, controller));
+  status_ok_or_return(generic_can_register_rx(
+      controller->settings.motor_can, prv_velocity_measurement_rx, GENERIC_CAN_EMPTY_MASK,
+      MOTOR_CAN_RIGHT_VELOCITY_MEASUREMENT_FRAME_ID, false, controller));
 
-    can_id.msg_id = WAVESCULPTOR_MEASUREMENT_ID_BUS;
-    status_ok_or_return(generic_can_register_rx(controller->settings.motor_can,
-                                                prv_bus_measurement_rx, GENERIC_CAN_EMPTY_MASK,
-                                                can_id.raw, false, controller));
-  }
+  // Bus Mesurements
+  status_ok_or_return(generic_can_register_rx(
+      controller->settings.motor_can, prv_bus_measurement_rx, GENERIC_CAN_EMPTY_MASK,
+      MOTOR_CAN_LEFT_BUS_MEASUREMENT_FRAME_ID, false, controller));
+  status_ok_or_return(generic_can_register_rx(
+      controller->settings.motor_can, prv_bus_measurement_rx, GENERIC_CAN_EMPTY_MASK,
+      MOTOR_CAN_RIGHT_BUS_MEASUREMENT_FRAME_ID, false, controller));
 
   return soft_timer_start_millis(MOTOR_CONTROLLER_DRIVE_TX_PERIOD_MS, prv_periodic_tx, controller,
                                  NULL);
