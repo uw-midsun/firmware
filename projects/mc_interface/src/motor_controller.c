@@ -10,6 +10,9 @@
 #include "soft_timer.h"
 #include "wavesculptor.h"
 
+#include "log.h"
+#include "delay.h"
+
 // Torque control mode:
 // - velocity = +/-100 m/s
 // - current = 0 to 100% (throttle position)
@@ -94,10 +97,13 @@ static void prv_periodic_tx(SoftTimerId timer_id, void *context) {
   if (storage->timeout_counter > MOTOR_CONTROLLER_WATCHDOG_COUNTER) {
     // We haven't received an update from driver controls in a while. As
     // such, we'll do the safe thing and send coast commands.
-    left_drive_cmd.motor_velocity = 0.0f, left_drive_cmd.motor_current = 0.0f;
+    left_drive_cmd.motor_velocity = 0.0f;
+    left_drive_cmd.motor_current = 0.0f;
 
     right_drive_cmd.motor_velocity = 0.0f;
     right_drive_cmd.motor_current = 0.0f;
+    LOG_DEBUG("Motor watchdog\n"); 
+
   } else if (storage->target_mode == MOTOR_CONTROLLER_MODE_TORQUE) {
     // If we are in Torque Control mode, then we just send the same message
     // to both Motor Controllers
@@ -106,6 +112,8 @@ static void prv_periodic_tx(SoftTimerId timer_id, void *context) {
 
     right_drive_cmd.motor_velocity = storage->target_velocity_ms;
     right_drive_cmd.motor_current = storage->target_current_percentage;
+    LOG_DEBUG("Motor torque mode\n"); 
+
   } else {
     // For Cruise Control mode, we allow the Motor Controller's control loop
     // to perform the calculations. In order to do so, WLOG we designate the
@@ -118,6 +126,8 @@ static void prv_periodic_tx(SoftTimerId timer_id, void *context) {
     right_drive_cmd.motor_velocity =
         (storage->cruise_is_braking) ? 0.0f : WAVESCULPTOR_FORWARD_VELOCITY;
     right_drive_cmd.motor_current = storage->cruise_current_percentage;
+    LOG_DEBUG("cruise control mode\n"); 
+
   }
 
   uint8_t data_left[MOTOR_CAN_LEFT_DRIVE_COMMAND_LENGTH] = { 0 };
