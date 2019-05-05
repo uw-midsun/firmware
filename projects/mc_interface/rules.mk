@@ -10,4 +10,3 @@ $(T)_DEPS := ms-common ms-helper codegen-motor-can
 
 $(T)_test_drive_can_MOCKS := motor_controller_set_throttle motor_controller_set_cruise \
                              motor_controller_set_update_cbs
-
