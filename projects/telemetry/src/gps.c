@@ -25,16 +25,6 @@ static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
   }
 }
 
-// The GPS power line will be connected to a 3V pin. This method will
-// control if that pin is providing power or not.
-static void prv_gps_set_power_state(bool powered) {
-  if (powered) {
-    gpio_set_state(s_settings->pin_power, GPIO_STATE_HIGH);
-  } else {
-    gpio_set_state(s_settings->pin_power, GPIO_STATE_LOW);
-  }
-}
-
 // Initialization of this chip is described on page 10 of:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
 StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
@@ -52,8 +42,7 @@ StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
     .alt_function = GPIO_ALTFN_1,
   };
 
-  // Initializes UART
-  uart_init(s_settings->port, s_settings->uart_settings, &s_settings->uart_storage);
+  // Initializes UART callback
   uart_set_rx_handler(s_settings->port, prv_gps_callback, NULL);
 
   // Initializes the pins
@@ -61,10 +50,10 @@ StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
   ret |= gpio_init_pin(s_settings->pin_on_off, &telemetry_settings_gpio_general);
 
   if (!status_ok(ret)) {
-    return status_msg(STATUS_CODE_INTERNAL_ERROR, "Error initializing GPIO Pins");
+    return status_msg(STATUS_CODE_INTERNAL_ERROR, "Error initializing GPIO Pins\n");
   }
 
-  prv_gps_set_power_state(true);
+  // Ensure that ON/OFF pulse happens at least 1s after power on
   delay_s(1);
 
   // Pull high on ON/OFF line
@@ -76,7 +65,7 @@ StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
   delay_ms(900);
 
   if (!status_ok(ret)) {
-    return status_msg(STATUS_CODE_INTERNAL_ERROR, "Error turning on GPS Module");
+    return status_msg(STATUS_CODE_INTERNAL_ERROR, "Error turning on GPS Module\n");
   }
 
   // Turning off messages we don't need

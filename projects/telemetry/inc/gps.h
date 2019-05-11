@@ -28,9 +28,6 @@
 typedef struct {
   UartPort port;
   UartSettings *uart_settings;  // The uart settings to be used
-  GpioAddress *pin_rx;          // Pin addresses
-  GpioAddress *pin_tx;
-  GpioAddress *pin_power;
   GpioAddress *pin_on_off;
   UartStorage uart_storage;
 } GpsSettings;

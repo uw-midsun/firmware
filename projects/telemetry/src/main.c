@@ -22,21 +22,17 @@ GpioSettings telemetry_settings_gpio_general = {
 
 UartSettings telemetry_gps_uart_settings = {
   .baudrate = 9600,
-  .tx = { .port = GPIO_PORT_A, .pin = 2 },
-  .rx = { .port = GPIO_PORT_A, .pin = 3 },
-  .alt_fn = GPIO_ALTFN_1,
+  .tx = { .port = GPIO_PORT_B, .pin = 10 },
+  .rx = { .port = GPIO_PORT_B, .pin = 11 },
+  .alt_fn = GPIO_ALTFN_4,     //ALTFN for UART for PB10 and PB11
 };
 
 // The pin numbers to use for providing power and turning the GPS on and off
-GpioAddress telemetry_gps_pins[] = {
-  { .port = GPIO_PORT_B, .pin = 3 },  // Pin GPS power
-  { .port = GPIO_PORT_B, .pin = 4 },  // Pin GPS on_off
-};
+GpioAddress telemetry_gps_on_off_pin = { .port = GPIO_PORT_B, .pin = 9 };  // Pin GPS on_off
 
-GpsSettings telemetry_gps_settings = { .pin_power = &telemetry_gps_pins[0],
-                                       .pin_on_off = &telemetry_gps_pins[1],
+GpsSettings telemetry_gps_settings = { .pin_on_off = &telemetry_gps_on_off_pin,
                                        .uart_settings = &telemetry_gps_uart_settings,
-                                       .port = UART_PORT_2 };
+                                       .port = UART_PORT_3 };
 
 GpsStorage telemetry_gps_storage = { 0 };
 
@@ -46,7 +42,13 @@ int main(void) {
   soft_timer_init();
   event_queue_init();
 
-  StatusCode ret = gps_init(&telemetry_gps_settings, &telemetry_gps_storage);
+  // Initialize UART
+  StatusCode ret = uart_init(s_settings->port, s_settings->uart_settings, &s_settings->uart_storage);
+  if (!status_ok(ret)) {
+    LOG_CRITICAL("Error initializing UART\n");
+  }
+
+  ret |= gps_init(&telemetry_gps_settings, &telemetry_gps_storage);
   if (!status_ok(ret)) {
     LOG_CRITICAL("Telemetry project could not initialize GPS\n");
   }
