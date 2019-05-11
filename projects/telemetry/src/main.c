@@ -43,7 +43,9 @@ int main(void) {
   event_queue_init();
 
   // Initialize UART
-  StatusCode ret = uart_init(&telemetry_gps_settings->port, &telmetry_gps_settings->uart_settings, &s_settings->uart_storage);
+  StatusCode ret = uart_init( telemetry_gps_settings->port, 
+                              telemetry_gps_settings->uart_settings, 
+                              &telemetry_gps_settings->uart_storage);
   if (!status_ok(ret)) {
     LOG_CRITICAL("Error initializing UART\n");
   }
