@@ -46,8 +46,7 @@ StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
   uart_set_rx_handler(s_settings->port, prv_gps_callback, NULL);
 
   // Initializes the pins
-  StatusCode ret = gpio_init_pin(s_settings->pin_power, &telemetry_settings_gpio_general);
-  ret |= gpio_init_pin(s_settings->pin_on_off, &telemetry_settings_gpio_general);
+  StatusCode ret = gpio_init_pin(s_settings->pin_on_off, &telemetry_settings_gpio_general);
 
   if (!status_ok(ret)) {
     return status_msg(STATUS_CODE_INTERNAL_ERROR, "Error initializing GPIO Pins\n");
