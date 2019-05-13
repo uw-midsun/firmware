@@ -71,26 +71,16 @@
                     CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_DRIVE_OUTPUT(msg_ptr, throttle_u16, direction_u16, cruise_control_u16,            \
-                              mech_brake_u16)                                                      \
+                              mechanical_brake_state_u16)                                          \
   can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT, \
-                    8, (throttle_u16), (direction_u16), (cruise_control_u16), (mech_brake_u16))
+                    8, (throttle_u16), (direction_u16), (cruise_control_u16),                      \
+                    (mechanical_brake_state_u16))
 
-#define CAN_PACK_STEERING_OUTPUT(msg_ptr, control_stalk_analog_state_u16,                    \
-                                 control_stalk_digital_state_u16)                            \
-  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_STEERING_CONTROLS,                          \
-                    SYSTEM_CAN_MESSAGE_STEERING_OUTPUT, 4, (control_stalk_analog_state_u16), \
-                    (control_stalk_digital_state_u16), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
-
-#define CAN_PACK_PEDAL_OUTPUT(msg_ptr, throttle_u16, throttle_state_u16, mech_brake_u16)          \
-  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_PEDAL_CONTROLS, SYSTEM_CAN_MESSAGE_PEDAL_OUTPUT, \
-                    6, (throttle_u16), (throttle_state_u16), (mech_brake_u16),                    \
-                    CAN_PACK_IMPL_EMPTY)
-
-#define CAN_PACK_CRUISE_TARGET(msg_ptr, target_speed_u8)                                        \
-  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_STEERING_CONTROLS,                              \
-                   SYSTEM_CAN_MESSAGE_CRUISE_TARGET, 1, (target_speed_u8), CAN_PACK_IMPL_EMPTY, \
-                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,               \
-                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
+#define CAN_PACK_CRUISE_TARGET(msg_ptr, target_speed_u8)                                           \
+  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, SYSTEM_CAN_MESSAGE_CRUISE_TARGET, \
+                   1, (target_speed_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                 \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                  \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_FAN_CONTROL(msg_ptr, state_u8)                                               \
   can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_CHAOS, SYSTEM_CAN_MESSAGE_FAN_CONTROL, 1,     \
@@ -115,10 +105,10 @@
                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                 \
                    CAN_PACK_IMPL_EMPTY)
 
-#define CAN_PACK_HORN(msg_ptr, state_u8)                                                       \
-  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_STEERING_CONTROLS, SYSTEM_CAN_MESSAGE_HORN, 1, \
-                   (state_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,  \
-                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,              \
+#define CAN_PACK_HORN(msg_ptr, state_u8)                                                      \
+  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, SYSTEM_CAN_MESSAGE_HORN, 1,  \
+                   (state_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,             \
                    CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_CHARGER_CONN_STATE(msg_ptr, is_connected_u8)                                      \
@@ -134,7 +124,7 @@
                    CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_STEERING_ANGLE(msg_ptr, steering_angle_u16)                    \
-  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_STEERING_CONTROLS,             \
+  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,               \
                     SYSTEM_CAN_MESSAGE_STEERING_ANGLE, 2, (steering_angle_u16), \
                     CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 

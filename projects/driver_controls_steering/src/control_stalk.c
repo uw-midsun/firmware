@@ -6,7 +6,7 @@
 #include "log.h"
 #include "sc_cfg.h"
 #include "sc_input_event.h"
-#include "steering_output.h"
+#include "can_transmit.h"
 
 // The A6 control stalks have two types of inputs: analog and digital.
 // Analog inputs are either floating, 2.1818 kOhms to GND, or 681 Ohms to GND. We tie a resistor
@@ -119,9 +119,7 @@ static void prv_analog_cb(AdcChannel channel, void *context) {
   }
 
   if (stalk->debounce_counter[channel] == CONTROL_STALK_DEBOUNCE_COUNTER_THRESHOLD) {
-    steering_output_update(steering_output_global(),
-                           STEERING_OUTPUT_SOURCE_CONTROL_STALK_ANALOG_STATE,
-                           s_analog_mapping[channel][state]);
+    CAN_TRANSMIT_STEERING_OUTPUT(s_analog_mapping[channel][state], 0)
   }
 }
 
@@ -129,8 +127,7 @@ void prv_digital_cb(const GpioAddress *address, void *context) {
   StateId *inputStates = context;
   GpioState state;
   gpio_get_state(address, &state);
-  steering_output_update(steering_output_global(),
-                         STEERING_OUTPUT_SOURCE_CONTROL_STALK_DIGITAL_STATE, inputStates[state]);
+  CAN_TRANSMIT_STEERING_OUTPUT(inputStates[state], 0)
 }
 
 StatusCode control_stalk_init(ControlStalk *stalk) {

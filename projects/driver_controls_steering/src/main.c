@@ -4,10 +4,10 @@
 
 #include "can.h"
 #include "can_msg_defs.h"
-#include "crc32.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "i2c.h"
+#include "adc.h"
 #include "interrupt.h"
 #include "log.h"
 
@@ -16,12 +16,11 @@
 
 #include "debug_led.h"
 #include "event_queue.h"
-#include "flash.h"
 #include "heartbeat_rx.h"
 #include "sc_cfg.h"
 #include "sc_input_event.h"
 #include "soft_timer.h"
-#include "steering_output.h"
+
 
 static CanStorage s_can;
 
@@ -32,11 +31,10 @@ int main(void) {
   gpio_init();
   interrupt_init();
   gpio_it_init();
+  adc_init(ADC_MODE_CONTINUOUS);
   soft_timer_init();
   event_queue_init();
-  crc32_init();
-  flash_init();
-
+ 
   const CanSettings can_settings = {
     .device_id = SC_CFG_CAN_DEVICE_ID,
     .bitrate = SC_CFG_CAN_BITRATE,
@@ -55,10 +53,6 @@ int main(void) {
                                 heartbeat_rx_auto_ack_handler, NULL);
 
   control_stalk_init(&s_stalk);
-  steering_output_init(steering_output_global(), INPUT_EVENT_STEERING_WATCHDOG_FAULT,
-                       INPUT_EVENT_STEERING_UPDATE_REQUESTED);
-  steering_output_set_enabled(steering_output_global(), true);
-
   LOG_DEBUG("Steering Controls initialized\n");
 
   Event e;
