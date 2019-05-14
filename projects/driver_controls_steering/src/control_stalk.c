@@ -1,12 +1,12 @@
 #include "control_stalk.h"
 #include <string.h>
+#include "can_transmit.h"
 #include "exported_enums.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "log.h"
 #include "sc_cfg.h"
 #include "sc_input_event.h"
-#include "can_transmit.h"
 
 // The A6 control stalks have two types of inputs: analog and digital.
 // Analog inputs are either floating, 2.1818 kOhms to GND, or 681 Ohms to GND. We tie a resistor

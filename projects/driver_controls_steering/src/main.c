@@ -2,12 +2,12 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "adc.h"
 #include "can.h"
 #include "can_msg_defs.h"
 #include "gpio.h"
 #include "gpio_it.h"
 #include "i2c.h"
-#include "adc.h"
 #include "interrupt.h"
 #include "log.h"
 
@@ -21,7 +21,6 @@
 #include "sc_input_event.h"
 #include "soft_timer.h"
 
-
 static CanStorage s_can;
 
 static ControlStalk s_stalk;
@@ -34,7 +33,7 @@ int main(void) {
   adc_init(ADC_MODE_CONTINUOUS);
   soft_timer_init();
   event_queue_init();
- 
+
   const CanSettings can_settings = {
     .device_id = SC_CFG_CAN_DEVICE_ID,
     .bitrate = SC_CFG_CAN_BITRATE,
