@@ -2,8 +2,10 @@
 #include "config.h"
 #include "test_helpers.h"
 
+// Button storage
 static ButtonStorage button_storage[NUM_BUTTON_COLOURS];
 
+// Mocked `gpio_it_register_interrupt` function
 StatusCode TEST_MOCK(gpio_it_register_interrupt)(const GpioAddress *address,
                                                  const InterruptSettings *settings,
                                                  InterruptEdge edge, GpioItCallback callback,
@@ -16,11 +18,11 @@ void setup_test(void) {}
 void teardown_test(void) {}
 
 void test_invalid_input(void) {
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, button_init(NULL, button_storage));
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, button_init(config_load_buttons(), NULL));
-  TEST_ASSERT_EQUAL(STATUS_CODE_INVALID_ARGS, button_init(NULL, NULL));
+  // Test for invalid inputs
+  // Enter your code below ...
 }
 
 void test_valid_input(void) {
-  TEST_ASSERT_OK(button_init(config_load_buttons(), button_storage));
+  // Test for valid inputs
+  // Enter your code below ...
 }
