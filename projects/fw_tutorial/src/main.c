@@ -34,6 +34,6 @@ int main(void) {
 
   // Superloop!
   while (true) {
-    // Do stuff here!
+    // Do other stuff here!
   }
 }
