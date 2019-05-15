@@ -7,9 +7,8 @@
 
 // Potentiometer settings structure
 typedef struct PotentiometerSettings {
-  GpioAddress adc_address;    // Address of the ADC pin
-  GpioSettings adc_settings;  // GPIO ADC settings
-  uint32_t update_period_s;   // Update period of the ADC
+  GpioAddress adc_address;   // Address of the ADC pin
+  uint32_t update_period_s;  // Update period of the ADC
 } PotentiometerSettings;
 
 // Potentiometer storage structure

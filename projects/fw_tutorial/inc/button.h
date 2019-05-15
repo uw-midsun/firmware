@@ -18,8 +18,6 @@ typedef enum {
 typedef struct ButtonSettings {
   GpioAddress button_addresses[NUM_BUTTON_COLOURS];  // Array of GPIO addresses for each push button
   GpioAddress led_addresses[NUM_BUTTON_COLOURS];     // Array of GPIO addresses for each LED
-  GpioSettings gpio_settings;                        // GPIO settings for the push-button (input)
-  GpioSettings led_settings;                         // GPIO settings for LED (output)
   InterruptSettings interrupt_settings;              // Interrupt settings for push-buttons
   InterruptEdge interrupt_edge;                      // Interrupt trigger edge for push-buttons
 } ButtonSettings;
