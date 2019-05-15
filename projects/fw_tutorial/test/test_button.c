@@ -1,14 +1,13 @@
-#include "test_helpers.h"
 #include "button.h"
 #include "config.h"
+#include "test_helpers.h"
 
 static ButtonStorage button_storage[NUM_BUTTON_COLOURS];
 
-StatusCode TEST_MOCK(gpio_it_register_interrupt) (const GpioAddress *address,
-                                                  const InterruptSettings *settings,
-                                                  InterruptEdge edge,
-                                                  GpioItCallback callback,
-                                                  void *context) {
+StatusCode TEST_MOCK(gpio_it_register_interrupt)(const GpioAddress *address,
+                                                 const InterruptSettings *settings,
+                                                 InterruptEdge edge, GpioItCallback callback,
+                                                 void *context) {
   return STATUS_CODE_OK;
 }
 

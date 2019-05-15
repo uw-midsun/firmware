@@ -1,7 +1,7 @@
+#include "potentiometer.h"
 #include <stddef.h>
 #include "log.h"
 #include "soft_timer.h"
-#include "potentiometer.h"
 
 StatusCode potentiometer_init(const PotentiometerSettings *settings,
                               PotentiometerStorage *storage) {

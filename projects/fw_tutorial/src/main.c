@@ -8,8 +8,8 @@
 #include "wait.h"
 
 // Module specific includes
-#include "config.h"
 #include "button.h"
+#include "config.h"
 #include "potentiometer.h"
 
 // Button and potentiometer storage which will persist throughout the duration of the program

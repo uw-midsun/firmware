@@ -1,6 +1,6 @@
+#include "button.h"
 #include <stddef.h>
 #include <stdio.h>
-#include "button.h"
 
 static void prv_button_callback(const GpioAddress *address, void *context) {
   ButtonStorage *storage = (ButtonStorage *)context;
@@ -28,11 +28,9 @@ StatusCode button_init(const ButtonSettings *settings, ButtonStorage *storage) {
 
     // Initializae the button GPIO and register its interrupt
     status_ok_or_return(gpio_init_pin(&settings->button_addresses[i], &settings->gpio_settings));
-    status_ok_or_return(gpio_it_register_interrupt(&settings->button_addresses[i],
-                                                   &settings->interrupt_settings,
-                                                   settings->interrupt_edge,
-                                                   prv_button_callback,
-                                                   &storage[i]));
+    status_ok_or_return(
+        gpio_it_register_interrupt(&settings->button_addresses[i], &settings->interrupt_settings,
+                                   settings->interrupt_edge, prv_button_callback, &storage[i]));
   }
 
   // Everything has been initialized properly
