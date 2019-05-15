@@ -1,4 +1,6 @@
 #pragma once
+
+#include <stdbool.h>
 #include "can.h"
 #include "can_msg_defs.h"
 #include "can_transmit.h"
@@ -8,6 +10,7 @@
 #include "solar_master_current.h"
 #include "solar_master_event.h"
 #include "solar_master_slave.h"
+#include "thermistor.h"
 
 #define SOLAR_MASTER_TELEMETRY_PERIOD_MS 3000
 

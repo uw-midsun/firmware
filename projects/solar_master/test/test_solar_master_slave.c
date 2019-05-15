@@ -11,17 +11,6 @@
 static Mcp3427Storage s_slave_mcp3427[SOLAR_MASTER_NUM_SOLAR_SLAVES] = { 0 };
 static SolarMasterSlave s_slave_storage[SOLAR_MASTER_NUM_SOLAR_SLAVES] = { 0 };
 
-static const uint8_t slave_addr_lookup_reverse[8] = { 0, 1, 2, 3, 4, 5, 0, 0 };
-
-static const Mcp3427PinState adc_address_map[SOLAR_MASTER_NUM_SOLAR_SLAVES][2] = {
-  { MCP3427_PIN_STATE_LOW, MCP3427_PIN_STATE_LOW },     // I2C Address 0x68 i.e. 0x68 ^ 0x00
-  { MCP3427_PIN_STATE_LOW, MCP3427_PIN_STATE_FLOAT },   // I2C Address 0x69 i.e. 0x68 ^ 0x01
-  { MCP3427_PIN_STATE_LOW, MCP3427_PIN_STATE_HIGH },    // I2C Address 0x70 i.e. 0x68 ^ 0x02
-  { MCP3427_PIN_STATE_FLOAT, MCP3427_PIN_STATE_LOW },   // I2C Address 0x71 i.e. 0x68 ^ 0x03
-  { MCP3427_PIN_STATE_HIGH, MCP3427_PIN_STATE_LOW },    // I2C Address 0x72 i.e. 0x68 ^ 0x04
-  { MCP3427_PIN_STATE_HIGH, MCP3427_PIN_STATE_FLOAT },  // I2C Address 0x73 i.e. 0x68 ^ 0x05
-};
-
 const Mcp3427Setting slave_mcp3427_settings_base = {
   .sample_rate = MCP3427_SAMPLE_RATE_12_BIT,
   .Adr0 = MCP3427_PIN_STATE_FLOAT,
@@ -43,12 +32,12 @@ void setup_test(void) {
 
 void teardown_test(void) {}
 
-void test_solar_master_slave_init(void) {
-  for (int i = 0; i < SOLAR_MASTER_NUM_SOLAR_SLAVES; i++) {
-    Mcp3427Setting temp_slave_settings = slave_mcp3427_settings_base;
-    temp_slave_settings.Adr0 = adc_address_map[i][0];
-    temp_slave_settings.Adr1 = adc_address_map[i][1];
-    TEST_ASSERT_OK(mcp3427_init(&(s_slave_mcp3427[i]), &temp_slave_settings));
-    TEST_ASSERT_OK(solar_master_slave_init(&(s_slave_storage[i]), &(s_slave_mcp3427[i])));
-  }
-}
+// void test_solar_master_slave_init(void) {
+//   for (int i = 0; i < SOLAR_MASTER_NUM_SOLAR_SLAVES; i++) {
+//     Mcp3427Setting temp_slave_settings = slave_mcp3427_settings_base;
+//     temp_slave_settings.Adr0 = ADC_ADDRESS_MAP[i][0];
+//     temp_slave_settings.Adr1 = ADC_ADDRESS_MAP[i][1];
+//     TEST_ASSERT_OK(mcp3427_init(&(s_slave_mcp3427[i]), &temp_slave_settings));
+//     TEST_ASSERT_OK(solar_master_slave_init(&(s_slave_storage[i]), &(s_slave_mcp3427[i])));
+//   }
+// }

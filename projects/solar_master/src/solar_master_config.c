@@ -1,5 +1,12 @@
 #include "solar_master_config.h"
 
+const GpioSettings board_select_gpio_settings = {
+  .direction = GPIO_DIR_IN,
+  .state = GPIO_STATE_LOW,
+  .resistor = GPIO_RES_NONE,
+  .alt_function = GPIO_ALTFN_NONE,
+};
+
 // TODO(ELEC-502): Add I2C high speed support to the driver.
 const I2CSettings slave_i2c_settings = {
   .speed = I2C_SPEED_STANDARD,      //
@@ -53,14 +60,18 @@ static const GpioAddress s_mode_sel_1 = { .port = GPIO_PORT_A, .pin = 10 };
 StatusCode solar_master_config_init(void) {
   // Getting board type.
   GpioState state = NUM_GPIO_STATES;
-  StatusCode status = gpio_get_state(&s_mode_sel_0, &state);
+  StatusCode status = gpio_init_pin(&s_mode_sel_0, &board_select_gpio_settings);
+  if (!status_ok(status)) {
+    LOG_DEBUG("Error initializing board type GPIO.\n");
+    return status_code(STATUS_CODE_UNINITIALIZED);
+  }
+  status = gpio_get_state(&s_mode_sel_0, &state);
   if (!status_ok(status)) {
     LOG_DEBUG("Error getting board type.\n");
     return status_code(STATUS_CODE_INTERNAL_ERROR);
   }
   s_config.board =
       (state == GPIO_STATE_HIGH) ? SOLAR_MASTER_CONFIG_BOARD_FRONT : SOLAR_MASTER_CONFIG_BOARD_REAR;
-
   s_config.can_settings->device_id = device_id_lookup[s_config.board];
   return STATUS_CODE_OK;
 }

@@ -18,7 +18,6 @@ StatusCode solar_master_relay_init(void) {
     .alt_function = GPIO_ALTFN_NONE  //
   };
 
-  event_raise(SOLAR_MASTER_EVENT_RELAY_STATE, EE_CHARGER_SET_RELAY_STATE_CLOSE);
   return gpio_init_pin(&s_relay_address, &settings);
 }
 
