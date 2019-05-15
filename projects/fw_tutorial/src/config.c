@@ -14,10 +14,11 @@ static ButtonSettings button_settings = {
                     .state = GPIO_STATE_LOW,
                     .resistor = GPIO_RES_NONE,
                     .alt_function = GPIO_ALTFN_NONE },
-  .interrupt_settings = {
-    .type = INTERRUPT_TYPE_INTERRUPT,
-    .priority = INTERRUPT_PRIORITY_NORMAL  // No other interrupts, leave as normal
-  },
+  .interrupt_settings =
+      {
+          .type = INTERRUPT_TYPE_INTERRUPT,
+          .priority = INTERRUPT_PRIORITY_NORMAL  // No other interrupts, leave as normal
+      },
   .interrupt_edge = INTERRUPT_EDGE_RISING  // Trigger on the rising edge
 };
 
@@ -25,12 +26,13 @@ static ButtonSettings button_settings = {
 static PotentiometerSettings potentiometer_settings = {
   // TODO(ELEC-624): Change this once hardware revision updates
   .adc_address = { GPIO_PORT_A, 0 },  // Potentiometer pin
-  .adc_settings = {
-    .direction = GPIO_DIR_IN,
-    .state = GPIO_STATE_LOW,
-    .resistor = GPIO_RES_NONE,
-    .alt_function = GPIO_ALTFN_ANALOG  // Alternate function as ADC
-  },
+  .adc_settings =
+      {
+          .direction = GPIO_DIR_IN,
+          .state = GPIO_STATE_LOW,
+          .resistor = GPIO_RES_NONE,
+          .alt_function = GPIO_ALTFN_ANALOG  // Alternate function as ADC
+      },
   .update_period_s = CONFIG_ADC_UPDATE_PERIOD_S  // Update period
 };
 
