@@ -69,16 +69,16 @@ StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
 
   // Turning off messages we don't need
   char *ggl_off = GPS_GLL_OFF;
-  uart_tx(s_settings->port, (uint8_t *)ggl_off, strlen(ggl_off));
+  uart_tx(s_settings->uart_port, (uint8_t *)ggl_off, strlen(ggl_off));
 
   char *gsa_off = GPS_GSA_OFF;
-  uart_tx(s_settings->port, (uint8_t *)gsa_off, strlen(gsa_off));
+  uart_tx(s_settings->uart_port, (uint8_t *)gsa_off, strlen(gsa_off));
 
   char *gsv_off = GPS_GSV_OFF;
-  uart_tx(s_settings->port, (uint8_t *)gsv_off, strlen(gsv_off));
+  uart_tx(s_settings->uart_port, (uint8_t *)gsv_off, strlen(gsv_off));
 
   char *rmc_off = GPS_RMC_OFF;
-  uart_tx(s_settings->port, (uint8_t *)rmc_off, strlen(rmc_off));
+  uart_tx(s_settings->uart_port, (uint8_t *)rmc_off, strlen(rmc_off));
 
   return STATUS_CODE_OK;
 }
