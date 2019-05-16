@@ -17,7 +17,7 @@
 #define TELEMETRY_GPS_UART_PORT UART_PORT_3;
 #define TELEMETRY_GPS_UART_TX \
   { .port = GPIO_PORT_B, .pin = 10 }
-#define TELMETRY_GPS_UART_RX \
+#define TELEMETRY_GPS_UART_RX \
   { .port = GPIO_PORT_B, .pin = 11 }
 #define TELEMETRY_GPS_UART_ALTFN GPIO_ALTFN_4
 
@@ -25,8 +25,8 @@ static UartStorage s_uart_storage;
 
 UartSettings telemetry_gps_uart_settings = {
   .baudrate = TELEMETRY_GPS_UART_BAUD_RATE,
-  .tx = TELMETRY_GPS_UART_TX,
-  .rx = TELMETRY_GPS_UART_RX,
+  .tx = TELEMETRY_GPS_UART_TX,
+  .rx = TELEMETRY_GPS_UART_RX,
   .alt_fn = TELEMETRY_GPS_UART_ALTFN  // ALTFN for UART for PB10 and PB11
 };
 
@@ -44,7 +44,7 @@ void setup_test(void) {
   soft_timer_init();
   event_queue_init();
 
-  uart_init(TELEMETRY_GPS_UART_PORT, &telemetry_gps_uart_settings, &telemetry_gps_uart_storage);
+  uart_init(TELEMETRY_GPS_UART_PORT, &telemetry_gps_uart_settings, &s_uart_storage);
 }
 
 void teardown_test(void) {}
