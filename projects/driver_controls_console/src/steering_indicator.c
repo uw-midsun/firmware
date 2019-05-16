@@ -99,7 +99,7 @@ static StatusCode prv_handle_steering(const CanMessage *msg, void *context,
     default:
       break;
   }
-  
+
   return STATUS_CODE_OK;
 }
 
