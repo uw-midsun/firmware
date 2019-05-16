@@ -9,11 +9,11 @@ static StatusCode prv_handle_steering(const CanMessage *msg, void *context,
   DriveOutputStorage *storage = context;
 
   uint16_t control_stalk_analog_state = 0;
-  uint16_t control_stalk_digital_state = 0;
+  uint16_t data = 0;
 
-  CAN_UNPACK_STEERING_OUTPUT(msg, &control_stalk_analog_state, &control_stalk_digital_state);
+  CAN_UNPACK_STEERING_OUTPUT(&event_id, &data);
 
-  switch (control_stalk_analog_state) {
+  switch (event_id) {
     case EE_CONTROL_STALK_ANALOG_DISTANCE_NEUTRAL:
       event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_CONTROL_STALK_ANALOG_DISTANCE_NEUTRAL,
                            0);
@@ -59,11 +59,6 @@ static StatusCode prv_handle_steering(const CanMessage *msg, void *context,
       event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_CONTROL_STALK_ANALOG_TURN_SIGNAL_LEFT,
                            0);
       break;
-    default:
-      break;
-  }
-
-  switch (control_stalk_digital_state) {
     case EE_CONTROL_STALK_DIGITAL_CC_SET_PRESSED:
       event_raise_priority(EVENT_PRIORITY_NORMAL, INPUT_EVENT_CONTROL_STALK_DIGITAL_CC_SET_PRESSED,
                            0);
@@ -101,11 +96,10 @@ static StatusCode prv_handle_steering(const CanMessage *msg, void *context,
     case EE_CONTROL_STALK_DIGITAL_HIGH_BEAM_BACK_RELEASED:
       event_raise_priority(EVENT_PRIORITY_NORMAL,
                            INPUT_EVENT_CONTROL_STALK_DIGITAL_HEADLIGHT_BACK_RELEASED, 0);
-      break;
     default:
       break;
   }
-
+  
   return STATUS_CODE_OK;
 }
 

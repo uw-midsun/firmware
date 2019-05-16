@@ -42,9 +42,9 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void test_steering_indicator_analog_distance(void) {
-  const uint16_t control_stalk_analog_state = EE_CONTROL_STALK_ANALOG_DISTANCE_NEUTRAL;
+  const uint16_t control_stalk_analog_event = EE_CONTROL_STALK_ANALOG_DISTANCE_NEUTRAL;
 
-  CAN_TRANSMIT_STEERING_OUTPUT(control_stalk_analog_state, 0);
+  CAN_TRANSMIT_STEERING_OUTPUT(control_stalk_analog_event, 0);
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
@@ -54,9 +54,9 @@ void test_steering_indicator_analog_distance(void) {
 }
 
 void test_steering_indicator_analog_speed(void) {
-  const uint16_t control_stalk_analog_state = EE_CONTROL_STALK_ANALOG_CC_SPEED_MINUS;
+  const uint16_t control_stalk_analog_event = EE_CONTROL_STALK_ANALOG_CC_SPEED_MINUS;
 
-  CAN_TRANSMIT_STEERING_OUTPUT(control_stalk_analog_state, 0);
+  CAN_TRANSMIT_STEERING_OUTPUT(control_stalk_analog_event, 0);
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
@@ -66,9 +66,9 @@ void test_steering_indicator_analog_speed(void) {
 }
 
 void test_steering_indicator_analog_resume(void) {
-  const uint16_t control_stalk_analog_state = EE_CONTROL_STALK_ANALOG_CC_RESUME;
+  const uint16_t control_stalk_analog_event = EE_CONTROL_STALK_ANALOG_CC_RESUME;
 
-  CAN_TRANSMIT_STEERING_OUTPUT(control_stalk_analog_state, 0);
+  CAN_TRANSMIT_STEERING_OUTPUT(control_stalk_analog_event, 0);
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
@@ -78,9 +78,9 @@ void test_steering_indicator_analog_resume(void) {
 }
 
 void test_steering_indicator_analog_turn_signal(void) {
-  const uint16_t control_stalk_analog_state = EE_CONTROL_STALK_ANALOG_CC_TURN_SIGNAL_RIGHT;
+  const uint16_t control_stalk_analog_event = EE_CONTROL_STALK_ANALOG_CC_TURN_SIGNAL_RIGHT;
 
-  CAN_TRANSMIT_STEERING_OUTPUT(control_stalk_analog_state, 0);
+  CAN_TRANSMIT_STEERING_OUTPUT(control_stalk_analog_event, 0);
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
@@ -90,9 +90,9 @@ void test_steering_indicator_analog_turn_signal(void) {
 }
 
 void test_steering_indicator_digital_cc_set(void) {
-  const uint16_t control_stalk_digital_state = EE_CONTROL_STALK_DIGITAL_CC_SET_RELEASED;
+  const uint16_t control_stalk_digital_event = EE_CONTROL_STALK_DIGITAL_CC_SET_RELEASED;
 
-  CAN_TRANSMIT_STEERING_OUTPUT(0, control_stalk_digital_state);
+  CAN_TRANSMIT_STEERING_OUTPUT(control_stalk_digital_event, 0);
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
@@ -106,9 +106,9 @@ void test_steering_indicator_digital_cc_set(void) {
 }
 
 void test_steering_indicator_digital_cc_lane_assist(void) {
-  const uint16_t control_stalk_digital_state = EE_CONTROL_STALK_DIGITAL_CC_LANE_ASSIST_PRESSED;
+  const uint16_t control_stalk_digital_event = EE_CONTROL_STALK_DIGITAL_CC_LANE_ASSIST_PRESSED;
 
-  CAN_TRANSMIT_STEERING_OUTPUT(0, control_stalk_digital_state);
+  CAN_TRANSMIT_STEERING_OUTPUT(control_stalk_digital_event, 0);
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
@@ -122,9 +122,9 @@ void test_steering_indicator_digital_cc_lane_assist(void) {
 }
 
 void test_steering_indicator_digital_high_beam_fwd(void) {
-  const uint16_t control_stalk_digital_state = EE_CONTROL_STALK_DIGITAL_HIGH_BEAM_FWD_RELEASED;
+  const uint16_t control_stalk_digital_event = EE_CONTROL_STALK_DIGITAL_HIGH_BEAM_FWD_RELEASED;
 
-  CAN_TRANSMIT_STEERING_OUTPUT(0, control_stalk_digital_state);
+  CAN_TRANSMIT_STEERING_OUTPUT(control_stalk_digital_event, 0);
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
@@ -138,9 +138,9 @@ void test_steering_indicator_digital_high_beam_fwd(void) {
 }
 
 void test_steering_indicator_digital_high_beam_back(void) {
-  const uint16_t control_stalk_digital_state = EE_CONTROL_STALK_DIGITAL_HIGH_BEAM_BACK_PRESSED;
+  const uint16_t control_stalk_digital_event = EE_CONTROL_STALK_DIGITAL_HIGH_BEAM_BACK_PRESSED;
 
-  CAN_TRANSMIT_STEERING_OUTPUT(0, control_stalk_digital_state);
+  CAN_TRANSMIT_STEERING_OUTPUT(control_stalk_digital_event, 0);
 
   MS_TEST_HELPER_CAN_TX_RX(INPUT_EVENT_CENTER_CONSOLE_CAN_TX, INPUT_EVENT_CENTER_CONSOLE_CAN_RX);
 
