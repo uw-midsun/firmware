@@ -45,7 +45,10 @@
 
 #define CAN_UNPACK_POWERTRAIN_HEARTBEAT(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
 
-#define CAN_UNPACK_MOTOR_CONTROLLER_RESET(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
+#define CAN_UNPACK_MOTOR_CONTROLLER_RESET(msg_ptr, motor_controller_u8_ptr)               \
+  can_unpack_impl_u8((msg_ptr), 1, (motor_controller_u8_ptr), CAN_UNPACK_IMPL_EMPTY,      \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
 #define CAN_UNPACK_OVUV_DCDC_AUX(msg_ptr, dcdc_ov_flag_u8_ptr, dcdc_uv_flag_u8_ptr,             \
                                  aux_bat_ov_flag_u8_ptr, aux_bat_uv_flag_u8_ptr)                \
@@ -61,11 +64,6 @@
                                 cruise_control_u16_ptr, mechanical_brake_state_u16_ptr) \
   can_unpack_impl_u16((msg_ptr), 8, (throttle_u16_ptr), (direction_u16_ptr),            \
                       (cruise_control_u16_ptr), (mechanical_brake_state_u16_ptr))
-
-#define CAN_UNPACK_CRUISE_TARGET(msg_ptr, target_speed_u8_ptr)                            \
-  can_unpack_impl_u8((msg_ptr), 1, (target_speed_u8_ptr), CAN_UNPACK_IMPL_EMPTY,          \
-                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, \
-                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
 #define CAN_UNPACK_FAN_CONTROL(msg_ptr, state_u8_ptr)                                            \
   can_unpack_impl_u8((msg_ptr), 1, (state_u8_ptr), CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, \
@@ -100,9 +98,14 @@
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY,        \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
-#define CAN_UNPACK_STEERING_ANGLE(msg_ptr, steering_angle_u16_ptr)                   \
-  can_unpack_impl_u16((msg_ptr), 2, (steering_angle_u16_ptr), CAN_UNPACK_IMPL_EMPTY, \
-                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
+#define CAN_UNPACK_STEERING_OUTPUT(msg_ptr, event_id_u16_ptr, data_u16_ptr)                    \
+  can_unpack_impl_u16((msg_ptr), 4, (event_id_u16_ptr), (data_u16_ptr), CAN_UNPACK_IMPL_EMPTY, \
+                      CAN_UNPACK_IMPL_EMPTY)
+
+#define CAN_UNPACK_PEDAL_OUTPUT(msg_ptr, throttle_u16_ptr, throttle_state_u16_ptr, \
+                                mech_brake_u16_ptr)                                \
+  can_unpack_impl_u16((msg_ptr), 6, (throttle_u16_ptr), (throttle_state_u16_ptr),  \
+                      (mech_brake_u16_ptr), CAN_UNPACK_IMPL_EMPTY)
 
 #define CAN_UNPACK_BATTERY_SOC(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
 

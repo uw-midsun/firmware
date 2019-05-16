@@ -95,7 +95,7 @@ int main(void) {
   can_add_filter(SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT);
   can_add_filter(SYSTEM_CAN_MESSAGE_MOTOR_VELOCITY);
   can_add_filter(SYSTEM_CAN_MESSAGE_STEERING_OUTPUT);
-  can_add_filter(SYSTEM_CAN_DEVICE_PEDAL_CONTROLS);
+  can_add_filter(SYSTEM_CAN_MESSAGE_PEDAL_OUTPUT);
 
   const I2CSettings i2c_settings = {
     .speed = I2C_SPEED_FAST,    //

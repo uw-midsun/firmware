@@ -54,7 +54,7 @@ StatusCode cruise_set_target_cms(CruiseStorage *cruise, int16_t target) {
   cruise->target_speed_cms = MAX(0, cruise->target_speed_cms);
   cruise->target_speed_cms = MIN(CRUISE_MAX_TARGET_CMS, cruise->target_speed_cms);
 
-  return CAN_TRANSMIT_CRUISE_TARGET(cruise->target_speed_cms);
+  return STATUS_CODE_OK;
 }
 
 int16_t cruise_get_target_cms(CruiseStorage *cruise) {

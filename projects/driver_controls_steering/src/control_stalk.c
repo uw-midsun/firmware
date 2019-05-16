@@ -46,7 +46,7 @@ static const GpioAddress s_digital_gpio_addresses[CONTROL_STALK_DIGITAL_INPUTS] 
   SC_CFG_HIGH_BEAM_FWD_PIN, SC_CFG_HIGH_BEAM_BACK_PIN,
 };
 
-typedef int16_t StateId;
+typedef uint16_t StateId;
 
 // ADC channel to state
 static const StateId s_analog_mapping[CONTROL_STALK_ANALOG_INPUTS][NUM_CONTROL_STALK_STATES] = {
@@ -119,7 +119,7 @@ static void prv_analog_cb(AdcChannel channel, void *context) {
   }
 
   if (stalk->debounce_counter[channel] == CONTROL_STALK_DEBOUNCE_COUNTER_THRESHOLD) {
-    CAN_TRANSMIT_STEERING_OUTPUT(s_analog_mapping[channel][state], 0)
+    CAN_TRANSMIT_STEERING_OUTPUT(s_analog_mapping[channel][state], 0);
   }
 }
 
@@ -127,7 +127,7 @@ void prv_digital_cb(const GpioAddress *address, void *context) {
   StateId *inputStates = context;
   GpioState state;
   gpio_get_state(address, &state);
-  CAN_TRANSMIT_STEERING_OUTPUT(inputStates[state], 0)
+  CAN_TRANSMIT_STEERING_OUTPUT(inputStates[state], 0);
 }
 
 StatusCode control_stalk_init(ControlStalk *stalk) {

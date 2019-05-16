@@ -79,12 +79,12 @@
     status;                                            \
   })
 
-#define CAN_TRANSMIT_MOTOR_CONTROLLER_RESET()     \
-  ({                                              \
-    CanMessage msg = { 0 };                       \
-    CAN_PACK_MOTOR_CONTROLLER_RESET(&msg);        \
-    StatusCode status = can_transmit(&msg, NULL); \
-    status;                                       \
+#define CAN_TRANSMIT_MOTOR_CONTROLLER_RESET(motor_controller_u8)  \
+  ({                                                              \
+    CanMessage msg = { 0 };                                       \
+    CAN_PACK_MOTOR_CONTROLLER_RESET(&msg, (motor_controller_u8)); \
+    StatusCode status = can_transmit(&msg, NULL);                 \
+    status;                                                       \
   })
 
 #define CAN_TRANSMIT_OVUV_DCDC_AUX(dcdc_ov_flag_u8, dcdc_uv_flag_u8, aux_bat_ov_flag_u8,     \
@@ -113,14 +113,6 @@
                           (mechanical_brake_state_u16));                               \
     StatusCode status = can_transmit(&msg, NULL);                                      \
     status;                                                                            \
-  })
-
-#define CAN_TRANSMIT_CRUISE_TARGET(target_speed_u8)  \
-  ({                                                 \
-    CanMessage msg = { 0 };                          \
-    CAN_PACK_CRUISE_TARGET(&msg, (target_speed_u8)); \
-    StatusCode status = can_transmit(&msg, NULL);    \
-    status;                                          \
   })
 
 #define CAN_TRANSMIT_FAN_CONTROL(state_u8)        \
@@ -187,12 +179,20 @@
     status;                                             \
   })
 
-#define CAN_TRANSMIT_STEERING_ANGLE(steering_angle_u16)  \
-  ({                                                     \
-    CanMessage msg = { 0 };                              \
-    CAN_PACK_STEERING_ANGLE(&msg, (steering_angle_u16)); \
-    StatusCode status = can_transmit(&msg, NULL);        \
-    status;                                              \
+#define CAN_TRANSMIT_STEERING_OUTPUT(event_id_u16, data_u16)    \
+  ({                                                            \
+    CanMessage msg = { 0 };                                     \
+    CAN_PACK_STEERING_OUTPUT(&msg, (event_id_u16), (data_u16)); \
+    StatusCode status = can_transmit(&msg, NULL);               \
+    status;                                                     \
+  })
+
+#define CAN_TRANSMIT_PEDAL_OUTPUT(throttle_u16, throttle_state_u16, mech_brake_u16)      \
+  ({                                                                                     \
+    CanMessage msg = { 0 };                                                              \
+    CAN_PACK_PEDAL_OUTPUT(&msg, (throttle_u16), (throttle_state_u16), (mech_brake_u16)); \
+    StatusCode status = can_transmit(&msg, NULL);                                        \
+    status;                                                                              \
   })
 
 #define CAN_TRANSMIT_BATTERY_SOC()                \

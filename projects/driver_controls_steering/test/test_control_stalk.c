@@ -15,7 +15,6 @@
 #include "log.h"
 #include "sc_input_event.h"
 #include "soft_timer.h"
-#include "steering_output.h"
 #include "test_helpers.h"
 #include "unity.h"
 #include "wait.h"

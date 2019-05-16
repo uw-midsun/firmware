@@ -59,7 +59,6 @@ int main(void) {
     if (status_ok(event_process(&e))) {
 #ifdef SC_CFG_DEBUG_PRINT_EVENTS
       switch (e.id) {
-        case INPUT_EVENT_STEERING_UPDATE_REQUESTED:
         case INPUT_EVENT_STEERING_CAN_RX:
         case INPUT_EVENT_STEERING_CAN_TX:
           break;
