@@ -34,7 +34,7 @@ UartSettings telemetry_gps_uart_settings = {
 GpioAddress telemetry_gps_on_off_pin = { .port = GPIO_PORT_B, .pin = 9 };  // Pin GPS power
 
 GpsSettings telemetry_gps_settings = { .pin_on_off = &telemetry_gps_on_off_pin,
-                                       .port = UART_PORT_3 };
+                                       .uart_port = UART_PORT_3 };
 
 GpsStorage telemetry_gps_storage = { 0 };
 
