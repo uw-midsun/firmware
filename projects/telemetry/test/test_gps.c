@@ -27,7 +27,7 @@ UartSettings telemetry_gps_uart_settings = {
   .baudrate = TELEMETRY_GPS_UART_BAUD_RATE,
   .tx = TELMETRY_GPS_UART_TX,
   .rx = TELMETRY_GPS_UART_RX,
-  .alt_fn = TELEMETRY_GPS_UART_ALTFN     //ALTFN for UART for PB10 and PB11
+  .alt_fn = TELEMETRY_GPS_UART_ALTFN  // ALTFN for UART for PB10 and PB11
 };
 
 // The pin numbers to use for providing power and turning the GPS on and off
@@ -44,9 +44,7 @@ void setup_test(void) {
   soft_timer_init();
   event_queue_init();
 
-  uart_init( TELEMETRY_GPS_UART_PORT, 
-             &telemetry_gps_uart_settings, 
-             &telemetry_gps_uart_storage);
+  uart_init(TELEMETRY_GPS_UART_PORT, &telemetry_gps_uart_settings, &telemetry_gps_uart_storage);
 }
 
 void teardown_test(void) {}
