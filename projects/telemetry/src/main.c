@@ -14,8 +14,8 @@
 #include "uart.h"
 #include "wait.h"
 
-#define TELEMETRY_GPS_UART_BAUD_RATE 9600;
-#define TELEMETRY_GPS_UART_PORT UART_PORT_3;
+#define TELEMETRY_GPS_UART_BAUD_RATE 9600
+#define TELEMETRY_GPS_UART_PORT UART_PORT_3
 #define TELEMETRY_GPS_UART_TX \
   { .port = GPIO_PORT_B, .pin = 10 }
 #define TELMETRY_GPS_UART_RX \
