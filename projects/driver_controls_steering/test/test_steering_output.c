@@ -1,6 +1,6 @@
 #include "can.h"
-#include "can_unpack.h"
 #include "can_transmit.h"
+#include "can_unpack.h"
 #include "delay.h"
 #include "event_queue.h"
 #include "gpio.h"
@@ -23,8 +23,7 @@ static StatusCode prv_handle_output(const CanMessage *msg, void *context, CanAck
   if (*received == false) {
     uint16_t s_test_event = 0;
     uint16_t s_test_data = 0;
-    TEST_ASSERT_OK(
-        CAN_UNPACK_STEERING_OUTPUT(msg, &s_test_event, &s_test_data));
+    TEST_ASSERT_OK(CAN_UNPACK_STEERING_OUTPUT(msg, &s_test_event, &s_test_data));
     TEST_ASSERT_EQUAL_UINT(s_test_event, s_test_data);
     *received = true;
   }
@@ -50,7 +49,6 @@ void setup_test(void) {
   };
   TEST_ASSERT_OK(can_init(&s_can_storage, &can_settings));
   can_add_filter(SYSTEM_CAN_MESSAGE_STEERING_OUTPUT);
-
 }
 
 void teardown_test(void) {}
@@ -59,7 +57,6 @@ void test_steering_output_values(void) {
   // Test that s_storage is updated correctly
   uint16_t s_test_event = 4;
   uint16_t s_test_data = 80;
- 
 
   CAN_TRANSMIT_STEERING_OUTPUT(s_test_event, s_test_data);
 
