@@ -55,15 +55,15 @@ void test_control_stalks_readback(void) {
   }
 
   while (true) {
-    uint16_t control_stalk_analog_state = 0;
-    uint16_t control_stalk_digital_state = 0;
+    uint16_t s_event = 0;
+    uint16_t s_data = 0;
 
     CanMessage msg = {};
 
-    CAN_UNPACK_STEERING_OUTPUT(&msg, &control_stalk_analog_state, &control_stalk_digital_state);
+    CAN_UNPACK_STEERING_OUTPUT(&msg, &s_event, &s_data);
     wait();
     // Digital pins
-    switch (control_stalk_digital_state) {
+    switch (s_event) {
       // CC_SET
       case EE_CONTROL_STALK_DIGITAL_CC_SET_PRESSED:
         LOG_DEBUG("DIGITAL_CC_SET_PRESSED\n");
@@ -107,10 +107,10 @@ void test_control_stalks_readback(void) {
       case EE_CONTROL_STALK_DIGITAL_HIGH_BEAM_BACK_RELEASED:
         LOG_DEBUG("DIGITAL_HIGH_BEAM_BACK_RELEASED\n");
         break;
-    }
+    
 
     // Analog Pins
-    switch (control_stalk_analog_state) {
+   
       // TURN_SIGNAL
       case EE_CONTROL_STALK_ANALOG_CC_TURN_SIGNAL_NONE:
         LOG_DEBUG("ANALOG_TURN_SIGNAL_NONE\n");
