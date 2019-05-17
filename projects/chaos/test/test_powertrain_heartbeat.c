@@ -105,7 +105,7 @@ void test_powertrain_heartbeat_kick_watchdog(void) {
   // Send heartbeat - watchdog should be kicked (manually ACK message)
   msg.source_id = SYSTEM_CAN_DEVICE_PLUTUS;
   TEST_ASSERT_OK(can_ack_handle_msg(&s_storage.ack_requests, &msg));
-  msg.source_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS;
+  msg.source_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS_CENTER_CONSOLE;
   TEST_ASSERT_OK(can_ack_handle_msg(&s_storage.ack_requests, &msg));
   msg.source_id = SYSTEM_CAN_DEVICE_MOTOR_CONTROLLER;
   TEST_ASSERT_OK(can_ack_handle_msg(&s_storage.ack_requests, &msg));

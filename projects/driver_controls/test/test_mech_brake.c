@@ -60,7 +60,7 @@ void setup_test() {
 
   const MechBrakeCalibrationData s_calibration_data = {
     .zero_value = 0,
-    .hundred_value = EE_DRIVE_OUTPUT_DENOMINATOR,
+    .hundred_value = EE_PEDAL_OUTPUT_DENOMINATOR,
   };
 
   mech_brake_init(&s_mech_brake_storage, &brake_settings, &s_calibration_data);
@@ -71,7 +71,7 @@ void teardown_test(void) {}
 void test_mech_brake_init_invalid_args(void) {
   const MechBrakeCalibrationData s_calibration_data_test = {
     .zero_value = 0,
-    .hundred_value = EE_DRIVE_OUTPUT_DENOMINATOR,
+    .hundred_value = EE_PEDAL_OUTPUT_DENOMINATOR,
   };
   // Test with valid arguments.
   TEST_ASSERT_EQUAL(STATUS_CODE_OK, mech_brake_init(&s_mech_brake_storage, &brake_settings,
@@ -183,7 +183,7 @@ void test_mech_brake_percentage_below_bounds(void) {
 void test_mech_brake_percentage_above_bounds(void) {
   int16_t position = 0;
   // The bounds_tolerance is 2%, so the upper_bound for the position is 4177.
-  s_mocked_reading = EE_DRIVE_OUTPUT_DENOMINATOR + 1000;
+  s_mocked_reading = EE_PEDAL_OUTPUT_DENOMINATOR + 1000;
   Event e;
 
   TEST_ASSERT_EQUAL(STATUS_CODE_OUT_OF_RANGE,

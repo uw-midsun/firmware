@@ -42,7 +42,7 @@ void setup_test(void) {
   soft_timer_init();
 
   CanSettings can_settings = {
-    .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,
+    .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS_CENTER_CONSOLE,
     .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = INPUT_EVENT_CENTER_CONSOLE_CAN_RX,
     .tx_event = INPUT_EVENT_CENTER_CONSOLE_CAN_TX,

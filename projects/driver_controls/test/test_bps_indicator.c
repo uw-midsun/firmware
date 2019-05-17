@@ -32,7 +32,7 @@ void setup_test(void) {
   soft_timer_init();
 
   CanSettings can_settings = {
-    .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,
+    .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS_CENTER_CONSOLE,
     .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = INPUT_EVENT_CAN_RX,
     .tx_event = INPUT_EVENT_CAN_TX,
@@ -57,7 +57,7 @@ void test_bps_indicator_heartbeat(void) {
   CanAckRequest ack_request = {
     .callback = NULL,
     .context = NULL,
-    .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_DRIVER_CONTROLS),
+    .expected_bitset = CAN_ACK_EXPECTED_DEVICES(SYSTEM_CAN_DEVICE_DRIVER_CONTROLS_CENTER_CONSOLE),
   };
   CAN_TRANSMIT_BPS_HEARTBEAT(&ack_request, EE_BPS_HEARTBEAT_STATE_OK);
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(INPUT_EVENT_CAN_TX, INPUT_EVENT_CAN_RX);
