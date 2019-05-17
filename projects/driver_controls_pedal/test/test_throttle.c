@@ -65,6 +65,7 @@ void setup_test(void) {
   };
   i2c_init(PC_CFG_I2C_BUS_PORT, &i2c_settings);
   GpioAddress ready_pin = PC_CFG_PEDAL_ADC_RDY_PIN;
+  ads1015_init(&s_ads1015_storage, PC_CFG_I2C_BUS_PORT, ADS1015_ADDRESS_GND, &ready_pin);
   prv_set_calibration_data(&s_calibration_data);
   throttle_init(&s_throttle_storage, &s_calibration_data, &s_ads1015_storage);
 }
