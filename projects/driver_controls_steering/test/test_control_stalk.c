@@ -107,10 +107,9 @@ void test_control_stalks_readback(void) {
       case EE_CONTROL_STALK_DIGITAL_HIGH_BEAM_BACK_RELEASED:
         LOG_DEBUG("DIGITAL_HIGH_BEAM_BACK_RELEASED\n");
         break;
-    
 
-    // Analog Pins
-   
+        // Analog Pins
+
       // TURN_SIGNAL
       case EE_CONTROL_STALK_ANALOG_CC_TURN_SIGNAL_NONE:
         LOG_DEBUG("ANALOG_TURN_SIGNAL_NONE\n");
