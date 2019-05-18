@@ -2,7 +2,7 @@
 // Push button module for LED control written for the Tutorial board
 // This module is used as an introduction to Midnight Sun style firmware.
 // It is organized in such a way as to expose the user to basic fundamentals
-// and principals we follow when writing drivers and modules
+// and principles we follow when writing drivers and modules
 // Requires interrupts to be initialized
 #include "gpio.h"
 #include "gpio_it.h"
