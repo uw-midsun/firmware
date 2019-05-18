@@ -38,7 +38,7 @@ StatusCode button_init(const ButtonSettings *settings, ButtonStorage *storage) {
     // Initialize the LED GPIO
     status_ok_or_return(gpio_init_pin(&settings->led_addresses[i], &led_settings));
 
-    // Initializae the button GPIO and register its interrupt
+    // Initialize the button GPIO and register its interrupt
     status_ok_or_return(gpio_init_pin(&settings->button_addresses[i], &gpio_settings));
     status_ok_or_return(
         gpio_it_register_interrupt(&settings->button_addresses[i], &settings->interrupt_settings,
