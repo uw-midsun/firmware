@@ -1,6 +1,5 @@
 #include <stdint.h>
 
-#include "pwm_input.h"
 #include "delay.h"
 #include "gpio.h"
 #include "gpio_it.h"
@@ -8,6 +7,7 @@
 #include "interrupt_def.h"
 #include "log.h"
 #include "pwm.h"
+#include "pwm_input.h"
 #include "soft_timer.h"
 
 // To run this test, connect the input and output pins
