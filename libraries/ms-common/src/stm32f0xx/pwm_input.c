@@ -44,6 +44,7 @@ StatusCode pwm_input_init(PwmTimer timer, PwmChannel channel) {
 
   uint16_t trigger_source = 0;
 
+  // Sets the trigger source depending on whether we're using channel 1 or 2
   if (channel == PWM_CHANNEL_1) {
     s_port[timer].channel = TIM_Channel_1;
     trigger_source = TIM_TS_TI1FP1;
@@ -54,9 +55,11 @@ StatusCode pwm_input_init(PwmTimer timer, PwmChannel channel) {
 
   TIM_TypeDef *tim_location = s_port[timer].base;
 
+  // Gets our current frequency
   RCC_ClocksTypeDef clocks;
   RCC_GetClocksFreq(&clocks);
 
+  // Struct to configure PWM frequency (this will determine what unit the user gets)
   TIM_TimeBaseInitTypeDef tim_init = {
     .TIM_Prescaler = (clocks.PCLK_Frequency / 1000000) - 1,
     .TIM_CounterMode = TIM_CounterMode_Up,
@@ -67,6 +70,7 @@ StatusCode pwm_input_init(PwmTimer timer, PwmChannel channel) {
 
   TIM_TimeBaseInit(tim_location, &tim_init);
 
+  // Struct to configure the timer for PWM input mode
   TIM_ICInitTypeDef tim_icinit = {
     .TIM_Channel = s_port[timer].channel,
     .TIM_ICPolarity = TIM_ICPolarity_Rising,
@@ -77,6 +81,7 @@ StatusCode pwm_input_init(PwmTimer timer, PwmChannel channel) {
 
   TIM_PWMIConfig(tim_location, &tim_icinit);
 
+  // Puts the timer into PWM input mode
   TIM_SelectInputTrigger(tim_location, trigger_source);
   TIM_SelectSlaveMode(tim_location, TIM_SlaveMode_Reset);
   TIM_SelectMasterSlaveMode(tim_location, TIM_MasterSlaveMode_Enable);
@@ -93,6 +98,8 @@ StatusCode pwm_input_get_reading(PwmTimer timer, PwmInputReading *reading) {
 
   TIM_TypeDef *tim_location = s_port[timer].base;
 
+  // Returns reading if the Capture Compare flag is set, otherwise
+  // returns a PWM of 0
   if (TIM_GetFlagStatus(tim_location, TIM_FLAG_CC1) == SET) {
     TIM_ClearFlag(tim_location, TIM_FLAG_CC1);
   } else {
@@ -107,6 +114,7 @@ StatusCode pwm_input_get_reading(PwmTimer timer, PwmInputReading *reading) {
   uint32_t period_us = 0;
   uint32_t dc = 0;
 
+  // Depending on which channel we use, the values need to be flipped
   if (s_port[timer].channel == TIM_Channel_2) {
     IC2Value_1 = TIM_GetCapture2(tim_location);
     IC2Value_2 = TIM_GetCapture1(tim_location);
@@ -115,6 +123,8 @@ StatusCode pwm_input_get_reading(PwmTimer timer, PwmInputReading *reading) {
     IC2Value_1 = TIM_GetCapture1(tim_location);
   }
 
+  // Perform the PWM calculation. IC2Value_1 is the period, and IC2Value_2 is the time
+  // that the signal is high
   if (IC2Value_1 != 0) {
     dc = (IC2Value_2 * 1000) / IC2Value_1;
     period_us = IC2Value_1;
