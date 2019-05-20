@@ -18,14 +18,26 @@ typedef enum {
   NUM_THERMISTOR_POSITIONS,
 } ThermistorPosition;
 
-typedef struct ThermistorStorage {
+typedef enum {
+  NXRT15XH103 = 0,
+  NXRT15WF104,
+  NUM_SUPPORTED_THERMISTOR_MODELS,
+} ThermistorModel;
+
+typedef struct ThermistorSettings {
+  GpioAddress thermistor_gpio;
   ThermistorPosition position;
+  ThermistorModel model;
+  uint16_t dividor_resistor_ohms;
+}
+
+typedef struct ThermistorStorage {
+  ThermistorSettings *settings;
   AdcChannel adc_channel;
 } ThermistorStorage;
 
 // Initializes the GPIO pin and ADC Channel associated with the thermistor
-StatusCode thermistor_init(ThermistorStorage *storage, GpioAddress thermistor_gpio,
-                           ThermistorPosition position);
+StatusCode thermistor_init(ThermistorStorage *storage, ThermistorSettings *settings);
 
 // Fetch the temperature reading in deciCelsius from the MCU's ADC
 // Note: "dc" (deciCelsius) is a tenth of a celsius (0.1C)

@@ -29,9 +29,8 @@ static const uint32_t s_resistance_lookup[] = {
 #define THERMISTOR_DECICELSIUS_TO_CELSIUS(x) ((x) / 10)
 #define THERMISTOR_CELSIUS_TO_DECICELSIUS(x) ((x)*10)
 
-StatusCode thermistor_init(ThermistorStorage *storage, GpioAddress thermistor_gpio,
-                           ThermistorPosition position) {
-  storage->position = position;
+StatusCode thermistor_init(ThermistorStorage *storage, ThermistorSettings *settings) {
+  storage->settings = settings;
   GpioSettings gpio_settings = {
     .direction = GPIO_DIR_IN,
     .state = GPIO_STATE_LOW,
@@ -49,7 +48,7 @@ StatusCode thermistor_init(ThermistorStorage *storage, GpioAddress thermistor_gp
 StatusCode thermistor_get_temp(ThermistorStorage *storage, uint16_t *temperature_dc) {
   // Fetch the voltage readings
   uint16_t reading = 0;                     // the divided voltage in millivolts
-  uint32_t thermistor_resistance_ohms = 0;  // resistance in milliohms
+  uint32_t thermistor_resistance = 0;       // resistance in milliohms
   uint16_t vdda = 0;                        // vdda voltage in millivolts
 
   // Get source voltage and node voltage of the voltage divider
@@ -64,19 +63,24 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint16_t *temperature
     return status_msg(STATUS_CODE_INTERNAL_ERROR, "No node voltage detected.");
   }
 
-  // Calculates thermistor resistance in milliOhms based on the position of thermistor and the fixed
-  // resistor
-  if (storage->position == THERMISTOR_POSITION_R1) {
-    thermistor_resistance_ohms =
-        ((uint32_t)(vdda - reading)) * (uint32_t)THERMISTOR_FIXED_RESISTANCE_OHMS / reading;
-  } else {
-    thermistor_resistance_ohms =
-        ((uint32_t)THERMISTOR_FIXED_RESISTANCE_OHMS * reading) / (uint32_t)(vdda - reading);
-  }
-  return thermistor_calculate_temp(thermistor_resistance_ohms, (uint16_t *)temperature_dc);
+  status_ok_or_return(thermistor_get_resistance(reading, vdda, storage->settings, &thermistor_resistance));
+  return thermistor_calculate_temp(thermistor_calculate_temp(thermistor_resistance, storage->settings, temperature_dc));
 }
 
-StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms,
+StatusCode thermistor_get_resistance(uint16_t reading, uint16_t vdda, ThermistorSettings *settings, uint32_t *thermistor_resistance) {
+  // Calculates thermistor resistance in milliOhms based on the position of thermistor and the fixed
+  // resistor
+  if (settings->position == THERMISTOR_POSITION_R1) {
+    thermistor_resistance =
+        ((uint32_t)(vdda - reading)) * (uint32_t)THERMISTOR_FIXED_RESISTANCE_OHMS / reading;
+  } else {
+    thermistor_resistance =
+        ((uint32_t)THERMISTOR_FIXED_RESISTANCE_OHMS * reading) / (uint32_t)(vdda - reading);
+  }
+  return STATUS_CODE_OK;
+}
+
+StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance, ThermistorSettings *settings,
                                      uint16_t *temperature_dc) {
   // Find the approximate target temperature from the arguments passed
   for (uint16_t i = 0; i < SIZEOF_ARRAY(s_resistance_lookup) - 1; i++) {
@@ -95,7 +99,7 @@ StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms,
   return status_msg(STATUS_CODE_OUT_OF_RANGE, "Temperature out of lookup table range.");
 }
 
-StatusCode thermistor_calculate_resistance(uint16_t temperature_dc,
+StatusCode thermistor_calculate_resistance_from_temp(uint16_t temperature_dc,
                                            uint16_t *thermistor_resistor_ohms) {
   if (temperature_dc > THERMISTOR_CELSIUS_TO_DECICELSIUS(THERMISTOR_LOOKUP_RANGE)) {
     return status_msg(STATUS_CODE_OUT_OF_RANGE,
