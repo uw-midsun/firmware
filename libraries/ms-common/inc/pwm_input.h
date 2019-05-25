@@ -7,8 +7,9 @@
 #include "status.h"
 
 // This struct is used for getting the DC value and period at the same time
+// The DC percent value is reported as a number 0-1000 which represents ddd.d%.
 typedef struct {
-  uint32_t dc;
+  uint32_t dc_percent;
   uint32_t period_us;
 } PwmInputReading;
 

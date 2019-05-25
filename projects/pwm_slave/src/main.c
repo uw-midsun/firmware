@@ -10,19 +10,11 @@
 #include "pwm_input.h"
 #include "soft_timer.h"
 
-// To run this test, connect the input and output pins
-
-#define TEST_OUTPUT_PWM_TIMER PWM_TIMER_1
-#define TEST_OUTPUT_PWM_ALTFN GPIO_ALTFN_2
-#define TEST_OUTPUT_PWM_PERIOD_US 1000
-#define TEST_OUTPUT_PWM_ADDR \
-  { .port = GPIO_PORT_A, .pin = 8, }
-
-#define TEST_INPUT_PWM_TIMER PWM_TIMER_3
-#define TEST_INPUT_PWM_ALTFN GPIO_ALTFN_1
+#define TEST_INPUT_PWM_TIMER PWM_TIMER_1
+#define TEST_INPUT_PWM_ALTFN GPIO_ALTFN_2
 #define TEST_INPUT_PWM_CHANNEL PWM_CHANNEL_1
 #define TEST_INPUT_PWM_ADDR \
-  { .port = GPIO_PORT_A, .pin = 6, }
+  { .port = GPIO_PORT_A, .pin = 8, }
 
 int main(void) {
   interrupt_init();
@@ -45,7 +37,7 @@ int main(void) {
 
   while (true) {
     pwm_input_get_reading(TEST_INPUT_PWM_TIMER, &reading);
-    LOG_DEBUG("DC: %d | Period: %d\n", (int)reading.dc, (int)reading.period_us);
+    LOG_DEBUG("DC: %d | Period: %d\n", (int)reading.dc_percent, (int)reading.period_us);
     delay_ms(500);
   }
 

@@ -9,7 +9,7 @@
 #include "pwm.h"
 #include "stm32f0xx.h"
 
-#define MAX_DC_VALUE (1000)
+#define MAX_DC_PERCENT (1000)
 
 typedef struct {
   void (*rcc_cmd)(uint32_t periph, FunctionalState state);
@@ -103,7 +103,7 @@ StatusCode pwm_input_get_reading(PwmTimer timer, PwmInputReading *reading) {
   if (TIM_GetFlagStatus(tim_location, TIM_FLAG_CC1) == SET) {
     TIM_ClearFlag(tim_location, TIM_FLAG_CC1);
   } else {
-    reading->dc = 0;
+    reading->dc_percent = 0;
     reading->period_us = 0;
     return STATUS_CODE_OK;
   }
@@ -112,7 +112,7 @@ StatusCode pwm_input_get_reading(PwmTimer timer, PwmInputReading *reading) {
   uint32_t IC2Value_2 = 0;
 
   uint32_t period_us = 0;
-  uint32_t dc = 0;
+  uint32_t dc_percent = 0;
 
   // Depending on which channel we use, the values need to be flipped
   if (s_port[timer].channel == TIM_Channel_2) {
@@ -126,18 +126,18 @@ StatusCode pwm_input_get_reading(PwmTimer timer, PwmInputReading *reading) {
   // Perform the PWM calculation. IC2Value_1 is the period, and IC2Value_2 is the time
   // that the signal is high
   if (IC2Value_1 != 0) {
-    dc = (IC2Value_2 * 1000) / IC2Value_1;
+    dc_percent = (IC2Value_2 * MAX_DC_PERCENT) / IC2Value_1;
     period_us = IC2Value_1;
   } else {
-    dc = 0;
+    dc_percent = 0;
     period_us = 0;
   }
 
-  if (dc > MAX_DC_VALUE) {
-    dc = MAX_DC_VALUE;
+  if (dc_percent > MAX_DC_PERCENT) {
+    dc_percent = MAX_DC_PERCENT;
   }
 
-  reading->dc = dc;
+  reading->dc_percent = dc_percent;
   reading->period_us = period_us;
 
   return STATUS_CODE_OK;

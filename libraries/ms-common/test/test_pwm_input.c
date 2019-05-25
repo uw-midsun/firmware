@@ -38,8 +38,8 @@ void setup_test(void) {
 void teardown_test(void) {}
 
 void print_reading(uint32_t dc, PwmInputReading *reading) {
-  LOG_DEBUG("DC: %d, read DC: %d | Period: %d, read period: %d\n", (int)dc, (int)reading->dc,
-            TEST_OUTPUT_PWM_PERIOD_US, (int)reading->period_us);
+  LOG_DEBUG("DC: %d, read DC: %d | Period: %d, read period: %d\n", (int)dc,
+            (int)reading->dc_percent, TEST_OUTPUT_PWM_PERIOD_US, (int)reading->period_us);
 }
 
 void check_pwm_value(uint32_t dc, PwmInputReading *reading) {
@@ -53,12 +53,12 @@ void check_pwm_value(uint32_t dc, PwmInputReading *reading) {
   if (dc == 0) {
     TEST_ASSERT_OK(pwm_input_get_reading(TEST_INPUT_PWM_TIMER, reading));
     print_reading(dc, reading);
-    TEST_ASSERT_EQUAL(0, reading->dc);
+    TEST_ASSERT_EQUAL(0, reading->dc_percent);
     TEST_ASSERT_EQUAL(0, reading->period_us);
   } else {
-    TEST_ASSERT_TRUE((uint32_t)dc * 10 + TOLERANCE > reading->dc);
+    TEST_ASSERT_TRUE((uint32_t)dc * 10 + TOLERANCE > reading->dc_percent);
     TEST_ASSERT_TRUE(((uint32_t)dc == 0 ? (uint32_t)0 : (uint32_t)dc * 10 - TOLERANCE) <=
-                     reading->dc);
+                     reading->dc_percent);
 
     TEST_ASSERT_TRUE((uint32_t)TEST_OUTPUT_PWM_PERIOD_US - TOLERANCE < reading->period_us);
     TEST_ASSERT_TRUE((uint32_t)TEST_OUTPUT_PWM_PERIOD_US + TOLERANCE > reading->period_us);
