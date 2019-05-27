@@ -35,12 +35,15 @@ static void prv_periodic_tx_telemetry(SoftTimerId timer_id, void *context) {
     // Voltage dividor:
     // 5V --> thermistor --> Measurement (mv) --> 10k Ohms --> GND
     // R = (5 V) * (10000 Ohms) * 1000 / (Avg Measurement mV)
-    temp_resistance_ohms = ((SOLAR_MASTER_TEMP_VOLTAGE * SOLAR_MASTER_TEMP_RESISTOR) /
-                            ((uint32_t)storage->slave_storage[i].sliding_sum_temp_mv /
-                             SOLAR_MASTER_MCP3427_SAMPLE_SIZE)) -
-                           SOLAR_MASTER_TEMP_RESISTOR;
+    // temp_resistance_ohms = ((SOLAR_MASTER_TEMP_VOLTAGE * SOLAR_MASTER_TEMP_RESISTOR) /
+    //                         ((uint32_t)storage->slave_storage[i].sliding_sum_temp_mv /
+    //                          SOLAR_MASTER_MCP3427_SAMPLE_SIZE)) -
+    //                        SOLAR_MASTER_TEMP_RESISTOR;
 
-    StatusCode sc = thermistor_calculate_temp(temp_resistance_ohms, &temp);
+    // StatusCode sc = thermistor_calculate_temp(temp_resistance_ohms, &temp);
+
+    temp = (uint16_t)((uint32_t)storage->slave_storage[i].sliding_sum_temp_mv / SOLAR_MASTER_MCP3427_SAMPLE_SIZE);
+
 
     module_id = i;
     LOG_DEBUG("module: %i, voltage: %i, current: %i, temp: %i\n", module_id, voltage, current,
