@@ -87,6 +87,7 @@ int main(void) {
     .motor_power_pin = cfg->motor_interface_power,
     .solar_front_power_pin = cfg->array_sense_power,
     .solar_rear_power_pin = cfg->array_sense_power,
+    .charger_power_pin = cfg->charger_power,
     .loopback = false,
   };
   relay_init(&relay_settings);

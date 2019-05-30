@@ -33,6 +33,7 @@ static void prv_send(SoftTimerId timer_id, void *context) {
   PowerPathVCReadings dcdc = { 0 };
   power_path_read_source(&cfg->dcdc, &dcdc);
   CAN_TRANSMIT_AUX_DCDC_VC(aux.voltage, aux.current, dcdc.voltage, dcdc.current);
+  CAN_TRANSMIT_DCDC_TEMPS(dcdc.temperature1, dcdc.temperature2);
   soft_timer_start_millis(cfg->period_millis, prv_send, context, NULL);
 }
 
@@ -79,6 +80,17 @@ static void prv_adc_read(SoftTimerId timer_id, void *context) {
   adc_read_converted(chan, &value);
   pps->readings.voltage = pps->voltage_convert_fn(value);
 
+  // Read and convert the temp values.
+  value = 0;
+  adc_get_channel(pps->temperature1_pin, &chan);
+  adc_read_converted(chan, &value);
+  pps->readings.temperature1 = pps->temperature_convert_fn(value);
+
+  value = 0;
+  adc_get_channel(pps->temperature2_pin, &chan);
+  adc_read_converted(chan, &value);
+  pps->readings.temperature2 = pps->temperature_convert_fn(value);
+
   // Start the next timer.
   soft_timer_start_millis(pps->period_millis, prv_adc_read, context, &pps->timer_id);
 }
@@ -110,6 +122,10 @@ StatusCode power_path_init(PowerPathCfg *pp) {
                                                  INTERRUPT_EDGE_RISING, prv_voltage_warning, pp));
   status_ok_or_return(gpio_it_register_interrupt(&pp->dcdc.uv_ov_pin, &it_settings,
                                                  INTERRUPT_EDGE_RISING, prv_voltage_warning, pp));
+  // TODO(ELEC-626): "load shed mode that turns non-essential things off
+  //        (fans, displays, etc) or turns cooling on when temperature
+  //        goes over a certain value. This should probably be
+  //        implemented so if we don't go over our DC-DC current limit either"
   pp->aux_bat.timer_id = SOFT_TIMER_INVALID_TIMER;
   pp->dcdc.timer_id = SOFT_TIMER_INVALID_TIMER;
 
@@ -119,6 +135,8 @@ StatusCode power_path_init(PowerPathCfg *pp) {
   status_ok_or_return(gpio_init_pin(&pp->aux_bat.current_pin, &settings));
   status_ok_or_return(gpio_init_pin(&pp->dcdc.voltage_pin, &settings));
   status_ok_or_return(gpio_init_pin(&pp->dcdc.current_pin, &settings));
+  status_ok_or_return(gpio_init_pin(&pp->dcdc.temperature1_pin, &settings));
+  status_ok_or_return(gpio_init_pin(&pp->dcdc.temperature2_pin, &settings));
   status_ok_or_return(power_path_source_monitor_disable(&pp->aux_bat));
   return power_path_source_monitor_disable(&pp->dcdc);
 }
@@ -143,6 +161,10 @@ StatusCode power_path_source_monitor_enable(PowerPathSource *source, uint32_t pe
   status_ok_or_return(adc_set_channel(chan, true));
   adc_get_channel(source->voltage_pin, &chan);
   status_ok_or_return(adc_set_channel(chan, true));
+  adc_get_channel(source->temperature1_pin, &chan);
+  status_ok_or_return(adc_set_channel(chan, true));
+  adc_get_channel(source->temperature2_pin, &chan);
+  status_ok_or_return(adc_set_channel(chan, true));
 
   source->monitoring_active = true;
 
@@ -166,7 +188,12 @@ StatusCode power_path_source_monitor_disable(PowerPathSource *source) {
   adc_get_channel(source->current_pin, &chan);
   status_ok_or_return(adc_set_channel(chan, false));
   adc_get_channel(source->voltage_pin, &chan);
-  return adc_set_channel(chan, false);
+  status_ok_or_return(adc_set_channel(chan, false));
+  adc_get_channel(source->temperature1_pin, &chan);
+  status_ok_or_return(adc_set_channel(chan, false));
+  adc_get_channel(source->temperature2_pin, &chan);
+  status_ok_or_return(adc_set_channel(chan, false));
+  return STATUS_CODE_OK;
 }
 
 StatusCode power_path_read_source(const PowerPathSource *source, PowerPathVCReadings *values) {

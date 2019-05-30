@@ -50,6 +50,11 @@ static uint16_t prv_convert_dcdc_voltage(uint16_t value) {
   return CHAOS_CONFIG_DCDC_VOLTAGE_CONVERT(value);
 }
 
+static uint16_t prv_convert_dcdc_temp(uint16_t value) {
+  // TODO(ECE-626): Should convert value to actual ...
+  return value;
+}
+
 // clang-format off
 static ChaosConfig s_config = {
   .power_path = {
@@ -70,12 +75,16 @@ static ChaosConfig s_config = {
       .uv_ov_pin = { GPIO_PORT_A, 10 },
       .voltage_pin = { GPIO_PORT_A, 0 },
       .current_pin = { GPIO_PORT_A, 2 },
+      .temperature1_pin = {GPIO_PORT_A, 4},
+      .temperature2_pin = {GPIO_PORT_A, 5},
       .current_convert_fn = prv_convert_dcdc_current,
       .voltage_convert_fn = prv_convert_dcdc_voltage,
+      .temperature_convert_fn = prv_convert_dcdc_temp,
       .period_millis = CHAOS_CONFIG_POWER_PATH_PERIOD_MS,
       .timer_id = SOFT_TIMER_INVALID_TIMER,
     }
   },
+  .charger_power = {GPIO_PORT_B, 5},
   .telemetry_power = { GPIO_PORT_B, 14 },
   .array_sense_power = { GPIO_PORT_B, 13 },
   .rear_camera_power = { GPIO_PORT_B, 12 },
@@ -84,10 +93,14 @@ static ChaosConfig s_config = {
   .front_lights_power = { GPIO_PORT_B, 2 },
   .battery_box_power = { GPIO_PORT_B, 0 },
   .motor_interface_power = { GPIO_PORT_A, 7 },
-  .rear_lights_power = { GPIO_PORT_B, 9 },
-  .pjb_fan = { GPIO_PORT_A, 6 },
-  .spare_protected_power = { GPIO_PORT_B, 1 },
-  .spare_unprotected_power = { GPIO_PORT_B, 9 },
+  // should have always been 15 was previously pointing to a spare ...?
+  .rear_lights_power = { GPIO_PORT_B, 15 }, // REMAP
+  .pjb_fan = { GPIO_PORT_B, 9 }, // REMAP
+
+  .spare_protected_power1 = { GPIO_PORT_B, 6 }, // REMAP
+  .spare_protected_power2 = { GPIO_PORT_B, 4 }, // NEW
+  .spare_unprotected_power1 = { GPIO_PORT_B, 1 }, // REMAP
+  .spare_unprotected_power2 = { GPIO_PORT_C, 13 }, // NEW
 };
 // clang-format on
 
