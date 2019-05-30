@@ -69,6 +69,7 @@ static void prv_gpio_state_idle(Fsm *fsm, const Event *e, void *context) {
     cfg->rear_camera_power,      //
     cfg->front_lights_power,     //
     cfg->driver_display_power,   //
+    cfg->charger_power,          //
   };
 
   gpio_seq_set_state(sequence, SIZEOF_ARRAY(sequence), GPIO_STATE_LOW, GPIO_FSM_SLEW_RATE_US);
