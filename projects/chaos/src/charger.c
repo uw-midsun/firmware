@@ -29,7 +29,6 @@ static StatusCode prv_handle_charger_conn_state(const CanMessage *msg, void *con
 StatusCode charger_init(void) {
   s_storage.relay_state = EE_CHARGER_SET_RELAY_STATE_OPEN;
   s_storage.conn_state = EE_CHARGER_CONN_STATE_DISCONNECTED;
-  // TODO (ELEC-626): Pull in GPIO and init it.
   return can_register_rx_handler(SYSTEM_CAN_MESSAGE_CHARGER_CONN_STATE,
                                  prv_handle_charger_conn_state, NULL);
 }
@@ -40,7 +39,6 @@ StatusCode charger_set_state(EEChargerSetRelayState state) {
   }
   s_storage.relay_state = state;
   if (s_storage.conn_state == EE_CHARGER_CONN_STATE_CONNECTED) {
-    // TODO (ELEC-626): Actually toggle the charger
     return CAN_TRANSMIT_CHARGER_SET_RELAY_STATE((uint8_t)state);
   }
   return STATUS_CODE_OK;
