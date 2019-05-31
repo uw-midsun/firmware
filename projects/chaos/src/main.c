@@ -44,7 +44,7 @@ static void prv_toggle(SoftTimerId id, void *context) {
   debug_led_toggle_state(DEBUG_LED_RED);
   soft_timer_start_millis(CHAOS_DEBUG_LED_PERIOD_MS, prv_toggle, NULL, NULL);
 }
-
+// clang-format off
 int main(void) {
   // Common
   event_queue_init();
@@ -190,3 +190,4 @@ int main(void) {
   // Not reached.
   return EXIT_SUCCESS;
 }
+// clang-format on
