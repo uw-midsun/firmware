@@ -14,6 +14,8 @@
 #include "soft_timer.h"
 #include "status.h"
 
+#include "log.h"
+
 // All values in millivolts
 #define POWER_PATH_AUX_UV_MILLIV 8460
 #define POWER_PATH_AUX_OV_MILLIV 14310
@@ -34,6 +36,8 @@ static void prv_send(SoftTimerId timer_id, void *context) {
   power_path_read_source(&cfg->dcdc, &dcdc);
   CAN_TRANSMIT_AUX_DCDC_VC(aux.voltage, aux.current, dcdc.voltage, dcdc.current);
   CAN_TRANSMIT_DCDC_TEMPS(dcdc.temperature1, dcdc.temperature2);
+  LOG_DEBUG("AUX_VOLT: %u, AUX_CURRENT: %u, DCDC_VOLT: %u, DCDC_CURRENT: %u\n", aux.voltage, aux.current, dcdc.voltage, dcdc.current);
+  LOG_DEBUG("DCDC_TEMP1: %u, DCDC_TEMP2: %u\n", dcdc.temperature1, dcdc.temperature2);
   soft_timer_start_millis(cfg->period_millis, prv_send, context, NULL);
 }
 
@@ -70,26 +74,34 @@ static void prv_adc_read(SoftTimerId timer_id, void *context) {
   uint16_t value = 0;
   AdcChannel chan = NUM_ADC_CHANNELS;
   // Read and convert the current values.
+  LOG_DEBUG("SOMETHING IS GOING GOOD?\n");
   adc_get_channel(pps->current_pin, &chan);
   adc_read_converted(chan, &value);
   pps->readings.current = pps->current_convert_fn(value);
+  LOG_DEBUG("YES!\n");
 
   // Read and convert the voltage values.
+  LOG_DEBUG("SOMETHING IS GOING GOOD?\n");
   value = 0;
   adc_get_channel(pps->voltage_pin, &chan);
   adc_read_converted(chan, &value);
   pps->readings.voltage = pps->voltage_convert_fn(value);
+  LOG_DEBUG("YES!\n");
 
   // Read and convert the temp values.
-  value = 0;
-  adc_get_channel(pps->temperature1_pin, &chan);
-  adc_read_converted(chan, &value);
-  pps->readings.temperature1 = pps->temperature_convert_fn(value);
+  // LOG_DEBUG("SOMETHING IS GOING GOOD?\n");
+  // value = 0;
+  // adc_get_channel(pps->temperature1_pin, &chan);
+  // adc_read_converted(chan, &value);
+  // pps->readings.temperature1 = pps->temperature_convert_fn(value);
+  // LOG_DEBUG("YES!\n");
 
-  value = 0;
-  adc_get_channel(pps->temperature2_pin, &chan);
-  adc_read_converted(chan, &value);
-  pps->readings.temperature2 = pps->temperature_convert_fn(value);
+  // LOG_DEBUG("SOMETHING IS GOING GOOD?\n");
+  // value = 0;
+  // adc_get_channel(pps->temperature2_pin, &chan);
+  // adc_read_converted(chan, &value);
+  // pps->readings.temperature2 = pps->temperature_convert_fn(value);
+  // LOG_DEBUG("YES!\n");
 
   // Start the next timer.
   soft_timer_start_millis(pps->period_millis, prv_adc_read, context, &pps->timer_id);
@@ -168,7 +180,8 @@ StatusCode power_path_source_monitor_enable(PowerPathSource *source, uint32_t pe
 
   source->monitoring_active = true;
 
-  return soft_timer_start_millis(source->period_millis, prv_adc_read, source, &source->timer_id);
+soft_timer_start_millis(source->period_millis, prv_adc_read, source, &source->timer_id);
+  return STATUS_CODE_OK;
 }
 
 StatusCode power_path_source_monitor_disable(PowerPathSource *source) {
