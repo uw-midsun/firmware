@@ -95,7 +95,7 @@ static ChaosConfig s_config = {
   .rear_lights_power = { GPIO_PORT_B, 15 }, // REMAP
   .pjb_fan = { GPIO_PORT_B, 9 }, // REMAP
 
-  .spare_protected_power1 = { GPIO_PORT_B, 6 }, // REMAP
+  .spare_protected_power1 = { GPIO_PORT_A, 6 }, // REMAP
   .spare_protected_power2 = { GPIO_PORT_B, 4 }, // NEW
   .spare_unprotected_power1 = { GPIO_PORT_B, 1 }, // REMAP
   .spare_unprotected_power2 = { GPIO_PORT_C, 13 }, // NEW
