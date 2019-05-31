@@ -29,7 +29,6 @@ static StatusCode prv_handle_charger_conn_state(const CanMessage *msg, void *con
 StatusCode charger_init(void) {
   s_storage.relay_state = EE_CHARGER_SET_RELAY_STATE_OPEN;
   s_storage.conn_state = EE_CHARGER_CONN_STATE_DISCONNECTED;
-
   return can_register_rx_handler(SYSTEM_CAN_MESSAGE_CHARGER_CONN_STATE,
                                  prv_handle_charger_conn_state, NULL);
 }

@@ -14,6 +14,7 @@ typedef struct ChaosConfig {
   const GpioAddress rear_camera_power;
   // Front
   const GpioAddress themis_power;
+  const GpioAddress charger_power;
   const GpioAddress driver_display_power;
   const GpioAddress front_lights_power;
   // Misc
@@ -22,8 +23,10 @@ typedef struct ChaosConfig {
   const GpioAddress rear_lights_power;
   const GpioAddress pjb_fan;
   // Unused but available pins
-  const GpioAddress spare_protected_power;
-  const GpioAddress spare_unprotected_power;
+  const GpioAddress spare_protected_power1;
+  const GpioAddress spare_unprotected_power1;
+  const GpioAddress spare_protected_power2;
+  const GpioAddress spare_unprotected_power2;
   // Debug LEDs
   // const GpioAddress led1_power;
   // const GpioAddress led2_power;

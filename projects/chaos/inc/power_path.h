@@ -24,6 +24,8 @@ typedef enum {
 typedef struct PowerPathVCReadings {
   uint16_t voltage;
   uint16_t current;
+  uint16_t temperature1;
+  uint16_t temperature2;
 } PowerPathVCReadings;
 
 // For storing the Power Path Source (eg AUX Battery vs DCDCs).
@@ -32,9 +34,12 @@ typedef struct PowerPathSource {
   const GpioAddress uv_ov_pin;
   const GpioAddress voltage_pin;
   const GpioAddress current_pin;
+  const GpioAddress temperature1_pin;
+  const GpioAddress temperature2_pin;
   volatile PowerPathVCReadings readings;
   PowerPathConversionFn current_convert_fn;
   PowerPathConversionFn voltage_convert_fn;
+  PowerPathConversionFn temperature_convert_fn;
   uint32_t period_millis;
   SoftTimerId timer_id;
   bool monitoring_active;

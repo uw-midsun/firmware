@@ -65,9 +65,11 @@ static void prv_gpio_state_idle(Fsm *fsm, const Event *e, void *context) {
   const GpioAddress sequence[] = {
     cfg->motor_interface_power,  // To reset relays as a precaution.
     cfg->array_sense_power,      // To reset relays as a precaution.
+    cfg->charger_power,          //
     cfg->rear_camera_power,      //
     cfg->front_lights_power,     //
     cfg->driver_display_power,   //
+    cfg->charger_power,          //
   };
 
   gpio_seq_set_state(sequence, SIZEOF_ARRAY(sequence), GPIO_STATE_LOW, GPIO_FSM_SLEW_RATE_US);
@@ -77,6 +79,7 @@ static void prv_gpio_state_charge_preconfig(Fsm *fsm, const Event *e, void *cont
   const ChaosConfig *cfg = context;
   const GpioAddress sequence[] = {
     cfg->array_sense_power,      // To reset relays as a precaution.
+    cfg->charger_power,          //
     cfg->front_lights_power,     //
     cfg->motor_interface_power,  //
     cfg->rear_camera_power,      //
@@ -88,10 +91,10 @@ static void prv_gpio_state_charge_preconfig(Fsm *fsm, const Event *e, void *cont
 static void prv_gpio_state_charge(Fsm *fsm, const Event *e, void *context) {
   const ChaosConfig *cfg = context;
   const GpioAddress sequence[] = {
-    // cfg->charger_power, (external)
     cfg->driver_display_power,  //
     cfg->rear_camera_power,     //
     cfg->array_sense_power,     //
+    cfg->charger_power,         //
     cfg->front_lights_power,    //
   };
 
@@ -101,8 +104,8 @@ static void prv_gpio_state_charge(Fsm *fsm, const Event *e, void *context) {
 static void prv_gpio_state_drive_preconfig(Fsm *fsm, const Event *e, void *context) {
   const ChaosConfig *cfg = context;
   const GpioAddress sequence[] = {
-    // cfg->charger_power, (external)
     cfg->array_sense_power,  // To reset relays as a precaution.
+    cfg->charger_power       //
   };
 
   gpio_seq_set_state(sequence, SIZEOF_ARRAY(sequence), GPIO_STATE_LOW, GPIO_FSM_SLEW_RATE_US);
@@ -115,6 +118,7 @@ static void prv_gpio_state_drive(Fsm *fsm, const Event *e, void *context) {
     cfg->driver_display_power,   //
     cfg->rear_camera_power,      //
     cfg->array_sense_power,      //
+    cfg->charger_power,          //
     cfg->front_lights_power,     //
   };
 
@@ -148,10 +152,9 @@ void gpio_fsm_init(const ChaosConfig *cfg) {
   gpio_seq_init_pins(init_high_sequence, SIZEOF_ARRAY(init_high_sequence), &settings,
                      GPIO_FSM_SLEW_RATE_US);
 
-  const GpioAddress init_low_sequence[] = {
-    cfg->motor_interface_power, cfg->rear_camera_power, cfg->front_lights_power,
-    cfg->driver_display_power,  cfg->array_sense_power,
-  };
+  const GpioAddress init_low_sequence[] = { cfg->motor_interface_power, cfg->rear_camera_power,
+                                            cfg->front_lights_power,    cfg->driver_display_power,
+                                            cfg->array_sense_power,     cfg->charger_power };
   settings.state = GPIO_STATE_LOW;
 
   gpio_seq_init_pins(init_low_sequence, SIZEOF_ARRAY(init_low_sequence), &settings,

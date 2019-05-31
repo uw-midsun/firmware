@@ -184,7 +184,7 @@ void test_power_path_adcs(void) {
 
   delay_ms(TEST_POWER_PATH_ADC_PERIOD_MS + TEST_POWER_PATH_ADC_PERIOD_MS / 10);
 
-  PowerPathVCReadings readings = { 0, 0 };
+  PowerPathVCReadings readings = { 0, 0, 0, 0 };
   TEST_ASSERT_OK(power_path_read_source(&s_ppc.aux_bat, &readings));
   TEST_ASSERT_EQUAL(TEST_POWER_PATH_AUX_CURRENT_VAL, readings.current);
   TEST_ASSERT_EQUAL(TEST_POWER_PATH_AUX_UV_VAL, readings.voltage);
