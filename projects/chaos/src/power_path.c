@@ -36,7 +36,8 @@ static void prv_send(SoftTimerId timer_id, void *context) {
   power_path_read_source(&cfg->dcdc, &dcdc);
   CAN_TRANSMIT_AUX_DCDC_VC(aux.voltage, aux.current, dcdc.voltage, dcdc.current);
   CAN_TRANSMIT_DCDC_TEMPS(dcdc.temperature1, dcdc.temperature2);
-  LOG_DEBUG("AUX_VOLT: %u, AUX_CURRENT: %u, DCDC_VOLT: %u, DCDC_CURRENT: %u\n", aux.voltage, aux.current, dcdc.voltage, dcdc.current);
+  LOG_DEBUG("AUX_VOLT: %u, AUX_CURRENT: %u, DCDC_VOLT: %u, DCDC_CURRENT: %u\n", aux.voltage,
+            aux.current, dcdc.voltage, dcdc.current);
   LOG_DEBUG("DCDC_TEMP1: %u, DCDC_TEMP2: %u\n", dcdc.temperature1, dcdc.temperature2);
   soft_timer_start_millis(cfg->period_millis, prv_send, context, NULL);
 }
@@ -180,7 +181,7 @@ StatusCode power_path_source_monitor_enable(PowerPathSource *source, uint32_t pe
 
   source->monitoring_active = true;
 
-soft_timer_start_millis(source->period_millis, prv_adc_read, source, &source->timer_id);
+  soft_timer_start_millis(source->period_millis, prv_adc_read, source, &source->timer_id);
   return STATUS_CODE_OK;
 }
 
