@@ -8,25 +8,22 @@
 #include "log.h"
 static Fsm s_button_led_fsms[NUM_CENTER_CONSOLE_BUTTON_LEDS] = { 0 };
 
-void button_led_init(GpioExpanderStorage *storage, GpioExpanderPin *pins) {
+void button_led_init(GpioExpanderStorage *storage, ButtonLedGpioExpanderPins *pins) {
   button_led_fsm_init();
 
   // Create FSMs for each LED output
   button_led_fsm_create(&s_button_led_fsms[CENTER_CONSOLE_BUTTON_LED_BPS], storage,
-                        EE_CENTER_CONSOLE_DIGITAL_INPUT_BPS, pins[CENTER_CONSOLE_BUTTON_LED_BPS],
-                        "BPSIndicator");
+                        EE_CENTER_CONSOLE_DIGITAL_INPUT_BPS, pins->bps_indicator, "BPSIndicator");
   button_led_fsm_create(&s_button_led_fsms[CENTER_CONSOLE_BUTTON_LED_PWR], storage,
-                        EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER, pins[CENTER_CONSOLE_BUTTON_LED_PWR],
+                        EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER, pins->power_indicator,
                         "PowerIndicator");
   button_led_fsm_create(&s_button_led_fsms[CENTER_CONSOLE_BUTTON_LED_DRL], storage,
-                        EE_CENTER_CONSOLE_DIGITAL_INPUT_DRL, pins[CENTER_CONSOLE_BUTTON_LED_DRL],
-                        "DRLIndicator");
+                        EE_CENTER_CONSOLE_DIGITAL_INPUT_DRL, pins->lights_drl, "DRLIndicator");
   button_led_fsm_create(&s_button_led_fsms[CENTER_CONSOLE_BUTTON_LED_LOW_BEAMS], storage,
-                        EE_CENTER_CONSOLE_DIGITAL_INPUT_LOW_BEAM,
-                        pins[CENTER_CONSOLE_BUTTON_LED_LOW_BEAMS], "LowBeams");
+                        EE_CENTER_CONSOLE_DIGITAL_INPUT_LOW_BEAM, pins->lights_low_beams,
+                        "LowBeams");
   button_led_fsm_create(&s_button_led_fsms[CENTER_CONSOLE_BUTTON_LED_HAZARDS], storage,
-                        EE_CENTER_CONSOLE_DIGITAL_INPUT_HAZARDS,
-                        pins[CENTER_CONSOLE_BUTTON_LED_HAZARDS], "Hazards");
+                        EE_CENTER_CONSOLE_DIGITAL_INPUT_HAZARDS, pins->lights_hazards, "Hazards");
 }
 
 bool button_led_process_event(const Event *e) {

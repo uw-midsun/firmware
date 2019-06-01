@@ -68,6 +68,13 @@ StatusCode button_led_fsm_create(Fsm *fsm, GpioExpanderStorage *expander_storage
   s_fsm_ctxs[button_id].pin = pin;
   s_fsm_ctxs[button_id].expander_storage = expander_storage;
 
+  // Start with all buttons with low
+  const GpioSettings output_settings = {
+    .direction = GPIO_DIR_OUT,  //
+    .state = GPIO_STATE_LOW,    //
+  };
+  status_ok_or_return(gpio_expander_init_pin(expander_storage, pin, &output_settings));
+
   fsm_init(fsm, fsm_name, &button_led_off, &s_fsm_ctxs[button_id]);
 
   return STATUS_CODE_OK;
