@@ -90,19 +90,22 @@ static void prv_adc_read(SoftTimerId timer_id, void *context) {
   LOG_DEBUG("YES!\n");
 
   // Read and convert the temp values.
-  // LOG_DEBUG("SOMETHING IS GOING GOOD?\n");
-  // value = 0;
-  // adc_get_channel(pps->temperature1_pin, &chan);
-  // adc_read_converted(chan, &value);
-  // pps->readings.temperature1 = pps->temperature_convert_fn(value);
-  // LOG_DEBUG("YES!\n");
+  if (pps->id == POWER_PATH_SOURCE_ID_DCDC) {
+    LOG_DEBUG("DCDC\n");
+    LOG_DEBUG("SOMETHING IS GOING GOOD?\n");
+    value = 0;
+    adc_get_channel(pps->temperature1_pin, &chan);
+    adc_read_converted(chan, &value);
+    pps->readings.temperature1 = pps->temperature_convert_fn(value);
+    LOG_DEBUG("YES!\n");
 
-  // LOG_DEBUG("SOMETHING IS GOING GOOD?\n");
-  // value = 0;
-  // adc_get_channel(pps->temperature2_pin, &chan);
-  // adc_read_converted(chan, &value);
-  // pps->readings.temperature2 = pps->temperature_convert_fn(value);
-  // LOG_DEBUG("YES!\n");
+    LOG_DEBUG("SOMETHING IS GOING GOOD?\n");
+    value = 0;
+    adc_get_channel(pps->temperature2_pin, &chan);
+    adc_read_converted(chan, &value);
+    pps->readings.temperature2 = pps->temperature_convert_fn(value);
+    LOG_DEBUG("YES!\n");
+  }
 
   // Start the next timer.
   soft_timer_start_millis(pps->period_millis, prv_adc_read, context, &pps->timer_id);
@@ -174,10 +177,13 @@ StatusCode power_path_source_monitor_enable(PowerPathSource *source, uint32_t pe
   status_ok_or_return(adc_set_channel(chan, true));
   adc_get_channel(source->voltage_pin, &chan);
   status_ok_or_return(adc_set_channel(chan, true));
-  adc_get_channel(source->temperature1_pin, &chan);
-  status_ok_or_return(adc_set_channel(chan, true));
-  adc_get_channel(source->temperature2_pin, &chan);
-  status_ok_or_return(adc_set_channel(chan, true));
+
+  if (source->id == POWER_PATH_SOURCE_ID_DCDC) {
+    adc_get_channel(source->temperature1_pin, &chan);
+    status_ok_or_return(adc_set_channel(chan, true));
+    adc_get_channel(source->temperature2_pin, &chan);
+    status_ok_or_return(adc_set_channel(chan, true));
+  }
 
   source->monitoring_active = true;
 
