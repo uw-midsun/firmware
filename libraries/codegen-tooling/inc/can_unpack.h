@@ -45,8 +45,6 @@
 
 #define CAN_UNPACK_POWERTRAIN_HEARTBEAT(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
 
-#define CAN_UNPACK_MOTOR_CONTROLLER_RESET(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
-
 #define CAN_UNPACK_OVUV_DCDC_AUX(msg_ptr, dcdc_ov_flag_u8_ptr, dcdc_uv_flag_u8_ptr,             \
                                  aux_bat_ov_flag_u8_ptr, aux_bat_uv_flag_u8_ptr)                \
   can_unpack_impl_u8((msg_ptr), 4, (dcdc_ov_flag_u8_ptr), (dcdc_uv_flag_u8_ptr),                \
@@ -100,9 +98,18 @@
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY,        \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
-#define CAN_UNPACK_STEERING_ANGLE(msg_ptr, steering_angle_u16_ptr)                   \
-  can_unpack_impl_u16((msg_ptr), 2, (steering_angle_u16_ptr), CAN_UNPACK_IMPL_EMPTY, \
-                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
+#define CAN_UNPACK_STEERING_EVENT(msg_ptr, event_id_u16_ptr, data_u16_ptr)                     \
+  can_unpack_impl_u16((msg_ptr), 4, (event_id_u16_ptr), (data_u16_ptr), CAN_UNPACK_IMPL_EMPTY, \
+                      CAN_UNPACK_IMPL_EMPTY)
+
+#define CAN_UNPACK_CENTER_CONSOLE_EVENT(msg_ptr, event_id_u16_ptr, data_u16_ptr)               \
+  can_unpack_impl_u16((msg_ptr), 4, (event_id_u16_ptr), (data_u16_ptr), CAN_UNPACK_IMPL_EMPTY, \
+                      CAN_UNPACK_IMPL_EMPTY)
+
+#define CAN_UNPACK_MOTOR_CONTROLLER_RESET(msg_ptr, motor_controller_index_u8_ptr)          \
+  can_unpack_impl_u8((msg_ptr), 1, (motor_controller_index_u8_ptr), CAN_UNPACK_IMPL_EMPTY, \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY,  \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
 #define CAN_UNPACK_BATTERY_SOC(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
 
