@@ -2,6 +2,7 @@
 
 #include "exported_enums.h"
 #include "gpio.h"
+#include "gpio_expander.h"
 #include "input_event.h"
 
 #include "log.h"
@@ -99,6 +100,15 @@ StatusCode button_led_radio_fsm_create(Fsm *fsm, GpioExpanderStorage *expander_s
   s_fsm_ctxs.reverse_pin = settings->reverse_pin;
 
   fsm_init(fsm, fsm_name, &button_group_neutral_on, &s_fsm_ctxs);
+
+  // Start with all buttons with low
+  const GpioSettings output_settings = {
+    .direction = GPIO_DIR_OUT,  //
+    .state = GPIO_STATE_LOW,    //
+  };
+  status_ok_or_return(gpio_expander_init_pin(expander_storage, settings->drive_pin, &output_settings));
+  status_ok_or_return(gpio_expander_init_pin(expander_storage, settings->neutral_pin, &output_settings));
+  status_ok_or_return(gpio_expander_init_pin(expander_storage, settings->reverse_pin, &output_settings));
 
   return STATUS_CODE_OK;
 }
