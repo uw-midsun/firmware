@@ -49,28 +49,6 @@ static void prv_adc_monitor(SoftTimerId timer_id, void *context) {
                           NULL);
 }
 
-// Used to update the direction LED indicators
-static StatusCode prv_direction_rx_handler(const CanMessage *msg, void *context,
-                                           CanAckStatus *ack_reply) {
-  uint16_t throttle = 0;
-  uint16_t direction = 0;
-  uint16_t cruise_control = 0;
-  uint16_t mech_brake = 0;
-  CAN_UNPACK_DRIVE_OUTPUT(msg, &throttle, &direction, &cruise_control, &mech_brake);
-
-  EventId can_to_local_event_map[] = {
-    [EE_DRIVE_OUTPUT_DIRECTION_NEUTRAL] = CENTER_CONSOLE_EVENT_DRIVE_OUTPUT_DIRECTION_NEUTRAL,
-    [EE_DRIVE_OUTPUT_DIRECTION_FORWARD] = CENTER_CONSOLE_EVENT_DRIVE_OUTPUT_DIRECTION_DRIVE,
-    [EE_DRIVE_OUTPUT_DIRECTION_REVERSE] = CENTER_CONSOLE_EVENT_DRIVE_OUTPUT_DIRECTION_REVERSE,
-  };
-  if (direction >= SIZEOF_ARRAY(can_to_local_event_map)) {
-    return status_code(STATUS_CODE_OUT_OF_RANGE);
-  }
-
-  event_raise(can_to_local_event_map[direction], 0);
-  return STATUS_CODE_OK;
-}
-
 int main() {
   // Standard module inits
   gpio_init();
@@ -116,11 +94,7 @@ int main() {
     .neutral_pin = CENTER_CONSOLE_CONFIG_GPIO_EXPANDER_LED_NEUTRAL,
     .drive_pin = CENTER_CONSOLE_CONFIG_GPIO_EXPANDER_LED_DRIVE,
   };
-  button_led_radio_init(&s_expander, &radio_settings);
-
-  // Enable RX handler to update Direction LEDs
-  status_ok_or_return(
-      can_register_rx_handler(SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT, prv_direction_rx_handler, NULL));
+  status_ok_or_return(button_led_radio_init(&s_expander, &radio_settings));
 
   CenterConsoleStorage cc_storage = {
     .momentary_switch_lights_low_beam =
