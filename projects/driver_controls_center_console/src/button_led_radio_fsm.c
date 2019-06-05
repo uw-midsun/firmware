@@ -106,9 +106,12 @@ StatusCode button_led_radio_fsm_create(Fsm *fsm, GpioExpanderStorage *expander_s
     .direction = GPIO_DIR_OUT,  //
     .state = GPIO_STATE_LOW,    //
   };
-  status_ok_or_return(gpio_expander_init_pin(expander_storage, settings->drive_pin, &output_settings));
-  status_ok_or_return(gpio_expander_init_pin(expander_storage, settings->neutral_pin, &output_settings));
-  status_ok_or_return(gpio_expander_init_pin(expander_storage, settings->reverse_pin, &output_settings));
+  status_ok_or_return(
+      gpio_expander_init_pin(expander_storage, settings->drive_pin, &output_settings));
+  status_ok_or_return(
+      gpio_expander_init_pin(expander_storage, settings->neutral_pin, &output_settings));
+  status_ok_or_return(
+      gpio_expander_init_pin(expander_storage, settings->reverse_pin, &output_settings));
 
   return STATUS_CODE_OK;
 }
