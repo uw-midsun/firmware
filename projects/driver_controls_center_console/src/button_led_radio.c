@@ -4,9 +4,10 @@
 #include "can.h"
 #include "can_msg_defs.h"
 #include "can_unpack.h"
+#include "center_console_event.h"
+#include "event_queue.h"
 #include "exported_enums.h"
 #include "fsm.h"
-#include "input_event.h"
 
 static Fsm s_button_led_radio_fsms = { 0 };
 

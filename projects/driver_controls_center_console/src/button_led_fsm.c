@@ -1,15 +1,15 @@
 #include "button_led_fsm.h"
 
+#include "center_console_event.h"
 #include "fsm.h"
 #include "gpio.h"
-#include "input_event.h"
 
 #include "log.h"
 
 // Contains all the context data needed for the callback
 typedef struct ButtonFsmCtx {
   // The Button ID that allows us to reference it
-  uint8_t button_id;
+  EECenterConsoleDigitalInput button_id;
   // Pin for the LED on the GPIO Expander
   GpioExpanderPin pin;
   GpioExpanderStorage *expander_storage;
@@ -39,14 +39,12 @@ FSM_STATE_TRANSITION(button_led_off) {
 }
 
 static void prv_button_led_on(Fsm *fsm, const Event *e, void *context) {
-  LOG_DEBUG("Button ON\n");
   ButtonFsmCtx *button_fsm_ctx = context;
 
   gpio_expander_set_state(button_fsm_ctx->expander_storage, button_fsm_ctx->pin, GPIO_STATE_HIGH);
 }
 
 static void prv_button_led_off(Fsm *fsm, const Event *e, void *context) {
-  LOG_DEBUG("Button Off\n");
   ButtonFsmCtx *button_fsm_ctx = context;
 
   gpio_expander_set_state(button_fsm_ctx->expander_storage, button_fsm_ctx->pin, GPIO_STATE_LOW);
@@ -58,9 +56,9 @@ void button_led_fsm_init(void) {
 }
 
 StatusCode button_led_fsm_create(Fsm *fsm, GpioExpanderStorage *expander_storage,
-                                 CenterConsoleButtonLed button_id, GpioExpanderPin pin,
+                                 EECenterConsoleDigitalInput button_id, GpioExpanderPin pin,
                                  const char *fsm_name) {
-  if (button_id > NUM_CENTER_CONSOLE_BUTTON_LEDS) {
+  if (button_id > NUM_EE_CENTER_CONSOLE_DIGITAL_INPUTS) {
     return status_code(STATUS_CODE_RESOURCE_EXHAUSTED);
   }
 
@@ -68,13 +66,14 @@ StatusCode button_led_fsm_create(Fsm *fsm, GpioExpanderStorage *expander_storage
   s_fsm_ctxs[button_id].pin = pin;
   s_fsm_ctxs[button_id].expander_storage = expander_storage;
 
-  // Start with all buttons with low
+  // Start with all buttons with low output
   const GpioSettings output_settings = {
     .direction = GPIO_DIR_OUT,  //
     .state = GPIO_STATE_LOW,    //
   };
   status_ok_or_return(gpio_expander_init_pin(expander_storage, pin, &output_settings));
 
+  // Start in the off state
   fsm_init(fsm, fsm_name, &button_led_off, &s_fsm_ctxs[button_id]);
 
   return STATUS_CODE_OK;

@@ -1,5 +1,9 @@
 #pragma once
 
+// This module uses the MCP23008 IO/Expander and controls the LED buttons
+// Requires the following be initialized:
+// - GPIO Expander
+
 #include "event_queue.h"
 #include "gpio_expander.h"
 #include "status.h"

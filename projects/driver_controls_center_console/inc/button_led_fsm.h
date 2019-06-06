@@ -1,8 +1,6 @@
 #pragma once
 
-// TODO: Finish implementing this
-// This module uses the MCP23008 IO/Expander and controls the LED buttons
-
+#include "exported_enums.h"
 #include "fsm.h"
 #include "gpio_expander.h"
 #include "status.h"
@@ -24,5 +22,5 @@ void button_led_fsm_init(void);
 
 // Create a new button FSM instance for a CenterConsoleButtonLed.
 StatusCode button_led_fsm_create(Fsm *fsm, GpioExpanderStorage *expander_storage,
-                                 CenterConsoleButtonLed button_id, GpioExpanderPin pin,
+                                 EECenterConsoleDigitalInput button_id, GpioExpanderPin pin,
                                  const char *fsm_name);

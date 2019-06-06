@@ -1,9 +1,9 @@
 #include "button_led_radio_fsm.h"
 
+#include "center_console_event.h"
 #include "exported_enums.h"
 #include "gpio.h"
 #include "gpio_expander.h"
-#include "input_event.h"
 
 #include "log.h"
 typedef struct RadioButtonFsmCtx {
@@ -19,7 +19,6 @@ static RadioButtonFsmCtx s_fsm_ctxs;
 static void prv_button_drive_on(Fsm *fsm, const Event *e, void *context) {
   // All LEDs should be off except for Drive
   RadioButtonFsmCtx *button_fsm_ctx = context;
-  LOG_DEBUG("DRIVE\n");
 
   gpio_expander_set_state(button_fsm_ctx->expander_storage, button_fsm_ctx->neutral_pin,
                           GPIO_STATE_LOW);
@@ -30,13 +29,11 @@ static void prv_button_drive_on(Fsm *fsm, const Event *e, void *context) {
 
   gpio_expander_set_state(button_fsm_ctx->expander_storage, button_fsm_ctx->drive_pin,
                           GPIO_STATE_HIGH);
-  LOG_DEBUG("DRIVE: Done\n");
 }
 
 static void prv_button_neutral_on(Fsm *fsm, const Event *e, void *context) {
   // All LEDs should be off except for Neutral
   RadioButtonFsmCtx *button_fsm_ctx = context;
-  LOG_DEBUG("NEUTRAL: Start\n");
 
   gpio_expander_set_state(button_fsm_ctx->expander_storage, button_fsm_ctx->neutral_pin,
                           GPIO_STATE_LOW);
@@ -47,13 +44,11 @@ static void prv_button_neutral_on(Fsm *fsm, const Event *e, void *context) {
 
   gpio_expander_set_state(button_fsm_ctx->expander_storage, button_fsm_ctx->neutral_pin,
                           GPIO_STATE_HIGH);
-  LOG_DEBUG("NEUTRAL: Done\n");
 }
 
 static void prv_button_reverse_on(Fsm *fsm, const Event *e, void *context) {
   // Go through all pins and turn them all off
   RadioButtonFsmCtx *button_fsm_ctx = context;
-  LOG_DEBUG("REVERSE: Start\n");
 
   gpio_expander_set_state(button_fsm_ctx->expander_storage, button_fsm_ctx->neutral_pin,
                           GPIO_STATE_LOW);
@@ -64,7 +59,6 @@ static void prv_button_reverse_on(Fsm *fsm, const Event *e, void *context) {
 
   gpio_expander_set_state(button_fsm_ctx->expander_storage, button_fsm_ctx->reverse_pin,
                           GPIO_STATE_HIGH);
-  LOG_DEBUG("REVERSE: Done\n");
 }
 
 FSM_DECLARE_STATE(button_group_neutral_on);
@@ -95,6 +89,7 @@ void button_led_radio_fsm_init(void) {
 StatusCode button_led_radio_fsm_create(Fsm *fsm, GpioExpanderStorage *expander_storage,
                                        ButtonLedRadioSettings *settings, const char *fsm_name) {
   s_fsm_ctxs.expander_storage = expander_storage;
+
   s_fsm_ctxs.drive_pin = settings->drive_pin;
   s_fsm_ctxs.neutral_pin = settings->neutral_pin;
   s_fsm_ctxs.reverse_pin = settings->reverse_pin;

@@ -1,11 +1,11 @@
 #include "center_console.h"
 
 #include "can.h"
+#include "center_console_event.h"
 #include "config.h"
 #include "critical_section.h"
 #include "gpio.h"
 #include "gpio_it.h"
-#include "input_event.h"
 #include "interrupt.h"
 #include "log.h"
 #include "ms_test_helpers.h"

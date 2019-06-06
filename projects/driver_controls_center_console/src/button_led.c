@@ -4,11 +4,11 @@
 #include "can_unpack.h"
 
 #include "button_led_fsm.h"
+#include "center_console_event.h"
 #include "event_queue.h"
 #include "exported_enums.h"
 #include "fsm.h"
 #include "gpio.h"
-#include "input_event.h"
 
 #include "log.h"
 
@@ -62,6 +62,9 @@ static StatusCode prv_lights_state_rx_handler(const CanMessage *msg, void *conte
     case EE_LIGHT_TYPE_SIGNAL_HAZARD:
       event_raise(state_to_local_event_map[light_state], EE_CENTER_CONSOLE_DIGITAL_INPUT_HAZARDS);
       break;
+    // Currently we don't process the strobe LED in here, since we use the BPS
+    // heartbeat message instead to raise the event triggering a transition in
+    // the LED FSM.
     default:
       return STATUS_CODE_OK;
   }
@@ -78,6 +81,8 @@ StatusCode button_led_init(GpioExpanderStorage *storage, ButtonLedGpioExpanderPi
   button_led_fsm_create(&s_button_led_fsms[CENTER_CONSOLE_BUTTON_LED_PWR], storage,
                         EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER, pins->power_indicator,
                         "PowerIndicator");
+  // These are separate because Lights sends an explicit ON/OFF for these,
+  // unlike Power State
   button_led_fsm_create(&s_button_led_fsms[CENTER_CONSOLE_BUTTON_LED_DRL], storage,
                         EE_CENTER_CONSOLE_DIGITAL_INPUT_DRL, pins->lights_drl, "DRLIndicator");
   button_led_fsm_create(&s_button_led_fsms[CENTER_CONSOLE_BUTTON_LED_LOW_BEAMS], storage,

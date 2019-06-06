@@ -8,8 +8,8 @@
 #include "wait.h"
 
 #include "adc.h"
+#include "center_console_event.h"
 #include "exported_enums.h"
-#include "input_event.h"
 
 #include "can.h"
 #include "can_msg_defs.h"
