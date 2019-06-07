@@ -16,7 +16,8 @@
 // Resistor divider value in ohms
 #define CONTROL_STALK_RESISTOR_OHMS 1000u
 // 4096 codes for +/-4.096V -> LSB = 2mV
-#define CONTROL_STALK_THRESHOLD(ohms) ((1u << 12) * (ohms) / ((CONTROL_STALK_RESISTOR_OHMS) + (ohms)))
+#define CONTROL_STALK_THRESHOLD(ohms) \
+  ((1u << 12) * (ohms) / ((CONTROL_STALK_RESISTOR_OHMS) + (ohms)))
 // 2k181 +10% resistor = ~2k4, -10% = 1k963
 #define CONTROL_STALK_2181_OHMS_THRESHOLD CONTROL_STALK_THRESHOLD(1963)
 // 681 +10% resistor = ~750, -10% = 613

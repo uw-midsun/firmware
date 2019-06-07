@@ -1,38 +1,32 @@
-#include "adc.h"
-#include "gpio.h"
-#include "gpio_it.h"
-#include "interrupt.h"
-#include "soft_timer.h"
-#include "status.h"
-#include "wait.h"
+#include "control_stalk.h"
+
+#include <string.h>
 
 #include "can.h"
 #include "can_msg_defs.h"
-#include "can_transmit.h"
-
 #include "config.h"
-#include "control_stalk.h"
+#include "critical_section.h"
 #include "exported_enums.h"
-#include "steering_events.h"
-
+#include "gpio.h"
+#include "gpio_it.h"
+#include "interrupt.h"
 #include "log.h"
-static CanStorage s_can_storage;
+#include "ms_test_helpers.h"
+#include "steering_events.h"
+#include "test_helpers.h"
 
-// We only need the following inputs from the Steering Board:
-// * CC_SPEED: Used to increase/decrease the current cruise target
-// * CC_SET: Used to set the cruise target to the current speed
-// * CC_ON/OFF: Used to enable/disable cruise control
-// * TURN_SIGNAL_STALK: Used to designate left/right turn signals
+#include "unity.h"
 
-int main() {
-  // Standard module inits
+static CanStorage s_can_storage = { 0 };
+static ControlStalkStorage s_stalk = { 0 };
+
+void setup_test(void) {
   gpio_init();
   interrupt_init();
   gpio_it_init();
   soft_timer_init();
   event_queue_init();
 
-  // CAN initialization
   const CanSettings can_settings = {
     .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS_STEERING,
     .bitrate = CAN_HW_BITRATE_500KBPS,
@@ -41,10 +35,9 @@ int main() {
     .fault_event = STEERING_EVENT_CAN_FAULT,
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },
+    .loopback = true,
   };
   can_init(&s_can_storage, &can_settings);
-
-  adc_init(ADC_MODE_CONTINUOUS);
 
   // Enable Control Stalk
   ControlStalkStorage stalk = {
@@ -133,15 +126,84 @@ int main() {
                 }  //
         },
   };
-  control_stalk_init(&stalk);
+  // Do a memcpy so we don't point to uninitialized memory after the stack
+  // frame gets popped.
+  memcpy(&s_stalk, &stalk, sizeof(s_stalk));
 
-  StatusCode status = NUM_STATUS_CODES;
+  // x86 doesn't implement the ADC so we YOLO hack around it and just don't
+  // check the return code, and don't exercise any ADC readings without
+  // extensive mocking
+  control_stalk_init(&s_stalk);
+}
+
+void teardown_test(void) {}
+
+static StatusCode prv_callback(const CanMessage *msg, void *context, CanAckStatus *ack_reply) {
+  bool *block = (bool *)context;
+
+  *block = true;
+  return STATUS_CODE_OK;
+}
+
+void test_control_stalk_raises_can_msg_when_digital_input_horn(void) {
+  bool interrupt_ran = false;
+  TEST_ASSERT_OK(
+      can_register_rx_handler(SYSTEM_CAN_MESSAGE_STEERING_EVENT, prv_callback, &interrupt_ran));
+
+  // Trigger a SW interrupt
+  bool disabled = critical_section_start();
+  TEST_ASSERT_FALSE(interrupt_ran);
+
+  GpioAddress pin_horn = STEERING_CONFIG_PIN_HORN;
+  TEST_ASSERT_OK(gpio_it_trigger_interrupt(&pin_horn));
+  critical_section_end(disabled);
+
+  MS_TEST_HELPER_CAN_TX_RX(STEERING_EVENT_CAN_TX, STEERING_EVENT_CAN_RX);
+
+  TEST_ASSERT_TRUE(interrupt_ran);
+
   Event e = { 0 };
-  while (true) {
-    while (status_ok(event_process(&e))) {
-      can_process_event(&e);
-    }
-  }
+  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
+}
 
-  return 0;
+void test_control_stalk_raises_can_msg_when_digital_input_cc_on_off(void) {
+  bool interrupt_ran = false;
+  TEST_ASSERT_OK(
+      can_register_rx_handler(SYSTEM_CAN_MESSAGE_STEERING_EVENT, prv_callback, &interrupt_ran));
+
+  // Trigger a SW interrupt
+  bool disabled = critical_section_start();
+  TEST_ASSERT_FALSE(interrupt_ran);
+
+  GpioAddress pin_cc_on_off = STEERING_CONFIG_PIN_CC_ON_OFF;
+  TEST_ASSERT_OK(gpio_it_trigger_interrupt(&pin_cc_on_off));
+  critical_section_end(disabled);
+
+  MS_TEST_HELPER_CAN_TX_RX(STEERING_EVENT_CAN_TX, STEERING_EVENT_CAN_RX);
+
+  TEST_ASSERT_TRUE(interrupt_ran);
+
+  Event e = { 0 };
+  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
+}
+
+void test_control_stalk_raises_can_msg_when_digital_input_cc_set(void) {
+  bool interrupt_ran = false;
+  TEST_ASSERT_OK(
+      can_register_rx_handler(SYSTEM_CAN_MESSAGE_STEERING_EVENT, prv_callback, &interrupt_ran));
+
+  // Trigger a SW interrupt
+  bool disabled = critical_section_start();
+  TEST_ASSERT_FALSE(interrupt_ran);
+
+  GpioAddress pin_cc_set = STEERING_CONFIG_PIN_CC_SET;
+  TEST_ASSERT_OK(gpio_it_trigger_interrupt(&pin_cc_set));
+  critical_section_end(disabled);
+
+  MS_TEST_HELPER_CAN_TX_RX(STEERING_EVENT_CAN_TX, STEERING_EVENT_CAN_RX);
+
+  TEST_ASSERT_TRUE(interrupt_ran);
+
+  Event e = { 0 };
+  TEST_ASSERT_EQUAL(STATUS_CODE_EMPTY, event_process(&e));
 }
