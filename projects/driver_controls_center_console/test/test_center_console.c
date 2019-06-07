@@ -90,6 +90,7 @@ static StatusCode prv_callback(const CanMessage *msg, void *context, CanAckStatu
   *block = true;
   return STATUS_CODE_OK;
 }
+
 void test_center_console_momentary_switch_low_beam_raises_can_msg_on_gpio_it(void) {
   bool interrupt_ran = false;
   TEST_ASSERT_OK(can_register_rx_handler(SYSTEM_CAN_MESSAGE_CENTER_CONSOLE_EVENT, prv_callback,
