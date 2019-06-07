@@ -12,6 +12,7 @@
 
 #include "config.h"
 #include "control_stalk.h"
+#include "exported_enums.h"
 #include "input_event.h"
 
 #include "log.h"
@@ -25,7 +26,7 @@ static CanStorage s_can_storage;
 
 int main() {
   // Standard module inits
-  status_ok_or_return(gpio_init());
+  gpio_init();
   interrupt_init();
   gpio_it_init();
   soft_timer_init();
@@ -41,12 +42,98 @@ int main() {
     .tx = { GPIO_PORT_A, 12 },
     .rx = { GPIO_PORT_A, 11 },
   };
-  status_ok_or_return(can_init(&s_can_storage, &can_settings));
+  can_init(&s_can_storage, &can_settings);
 
   adc_init(ADC_MODE_CONTINUOUS);
 
   // Enable Control Stalk
-  control_stalk_init();
+  ControlStalkStorage stalk = {
+    .digital_config =
+        {
+            //
+            [CONTROL_STALK_DIGITAL_INPUT_ID_HORN] =
+                {
+                    .pin = STEERING_CONFIG_PIN_HORN,
+                    .can_event =
+                        {
+                            [GPIO_STATE_HIGH] = EE_STEERING_INPUT_HORN_PRESSED,  //
+                            [GPIO_STATE_LOW] = EE_STEERING_INPUT_HORN_RELEASED   //
+                        },
+                },
+            [CONTROL_STALK_DIGITAL_INPUT_ID_CC_ON_OFF] =
+                {
+                    .pin = STEERING_CONFIG_PIN_CC_ON_OFF,
+                    .can_event =
+                        {
+                            [GPIO_STATE_HIGH] = EE_STEERING_INPUT_CC_ON_OFF_PRESSED,  //
+                            [GPIO_STATE_LOW] = EE_STEERING_INPUT_CC_ON_OFF_RELEASED   //
+                        },
+                },
+            [CONTROL_STALK_DIGITAL_INPUT_ID_SET] =
+                {
+                    .pin = STEERING_CONFIG_PIN_CC_SET,
+                    .can_event =
+                        {
+                            [GPIO_STATE_HIGH] = EE_STEERING_INPUT_CC_SET_PRESSED,  //
+                            [GPIO_STATE_LOW] = EE_STEERING_INPUT_CC_SET_RELEASED   //
+                        },
+                }  //
+        },
+    .analog_config =
+        {
+            //
+            [CONTROL_STALK_ANALOG_INPUT_ID_CC_SPEED] =
+                {
+                    .address = STEERING_CONFIG_PIN_CC_SPEED,
+                    .can_event =
+                        {
+                            [CONTROL_STALK_STATE_FLOATING] = EE_STEERING_INPUT_CC_SPEED_NEUTRAL,  //
+                            [CONTROL_STALK_STATE_681_OHMS] = EE_STEERING_INPUT_CC_SPEED_MINUS,    //
+                            [CONTROL_STALK_STATE_2181_OHMS] = EE_STEERING_INPUT_CC_SPEED_PLUS     //
+                        },
+                },
+            [CONTROL_STALK_ANALOG_INPUT_ID_CC_CANCEL_RESUME] =
+                {
+                    .address = STEERING_CONFIG_PIN_CC_CANCEL_RESUME,
+                    .can_event =
+                        {
+                            [CONTROL_STALK_STATE_FLOATING] =
+                                EE_STEERING_INPUT_CC_CANCEL_RESUME_NEUTRAL,  //
+                            [CONTROL_STALK_STATE_681_OHMS] =
+                                EE_STEERING_INPUT_CC_CANCEL_RESUME_CANCEL,  //
+                            [CONTROL_STALK_STATE_2181_OHMS] =
+                                EE_STEERING_INPUT_CC_CANCEL_RESUME_RESUME  //
+                        },
+                },
+            [CONTROL_STALK_ANALOG_INPUT_ID_TURN_SIGNAL_STALK] =
+                {
+                    .address = STEERING_CONFIG_PIN_TURN_SIGNAL_STALK,
+                    .can_event =
+                        {
+                            [CONTROL_STALK_STATE_FLOATING] =
+                                EE_STEERING_INPUT_TURN_SIGNAL_STALK_NONE,  //
+                            [CONTROL_STALK_STATE_681_OHMS] =
+                                EE_STEERING_INPUT_TURN_SIGNAL_STALK_RIGHT,  //
+                            [CONTROL_STALK_STATE_2181_OHMS] =
+                                EE_STEERING_INPUT_TURN_SIGNAL_STALK_LEFT  //
+                        },
+                },
+            [CONTROL_STALK_ANALOG_INPUT_ID_CC_DISTANCE] =
+                {
+                    .address = STEERING_CONFIG_PIN_CC_DISTANCE,
+                    .can_event =
+                        {
+                            [CONTROL_STALK_STATE_FLOATING] =
+                                EE_STEERING_INPUT_EVENT_CC_DISTANCE_NEUTRAL,  //
+                            [CONTROL_STALK_STATE_681_OHMS] =
+                                EE_STEERING_INPUT_EVENT_CC_DISTANCE_MINUS,  //
+                            [CONTROL_STALK_STATE_2181_OHMS] =
+                                EE_STEERING_INPUT_EVENT_CC_DISTANCE_PLUS  //
+                        },
+                }  //
+        },
+  };
+  control_stalk_init(&stalk);
 
   StatusCode status = NUM_STATUS_CODES;
   Event e = { 0 };
