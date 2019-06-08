@@ -57,7 +57,7 @@ StatusCode solar_master_slave_init(SolarMasterSlave *slave_storage, Mcp3427Stora
     slave_storage[i].mcp3427 = &(mcp3427_storage[i]);
     slave_storage[i].is_stale = true;
   }
-  soft_timer_start_millis(SOLAR_MASTER_SLAVE_REINIT_PERIOD_MS, prv_periodic_slave_init,
-                          slave_storage, NULL);
+
+  prv_periodic_slave_init(0, slave_storage);
   return STATUS_CODE_OK;
 }

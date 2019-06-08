@@ -43,16 +43,11 @@ int main(void) {
   i2c_init(config->slave_i2c_port, config->slave_i2c_settings);
   i2c_init(config->current_i2c_port, config->current_i2c_settings);
 
-  StatusCode status = solar_master_relay_init();
-  if (!status_ok(status)) {
-    LOG_DEBUG("Error initializing Solar Master Relay.\n");
-  }
-
   // Initialize current sense ADC
   GpioAddress current_ready_pin = CURRENT_ADC_READY_PIN;
   ads1015_init(&s_current_ads1015, config->current_i2c_port, SOLAR_MASTER_CURRENT_ADC_ADDR,
                &current_ready_pin);
-  status = solar_master_current_init(&s_current_storage, &s_current_ads1015);
+  StatusCode status = solar_master_current_init(&s_current_storage, &s_current_ads1015);
   if (!status_ok(status)) {
     LOG_DEBUG("Error initializing Solar Master Current.\n");
   }
@@ -60,6 +55,13 @@ int main(void) {
   status = solar_master_slave_init(s_slave_storage, s_slave_mcp3427,
                                    config->slave_mcp3427_settings_base);
 
+  
+  status = solar_master_relay_init();
+  if (!status_ok(status)) {
+    LOG_DEBUG("Error initializing Solar Master Relay.\n");
+  }
+  
+  
   // Initialize solar_master_can.
   s_solar_master_can_storage.current_storage = &s_current_storage;
   s_solar_master_can_storage.slave_storage = s_slave_storage;
