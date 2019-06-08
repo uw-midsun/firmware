@@ -55,13 +55,11 @@ int main(void) {
   status = solar_master_slave_init(s_slave_storage, s_slave_mcp3427,
                                    config->slave_mcp3427_settings_base);
 
-  
   status = solar_master_relay_init();
   if (!status_ok(status)) {
     LOG_DEBUG("Error initializing Solar Master Relay.\n");
   }
-  
-  
+
   // Initialize solar_master_can.
   s_solar_master_can_storage.current_storage = &s_current_storage;
   s_solar_master_can_storage.slave_storage = s_slave_storage;

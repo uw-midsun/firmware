@@ -19,8 +19,8 @@ typedef enum {
 } ThermistorPosition;
 
 typedef enum {
-  NXRT15XH103 = 0, // 10k ohm nominal resistance thermistor
-  NXRT15WF104,     // 100k ohm nominal resistance thermistor
+  NXRT15XH103 = 0,  // 10k ohm nominal resistance thermistor
+  NXRT15WF104,      // 100k ohm nominal resistance thermistor
   NUM_SUPPORTED_THERMISTOR_MODELS,
 } ThermistorModel;
 
@@ -40,13 +40,17 @@ typedef struct ThermistorStorage {
 StatusCode thermistor_init(ThermistorStorage *storage, ThermistorSettings *settings);
 
 // Based on a voltage reading and dividor parameters, calculate the resistance of the thermistor.
-StatusCode thermistor_get_resistance(ThermistorPosition position, uint16_t dividor_resistor_ohms, uint16_t reading_mv, uint16_t vdda_mv, uint32_t *thermistor_resistance_mohms);
+StatusCode thermistor_get_resistance(ThermistorPosition position, uint16_t dividor_resistor_ohms,
+                                     uint16_t reading_mv, uint16_t vdda_mv,
+                                     uint32_t *thermistor_resistance_mohms);
 
 // Calculate the temperature in deciCelsius from ohms
-StatusCode thermistor_calculate_temp(ThermistorModel model, uint32_t thermistor_resistance_mohms, uint16_t *temperature_dc);
+StatusCode thermistor_calculate_temp(ThermistorModel model, uint32_t thermistor_resistance_mohms,
+                                     uint16_t *temperature_dc);
 
 // Calculates the thermistor resistance given a certain temperature in dC
-StatusCode thermistor_calculate_resistance_from_temp(ThermistorModel model, uint16_t temperature_dc, uint16_t *thermistor_resistance_ohms);
+StatusCode thermistor_calculate_resistance_from_temp(ThermistorModel model, uint16_t temperature_dc,
+                                                     uint16_t *thermistor_resistance_ohms);
 
 // Fetch the temperature reading in deciCelsius from the MCU's ADC
 // Note: "dc" (deciCelsius) is a tenth of a celsius (0.1C)
