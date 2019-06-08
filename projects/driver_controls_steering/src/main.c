@@ -44,7 +44,7 @@ int main() {
   };
   can_init(&s_can_storage, &can_settings);
 
-  adc_init(ADC_MODE_CONTINUOUS);
+  adc_init(ADC_MODE_SINGLE);
 
   // Enable Control Stalk
   ControlStalkStorage stalk = {

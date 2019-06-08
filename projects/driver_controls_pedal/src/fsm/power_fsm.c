@@ -75,7 +75,7 @@ static bool prv_guard_off(const Event *e) {
     case PEDAL_EVENT_INPUT_POWER_STATE_DRIVE:
     case PEDAL_EVENT_INPUT_HAZARDS_STATE_OFF:
     case PEDAL_EVENT_INPUT_CENTER_CONSOLE_HAZARDS_PRESSED:
-      LOG_DEBUG("e->id: %d\n", e->id);
+      /* LOG_DEBUG("e->id: %d\n", e->id); */
       return true;
     default:
       return false;
