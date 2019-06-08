@@ -24,7 +24,7 @@ static void prv_periodic_tx_telemetry(SoftTimerId timer_id, void *context) {
   uint16_t voltage = 0;
   uint16_t temp = 0;
 
-  uint32_t temp_resistance_ohms = 0;
+  uint32_t temp_resistance_mohms = 0;
   for (int i = 0; i < SOLAR_MASTER_NUM_SOLAR_SLAVES; i++) {
     if (storage->slave_storage[i].is_stale) {
       continue;
@@ -35,15 +35,8 @@ static void prv_periodic_tx_telemetry(SoftTimerId timer_id, void *context) {
     // Voltage dividor:
     // 5V --> thermistor --> Measurement (mv) --> 10k Ohms --> GND
     // R = (5 V) * (10000 Ohms) * 1000 / (Avg Measurement mV)
-    // temp_resistance_ohms = ((SOLAR_MASTER_TEMP_VOLTAGE * SOLAR_MASTER_TEMP_RESISTOR) /
-    //                         ((uint32_t)storage->slave_storage[i].sliding_sum_temp_mv /
-    //                          SOLAR_MASTER_MCP3427_SAMPLE_SIZE)) -
-    //                        SOLAR_MASTER_TEMP_RESISTOR;
-
-    // StatusCode sc = thermistor_calculate_temp(temp_resistance_ohms, &temp);
-
-    temp = (uint16_t)((uint32_t)storage->slave_storage[i].sliding_sum_temp_mv / SOLAR_MASTER_MCP3427_SAMPLE_SIZE);
-
+    thermistor_get_resistance(THERMISTOR_POSITION_R1, 4700, storage->slave_storage[i].sliding_sum_temp_mv/SOLAR_MASTER_MCP3427_SAMPLE_SIZE, 5000, &temp_resistance_mohms);
+    thermistor_calculate_temp(NXRT15WF104, temp_resistance_mohms, &temp);
 
     module_id = i;
     LOG_DEBUG("module: %i, voltage: %i, current: %i, temp: %i\n", module_id, voltage, current,
