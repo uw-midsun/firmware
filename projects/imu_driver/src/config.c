@@ -7,8 +7,8 @@ static ImuSettings imu_settings = { .cs = { .port = GPIO_PORT_A, .pin = 4 },
                                     .miso = { .port = GPIO_PORT_A, .pin = 6 },
                                     .sclk = { .port = GPIO_PORT_A, .pin = 5 },
 
-                                    .gyro_first_register = 0x22,
-                                    .xl_first_register = 0x28,
+                                    .gyro_head_register = 0x22,
+                                    .xl_head_register = 0x28,
 
                                     .mode = SPI_MODE_3,
                                     .spi_baudrate = IMU_BAUDRATE_NS,

@@ -16,7 +16,7 @@ int main(void) {
   gpio_init();
   soft_timer_init();
 
-  // Initialize imu
+  // Initialize imu including starting periodic reads
   imu_init(config_load_imu(), &imu_storage);
 
   // Superloop
