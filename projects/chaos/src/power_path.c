@@ -75,36 +75,27 @@ static void prv_adc_read(SoftTimerId timer_id, void *context) {
   uint16_t value = 0;
   AdcChannel chan = NUM_ADC_CHANNELS;
   // Read and convert the current values.
-  LOG_DEBUG("SOMETHING IS GOING GOOD?\n");
   adc_get_channel(pps->current_pin, &chan);
   adc_read_converted(chan, &value);
   pps->readings.current = pps->current_convert_fn(value);
-  LOG_DEBUG("YES!\n");
 
   // Read and convert the voltage values.
-  LOG_DEBUG("SOMETHING IS GOING GOOD?\n");
   value = 0;
   adc_get_channel(pps->voltage_pin, &chan);
   adc_read_converted(chan, &value);
   pps->readings.voltage = pps->voltage_convert_fn(value);
-  LOG_DEBUG("YES!\n");
 
   // Read and convert the temp values.
   if (pps->id == POWER_PATH_SOURCE_ID_DCDC) {
-    LOG_DEBUG("DCDC\n");
-    LOG_DEBUG("SOMETHING IS GOING GOOD?\n");
     value = 0;
     adc_get_channel(pps->temperature1_pin, &chan);
     adc_read_converted(chan, &value);
     pps->readings.temperature1 = pps->temperature_convert_fn(value);
-    LOG_DEBUG("YES!\n");
 
-    LOG_DEBUG("SOMETHING IS GOING GOOD?\n");
     value = 0;
     adc_get_channel(pps->temperature2_pin, &chan);
     adc_read_converted(chan, &value);
     pps->readings.temperature2 = pps->temperature_convert_fn(value);
-    LOG_DEBUG("YES!\n");
   }
 
   // Start the next timer.

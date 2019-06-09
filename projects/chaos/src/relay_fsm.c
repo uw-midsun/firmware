@@ -18,6 +18,8 @@
 #include "relay_id.h"
 #include "status.h"
 
+#include "log.h"
+
 typedef struct RelayFsmAckCtx {
   RelayId id;
   EventId event_id;
@@ -47,7 +49,7 @@ static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CanAckS
   if (status != CAN_ACK_STATUS_OK) {
     event_raise(CHAOS_EVENT_MAYBE_RETRY_RELAY, ack_ctx->id);
   } else {
-    event_raise(ack_ctx->event_id, ack_ctx->id);
+  event_raise(ack_ctx->event_id, ack_ctx->id);
   }
   return STATUS_CODE_OK;
 }

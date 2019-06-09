@@ -19,18 +19,13 @@
 // - 300 mV / A = 300 uV / maA
 #define CHAOS_CONFIG_AUX_BAT_CURRENT_CONVERT(val) (((uint32_t)(val)) / 300)
 
-// ##### Voltage Equation #####
-// V_out = V_in * (R_1 + R_2) / R_1
-
 // DCDC:
-// - R_1 = 110 kOhm
-// - R_2 = 470 kOhm
-#define CHAOS_CONFIG_DCDC_VOLTAGE_CONVERT(val) (((uint32_t)(val)) * (470 + 110) / 110)
+// Calibrated at 12V
+#define CHAOS_CONFIG_DCDC_VOLTAGE_CONVERT(val) (((uint32_t)(val)) * 531 / 100)
 
 // AUX BAT:
-// - R_1 = 110 kOhm
-// - R_2 = 470 kOhm
-#define CHAOS_CONFIG_AUX_BAT_VOLTAGE_CONVERT(val) (((uint32_t)(val)) * (470 + 110) / 110)
+// Calibrated at 12V
+#define CHAOS_CONFIG_AUX_BAT_VOLTAGE_CONVERT(val) (((uint32_t)(val)) * 532 / 100)
 
 static uint16_t prv_convert_aux_bat_current(uint16_t value) {
   return CHAOS_CONFIG_AUX_BAT_CURRENT_CONVERT(CHAOS_CONFIG_VALUE_TO_MICROVOLTS(value));
