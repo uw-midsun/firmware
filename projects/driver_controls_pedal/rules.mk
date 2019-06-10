@@ -11,3 +11,9 @@ $(T)_DEPS := ms-common ms-helper
 $(T)_INC_DIRS := $($(T)_INC_DIRS) $($(T)_DIR)/inc/fsm
 $(T)_SRC_DIRS := $($(T)_SRC_ROOT) $($(T)_SRC_ROOT)/$(PLATFORM) $($(T)_SRC_ROOT)/fsm
 $(T)_SRC := $(call find_in,$($(T)_SRC_DIRS),*.c)
+
+ifeq (x86,$(PLATFORM))
+$(T)_EXCLUDE_TESTS := \
+	mech_brake_calibration \
+	throttle_calibration
+endif
