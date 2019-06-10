@@ -71,6 +71,7 @@ static bool prv_guard_off(const Event *e) {
   // This also prevents lights, etc. from being turned on unless the
   // unprotected rail is powered.
   switch (e->id) {
+    case PEDAL_EVENT_QUEUEING_FAULT:
     case PEDAL_EVENT_INPUT_BPS_FAULT:
     case PEDAL_EVENT_INPUT_POWER_STATE_DRIVE:
     case PEDAL_EVENT_INPUT_POWER_STATE_CHARGE:
