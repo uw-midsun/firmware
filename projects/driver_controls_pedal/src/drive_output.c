@@ -7,6 +7,7 @@
 #include "exported_enums.h"
 #include "log.h"
 #include "misc.h"
+#include "pedal_flags.h"
 
 #define DRIVE_OUTPUT_VALID_WATCHDOG ((1 << NUM_DRIVE_OUTPUT_SOURCES) - 1)
 
@@ -36,10 +37,12 @@ static void prv_broadcast_cb(SoftTimerId timer_id, void *context) {
   // Note that this will usually output stale data from the previous update request
   event_raise(storage->update_req_event, 0);
 
+#ifndef CENTER_CONSOLE_ENABLE_REGEN_BRAKING
   // Scale regen brake
   if (storage->data[DRIVE_OUTPUT_SOURCE_THROTTLE] < 0) {
     storage->data[DRIVE_OUTPUT_SOURCE_THROTTLE] = 0;
   }
+#endif
 
   CAN_TRANSMIT_DRIVE_OUTPUT((uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_THROTTLE],
                             (uint16_t)storage->data[DRIVE_OUTPUT_SOURCE_DIRECTION],
