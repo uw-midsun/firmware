@@ -41,7 +41,7 @@ int main() {
   StatusCode status = NUM_STATUS_CODES;
   Event e = { 0 };
   while (true) {
-    while (status_ok(event_process(&e))) {
+    if (status_ok(event_process(&e))) {
       can_process_event(&e);
     }
   }
