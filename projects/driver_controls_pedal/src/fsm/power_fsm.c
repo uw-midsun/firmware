@@ -34,6 +34,7 @@ FSM_STATE_TRANSITION(state_off) {
   FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_CENTER_CONSOLE_POWER_PRESSED, state_charging);
 
   FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_BPS_FAULT, state_fault);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_QUEUEING_FAULT, state_fault);
 }
 
 FSM_STATE_TRANSITION(state_off_brake) {
@@ -41,18 +42,21 @@ FSM_STATE_TRANSITION(state_off_brake) {
   FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_MECHANICAL_BRAKE_RELEASED, state_off);
 
   FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_BPS_FAULT, state_fault);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_QUEUEING_FAULT, state_fault);
 }
 
 FSM_STATE_TRANSITION(state_charging) {
   FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_CENTER_CONSOLE_POWER_PRESSED, state_off);
 
   FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_BPS_FAULT, state_fault);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_QUEUEING_FAULT, state_fault);
 }
 
 FSM_STATE_TRANSITION(state_on) {
   FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_CENTER_CONSOLE_POWER_PRESSED, state_off);
 
   FSM_ADD_TRANSITION(PEDAL_EVENT_INPUT_BPS_FAULT, state_fault);
+  FSM_ADD_TRANSITION(PEDAL_EVENT_QUEUEING_FAULT, state_fault);
 }
 
 FSM_STATE_TRANSITION(state_fault) {
@@ -61,20 +65,22 @@ FSM_STATE_TRANSITION(state_fault) {
 
 // Power FSM arbiter functions
 static bool prv_guard_off(const Event *e) {
-  // The only valid events when the car isn't in drive are the power button, mechanical brake,
-  // and fault.
-  // This also prevents lights, etc. from being turned on unless the unprotected rail is powered.
+  // The only valid events when the car isn't in drive are the power button,
+  // mechanical brake, and fault.
+  //
+  // This also prevents lights, etc. from being turned on unless the
+  // unprotected rail is powered.
   switch (e->id) {
+    case PEDAL_EVENT_INPUT_BPS_FAULT:
+    case PEDAL_EVENT_INPUT_POWER_STATE_DRIVE:
+    case PEDAL_EVENT_INPUT_POWER_STATE_CHARGE:
+    case PEDAL_EVENT_INPUT_POWER_STATE_OFF:
+    case PEDAL_EVENT_INPUT_POWER_STATE_FAULT:
+    case PEDAL_EVENT_INPUT_HAZARDS_STATE_OFF:
+    case PEDAL_EVENT_INPUT_CENTER_CONSOLE_HAZARDS_PRESSED:
     case PEDAL_EVENT_INPUT_CENTER_CONSOLE_POWER_PRESSED:
     case PEDAL_EVENT_INPUT_MECHANICAL_BRAKE_RELEASED:
     case PEDAL_EVENT_INPUT_MECHANICAL_BRAKE_PRESSED:
-    case PEDAL_EVENT_INPUT_BPS_FAULT:
-    case PEDAL_EVENT_INPUT_POWER_STATE_OFF:
-    case PEDAL_EVENT_INPUT_POWER_STATE_CHARGE:
-    case PEDAL_EVENT_INPUT_POWER_STATE_FAULT:
-    case PEDAL_EVENT_INPUT_POWER_STATE_DRIVE:
-    case PEDAL_EVENT_INPUT_HAZARDS_STATE_OFF:
-    case PEDAL_EVENT_INPUT_CENTER_CONSOLE_HAZARDS_PRESSED:
       /* LOG_DEBUG("e->id: %d\n", e->id); */
       return true;
     default:

@@ -39,6 +39,7 @@
 #include "fsm/turn_signal_fsm.h"
 
 #include "log.h"
+
 typedef enum {
   DRIVER_CONTROLS_FSM_POWER = 0,
   DRIVER_CONTROLS_FSM_CRUISE,
@@ -118,7 +119,12 @@ static StatusCode prv_steering_rx_handler(const CanMessage *msg, void *context,
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 
-  event_raise(s_steering_event_mapping[event_id], 0);
+  if (!status_ok(event_raise(s_steering_event_mapping[event_id], 0))) {
+    // We are essentially getting DOS'd by events being sent too fast that we
+    // can't process in time. As such, we'll try to fail fast and coast to a
+    // stop.
+    event_raise_priority(EVENT_PRIORITY_HIGHEST, PEDAL_EVENT_QUEUEING_FAULT, 0);
+  }
   return STATUS_CODE_OK;
 }
 
@@ -133,7 +139,12 @@ static StatusCode prv_center_console_rx_handler(const CanMessage *msg, void *con
     return status_code(STATUS_CODE_OUT_OF_RANGE);
   }
 
-  event_raise(s_center_console_digital_event_mapping[event_id], 0);
+  if (!status_ok(event_raise(s_center_console_digital_event_mapping[event_id], 0))) {
+    // We are essentially getting DOS'd by events being sent too fast that we
+    // can't process in time. As such, we'll try to fail fast and coast to a
+    // stop.
+    event_raise_priority(EVENT_PRIORITY_HIGHEST, PEDAL_EVENT_QUEUEING_FAULT, 0);
+  }
   return STATUS_CODE_OK;
 }
 
