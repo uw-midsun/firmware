@@ -1,9 +1,12 @@
 #include <stdbool.h>
 
-#include "button_led.h"
-#include "button_led_radio.h"
 #include "center_console_event.h"
 #include "config.h"
+
+#include "adc.h"
+#include "button_led.h"
+#include "button_led_radio.h"
+#include "center_console.h"
 #include "gpio.h"
 #include "gpio_expander.h"
 #include "gpio_it.h"
@@ -20,6 +23,26 @@
 
 static CanStorage s_can_storage = { 0 };
 static GpioExpanderStorage s_expander = { 0 };
+
+#if defined(CENTER_CONSOLE_FLAG_ENABLE_5V_MONITOR)
+#define CENTER_CONSOLE_5V_RAIL_MONITOR_PERIOD_MILLIS 100
+
+static void prv_adc_monitor(SoftTimerId timer_id, void *context) {
+  uint16_t *rail_monitor_5v = context;
+
+  GpioAddress monitor_5v = CENTER_CONSOLE_CONFIG_PIN_5V_MONITOR;
+  AdcChannel adc_channel_5v_monitor = NUM_ADC_CHANNELS;
+  adc_get_channel(monitor_5v, &adc_channel_5v_monitor);
+
+  adc_read_converted(adc_channel_5v_monitor, rail_monitor_5v);
+
+  // TODO(ELEC-637): Any logic here to monitor 5V rail and raise appropriate
+  // event?
+
+  soft_timer_start_millis(CENTER_CONSOLE_5V_RAIL_MONITOR_PERIOD_MILLIS, prv_adc_monitor, context,
+                          NULL);
+}
+#endif
 
 int main() {
   // Standard module inits
@@ -69,8 +92,94 @@ int main() {
   };
   button_led_radio_init(&s_expander, &radio_settings);
 
+  // Initialize Center Console
+  CenterConsoleStorage cc_storage = {
+    .momentary_switch_lights_low_beam =
+        {
+            .pin_address = CENTER_CONSOLE_CONFIG_PIN_LOW_BEAM,
+            .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_LOW_BEAM,
+        },
+    .momentary_switch_lights_drl =
+        {
+            .pin_address = CENTER_CONSOLE_CONFIG_PIN_DRL,
+            .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_DRL,
+        },
+    .toggle_switch_lights_hazards =
+        {
+            .pin_address = CENTER_CONSOLE_CONFIG_PIN_HAZARDS,
+            .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_HAZARDS,
+        },
+    .radio_button_drive =
+        {
+            .pin_address = CENTER_CONSOLE_CONFIG_PIN_DRIVE,
+            .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_DRIVE,
+        },
+    .radio_button_neutral =
+        {
+            .pin_address = CENTER_CONSOLE_CONFIG_PIN_NEUTRAL,
+            .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_NEUTRAL,
+        },
+    .radio_button_reverse =
+        {
+            .pin_address = CENTER_CONSOLE_CONFIG_PIN_REVERSE,
+            .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_REVERSE,
+        },
+    .toggle_switch_power =
+        {
+            .pin_address = CENTER_CONSOLE_CONFIG_PIN_POWER,
+            .can_event = EE_CENTER_CONSOLE_DIGITAL_INPUT_POWER,
+        },
+  };
+  status_ok_or_return(center_console_init(&cc_storage));
+
+#if defined(CENTER_CONSOLE_FLAG_ENABLE_5V_MONITOR)
+  // Enable 5V monitor
+  const GpioSettings adc_input_settings = {
+    .direction = GPIO_DIR_IN,           //
+    .state = GPIO_STATE_LOW,            //
+    .resistor = GPIO_RES_NONE,          //
+    .alt_function = GPIO_ALTFN_ANALOG,  //
+  };
+  GpioAddress monitor_5v = CENTER_CONSOLE_CONFIG_PIN_5V_MONITOR;
+  status_ok_or_return(gpio_init_pin(&monitor_5v, &adc_input_settings));
+  AdcChannel adc_channel_5v_monitor = NUM_ADC_CHANNELS;
+
+  adc_init(ADC_MODE_SINGLE);
+
+  uint16_t rail_monitor_5v = 0u;
+  status_ok_or_return(adc_get_channel(monitor_5v, &adc_channel_5v_monitor));
+  status_ok_or_return(adc_set_channel(adc_channel_5v_monitor, true));
+  status_ok_or_return(soft_timer_start_millis(CENTER_CONSOLE_5V_RAIL_MONITOR_PERIOD_MILLIS,
+                                              prv_adc_monitor, (void *)&rail_monitor_5v, NULL));
+#endif
+
+  const GpioSettings enable_output_rail = {
+    .direction = GPIO_DIR_OUT,
+    .state = GPIO_STATE_HIGH,
+    .resistor = GPIO_RES_NONE,
+    .alt_function = GPIO_ALTFN_NONE,
+  };
+#if defined(CENTER_CONSOLE_FLAG_ENABLE_5V_RAIL)
+  // Enable 5V rail
+  const GpioAddress rail_5v = CENTER_CONSOLE_CONFIG_PIN_5V_ENABLE;
+  status_ok_or_return(gpio_init_pin(&rail_5v, &enable_output_rail));
+#endif
+
+#if defined(CENTER_CONSOLE_FLAG_ENABLE_DISPLAY)
+  // Enable Driver Display
+  const GpioAddress display_rail = CENTER_CONSOLE_CONFIG_PIN_DISPLAY_ENABLE;
+  status_ok_or_return(gpio_init_pin(&display_rail, &enable_output_rail));
+#endif
+
+  // Enable fan
+  const GpioAddress fan_enable = CENTER_CONSOLE_CONFIG_PIN_FAN_ENABLE;
+  status_ok_or_return(gpio_init_pin(&fan_enable, &enable_output_rail));
+
   Event e = { 0 };
   while (true) {
+    // TODO(HW-200): Remove this once the HW fix goes in
+    center_console_poll(&cc_storage);
+
     while (status_ok(event_process(&e))) {
       can_process_event(&e);
 
