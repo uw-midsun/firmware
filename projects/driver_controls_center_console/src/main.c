@@ -1,5 +1,7 @@
 #include <stdbool.h>
 
+#include "button_led.h"
+#include "button_led_radio.h"
 #include "center_console_event.h"
 #include "config.h"
 #include "gpio.h"
@@ -37,7 +39,7 @@ int main() {
     .tx = CENTER_CONSOLE_CONFIG_PIN_CAN_TX,
     .rx = CENTER_CONSOLE_CONFIG_PIN_CAN_RX,
   };
-  status_ok_or_return(can_init(&s_can_storage, &can_settings));
+  can_init(&s_can_storage, &can_settings);
 
   // Use I/O Expander for button LEDs
   I2CSettings settings = {
@@ -45,11 +47,36 @@ int main() {
     .sda = CENTER_CONSOLE_CONFIG_PIN_I2C_SDA,  //
     .scl = CENTER_CONSOLE_CONFIG_PIN_I2C_SDL,  //
   };
-  status_ok_or_return(i2c_init(I2C_PORT_2, &settings));
+  i2c_init(I2C_PORT_2, &settings);
   // Configure the expander to be output only
-  status_ok_or_return(gpio_expander_init(&s_expander, I2C_PORT_2, GPIO_EXPANDER_ADDRESS_0, NULL));
+  gpio_expander_init(&s_expander, I2C_PORT_2, GPIO_EXPANDER_ADDRESS_0, NULL);
 
+  // Initialize normal toggle buttons
+  ButtonLedGpioExpanderPins expander_pins = {
+    .bps_indicator = CENTER_CONSOLE_CONFIG_GPIO_EXPANDER_LED_BPS,
+    .power_indicator = CENTER_CONSOLE_CONFIG_GPIO_EXPANDER_LED_POWER,
+    .lights_drl = CENTER_CONSOLE_CONFIG_GPIO_EXPANDER_LED_DRL,
+    .lights_low_beams = CENTER_CONSOLE_CONFIG_GPIO_EXPANDER_LED_LOW_BEAMS,
+    .lights_hazards = CENTER_CONSOLE_CONFIG_GPIO_EXPANDER_LED_HAZARDS,
+  };
+  button_led_init(&s_expander, &expander_pins);
+
+  // Initialize radio button groups
+  ButtonLedRadioSettings radio_settings = {
+    .reverse_pin = CENTER_CONSOLE_CONFIG_GPIO_EXPANDER_LED_REVERSE,
+    .neutral_pin = CENTER_CONSOLE_CONFIG_GPIO_EXPANDER_LED_NEUTRAL,
+    .drive_pin = CENTER_CONSOLE_CONFIG_GPIO_EXPANDER_LED_DRIVE,
+  };
+  button_led_radio_init(&s_expander, &radio_settings);
+
+  Event e = { 0 };
   while (true) {
+    while (status_ok(event_process(&e))) {
+      can_process_event(&e);
+
+      button_led_process_event(&e);
+      button_led_radio_process_event(&e);
+    }
   }
   return 0;
 }

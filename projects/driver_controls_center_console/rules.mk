@@ -12,3 +12,7 @@ ifeq (x86,$(PLATFORM))
 $(T)_EXCLUDE_TESTS := \
 	gpio_expander
 endif
+
+$(T)_test_button_led_MOCKS := gpio_expander_init_pin
+
+$(T)_test_button_led_radio_MOCKS := gpio_expander_init_pin
