@@ -162,15 +162,19 @@ int main() {
   };
 #ifdef CENTER_CONSOLE_FLAG_ENABLE_5V_RAIL
   // Enable 5V rail
-  GpioAddress rail_5v = CENTER_CONSOLE_CONFIG_PIN_5V_ENABLE;
+  const GpioAddress rail_5v = CENTER_CONSOLE_CONFIG_PIN_5V_ENABLE;
   status_ok_or_return(gpio_init_pin(&rail_5v, &enable_output_rail));
 #endif
 
 #ifdef CENTER_CONSOLE_FLAG_ENABLE_DISPLAY
   // Enable Driver Display
-  GpioAddress display_rail = CENTER_CONSOLE_CONFIG_PIN_DISPLAY_ENABLE;
+  const GpioAddress display_rail = CENTER_CONSOLE_CONFIG_PIN_DISPLAY_ENABLE;
   status_ok_or_return(gpio_init_pin(&display_rail, &enable_output_rail));
 #endif
+
+  // Enable fan
+  const GpioAddress fan_rail = CENTER_CONSOLE_CONFIG_PIN_FAN_ENABLE;
+  status_ok_or_return(gpio_init_pin(&fan_rail, &enable_output_rail));
 
   Event e = { 0 };
 
