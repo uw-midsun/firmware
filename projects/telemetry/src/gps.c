@@ -13,9 +13,11 @@
 // Two structs to store data and settings. Since the GPS should only be initialized once
 static GpsSettings *s_settings = NULL;
 static GpsStorage *s_storage = NULL;
+static bool s_turned_on = false;
 
 // This method will be called every time the GPS sends data.
 static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
+  s_turned_on = true;
   NmeaMessageId messageId = NMEA_MESSAGE_ID_UNKNOWN;
   nmea_sentence_type((char *)rx_arr, &messageId);
   if (messageId == NMEA_MESSAGE_ID_GGA) {  // GGA message
@@ -39,7 +41,7 @@ StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
   GpioSettings telemetry_settings_gpio_general = {
     .direction = GPIO_DIR_OUT,  // The pin needs to output.
     .state = GPIO_STATE_LOW,    // Start in the "off" state.
-    .alt_function = GPIO_ALTFN_1,
+    .alt_function = GPIO_ALTFN_NONE,
   };
 
   // Initializes UART callback
@@ -54,17 +56,18 @@ StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
 
   // Ensure that ON/OFF pulse happens at least 1s after power on
   delay_s(1);
+  if (!s_turned_on) {
+    // Pull high on ON/OFF line
+    ret |= gpio_set_state(s_settings->pin_on_off, GPIO_STATE_HIGH);
+    delay_ms(150);
 
-  // Pull high on ON/OFF line
-  ret |= gpio_set_state(s_settings->pin_on_off, GPIO_STATE_HIGH);
-  delay_ms(100);
+    // Set ON/OFF line to low
+    ret |= gpio_set_state(s_settings->pin_on_off, GPIO_STATE_LOW);
+    delay_ms(900);
 
-  // Set ON/OFF line to low
-  ret |= gpio_set_state(s_settings->pin_on_off, GPIO_STATE_LOW);
-  delay_ms(900);
-
-  if (!status_ok(ret)) {
-    return status_msg(STATUS_CODE_INTERNAL_ERROR, "Error turning on GPS Module\n");
+    if (!status_ok(ret)) {
+      return status_msg(STATUS_CODE_INTERNAL_ERROR, "Error turning on GPS Module\n");
+    }
   }
 
   // Turning off messages we don't need
