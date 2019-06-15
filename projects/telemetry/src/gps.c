@@ -13,6 +13,8 @@
 // Two structs to store data and settings. Since the GPS should only be initialized once
 static GpsSettings *s_settings = NULL;
 static GpsStorage *s_storage = NULL;
+
+// Determines if module is turned on
 static bool s_turned_on = false;
 
 // This method will be called every time the GPS sends data.
@@ -56,6 +58,9 @@ StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
 
   // Ensure that ON/OFF pulse happens at least 1s after power on
   delay_s(1);
+
+  // Sends a pulse on the on/off pin only if the module is off
+  // A pulse to the module in peak mode sends it to hibernate mode
   if (!s_turned_on) {
     // Pull high on ON/OFF line
     ret |= gpio_set_state(s_settings->pin_on_off, GPIO_STATE_HIGH);
