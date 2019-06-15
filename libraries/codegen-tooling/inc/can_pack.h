@@ -45,18 +45,14 @@
                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,               \
                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
-#define CAN_PACK_POWER_STATE(msg_ptr, power_state_u8)                                            \
-  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, SYSTEM_CAN_MESSAGE_POWER_STATE, \
-                   1, (power_state_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                \
-                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                \
-                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
+#define CAN_PACK_POWER_STATE(msg_ptr, power_state_u8)                                        \
+  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS_PEDAL,                       \
+                   SYSTEM_CAN_MESSAGE_POWER_STATE, 1, (power_state_u8), CAN_PACK_IMPL_EMPTY, \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,            \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_POWERTRAIN_HEARTBEAT(msg_ptr) \
   can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_CHAOS, SYSTEM_CAN_MESSAGE_POWERTRAIN_HEARTBEAT)
-
-#define CAN_PACK_MOTOR_CONTROLLER_RESET(msg_ptr)                    \
-  can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, \
-                      SYSTEM_CAN_MESSAGE_MOTOR_CONTROLLER_RESET)
 
 #define CAN_PACK_OVUV_DCDC_AUX(msg_ptr, dcdc_ov_flag_u8, dcdc_uv_flag_u8, aux_bat_ov_flag_u8, \
                                aux_bat_uv_flag_u8)                                            \
@@ -70,17 +66,17 @@
                     SYSTEM_CAN_MESSAGE_MC_ERROR_LIMITS, 4, (error_id_u16), (limits_u16), \
                     CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
-#define CAN_PACK_DRIVE_OUTPUT(msg_ptr, throttle_u16, direction_u16, cruise_control_u16,            \
-                              mechanical_brake_state_u16)                                          \
-  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT, \
-                    8, (throttle_u16), (direction_u16), (cruise_control_u16),                      \
-                    (mechanical_brake_state_u16))
+#define CAN_PACK_DRIVE_OUTPUT(msg_ptr, throttle_u16, direction_u16, cruise_control_u16,  \
+                              mechanical_brake_state_u16)                                \
+  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS_PEDAL,                  \
+                    SYSTEM_CAN_MESSAGE_DRIVE_OUTPUT, 8, (throttle_u16), (direction_u16), \
+                    (cruise_control_u16), (mechanical_brake_state_u16))
 
-#define CAN_PACK_CRUISE_TARGET(msg_ptr, target_speed_u8)                                           \
-  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, SYSTEM_CAN_MESSAGE_CRUISE_TARGET, \
-                   1, (target_speed_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                 \
-                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                  \
-                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
+#define CAN_PACK_CRUISE_TARGET(msg_ptr, target_speed_u8)                                        \
+  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS_PEDAL,                          \
+                   SYSTEM_CAN_MESSAGE_CRUISE_TARGET, 1, (target_speed_u8), CAN_PACK_IMPL_EMPTY, \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,               \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_FAN_CONTROL(msg_ptr, state_u8)                                               \
   can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_CHAOS, SYSTEM_CAN_MESSAGE_FAN_CONTROL, 1,     \
@@ -99,16 +95,16 @@
 #define CAN_PACK_LIGHTS_SYNC(msg_ptr) \
   can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_LIGHTS_REAR, SYSTEM_CAN_MESSAGE_LIGHTS_SYNC)
 
-#define CAN_PACK_LIGHTS_STATE(msg_ptr, light_id_u8, light_state_u8)                               \
-  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, SYSTEM_CAN_MESSAGE_LIGHTS_STATE, \
-                   2, (light_id_u8), (light_state_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,  \
-                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                 \
-                   CAN_PACK_IMPL_EMPTY)
+#define CAN_PACK_LIGHTS_STATE(msg_ptr, light_id_u8, light_state_u8)                     \
+  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS_PEDAL,                  \
+                   SYSTEM_CAN_MESSAGE_LIGHTS_STATE, 2, (light_id_u8), (light_state_u8), \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,       \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
-#define CAN_PACK_HORN(msg_ptr, state_u8)                                                      \
-  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS, SYSTEM_CAN_MESSAGE_HORN, 1,  \
-                   (state_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, \
-                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,             \
+#define CAN_PACK_HORN(msg_ptr, state_u8)                                                           \
+  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS_PEDAL, SYSTEM_CAN_MESSAGE_HORN, 1, \
+                   (state_u8), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,      \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                  \
                    CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_CHARGER_CONN_STATE(msg_ptr, is_connected_u8)                                      \
@@ -123,10 +119,22 @@
                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,                  \
                    CAN_PACK_IMPL_EMPTY)
 
-#define CAN_PACK_STEERING_ANGLE(msg_ptr, steering_angle_u16)                    \
-  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS,               \
-                    SYSTEM_CAN_MESSAGE_STEERING_ANGLE, 2, (steering_angle_u16), \
-                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
+#define CAN_PACK_STEERING_EVENT(msg_ptr, event_id_u16, data_u16)                      \
+  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS_STEERING,            \
+                    SYSTEM_CAN_MESSAGE_STEERING_EVENT, 4, (event_id_u16), (data_u16), \
+                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
+
+#define CAN_PACK_CENTER_CONSOLE_EVENT(msg_ptr, event_id_u16, data_u16)                      \
+  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS_CENTER_CONSOLE,            \
+                    SYSTEM_CAN_MESSAGE_CENTER_CONSOLE_EVENT, 4, (event_id_u16), (data_u16), \
+                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
+
+#define CAN_PACK_MOTOR_CONTROLLER_RESET(msg_ptr, motor_controller_index_u8)                   \
+  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_DRIVER_CONTROLS_PEDAL,                        \
+                   SYSTEM_CAN_MESSAGE_MOTOR_CONTROLLER_RESET, 1, (motor_controller_index_u8), \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,             \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,             \
+                   CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_BATTERY_SOC(msg_ptr) \
   can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_PLUTUS, SYSTEM_CAN_MESSAGE_BATTERY_SOC)
