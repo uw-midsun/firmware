@@ -77,7 +77,7 @@ StatusCode nmea_valid(const char *to_check) {
     return status_msg(STATUS_CODE_UNKNOWN, "NMEA sentence should begin with GP\n");
   }
   if (!nmea_checksum_validate((char *)to_check, len)) {
-    return status_msg(STATUS_CODE_UNKNOWN, "Invalid checksum for NMEA message\n");
+    //return status_msg(STATUS_CODE_UNKNOWN, "Invalid checksum for NMEA message\n");
   }
   return STATUS_CODE_OK;
 }
@@ -122,7 +122,7 @@ StatusCode nmea_sentence_type(const char *rx_arr, NmeaMessageId *result) {
     *result = NMEA_MESSAGE_ID_VTG;
     return STATUS_CODE_OK;
   } else {
-    LOG_DEBUG("Unknown message type: %c%c%c", message_id[0], message_id[1], message_id[2]);
+    //LOG_DEBUG("Unknown message type: %c%c%c", message_id[0], message_id[1], message_id[2]);
     return status_msg(STATUS_CODE_INVALID_ARGS, "Unknown NMEA message type\n");
   }
 }
@@ -134,7 +134,7 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
 
   size_t len = strlen(rx_arr);
 
-  status_ok_or_return(nmea_valid(rx_arr));
+  //status_ok_or_return(nmea_valid(rx_arr));
 
   // m_id will keep track of which sentence type we are currently operating on
   NmeaMessageId m_id = 0;
@@ -161,18 +161,38 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
 
     // Get time
     token = strsep(&rx_arr_copy_ptr, ",");
-    if (token != NULL) {
-      char fraction_string[5] = { 0 };
-      sscanf(token, "%2" SCNd8 "%2" SCNd8 "%2" SCNd8 ".%4s", &result->time.hh, &result->time.mm,
-             &result->time.ss, fraction_string);
-      uint16_t fraction = 0;
-      prv_string_to_fraction(fraction_string, 3, &fraction);
-      result->time.sss = fraction;
+    //printf("Time: %s\n", token);
+    if (strlen(token) == 10) {
+      char hh[2], mm[2], ss[2], sss[3];
+      strncpy( hh, token, 2);
+      strncpy( mm, token+2, 2);
+      strncpy( ss, token+4, 2);
+      strncpy( sss, token+7, 3); 
+      result->time.hh = atoi(hh);
+      result->time.mm = atoi(mm);
+      result->time.ss = atoi(ss);
+      result->time.sss = atoi(sss);
+      // char fraction_string[5] = { 0 };
+      // sscanf(token, "%2" SCNd8 "%2" SCNd8 "%2" SCNd8 ".%4s", &result->time.hh, &result->time.mm,
+      //        &result->time.ss, fraction_string);
+      // uint16_t fraction = 0;
+      // prv_string_to_fraction(fraction_string, 3, &fraction);
+      // result->time.sss = fraction;
     }
 
     // Get latitude
     token = strsep(&rx_arr_copy_ptr, ",");
+    //printf("Latitude: %s\n", token);
     if (token != NULL) {
+      char deg[2], min[2], frac[4];
+      strncpy( hh, token, 2);
+      strncpy( mm, token+2, 2);
+      strncpy( ss, token+4, 2);
+      strncpy( sss, token+7, 3); 
+      result->time.hh = atoi(hh);
+      result->time.mm = atoi(mm);
+      result->time.ss = atoi(ss);
+      result->time.sss = atoi(sss);
       char fraction_string[5] = { 0 };
       sscanf(token, "%2" SCNd16 "%2" SCNd16 ".%4s", &result->latitude.degrees,
              &result->latitude.minutes, fraction_string);
@@ -183,12 +203,14 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
 
     // Get North/South indicator
     token = strsep(&rx_arr_copy_ptr, ",");
+    //printf("N/S: %s\n", token);
     if (token != NULL) {
       result->north_south = token[0];
     }
 
     // Get longitude
     token = strsep(&rx_arr_copy_ptr, ",");
+    //printf("Longitude: %s\n", token);
     if (token != NULL) {
       char fraction_string[5] = { 0 };
       sscanf(token, "%3" SCNd16 "%2" SCNd16 ".%4s", &result->longitude.degrees,
@@ -200,12 +222,14 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
 
     // Get East/West indicator
     token = strsep(&rx_arr_copy_ptr, ",");
+    //printf("E/W: %s\n", token);
     if (token != NULL) {
       result->east_west = token[0];
     }
 
     // Get position fix indicator
     token = strsep(&rx_arr_copy_ptr, ",");
+    //printf("GPS Used: %s\n", token);
     if (token != NULL) {
       uint8_t temp_position_fix = 0;
 
@@ -289,6 +313,8 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
     if (token != NULL) {
       sscanf(token, "%" SCNd16, &result->drs);
     }
+
+    //printf("RESULT: %d\n", result->north_south);
 
     return STATUS_CODE_OK;
   }

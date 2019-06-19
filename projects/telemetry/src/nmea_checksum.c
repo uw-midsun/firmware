@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "log.h"
 
 // Private method to convert hex char (stored in the 'h' parameter) to an int
 // Store the result in the result pointer (which cannot be NULL)
@@ -58,6 +59,7 @@ StatusCode nmea_checksum_compute(char *message, size_t message_len, uint8_t *che
 
 bool nmea_checksum_validate(char *message, size_t message_len) {
   if (message == NULL || message_len < 4) {
+    LOG_DEBUG("first\n");
     return false;
   }
 
@@ -65,7 +67,11 @@ bool nmea_checksum_validate(char *message, size_t message_len) {
   // Hence, the 3rd last character should be '*' (we subtract 3 instead of 2 to
   // account for \0)
 
-  if (message[message_len - 3] != '*') {
+  if (message[message_len - 5] != '*') {
+    for(uint16_t i = 0; i <= message_len; i++){
+      printf("%c", message[i]);
+    }
+    LOG_DEBUG("second: %d\n", message_len);
     // return false if there's no checksum in the message
     return false;
   }
@@ -79,6 +85,7 @@ bool nmea_checksum_validate(char *message, size_t message_len) {
   uint8_t computed = 0;
   StatusCode status_computed = nmea_checksum_compute(message, message_len, &computed);
   if (!status_ok(status_computed) || !status_ok(status_extracted)) {
+    LOG_DEBUG("third\n");
     // return false if nmea_compute_checksum fails
     return false;
   }

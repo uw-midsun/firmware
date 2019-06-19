@@ -20,6 +20,38 @@ static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
   nmea_sentence_type((char *)rx_arr, &messageId);
   if (messageId == NMEA_MESSAGE_ID_GGA) {  // GGA message
     strncpy((char *)s_storage->gga_data, (char *)rx_arr, GPS_MAX_NMEA_LENGTH);
+
+    NmeaGgaSentence r = { 0 };
+    // printf("PRINTING ARRAY\n");
+    // int segment = 1;
+    // const char tok[] = ",";
+    // char * tmp = (char *)s_storage->gga_data;
+    // do {
+    //   uint16_t len = strcspn (tmp, tok);
+    //   if(segment == 2){
+    //     printf("Time: %.*s\n", len, tmp);
+    //   } else if (segment == 3){
+    //     printf("Lat: %.*s\n", len, tmp);
+    //   } else if (segment == 4){
+    //     printf("N/S: %.*s\n", len, tmp);
+    //   } else if (segment == 5){
+    //     printf("Lng: %.*s\n", len, tmp);
+    //   } else if (segment == 6){
+    //     printf("E/W: %.*s\n", len, tmp);
+    //   } else if (segment == 7){
+    //     printf("Sat Used: %.*s\n", len, tmp);
+    //   }
+    //   tmp += len + 1;
+    //   segment ++;
+    // } while (tmp[-1]);
+    nmea_get_gga_sentence(s_storage->gga_data, &r);
+
+    for(int i = 0; i < GPS_MAX_NMEA_LENGTH; i++) {
+      printf("%c", s_storage->gga_data[i]);
+    }
+
+    printf("TIME: %d:%d:%d:%d\n", r.time.hh, r.time.mm, r.time.ss, r.time.sss);
+
   } else if (messageId == NMEA_MESSAGE_ID_VTG) {  // VTG message
     strncpy((char *)s_storage->vtg_data, (char *)rx_arr, GPS_MAX_NMEA_LENGTH);
   }
