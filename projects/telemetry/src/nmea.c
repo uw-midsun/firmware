@@ -158,46 +158,33 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
 
     // Get rid of $GPGGA
     char *token = strsep(&rx_arr_copy_ptr, ",");
-
     // Get time
     token = strsep(&rx_arr_copy_ptr, ",");
     //printf("Time: %s\n", token);
     if (strlen(token) == 10) {
-      char hh[2], mm[2], ss[2], sss[3];
-      strncpy( hh, token, 2);
-      strncpy( mm, token+2, 2);
-      strncpy( ss, token+4, 2);
-      strncpy( sss, token+7, 3); 
-      result->time.hh = atoi(hh);
-      result->time.mm = atoi(mm);
-      result->time.ss = atoi(ss);
-      result->time.sss = atoi(sss);
-      // char fraction_string[5] = { 0 };
-      // sscanf(token, "%2" SCNd8 "%2" SCNd8 "%2" SCNd8 ".%4s", &result->time.hh, &result->time.mm,
-      //        &result->time.ss, fraction_string);
-      // uint16_t fraction = 0;
-      // prv_string_to_fraction(fraction_string, 3, &fraction);
-      // result->time.sss = fraction;
+      int mm, hh, ss;
+      char fraction_string[5] = { 0 };
+      sscanf(token, "%2d%2d%2d.%4s", &hh, &mm, &ss, fraction_string);
+      result->time.hh = (uint8_t)hh;
+      result->time.mm = (uint8_t)mm;
+      result->time.ss = (uint8_t)ss;
+      uint16_t fraction = 0;
+      prv_string_to_fraction(fraction_string, 3, &fraction);
+      result->time.sss = fraction;
     }
 
     // Get latitude
     token = strsep(&rx_arr_copy_ptr, ",");
+    //token = "2503.6319";
     //printf("Latitude: %s\n", token);
-    if (token != NULL) {
-      char deg[2], min[2], frac[4];
-      strncpy( hh, token, 2);
-      strncpy( mm, token+2, 2);
-      strncpy( ss, token+4, 2);
-      strncpy( sss, token+7, 3); 
-      result->time.hh = atoi(hh);
-      result->time.mm = atoi(mm);
-      result->time.ss = atoi(ss);
-      result->time.sss = atoi(sss);
+    if (strlen(token) == 9) {
+      int degrees, minutes;
       char fraction_string[5] = { 0 };
-      sscanf(token, "%2" SCNd16 "%2" SCNd16 ".%4s", &result->latitude.degrees,
-             &result->latitude.minutes, fraction_string);
+      sscanf(token, "%2d%2d.%4s", &degrees, &minutes, fraction_string);
+      result->latitude.degrees = (uint16_t)degrees;
+      result->latitude.minutes = (uint8_t)minutes;
       uint16_t fraction = 0;
-      prv_string_to_fraction(fraction_string, 3, &fraction);
+      prv_string_to_fraction(fraction_string, 4, &fraction);
       result->latitude.fraction = fraction;
     }
 
@@ -211,12 +198,14 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
     // Get longitude
     token = strsep(&rx_arr_copy_ptr, ",");
     //printf("Longitude: %s\n", token);
-    if (token != NULL) {
+    if (strlen(token) == 10) {
+      int degrees, minutes;
       char fraction_string[5] = { 0 };
-      sscanf(token, "%3" SCNd16 "%2" SCNd16 ".%4s", &result->longitude.degrees,
-             &result->longitude.minutes, fraction_string);
+      sscanf(token, "%3d%2d.%4s", &degrees, &minutes, fraction_string);
+      result->longitude.degrees = (uint16_t)degrees;
+      result->longitude.minutes = (uint8_t)minutes;
       uint16_t fraction = 0;
-      prv_string_to_fraction(fraction_string, 3, &fraction);
+      prv_string_to_fraction(fraction_string, 4, &fraction);
       result->longitude.fraction = fraction;
     }
 
@@ -257,14 +246,16 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
     // Get satellites used
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
-      sscanf(token, "%" SCNu16, &result->satellites_used);
+      sscanf(token, "%2" SCNd16, &result->satellites_used);
     }
 
     // Get horizontal dilution of precision
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
+      int hdop_integer;
       char fraction_string[5] = { 0 };
-      sscanf(token, "%" SCNd16 ".%4s", &result->hdop_integer, fraction_string);
+      sscanf(token, "%d.%4s", &hdop_integer, fraction_string);
+      result->hdop_integer = (uint16_t)hdop_integer;
       uint16_t fraction = 0;
       prv_string_to_fraction(fraction_string, 3, &fraction);
       result->hdop_fraction = fraction;
@@ -273,8 +264,10 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
     // Get mean sea level altitude
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
+      int msl_alt;
       char fraction_string[5] = { 0 };
-      sscanf(token, "%" SCNd16 ".%4s", &result->msl_altitude_integer, fraction_string);
+      sscanf(token, "%2d.%4s", &msl_alt, fraction_string);
+      result->msl_altitude_integer = (uint16_t)msl_alt;
       uint16_t fraction = 0;
       prv_string_to_fraction(fraction_string, 3, &fraction);
       result->msl_altitude_fraction = fraction;
@@ -289,8 +282,10 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
     // Get geoid separation
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
+      int geoid_sep;
       char fraction_string[5] = { 0 };
-      sscanf(token, "%" SCNd16 ".%4s", &result->geoid_seperation_integer, fraction_string);
+      sscanf(token, "%d.%4s", &geoid_sep, fraction_string);
+      result->geoid_seperation_integer = (uint16_t)geoid_sep;
       uint16_t fraction = 0;
       prv_string_to_fraction(fraction_string, 3, &fraction);
       result->geoid_seperation_fraction = fraction;
@@ -357,7 +352,9 @@ StatusCode nmea_get_vtg_sentence(const char *rx_arr, NmeaVtgSentence *result) {
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       char fraction_string[5] = { 0 };
-      sscanf(token, "%" SCNd16 ".%4s", &result->measure_heading_degrees_integer, fraction_string);
+      int heading;
+      sscanf(token, "%d.%4s", &heading, fraction_string);
+      result->measure_heading_degrees_integer = (uint16_t)heading;
       uint16_t fraction = 0;
       prv_string_to_fraction(fraction_string, 3, &fraction);
       result->measure_heading_degrees_fraction = fraction;
@@ -374,7 +371,9 @@ StatusCode nmea_get_vtg_sentence(const char *rx_arr, NmeaVtgSentence *result) {
     token = strsep(&rx_arr_copy_ptr, ",");
     if (token != NULL) {
       char fraction_string[5] = { 0 };
-      sscanf(token, "%" SCNd16 ".%4s", &result->speed_kmh_integer, fraction_string);
+      int spd_kmh;
+      sscanf(token, "%d.%4s", &spd_kmh, fraction_string);
+      result->speed_kmh_integer = (uint16_t)spd_kmh;
       uint16_t fraction = 0;
       prv_string_to_fraction(fraction_string, 3, &fraction);
       result->speed_kmh_fraction = fraction;

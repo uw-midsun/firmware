@@ -41,8 +41,8 @@ typedef struct {
 // Representation of longitude or latitude
 // https://en.wikipedia.org/wiki/Longitude
 typedef struct {
-  int16_t degrees;
-  int16_t minutes;
+  uint16_t degrees;
+  uint8_t minutes;
   uint16_t fraction;
 } NmeaCoord;
 
@@ -51,11 +51,11 @@ typedef struct {
 
 typedef struct {
   NmeaPositionFix position_fix;      // True if this struct has valid data
-  int16_t adc;                       // Age of diff. corr. in seconds
-  int16_t drs;                       // Diff. Ref. Station. Not sure what it is yet
-  int16_t hdop_integer;              // Horizontal dilution of precision, characteristic
-  int16_t msl_altitude_integer;      // In meters, characteristic
-  int16_t geoid_seperation_integer;  // In meters, characteristic
+  uint16_t adc;                       // Age of diff. corr. in seconds
+  uint16_t drs;                       // Diff. Ref. Station. Not sure what it is yet
+  uint16_t hdop_integer;              // Horizontal dilution of precision, characteristic
+  uint16_t msl_altitude_integer;      // In meters, characteristic
+  uint16_t geoid_seperation_integer;  // In meters, characteristic
 
   // All fractions in thousandths
   uint16_t hdop_fraction;              // Horizontal dilution of precision, mantissa
@@ -74,9 +74,9 @@ typedef struct {
 } NmeaGgaSentence;
 
 typedef struct {
-  int16_t measure_heading_degrees_integer;    // Whole number of degrees representing the heading
+  uint16_t measure_heading_degrees_integer;    // Whole number of degrees representing the heading
   uint16_t measure_heading_degrees_fraction;  // Decimal part of degrees representing the heading
-  int16_t speed_kmh_integer;                  // Speed in km/h
+  uint16_t speed_kmh_integer;                  // Speed in km/h
   uint16_t speed_kmh_fraction;                // Speed in km/h, fractional part (after the decimal)
 } NmeaVtgSentence;
 
