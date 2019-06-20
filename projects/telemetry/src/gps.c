@@ -14,17 +14,27 @@
 static GpsSettings *s_settings = NULL;
 static GpsStorage *s_storage = NULL;
 
+// Here's what we probably want to send through CAN:
+// Time: (8 + 8 + 8 + 16 = 40 bits)
+// MSL Altitude: (16 + 8 = 24 bits)
+
+// Long + N/S: (16 + 8 + 16 + 8 = 48 bits)
+// Satellites Used: (8 bits)
+
+// Lat + E/W: (16 + 8 + 16 + 8 = 48 bits)
+// Pos Fix Indicator: (8 bits)
+
+// Speed Over Ground: (16 + 16 = 32 bits)
+// HDOP: (16 + 16 = 32 bits)
+
 // This method will be called every time the GPS sends data.
 static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
   NmeaMessageId messageId = NMEA_MESSAGE_ID_UNKNOWN;
   nmea_sentence_type((char *)rx_arr, &messageId);
   if (messageId == NMEA_MESSAGE_ID_GGA) {  // GGA message
     strncpy((char *)s_storage->gga_data, (char *)rx_arr, GPS_MAX_NMEA_LENGTH);
-
     NmeaGgaSentence r = { 0 };
-    NmeaVtgSentence r2 = { 0 };
     nmea_get_gga_sentence(s_storage->gga_data, &r);
-    nmea_get_vtg_sentence(s_storage->vtg_data, &r2);
 
     for(int i = 0; i < GPS_MAX_NMEA_LENGTH; i++) {
       printf("%c", s_storage->gga_data[i]);
@@ -39,6 +49,12 @@ static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
 
   } else if (messageId == NMEA_MESSAGE_ID_VTG) {  // VTG message
     strncpy((char *)s_storage->vtg_data, (char *)rx_arr, GPS_MAX_NMEA_LENGTH);
+    NmeaVtgSentence r2 = { 0 };
+    nmea_get_vtg_sentence(s_storage->vtg_data, &r2);
+
+    for(int i = 0; i < GPS_MAX_NMEA_LENGTH; i++) {
+      printf("%c", s_storage->vtg_data[i]);
+    }
   }
 }
 

@@ -268,7 +268,7 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
       char fraction_string[5] = { 0 };
       sscanf(token, "%2d.%4s", &msl_alt, fraction_string);
       result->msl_altitude_integer = (uint16_t)msl_alt;
-      uint16_t fraction = 0;
+      uint8_t fraction = 0;
       prv_string_to_fraction(fraction_string, 3, &fraction);
       result->msl_altitude_fraction = fraction;
     }
