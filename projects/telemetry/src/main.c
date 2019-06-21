@@ -40,10 +40,27 @@ GpsSettings telemetry_gps_settings = { .pin_on_off = &telemetry_gps_on_off_pin,
 GpsStorage telemetry_gps_storage = { 0 };
 
 int main(void) {
+  gpio_init();
   interrupt_init();
   gpio_init();
+  gpio_it_init();
   soft_timer_init();
   event_queue_init();
+  
+  Event e = { 0 };
+
+  const CanSettings can_settings = {
+    .device_id = DC_CFG_CAN_DEVICE_ID,
+    .bitrate = DC_CFG_CAN_BITRATE,
+    .rx_event = INPUT_EVENT_CAN_RX,
+    .tx_event = INPUT_EVENT_CAN_TX,
+    .fault_event = INPUT_EVENT_CAN_FAULT,
+    .tx = DC_CFG_CAN_TX,
+    .rx = DC_CFG_CAN_RX,
+    .loopback = false,
+  };
+
+  StatusCode status = can_init(&s_can_storage, &can_settings);
 
   // Initialize UART
   StatusCode ret =
@@ -59,6 +76,9 @@ int main(void) {
   }
 
   while (true) {
+    while (status_ok(event_process(&e))) {
+      can_process_event(&e);
+    }
   }
 
   return 0;

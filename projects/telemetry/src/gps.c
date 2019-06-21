@@ -9,6 +9,7 @@
 #include "nmea.h"
 #include "status.h"
 #include "uart.h"
+#include "can_transmit.h"
 
 // Two structs to store data and settings. Since the GPS should only be initialized once
 static GpsSettings *s_settings = NULL;
@@ -31,31 +32,29 @@ static GpsStorage *s_storage = NULL;
 static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
   NmeaMessageId messageId = NMEA_MESSAGE_ID_UNKNOWN;
   nmea_sentence_type((char *)rx_arr, &messageId);
+  NmeaGgaSentence gga_result = { 0 };
+  NmeaGgaSentence vtg_result = { 0 };
   if (messageId == NMEA_MESSAGE_ID_GGA) {  // GGA message
     strncpy((char *)s_storage->gga_data, (char *)rx_arr, GPS_MAX_NMEA_LENGTH);
-    NmeaGgaSentence r = { 0 };
-    nmea_get_gga_sentence(s_storage->gga_data, &r);
+    
+    nmea_get_gga_sentence(s_storage->gga_data, &gga_result);
 
     for(int i = 0; i < GPS_MAX_NMEA_LENGTH; i++) {
       printf("%c", s_storage->gga_data[i]);
     }
 
-    // printf("Time: %d:%d:%d:%d\n", r.time.hh, r.time.mm, r.time.ss, r.time.sss);
-    // printf("Latitude: %d %d %d, %c\n", r.latitude.degrees, r.latitude.minutes, r.latitude.fraction, r.north_south);
-    // printf("Longitude: %d %d %d, %c\n", r.longitude.degrees, r.longitude.minutes, r.longitude.fraction, r.east_west);
-    // printf("Sat Used: %d\n", r.satellites_used);
-    // printf("MSL Alt: %d %d\n\n", r.msl_altitude_integer, r.msl_altitude_fraction);
-    // printf("Speed kmh: %d %d\n", r2.speed_kmh_integer, r2.speed_kmh_fraction);
-
   } else if (messageId == NMEA_MESSAGE_ID_VTG) {  // VTG message
     strncpy((char *)s_storage->vtg_data, (char *)rx_arr, GPS_MAX_NMEA_LENGTH);
-    NmeaVtgSentence r2 = { 0 };
-    nmea_get_vtg_sentence(s_storage->vtg_data, &r2);
+
+    nmea_get_vtg_sentence(s_storage->vtg_data, &vtg_result);
 
     for(int i = 0; i < GPS_MAX_NMEA_LENGTH; i++) {
       printf("%c", s_storage->vtg_data[i]);
     }
   }
+
+  CAN_TRANSMIT_GPS_TIME_AND_ALTITUDE(gga_result.time.sss, gga_result.msl_altitude_fraction);
+
 }
 
 // Initialization of this chip is described on page 10 of:
