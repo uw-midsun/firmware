@@ -17,21 +17,19 @@ static void prv_periodic_discharge_bitset(SoftTimerId timer_id, void *context) {
   memcpy(&data, afe->discharge_bitset, sizeof(data));
   CAN_TRANSMIT_DISCHARGE_STATE(data);
 
-  soft_timer_start(PLUTUS_CFG_LTC_AFE_DISCHARGE_DUMP_PERIOD_MS, prv_periodic_discharge_bitset, afe,
+  soft_timer_start_millis(PLUTUS_CFG_LTC_AFE_DISCHARGE_DUMP_PERIOD_MS, prv_periodic_discharge_bitset, afe,
                    NULL);
 }
 
  static StatusCode prv_handle_can_bitset(const CanMessage *msg, void *context,
                                         CanAckStatus *ack_reply) {
   LtcAfeStorage *afe = context; 
-  uint8_t module;
-  uint8_t discharge; 
+  uint8_t module = 0;
+  uint8_t discharge = 0; 
 
   CAN_UNPACK_SET_MODULE_DISCHARGE(msg, &module, &discharge);
-  LOG_DEBUG("Discharge: %i, %i\n", module, discharge);
   ltc_afe_impl_toggle_cell_discharge(afe, module, discharge); 
-  
-   return STATUS_CODE_OK;
+  return STATUS_CODE_OK;
 }
 
 StatusCode ltc_afe_init(LtcAfeStorage *afe, const LtcAfeSettings *settings) {
@@ -42,7 +40,7 @@ StatusCode ltc_afe_init(LtcAfeStorage *afe, const LtcAfeSettings *settings) {
     can_register_rx_handler(SYSTEM_CAN_MESSAGE_SET_MODULE_DISCHARGE, prv_handle_can_bitset, afe)
   );
 
-  return soft_timer_start(PLUTUS_CFG_LTC_AFE_DISCHARGE_DUMP_PERIOD_MS,
+  return soft_timer_start_millis(PLUTUS_CFG_LTC_AFE_DISCHARGE_DUMP_PERIOD_MS,
                           prv_periodic_discharge_bitset, afe, NULL);
 }
 
