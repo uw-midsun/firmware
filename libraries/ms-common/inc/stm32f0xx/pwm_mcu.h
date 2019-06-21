@@ -12,3 +12,9 @@ typedef enum {
   PWM_TIMER_17,
   NUM_PWM_TIMERS,
 } PwmTimer;
+
+typedef enum {
+  PWM_CHANNEL_1 = 0,
+  PWM_CHANNEL_2,
+  NUM_PWM_CHANNELS,
+} PwmChannel;

@@ -73,13 +73,7 @@ StatusCode spi_init(SpiPort spi, const SpiSettings *settings) {
   return STATUS_CODE_OK;
 }
 
-StatusCode spi_exchange(SpiPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *rx_data,
-                        size_t rx_len) {
-  if (spi >= NUM_SPI_PORTS) {
-    return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid SPI port.");
-  }
-  gpio_set_state(&s_port[spi].cs, GPIO_STATE_LOW);
-
+StatusCode spi_tx(SpiPort spi, uint8_t *tx_data, size_t tx_len) {
   for (size_t i = 0; i < tx_len; i++) {
     while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_TXE) == RESET) {
     }
@@ -90,17 +84,43 @@ StatusCode spi_exchange(SpiPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *r
     SPI_ReceiveData8(s_port[spi].base);
   }
 
+  return STATUS_CODE_OK;
+}
+
+StatusCode spi_rx(SpiPort spi, uint8_t *rx_data, size_t rx_len, uint8_t placeholder) {
   for (size_t i = 0; i < rx_len; i++) {
     while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_TXE) == RESET) {
     }
-    SPI_SendData8(s_port[spi].base, 0x00);
+    SPI_SendData8(s_port[spi].base, placeholder);
 
     while (SPI_I2S_GetFlagStatus(s_port[spi].base, SPI_I2S_FLAG_RXNE) == RESET) {
     }
     rx_data[i] = SPI_ReceiveData8(s_port[spi].base);
   }
 
-  gpio_set_state(&s_port[spi].cs, GPIO_STATE_HIGH);
+  return STATUS_CODE_OK;
+}
+
+StatusCode spi_cs_set_state(SpiPort spi, GpioState state) {
+  return gpio_set_state(&s_port[spi].cs, state);
+}
+
+StatusCode spi_cs_get_state(SpiPort spi, GpioState *input_state) {
+  return gpio_get_state(&s_port[spi].cs, input_state);
+}
+
+StatusCode spi_exchange(SpiPort spi, uint8_t *tx_data, size_t tx_len, uint8_t *rx_data,
+                        size_t rx_len) {
+  if (spi >= NUM_SPI_PORTS) {
+    return status_msg(STATUS_CODE_INVALID_ARGS, "Invalid SPI port.");
+  }
+  spi_cs_set_state(spi, GPIO_STATE_LOW);
+
+  spi_tx(spi, tx_data, tx_len);
+
+  spi_rx(spi, rx_data, rx_len, 0x00);
+
+  spi_cs_set_state(spi, GPIO_STATE_HIGH);
 
   return STATUS_CODE_OK;
 }

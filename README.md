@@ -40,7 +40,7 @@ make gdb TEST=can LIBRARY=ms-common
 make new PROJECT=new_project_name
 
 # Nukes the build directory - use when things aren't working
-make reallyclean
+make clean
 
 # Linting and formatting - used to help enforce our coding style
 make format
@@ -60,7 +60,7 @@ If you have Clang/LLVM/Bear installed and want to debug on x86 more easily/more 
 To create a compile commands database, run
 
 ```bash
-make reallyclean
+make clean
 bear make build_all PLATFORM=x86
 ```
 
@@ -75,7 +75,7 @@ clang-tidy $PATH_TO_C_FILE -checks=*
 To build in debug with memory and address sanitation and extended stack traces on faults, run
 
 ```bash
-make reallyclean
+make clean
 make build_all PLATFORM=x86 COMPILER=clang COPTIONS=asan
 ```
 
@@ -86,7 +86,7 @@ If you run any of the resulting binaries and a memory error of any kind occurs t
 To build in debug with thread sanitation run
 
 ```bash
-make reallyclean
+make clean
 make build_all PLATFORM=x86 COMPILER=clang COPTIONS=tsan
 ```
 
