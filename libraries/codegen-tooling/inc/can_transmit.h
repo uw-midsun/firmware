@@ -79,14 +79,6 @@
     status;                                            \
   })
 
-#define CAN_TRANSMIT_MOTOR_CONTROLLER_RESET()     \
-  ({                                              \
-    CanMessage msg = { 0 };                       \
-    CAN_PACK_MOTOR_CONTROLLER_RESET(&msg);        \
-    StatusCode status = can_transmit(&msg, NULL); \
-    status;                                       \
-  })
-
 #define CAN_TRANSMIT_OVUV_DCDC_AUX(dcdc_ov_flag_u8, dcdc_uv_flag_u8, aux_bat_ov_flag_u8,     \
                                    aux_bat_uv_flag_u8)                                       \
   ({                                                                                         \
@@ -131,12 +123,12 @@
     status;                                       \
   })
 
-#define CAN_TRANSMIT_SET_DISCHARGE_BITSET(discharge_bitset_u64)  \
-  ({                                                             \
-    CanMessage msg = { 0 };                                      \
-    CAN_PACK_SET_DISCHARGE_BITSET(&msg, (discharge_bitset_u64)); \
-    StatusCode status = can_transmit(&msg, NULL);                \
-    status;                                                      \
+#define CAN_TRANSMIT_SET_MODULE_DISCHARGE(module_u8, discharge_u8)    \
+  ({                                                                  \
+    CanMessage msg = { 0 };                                           \
+    CAN_PACK_SET_MODULE_DISCHARGE(&msg, (module_u8), (discharge_u8)); \
+    StatusCode status = can_transmit(&msg, NULL);                     \
+    status;                                                           \
   })
 
 #define CAN_TRANSMIT_DISCHARGE_STATE(discharge_bitset_u64)  \
@@ -187,12 +179,28 @@
     status;                                             \
   })
 
-#define CAN_TRANSMIT_STEERING_ANGLE(steering_angle_u16)  \
-  ({                                                     \
-    CanMessage msg = { 0 };                              \
-    CAN_PACK_STEERING_ANGLE(&msg, (steering_angle_u16)); \
-    StatusCode status = can_transmit(&msg, NULL);        \
-    status;                                              \
+#define CAN_TRANSMIT_STEERING_EVENT(event_id_u16, data_u16)    \
+  ({                                                           \
+    CanMessage msg = { 0 };                                    \
+    CAN_PACK_STEERING_EVENT(&msg, (event_id_u16), (data_u16)); \
+    StatusCode status = can_transmit(&msg, NULL);              \
+    status;                                                    \
+  })
+
+#define CAN_TRANSMIT_CENTER_CONSOLE_EVENT(event_id_u16, data_u16)    \
+  ({                                                                 \
+    CanMessage msg = { 0 };                                          \
+    CAN_PACK_CENTER_CONSOLE_EVENT(&msg, (event_id_u16), (data_u16)); \
+    StatusCode status = can_transmit(&msg, NULL);                    \
+    status;                                                          \
+  })
+
+#define CAN_TRANSMIT_MOTOR_CONTROLLER_RESET(motor_controller_index_u8)  \
+  ({                                                                    \
+    CanMessage msg = { 0 };                                             \
+    CAN_PACK_MOTOR_CONTROLLER_RESET(&msg, (motor_controller_index_u8)); \
+    StatusCode status = can_transmit(&msg, NULL);                       \
+    status;                                                             \
   })
 
 #define CAN_TRANSMIT_BATTERY_SOC()                \
@@ -327,4 +335,42 @@
     CAN_PACK_ANGULAR_ROTATION(&msg);              \
     StatusCode status = can_transmit(&msg, NULL); \
     status;                                       \
+  })
+
+#define CAN_TRANSMIT_GPS_TIME_AND_ALTITUDE(time_millisecond_u16, altitude_fraction_u16)    \
+  ({                                                                                       \
+    CanMessage msg = { 0 };                                                                \
+    CAN_PACK_GPS_TIME_AND_ALTITUDE(&msg, (time_millisecond_u16), (altitude_fraction_u16)); \
+    StatusCode status = can_transmit(&msg, NULL);                                          \
+    status;                                                                                \
+  })
+
+#define CAN_TRANSMIT_GPS_LONGITUDE_AND_SATTELITES_USED(longitude_degree_u16,          \
+                                                       longitude_minute_fraction_u16) \
+  ({                                                                                  \
+    CanMessage msg = { 0 };                                                           \
+    CAN_PACK_GPS_LONGITUDE_AND_SATTELITES_USED(&msg, (longitude_degree_u16),          \
+                                               (longitude_minute_fraction_u16));      \
+    StatusCode status = can_transmit(&msg, NULL);                                     \
+    status;                                                                           \
+  })
+
+#define CAN_TRANSMIT_GPS_LATITUDE_AND_POS_FIX_INDICATOR(latitude_degree_u16,          \
+                                                        latitude_minute_fraction_u16) \
+  ({                                                                                  \
+    CanMessage msg = { 0 };                                                           \
+    CAN_PACK_GPS_LATITUDE_AND_POS_FIX_INDICATOR(&msg, (latitude_degree_u16),          \
+                                                (latitude_minute_fraction_u16));      \
+    StatusCode status = can_transmit(&msg, NULL);                                     \
+    status;                                                                           \
+  })
+
+#define CAN_TRANSMIT_GPS_SPEED_AND_HDOP(speed_integer_u16, speed_fraction_u16, hdop_integer_u16, \
+                                        hdop_fraction_u16)                                       \
+  ({                                                                                             \
+    CanMessage msg = { 0 };                                                                      \
+    CAN_PACK_GPS_SPEED_AND_HDOP(&msg, (speed_integer_u16), (speed_fraction_u16),                 \
+                                (hdop_integer_u16), (hdop_fraction_u16));                        \
+    StatusCode status = can_transmit(&msg, NULL);                                                \
+    status;                                                                                      \
   })

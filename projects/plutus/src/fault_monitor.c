@@ -120,7 +120,7 @@ bool fault_monitor_process_event(FaultMonitorStorage *storage, const Event *e) {
   switch (e->id) {
     case PLUTUS_EVENT_AFE_FAULT:
       if (storage->num_afe_faults++ > PLUTUS_CFG_LTC_AFE_FSM_MAX_FAULTS) {
-        LOG_DEBUG("AFE FSM fault %d\n", e->data);
+        //LOG_DEBUG("AFE FSM fault %d\n", e->data);
         bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
                                   EE_BPS_HEARTBEAT_FAULT_SOURCE_LTC_AFE_FSM);
       }

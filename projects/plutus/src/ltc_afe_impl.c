@@ -5,6 +5,8 @@
 #include "delay.h"
 #include "ltc68041.h"
 
+#include "log.h"
+
 // - 12-bit, 16-bit and 24-bit values are little endian
 // - commands and PEC are big endian
 
@@ -149,7 +151,6 @@ static void prv_calc_offsets(LtcAfeStorage *afe) {
   // Similarly, we do the opposite mapping for discharge.
   size_t cell_index = 0;
   size_t aux_index = 0;
-  size_t discharge_index = 0;
   for (size_t device = 0; device < PLUTUS_CFG_AFE_DEVICES_IN_CHAIN; device++) {
     for (size_t device_cell = 0; device_cell < LTC_AFE_MAX_CELLS_PER_DEVICE; device_cell++) {
       size_t cell = device * LTC_AFE_MAX_CELLS_PER_DEVICE + device_cell;
@@ -276,15 +277,21 @@ StatusCode ltc_afe_impl_read_aux(LtcAfeStorage *afe, uint8_t device_cell) {
 
 StatusCode ltc_afe_impl_toggle_cell_discharge(LtcAfeStorage *afe, uint16_t cell, bool discharge) {
   if (cell >= PLUTUS_CFG_AFE_TOTAL_CELLS) {
+    LOG_DEBUG("Invalid Args\n");
     return status_code(STATUS_CODE_INVALID_ARGS);
   }
 
+  for (int i = 0; i < PLUTUS_CFG_AFE_TOTAL_CELLS; i++) {
+    LOG_DEBUG("Actual Cells: %i, %i\n", i, afe->discharge_cell_lookup[i]);
+  }
   uint16_t actual_cell = afe->discharge_cell_lookup[cell];
-  uint16_t device = actual_cell % LTC_AFE_MAX_CELLS_PER_DEVICE;
-  uint16_t device_cell = actual_cell / LTC_AFE_MAX_CELLS_PER_DEVICE;
+  uint16_t device_cell = actual_cell % LTC_AFE_MAX_CELLS_PER_DEVICE;
+  uint16_t device = actual_cell / LTC_AFE_MAX_CELLS_PER_DEVICE;
+
+  LOG_DEBUG("Specified Cell: %i, Actual Cell: %i, Device: %i, Device Cell: %i\n", cell, actual_cell,  device, device_cell); 
 
   if (discharge) {
-    afe->discharge_bitset[device] |= 1 << device_cell;
+    afe->discharge_bitset[device] |= (1 << device_cell);
   } else {
     afe->discharge_bitset[device] &= ~(1 << device_cell);
   }

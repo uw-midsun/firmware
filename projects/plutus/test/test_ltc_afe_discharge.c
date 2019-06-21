@@ -59,6 +59,7 @@ void setup_test(void) {
   };
 
   ltc_afe_init(&s_afe, &afe_settings);
+
 }
 
 void teardown_test(void) {}
@@ -78,17 +79,33 @@ void test_ltc_afe_adc_conversion_initiated(void) {
 
 void test_ltc_afe_discharge_cell(void) {
 //  StatusCode discharge_status = ltc_afe_toggle_cell_discharge(&s_afe, 0, true);
+  delay_s(2);
+  LOG_DEBUG("Discharge test...\n");
   StatusCode discharge_status; 
 
-  discharge_status = ltc_afe_toggle_cell_discharge(&s_afe, 0, true); 
-  LOG_DEBUG("Status: %i\n", discharge_status); 
+  for(int i = 0; i < 12; i++){
+    discharge_status = ltc_afe_toggle_cell_discharge(&s_afe, i, true);
+    LOG_DEBUG("Status: %i for %i\n", discharge_status, i);
+    //TEST_ASSERT_OK(discharge_status);
 
-  TEST_ASSERT_OK(ltc_afe_request_aux_conversion(&s_afe)); 
+    ltc_afe_request_aux_conversion(&s_afe); 
+
+  }
   prv_wait_conv();
+  delay_s(180);
+
+
+  //discharge_status = ltc_afe_toggle_cell_discharge(&s_afe, 11, true); 
+  //LOG_DEBUG("Status: %i\n", discharge_status); 
 
   LOG_DEBUG("Discharge ON\n") ; 
 
-  ltc_afe_toggle_cell_discharge(&s_afe, 0, false);
+
+  for(int i = 0; i < 12; i++){
+    ltc_afe_toggle_cell_discharge(&s_afe, i, false);
+  }
+
+  //ltc_afe_toggle_cell_discharge(&s_afe, 11, false);
   TEST_ASSERT_OK(ltc_afe_request_cell_conversion(&s_afe));
   prv_wait_conv();
 
