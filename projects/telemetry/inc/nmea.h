@@ -32,9 +32,9 @@ typedef enum {
 } NmeaPositionFix;
 
 typedef struct {
-  uint8_t hh;    // Hours
-  uint8_t mm;    // Minutes
-  uint8_t ss;    // Seconds
+  uint16_t hh;    // Hours
+  uint16_t mm;    // Minutes
+  uint16_t ss;    // Seconds
   uint16_t sss;  // Milliseconds
 } NmeaUtcTime;
 
@@ -42,7 +42,7 @@ typedef struct {
 // https://en.wikipedia.org/wiki/Longitude
 typedef struct {
   uint16_t degrees;
-  uint8_t minutes;
+  uint16_t minutes;
   uint16_t fraction;
 } NmeaCoord;
 

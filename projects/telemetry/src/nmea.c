@@ -165,9 +165,9 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
       int mm, hh, ss;
       char fraction_string[5] = { 0 };
       sscanf(token, "%2d%2d%2d.%4s", &hh, &mm, &ss, fraction_string);
-      result->time.hh = (uint8_t)hh;
-      result->time.mm = (uint8_t)mm;
-      result->time.ss = (uint8_t)ss;
+      result->time.hh = (uint16_t)hh;
+      result->time.mm = (uint16_t)mm;
+      result->time.ss = (uint16_t)ss;
       uint16_t fraction = 0;
       prv_string_to_fraction(fraction_string, 3, &fraction);
       result->time.sss = fraction;
@@ -203,7 +203,7 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
       char fraction_string[5] = { 0 };
       sscanf(token, "%3d%2d.%4s", &degrees, &minutes, fraction_string);
       result->longitude.degrees = (uint16_t)degrees;
-      result->longitude.minutes = (uint8_t)minutes;
+      result->longitude.minutes = (uint16_t)minutes;
       uint16_t fraction = 0;
       prv_string_to_fraction(fraction_string, 4, &fraction);
       result->longitude.fraction = fraction;
@@ -268,7 +268,7 @@ StatusCode nmea_get_gga_sentence(const char *rx_arr, NmeaGgaSentence *result) {
       char fraction_string[5] = { 0 };
       sscanf(token, "%2d.%4s", &msl_alt, fraction_string);
       result->msl_altitude_integer = (uint16_t)msl_alt;
-      uint8_t fraction = 0;
+      uint16_t fraction = 0;
       prv_string_to_fraction(fraction_string, 3, &fraction);
       result->msl_altitude_fraction = fraction;
     }

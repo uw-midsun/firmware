@@ -11,6 +11,8 @@
 #include "uart.h"
 #include "can_transmit.h"
 
+#include "log.h"
+
 // Two structs to store data and settings. Since the GPS should only be initialized once
 static GpsSettings *s_settings = NULL;
 static GpsStorage *s_storage = NULL;
@@ -28,21 +30,23 @@ static GpsStorage *s_storage = NULL;
 // Speed Over Ground: (16 + 16 = 32 bits)
 // HDOP: (16 + 16 = 32 bits)
 
+// Time: hh, mm, ss, sss
+// Long
+
+  NmeaGgaSentence gga_result = { 0 };
+  NmeaVtgSentence vtg_result = { 0 };
+  
 // This method will be called every time the GPS sends data.
 static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
   NmeaMessageId messageId = NMEA_MESSAGE_ID_UNKNOWN;
   nmea_sentence_type((char *)rx_arr, &messageId);
-  NmeaGgaSentence gga_result = { 0 };
-  NmeaGgaSentence vtg_result = { 0 };
+
   if (messageId == NMEA_MESSAGE_ID_GGA) {  // GGA message
     strncpy((char *)s_storage->gga_data, (char *)rx_arr, GPS_MAX_NMEA_LENGTH);
     
     nmea_get_gga_sentence(s_storage->gga_data, &gga_result);
-
-    for(int i = 0; i < GPS_MAX_NMEA_LENGTH; i++) {
-      printf("%c", s_storage->gga_data[i]);
-    }
-
+    CAN_TRANSMIT_GPS_UTC_TIME(gga_result.time.hh, gga_result.time.mm, gga_result.time.ss, gga_result.time.sss); 
+    LOG_DEBUG("sent\n");
   } else if (messageId == NMEA_MESSAGE_ID_VTG) {  // VTG message
     strncpy((char *)s_storage->vtg_data, (char *)rx_arr, GPS_MAX_NMEA_LENGTH);
 
@@ -53,16 +57,17 @@ static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
     }
   }
 
-  CAN_TRANSMIT_GPS_TIME_AND_ALTITUDE(gga_result.time.sss, gga_result.msl_altitude_fraction);
-
 }
 
 // Initialization of this chip is described on page 10 of:
 // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
 StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
+    LOG_DEBUG("2\n"); 
   if (s_settings != NULL) {
+    LOG_DEBUG("No Settings\n"); 
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "Cannot reinitialize GPS\n");
   }
+      LOG_DEBUG("1\n"); 
 
   // Initialize both structs
   s_settings = settings;

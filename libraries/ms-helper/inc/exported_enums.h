@@ -120,8 +120,11 @@ typedef enum {
   EE_GPS_POSITION_FIX_INDICATOR_NOT_AVAIL,
   EE_GPS_POSITION_FIX_INDICATOR_AVAIL,
   EE_GPS_POSITION_FIX_INDICATOR_DIFFERENTIAL,
-} EEGPSPositionFixIndicator;
+} EEGpsPositionFixIndicator;
 
-typedef enum {N, S} EEGpsNWIndicator;
-
-typedef enum {E, W} EEGpsNWIndicator;
+typedef enum {
+  EE_GPS_DIRECTION_N,
+  EE_GPS_DIRECTION_S,
+  EE_GPS_DIRECTION_E,
+  EE_GPS_DIRECTION_W,
+} EEGpsDirectionIndicator;

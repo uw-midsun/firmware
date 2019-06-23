@@ -84,9 +84,11 @@
                    CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,             \
                    CAN_PACK_IMPL_EMPTY)
 
-#define CAN_PACK_SET_DISCHARGE_BITSET(msg_ptr, discharge_bitset_u64) \
-  can_pack_impl_u64((msg_ptr), SYSTEM_CAN_DEVICE_TELEMETRY,          \
-                    SYSTEM_CAN_MESSAGE_SET_DISCHARGE_BITSET, 8, (discharge_bitset_u64))
+#define CAN_PACK_SET_MODULE_DISCHARGE(msg_ptr, module_u8, discharge_u8)                     \
+  can_pack_impl_u8((msg_ptr), SYSTEM_CAN_DEVICE_TELEMETRY,                                  \
+                   SYSTEM_CAN_MESSAGE_SET_MODULE_DISCHARGE, 2, (module_u8), (discharge_u8), \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY,           \
+                   CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
 
 #define CAN_PACK_DISCHARGE_STATE(msg_ptr, discharge_bitset_u64)                                 \
   can_pack_impl_u64((msg_ptr), SYSTEM_CAN_DEVICE_PLUTUS, SYSTEM_CAN_MESSAGE_DISCHARGE_STATE, 8, \
@@ -208,24 +210,25 @@
   can_pack_impl_empty((msg_ptr), SYSTEM_CAN_DEVICE_SENSOR_BOARD, \
                       SYSTEM_CAN_MESSAGE_ANGULAR_ROTATION)
 
-#define CAN_PACK_GPS_TIME_AND_ALTITUDE(msg_ptr, time_millisecond_u16, altitude_fraction_u16) \
-  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_TELEMETRY,                                  \
-                    SYSTEM_CAN_MESSAGE_GPS_TIME_AND_ALTITUDE, 4, (time_millisecond_u16),     \
-                    (altitude_fraction_u16), CAN_PACK_IMPL_EMPTY, CAN_PACK_IMPL_EMPTY)
+#define CAN_PACK_GPS_UTC_TIME(msg_ptr, hour_u16, minute_u16, second_u16, millisecond_u16)       \
+  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_TELEMETRY, SYSTEM_CAN_MESSAGE_GPS_UTC_TIME, 8, \
+                    (hour_u16), (minute_u16), (second_u16), (millisecond_u16))
 
-#define CAN_PACK_GPS_LONGITUDE_AND_SATTELITES_USED(msg_ptr, longitude_degree_u16,                 \
-                                                   longitude_minute_fraction_u16)                 \
+#define CAN_PACK_GPS_LONGITUDE_AND_SATELITES_USED(                                      \
+    msg_ptr, longitude_degree_u16, longitude_minute_u16, longitude_minute_fraction_u16, \
+    satellites_used_u16)                                                                \
+  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_TELEMETRY,                             \
+                    SYSTEM_CAN_MESSAGE_GPS_LONGITUDE_AND_SATELITES_USED, 8,             \
+                    (longitude_degree_u16), (longitude_minute_u16),                     \
+                    (longitude_minute_fraction_u16), (satellites_used_u16))
+
+#define CAN_PACK_GPS_LATITUDE_AND_POSITION_FIX_INDICATOR(                                         \
+    msg_ptr, latitude_degree_u16, latitude_minute_u16, latitude_minute_fraction_u16,              \
+    pos_fix_indicator_u16)                                                                        \
   can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_TELEMETRY,                                       \
-                    SYSTEM_CAN_MESSAGE_GPS_LONGITUDE_AND_SATTELITES_USED, 4,                      \
-                    (longitude_degree_u16), (longitude_minute_fraction_u16), CAN_PACK_IMPL_EMPTY, \
-                    CAN_PACK_IMPL_EMPTY)
-
-#define CAN_PACK_GPS_LATITUDE_AND_POS_FIX_INDICATOR(msg_ptr, latitude_degree_u16,               \
-                                                    latitude_minute_fraction_u16)               \
-  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_TELEMETRY,                                     \
-                    SYSTEM_CAN_MESSAGE_GPS_LATITUDE_AND_POS_FIX_INDICATOR, 4,                   \
-                    (latitude_degree_u16), (latitude_minute_fraction_u16), CAN_PACK_IMPL_EMPTY, \
-                    CAN_PACK_IMPL_EMPTY)
+                    SYSTEM_CAN_MESSAGE_GPS_LATITUDE_AND_POSITION_FIX_INDICATOR, 8,                \
+                    (latitude_degree_u16), (latitude_minute_u16), (latitude_minute_fraction_u16), \
+                    (pos_fix_indicator_u16))
 
 #define CAN_PACK_GPS_SPEED_AND_HDOP(msg_ptr, speed_integer_u16, speed_fraction_u16,                \
                                     hdop_integer_u16, hdop_fraction_u16)                           \

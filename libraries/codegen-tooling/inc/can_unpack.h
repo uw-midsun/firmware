@@ -70,8 +70,10 @@
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY,        \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
-#define CAN_UNPACK_SET_DISCHARGE_BITSET(msg_ptr, discharge_bitset_u64_ptr) \
-  can_unpack_impl_u64((msg_ptr), 8, (discharge_bitset_u64_ptr))
+#define CAN_UNPACK_SET_MODULE_DISCHARGE(msg_ptr, module_u8_ptr, discharge_u8_ptr)              \
+  can_unpack_impl_u8((msg_ptr), 2, (module_u8_ptr), (discharge_u8_ptr), CAN_UNPACK_IMPL_EMPTY, \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY,      \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
 #define CAN_UNPACK_DISCHARGE_STATE(msg_ptr, discharge_bitset_u64_ptr) \
   can_unpack_impl_u64((msg_ptr), 8, (discharge_bitset_u64_ptr))
@@ -170,21 +172,22 @@
 
 #define CAN_UNPACK_ANGULAR_ROTATION(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
 
-#define CAN_UNPACK_GPS_TIME_AND_ALTITUDE(msg_ptr, time_millisecond_u16_ptr,                  \
-                                         altitude_fraction_u16_ptr)                          \
-  can_unpack_impl_u16((msg_ptr), 4, (time_millisecond_u16_ptr), (altitude_fraction_u16_ptr), \
-                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
+#define CAN_UNPACK_GPS_UTC_TIME(msg_ptr, hour_u16_ptr, minute_u16_ptr, second_u16_ptr,  \
+                                millisecond_u16_ptr)                                    \
+  can_unpack_impl_u16((msg_ptr), 8, (hour_u16_ptr), (minute_u16_ptr), (second_u16_ptr), \
+                      (millisecond_u16_ptr))
 
-#define CAN_UNPACK_GPS_LONGITUDE_AND_SATTELITES_USED(msg_ptr, longitude_degree_u16_ptr, \
-                                                     longitude_minute_fraction_u16_ptr) \
-  can_unpack_impl_u16((msg_ptr), 4, (longitude_degree_u16_ptr),                         \
-                      (longitude_minute_fraction_u16_ptr), CAN_UNPACK_IMPL_EMPTY,       \
-                      CAN_UNPACK_IMPL_EMPTY)
+#define CAN_UNPACK_GPS_LONGITUDE_AND_SATELITES_USED(                                        \
+    msg_ptr, longitude_degree_u16_ptr, longitude_minute_u16_ptr,                            \
+    longitude_minute_fraction_u16_ptr, satellites_used_u16_ptr)                             \
+  can_unpack_impl_u16((msg_ptr), 8, (longitude_degree_u16_ptr), (longitude_minute_u16_ptr), \
+                      (longitude_minute_fraction_u16_ptr), (satellites_used_u16_ptr))
 
-#define CAN_UNPACK_GPS_LATITUDE_AND_POS_FIX_INDICATOR(msg_ptr, latitude_degree_u16_ptr,            \
-                                                      latitude_minute_fraction_u16_ptr)            \
-  can_unpack_impl_u16((msg_ptr), 4, (latitude_degree_u16_ptr), (latitude_minute_fraction_u16_ptr), \
-                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
+#define CAN_UNPACK_GPS_LATITUDE_AND_POSITION_FIX_INDICATOR(                                      \
+    msg_ptr, latitude_degree_u16_ptr, latitude_minute_u16_ptr, latitude_minute_fraction_u16_ptr, \
+    pos_fix_indicator_u16_ptr)                                                                   \
+  can_unpack_impl_u16((msg_ptr), 8, (latitude_degree_u16_ptr), (latitude_minute_u16_ptr),        \
+                      (latitude_minute_fraction_u16_ptr), (pos_fix_indicator_u16_ptr))
 
 #define CAN_UNPACK_GPS_SPEED_AND_HDOP(msg_ptr, speed_integer_u16_ptr, speed_fraction_u16_ptr, \
                                       hdop_integer_u16_ptr, hdop_fraction_u16_ptr)            \
