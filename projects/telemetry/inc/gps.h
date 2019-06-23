@@ -1,4 +1,5 @@
 #pragma once
+
 // This will be the GPS driver. It will be responsive for initializing, and cleaning up the GPS
 // as well as providing data from the GPS.
 
@@ -6,17 +7,17 @@
 // contain data about current time, position, speed, etc. The message we are most interested
 // in is the GGA message (Global Positioning System Fix Data). It contains latitude and
 // longitude.
-#include <stdbool.h>
-#include <string.h>
-#include "nmea.h"
+// #include <stdbool.h>
+// #include <string.h>
+// #include "nmea.h"
 #include "status.h"
 #include "uart.h"
 
-// Just some constants so that the max length of raw data can be set.
-// A GGA message will be around a hundred characters.
+// // Just some constants so that the max length of raw data can be set.
+// // A GGA message will be around a hundred characters.
 #define GPS_MAX_NMEA_LENGTH 128
 
-// NMEA sentences to transmit to the GPS module to turn off unneeded messages
+// // NMEA sentences to transmit to the GPS module to turn off unneeded messages
 #define GPS_GLL_OFF "$PSRF103,01,00,00,01*27\r\n"  // GLL: Geographic Position - Latitude/Longitude
 #define GPS_GSA_OFF "$PSRF103,02,00,00,01*26\r\n"  // GSA: GPS DOP and Active Satellites
 #define GPS_GSV_OFF "$PSRF103,03,00,00,01*27\r\n"  // GSV: GPS Satellites in View
@@ -28,7 +29,6 @@
 typedef struct {
   UartPort uart_port;
   GpioAddress *pin_on_off;
-  UartStorage uart_storage;
 } GpsSettings;
 
 typedef struct {
@@ -39,8 +39,8 @@ typedef struct {
 // Initialized the GPS module
 StatusCode gps_init(GpsSettings *settings, GpsStorage *storage);
 
-// Gets most recent GGA data (coordinates, time)
+// // Gets most recent GGA data (coordinates, time)
 StatusCode gps_get_gga_data(uint8_t **result);
 
-// Gets most recent VTG data (speed, heading)
+// // Gets most recent VTG data (speed, heading)
 StatusCode gps_get_vtg_data(uint8_t **result);
