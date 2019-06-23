@@ -230,8 +230,8 @@
                     (latitude_degree_u16), (latitude_minute_u16), (latitude_minute_fraction_u16), \
                     (pos_fix_indicator_u16))
 
-#define CAN_PACK_GPS_SPEED_AND_HDOP(msg_ptr, speed_integer_u16, speed_fraction_u16,                \
-                                    hdop_integer_u16, hdop_fraction_u16)                           \
-  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_TELEMETRY, SYSTEM_CAN_MESSAGE_GPS_SPEED_AND_HDOP, \
-                    8, (speed_integer_u16), (speed_fraction_u16), (hdop_integer_u16),              \
-                    (hdop_fraction_u16))
+#define CAN_PACK_GPS_SPEED_AND_TRUE_HEADING(msg_ptr, speed_integer_u16, speed_fraction_u16, \
+                                            heading_integer_u16, heading_fraction_u16)      \
+  can_pack_impl_u16((msg_ptr), SYSTEM_CAN_DEVICE_TELEMETRY,                                 \
+                    SYSTEM_CAN_MESSAGE_GPS_SPEED_AND_TRUE_HEADING, 8, (speed_integer_u16),  \
+                    (speed_fraction_u16), (heading_integer_u16), (heading_fraction_u16))

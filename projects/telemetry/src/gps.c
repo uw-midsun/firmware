@@ -57,16 +57,31 @@ static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
 
     nmea_get_gga_sentence(s_storage->gga_data, &gga_result);
     CAN_TRANSMIT_GPS_UTC_TIME(gga_result.time.hh, gga_result.time.mm, gga_result.time.ss, gga_result.time.sss);
-    LOG_DEBUG("GGA Message\n");
-  } else if (messageId == NMEA_MESSAGE_ID_VTG) {  // VTG message
+    CAN_TRANSMIT_GPS_LONGITUDE_AND_SATELITES_USED(gga_result.longitude.degrees, gga_result.longitude.minutes, \
+                                                      gga_result.longitude.fraction, gga_result.satellites_used);
+    CAN_TRANSMIT_GPS_LATITUDE_AND_POSITION_FIX_INDICATOR(                                
+    gga_result.latitude.degrees, gga_result.latitude.minutes, gga_result.latitude.fraction, (uint16_t)(gga_result.position_fix));
+
+    #ifdef GPS_DEBUG_PRINT_MESSAGES
+        for(int i = 0; i < GPS_MAX_NMEA_LENGTH; i++) {
+          printf("%c", s_storage->gga_data[i]);
+        }  
+    #endif
+
+    } 
+
+    else if (messageId == NMEA_MESSAGE_ID_VTG) {  // VTG message
     strncpy((char *)s_storage->vtg_data, (char *)rx_arr, GPS_MAX_NMEA_LENGTH);
 
     nmea_get_vtg_sentence(s_storage->vtg_data, &vtg_result);
+    CAN_TRANSMIT_GPS_SPEED_AND_TRUE_HEADING(vtg_result.speed_kmh_integer, vtg_result.speed_kmh_fraction, \
+      vtg_result.measure_heading_degrees_integer, vtg_result.measure_heading_degrees_fraction);
 
-    printf("VTG Message: ");
-    for(int i = 0; i < GPS_MAX_NMEA_LENGTH; i++) {
-      printf("%c", s_storage->vtg_data[i]);
-    }
+    #ifdef GPS_DEBUG_PRINT_MESSAGES
+      for(int i = 0; i < GPS_MAX_NMEA_LENGTH; i++) {
+        printf("%c", s_storage->vtg_data[i]);
+      }
+    #endif
   }
 }
 

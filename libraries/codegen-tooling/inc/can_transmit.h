@@ -368,12 +368,12 @@
     status;                                                                                        \
   })
 
-#define CAN_TRANSMIT_GPS_SPEED_AND_HDOP(speed_integer_u16, speed_fraction_u16, hdop_integer_u16, \
-                                        hdop_fraction_u16)                                       \
-  ({                                                                                             \
-    CanMessage msg = { 0 };                                                                      \
-    CAN_PACK_GPS_SPEED_AND_HDOP(&msg, (speed_integer_u16), (speed_fraction_u16),                 \
-                                (hdop_integer_u16), (hdop_fraction_u16));                        \
-    StatusCode status = can_transmit(&msg, NULL);                                                \
-    status;                                                                                      \
+#define CAN_TRANSMIT_GPS_SPEED_AND_TRUE_HEADING(speed_integer_u16, speed_fraction_u16,     \
+                                                heading_integer_u16, heading_fraction_u16) \
+  ({                                                                                       \
+    CanMessage msg = { 0 };                                                                \
+    CAN_PACK_GPS_SPEED_AND_TRUE_HEADING(&msg, (speed_integer_u16), (speed_fraction_u16),   \
+                                        (heading_integer_u16), (heading_fraction_u16));    \
+    StatusCode status = can_transmit(&msg, NULL);                                          \
+    status;                                                                                \
   })
