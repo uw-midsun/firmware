@@ -7,6 +7,7 @@
 #include "log.h"
 #include "can_transmit.h"
 
+#include "gps_cfg.h"
 // // #include <stdbool.h>
 // // #include <stdint.h>
 // // #include <stdio.h>
@@ -66,6 +67,8 @@ static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
         for(int i = 0; i < GPS_MAX_NMEA_LENGTH; i++) {
           printf("%c", s_storage->gga_data[i]);
         }  
+
+        printf("\n");
     #endif
 
     } 
@@ -81,6 +84,7 @@ static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
       for(int i = 0; i < GPS_MAX_NMEA_LENGTH; i++) {
         printf("%c", s_storage->vtg_data[i]);
       }
+      printf("\n");
     #endif
   }
 }
@@ -89,7 +93,6 @@ static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
 // https://www.linxtechnologies.com/wp/wp-content/uploads/rxm-gps-f4.pdf
 StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
   if (s_settings != NULL) {
-    LOG_DEBUG("No Settings\n");
     return status_msg(STATUS_CODE_RESOURCE_EXHAUSTED, "Cannot reinitialize GPS\n");
   }
 

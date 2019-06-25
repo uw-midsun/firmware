@@ -19,16 +19,7 @@
 
 #include "can_msg_defs.h"
 
-#define TELEMETRY_GPS_UART_BAUD_RATE 9600
-#define TELEMETRY_GPS_UART_PORT UART_PORT_3
-#define TELEMETRY_GPS_UART_TX \
-  { .port = GPIO_PORT_B, .pin = 10 }
-#define TELEMETRY_GPS_UART_RX \
-  { .port = GPIO_PORT_B, .pin = 11 }
-#define TELEMETRY_GPS_UART_ALTFN GPIO_ALTFN_4
-
-#define GPS_CAN_BITRATE CAN_HW_BITRATE_500KBPS
-
+#include "gps_cfg.h"
 typedef enum {
   GPS_EVENT_SYSTEM_CAN_RX = 0,
   GPS_EVENT_SYSTEM_CAN_TX,
@@ -47,14 +38,10 @@ UartSettings telemetry_gps_uart_settings = {
   .context = NULL,
 };
 
-// The pin numbers to use for providing power and turning the GPS on and off
-GpioAddress telemetry_gps_on_off_pin = {
-  .port = GPIO_PORT_B,
-  .pin = 9
-};  // Pin GPS on_off
+GpioAddress telemetry_on_off = TELEMETRY_GPS_ON_OFF_PIN; 
 
 GpsSettings telemetry_gps_settings = {
-  .pin_on_off = &telemetry_gps_on_off_pin,
+  .pin_on_off = &telemetry_on_off,
   .uart_port = UART_PORT_3,
 };
 
@@ -96,13 +83,11 @@ int main(void) {
 
   // Initialize GPS
   status_ok_or_return(gps_init(&telemetry_gps_settings, &telemetry_gps_storage));
-  LOG_DEBUG("GPS Initialized\n");
 
   while (true) {
     while (status_ok(event_process(&e))) {
       can_process_event(&e);
     }
   }
-
   return 0;
 }

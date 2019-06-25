@@ -60,7 +60,6 @@ StatusCode nmea_checksum_compute(char *message, size_t message_len, uint8_t *che
 bool nmea_checksum_validate(char *message, size_t message_len) {
   if (message == NULL || message_len < 4) {
     LOG_DEBUG("first\n");
-    return false;
   }
 
   // We expect the last 2 characters in the message to be the sent checksum
@@ -71,7 +70,6 @@ bool nmea_checksum_validate(char *message, size_t message_len) {
     for(uint16_t i = 0; i <= message_len; i++){
       printf("%c", message[i]);
     }
-    LOG_DEBUG("second: %d\n", message_len);
     // return false if there's no checksum in the message
     return false;
   }
@@ -85,7 +83,6 @@ bool nmea_checksum_validate(char *message, size_t message_len) {
   uint8_t computed = 0;
   StatusCode status_computed = nmea_checksum_compute(message, message_len, &computed);
   if (!status_ok(status_computed) || !status_ok(status_extracted)) {
-    LOG_DEBUG("third\n");
     // return false if nmea_compute_checksum fails
     return false;
   }
