@@ -5,6 +5,8 @@
 #include "delay.h"
 #include "ltc68041.h"
 
+#include "log.h"
+
 // - 12-bit, 16-bit and 24-bit values are little endian
 // - commands and PEC are big endian
 
@@ -280,11 +282,11 @@ StatusCode ltc_afe_impl_toggle_cell_discharge(LtcAfeStorage *afe, uint16_t cell,
   }
 
   uint16_t actual_cell = afe->discharge_cell_lookup[cell];
-  uint16_t device = actual_cell % LTC_AFE_MAX_CELLS_PER_DEVICE;
-  uint16_t device_cell = actual_cell / LTC_AFE_MAX_CELLS_PER_DEVICE;
+  uint16_t device_cell = actual_cell % LTC_AFE_MAX_CELLS_PER_DEVICE;
+  uint16_t device = actual_cell / LTC_AFE_MAX_CELLS_PER_DEVICE;
 
   if (discharge) {
-    afe->discharge_bitset[device] |= 1 << device_cell;
+    afe->discharge_bitset[device] |= (1 << device_cell);
   } else {
     afe->discharge_bitset[device] &= ~(1 << device_cell);
   }

@@ -80,16 +80,23 @@ void test_ltc_afe_discharge_cell(void) {
 //  StatusCode discharge_status = ltc_afe_toggle_cell_discharge(&s_afe, 0, true);
   StatusCode discharge_status; 
 
-  discharge_status = ltc_afe_toggle_cell_discharge(&s_afe, 0, true); 
-  LOG_DEBUG("Status: %i\n", discharge_status); 
+  for(int i = 0; i<12; i++){
+    discharge_status = ltc_afe_toggle_cell_discharge(&s_afe, i, true); 
+    LOG_DEBUG("Status: %i\n", discharge_status); 
 
-  TEST_ASSERT_OK(ltc_afe_request_aux_conversion(&s_afe)); 
-  prv_wait_conv();
+    TEST_ASSERT_OK(ltc_afe_request_aux_conversion(&s_afe)); 
+    prv_wait_conv();
+  }
 
-  LOG_DEBUG("Discharge ON\n") ; 
+    delay_s(600);
 
-  ltc_afe_toggle_cell_discharge(&s_afe, 0, false);
-  TEST_ASSERT_OK(ltc_afe_request_cell_conversion(&s_afe));
-  prv_wait_conv();
+  for(int i = 0; i<12; i++){
+    discharge_status = ltc_afe_toggle_cell_discharge(&s_afe, i, false); 
+    LOG_DEBUG("Status: %i\n", discharge_status); 
+
+    TEST_ASSERT_OK(ltc_afe_request_aux_conversion(&s_afe)); 
+    prv_wait_conv();
+  }
+
 
 }
