@@ -25,7 +25,7 @@
 
 // AUX BAT:
 // Calibrated at 12V
-#define CHAOS_CONFIG_AUX_BAT_VOLTAGE_CONVERT(val) (((uint32_t)(val)) * 532 / 100)
+#define CHAOS_CONFIG_AUX_BAT_VOLTAGE_CONVERT(val) (((uint32_t)(val)) * 1)
 
 static uint16_t prv_convert_aux_bat_current(uint16_t value) {
   return CHAOS_CONFIG_AUX_BAT_CURRENT_CONVERT(CHAOS_CONFIG_VALUE_TO_MICROVOLTS(value));

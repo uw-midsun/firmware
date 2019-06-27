@@ -45,8 +45,6 @@
 
 #define CAN_UNPACK_POWERTRAIN_HEARTBEAT(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
 
-#define CAN_UNPACK_MOTOR_CONTROLLER_RESET(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
-
 #define CAN_UNPACK_OVUV_DCDC_AUX(msg_ptr, dcdc_ov_flag_u8_ptr, dcdc_uv_flag_u8_ptr,             \
                                  aux_bat_ov_flag_u8_ptr, aux_bat_uv_flag_u8_ptr)                \
   can_unpack_impl_u8((msg_ptr), 4, (dcdc_ov_flag_u8_ptr), (dcdc_uv_flag_u8_ptr),                \
@@ -72,8 +70,10 @@
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY,        \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
-#define CAN_UNPACK_SET_DISCHARGE_BITSET(msg_ptr, discharge_bitset_u64_ptr) \
-  can_unpack_impl_u64((msg_ptr), 8, (discharge_bitset_u64_ptr))
+#define CAN_UNPACK_SET_MODULE_DISCHARGE(msg_ptr, module_u8_ptr, discharge_u8_ptr)              \
+  can_unpack_impl_u8((msg_ptr), 2, (module_u8_ptr), (discharge_u8_ptr), CAN_UNPACK_IMPL_EMPTY, \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY,      \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
 #define CAN_UNPACK_DISCHARGE_STATE(msg_ptr, discharge_bitset_u64_ptr) \
   can_unpack_impl_u64((msg_ptr), 8, (discharge_bitset_u64_ptr))
@@ -100,9 +100,18 @@
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY,        \
                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
-#define CAN_UNPACK_STEERING_ANGLE(msg_ptr, steering_angle_u16_ptr)                   \
-  can_unpack_impl_u16((msg_ptr), 2, (steering_angle_u16_ptr), CAN_UNPACK_IMPL_EMPTY, \
-                      CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
+#define CAN_UNPACK_STEERING_EVENT(msg_ptr, event_id_u16_ptr, data_u16_ptr)                     \
+  can_unpack_impl_u16((msg_ptr), 4, (event_id_u16_ptr), (data_u16_ptr), CAN_UNPACK_IMPL_EMPTY, \
+                      CAN_UNPACK_IMPL_EMPTY)
+
+#define CAN_UNPACK_CENTER_CONSOLE_EVENT(msg_ptr, event_id_u16_ptr, data_u16_ptr)               \
+  can_unpack_impl_u16((msg_ptr), 4, (event_id_u16_ptr), (data_u16_ptr), CAN_UNPACK_IMPL_EMPTY, \
+                      CAN_UNPACK_IMPL_EMPTY)
+
+#define CAN_UNPACK_MOTOR_CONTROLLER_RESET(msg_ptr, motor_controller_index_u8_ptr)          \
+  can_unpack_impl_u8((msg_ptr), 1, (motor_controller_index_u8_ptr), CAN_UNPACK_IMPL_EMPTY, \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY,  \
+                     CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY, CAN_UNPACK_IMPL_EMPTY)
 
 #define CAN_UNPACK_BATTERY_SOC(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
 
@@ -162,3 +171,26 @@
 #define CAN_UNPACK_LINEAR_ACCELERATION(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
 
 #define CAN_UNPACK_ANGULAR_ROTATION(msg_ptr) can_unpack_impl_empty((msg_ptr), 0)
+
+#define CAN_UNPACK_GPS_UTC_TIME(msg_ptr, hour_u16_ptr, minute_u16_ptr, second_u16_ptr,  \
+                                millisecond_u16_ptr)                                    \
+  can_unpack_impl_u16((msg_ptr), 8, (hour_u16_ptr), (minute_u16_ptr), (second_u16_ptr), \
+                      (millisecond_u16_ptr))
+
+#define CAN_UNPACK_GPS_LONGITUDE_AND_SATELITES_USED(                                        \
+    msg_ptr, longitude_degree_u16_ptr, longitude_minute_u16_ptr,                            \
+    longitude_minute_fraction_u16_ptr, satellites_used_u16_ptr)                             \
+  can_unpack_impl_u16((msg_ptr), 8, (longitude_degree_u16_ptr), (longitude_minute_u16_ptr), \
+                      (longitude_minute_fraction_u16_ptr), (satellites_used_u16_ptr))
+
+#define CAN_UNPACK_GPS_LATITUDE_AND_POSITION_FIX_INDICATOR(                                      \
+    msg_ptr, latitude_degree_u16_ptr, latitude_minute_u16_ptr, latitude_minute_fraction_u16_ptr, \
+    pos_fix_indicator_u16_ptr)                                                                   \
+  can_unpack_impl_u16((msg_ptr), 8, (latitude_degree_u16_ptr), (latitude_minute_u16_ptr),        \
+                      (latitude_minute_fraction_u16_ptr), (pos_fix_indicator_u16_ptr))
+
+#define CAN_UNPACK_GPS_SPEED_AND_TRUE_HEADING(msg_ptr, speed_integer_u16_ptr,                  \
+                                              speed_fraction_u16_ptr, heading_integer_u16_ptr, \
+                                              heading_fraction_u16_ptr)                        \
+  can_unpack_impl_u16((msg_ptr), 8, (speed_integer_u16_ptr), (speed_fraction_u16_ptr),         \
+                      (heading_integer_u16_ptr), (heading_fraction_u16_ptr))
