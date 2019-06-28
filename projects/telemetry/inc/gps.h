@@ -22,6 +22,7 @@
 #define GPS_GSA_OFF "$PSRF103,02,00,00,01*26\r\n"  // GSA: GPS DOP and Active Satellites
 #define GPS_GSV_OFF "$PSRF103,03,00,00,01*27\r\n"  // GSV: GPS Satellites in View
 #define GPS_RMC_OFF "$PSRF103,04,00,00,01*20\r\n"  // RMC: Recommended Minimum Specific GPS Data
+#define GPS_5HZ_ON  "$PSRF103,00,06,00,00*23\r\n"
 
 // This struct basically contains all the info about pins etc.
 // Check this document on page 4:

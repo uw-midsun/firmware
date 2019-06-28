@@ -47,6 +47,7 @@ static const char s_gll_off[] = GPS_GLL_OFF;
 static const char s_gsa_off[] = GPS_GSA_OFF;
 static const char s_gsv_off[] = GPS_GSV_OFF;
 static const char s_rmc_off[] = GPS_RMC_OFF;
+static const char s_5hz_on[] = GPS_5HZ_ON;
 
 // This method will be called every time the GPS sends data.
 static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
@@ -123,6 +124,7 @@ StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
   uart_tx(s_settings->uart_port, (uint8_t *)&s_gsa_off, SIZEOF_ARRAY(s_gsa_off));
   uart_tx(s_settings->uart_port, (uint8_t *)&s_gsv_off, SIZEOF_ARRAY(s_gsv_off));
   uart_tx(s_settings->uart_port, (uint8_t *)&s_rmc_off, SIZEOF_ARRAY(s_rmc_off));
+  uart_tx(s_settings->uart_port, (uint8_t *)&s_5hz_on,  SIZEOF_ARRAY(s_5hz_on));
 
   return STATUS_CODE_OK;
 }
