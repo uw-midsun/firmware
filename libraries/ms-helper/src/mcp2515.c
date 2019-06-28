@@ -10,8 +10,9 @@
 #include "soft_timer.h"
 #include "log.h"
 
-#include "critical_section.h"
+#include "delay.h"
 
+#include "critical_section.h"
 
 #define MCP2515_MAX_WRITE_BUFFER_LEN 10
 
@@ -237,6 +238,7 @@ StatusCode mcp2515_tx(Mcp2515Storage *storage, uint32_t id, bool extended, uint6
                       size_t dlc) {
   CRITICAL_SECTION_AUTOEND;
 
+  printf("%i\n", (int)5);
   // Get free transmit buffer
   uint8_t tx_status =
       __builtin_ffs(~prv_read_status(storage) &

@@ -2,6 +2,8 @@
 #include <string.h>
 #include "generic_can_helpers.h"
 
+#include <stdio.h> 
+
 static Mcp2515Storage s_mcp2515;
 static GenericCanInterface s_interface;
 
@@ -27,6 +29,7 @@ static StatusCode prv_tx(const GenericCan *can, const GenericCanMsg *msg) {
   if (gcmcp->base.interface != &s_interface || gcmcp->mcp2515 != &s_mcp2515) {
     return status_msg(STATUS_CODE_INVALID_ARGS, "GenericCan not aligned to GenericCanMcp2515.");
   }
+
   return mcp2515_tx(gcmcp->mcp2515, msg->id, msg->extended, msg->data, msg->dlc);
 }
 
