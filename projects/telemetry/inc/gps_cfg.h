@@ -21,4 +21,4 @@
 { .port = GPIO_PORT_B, .pin = 9}
 
 // Uncomment to print raw NEMA messages 
-#define GPS_DEBUG_PRINT_MESSAGES
+//#define GPS_DEBUG_PRINT_MESSAGES

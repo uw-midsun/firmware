@@ -68,7 +68,7 @@ bool nmea_checksum_validate(char *message, size_t message_len) {
 
   if (message[message_len - 5] != '*') {
     for(uint16_t i = 0; i <= message_len; i++){
-      printf("%c", message[i]);
+      //printf("%c", message[i]);
     }
     // return false if there's no checksum in the message
     return false;
