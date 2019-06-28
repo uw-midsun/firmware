@@ -14,24 +14,18 @@
 static GpsSettings *s_settings = NULL;
 static GpsStorage *s_storage = NULL;
 
+// Determines if module is turned on
+static bool s_turned_on = false;
+
 // This method will be called every time the GPS sends data.
 static void prv_gps_callback(const uint8_t *rx_arr, size_t len, void *context) {
+  s_turned_on = true;
   NmeaMessageId messageId = NMEA_MESSAGE_ID_UNKNOWN;
   nmea_sentence_type((char *)rx_arr, &messageId);
   if (messageId == NMEA_MESSAGE_ID_GGA) {  // GGA message
     strncpy((char *)s_storage->gga_data, (char *)rx_arr, GPS_MAX_NMEA_LENGTH);
   } else if (messageId == NMEA_MESSAGE_ID_VTG) {  // VTG message
     strncpy((char *)s_storage->vtg_data, (char *)rx_arr, GPS_MAX_NMEA_LENGTH);
-  }
-}
-
-// The GPS power line will be connected to a 3V pin. This method will
-// control if that pin is providing power or not.
-static void prv_gps_set_power_state(bool powered) {
-  if (powered) {
-    gpio_set_state(s_settings->pin_power, GPIO_STATE_HIGH);
-  } else {
-    gpio_set_state(s_settings->pin_power, GPIO_STATE_LOW);
   }
 }
 
@@ -49,48 +43,50 @@ StatusCode gps_init(GpsSettings *settings, GpsStorage *storage) {
   GpioSettings telemetry_settings_gpio_general = {
     .direction = GPIO_DIR_OUT,  // The pin needs to output.
     .state = GPIO_STATE_LOW,    // Start in the "off" state.
-    .alt_function = GPIO_ALTFN_1,
+    .alt_function = GPIO_ALTFN_NONE,
   };
 
-  // Initializes UART
-  uart_init(s_settings->port, s_settings->uart_settings, &s_settings->uart_storage);
-  uart_set_rx_handler(s_settings->port, prv_gps_callback, NULL);
+  // Initializes UART callback
+  uart_set_rx_handler(s_settings->uart_port, prv_gps_callback, NULL);
 
   // Initializes the pins
-  StatusCode ret = gpio_init_pin(s_settings->pin_power, &telemetry_settings_gpio_general);
-  ret |= gpio_init_pin(s_settings->pin_on_off, &telemetry_settings_gpio_general);
+  StatusCode ret = gpio_init_pin(s_settings->pin_on_off, &telemetry_settings_gpio_general);
 
   if (!status_ok(ret)) {
-    return status_msg(STATUS_CODE_INTERNAL_ERROR, "Error initializing GPIO Pins");
+    return status_msg(STATUS_CODE_INTERNAL_ERROR, "Error initializing GPIO Pins\n");
   }
 
-  prv_gps_set_power_state(true);
+  // Ensure that ON/OFF pulse happens at least 1s after power on
   delay_s(1);
 
-  // Pull high on ON/OFF line
-  ret |= gpio_set_state(s_settings->pin_on_off, GPIO_STATE_HIGH);
-  delay_ms(100);
+  // Sends a pulse on the on/off pin only if the module is off
+  // A pulse to the module in peak mode sends it to hibernate mode
+  if (!s_turned_on) {
+    // Pull high on ON/OFF line
+    ret |= gpio_set_state(s_settings->pin_on_off, GPIO_STATE_HIGH);
+    delay_ms(150);
 
-  // Set ON/OFF line to low
-  ret |= gpio_set_state(s_settings->pin_on_off, GPIO_STATE_LOW);
-  delay_ms(900);
+    // Set ON/OFF line to low
+    ret |= gpio_set_state(s_settings->pin_on_off, GPIO_STATE_LOW);
+    delay_ms(900);
 
-  if (!status_ok(ret)) {
-    return status_msg(STATUS_CODE_INTERNAL_ERROR, "Error turning on GPS Module");
+    if (!status_ok(ret)) {
+      return status_msg(STATUS_CODE_INTERNAL_ERROR, "Error turning on GPS Module\n");
+    }
   }
 
   // Turning off messages we don't need
   char *ggl_off = GPS_GLL_OFF;
-  uart_tx(s_settings->port, (uint8_t *)ggl_off, strlen(ggl_off));
+  uart_tx(s_settings->uart_port, (uint8_t *)ggl_off, strlen(ggl_off));
 
   char *gsa_off = GPS_GSA_OFF;
-  uart_tx(s_settings->port, (uint8_t *)gsa_off, strlen(gsa_off));
+  uart_tx(s_settings->uart_port, (uint8_t *)gsa_off, strlen(gsa_off));
 
   char *gsv_off = GPS_GSV_OFF;
-  uart_tx(s_settings->port, (uint8_t *)gsv_off, strlen(gsv_off));
+  uart_tx(s_settings->uart_port, (uint8_t *)gsv_off, strlen(gsv_off));
 
   char *rmc_off = GPS_RMC_OFF;
-  uart_tx(s_settings->port, (uint8_t *)rmc_off, strlen(rmc_off));
+  uart_tx(s_settings->uart_port, (uint8_t *)rmc_off, strlen(rmc_off));
 
   return STATUS_CODE_OK;
 }
