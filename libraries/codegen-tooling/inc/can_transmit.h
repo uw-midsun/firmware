@@ -123,12 +123,12 @@
     status;                                       \
   })
 
-#define CAN_TRANSMIT_SET_DISCHARGE_BITSET(discharge_bitset_u64)  \
-  ({                                                             \
-    CanMessage msg = { 0 };                                      \
-    CAN_PACK_SET_DISCHARGE_BITSET(&msg, (discharge_bitset_u64)); \
-    StatusCode status = can_transmit(&msg, NULL);                \
-    status;                                                      \
+#define CAN_TRANSMIT_SET_MODULE_DISCHARGE(module_u8, discharge_u8)    \
+  ({                                                                  \
+    CanMessage msg = { 0 };                                           \
+    CAN_PACK_SET_MODULE_DISCHARGE(&msg, (module_u8), (discharge_u8)); \
+    StatusCode status = can_transmit(&msg, NULL);                     \
+    status;                                                           \
   })
 
 #define CAN_TRANSMIT_DISCHARGE_STATE(discharge_bitset_u64)  \
@@ -193,6 +193,14 @@
     CAN_PACK_CENTER_CONSOLE_EVENT(&msg, (event_id_u16), (data_u16)); \
     StatusCode status = can_transmit(&msg, NULL);                    \
     status;                                                          \
+  })
+
+#define CAN_TRANSMIT_MOTOR_CONTROLLER_RESET(motor_controller_index_u8)  \
+  ({                                                                    \
+    CanMessage msg = { 0 };                                             \
+    CAN_PACK_MOTOR_CONTROLLER_RESET(&msg, (motor_controller_index_u8)); \
+    StatusCode status = can_transmit(&msg, NULL);                       \
+    status;                                                             \
   })
 
 #define CAN_TRANSMIT_BATTERY_SOC()                \
@@ -327,4 +335,45 @@
     CAN_PACK_ANGULAR_ROTATION(&msg);              \
     StatusCode status = can_transmit(&msg, NULL); \
     status;                                       \
+  })
+
+#define CAN_TRANSMIT_GPS_UTC_TIME(hour_u16, minute_u16, second_u16, millisecond_u16)        \
+  ({                                                                                        \
+    CanMessage msg = { 0 };                                                                 \
+    CAN_PACK_GPS_UTC_TIME(&msg, (hour_u16), (minute_u16), (second_u16), (millisecond_u16)); \
+    StatusCode status = can_transmit(&msg, NULL);                                           \
+    status;                                                                                 \
+  })
+
+#define CAN_TRANSMIT_GPS_LONGITUDE_AND_SATELITES_USED(longitude_degree_u16, longitude_minute_u16, \
+                                                      longitude_minute_fraction_u16,              \
+                                                      satellites_used_u16)                        \
+  ({                                                                                              \
+    CanMessage msg = { 0 };                                                                       \
+    CAN_PACK_GPS_LONGITUDE_AND_SATELITES_USED(                                                    \
+        &msg, (longitude_degree_u16), (longitude_minute_u16), (longitude_minute_fraction_u16),    \
+        (satellites_used_u16));                                                                   \
+    StatusCode status = can_transmit(&msg, NULL);                                                 \
+    status;                                                                                       \
+  })
+
+#define CAN_TRANSMIT_GPS_LATITUDE_AND_POSITION_FIX_INDICATOR(                                      \
+    latitude_degree_u16, latitude_minute_u16, latitude_minute_fraction_u16, pos_fix_indicator_u16) \
+  ({                                                                                               \
+    CanMessage msg = { 0 };                                                                        \
+    CAN_PACK_GPS_LATITUDE_AND_POSITION_FIX_INDICATOR(                                              \
+        &msg, (latitude_degree_u16), (latitude_minute_u16), (latitude_minute_fraction_u16),        \
+        (pos_fix_indicator_u16));                                                                  \
+    StatusCode status = can_transmit(&msg, NULL);                                                  \
+    status;                                                                                        \
+  })
+
+#define CAN_TRANSMIT_GPS_SPEED_AND_TRUE_HEADING(speed_integer_u16, speed_fraction_u16,     \
+                                                heading_integer_u16, heading_fraction_u16) \
+  ({                                                                                       \
+    CanMessage msg = { 0 };                                                                \
+    CAN_PACK_GPS_SPEED_AND_TRUE_HEADING(&msg, (speed_integer_u16), (speed_fraction_u16),   \
+                                        (heading_integer_u16), (heading_fraction_u16));    \
+    StatusCode status = can_transmit(&msg, NULL);                                          \
+    status;                                                                                \
   })

@@ -2,6 +2,7 @@
 
 #include <string.h>
 
+#include "critical_section.h"
 #include "exported_enums.h"
 #include "log.h"
 #include "plutus_event.h"
@@ -12,6 +13,7 @@ static void prv_extract_cell_result(uint16_t *result_arr, size_t len, void *cont
 
   ltc_afe_request_aux_conversion(storage->settings.ltc_afe);
 
+  bool disabled = critical_section_start();
   memcpy(storage->result.cell_voltages, result_arr, sizeof(storage->result.cell_voltages));
 
   storage->result.total_voltage = 0;
@@ -23,6 +25,7 @@ static void prv_extract_cell_result(uint16_t *result_arr, size_t len, void *cont
       fault = true;
     }
   }
+  critical_section_end(disabled);
 
   if (fault) {
     bps_heartbeat_raise_fault(storage->settings.bps_heartbeat,
