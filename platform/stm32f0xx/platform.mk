@@ -36,7 +36,6 @@ CFLAGS := -Wall \
 					-Wpointer-arith \
 					-fdata-sections \
 					-ffunction-sections \
-					-flto \
 					$(ARCH_CFLAGS) $(addprefix -D,$(CDEFINES))
 
 # Linker flags

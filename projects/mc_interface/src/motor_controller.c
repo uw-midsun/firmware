@@ -102,6 +102,7 @@ static void prv_periodic_tx(SoftTimerId timer_id, void *context) {
 
     right_drive_cmd.motor_velocity = 0.0f;
     right_drive_cmd.motor_current = 0.0f;
+
     LOG_DEBUG("Motor watchdog\n"); 
 
   } else if (storage->target_mode == MOTOR_CONTROLLER_MODE_TORQUE) {
@@ -129,6 +130,12 @@ static void prv_periodic_tx(SoftTimerId timer_id, void *context) {
     LOG_DEBUG("cruise control mode\n"); 
 
   }
+
+  LOG_DEBUG("LEFT: %i %i\n", (int) (left_drive_cmd.motor_velocity*100), (int)(left_drive_cmd.motor_current*100));
+  LOG_DEBUG("RIGHT: %i %i\n", (int) (right_drive_cmd.motor_velocity*100), (int)(right_drive_cmd.motor_current*100));
+ 
+ 
+
 
   uint8_t data_left[MOTOR_CAN_LEFT_DRIVE_COMMAND_LENGTH] = { 0 };
   uint8_t data_right[MOTOR_CAN_RIGHT_DRIVE_COMMAND_LENGTH] = { 0 };
