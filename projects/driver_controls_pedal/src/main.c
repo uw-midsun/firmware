@@ -38,6 +38,7 @@
 #include "fsm/power_fsm.h"
 #include "fsm/turn_signal_fsm.h"
 
+#include "bps_indicator.h"
 #include "log.h"
 
 typedef enum {
@@ -225,6 +226,9 @@ int main() {
   // Center Console
   status_ok_or_return(can_register_rx_handler(SYSTEM_CAN_MESSAGE_CENTER_CONSOLE_EVENT,
                                               prv_center_console_rx_handler, NULL));
+
+  // BPS Strobe
+  status_ok_or_return(bps_indicator_init());
   // TODO: Allocate a CAN message or provide a way to disable regen braking
   // behaviour.
 
