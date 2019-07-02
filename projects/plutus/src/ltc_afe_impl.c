@@ -5,6 +5,8 @@
 #include "delay.h"
 #include "ltc68041.h"
 
+#include "log.h"
+
 // - 12-bit, 16-bit and 24-bit values are little endian
 // - commands and PEC are big endian
 
