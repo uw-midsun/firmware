@@ -102,6 +102,8 @@ StatusCode plutus_sys_init(PlutusSysStorage *storage, PlutusSysType type) {
   status_ok_or_return(prv_init_common(storage, type));
 
   GpioAddress killswitch = PLUTUS_CFG_KILLSWITCH;
+  GpioAddress killswitch_monitor = PLUTUS_CFG_KILLSWITCH_MONITOR;
+  
   if (type == PLUTUS_SYS_TYPE_MASTER) {
     // Master also handles:
     // LTC AFE/ADC
@@ -145,7 +147,7 @@ StatusCode plutus_sys_init(PlutusSysStorage *storage, PlutusSysType type) {
                                            PLUTUS_CFG_HEARTBEAT_PERIOD_MS,
                                            PLUTUS_CFG_HEARTBEAT_EXPECTED_DEVICES));
     status_ok_or_return(
-        killswitch_init(&storage->killswitch, &killswitch, &storage->bps_heartbeat));
+        killswitch_init(&storage->killswitch, &killswitch, &killswitch_monitor, &storage->bps_heartbeat));
   } else if (type == PLUTUS_SYS_TYPE_SLAVE) {
     // Slave also handles:
     // BPS Heartbeat RX

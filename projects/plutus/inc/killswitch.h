@@ -13,7 +13,7 @@ typedef struct KillswitchStorage {
 } KillswitchStorage;
 
 // Set the killswitch up to fault if hit. Assumes the killswitch is active-low.
-StatusCode killswitch_init(KillswitchStorage *storage, const GpioAddress *killswitch,
+StatusCode killswitch_init(KillswitchStorage *storage, const GpioAddress *killswitch, const GpioAddress *killswitch_monitor,
                            BpsHeartbeatStorage *bps_heartbeat);
 
 // Bypass the killswitch. It does not need to be initialized.

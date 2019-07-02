@@ -17,11 +17,19 @@ static void prv_killswitch_handler(const GpioAddress *address, void *context) {
   }
 }
 
-StatusCode killswitch_init(KillswitchStorage *storage, const GpioAddress *killswitch,
+StatusCode killswitch_init(KillswitchStorage *storage, const GpioAddress *killswitch, const GpioAddress *killswitch_monitor,
                            BpsHeartbeatStorage *bps_heartbeat) {
+
+  GpioSettings gpio_settings = {
+    .direction = GPIO_DIR_OUT,
+    .state = GPIO_STATE_HIGH,
+  };
+
+  gpio_init_pin(killswitch, &gpio_settings);
+
   // Force update
-  prv_killswitch_handler(killswitch, bps_heartbeat);
-  return debouncer_init_pin(&storage->debouncer, killswitch, prv_killswitch_handler, bps_heartbeat);
+  prv_killswitch_handler(killswitch_monitor, bps_heartbeat);
+  return debouncer_init_pin(&storage->debouncer, killswitch_monitor, prv_killswitch_handler, bps_heartbeat);
 }
 
 StatusCode killswitch_bypass(const GpioAddress *killswitch) {
