@@ -53,7 +53,7 @@ static void prv_extract_aux_result(uint16_t *result_arr, size_t len, void *conte
   bool fault = false;
 
   for (size_t i = 0; i < len; ++i) {
-    if (result_arr[i] > threshold) {
+    if (result_arr[i] < threshold) {
       fault = true;
     }
   }
