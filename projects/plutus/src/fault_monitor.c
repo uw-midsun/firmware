@@ -91,10 +91,9 @@ static void prv_handle_adc_timeout(void *context) {
 
 static StatusCode prv_convert_temp_node_voltage(uint16_t temp_dc, uint16_t *node_voltage) {
   uint16_t thermistor_resistance_ohms = 0;
-
   status_ok_or_return(thermistor_calculate_resistance(temp_dc, &thermistor_resistance_ohms));
   // Treat this as a Voltage divider
-  LOG_DEBUG("Thermistor: %i\n", thermistor_resistance_ohms)
+  LOG_DEBUG("Thermistor: %i\n", thermistor_resistance_ohms);
   *node_voltage = PLUTUS_CFG_THERMISTOR_SUPPLY * thermistor_resistance_ohms /
                   (PLUTUS_CFG_THERMISTOR_FIXED_RESISTOR_OHMS + thermistor_resistance_ohms);
 
