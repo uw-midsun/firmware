@@ -33,6 +33,8 @@ int main(void) {
   PlutusSysType board_type = plutus_sys_get_type();
   plutus_sys_init(&s_plutus, board_type);
   LOG_DEBUG("Board type: %d\n", board_type);
+
+  if (board_type == PLUTUS_SYS_TYPE_MASTER) {\
     const FaultMonitorSettings fault_settings = {
       .bps_heartbeat = &s_plutus.bps_heartbeat,
       .ltc_afe = &s_plutus.ltc_afe,
@@ -47,7 +49,7 @@ int main(void) {
       .overtemp_charge = PLUTUS_CFG_OVERTEMP_CHARGE,
       .overtemp_discharge = PLUTUS_CFG_OVERTEMP_DISCHARGE,
     };
-  if (board_type == PLUTUS_SYS_TYPE_MASTER) {\
+        
     fault_monitor_init(&s_fault_monitor, &fault_settings);
     soft_timer_start_millis(PLUTUS_CFG_TELEMETRY_PERIOD_MS, prv_periodic_tx_debug, NULL, NULL);
   }
@@ -65,10 +67,6 @@ int main(void) {
       if (board_type == PLUTUS_SYS_TYPE_MASTER) {
         fault_monitor_process_event(&s_fault_monitor, &e);
         ltc_afe_process_event(&s_plutus.ltc_afe, &e);
-        gpio_get_state(&killswitch_monitor, &kill_sw_monitor_state);
-        if (kill_sw_monitor_state == GPIO_STATE_LOW) {
-          bps_heartbeat_raise_fault(s_fault_monitor.settings.bps_heartbeat, EE_BPS_HEARTBEAT_FAULT_SOURCE_KILLSWITCH);
-        }
       }
     }
   }
