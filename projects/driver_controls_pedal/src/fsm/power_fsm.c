@@ -119,7 +119,7 @@ static void prv_drive_output(Fsm *fsm, const Event *e, void *context) {
 static void prv_fault_output(Fsm *fsm, const Event *e, void *context) {
   EventArbiterGuard *guard = fsm->context;
 
-  if (e->id == PEDAL_EVENT_INPUT_BPS_FAULT && e->data) {
+  if ((e->id == PEDAL_EVENT_INPUT_BPS_FAULT) && e->data) {
     bps_indicator_set_fault();
   }
 
