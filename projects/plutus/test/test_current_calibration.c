@@ -15,9 +15,9 @@
 
 // The module does not know what current the adc readings correspond to, so keep an arbitrary
 // max point for testing
-#define TEST_CURRENT_CALIBRATION_MAX 20
+#define TEST_CURRENT_CALIBRATION_MAX 5
 
-#define TEST_CURRENT_CALIBRATION_DELAY_SECONDS 10
+#define TEST_CURRENT_CALIBRATION_DELAY_SECONDS 4
 
 void setup_test(void) {
   gpio_init();
