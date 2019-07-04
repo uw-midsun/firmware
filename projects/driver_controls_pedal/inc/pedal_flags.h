@@ -13,4 +13,4 @@
 //    2. Battery SOC is above a predetermined threshold
 //    3. If the driver doesn't want regen braking for some reason
 //
-#define CENTER_CONSOLE_ENABLE_REGEN_BRAKING
+//#define CENTER_CONSOLE_ENABLE_REGEN_BRAKING
