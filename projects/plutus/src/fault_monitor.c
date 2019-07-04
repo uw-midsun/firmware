@@ -38,10 +38,17 @@ static void prv_extract_cell_result(uint16_t *result_arr, size_t len, void *cont
 
 static void prv_extract_aux_result(uint16_t *result_arr, size_t len, void *context) {
   FaultMonitorStorage *storage = context;
+  uint32_t thermistor_resistance_ohms = 0;
 
   ltc_afe_request_cell_conversion(storage->settings.ltc_afe);
 
   memcpy(storage->result.temp_voltages, result_arr, sizeof(storage->result.temp_voltages));
+
+  for(size_t i = 0; i < sizeof(storage->result.temp_voltages); i++) {
+    thermistor_calculate_resistance_from_voltage(result_arr[i], PLUTUS_CFG_THERMISTOR_SUPPLY, 
+      PLUTUS_CFG_THERMISTOR_FIXED_RESISTOR_OHMS, &thermistor_resistance_ohms);
+    thermistor_calculate_temp(thermistor_resistance_ohms, &storage->result.temperature_deg_c[i]);
+  }
 
   // Determine whether we are charging/discharging and use the appropriate
   // threshold
@@ -53,6 +60,7 @@ static void prv_extract_aux_result(uint16_t *result_arr, size_t len, void *conte
   bool fault = false;
 
   for (size_t i = 0; i < len; ++i) {
+
     if (result_arr[i] < threshold) {
       fault = true;
     }
@@ -94,7 +102,7 @@ static StatusCode prv_convert_temp_node_voltage(uint16_t temp_dc, uint16_t *node
 
   status_ok_or_return(thermistor_calculate_resistance(temp_dc, &thermistor_resistance_ohms));
   // Treat this as a Voltage divider
-  LOG_DEBUG("Thermistor: %i\n", thermistor_resistance_ohms)
+  LOG_DEBUG("Thermistor: %i\n", thermistor_resistance_ohms);
   *node_voltage = PLUTUS_CFG_THERMISTOR_SUPPLY * thermistor_resistance_ohms /
                   (PLUTUS_CFG_THERMISTOR_FIXED_RESISTOR_OHMS + thermistor_resistance_ohms);
 

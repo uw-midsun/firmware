@@ -34,6 +34,10 @@ StatusCode thermistor_get_temp(ThermistorStorage *storage, uint16_t *temperature
 // Calculate the temperature in deciCelsius from ohms
 StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms, uint16_t *temperature_dc);
 
+//Calculate resistance from voltage in *100uV. i.e 14451 = 1.4451V
+StatusCode thermistor_calculate_resistance_from_voltage(uint32_t thermistor_voltage_10mV, uint32_t rev_voltage, 
+																												uint32_t fixed_resistance, uint32_t *thermistor_resistance_ohms);
+
 // Calculates the thermistor resistance given a certain temperature in dC
 StatusCode thermistor_calculate_resistance(uint16_t temperature_dc,
                                            uint16_t *thermistor_resistor_ohms);

@@ -28,6 +28,7 @@ typedef struct FaultMonitorSettings {
 typedef struct FaultMonitorResult {
   uint16_t cell_voltages[PLUTUS_CFG_AFE_TOTAL_CELLS];
   uint16_t temp_voltages[PLUTUS_CFG_AFE_TOTAL_CELLS];
+  uint16_t temperature_deg_c[PLUTUS_CFG_AFE_TOTAL_CELLS];
   uint32_t total_voltage;
   int32_t current;
   bool charging;

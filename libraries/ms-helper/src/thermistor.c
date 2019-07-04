@@ -95,6 +95,13 @@ StatusCode thermistor_calculate_temp(uint32_t thermistor_resistance_ohms,
   return status_msg(STATUS_CODE_OUT_OF_RANGE, "Temperature out of lookup table range.");
 }
 
+StatusCode thermistor_calculate_resistance_from_voltage(uint32_t node_voltage, uint32_t ref_voltage,
+                                                        uint32_t fixed_resistance, uint32_t *thermistor_resistance_ohms) {
+  *thermistor_resistance_ohms = node_voltage/((ref_voltage - node_voltage) / fixed_resistance);
+  
+  return STATUS_CODE_OK;
+}
+
 StatusCode thermistor_calculate_resistance(uint16_t temperature_dc,
                                            uint16_t *thermistor_resistor_ohms) {
   if (temperature_dc > THERMISTOR_CELSIUS_TO_DECICELSIUS(THERMISTOR_LOOKUP_RANGE)) {

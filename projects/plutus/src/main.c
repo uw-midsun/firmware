@@ -19,7 +19,7 @@ static void prv_periodic_tx_debug(SoftTimerId timer_id, void *context) {
   FaultMonitorResult *result = &s_fault_monitor.result;
   if (s_telemetry_counter < PLUTUS_CFG_AFE_TOTAL_CELLS) {
     CAN_TRANSMIT_BATTERY_VT(s_telemetry_counter, result->cell_voltages[s_telemetry_counter],
-                            result->temp_voltages[s_telemetry_counter]);
+                            result->temperature_deg_c[s_telemetry_counter]);
     s_telemetry_counter++;
   } else if (s_telemetry_counter == PLUTUS_CFG_AFE_TOTAL_CELLS) {
     CAN_TRANSMIT_BATTERY_AGGREGATE_VC(result->total_voltage, (uint32_t)result->current);
