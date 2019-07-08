@@ -34,7 +34,7 @@ void setup_test(void) {
 
   CanSettings settings = {
     .device_id = SYSTEM_CAN_DEVICE_DRIVER_CONTROLS_CENTER_CONSOLE,
-    .bitrate = CAN_HW_BITRATE_250KBPS,
+    .bitrate = CAN_HW_BITRATE_500KBPS,
     .rx_event = CENTER_CONSOLE_EVENT_CAN_RX,
     .tx_event = CENTER_CONSOLE_EVENT_CAN_TX,
     .fault_event = CENTER_CONSOLE_EVENT_CAN_FAULT,
