@@ -4,6 +4,7 @@
 #include "config.h"
 
 #include "adc.h"
+#include "bps_indicator.h"
 #include "button_led.h"
 #include "button_led_radio.h"
 #include "center_console.h"
@@ -131,6 +132,8 @@ int main() {
         },
   };
   status_ok_or_return(center_console_init(&cc_storage));
+
+  status_ok_or_return(bps_indicator_init());
 
 #if defined(CENTER_CONSOLE_FLAG_ENABLE_5V_MONITOR)
   // Enable 5V monitor
