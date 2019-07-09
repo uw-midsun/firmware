@@ -5,6 +5,12 @@
 // High priority messages in the event queue
 typedef enum {
   PEDAL_EVENT_DUMMY = 0,
+
+  // Hopefully never happens, but in case we're getting DOS'd by a series of
+  // bad sensor readings or something, we can raise this as a high priority
+  // message and hope for the best.
+  PEDAL_EVENT_QUEUEING_FAULT,
+
   NUM_PEDAL_EVENTS_CRITICAL,
 } PedalEventsCritical;
 
