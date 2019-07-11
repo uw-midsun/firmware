@@ -23,21 +23,33 @@ static void prv_periodic_tx_telemetry(SoftTimerId timer_id, void *context) {
   uint16_t module_id = 0;
   uint16_t voltage = 0;
   uint16_t temp = 0;
+
+  uint32_t temp_resistance_mohms = 0;
   for (int i = 0; i < SOLAR_MASTER_NUM_SOLAR_SLAVES; i++) {
+    if (storage->slave_storage[i].is_stale) {
+      continue;
+    }
     voltage = (uint16_t)((uint32_t)storage->slave_storage[i].sliding_sum_voltage_mv *
                          SOLAR_MASTER_VOLTAGE_SCALING_FACTOR / SOLAR_MASTER_MCP3427_SAMPLE_SIZE);
-    temp = (uint16_t)((uint32_t)storage->slave_storage[i].sliding_sum_temp_mv *
-                      SOLAR_MASTER_TEMP_SCALING_FACTOR / SOLAR_MASTER_MCP3427_SAMPLE_SIZE);
+
+    // Voltage dividor:
+    // 5V --> thermistor --> Measurement (mv) --> 10k Ohms --> GND
+    // R = (5 V) * (10000 Ohms) * 1000 / (Avg Measurement mV)
+    thermistor_get_resistance(
+        THERMISTOR_POSITION_R1, 4700,
+        storage->slave_storage[i].sliding_sum_temp_mv / SOLAR_MASTER_MCP3427_SAMPLE_SIZE, 5000,
+        &temp_resistance_mohms);
+    thermistor_calculate_temp(NXRT15WF104, temp_resistance_mohms, &temp);
 
     module_id = i;
     LOG_DEBUG("module: %i, voltage: %i, current: %i, temp: %i\n", module_id, voltage, current,
               temp);
     if (storage->board == SOLAR_MASTER_CONFIG_BOARD_FRONT) {
-      module_id |= (1 << 3);
       CAN_TRANSMIT_SOLAR_DATA_FRONT(module_id, voltage, current, temp);
     } else {
       CAN_TRANSMIT_SOLAR_DATA_REAR(module_id, voltage, current, temp);
     }
+    storage->slave_storage[i].is_stale = true;
   }
   soft_timer_start_millis(SOLAR_MASTER_TELEMETRY_PERIOD_MS, prv_periodic_tx_telemetry, storage,
                           NULL);

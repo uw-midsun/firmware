@@ -43,52 +43,21 @@ int main(void) {
   i2c_init(config->slave_i2c_port, config->slave_i2c_settings);
   i2c_init(config->current_i2c_port, config->current_i2c_settings);
 
-  StatusCode status = solar_master_relay_init();
-  if (!status_ok(status)) {
-    LOG_DEBUG("Error initializing Solar Master Relay.\n");
-  }
-
   // Initialize current sense ADC
   GpioAddress current_ready_pin = CURRENT_ADC_READY_PIN;
   ads1015_init(&s_current_ads1015, config->current_i2c_port, SOLAR_MASTER_CURRENT_ADC_ADDR,
                &current_ready_pin);
-  status = solar_master_current_init(&s_current_storage, &s_current_ads1015);
+  StatusCode status = solar_master_current_init(&s_current_storage, &s_current_ads1015);
   if (!status_ok(status)) {
     LOG_DEBUG("Error initializing Solar Master Current.\n");
   }
 
-  // Initialize voltage/temp (slave) reading adcs
-  // Some information must be hardcoded
-  // Need to coordinate identifying slave modules with driver controls and telemetry
-  static const uint8_t slave_addr_lookup_reverse[8] = { 0, 1, 2, 3, 4, 5, 0, 0 };
+  status = solar_master_slave_init(s_slave_storage, s_slave_mcp3427,
+                                   config->slave_mcp3427_settings_base);
 
-  // The switches on the ith slave board must be set up to set the Adr0 and Adr1 pins to match
-  // adc_address_map[i]
-  // See the MCP3427 datasheet section 5.3 for details
-  static const Mcp3427PinState adc_address_map[SOLAR_MASTER_NUM_SOLAR_SLAVES][2] = {
-    { MCP3427_PIN_STATE_LOW, MCP3427_PIN_STATE_LOW },     // I2C Address 0x68 i.e. 0x68 ^ 0x00
-    { MCP3427_PIN_STATE_LOW, MCP3427_PIN_STATE_FLOAT },   // I2C Address 0x69 i.e. 0x68 ^ 0x01
-    { MCP3427_PIN_STATE_LOW, MCP3427_PIN_STATE_HIGH },    // I2C Address 0x70 i.e. 0x68 ^ 0x02
-    { MCP3427_PIN_STATE_FLOAT, MCP3427_PIN_STATE_LOW },   // I2C Address 0x71 i.e. 0x68 ^ 0x03
-    { MCP3427_PIN_STATE_HIGH, MCP3427_PIN_STATE_LOW },    // I2C Address 0x72 i.e. 0x68 ^ 0x04
-    { MCP3427_PIN_STATE_HIGH, MCP3427_PIN_STATE_FLOAT },  // I2C Address 0x73 i.e. 0x68 ^ 0x05
-  };
-
-  // Move this loop to solar_master_slave.c init?
-  for (int i = 0; i < SOLAR_MASTER_NUM_SOLAR_SLAVES; i++) {
-    Mcp3427Setting temp_slave_settings = *config->slave_mcp3427_settings_base;
-    temp_slave_settings.Adr0 = adc_address_map[i][0];
-    temp_slave_settings.Adr1 = adc_address_map[i][1];
-    status = mcp3427_init(&(s_slave_mcp3427[i]), &temp_slave_settings);
-    if (!status_ok(status)) {
-      LOG_DEBUG("Error initializing Solar Slave ADC with addressing pins %i, %i.\n",
-                temp_slave_settings.Adr0, temp_slave_settings.Adr1);
-      continue;
-    }
-    status = solar_master_slave_init(&(s_slave_storage[i]), &(s_slave_mcp3427[i]));
-    if (!status_ok(status)) {
-      LOG_DEBUG("Error initializing Solar Master Slave.\n");
-    }
+  status = solar_master_relay_init();
+  if (!status_ok(status)) {
+    LOG_DEBUG("Error initializing Solar Master Relay.\n");
   }
 
   // Initialize solar_master_can.
@@ -107,7 +76,7 @@ int main(void) {
       solar_master_relay_process_event(&e);
       // process the FSM event for the appropriate slave ADC
       if (e.data < 8) {
-        fsm_process_event(&(s_slave_mcp3427[slave_addr_lookup_reverse[e.data]].fsm), &e);
+        fsm_process_event(&(s_slave_mcp3427[SLAVE_ADDR_LOOKUP_REVERSE[e.data]].fsm), &e);
       }
     }
     wait();

@@ -68,11 +68,19 @@ void test_thermistor_normal(void) {
     .port = GPIO_PORT_A,
     .pin = 1,
   };
+
+  ThermistorSettings settings = {
+    .thermistor_gpio = gpio_addr,
+    .position = THERMISTOR_POSITION_R2,
+    .model = NXRT15XH103,
+    .dividor_resistor_ohms = 10000,
+  };
+
   ThermistorStorage storage;
-  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
 
   uint16_t reading = 0;
-  TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
+  TEST_ASSERT_OK(thermistor_init(&storage, &settings));
+  TEST_ASSERT_OK(thermistor_read_and_calculate_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading);
   TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE_DECICELSIUS, 100, reading);
 }
@@ -83,11 +91,19 @@ void test_thermistor_min_temp(void) {
     .port = GPIO_PORT_A,
     .pin = 2,
   };
+
+  ThermistorSettings settings = {
+    .thermistor_gpio = gpio_addr,
+    .position = THERMISTOR_POSITION_R2,
+    .model = NXRT15XH103,
+    .dividor_resistor_ohms = 10000,
+  };
+
   ThermistorStorage storage;
 
   uint16_t reading = 0;
-  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
-  TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
+  TEST_ASSERT_OK(thermistor_init(&storage, &settings));
+  TEST_ASSERT_OK(thermistor_read_and_calculate_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading);
   TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE_DECICELSIUS, 0, reading);
 }
@@ -98,11 +114,19 @@ void test_thermistor_max_temp(void) {
     .port = GPIO_PORT_A,
     .pin = 3,
   };
+
+  ThermistorSettings settings = {
+    .thermistor_gpio = gpio_addr,
+    .position = THERMISTOR_POSITION_R2,
+    .model = NXRT15XH103,
+    .dividor_resistor_ohms = 10000,
+  };
+
   ThermistorStorage storage;
 
   uint16_t reading = 0;
-  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
-  TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
+  TEST_ASSERT_OK(thermistor_init(&storage, &settings));
+  TEST_ASSERT_OK(thermistor_read_and_calculate_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading);
   TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE_DECICELSIUS, 1000, reading);
 }
@@ -116,11 +140,19 @@ void test_thermistor_normal_alt(void) {
     .port = GPIO_PORT_A,
     .pin = 4,
   };
+
+  ThermistorSettings settings = {
+    .thermistor_gpio = gpio_addr,
+    .position = THERMISTOR_POSITION_R1,
+    .model = NXRT15XH103,
+    .dividor_resistor_ohms = 10000,
+  };
+
   ThermistorStorage storage;
-  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R1));
 
   uint16_t reading = 0;
-  TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
+  TEST_ASSERT_OK(thermistor_init(&storage, &settings));
+  TEST_ASSERT_OK(thermistor_read_and_calculate_temp(&storage, &reading));
   TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE_DECICELSIUS, 100, reading);
   LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading);
 }
@@ -131,11 +163,19 @@ void test_thermistor_min_temp_alt(void) {
     .port = GPIO_PORT_A,
     .pin = 5,
   };
+
+  ThermistorSettings settings = {
+    .thermistor_gpio = gpio_addr,
+    .position = THERMISTOR_POSITION_R1,
+    .model = NXRT15XH103,
+    .dividor_resistor_ohms = 10000,
+  };
+
   ThermistorStorage storage;
 
   uint16_t reading = 0;
-  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R1));
-  TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
+  TEST_ASSERT_OK(thermistor_init(&storage, &settings));
+  TEST_ASSERT_OK(thermistor_read_and_calculate_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading);
   TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE_DECICELSIUS, 0, reading);
 }
@@ -146,11 +186,19 @@ void test_thermistor_max_temp_alt(void) {
     .port = GPIO_PORT_A,
     .pin = 6,
   };
+
+  ThermistorSettings settings = {
+    .thermistor_gpio = gpio_addr,
+    .position = THERMISTOR_POSITION_R1,
+    .model = NXRT15XH103,
+    .dividor_resistor_ohms = 10000,
+  };
+
   ThermistorStorage storage;
 
   uint16_t reading = 0;
-  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R1));
-  TEST_ASSERT_OK(thermistor_get_temp(&storage, &reading));
+  TEST_ASSERT_OK(thermistor_init(&storage, &settings));
+  TEST_ASSERT_OK(thermistor_read_and_calculate_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading);
   TEST_ASSERT_UINT16_WITHIN(THERMISTOR_TEMPERATURE_TOLERANCE_DECICELSIUS, 1000, reading);
 }
@@ -161,11 +209,19 @@ void test_thermistor_exceed_range(void) {
     .port = GPIO_PORT_A,
     .pin = 0,
   };
+
+  ThermistorSettings settings = {
+    .thermistor_gpio = gpio_addr,
+    .position = THERMISTOR_POSITION_R2,
+    .model = NXRT15XH103,
+    .dividor_resistor_ohms = 10000,
+  };
+
   ThermistorStorage storage;
 
   uint16_t reading = 0;
-  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
-  TEST_ASSERT_NOT_OK(thermistor_get_temp(&storage, &reading));
+  TEST_ASSERT_OK(thermistor_init(&storage, &settings));
+  TEST_ASSERT_NOT_OK(thermistor_read_and_calculate_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading);
 }
 
@@ -175,13 +231,21 @@ void test_thermistor_under_range(void) {
     .port = GPIO_PORT_A,
     .pin = 7,
   };
+
+  ThermistorSettings settings = {
+    .thermistor_gpio = gpio_addr,
+    .position = THERMISTOR_POSITION_R2,
+    .model = NXRT15XH103,
+    .dividor_resistor_ohms = 10000,
+  };
+
   ThermistorStorage storage;
 
   uint16_t reading = 0;
-  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
+  TEST_ASSERT_OK(thermistor_init(&storage, &settings));
   // Adds one millivolt as to not trigger the NULL read case
   reading++;
-  TEST_ASSERT_NOT_OK(thermistor_get_temp(&storage, &reading));
+  TEST_ASSERT_NOT_OK(thermistor_read_and_calculate_temp(&storage, &reading));
   LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading);
 }
 
@@ -191,75 +255,87 @@ void test_zero_node_voltage(void) {
     .port = GPIO_PORT_A,
     .pin = 7,
   };
+
+  ThermistorSettings settings = {
+    .thermistor_gpio = gpio_addr,
+    .position = THERMISTOR_POSITION_R2,
+    .model = NXRT15XH103,
+    .dividor_resistor_ohms = 10000,
+  };
+
   ThermistorStorage storage;
 
   uint16_t reading = 0;
-  TEST_ASSERT_OK(thermistor_init(&storage, gpio_addr, THERMISTOR_POSITION_R2));
+  TEST_ASSERT_OK(thermistor_init(&storage, &settings));
   LOG_DEBUG("Temperature: %" PRIuLEAST16 "\n", reading);
-  TEST_ASSERT_NOT_OK(thermistor_get_temp(&storage, &reading));
+  TEST_ASSERT_NOT_OK(thermistor_read_and_calculate_temp(&storage, &reading));
 }
 
 // Testing the temperature search function
 void test_temperature_calculation(void) {
+  ThermistorModel model = NXRT15XH103;
+
   uint16_t temperature = 0;
   // 10 Degrees
-  thermistor_calculate_temp(17925, &temperature);
+  thermistor_calculate_temp(model, 17925, &temperature);
   TEST_ASSERT_UINT16_WITHIN(200, 100, temperature);
 
   // 25 Degrees
-  thermistor_calculate_temp(10000, &temperature);
+  thermistor_calculate_temp(model, 10000, &temperature);
   TEST_ASSERT_UINT16_WITHIN(200, 250, temperature);
 
   // 50 Degrees
-  thermistor_calculate_temp(4160, &temperature);
+  thermistor_calculate_temp(model, 4160, &temperature);
   TEST_ASSERT_UINT16_WITHIN(200, 500, temperature);
 
   // 75 Degrees
-  thermistor_calculate_temp(1924, &temperature);
+  thermistor_calculate_temp(model, 1924, &temperature);
   TEST_ASSERT_UINT16_WITHIN(200, 750, temperature);
 
   // 90 Degrees
-  thermistor_calculate_temp(1268, &temperature);
+  thermistor_calculate_temp(model, 1268, &temperature);
   TEST_ASSERT_UINT16_WITHIN(200, 900, temperature);
 }
 
 // Test temperature to resistance
 void test_resistance_lookup(void) {
+  ThermistorModel model = NXRT15XH103;
+
   uint16_t resistance = 0;
   // Over 100 degrees
-  TEST_ASSERT_NOT_OK(thermistor_calculate_resistance(1010, &resistance));
+  TEST_ASSERT_NOT_OK(thermistor_calculate_resistance_from_temp(model, 1010, &resistance));
 
   // Exact: No interpolation required
   // 10 Degrees
-  thermistor_calculate_resistance(100, &resistance);
+  thermistor_calculate_resistance_from_temp(model, 100, &resistance);
   TEST_ASSERT_UINT16_WITHIN(1, 17925, resistance);
 
   // 25 Degrees
-  thermistor_calculate_resistance(250, &resistance);
+  thermistor_calculate_resistance_from_temp(model, 250, &resistance);
   TEST_ASSERT_UINT16_WITHIN(1, 10000, resistance);
 
   // 65 Degrees
-  thermistor_calculate_resistance(650, &resistance);
+  thermistor_calculate_resistance_from_temp(model, 650, &resistance);
   TEST_ASSERT_UINT16_WITHIN(1, 2586, resistance);
 
   // At exactly 100 degrees
-  thermistor_calculate_resistance(1000, &resistance);
+  thermistor_calculate_resistance_from_temp(model, 1000, &resistance);
   TEST_ASSERT_UINT16_WITHIN(1, 973, resistance);
 
   // Test some interpolated values
   // 12.5 degrees
-  thermistor_calculate_resistance(125, &resistance);
+  thermistor_calculate_resistance_from_temp(model, 125, &resistance);
   TEST_ASSERT_UINT16_WITHIN(1, 16210, resistance);
 
   // 50.5 degrees
-  thermistor_calculate_resistance(505, &resistance);
+  thermistor_calculate_resistance_from_temp(model, 505, &resistance);
   TEST_ASSERT_UINT16_WITHIN(1, 4093, resistance);
 
   // 74.7 degrees
-  thermistor_calculate_resistance(747, &resistance);
+  thermistor_calculate_resistance_from_temp(model, 747, &resistance);
   TEST_ASSERT_UINT16_WITHIN(1, 1941, resistance);
 
   // 75.5 degrees
-  thermistor_calculate_resistance(755, &resistance);
+  thermistor_calculate_resistance_from_temp(model, 755, &resistance);
   TEST_ASSERT_UINT16_WITHIN(1, 1897, resistance);
 }
