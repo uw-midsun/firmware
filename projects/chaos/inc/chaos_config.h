@@ -21,6 +21,7 @@ typedef struct ChaosConfig {
   const GpioAddress motor_interface_power;
   const GpioAddress rear_lights_power;
   const GpioAddress pjb_fan;
+  const GpioAddress charger_power;
   // Unused but available pins
   const GpioAddress spare_protected_power;
   const GpioAddress spare_unprotected_power;

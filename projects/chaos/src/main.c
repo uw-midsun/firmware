@@ -18,6 +18,7 @@
 #include "gpio.h"
 #include "gpio_fsm.h"
 #include "gpio_it.h"
+#include "gpio_seq.h"
 #include "interrupt.h"
 #include "log.h"
 #include "power_path.h"
@@ -108,40 +109,72 @@ int main(void) {
   // Postpone to as late as possible so that BPS heartbeats are ready to be ACK'd.
   gpio_fsm_init(cfg);
 
-  LOG_DEBUG("Started\n");
-
-  // Main loop
-  Event e = { 0 };
-  StatusCode status = NUM_STATUS_CODES;
+  // Debug
+  const GpioAddress addrs[] = {
+    cfg->array_sense_power,
+    cfg->battery_box_power,
+    cfg->charger_power,
+    cfg->driver_display_power,
+    cfg->front_lights_power,
+    cfg->motor_interface_power,
+    cfg->pjb_fan,
+    cfg->rear_camera_power,
+    cfg->rear_lights_power,
+    cfg->spare_protected_power,
+    cfg->spare_unprotected_power,
+    cfg->telemetry_power,
+    cfg->themis_power,
+  };
+  const GpioSettings stg = {
+    .resistor = GPIO_RES_NONE,
+    .direction = GPIO_DIR_OUT,
+    .state = GPIO_STATE_HIGH,
+  };
+  gpio_seq_init_pins(addrs, SIZEOF_ARRAY(addrs), &stg, 70);
   while (true) {
-    // Tight event loop
-    do {
-      status = event_process(&e);
-      // TODO(ELEC-105): Validate nothing gets stuck here.
-      if (status == STATUS_CODE_EMPTY) {
-        wait();
-      }
-    } while (status != STATUS_CODE_OK);
-
-    // Event Processing:
-
-    // TODO(ELEC-105): At least one of the following should respond with either a boolean true or
-    // a STATUS_CODE_OK for each emitted message. Consider adding a requirement that this is the
-    // case with a failure resulting in faulting into Emergency.
-    can_process_event(&e);
-    delay_service_process_event(&e);
-    fan_control_process_event(&e);
-    emergency_fault_process_event(&s_emergency_storage, &e);
-    gpio_fsm_process_event(&e);
-#ifdef CHAOS_FLAG_ENABLE_POWERTRAIN_HB
-    powertrain_heartbeat_process_event(&e);
-#endif  // CHAOS_FLAG_ENABLE_POWERTRAIN_HB
-    power_path_process_event(&cfg->power_path, &e);
-    charger_process_event(&e);
-    relay_process_event(&e);
-    relay_retry_service_update(&e);
-    sequencer_fsm_publish_next_event(&e);
+    gpio_seq_set_state(addrs, SIZEOF_ARRAY(addrs), GPIO_STATE_HIGH, 70);
+    delay_ms(1000);
+    gpio_seq_set_state(addrs, SIZEOF_ARRAY(addrs), GPIO_STATE_LOW, 70);
+    delay_ms(1000);
   }
+  // End debug
+
+  // LOG_DEBUG("Started\n");
+
+  // // Main loop
+  // Event e = { 0 };
+  // StatusCode status = NUM_STATUS_CODES;
+  // while (true) {
+  // Tight event loop
+  //     do {
+  //       status = event_process(&e);
+  //       // TODO(ELEC-105): Validate nothing gets stuck here.
+  //       if (status == STATUS_CODE_EMPTY) {
+  //         wait();
+  //       }
+  //     } while (status != STATUS_CODE_OK);
+  //
+  //     // Event Processing:
+  //
+  //     // TODO(ELEC-105): At least one of the following should respond with either a boolean true
+  //     or
+  //     // a STATUS_CODE_OK for each emitted message. Consider adding a requirement that this is
+  //     the
+  //     // case with a failure resulting in faulting into Emergency.
+  //     can_process_event(&e);
+  //     delay_service_process_event(&e);
+  //     fan_control_process_event(&e);
+  //     emergency_fault_process_event(&s_emergency_storage, &e);
+  //     gpio_fsm_process_event(&e);
+  // #ifdef CHAOS_FLAG_ENABLE_POWERTRAIN_HB
+  //     powertrain_heartbeat_process_event(&e);
+  // #endif  // CHAOS_FLAG_ENABLE_POWERTRAIN_HB
+  //     power_path_process_event(&cfg->power_path, &e);
+  //     charger_process_event(&e);
+  //     relay_process_event(&e);
+  //     relay_retry_service_update(&e);
+  //     sequencer_fsm_publish_next_event(&e);
+  //   }
 
   // Not reached.
   return EXIT_SUCCESS;
