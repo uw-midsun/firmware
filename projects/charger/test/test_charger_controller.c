@@ -100,7 +100,7 @@ void test_charger_controller(void) {
     .max_current = TEST_CHARGER_MAX_CURRENT,
     .can = can,  // Use pure HW can for both CAN and CAN UART since Extended support is needed while
                  // mocking.
-    .can_uart = can,
+    .can_mcp2515 = can,
     .relay_control_pin = { GPIO_PORT_A, 8 },
   };
 
@@ -163,7 +163,7 @@ void test_charger_controller_status(void) {
     .max_current = TEST_CHARGER_MAX_CURRENT,
     .can = can,  // Use pure HW can for both CAN and CAN UART since Extended support is needed while
                  // mocking.
-    .can_uart = can,
+    .can_mcp2515 = can,
     .relay_control_pin = { GPIO_PORT_A, 8 },
   };
   ChargerStorage storage = { 0 };
@@ -191,7 +191,7 @@ void test_charger_controller_off(void) {
     .max_current = TEST_CHARGER_MAX_CURRENT,
     .can = can,  // Use pure HW can for both CAN and CAN UART since Extended support is needed while
                  // mocking.
-    .can_uart = can,
+    .can_mcp2515 = can,
   };
 
   Event e = { 0, 0 };

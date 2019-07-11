@@ -6,11 +6,12 @@
 #include "can_msg_defs.h"
 #include "charger_controller.h"
 #include "charger_events.h"
+#include "generic_can_mcp2515.h"
 #include "generic_can_network.h"
-#include "generic_can_uart.h"
 #include "gpio.h"
+#include "mcp2515.h"
+#include "spi_mcu.h"
 #include "status.h"
-#include "uart.h"
 
 static CanSettings s_can_settings = {
   .device_id = SYSTEM_CAN_DEVICE_CHARGER,
@@ -27,40 +28,41 @@ CanSettings *charger_cfg_load_can_settings(void) {
   return &s_can_settings;
 }
 
-static UartSettings s_uart_settings = {
-  .baudrate = 115200,
-  .rx_handler = NULL,
-  .context = NULL,
-  .tx = { GPIO_PORT_B, 10 },
-  .rx = { GPIO_PORT_B, 11 },
-  .alt_fn = GPIO_ALTFN_4,
+static Mcp2515Settings s_mcp2515_settings = {
+  .spi_port = SPI_PORT_2,
+  .baudrate = 750000,
+  .mosi = { .port = GPIO_PORT_B, 15 },
+  .miso = { .port = GPIO_PORT_B, 14 },
+  .sclk = { .port = GPIO_PORT_B, 13 },
+  .cs = { .port = GPIO_PORT_B, 12 },
+  .int_pin = { .port = GPIO_PORT_A, 8 },
+  .loopback = false,
 };
 
-UartSettings *charger_cfg_load_uart_settings(void) {
-  return &s_uart_settings;
-}
-
-UartPort charger_cfg_load_uart_port(void) {
-  return UART_PORT_3;
+Mcp2515Settings *charger_cfg_load_mcp2515_settings(void) {
+  return &s_mcp2515_settings;
 }
 
 GpioAddress charger_cfg_load_charger_pin(void) {
-  return ((GpioAddress){ GPIO_PORT_A, 15 });
+  return ((GpioAddress){ GPIO_PORT_A, 7 });
 }
 
 static GenericCanNetwork s_can_storage;
-static GenericCanUart s_can_uart_storage;
+static GenericCanMcp2515 s_can_mcp2515_storage;
 
 static ChargerSettings s_charger_settings = {
   .max_voltage = 1512,  // 151.2 V
   .max_current = 1224,  // 122.4 A
   .can = (GenericCan *)&s_can_storage,
-  .can_uart = (GenericCan *)&s_can_uart_storage,
+  .can_mcp2515 = (GenericCan *)&s_can_mcp2515_storage,
+  .relay_control_pin = { GPIO_PORT_A, 9 },
+  .relay_control_pin_secondary = { GPIO_PORT_B, 9 },
+  .pilot_select_pin = { GPIO_PORT_A, 2 },
 };
 
 StatusCode charger_cfg_init_settings(void) {
   status_ok_or_return(generic_can_network_init(&s_can_storage));
-  return generic_can_uart_init(&s_can_uart_storage, charger_cfg_load_uart_port());
+  return generic_can_mcp2515_init(&s_can_mcp2515_storage, charger_cfg_load_mcp2515_settings());
 }
 
 ChargerSettings *charger_cfg_load_settings(void) {

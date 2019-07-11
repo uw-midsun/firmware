@@ -13,6 +13,7 @@
 #include "gpio.h"
 #include "interrupt.h"
 #include "log.h"
+#include "ms_test_helpers.h"
 #include "soft_timer.h"
 #include "status.h"
 #include "test_helpers.h"
@@ -77,15 +78,11 @@ void test_generic_can(void) {
   StatusCode status = NUM_STATUS_CODES;
   // TX
   TEST_ASSERT_OK(generic_can_tx(can, &msg));
-  do {
-    status = event_process(&e);
-  } while (status != STATUS_CODE_OK);
+  MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_CAN_TX, e.id);
   TEST_ASSERT_TRUE(can_process_event(&e));
   // RX
-  do {
-    status = event_process(&e);
-  } while (status != STATUS_CODE_OK);
+  MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_CAN_RX, e.id);
   TEST_ASSERT_TRUE(can_process_event(&e));
   // Callback is triggered.
@@ -98,15 +95,11 @@ void test_generic_can(void) {
   --raw_id.msg_id;
   msg.id = raw_id.raw;
   TEST_ASSERT_OK(generic_can_tx(can, &msg));
-  do {
-    status = event_process(&e);
-  } while (status != STATUS_CODE_OK);
+  MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_CAN_TX, e.id);
   TEST_ASSERT_TRUE(can_process_event(&e));
   // RX
-  do {
-    status = event_process(&e);
-  } while (status != STATUS_CODE_OK);
+  MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_CAN_RX, e.id);
   TEST_ASSERT_TRUE(can_process_event(&e));
   // Callback isn't triggered.

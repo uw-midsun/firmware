@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "adc.h"
 #include "can.h"
 #include "can_interval.h"
 #include "charger_cfg.h"
@@ -14,11 +15,9 @@
 #include "interrupt.h"
 #include "notify.h"
 #include "soft_timer.h"
-#include "uart.h"
 #include "wait.h"
 
 static CanStorage s_can_storage;
-static UartStorage s_uart_storage;
 static ChargerCanStatus s_charger_status;
 static ChargerStorage s_charger_storage;
 static Fsm s_charger_fsm;
@@ -33,14 +32,11 @@ int main(void) {
   gpio_it_init();
   soft_timer_init();
   can_interval_init();
+  adc_init(ADC_MODE_CONTINUOUS);
 
   // CAN
   const CanSettings *can_settings = charger_cfg_load_can_settings();
   can_init(&s_can_storage, can_settings);
-
-  // UART
-  UartSettings *uart_settings = charger_cfg_load_uart_settings();
-  uart_init(charger_cfg_load_uart_port(), uart_settings, &s_uart_storage);
 
   // Charger Cfg
   charger_cfg_init_settings();

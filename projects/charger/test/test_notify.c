@@ -66,7 +66,6 @@ void test_notify(void) {
                              TEST_NOTIFY_WATCHDOG_PERIOD_S));
 
   Event e = { 0, 0 };
-  StatusCode status = NUM_STATUS_CODES;
 
   // Charge
   s_response = EE_CHARGER_SET_RELAY_STATE_CLOSE;
@@ -75,27 +74,29 @@ void test_notify(void) {
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHARGER_EVENT_CAN_TX, CHARGER_EVENT_CAN_RX);
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_START_CHARGING, e.id);
+  can_process_event(&e);
 
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHARGER_EVENT_CAN_TX, CHARGER_EVENT_CAN_RX);
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_START_CHARGING, e.id);
+  can_process_event(&e);
 
   // Don't charge
   s_response = EE_CHARGER_SET_RELAY_STATE_OPEN;
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHARGER_EVENT_CAN_TX, CHARGER_EVENT_CAN_RX);
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_STOP_CHARGING, e.id);
+  can_process_event(&e);
 
   // Watchdog
   s_response = NUM_EE_CHARGER_SET_RELAY_STATES;
   e.id = UINT16_MAX;
   while (e.id != CHARGER_EVENT_STOP_CHARGING) {
-    do {
-      status = event_process(&e);
-    } while (status != STATUS_CODE_OK);
+    MS_TEST_HELPER_AWAIT_EVENT(e);
     if (e.id == CHARGER_EVENT_CAN_RX || e.id == CHARGER_EVENT_CAN_TX) {
       TEST_ASSERT_TRUE(can_process_event(&e));
     }
+    can_process_event(&e);
   }
 
   // Check still running
@@ -104,6 +105,7 @@ void test_notify(void) {
   MS_TEST_HELPER_CAN_TX_RX_WITH_ACK(CHARGER_EVENT_CAN_TX, CHARGER_EVENT_CAN_RX);
   MS_TEST_HELPER_AWAIT_EVENT(e);
   TEST_ASSERT_EQUAL(CHARGER_EVENT_START_CHARGING, e.id);
+  can_process_event(&e);
 
   // Send a singular disconnect message.
   s_response = NUM_EE_CHARGER_SET_RELAY_STATES;  // Don't respond.

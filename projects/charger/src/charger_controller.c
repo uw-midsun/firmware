@@ -70,6 +70,9 @@ StatusCode charger_controller_init(ChargerStorage *storage, const ChargerSetting
   s_charger_status = status;
   s_storage = storage;
   memcpy(&s_storage->relay_control_pin, &settings->relay_control_pin, sizeof(GpioAddress));
+  memcpy(&s_storage->relay_control_pin_secondary, &settings->relay_control_pin_secondary,
+         sizeof(GpioAddress));
+  memcpy(&s_storage->pilot_select_pin, &settings->pilot_select_pin, sizeof(GpioAddress));
 
   const GpioSettings gpio_settings = {
     .state = GPIO_STATE_LOW,
@@ -78,6 +81,8 @@ StatusCode charger_controller_init(ChargerStorage *storage, const ChargerSetting
     .resistor = GPIO_RES_NONE,
   };
   status_ok_or_return(gpio_init_pin(&settings->relay_control_pin, &gpio_settings));
+  status_ok_or_return(gpio_init_pin(&settings->relay_control_pin_secondary, &gpio_settings));
+  status_ok_or_return(gpio_init_pin(&settings->pilot_select_pin, &gpio_settings));
 
   const ChargerCanTxData tx_data = { .data_impl = {
                                          .max_voltage = settings->max_voltage,
@@ -92,9 +97,9 @@ StatusCode charger_controller_init(ChargerStorage *storage, const ChargerSetting
   };
 
   status_ok_or_return(
-      can_interval_factory(settings->can_uart, &tx_msg, CHARGER_PERIOD_US, &s_interval));
+      can_interval_factory(settings->can_mcp2515, &tx_msg, CHARGER_PERIOD_US, &s_interval));
 
-  status_ok_or_return(generic_can_register_rx(settings->can_uart, prv_rx_handler,
+  status_ok_or_return(generic_can_register_rx(settings->can_mcp2515, prv_rx_handler,
                                               GENERIC_CAN_EMPTY_MASK, s_rx_id.raw_id, true,
                                               settings->can));
   return STATUS_CODE_OK;
@@ -117,8 +122,12 @@ StatusCode charger_controller_set_state(ChargerCanState state) {
 
   if (state == CHARGER_STATE_START) {
     gpio_set_state(&s_storage->relay_control_pin, GPIO_STATE_HIGH);
+    gpio_set_state(&s_storage->relay_control_pin_secondary, GPIO_STATE_HIGH);
+    gpio_set_state(&s_storage->pilot_select_pin, GPIO_STATE_HIGH);
   } else {
     gpio_set_state(&s_storage->relay_control_pin, GPIO_STATE_LOW);
+    gpio_set_state(&s_storage->relay_control_pin_secondary, GPIO_STATE_LOW);
+    gpio_set_state(&s_storage->pilot_select_pin, GPIO_STATE_LOW);
   }
 
   if (state == CHARGER_STATE_OFF) {
