@@ -65,3 +65,4 @@ logs/
 
 ### Vagrant Patch ###
 *.box
+.idea
