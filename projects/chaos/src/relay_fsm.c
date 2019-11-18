@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "can.h"
+#include "log.h"
 #include "can_ack.h"
 #include "can_msg_defs.h"
 #include "can_transmit.h"
@@ -28,6 +29,14 @@ typedef struct RelayFsmCtx {
   CanAckRequest request;
   GpioAddress power_pin;
 } RelayFsmCtx;
+
+static char *relay_name_lookup[NUM_RELAY_IDS] = {
+  [RELAY_ID_SOLAR_MASTER_FRONT] = "Solar Master Front",
+  [RELAY_ID_SOLAR_MASTER_REAR] = "Solar Master Rear",
+  [RELAY_ID_BATTERY_MAIN] = "Battery Main",
+  [RELAY_ID_BATTERY_SLAVE] = "Battery Slave",
+  [RELAY_ID_MOTORS] = "Motors"
+};
 
 static RelayFsmCtx s_fsm_ctxs[NUM_RELAY_FSMS];
 
@@ -113,6 +122,8 @@ static void prv_opening(Fsm *fsm, const Event *e, void *context) {
   gpio_get_state(&relay_ctx->power_pin, &state);
   if (state == GPIO_STATE_LOW) {
     event_raise(CHAOS_EVENT_RELAY_OPENED, relay_ctx->ack_ctx.id);
+    RelayId id = (relay_ctx->ack_ctx).id;
+    LOG_DEBUG("Relay %s opened.\n", relay_name_lookup[id]);
     return;
   }
   relay_ctx->ack_ctx.event_id = CHAOS_EVENT_RELAY_OPENED;
@@ -130,6 +141,8 @@ static void prv_closing(Fsm *fsm, const Event *e, void *context) {
     return;
   }
   relay_ctx->ack_ctx.event_id = CHAOS_EVENT_RELAY_CLOSED;
+  RelayId id = (relay_ctx->ack_ctx).id;
+  LOG_DEBUG("Relay %s closed.\n", relay_name_lookup[id]);
   prv_relay_transmit(relay_ctx->ack_ctx.id, (RelayState)EE_RELAY_STATE_CLOSE, &relay_ctx->request);
 }
 
