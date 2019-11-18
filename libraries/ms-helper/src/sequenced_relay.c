@@ -3,6 +3,7 @@
 #include "can_msg_defs.h"
 #include "exported_enums.h"
 #include "soft_timer.h"
+#include "log.h"
 
 static void prv_delay_cb(SoftTimerId timer_id, void *context) {
   SequencedRelayStorage *storage = context;
@@ -37,7 +38,7 @@ StatusCode sequenced_relay_init(SequencedRelayStorage *storage,
 
 StatusCode sequenced_relay_set_state(SequencedRelayStorage *storage, EERelayState state) {
   soft_timer_cancel(storage->delay_timer);
-
+  LOG_DEBUG("Setting relays state: %s\n", state ? "Close" : "Open");
   gpio_set_state(&storage->settings.left_relay, (GpioState)state);
   if (state == EE_RELAY_STATE_CLOSE) {
     soft_timer_start_millis(storage->settings.delay_ms, prv_delay_cb, storage,

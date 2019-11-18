@@ -33,7 +33,7 @@ static void prv_periodic_tx_debug(SoftTimerId timer_id, void *context) {
 int main(void) {
   PlutusSysType board_type = plutus_sys_get_type();
   plutus_sys_init(&s_plutus, board_type);
-  LOG_DEBUG("Board type: %d\n", board_type);
+  LOG_DEBUG("Board type: %s\n", board_type ? "Slave" : "Master");
 
   if (board_type == PLUTUS_SYS_TYPE_MASTER) {
     const FaultMonitorSettings fault_settings = {

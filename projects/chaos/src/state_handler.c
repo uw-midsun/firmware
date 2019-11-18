@@ -25,6 +25,7 @@ static StatusCode prv_handle_power_state_msg(const CanMessage *msg, void *contex
   (void)context;
   EEPowerState power_state = NUM_EE_POWER_STATES;
   CAN_UNPACK_POWER_STATE(msg, (uint8_t *)&power_state);
+  LOG_DEBUG("Received Power State from pedal board: %d\n", power_state);
 
   if (power_state >= NUM_EE_POWER_STATES) {
     *ack_reply = CAN_ACK_STATUS_INVALID;

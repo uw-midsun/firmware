@@ -44,13 +44,15 @@ static void prv_toggle(SoftTimerId id, void *context) {
 }
 
 int main(void) {
+  LOG_DEBUG("Starting Chaos\n");
   // Common
   event_queue_init();
   interrupt_init();
   soft_timer_init();
   gpio_init();
   gpio_it_init();
-  adc_init(ADC_MODE_CONTINUOUS);
+  adc_init(ADC_MODE_SINGLE);
+  LOG_DEBUG("hits here\n");
   debug_led_init(DEBUG_LED_RED);
   soft_timer_start_millis(CHAOS_DEBUG_LED_PERIOD_MS, prv_toggle, NULL, NULL);
 

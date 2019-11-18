@@ -47,6 +47,10 @@ StatusCode relay_retry_service_update(const Event *e) {
       // exceeded.
       if (s_storage->max_retries != RELAY_RETRY_SERVICE_UNLIMITED_ATTEMPTS) {
         if (s_storage->relays_curr_retries[e->data] >= s_storage->max_retries) {
+          if (e->data == 1) {
+            LOG_DEBUG("[WARNING]: supressed relay error %d\n", e->data);
+            return STATUS_CODE_OK;
+          }
           LOG_DEBUG("Relay error: %d\n", e->data);
           return event_raise(CHAOS_EVENT_RELAY_ERROR, e->data);
         }

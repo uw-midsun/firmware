@@ -10,10 +10,13 @@
 #include "critical_section.h"
 #include "gpio.h"
 #include "status.h"
+#include "log.h"
 
 // CanRxHandler
 static StatusCode prv_relay_rx_can_handler(const CanMessage *msg, void *context,
                                            CanAckStatus *ack_reply) {
+  LOG_DEBUG("source id: %d\n", msg->source_id);
+  LOG_DEBUG("msg_id: %d\n", msg->msg_id);
   RelayRxStorage *storage = context;
   uint8_t state = storage->state_bound;
   // NOTE: This is a bit of a hack that exploits the fact all the relay control messages are the

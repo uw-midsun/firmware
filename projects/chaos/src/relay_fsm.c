@@ -54,6 +54,8 @@ static StatusCode prv_ack_callback(CanMessageId msg_id, uint16_t device, CanAckS
   (void)num_remaining;
   RelayFsmAckCtx *ack_ctx = context;
   if (status != CAN_ACK_STATUS_OK) {
+    LOG_DEBUG("RETRY: relay_id: %d, event_id: %d\n", ack_ctx->id,
+                    ack_ctx->event_id);
     event_raise(CHAOS_EVENT_MAYBE_RETRY_RELAY, ack_ctx->id);
   } else {
     event_raise(ack_ctx->event_id, ack_ctx->id);
@@ -92,6 +94,7 @@ FSM_STATE_TRANSITION(relay_opening) {
 }
 
 static void prv_relay_transmit(RelayId id, RelayState state, const CanAckRequest *ack_request) {
+  LOG_DEBUG("Setting relay %d state: %d\n", id, state);
   switch (id) {
     case RELAY_ID_SOLAR_MASTER_FRONT:
       CAN_TRANSMIT_SOLAR_RELAY_FRONT(ack_request, state);

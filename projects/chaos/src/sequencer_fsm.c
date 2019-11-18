@@ -278,6 +278,9 @@ static void prv_sequencer_state_emergency(Fsm *fsm, const Event *e, void *contex
     return;
   }
   LOG_DEBUG("Emergency\n");
+  LOG_DEBUG("event_id: %d\n", e->id);
+  LOG_DEBUG("event_data: %d\n", e->data);
+
   prv_add_filter(CHAOS_EVENT_RELAY_ERROR);
   prv_add_filter(CHAOS_EVENT_RELAY_OPENED);
   event_raise(CHAOS_EVENT_SET_RELAY_RETRIES, RELAY_RETRY_SERVICE_UNLIMITED_ATTEMPTS);
