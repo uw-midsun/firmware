@@ -4,8 +4,6 @@
 #include "soft_timer.h"
 #include "wait.h"
 
-
-
 #define TIMER_PERIOD 500  // timer period of 0.5 seconds
 
 typedef struct Counters {  // stores counter a and b counts
