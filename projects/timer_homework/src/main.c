@@ -1,9 +1,10 @@
+#include <stdint.h>
 #include "interrupt.h"
 #include "log.h"
 #include "soft_timer.h"
 #include "wait.h"
 
-#include <stdint.h>
+
 
 #define TIMER_PERIOD 500  // timer period of 0.5 seconds
 
